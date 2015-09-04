@@ -1532,7 +1532,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .itemsListview .content-icon {
-        display: none !important;
+        width: auto !important;
+        padding-right: .7em;
     }
 
     .itemsListview paper-item-body {

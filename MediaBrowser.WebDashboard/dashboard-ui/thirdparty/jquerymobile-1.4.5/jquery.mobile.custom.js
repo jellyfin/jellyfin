@@ -4068,7 +4068,8 @@ $.fn.fieldcontain = function(/* options */) {
 				    dependencies = dependencies || [];
 				    dependencies.push('jqmicons');
 				    dependencies.push('jqmpopup');
-				}
+				    dependencies.push('jqmlistview');
+                }
 
 				var currentSelf = this;
 

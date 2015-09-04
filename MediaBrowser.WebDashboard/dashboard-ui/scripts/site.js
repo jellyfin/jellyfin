@@ -2267,6 +2267,7 @@ $(document).on('pagecreate', ".page", function () {
     var page = $(this);
 
     var current = page.data('theme');
+
     if (!current) {
 
         var newTheme;
@@ -2282,13 +2283,16 @@ $(document).on('pagecreate', ".page", function () {
         if (current && current != newTheme) {
             page.page("option", "theme", newTheme);
         }
-
-        current = newTheme;
     }
 
+}).on('pageshow', ".page", function () {
+
+    var page = this;
+
+    var currentTheme = page.classList.contains('ui-page-theme-a') ? 'a' : 'b';
     var docElem = document.documentElement;
 
-    if (current == 'a') {
+    if (currentTheme == 'a') {
         docElem.classList.add('background-theme-a');
         docElem.classList.remove('background-theme-b');
     } else {
@@ -2296,15 +2300,11 @@ $(document).on('pagecreate', ".page", function () {
         docElem.classList.remove('background-theme-a');
     }
 
-    if (current != 'a' && !$.browser.mobile) {
+    if (currentTheme != 'a' && !$.browser.mobile) {
         document.body.classList.add('darkScrollbars');
     } else {
         document.body.classList.remove('darkScrollbars');
     }
-
-}).on('pageshow', ".page", function () {
-
-    var page = this;
 
     var isWizardPage = page.classList.contains('wizardPage');
     Dashboard.ensurePageTitle(page);
@@ -2320,7 +2320,7 @@ $(document).on('pagecreate', ".page", function () {
         var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
-            require(['jqmicons']);
+            require(['jqmicons', 'jqmlistview']);
             Dashboard.ensureToolsMenu(page);
 
             Dashboard.getCurrentUser().done(function (user) {

@@ -13855,7 +13855,339 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 <dom-module id="paper-spinner" assetpath="bower_components/paper-spinner/">
 
-  <link rel="import" type="css" href="bower_components/paper-spinner/paper-spinner.css">
+  <style>
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+
+*/
+/**************************/
+/* STYLES FOR THE SPINNER */
+/**************************/
+
+/*
+ * Constants:
+ *      STROKEWIDTH = 3px
+ *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
+ *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
+ *      ARCSTARTROT = 216 degrees (how much the start location of the arc
+ *                                should rotate each time, 216 gives us a
+ *                                5 pointed star shape (it's 360/5 * 3).
+ *                                For a 7 pointed star, we might do
+ *                                360/7 * 3 = 154.286)
+ *      CONTAINERWIDTH = 28px
+ *      SHRINK_TIME = 400ms
+ */
+
+:host {
+  display: inline-block;
+  position: relative;
+  width: 28px; /* CONTAINERWIDTH */
+  height: 28px; /* CONTAINERWIDTH */
+}
+
+#spinnerContainer {
+  width: 100%;
+  height: 100%;
+
+  /* The spinner does not have any contents that would have to be
+   * flipped if the direction changes. Always use ltr so that the
+   * style works out correctly in both cases. */
+  direction: ltr;
+}
+
+#spinnerContainer.active {
+  /* duration: 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+  -webkit-animation: container-rotate 1568ms linear infinite;
+  animation: container-rotate 1568ms linear infinite;
+}
+
+@-webkit-keyframes container-rotate {
+  to { -webkit-transform: rotate(360deg) }
+}
+
+@keyframes container-rotate {
+  to { transform: rotate(360deg) }
+}
+
+.spinner-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.layer-1 {
+  border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
+}
+
+.layer-2 {
+  border-color: var(--paper-spinner-layer-2-color, --google-red-500);
+}
+
+.layer-3 {
+  border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
+}
+
+.layer-4 {
+  border-color: var(--paper-spinner-layer-4-color, --google-blue-500);
+}
+
+/**
+ * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
+ *
+ * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
+ * guarantee that the animation will start _exactly_ after that value. So we avoid using
+ * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
+ * seems).
+ *
+ * We write out each animation in full (instead of separating animation-name,
+ * animation-duration, etc.) because under the polyfill, Safari does not recognize those
+ * specific properties properly, treats them as -webkit-animation, and overrides the
+ * other animation rules. See https://github.com/Polymer/platform/issues/53.
+ */
+.active .spinner-layer.layer-1 {
+  /* durations: 4 * ARCTIME */
+  -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+.active .spinner-layer.layer-2 {
+  /* durations: 4 * ARCTIME */
+  -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+.active .spinner-layer.layer-3 {
+  /* durations: 4 * ARCTIME */
+  -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+.active .spinner-layer.layer-4 {
+  /* durations: 4 * ARCTIME */
+  -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+@-webkit-keyframes fill-unfill-rotate {
+  12.5% { -webkit-transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+  25%   { -webkit-transform: rotate(270deg);  } /* 1   * ARCSIZE */
+  37.5% { -webkit-transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+  50%   { -webkit-transform: rotate(540deg);  } /* 2   * ARCSIZE */
+  62.5% { -webkit-transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+  75%   { -webkit-transform: rotate(810deg);  } /* 3   * ARCSIZE */
+  87.5% { -webkit-transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+  to    { -webkit-transform: rotate(1080deg); } /* 4   * ARCSIZE */
+}
+
+@keyframes fill-unfill-rotate {
+  12.5% { transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+  25%   { transform: rotate(270deg);  } /* 1   * ARCSIZE */
+  37.5% { transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+  50%   { transform: rotate(540deg);  } /* 2   * ARCSIZE */
+  62.5% { transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+  75%   { transform: rotate(810deg);  } /* 3   * ARCSIZE */
+  87.5% { transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+  to    { transform: rotate(1080deg); } /* 4   * ARCSIZE */
+}
+
+/**
+ * HACK: Even though the intention is to have the current .spinner-layer at
+ * `opacity: 1`, we set it to `opacity: 0.99` instead since this forces Chrome
+ * to do proper subpixel rendering for the elements being animated. This is
+ * especially visible in Chrome 39 on Ubuntu 14.04. See:
+ *
+ * - https://github.com/Polymer/paper-spinner/issues/9
+ * - https://code.google.com/p/chromium/issues/detail?id=436255
+ */
+@-webkit-keyframes layer-1-fade-in-out {
+  from { opacity: 0.99; }
+  25% { opacity: 0.99; }
+  26% { opacity: 0; }
+  89% { opacity: 0; }
+  90% { opacity: 0.99; }
+  100% { opacity: 0.99; }
+}
+
+@keyframes layer-1-fade-in-out {
+  from { opacity: 0.99; }
+  25% { opacity: 0.99; }
+  26% { opacity: 0; }
+  89% { opacity: 0; }
+  90% { opacity: 0.99; }
+  100% { opacity: 0.99; }
+}
+
+@-webkit-keyframes layer-2-fade-in-out {
+  from { opacity: 0; }
+  15% { opacity: 0; }
+  25% { opacity: 0.99; }
+  50% { opacity: 0.99; }
+  51% { opacity: 0; }
+}
+
+@keyframes layer-2-fade-in-out {
+  from { opacity: 0; }
+  15% { opacity: 0; }
+  25% { opacity: 0.99; }
+  50% { opacity: 0.99; }
+  51% { opacity: 0; }
+}
+
+@-webkit-keyframes layer-3-fade-in-out {
+  from { opacity: 0; }
+  40% { opacity: 0; }
+  50% { opacity: 0.99; }
+  75% { opacity: 0.99; }
+  76% { opacity: 0; }
+}
+
+@keyframes layer-3-fade-in-out {
+  from { opacity: 0; }
+  40% { opacity: 0; }
+  50% { opacity: 0.99; }
+  75% { opacity: 0.99; }
+  76% { opacity: 0; }
+}
+
+@-webkit-keyframes layer-4-fade-in-out {
+  from { opacity: 0; }
+  65% { opacity: 0; }
+  75% { opacity: 0.99; }
+  90% { opacity: 0.99; }
+  100% { opacity: 0; }
+}
+
+@keyframes layer-4-fade-in-out {
+  from { opacity: 0; }
+  65% { opacity: 0; }
+  75% { opacity: 0.99; }
+  90% { opacity: 0.99; }
+  100% { opacity: 0; }
+}
+
+/**
+ * Patch the gap that appear between the two adjacent div.circle-clipper while the
+ * spinner is rotating (appears on Chrome 38, Safari 7.1, and IE 11).
+ *
+ * Update: the gap no longer appears on Chrome when .spinner-layer's opacity is 0.99,
+ * but still does on Safari and IE.
+ */
+.gap-patch {
+  position: absolute;
+  box-sizing: border-box;
+  top: 0;
+  left: 45%;
+  width: 10%;
+  height: 100%;
+  overflow: hidden;
+  border-color: inherit;
+}
+
+.gap-patch .circle {
+  width: 1000%;
+  left: -450%;
+}
+
+.circle-clipper {
+  display: inline-block;
+  position: relative;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  border-color: inherit;
+}
+
+.circle-clipper .circle {
+  width: 200%;
+}
+
+.circle {
+  box-sizing: border-box;
+  height: 100%;
+  border-width: 3px; /* STROKEWIDTH */
+  border-style: solid;
+  border-color: inherit;
+  border-bottom-color: transparent !important;
+  border-radius: 50%;
+  -webkit-animation: none;
+  animation: none;
+
+  @apply(--layout-fit);
+}
+
+.circle-clipper.left .circle {
+  border-right-color: transparent !important;
+  -webkit-transform: rotate(129deg);
+  transform: rotate(129deg);
+}
+
+.circle-clipper.right .circle {
+  left: -100%;
+  border-left-color: transparent !important;
+  -webkit-transform: rotate(-129deg);
+  transform: rotate(-129deg);
+}
+
+.active .circle-clipper.left .circle {
+  /* duration: ARCTIME */
+  -webkit-animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+.active .circle-clipper.right .circle {
+  /* duration: ARCTIME */
+  -webkit-animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+  animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+}
+
+@-webkit-keyframes left-spin {
+  from { -webkit-transform: rotate(130deg); }
+  50% { -webkit-transform: rotate(-5deg); }
+  to { -webkit-transform: rotate(130deg); }
+}
+
+@keyframes left-spin {
+  from { transform: rotate(130deg); }
+  50% { transform: rotate(-5deg); }
+  to { transform: rotate(130deg); }
+}
+
+@-webkit-keyframes right-spin {
+  from { -webkit-transform: rotate(-130deg); }
+  50% { -webkit-transform: rotate(5deg); }
+  to { -webkit-transform: rotate(-130deg); }
+}
+
+@keyframes right-spin {
+  from { transform: rotate(-130deg); }
+  50% { transform: rotate(5deg); }
+  to { transform: rotate(-130deg); }
+}
+
+#spinnerContainer.cooldown {
+  /* duration: SHRINK_TIME */
+  -webkit-animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@-webkit-keyframes fade-out {
+  from { opacity: 0.99; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-out {
+  from { opacity: 0.99; }
+  to { opacity: 0; }
+}
+
+</style>
 
   <template>
 
@@ -14337,7 +14669,67 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 <dom-module id="paper-dialog" assetpath="bower_components/paper-dialog/">
 
-  <link rel="import" type="css" href="bower_components/paper-dialog-behavior/paper-dialog-common.css">
+  <style>
+/*
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: block;
+  margin: 24px 40px;
+
+  background: var(--paper-dialog-background-color, --primary-background-color);
+  color: var(--paper-dialog-color, --primary-text-color);
+
+  @apply(--layout-scroll);
+  @apply(--paper-font-body1);
+  @apply(--shadow-elevation-16dp);
+  @apply(--paper-dialog);
+}
+
+:host > ::content > * {
+  margin-top: 20px;
+  padding: 0 24px;
+}
+
+:host > ::content > .no-padding {
+  padding: 0;
+}
+
+:host > ::content > *:first-child {
+  margin-top: 24px;
+}
+
+:host > ::content > *:last-child {
+  margin-bottom: 24px;
+}
+
+:host > ::content h2 {
+  position: relative;
+  margin: 0;
+  @apply(--paper-font-title);
+
+  @apply(--paper-dialog-title);
+}
+
+:host > ::content .buttons {
+  position: relative;
+  padding: 8px 8px 8px 24px;
+  margin: 0;
+
+  color: var(--paper-dialog-button-color, --default-primary-color);
+
+  @apply(--layout-horizontal);
+  @apply(--layout-end-justified);
+}
+
+</style>
 
   <template>
     <content></content>
@@ -14786,7 +15178,160 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   });
 </script>
 <dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
-  <link rel="import" type="css" href="bower_components/paper-drawer-panel/paper-drawer-panel.css">
+  <style>
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+iron-selector > #drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: white;
+
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  @apply(--paper-drawer-panel-drawer-container);
+}
+
+.transition > #drawer {
+  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+}
+
+.left-drawer > #drawer {
+  @apply(--paper-drawer-panel-left-drawer-container);
+}
+
+.right-drawer > #drawer {
+  left: auto;
+  right: 0;
+
+  @apply(--paper-drawer-panel-right-drawer-container);
+}
+
+iron-selector > #main {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  @apply(--paper-drawer-panel-main-container);
+}
+
+.transition > #main {
+  transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+}
+
+.right-drawer > #main {
+  left: 0;
+}
+
+.right-drawer.transition > #main {
+  transition: right ease-in-out 0.3s, padding ease-in-out 0.3s;
+}
+
+#main > ::content > [main] {
+  height: 100%;
+}
+
+#drawer > ::content > [drawer] {
+  height: 100%;
+}
+
+#scrim {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.narrow-layout > #drawer {
+  will-change: transform;
+}
+
+.narrow-layout > #drawer.iron-selected {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.right-drawer.narrow-layout > #drawer.iron-selected {
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.narrow-layout > #drawer > ::content > [drawer] {
+  border: 0;
+}
+
+.left-drawer.narrow-layout > #drawer:not(.iron-selected) {
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
+}
+
+.right-drawer.narrow-layout > #drawer:not(.iron-selected) {
+  left: auto;
+  visibility: hidden;
+
+  -webkit-transform: translateX(100%);
+  transform: translateX(100%);
+}
+
+.right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
+.right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+  visibility: visible;
+}
+
+.narrow-layout > #main {
+  padding: 0;
+}
+
+.right-drawer.narrow-layout > #main {
+  left: 0;
+  right: 0;
+}
+
+.narrow-layout > #main:not(.iron-selected) > #scrim,
+.dragging > #main > #scrim {
+  visibility: visible;
+  opacity: var(--paper-drawer-panel-scrim-opacity, 1);
+}
+
+.narrow-layout > #main > * {
+  margin: 0;
+  min-height: 100%;
+  left: 0;
+  right: 0;
+
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
+  display: none;
+}
+</style>
 
   <template>
     <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
@@ -16668,7 +17213,267 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 <dom-module id="paper-slider" assetpath="bower_components/paper-slider/">
 
-  <link rel="import" type="css" href="bower_components/paper-slider/paper-slider.css">
+  <style>
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: inline-block;
+  width: 200px;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+:host(:not([disabled])) #sliderBar {
+  --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
+}
+
+:host(:not([disabled])) #sliderBar {
+  --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
+}
+
+:host([disabled]) #sliderBar {
+  --paper-progress-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
+}
+
+:host([disabled]) #sliderBar {
+  --paper-progress-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+}
+
+:host(:focus) {
+  outline: none;
+}
+
+#sliderContainer {
+  position: relative;
+  width: calc(100% - 32px);
+  height: 32px;
+}
+
+#sliderContainer.editable {
+  float: left;
+  width: calc(100% - 72px);
+  margin: 12px 0;
+}
+
+.bar-container {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ring > .bar-container {
+  left: 20px;
+  width: calc(100% - 4px);
+  transition: left 0.18s ease, width 0.18s ease;
+}
+
+.ring.expand:not(.pin) > .bar-container {
+  left: 30px;
+  width: calc(100% - 14px);
+}
+
+.ring.expand.dragging > .bar-container {
+  transition: none;
+}
+
+#sliderBar {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  padding: 8px 0;
+  margin: -8px 0;
+  background-color: var(--paper-slider-bar-color, transparent);
+}
+
+.ring #sliderBar {
+  left: -4px;
+  width: calc(100% + 4px);
+}
+
+.ring.expand:not(.pin) #sliderBar {
+  left: -14px;
+  width: calc(100% + 14px);
+}
+
+.slider-markers {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  height: 2px;
+  width: calc(100% + 2px);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.slider-markers::after,
+.slider-marker::after {
+  content: "";
+  display: block;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: black;
+}
+
+#sliderKnob {
+  @apply(--layout-center-justified);
+  @apply(--layout-center);
+  @apply(--layout-horizontal);
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.transiting > #sliderKnob {
+  transition: left 0.08s ease;
+}
+
+#sliderKnob:focus {
+  outline: none;
+}
+
+#sliderKnob.dragging {
+  transition: none;
+}
+
+.snaps > #sliderKnob.dragging {
+  transition: -webkit-transform 0.08s ease;
+  transition: transform 0.08s ease;
+}
+
+#sliderKnobInner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--paper-slider-knob-color, --google-blue-700);
+
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  transition-property: height, width, background-color, border;
+  transition-duration: 0.1s;
+  transition-timing-function: ease;
+}
+
+.expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+  width: 100%;
+  height: 100%;
+
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.ring > #sliderKnob > #sliderKnobInner {
+  background-color: var(--paper-slider-knob-start-color, transparent);
+  border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+}
+
+#sliderKnobInner::before {
+  background-color: var(--paper-slider-pin-color, --google-blue-700);
+}
+
+.pin > #sliderKnob > #sliderKnobInner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
+  border-radius: 50% 50% 50% 0;
+
+  -webkit-transform: rotate(-45deg) scale(0) translate(0);
+  transform: rotate(-45deg) scale(0) translate(0);
+}
+
+#sliderKnobInner::before,
+#sliderKnobInner::after {
+  transition: -webkit-transform .2s ease, background-color .18s ease;
+  transition: transform .2s ease, background-color .18s ease;
+}
+
+.pin.ring > #sliderKnob > #sliderKnobInner::before {
+  background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+}
+
+.pin.expand > #sliderKnob > #sliderKnobInner::before {
+  -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
+  transform: rotate(-45deg) scale(1) translate(17px, -17px);
+}
+
+.pin > #sliderKnob > #sliderKnobInner::after {
+  content: attr(value);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 26px;
+  text-align: center;
+  color: var(--paper-slider-font-color, #fff);
+  font-size: 10px;
+
+  -webkit-transform: scale(0) translate(0);
+  transform: scale(0) translate(0);
+}
+
+.pin.expand > #sliderKnob > #sliderKnobInner::after {
+  -webkit-transform: scale(1) translate(0, -17px);
+  transform: scale(1) translate(0, -17px);
+}
+
+/* editable: paper-input */
+.slider-input {
+  width: 40px;
+  float: right;
+  overflow: hidden;
+}
+
+.slider-input {
+  --paper-input-container-input: {
+      text-align: center;
+  };
+}
+
+/* disabled state */
+#sliderContainer.disabled {
+  pointer-events: none;
+}
+
+.disabled > #sliderKnob > #sliderKnobInner {
+  width: 8px;
+  height: 8px;
+  background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+}
+
+.disabled.ring > #sliderKnob > #sliderKnobInner {
+  background-color: transparent;
+}
+
+paper-ripple {
+  color: var(--paper-slider-knob-color, --google-blue-700);
+}
+
+</style>
 
   <template>
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
@@ -17740,7 +18545,28 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </dom-module>
 <dom-module id="paper-icon-item" assetpath="bower_components/paper-item/">
 
-  <link rel="import" type="css" href="bower_components/paper-item/paper-item-shared.css">
+  <style>
+/*
+    @license
+    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: block;
+  min-height: var(--paper-item-min-height, 48px);
+  padding: 0px 16px;
+}
+
+:host > ::content > *:not(:first-child):not(:last-child) {
+  margin-right: 16px;
+}
+
+</style>
 
   <style>
 
@@ -17841,7 +18667,123 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 <dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
 
-  <link rel="import" type="css" href="bower_components/paper-radio-button/paper-radio-button.css">
+  <style>
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+:host(:focus) {
+  outline: none;
+}
+
+#radioContainer {
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+:host #ink {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 48px;
+  height: 48px;
+  color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+:host #ink[checked] {
+  color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
+}
+
+:host #offRadio {
+  position: absolute;
+  box-sizing: content-box;
+  top: 0px;
+  left: 0px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: solid 2px;
+  background-color: var(--paper-radio-button-unchecked-background-color, transparent);
+  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+  transition: border-color 0.28s;
+}
+
+:host #onRadio {
+  position: absolute;
+  box-sizing: content-box;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--paper-radio-button-checked-color, --default-primary-color);
+  -webkit-transform: scale(0);
+  transform: scale(0);
+  transition: -webkit-transform ease 0.28s;
+  transition: transform ease 0.28s;
+}
+
+:host([checked]) #offRadio {
+  border-color: var(--paper-radio-button-checked-color, --default-primary-color);
+}
+
+:host([checked]) #onRadio {
+  -webkit-transform: scale(1);
+  transform: scale(1);
+}
+
+#radioLabel {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  white-space: normal;
+  pointer-events: none;
+  color: var(--paper-radio-button-label-color, --primary-text-color);
+}
+
+#radioLabel[hidden] {
+  display: none;
+}
+
+/* disabled state */
+:host([disabled]) {
+  pointer-events: none;
+}
+
+:host([disabled]) #offRadio {
+  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+  opacity: 0.5;
+}
+
+:host([disabled][checked]) #onRadio {
+  background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+  opacity: 0.5;
+}
+
+:host([disabled]) #radioLabel {
+  /* slightly darker than the button, so that it's readable */
+  opacity: 0.65;
+}
+
+</style>
 
   <template>
 
