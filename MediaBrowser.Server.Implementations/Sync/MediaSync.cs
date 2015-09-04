@@ -147,7 +147,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                     progress.Report(totalProgress);
                 });
 
-                await GetItem(provider, dataProvider, target, serverId, serverName, jobItem, innerProgress, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await GetItem(provider, dataProvider, target, serverId, serverName, jobItem, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error syncing item", ex);
+                }
 
                 numComplete++;
                 startingPercent = numComplete;
