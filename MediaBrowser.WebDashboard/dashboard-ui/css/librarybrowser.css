@@ -1508,6 +1508,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemsListview .listItem {
         border-bottom: 1px solid #303030;
         padding-left: 0;
+        padding-right: 0;
+    }
+
+    .itemsListview .listviewMenuButton {
+        margin-right: 0 !important;
     }
 
     .itemsListview .ui-li-count {
@@ -1553,15 +1558,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         background-size: cover;
         background-position: center center;
     }
-
-button.listviewMenuButton {
-    padding-left: 20px !important;
-    font-size: 20px;
-}
-
-paper-icon-button.listviewMenuButton {
-    margin-left: 20px !important;
-}
 
 .ui-page-theme-b .listItem:hover {
     background-color: rgba(51,51,51,.6) !important;
