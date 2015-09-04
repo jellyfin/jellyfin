@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var pageBackgroundCreated;
+
     function getElement() {
 
         //var elem = $('.backdropContainer');
@@ -12,6 +14,14 @@
         var elem = document.documentElement;
 
         elem.classList.add('backdropContainer');
+
+        if (!pageBackgroundCreated) {
+            pageBackgroundCreated = true;
+            var div = document.createElement('div');
+            div.classList.add('pageBackground');
+            document.body.insertBefore(div, document.body.firstChild);
+        }
+
         return elem;
     }
 

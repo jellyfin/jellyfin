@@ -299,7 +299,7 @@
 
     function showPostPlayMenu(item) {
 
-        require(['jqmpopup'], function() {
+        require(['jqmpopup', 'jqmlistview'], function () {
             $('.externalPlayerPostPlayFlyout').popup("close").remove();
 
             var html = '<div data-role="popup" class="externalPlayerPostPlayFlyout" data-history="false" data-theme="a" data-dismissible="false">';
@@ -410,7 +410,7 @@
 
     function showMenuForItem(item, players) {
 
-        require(['jqmpopup'], function () {
+        require(['jqmpopup', 'jqmlistview'], function () {
             closePlayMenu();
 
             var html = '<div data-role="popup" class="externalPlayerFlyout" data-theme="a" data-dismissible="false">';

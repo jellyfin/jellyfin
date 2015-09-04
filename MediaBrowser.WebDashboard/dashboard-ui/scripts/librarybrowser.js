@@ -1043,6 +1043,8 @@
 
         getListViewHtml: function (options) {
 
+            require(['jqmlistview']);
+
             var outerHtml = "";
 
             outerHtml += '<ul data-role="listview" class="itemsListview">';

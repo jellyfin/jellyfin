@@ -54,14 +54,14 @@
                     <h3>${HeaderAdvanced}</h3>
                     <div>
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                            </li>
-                            <li>
-                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                            </li>
-                        </ul>
+                        <div>
+                            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
                     </div>
                 </div>
                 <br />
@@ -71,7 +71,7 @@
                         <p>${MessageActiveSupporterMembershipRequiredSeriesRecordings}</p>
                         <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
                         <a class="clearLink btnSupporter hide" href="http://emby.media/donate" target="_blank"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
-                        <br/>
+                        <br />
                     </div>
                     <button type="submit" data-role="none" class="clearButton btnSubmitContainer">
                         <paper-button raised class="submit block" style="background:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>

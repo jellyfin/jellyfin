@@ -6,11 +6,11 @@
         background-color: rgba(27, 27, 27, .75);
     }
 
-.ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
-    background-color: #2b2b2b;
+.background-theme-b {
+    background-color: #242424;
 }
 
-.backdropPage.ui-page-theme-b {
+.backdropContainer .pageBackground {
     background-color: rgba(20, 20,20, .94) !important;
 }
 

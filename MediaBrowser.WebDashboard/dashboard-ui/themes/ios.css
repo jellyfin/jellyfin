@@ -1,10 +1,13 @@
-﻿html {
-    /* Setting it here will help prevent white flashes */
+﻿html, body, .ui-btn, .pageTitle {
+    font-family: San Francisco, Helvetica Neue;
+}
+
+.background-theme-b {
     background-color: #1c1c1c;
 }
 
-html, body, .ui-btn, .pageTitle {
-    font-family: San Francisco, Helvetica Neue;
+.backdropContainer .pageBackground {
+    background-color: rgba(28,28,28,.92) !important;
 }
 
 
@@ -16,47 +19,39 @@ html, body, .ui-btn, .pageTitle {
         background-color: rgba(28, 28, 28, .8);
     }
 
-.backdropPage.ui-page-theme-b {
-    background-color: rgba(28,28,28,.92) !important;
-}
+    .libraryViewNav a {
+        font-weight: 400;
+        text-transform: none;
+        color: #ccc !important;
+        padding: 12px 13px 8px;
+    }
 
-.ui-page-theme-b {
-    background-color: #1c1c1c;
-}
+    .libraryViewNav .tab-content {
+        display: block !important;
+    }
 
-.libraryViewNav a {
-    font-weight: 400;
-    text-transform: none;
-    color: #ccc !important;
-    padding: 12px 13px 8px;
-}
+    .libraryViewNav paper-tabs {
+        height: 58px !important;
+    }
 
-.libraryViewNav .tab-content {
-    display: block !important;
-}
+    .libraryViewNav paper-tab {
+        height: auto !important;
+    }
 
-.libraryViewNav paper-tabs {
-    height: 58px !important;
-}
+    .libraryViewNav iron-icon {
+        width: 22px;
+        height: 22px;
+        display: block;
+        margin: 0 auto 6px;
+    }
 
-.libraryViewNav paper-tab {
-    height: auto !important;
-}
+    .libraryViewNav paper-tabs iron-icon {
+        margin: 6px auto 6px;
+    }
 
-.libraryViewNav iron-icon {
-    width: 22px;
-    height: 22px;
-    display: block;
-    margin: 0 auto 6px;
-}
-
-.libraryViewNav paper-tabs iron-icon {
-    margin: 6px auto 6px;
-}
-
-.libraryViewNav #selectionBar {
-    background-color: transparent !important;
-}
+    .libraryViewNav #selectionBar {
+        background-color: transparent !important;
+    }
 
 @media all and (max-width: 600px) {
 

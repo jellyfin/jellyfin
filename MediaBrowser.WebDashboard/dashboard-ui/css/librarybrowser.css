@@ -12,37 +12,29 @@
     margin-left: .5em;
 }
 
+.background-theme-b {
+    background-color: #242424;
+}
+
+.ui-page-theme-b {
+    color: #fff;
+}
+
 .pageWithAbsoluteTabs {
     background-color: transparent !important;
 }
 
-.backdropPage.ui-page-theme-a:not(.pageWithAbsoluteTabs) {
-    background-color: rgba(240, 240,240, .94) !important;
-}
-
-.backdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.pageWithAbsoluteTabs .pageBackground {
-    background-color: rgba(20, 20,20, .92) !important;
-}
-
-.backdropPage.lightBackdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.lightBackdropPage.pageWithAbsoluteTabs .pageBackground {
-    background-color: rgba(20, 20,20, .90) !important;
-}
-
-.pageWithAbsoluteTabs .pageBackground {
+.backdropContainer .pageBackground {
+    background-color: rgba(20, 20,20, .92);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1;
 }
 
 .pageWithAbsoluteTabs neon-animatable {
     z-index: 2;
-}
-
-html, .ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
-    background-color: #242424;
 }
 
 .backdropContainer {

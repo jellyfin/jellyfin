@@ -40,7 +40,6 @@
 
                 html += '<div class="homePageSection">';
                 html += '<h1>' + startDateText + '</h1>';
-                //html += '<ul data-role="listview" data-split-icon="delete">';
                 html += '<div class="paperList">';
                 index = startDateText;
             }

@@ -72,7 +72,8 @@
 
 .mainDrawerPanel #main {
     left: 0 !important;
-    position: static !important;
+    position: relative !important;
+    z-index: 1;
 }
 
 .mainDrawerPanel #scrim {

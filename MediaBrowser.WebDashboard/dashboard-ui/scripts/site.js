@@ -2108,6 +2108,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.listview.css');
+            return {};
+        });
+
         define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
             return Hammer;
         });
@@ -2188,6 +2193,7 @@ var AppInfo = {};
                     if (newHtml.indexOf('type-interior') != -1) {
                         depends.push('jqmicons');
                         depends.push('jqmpopup');
+                        depends.push('jqmlistview');
                     }
 
                     require(depends, function () {
@@ -2278,6 +2284,16 @@ $(document).on('pagecreate', ".page", function () {
         }
 
         current = newTheme;
+    }
+
+    var docElem = document.documentElement;
+
+    if (current == 'a') {
+        docElem.classList.add('background-theme-a');
+        docElem.classList.remove('background-theme-b');
+    } else {
+        docElem.classList.add('background-theme-b');
+        docElem.classList.remove('background-theme-a');
     }
 
     if (current != 'a' && !$.browser.mobile) {
