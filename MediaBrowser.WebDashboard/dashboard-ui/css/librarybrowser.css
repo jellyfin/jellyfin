@@ -1497,7 +1497,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsListview {
     margin: 0 auto !important;
+    max-width: 1000px;
 }
+
+.itemsListview {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+    .itemsListview .listItem {
+        border-bottom: 1px solid #303030;
+        padding-left: 0;
+    }
 
     .itemsListview .ui-li-count {
         right: 1em;
@@ -1515,6 +1526,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         left: 55px;
     }
 
+    .itemsListview .content-icon {
+        display: none !important;
+    }
+
+    .itemsListview paper-item-body {
+        min-height: 0 !important;
+    }
+
+    .itemsListview .mediaItem {
+        padding: 7px 0;
+    }
+
 .listviewImage {
     width: 80px;
     height: 80px;
@@ -1523,27 +1546,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-position: center center;
 }
 
-.listviewIcon {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 70px;
-    height: 70px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center center;
-}
-
-.listViewAside {
-    position: absolute;
-    right: 0;
-    top: 10%;
-}
-
-    .listViewAside button {
-        padding: 15px 10px;
-        margin: 0 !important;
-        vertical-align: middle;
+    .listviewImage.small {
+        width: 70px;
+        height: 70px;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center center;
     }
 
 button.listviewMenuButton {
@@ -1555,62 +1563,8 @@ paper-icon-button.listviewMenuButton {
     margin-left: 20px !important;
 }
 
-.ui-li-has-icon > .ui-btn {
-    padding-left: 5.25em !important;
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
-}
-
-.listItem h3 {
-    font-weight: 400;
-}
-
-.ui-li-has-icon h3 {
-    margin-bottom: 10px !important;
-}
-
-.listItem > .ui-btn + .ui-btn {
-    border: 0 !important;
-    width: 60px !important;
-    height: 90% !important;
-    top: 5% !important;
-    padding-left: 0 !important;
-}
-
-.listItem a:first-child {
-    margin-right: 0 !important;
-    background-color: transparent !important;
-    padding-top: 0;
-    padding-bottom: 0;
-}
-
-.listItem.ui-li-has-thumb .ui-btn {
-    padding-left: 5.9em !important;
-}
-
-.ui-page-theme-a .listItem a:first-child {
-    border-color: #d8d8d8 !important;
-}
-
-.ui-page-theme-b .listItem a:first-child {
-    border-color: #383838 !important;
-}
-
-.listItem a + a {
-    background-color: transparent !important;
-    z-index: 999;
-}
-
-.ui-page-theme-a .listItem:hover a {
-    background-color: #eee !important;
-}
-
-.ui-page-theme-b .listItem:hover a {
+.ui-page-theme-b .listItem:hover {
     background-color: rgba(51,51,51,.6) !important;
-}
-
-.listviewSubLink:hover {
-    color: #2ad;
 }
 
 .listViewUserDataButtons {
@@ -1619,7 +1573,7 @@ paper-icon-button.listviewMenuButton {
 
 @media all and (min-width: 1200px) {
 
-    li:hover .listViewUserDataButtons {
+    .listItem:hover .listViewUserDataButtons {
         visibility: visible !important;
     }
 }
@@ -1627,13 +1581,6 @@ paper-icon-button.listviewMenuButton {
 @media all and (max-width: 1200px) {
 
     .listViewUserDataButtons {
-        display: none;
-    }
-}
-
-@media all and (max-width: 600px) {
-
-    .listViewAsideText {
         display: none;
     }
 }

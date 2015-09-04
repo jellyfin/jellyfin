@@ -1124,13 +1124,6 @@
         PlaylistManager.showPanel(selection);
     }
 
-    function onListviewSubLinkClick(e) {
-
-        var elem = e.target;
-        Dashboard.navigate(elem.getAttribute('data-href'));
-        return false;
-    }
-
     function onItemWithActionClick(e) {
 
         var elem = this;
@@ -1155,6 +1148,7 @@
         else if (action == 'playallfromhere') {
 
             index = elemWithAttributes.getAttribute('data-index');
+
             itemsContainer = $(elem).parents('.itemsContainer');
 
             playAllFromHere(index, itemsContainer, 'play');
@@ -1166,7 +1160,7 @@
     function playAllFromHere(index, itemsContainer, method) {
 
         var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
-            return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid');
+            return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid') || i.parentNode.parentNode.getAttribute('data-itemid');
         });
 
         ids = ids.slice(index);
@@ -1237,7 +1231,7 @@
 
             toggleSelections(page);
 
-        }).on('click', '.itemWithAction', onItemWithActionClick).on('click', '.listviewSubLink', onListviewSubLinkClick);
+        }).on('click', '.itemWithAction', onItemWithActionClick);
 
         var itemsContainers = page.getElementsByClassName('itemsContainer');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {

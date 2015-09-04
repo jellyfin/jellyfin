@@ -1043,17 +1043,15 @@
 
         getListViewHtml: function (options) {
 
-            require(['jqmlistview']);
-
             var outerHtml = "";
 
-            outerHtml += '<ul data-role="listview" class="itemsListview">';
-
             if (options.title) {
-                outerHtml += '<li data-role="list-divider">';
+                outerHtml += '<h1>';
                 outerHtml += options.title;
-                outerHtml += '</li>';
+                outerHtml += '</h1>';
             }
+
+            outerHtml += '<div class="paperList itemsListview">';
 
             var index = 0;
             var groupTitle = '';
@@ -1068,9 +1066,13 @@
 
                     if (itemGroupTitle != groupTitle) {
 
-                        html += '<li data-role="list-divider">';
+                        outerHtml += '</div>';
+
+                        html += '<h1>';
                         html += itemGroupTitle;
-                        html += '</li>';
+                        html += '</h1>';
+
+                        html += '<div class="paperList itemsListview">';
 
                         groupTitle = itemGroupTitle;
                     }
@@ -1078,19 +1080,10 @@
 
                 var dataAttributes = LibraryBrowser.getItemDataAttributes(item, options, index);
 
-                var cssClass = options.smallIcon ? 'ui-li-has-icon listItem' : 'ui-li-has-thumb listItem';
+                var cssClass = 'listItem';
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
-
-                var defaultAction = options.defaultAction;
-                if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
-                    if (item.PlayAccess != 'Full') {
-                        defaultAction = null;
-                    }
-                }
-                var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction mediaItem"') : ' class="mediaItem"';
-                html += '<a' + defaultActionAttribute + ' href="' + href + '">';
+                html += '<paper-icon-item class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
 
                 var imgUrl;
 
@@ -1143,15 +1136,15 @@
                     var minLazyIndex = 16;
                     if (options.smallIcon) {
                         if (index < minLazyIndex) {
-                            html += '<div class="listviewIcon ui-li-icon" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                            html += '<div class="listviewImage small" style="background-image:url(\'' + imgUrl + '\');"></div>';
                         } else {
-                            html += '<div class="listviewIcon ui-li-icon lazy" data-src="' + imgUrl + '"></div>';
+                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '"></div>';
                         }
                     } else {
                         if (index < minLazyIndex) {
-                            html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                            html += '<div class="listviewImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
                         } else {
-                            html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
+                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '"></div>';
                         }
                     }
                 }
@@ -1170,8 +1163,6 @@
                     displayName = item.IndexNumber + ". " + displayName;
                 }
                 textlines.push(displayName);
-
-                var verticalTextLines = 2;
 
                 if (item.Type == 'Audio') {
                     textlines.push(item.ArtistItems.map(function (a) {
@@ -1200,53 +1191,57 @@
                     textlines.push(LibraryBrowser.getMiscInfoHtml(item));
                 }
 
-                html += '<h3>';
-                html += textlines[0];
-                html += '</h3>';
-
-                if (textlines.length > 1 && verticalTextLines > 1) {
-                    html += '<p>';
-                    html += textlines[1] || '&nbsp;';
-                    html += '</p>';
+                if (textlines.length > 2) {
+                    html += '<paper-item-body three-line>';
+                } else {
+                    html += '<paper-item-body two-line>';
                 }
 
-                if (textlines.length > 2 && verticalTextLines > 2) {
-                    html += '<p>';
-                    html += textlines[2] || '&nbsp;';
-                    html += '</p>';
-                }
-
-                html += LibraryBrowser.getSyncIndicator(item);
-
-                if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
-                    if (item.UserData.UnplayedItemCount) {
-                        //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
-                    } else if (item.UserData.Played && item.Type != 'TvChannel') {
-                        html += '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
+                var defaultAction = options.defaultAction;
+                if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
+                    if (item.PlayAccess != 'Full') {
+                        defaultAction = null;
                     }
                 }
-                html += '</a>';
+                var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction mediaItem clearLink"') : ' class="mediaItem clearLink"';
+                html += '<a' + defaultActionAttribute + ' href="' + href + '">';
 
-                html += '<div class="listViewAside">';
-                html += '<span class="listViewAsideText">';
-                html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
-                html += '</span>';
-                //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
-                //html += '</button>';
+                for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
+
+                    if (i == 0) {
+                        html += '<div>';
+                    } else {
+                        html += '<div secondary>';
+                    }
+                    html += textlines[i] || '&nbsp;';
+                    html += '</div>';
+                }
+
+                //html += LibraryBrowser.getSyncIndicator(item);
+
+                //if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
+                //    if (item.UserData.UnplayedItemCount) {
+                //        //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
+                //    } else if (item.UserData.Played && item.Type != 'TvChannel') {
+                //        html += '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
+                //    }
+                //}
+                html += '</a>';
+                html += '</paper-item-body>';
+
                 html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
-                html += '</div>';
 
-                html += '</li>';
+                html += '</paper-icon-item>';
 
                 index++;
                 return html;
 
             }).join('');
 
-            outerHtml += '</ul>';
+            outerHtml += '</div>';
 
             return outerHtml;
         },
