@@ -3966,7 +3966,7 @@ $.fn.fieldcontain = function(/* options */) {
 			//workaround to allow scripts to execute when included in page divs
 			all.innerHTML = html;
 
-			page = all.querySelector("*[data-role='page'],*[data-role='dialog']");
+			page = all.querySelector("div[data-role='page']");
 
 			//if page elem couldn't be found, create one and insert the body element's contents
 			if ( !page ) {
