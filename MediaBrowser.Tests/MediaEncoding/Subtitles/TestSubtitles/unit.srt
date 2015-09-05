@@ -35,7 +35,7 @@ Unclosed but <b>supported HTML tags are left in, {\i1} SSA italics aren't
 
 9
 00:00:36,000 --> 00:00:36,999
-Multiple {\pos(142,120)\b1}SSA tags are stripped
+Multiple {\bord-3.7\clip(1,m 50 0 b 100 0 100 100 50 100 b 0 100 0 0 50 0)\pos(142,120)\t(0,500,\fscx100\fscy100)\b1\c&H000000&}SSA tags are stripped
 
 10
 00:00:37,000 --> 00:00:37,999
