@@ -274,7 +274,7 @@ namespace MediaBrowser.Model.Configuration
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
             EnableVideoFrameAnalysis = true;
-            VideoFrameAnalysisLimitBytes = 600000000;
+            VideoFrameAnalysisLimitBytes = 800000000;
 
             InsecureApps9 = new[]
             {
