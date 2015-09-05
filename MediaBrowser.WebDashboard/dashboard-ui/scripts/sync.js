@@ -196,7 +196,7 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["scripts/registrationservices", "jqmcollapsible"], function () {
+        requirejs(["scripts/registrationservices", "jqmcollapsible", "jqmpanel"], function () {
             RegistrationServices.validateFeature('sync').done(function () {
                 showSyncMenuInternal(options);
             });

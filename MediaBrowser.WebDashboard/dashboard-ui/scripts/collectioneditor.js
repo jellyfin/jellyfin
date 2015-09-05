@@ -205,7 +205,9 @@
     window.BoxSetEditor = {
 
         showPanel: function (items) {
-            showCollectionPanel(items);
+            require(['jqmpanel'], function () {
+                showCollectionPanel(items);
+            });
         },
 
         supportsAddingToCollection: function (item) {

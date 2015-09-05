@@ -44,8 +44,6 @@ var Dashboard = {
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
 
         // Make panels a little larger than the defaults
-        $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
-        $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
         //$.event.special.swipe.verticalDistanceThreshold = 40;
         //$.mobile.page.prototype.options.domCache = true;
@@ -787,33 +785,33 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+        require(['jqmpanel', 'jqmicons'], function () {
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
-        html += '<h3 class="userHeader">';
+            html += '<h3 class="userHeader">';
 
-        html += '</h3>';
+            html += '</h3>';
 
-        html += '<form>';
+            html += '<form>';
 
-        html += '<p class="preferencesContainer"></p>';
+            html += '<p class="preferencesContainer"></p>';
 
-        html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
+            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
-        html += '</form>';
-        html += '</div>';
+            html += '</form>';
+            html += '</div>';
 
-        $(document.body).append(html);
+            $(document.body).append(html);
 
-        var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
+            var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
 
-            $(this).off("panelclose").remove();
+                $(this).off("panelclose").remove();
+            });
+
+            ConnectionManager.user(window.ApiClient).done(function (user) {
+                Dashboard.updateUserFlyout(elem, user);
+            });
         });
-
-        ConnectionManager.user(window.ApiClient).done(function (user) {
-            Dashboard.updateUserFlyout(elem, user);
-        });
-
-        require(['jqmicons']);
     },
 
     updateUserFlyout: function (elem, user) {
@@ -2115,6 +2113,14 @@ var AppInfo = {};
 
         define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible"], function () {
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.collapsible.css');
+            return {};
+        });
+
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel"], function () {
+            $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
+            $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
+
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.panel.css');
             return {};
         });
 

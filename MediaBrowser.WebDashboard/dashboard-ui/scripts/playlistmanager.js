@@ -207,7 +207,10 @@
     window.PlaylistManager = {
 
         showPanel: function (items) {
-            showNewPlaylistPanel(items);
+
+            require(['jqmpanel'], function() {
+                showNewPlaylistPanel(items);
+            });
         },
 
         supportsPlaylists: function (item) {

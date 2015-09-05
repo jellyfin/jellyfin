@@ -492,9 +492,9 @@ select {
     background: #373737;
 }
 
-.ui-page-theme-b select option {
-    color: #fff;
-}
+    .ui-page-theme-b select option {
+        color: #fff;
+    }
 
 .smoothScrollX {
     overflow-x: scroll;
@@ -572,7 +572,7 @@ select {
 }
 
 .largePanel {
-    width: 270px;
+    width: 270px !important;
 }
 
 /* Make panels larger */
@@ -587,7 +587,7 @@ select {
 @media all and (min-width: 340px) {
 
     .largePanel {
-        width: 300px;
+        width: 300px !important;
     }
 
     /* Make panels larger */
@@ -786,9 +786,9 @@ paper-input + .fieldDescription {
     background-color: #f5f5f5;
 }
 
-    .ui-page-theme-a .content-secondary {
-        background: #fff;
-    }
+.ui-page-theme-a .content-secondary {
+    background: #fff;
+}
 
 .sidebarLinks {
     margin-top: 1.5em;
