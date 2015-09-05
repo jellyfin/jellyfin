@@ -259,6 +259,9 @@
     </BundleResource>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\.DS_Store">
+      <Link>Resources\dashboard-ui\.DS_Store</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
       <Link>Resources\dashboard-ui\about.html</Link>
     </BundleResource>
@@ -708,6 +711,57 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\font-roboto\roboto.html">
       <Link>Resources\dashboard-ui\bower_components\font-roboto\roboto.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.bowerrc">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.bowerrc</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.gitignore">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.gitignore</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.jscsrc">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.jscsrc</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.jshintrc">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.jshintrc</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.travis.yml">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\.travis.yml</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\CHANGELOG.md">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\CHANGELOG.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\CONTRIBUTING.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\Gruntfile.coffee">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\Gruntfile.coffee</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\LICENSE.md">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\LICENSE.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\README.md">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\component.json">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\component.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.js">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.min.js">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.min.map">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.min.map</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\package.json">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-a11y-announcer\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-a11y-announcer\.bower.json</Link>
@@ -2104,9 +2158,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-checkbox\metadata.html">
       <Link>Resources\dashboard-ui\bower_components\paper-checkbox\metadata.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-checkbox\paper-checkbox.css">
-      <Link>Resources\dashboard-ui\bower_components\paper-checkbox\paper-checkbox.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-checkbox\paper-checkbox.html">
       <Link>Resources\dashboard-ui\bower_components\paper-checkbox\paper-checkbox.html</Link>
     </BundleResource>
@@ -2851,9 +2902,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-toggle-button\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-toggle-button\index.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-toggle-button\paper-toggle-button.css">
-      <Link>Resources\dashboard-ui\bower_components\paper-toggle-button\paper-toggle-button.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-toggle-button\paper-toggle-button.html">
       <Link>Resources\dashboard-ui\bower_components\paper-toggle-button\paper-toggle-button.html</Link>
     </BundleResource>
@@ -3210,6 +3258,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\ios\orientation.js">
       <Link>Resources\dashboard-ui\cordova\ios\orientation.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\.DS_Store">
+      <Link>Resources\dashboard-ui\css\.DS_Store</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\card.css">
       <Link>Resources\dashboard-ui\css\card.css</Link>
@@ -4419,6 +4470,24 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\custombuild.txt">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\custombuild.txt</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.slider.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.slider.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.slider.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.slider.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css</Link>
