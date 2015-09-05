@@ -171,7 +171,8 @@
 
     function onCardTapHold(e) {
 
-        showContextMenu(this, {});
+        var card = parentWithClass(e.target, 'card');
+        showContextMenu(card, {});
 
         e.preventDefault();
         return false;
@@ -423,6 +424,7 @@
                                 break;
                             case 'album':
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
+                                break;
                             case 'record':
                                 Dashboard.navigate('livetvnewrecording.html?programid=' + itemId);
                                 break;
@@ -483,16 +485,24 @@
 
     function onListViewMenuButtonClick(e) {
 
-        showContextMenu(this, {});
+        var btn = parentWithClass(e.target, 'listviewMenuButton') || parentWithClass(e.target, 'cardOverlayMoreButton');
 
-        e.preventDefault();
-        return false;
+        if (btn) {
+            showContextMenu(btn, {});
+
+            e.preventDefault();
+            return false;
+        }
     }
 
     function onListViewPlayButtonClick(e) {
 
-        var playButton = this;
-        var card = this;
+        var playButton = parentWithClass(e.target, 'cardOverlayPlayButton');
+
+        if (!playButton) {
+            return;
+        }
+        var card = e.target;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
             card = $(card).parents('.listItem,.card')[0];
@@ -535,7 +545,11 @@
 
     function onGroupedCardClick(e) {
 
-        var card = this;
+        var card = parentWithClass(e.target, 'groupedCard');
+
+        if (!card) {
+            return;
+        }
         var itemId = card.getAttribute('data-itemid');
         var context = card.getAttribute('data-context');
 
@@ -794,13 +808,31 @@
         });
     }
 
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
     function onCardClick(e) {
+
+        var targetElem = parentWithClass(e.target, 'mediaItem');
+
+        if (!targetElem) {
+            return;
+        }
 
         if (isClickable(targetElem)) {
             return;
         }
 
-        var targetElem = e.target;
         if (targetElem.classList.contains('itemSelectionPanel') || this.querySelector('.itemSelectionPanel')) {
             return;
         }
@@ -923,20 +955,17 @@
             preventHover = true;
         }
 
-        this.off('contextmenu', '.card', onCardTapHold);
-        this.on('contextmenu', '.card', onCardTapHold);
+        this.off('contextmenu', onCardTapHold);
+        this.on('contextmenu', onCardTapHold);
 
-        this.off('click', '.groupedCard', onGroupedCardClick);
-        this.on('click', '.groupedCard', onGroupedCardClick);
+        this.off('click', onGroupedCardClick);
+        this.on('click', onGroupedCardClick);
 
-        this.off('click', '.listviewMenuButton', onListViewMenuButtonClick);
-        this.on('click', '.listviewMenuButton', onListViewMenuButtonClick);
+        this.off('click', onListViewMenuButtonClick);
+        this.on('click', onListViewMenuButtonClick);
 
-        this.off('click', '.cardOverlayMoreButton', onListViewMenuButtonClick);
-        this.on('click', '.cardOverlayMoreButton', onListViewMenuButtonClick);
-
-        this.off('click', '.cardOverlayPlayButton', onListViewPlayButtonClick);
-        this.on('click', '.cardOverlayPlayButton', onListViewPlayButtonClick);
+        this.off('click', onListViewPlayButtonClick);
+        this.on('click', onListViewPlayButtonClick);
 
         if (!AppInfo.isTouchPreferred) {
             this.off('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
@@ -949,8 +978,8 @@
             this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
         }
 
-        this.off('click', '.mediaItem', onCardClick);
-        this.on('click', '.mediaItem', onCardClick);
+        this.off('click', onCardClick);
+        this.on('click', onCardClick);
 
         return this;
     };

@@ -18,13 +18,6 @@
         return 'livetvitems2' + (query.ParentId || '');
     }
 
-    function updateFilterControls(page) {
-
-        $('#selectView', page).val(view);
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit);
-    }
-
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
@@ -39,13 +32,10 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-            updateFilterControls(page);
 
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -95,52 +85,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvItemsPage", function () {
-
-        var page = this;
-
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
-
-            reloadItems(page);
-
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
-        });
-
-        $('#radioBasicFilters', this).on('change', function () {
-
-            if (this.checked) {
-                $('.basicFilters', page).show();
-                $('.advancedFilters', page).hide();
-            } else {
-                $('.basicFilters', page).hide();
-            }
-        });
-
-        $('#radioAdvancedFilters', this).on('change', function () {
-
-            if (this.checked) {
-                $('.advancedFilters', page).show();
-                $('.basicFilters', page).hide();
-            } else {
-                $('.advancedFilters', page).hide();
-            }
-        });
-
-        $('.itemsContainer', page).on('needsrefresh', function () {
-
-            reloadItems(page);
-
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshow', "#liveTvItemsPage", function () {
+    $(document).on('pagebeforeshow', "#liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -163,16 +108,7 @@
 
         QueryFilters.onPageShow(page, query);
 
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(page);
+        reloadItems(page);
     });
 
 })(jQuery, document);

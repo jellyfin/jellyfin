@@ -117,12 +117,6 @@
                 $('.btnSync', page).addClass('hide');
             }
 
-            if (LibraryBrowser.canShare(item, user)) {
-                $('.btnShare', page).removeClass('hide');
-            } else {
-                $('.btnShare', page).addClass('hide');
-            }
-
             if (item.Type == 'Program' && item.TimerId) {
                 $('.btnCancelRecording', page).removeClass('hide');
             } else {
@@ -1745,13 +1739,6 @@
         $('.btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
-        });
-
-        $('.btnShare', page).on('click', function () {
-
-            require(['sharingmanager'], function () {
-                SharingManager.showMenu(Dashboard.getCurrentUserId(), currentItem.Id);
-            });
         });
 
         $('.btnMoreCommands', page).on('click', function () {

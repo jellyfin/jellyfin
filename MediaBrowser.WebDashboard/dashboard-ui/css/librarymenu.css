@@ -72,7 +72,7 @@
 
 .mainDrawerPanel #main {
     left: 0 !important;
-    position: relative !important;
+    position: static !important;
     z-index: 1;
 }
 

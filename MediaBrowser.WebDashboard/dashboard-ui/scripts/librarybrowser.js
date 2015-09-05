@@ -670,6 +670,10 @@
                 commands.push('download');
             }
 
+            if (LibraryBrowser.canShare(item, user)) {
+                commands.push('share');
+            }
+
             return commands;
         },
 
@@ -760,6 +764,14 @@
                 });
             }
 
+            if (commands.indexOf('share') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonShare'),
+                    id: 'share',
+                    ironIcon: 'share'
+                });
+            }
+
             require(['actionsheet'], function () {
 
                 ActionSheetElement.show({
@@ -769,6 +781,11 @@
 
                         switch (id) {
 
+                            case 'share':
+                                require(['sharingmanager'], function () {
+                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                break;
                             case 'addtocollection':
                                 BoxSetEditor.showPanel([itemId]);
                                 break;

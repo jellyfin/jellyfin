@@ -196,7 +196,7 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["scripts/registrationservices"], function () {
+        requirejs(["scripts/registrationservices", "jqmcollapsible"], function () {
             RegistrationServices.validateFeature('sync').done(function () {
                 showSyncMenuInternal(options);
             });
@@ -244,7 +244,6 @@
             html += '</div>';
 
             $(document.body).append(html);
-            require(['paperbuttonstyle']);
 
             var elem = $('.syncPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
                 $(this).off("panelclose").remove();

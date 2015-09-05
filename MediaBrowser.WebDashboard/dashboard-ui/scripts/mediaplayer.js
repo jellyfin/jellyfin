@@ -342,6 +342,21 @@
                 ]
             });
 
+            // These don't play very well
+            if (isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'dca',
+                    Conditions: [
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: 6
+                        }
+                    ]
+                });
+            }
+
             if (isVlc) {
                 profile.CodecProfiles.push({
                     Type: 'Video',

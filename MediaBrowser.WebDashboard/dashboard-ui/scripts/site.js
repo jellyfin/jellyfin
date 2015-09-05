@@ -2113,6 +2113,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.collapsible.css');
+            return {};
+        });
+
         define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
             return Hammer;
         });
@@ -2194,6 +2199,7 @@ var AppInfo = {};
                         depends.push('jqmicons');
                         depends.push('jqmpopup');
                         depends.push('jqmlistview');
+                        depends.push('jqmcollapsible');
                     }
 
                     require(depends, function () {
@@ -2320,7 +2326,7 @@ $(document).on('pagecreate', ".page", function () {
         var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
-            require(['jqmicons', 'jqmlistview']);
+
             Dashboard.ensureToolsMenu(page);
 
             Dashboard.getCurrentUser().done(function (user) {

@@ -144,6 +144,7 @@
 
     function onRecordClick() {
         $('.itemFlyout').popup('close');
+
         Dashboard.navigate('livetvnewrecording.html?programid=' + this.getAttribute('data-id'));
     }
 
