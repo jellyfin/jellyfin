@@ -9,11 +9,6 @@ namespace MediaBrowser.Model.System
     public class SystemInfo : PublicSystemInfo
     {
         /// <summary>
-        /// Gets or sets the operating sytem.
-        /// </summary>
-        /// <value>The operating sytem.</value>
-        public string OperatingSystem { get; set; }
-        /// <summary>
         /// Gets or sets the display name of the operating system.
         /// </summary>
         /// <value>The display name of the operating system.</value>
@@ -30,7 +25,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if [supports running as service]; otherwise, <c>false</c>.</value>
         public bool SupportsRunningAsService { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the mac address.
         /// </summary>
@@ -108,7 +103,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The cache path.</value>
         public string CachePath { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the log path.
         /// </summary>
@@ -120,7 +115,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The internal metadata path.</value>
         public string InternalMetadataPath { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the transcoding temporary path.
         /// </summary>

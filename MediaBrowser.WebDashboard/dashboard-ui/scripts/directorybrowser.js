@@ -78,7 +78,7 @@
         if (systemInfo) {
             deferred.resolveWith(null, [systemInfo]);
         } else {
-            ApiClient.getSystemInfo().done(function (info) {
+            ApiClient.getPublicSystemInfo().done(function (info) {
                 systemInfo = info;
                 deferred.resolveWith(null, [systemInfo]);
             });
