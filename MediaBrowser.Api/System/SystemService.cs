@@ -178,7 +178,8 @@ namespace MediaBrowser.Api.System
                 ServerName = result.ServerName,
                 Version = result.Version,
                 LocalAddress = result.LocalAddress,
-                WanAddress = result.WanAddress
+                WanAddress = result.WanAddress,
+                OperatingSystem = result.OperatingSystem
             };
 
             return ToOptimizedResult(publicInfo);
