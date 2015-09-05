@@ -11,20 +11,6 @@
         StartIndex: 0
     };
 
-    function getPageSizes() {
-
-        var sizes = [];
-
-        if (!maxPageSize || maxPageSize >= 10) sizes.push(10);
-        if (!maxPageSize || maxPageSize >= 20) sizes.push(20);
-        if (!maxPageSize || maxPageSize >= 30) sizes.push(30);
-        if (!maxPageSize || maxPageSize >= 40) sizes.push(40);
-        if (!maxPageSize || maxPageSize >= 50) sizes.push(50);
-        if (!maxPageSize || maxPageSize >= 100) sizes.push(100);
-
-        return sizes;
-    }
-
     function getSavedQueryId() {
         return 'channels-1-' + getParameterByName('id') + (getParameterByName('folderId') || '');
     }
@@ -198,7 +184,6 @@
         }).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
-        $('#selectPageSize', page).val(query.Limit);
     }
 
     $(document).on('pageinit', "#channelItemsPage", function () {
@@ -245,12 +230,6 @@
 
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
             reloadItems(page);
         });
 

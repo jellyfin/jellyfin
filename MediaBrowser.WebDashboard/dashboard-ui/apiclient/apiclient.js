@@ -528,7 +528,7 @@
             // First try a small amount so that we don't hang up their mobile connection
             self.getDownloadSpeed(1000000).done(function (bitrate) {
 
-                if (bitrate < 3000000) {
+                if (bitrate < 1000000) {
                     deferred.resolveWith(null, [Math.round(bitrate * .8)]);
                 } else {
 

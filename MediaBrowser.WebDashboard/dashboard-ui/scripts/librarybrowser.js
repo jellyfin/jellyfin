@@ -2540,24 +2540,24 @@
 
                 if (showControls) {
 
-                    html += '<paper-button raised class="subdued notext btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></paper-button>';
-                    html += '<paper-button raised class="subdued notext btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></paper-button>';
+                    html += '<paper-icon-button class="btnPreviousPage" icon="arrow-back" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
+                    html += '<paper-icon-button class="btnNextPage" icon="arrow-forward" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
                 }
 
                 html += (options.additionalButtonsHtml || '');
 
                 if (options.addSelectionButton) {
-                    html += '<paper-button raised class="subdued notext btnToggleSelections"><iron-icon icon="check"></iron-icon></paper-button>';
+                    html += '<paper-icon-button class="btnToggleSelections" icon="check"></paper-icon-button>';
                 }
 
                 if (options.addLayoutButton) {
 
-                    html += '<paper-button raised class="subdued notext btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
+                    html += '<paper-icon-button class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');" icon="view-comfy"></paper-icon-button>';
                 }
 
                 if (options.sortButton) {
 
-                    html += '<paper-button raised class="subdued notext btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></paper-button>';
+                    html += '<paper-icon-button class="btnSort" title="' + Globalize.translate('ButtonSort') + '" icon="sort-by-alpha"></paper-icon-button>';
                 }
 
                 if (options.viewButton) {
@@ -2565,7 +2565,7 @@
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                     var viewPanelClass = options.viewPanelClass || 'viewPanel';
                     var title = options.viewIcon == 'filter-list' ? Globalize.translate('ButtonFilter') : Globalize.translate('ButtonMenu');
-                    html += '<paper-button raised class="subdued notext" title="' + title + '" onclick="require([\'jqmicons\']);jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + (options.viewIcon || AppInfo.moreIcon) + '"></iron-icon></paper-button>';
+                    html += '<paper-icon-button title="' + title + '" icon="' + (options.viewIcon || AppInfo.moreIcon) + '" onclick="require([\'jqmicons\']);jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"></paper-icon-button>';
                 }
 
                 html += '</div>';

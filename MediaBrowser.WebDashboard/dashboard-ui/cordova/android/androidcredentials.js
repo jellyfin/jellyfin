@@ -43,8 +43,10 @@
 
     function sendRequest(request) {
 
+        var method = request.type || "GET";
+
         // For now, we can only handle json responses
-        if (request.dataType) {
+        if (request.dataType || method == "GET") {
             if (request.dataType != 'json') {
                 return baseAjaxMethod(request);
             }
@@ -68,7 +70,7 @@
         }
 
         var javaRequest = {
-            Method: request.type || "GET",
+            Method: method,
             Url: request.url,
             RequestHeaders: request.headers
         };

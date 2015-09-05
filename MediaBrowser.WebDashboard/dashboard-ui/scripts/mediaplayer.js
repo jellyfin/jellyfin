@@ -452,6 +452,10 @@
                         Method: 'Embed'
                     });
                     profile.SubtitleProfiles.push({
+                        Format: 'dvdsub',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
                         Format: 'vtt',
                         Method: 'Embed'
                     });
@@ -988,6 +992,8 @@
             };
         };
 
+        var lastBitrateDetect = 0;
+
         self.playInternal = function (item, startPosition, callback) {
 
             if (item == null) {
@@ -1008,7 +1014,28 @@
                 return;
             }
 
-            var deviceProfile = self.getDeviceProfile();
+            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - lastBitrateDetect) > 1000) {
+
+                Dashboard.showModalLoadingMsg();
+
+                ApiClient.detectBitrate().done(function (bitrate) {
+
+                    Logger.log('Max bitrate auto detected to ' + bitrate);
+                    lastBitrateDetect = new Date().getTime();
+                    AppSettings.maxStreamingBitrate(bitrate);
+
+                    playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
+                }).fail(function () {
+
+                    playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
+                });
+
+            } else {
+                playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
+            }
+        };
+
+        function playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback) {
 
             if (item.MediaType === "Video") {
 
@@ -1040,9 +1067,8 @@
                         MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
                 }
-
             });
-        };
+        }
 
         function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
 

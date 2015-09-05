@@ -39,8 +39,16 @@
             return '<option value="' + i.bitrate + '">' + i.name + '</option>';
 
         }).join('');
-        $('#selectMaxBitrate', page).html(bitrateOptions).val(AppSettings.maxStreamingBitrate());
 
+        bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
+
+        $('#selectMaxBitrate', page).html(bitrateOptions);
+
+        if (AppSettings.enableAutomaticBitrateDetection()) {
+            $('#selectMaxBitrate', page).val('');
+        } else {
+            $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate());
+        }
 
         $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate());
 
@@ -100,7 +108,13 @@
 
         AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
-        AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+        if ($('#selectMaxBitrate', page).val()) {
+            AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+            AppSettings.enableAutomaticBitrateDetection(false);
+        } else {
+            AppSettings.enableAutomaticBitrateDetection(true);
+        }
+
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
         AppSettings.enableChromecastAc3(page.querySelector('.chkEnableChromecastAc3').checked);
 

@@ -8,6 +8,22 @@
 
     window.AppSettings = {
 
+        enableAutomaticBitrateDetection: function (val) {
+
+            if (val != null) {
+                update('enableAutomaticBitrateDetection', val.toString());
+            }
+
+            var savedVal = appStorage.getItem('enableAutomaticBitrateDetection');
+
+            if (!savedVal) {
+                if (AppInfo.isNativeApp) {
+                    //return false;
+                }
+            }
+
+            return appStorage.getItem('enableAutomaticBitrateDetection') != 'false';
+        },
         maxStreamingBitrate: function (val) {
 
             if (val != null) {

@@ -242,6 +242,10 @@ paper-icon-button paper-ripple {
     color: inherit !important;
 }
 
+.ui-page-theme-b paper-icon-button[disabled] {
+    color: #444 !important;
+}
+
 paper-dialog + iron-overlay-backdrop {
     background-color: transparent !important;
 }
