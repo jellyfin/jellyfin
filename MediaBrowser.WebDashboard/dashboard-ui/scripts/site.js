@@ -2121,6 +2121,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.checkbox.css');
+            return {};
+        });
+
         define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel"], function () {
             $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
             $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
@@ -2212,6 +2217,7 @@ var AppInfo = {};
                         depends.push('jqmlistview');
                         depends.push('jqmcollapsible');
                         depends.push('jqmcontrolgroup');
+                        depends.push('jqmcheckbox');
                     }
 
                     require(depends, function () {
