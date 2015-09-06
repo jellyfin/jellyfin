@@ -4037,7 +4037,9 @@ $.fn.fieldcontain = function(/* options */) {
 			        if ($.mobile.filterHtml) {
 			            html = $.mobile.filterHtml(html);
 			        }
-			        pageCache[absUrl.split('?')[0]] = html;
+			        if (absUrl.toLowerCase().indexOf('/configurationpage?') == -1) {
+                        pageCache[absUrl.split('?')[0]] = html;
+                    }
                 }
 
 				//dont update the base tag if we are prefetching
