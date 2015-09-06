@@ -614,7 +614,7 @@
                         <output id="imageOutput"></output>
                     </div>
                     <div id="fldUpload" style="display: none;">
-                        <p data-role="fieldcontain">
+                        <div>
                             <label for="selectImageType">${LabelImageType}</label>
                             <select id="selectImageType" name="selectImageType">
                                 <option value="Primary">${OptionPrimary}</option>
@@ -630,7 +630,7 @@
                                 <option value="Screenshot">${OptionScreenshot}</option>
                                 <option value="Thumb">${OptionThumb}</option>
                             </select>
-                        </p>
+                        </div>
                         <button type="submit" data-icon="check" data-theme="b">${ButtonUpload}</button>
                     </div>
                     <a data-role="button" data-rel="back" data-icon="delete" onclick="Events.trigger($('#uploadImage').val('')[0], 'change');">${ButtonCancel}</a>

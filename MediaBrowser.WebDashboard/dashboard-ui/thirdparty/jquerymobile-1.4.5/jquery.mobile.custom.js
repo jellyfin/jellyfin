@@ -331,7 +331,7 @@
 		hideUrlBar: true,
 
 		// Keepnative Selector
-		keepNative: ":jqmData(role='none'), :jqmData(role='nojs')",
+		keepNative: "[data-role='none']",
 
 		// Deprecated in 1.4 remove in 1.5
 		// Class assigned to page currently in view, and during transitions
@@ -660,79 +660,6 @@ $.extend( $.expr[ ":" ], {
 // deprecated
 $.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
 
-$.support.selectstart = "onselectstart" in document.createElement( "div" );
-$.fn.extend({
-	disableSelection: function() {
-		return this.bind( ( $.support.selectstart ? "selectstart" : "mousedown" ) +
-			".ui-disableSelection", function( event ) {
-				event.preventDefault();
-			});
-	},
-
-	enableSelection: function() {
-		return this.unbind( ".ui-disableSelection" );
-	},
-
-	zIndex: function( zIndex ) {
-		if ( zIndex !== undefined ) {
-			return this.css( "zIndex", zIndex );
-		}
-
-		if ( this.length ) {
-			var elem = $( this[ 0 ] ), position, value;
-			while ( elem.length && elem[ 0 ] !== document ) {
-				// Ignore z-index if position is set to a value where z-index is ignored by the browser
-				// This makes behavior of this function consistent across browsers
-				// WebKit always returns auto if the element is positioned
-				position = elem.css( "position" );
-				if ( position === "absolute" || position === "relative" || position === "fixed" ) {
-					// IE returns 0 when zIndex is not specified
-					// other browsers return a string
-					// we ignore the case of nested elements with an explicit value of 0
-					// <div style="z-index: -10;"><div style="z-index: 0;"></div></div>
-					value = parseInt( elem.css( "zIndex" ), 10 );
-					if ( !isNaN( value ) && value !== 0 ) {
-						return value;
-					}
-				}
-				elem = elem.parent();
-			}
-		}
-
-		return 0;
-	}
-});
-
-// $.ui.plugin is deprecated. Use $.widget() extensions instead.
-$.ui.plugin = {
-	add: function( module, option, set ) {
-		var i,
-			proto = $.ui[ module ].prototype;
-		for ( i in set ) {
-			proto.plugins[ i ] = proto.plugins[ i ] || [];
-			proto.plugins[ i ].push( [ option, set[ i ] ] );
-		}
-	},
-	call: function( instance, name, args, allowDisconnected ) {
-		var i,
-			set = instance.plugins[ name ];
-
-		if ( !set ) {
-			return;
-		}
-
-		if ( !allowDisconnected && ( !instance.element[ 0 ].parentNode || instance.element[ 0 ].parentNode.nodeType === 11 ) ) {
-			return;
-		}
-
-		for ( i = 0; i < set.length; i++ ) {
-			if ( instance.options[ set[ i ][ 0 ] ] ) {
-				set[ i ][ 1 ].apply( instance.element, args );
-			}
-		}
-	}
-};
-
 })( jQuery );
 
 (function( $, window, undefined ) {
@@ -785,31 +712,6 @@ $.ui.plugin = {
 			return $.mobile.path.makeUrlAbsolute( url, base );
 		},
 		removeActiveLinkClass: function( forceRemoval ) {
-		},
-
-		// DEPRECATED in 1.4
-		// Find the closest parent with a theme class on it. Note that
-		// we are not using $.fn.closest() on purpose here because this
-		// method gets called quite a bit and we need it to be as fast
-		// as possible.
-		getInheritedTheme: function( el, defaultTheme ) {
-			var e = el[ 0 ],
-				ltr = "",
-				re = /ui-(bar|body|overlay)-([a-z])\b/,
-				c, m;
-			while ( e ) {
-				c = e.className || "";
-				if ( c && ( m = re.exec( c ) ) && ( ltr = m[ 2 ] ) ) {
-					// We found a parent with a theme class
-					// on it so bail from this loop.
-					break;
-				}
-
-				e = e.parentNode;
-			}
-			// Return the theme letter we found, if none, return the
-			// specified default.
-			return ltr || defaultTheme || "a";
 		},
 
 		enhanceable: function( elements ) {
@@ -903,12 +805,7 @@ $.ui.plugin = {
 
 			// Run buttonmarkup
 			if ( $.fn.buttonMarkup ) {
-			    $(thisElem.querySelectorAll($.fn.buttonMarkup.initSelector)).not(keepNative).jqmEnhanceable().buttonMarkup();
-			}
-
-			// Add classes for fieldContain
-			if ( $.fn.fieldcontain ) {
-			    $(thisElem.querySelectorAll("*[data-role='fieldcontain']")).not(keepNative).jqmEnhanceable().fieldcontain();
+			    $(thisElem.querySelectorAll($.fn.buttonMarkup.initSelector)).jqmEnhanceable().buttonMarkup();
 			}
 
 			// Enhance widgets
@@ -1692,7 +1589,7 @@ $.fn.buttonMarkup.defaults = {
 };
 
 $.extend( $.fn.buttonMarkup, {
-    initSelector: "a[data-role='button'], button"
+    initSelector: "a[data-role='button'], button:not([data-role='none'])"
 });
 
 })( jQuery );
@@ -2408,16 +2305,6 @@ $.widget( "mobile.page", {
 			.join( ", " ) );
 	}
 });
-})( jQuery );
-
-
-(function( $, undefined ) {
-
-// Deprecated in 1.4
-$.fn.fieldcontain = function(/* options */) {
-	return this.addClass( "ui-field-contain" );
-};
-
 })( jQuery );
 
 

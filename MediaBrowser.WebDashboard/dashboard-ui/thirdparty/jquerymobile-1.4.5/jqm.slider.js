@@ -1,7 +1,7 @@
 ﻿(function ($, undefined) {
 
     $.widget("mobile.slider", $.extend({
-        initSelector: "input[type='range'], *[data-type='range'], *[data-role='slider']",
+        initSelector: "input[type='range']",
 
         widgetEventPrefix: "slide",
 

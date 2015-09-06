@@ -34,8 +34,6 @@ var Dashboard = {
         //$.mobile.popup.prototype.options.theme = "c";
         //$.mobile.popup.prototype.options.transition = "none";
 
-        //$.mobile.keepNative = "textarea";
-
         if ($.browser.mobile) {
             $.mobile.defaultPageTransition = "none";
         } else {
@@ -65,7 +63,6 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none')";
 
         $.mobile.filterHtml = Dashboard.filterHtml;
     },

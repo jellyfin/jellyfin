@@ -1046,7 +1046,7 @@
 
                 var id = "txtLookup" + idInfo.Key;
 
-                html += '<div data-role="fieldcontain">';
+                html += '<div>';
 
                 var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
                 html += '<label for="' + id + '">' + idLabel + '</label>';
