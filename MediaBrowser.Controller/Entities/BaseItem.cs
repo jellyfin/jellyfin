@@ -183,7 +183,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 // Local trailer, special feature, theme video, etc.
                 // An item that belongs to another item but is not part of the Parent-Child tree
-                return !IsFolder && Parent == null && LocationType == LocationType.FileSystem;
+                return !IsFolder && ParentId == Guid.Empty && LocationType == LocationType.FileSystem;
             }
         }
 

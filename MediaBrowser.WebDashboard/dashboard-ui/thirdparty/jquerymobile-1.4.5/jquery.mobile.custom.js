@@ -1692,7 +1692,7 @@ $.fn.buttonMarkup.defaults = {
 };
 
 $.extend( $.fn.buttonMarkup, {
-    initSelector: "a[data-role='button'], .ui-bar > a, .ui-bar > *[data-role='controlgroup'] > a, button"
+    initSelector: "a[data-role='button'], button"
 });
 
 })( jQuery );

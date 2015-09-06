@@ -87,39 +87,40 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-mini="true">';
         var index = 0;
 
         html += result.Items.map(function (view) {
 
             var currentHtml = '';
 
-            currentHtml += '<li data-mini="true" class="viewItem" data-viewid="' + view.Id + '">';
+            currentHtml += '<paper-icon-item class="viewItem" data-viewid="' + view.Id + '">';
+
+            currentHtml += '<paper-fab class="listAvatar" style="background-color:#444;" icon="folder-open" item-icon></paper-fab>';
+
+            currentHtml += '<paper-item-body>';
+
+            currentHtml += '<div>';
+            currentHtml += view.Name;
+            currentHtml += '</div>';
+
+            currentHtml += '</paper-item-body>';
 
             if (index > 0) {
-                currentHtml += '<a href="#">' + view.Name + '</a>';
 
-                currentHtml += '<a class="btnViewItemUp btnViewItemMove" href="#" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
+                currentHtml += '<paper-icon-button icon="keyboard-arrow-up" class="btnViewItemUp btnViewItemMove" title="' + Globalize.translate('ButtonUp') + '"></paper-icon-button>';
             }
             else if (result.Items.length > 1) {
 
-                currentHtml += '<a href="#">' + view.Name + '</a>';
-
-                currentHtml += '<a class="btnViewItemDown btnViewItemMove" href="#" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
+                currentHtml += '<paper-icon-button icon="keyboard-arrow-down" class="btnViewItemDown btnViewItemMove" title="' + Globalize.translate('ButtonDown') + '"></paper-icon-button>';
             }
-            else {
 
-                currentHtml += view.Name;
 
-            }
-            html += '</li>';
+            currentHtml += '</paper-icon-item>';
 
             index++;
             return currentHtml;
 
         }).join('');
-
-        html += '</ul>';
 
         $('.viewOrderList', page).html(html).trigger('create');
     }
