@@ -552,6 +552,11 @@ a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
         width: 100%;
     }
 
+    a[data-role='button'][data-theme='b'], button[data-theme='b']:not([data-role='none']):not(.clearButton) {
+        background: #4285f4 !important;
+        color: #fff !important;
+    }
+
 div[data-role="controlgroup"] a[data-role='button'] {
     display: inline-block !important;
     margin: 0 !important;
