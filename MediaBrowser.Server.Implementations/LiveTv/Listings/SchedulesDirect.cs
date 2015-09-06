@@ -216,20 +216,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     //  Helper.logger.Info("Modifyin channel " + channel.Number);
                     if (_channelPair.ContainsKey(channel.Number))
                     {
-                        string channelName;
                         if (_channelPair[channel.Number].logo != null)
                         {
                             channel.ImageUrl = _channelPair[channel.Number].logo.URL;
                             channel.HasImage = true;
                         }
-                        if (_channelPair[channel.Number].affiliate != null)
-                        {
-                            channelName = _channelPair[channel.Number].affiliate;
-                        }
-                        else
-                        {
-                            channelName = _channelPair[channel.Number].name;
-                        }
+                        string channelName = _channelPair[channel.Number].name;
                         channel.Name = channelName;
                     }
                     else

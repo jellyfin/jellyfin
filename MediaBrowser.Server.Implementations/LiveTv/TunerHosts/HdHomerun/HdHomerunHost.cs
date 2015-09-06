@@ -325,8 +325,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 BitRate = 128000
                             }
                         },
-                RequiresOpening = false,
-                RequiresClosing = false,
+                RequiresOpening = true,
+                RequiresClosing = true,
                 BufferMs = 1000,
                 Container = "ts",
                 Id = profile

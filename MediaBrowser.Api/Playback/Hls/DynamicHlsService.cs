@@ -960,5 +960,30 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             return isOutputVideo ? ".ts" : ".ts";
         }
+
+        protected override bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        {
+            if (videoStream.KeyFrames == null || videoStream.KeyFrames.Count == 0)
+            {
+                Logger.Debug("Cannot stream copy video due to missing keyframe info");
+                return false;
+            }
+
+            var previousSegment = 0;
+            foreach (var frame in videoStream.KeyFrames)
+            {
+                var length = frame - previousSegment;
+
+                // Don't allow really long segments because this could result in long download times
+                if (length > 10000)
+                {
+                    Logger.Debug("Cannot stream copy video due to long segment length of {0}ms", length);
+                    return false;
+                }
+                previousSegment = frame;
+            }
+
+            return base.CanStreamCopyVideo(request, videoStream);
+        }
     }
 }
