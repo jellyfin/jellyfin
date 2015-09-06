@@ -277,6 +277,15 @@ paper-tabs paper-ripple {
     color: #38c !important;
 }
 
+paper-fab {
+    vertical-align: middle;
+}
+
+paper-fab.mini {
+    width: 22px;
+    height: 22px;
+}
+
 paper-fab.subdued {
     background: #484848;
     color: #fff;

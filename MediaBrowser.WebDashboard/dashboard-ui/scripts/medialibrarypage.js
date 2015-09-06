@@ -107,7 +107,7 @@
         html += '</p><ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
 
         html += '<li data-role="list-divider" class="mediaLocationsHeader">' + Globalize.translate('HeaderMediaLocations');
-        html += '<button type="button" data-icon="plus" data-mini="true" data-iconpos="notext" data-inline="true" onclick="MediaLibraryPage.addMediaLocation(' + index + ');">' + Globalize.translate('ButtonAdd') + '</button>';
+        html += '<paper-fab class="mini subdued" icon="add" title="' + Globalize.translate('ButtonAdd') + '" onclick="MediaLibraryPage.addMediaLocation(' + index + ');" style="margin-left:1em;"></paper-fab>';
         html += '</li>';
 
         for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {

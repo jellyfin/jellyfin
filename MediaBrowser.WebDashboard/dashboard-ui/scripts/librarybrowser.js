@@ -2565,7 +2565,7 @@
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                     var viewPanelClass = options.viewPanelClass || 'viewPanel';
                     var title = options.viewIcon == 'filter-list' ? Globalize.translate('ButtonFilter') : Globalize.translate('ButtonMenu');
-                    html += '<paper-icon-button title="' + title + '" icon="' + (options.viewIcon || AppInfo.moreIcon) + '" onclick="require([\'jqmicons\']);jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"></paper-icon-button>';
+                    html += '<paper-icon-button title="' + title + '" icon="' + (options.viewIcon || AppInfo.moreIcon) + '" onclick="jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"></paper-icon-button>';
                 }
 
                 html += '</div>';

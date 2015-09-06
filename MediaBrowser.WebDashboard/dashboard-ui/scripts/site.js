@@ -782,7 +782,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        require(['jqmpanel', 'jqmicons'], function () {
+        require(['jqmpanel'], function () {
             var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
             html += '<h3 class="userHeader">';
@@ -2209,7 +2209,6 @@ var AppInfo = {};
                     depends = depends || [];
 
                     if (newHtml.indexOf('type-interior') != -1) {
-                        depends.push('jqmicons');
                         depends.push('jqmpopup');
                         depends.push('jqmlistview');
                         depends.push('jqmcollapsible');
@@ -2281,9 +2280,31 @@ var AppInfo = {};
 
 })();
 
-Dashboard.jQueryMobileInit();
+function pageClassOn(eventName, className, fn) {
 
-$(document).on('pagecreate', ".page", function () {
+    $(document).on(eventName, function (e) {
+
+        var target = e.target;
+
+        if (target.classList.contains(className)) {
+            fn.call(target, e);
+        }
+    });
+}
+
+function pageIdOn(eventName, id, fn) {
+
+    $(document).on(eventName, function (e) {
+
+        var target = e.target;
+
+        if (target.id == id) {
+            fn.call(target, e);
+        }
+    });
+}
+
+pageClassOn('pagecreate', "page", function () {
 
     var page = $(this);
 
@@ -2306,7 +2327,9 @@ $(document).on('pagecreate', ".page", function () {
         }
     }
 
-}).on('pageshow', ".page", function () {
+});
+
+pageClassOn('pageshow', "page", function () {
 
     var page = this;
 
@@ -2327,14 +2350,9 @@ $(document).on('pagecreate', ".page", function () {
         document.body.classList.remove('darkScrollbars');
     }
 
-    var isWizardPage = page.classList.contains('wizardPage');
     Dashboard.ensurePageTitle(page);
 
     var apiClient = window.ApiClient;
-
-    if (isWizardPage) {
-        require(['jqmicons']);
-    }
 
     if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
 
@@ -2365,7 +2383,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !isWizardPage && this.id !== 'publicSharedItemPage') {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
@@ -2380,4 +2398,7 @@ $(document).on('pagecreate', ".page", function () {
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
     }
+
 });
+
+Dashboard.jQueryMobileInit();

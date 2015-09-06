@@ -248,7 +248,7 @@
                                         <div style="display: inline-block; width: 80%;">
                                             <input type="text" class="txtEditableListview" />
                                         </div>
-                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                        <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
                                 </div>
@@ -260,7 +260,7 @@
                                         <div style="display: inline-block; width: 80%;">
                                             <input type="text" class="txtEditableListview" />
                                         </div>
-                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                        <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
                                 </div>
@@ -281,7 +281,7 @@
                                         <div style="display: inline-block; width: 80%;">
                                             <input type="text" class="txtEditableListview" />
                                         </div>
-                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                        <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
                                 </div>
@@ -293,7 +293,7 @@
                                         <div style="display: inline-block; width: 80%;">
                                             <input type="text" class="txtEditableListview" />
                                         </div>
-                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                        <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
                                 </div>
@@ -305,7 +305,7 @@
                                         <div style="display: inline-block; width: 80%;">
                                             <input type="text" class="txtEditableListview" />
                                         </div>
-                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                        <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
                                     </div>
                                     <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
                                 </div>
@@ -355,7 +355,9 @@
                             <label for="selectLanguage">${LabelLanguage}</label>
                             <select id="selectLanguage" required="required" data-mini="true"></select>
                         </div>
-                        <button type="submit" data-icon="search" class="btnSearchSubtitles" data-inline="true" data-iconpos="notext" data-mini="true" style="vertical-align: bottom;">${ButtonSearch}</button>
+                        <button type="submit" class="clearButton btnSearchSubtitles" style="width:auto;">
+                            <paper-icon-button icon="search" title="${ButtonSearch}"></paper-icon-button>
+                        </button>
                     </form>
                     <br />
                     <div class="readOnlyContent" style="max-width: 700px;">
@@ -412,7 +414,7 @@
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">
 
-                <button type="button" data-icon="back" data-mini="true" data-inline="true" data-iconpos="notext" style="position: absolute; top: 8px; left: 10px; margin: 0;" class="btnIdentifyBack">${ButtonSearch}</button>
+                <paper-icon-button icon="arrow-back" class="btnIdentifyBack" style="position: absolute; top: 8px; left: 10px; margin: 0;"></paper-icon-button>
 
                 <h3 class="identificationHeader">${HeaderIdentifyItem}</h3>
             </div>
@@ -561,7 +563,6 @@
         </div>
 
         <div data-role="popup" class="popup popupSubtitleViewer">
-            <a href="#" data-rel="back" data-role="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
             <div class="subtitleViewerContent">
                 <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>
             </div>
@@ -586,8 +587,8 @@
                             <input type="text" id="txtLookupName" required="required" />
                         </div>
 
-                        <button type="submit" data-icon="search" data-mini="true" data-inline="true" data-iconpos="notext">
-                            ${ButtonSearch}
+                        <button type="submit" class="clearButton" style="width:auto;">
+                            <paper-icon-button icon="search" title="${ButtonSearch}"></paper-icon-button>
                         </button>
                     </div>
 
@@ -614,6 +615,7 @@
                         <output id="imageOutput"></output>
                     </div>
                     <div id="fldUpload" style="display: none;">
+                        <br />
                         <div>
                             <label for="selectImageType">${LabelImageType}</label>
                             <select id="selectImageType" name="selectImageType">
@@ -640,7 +642,6 @@
 
         <div data-role="popup" class="popup popupDownload" data-theme="a">
 
-            <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">${ButtonClose}</a>
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderBrowseOnlineImages}</h3>
             </div>

@@ -751,7 +751,7 @@
 
                 html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
-                html += '<button type="button" data-icon="delete" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">' + Globalize.translate('ButtonStop') + '</button>';
+                html += '<paper-icon-button title="' + Globalize.translate('ButtonStop') + '" icon="cancel" onclick="DashboardPage.stopTask(\'' + task.Id + '\');"></paper-icon-button>';
             }
             else if (task.State == "Cancelling") {
                 html += '<span style="color:#cc0000;">' + Globalize.translate('LabelStopping') + '</span>';

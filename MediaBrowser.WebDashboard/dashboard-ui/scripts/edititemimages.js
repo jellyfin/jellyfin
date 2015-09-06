@@ -210,9 +210,9 @@
 
         if (showControls) {
             html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
-            html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
 
-            html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
+            html += '<paper-icon-button icon="arrow-back" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
+            html += '<paper-icon-button icon="arrow-forward" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
             html += '</div>';
         }
 

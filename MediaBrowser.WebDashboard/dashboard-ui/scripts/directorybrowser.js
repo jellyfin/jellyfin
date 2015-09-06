@@ -138,7 +138,7 @@
         html += '<label for="txtDirectoryPickerPath" class="lblDirectoryPickerPath">' + Globalize.translate('LabelCurrentPath') + '</label>';
 
         html += '<div><input id="txtDirectoryPickerPath" name="txtDirectoryPickerPath" type="text" required="required" style="font-weight:bold;width:82%;display:inline-block;" />';
-        html += '<button class="btnRefreshDirectories" type="button" data-icon="refresh" data-inline="true" data-mini="true" data-iconpos="notext">' + Globalize.translate('ButtonRefresh') + '</button>';
+        html += '<paper-icon-button icon="refresh" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"></paper-icon-button>';
         html += '</div>';
 
         html += '</div>';

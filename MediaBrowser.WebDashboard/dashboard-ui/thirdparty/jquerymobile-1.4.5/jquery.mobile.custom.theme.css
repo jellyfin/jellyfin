@@ -19,9 +19,7 @@ html {
 body,
 button,
 .ui-btn {
-	font-size: 1em;
-	line-height: 1.3;
-	font-family: sans-serif /*{global-font-family}*/;
+	line-height: 1.3 /*{global-font-family}*/;
 }
 legend {
 	color: inherit;
@@ -35,13 +33,7 @@ div.ui-controlgroup-label {
 
 /* Separators
 -----------------------------------------------------------------------------------------------------------*/
-/* Field contain separator (< 28em) */
-.ui-field-contain {
-	border-bottom-color: #828282;
-	border-bottom-color: rgba(0,0,0,.15);
-	border-bottom-width: 1px;
-	border-bottom-style: solid;
-}
+
 
 /* Table opt-in classes: strokes between each row, and alternating row stripes */
 /* Classes table-stroke and table-stripe are deprecated in 1.4. */
@@ -533,23 +525,4 @@ button[disabled] {
 .ui-btn:focus,
 .ui-btn.ui-focus {
 	outline: 0;
-}
-/* Unset box-shadow in browsers that don't do it right */
-.ui-noboxshadow .ui-shadow,
-.ui-noboxshadow .ui-shadow-inset,
-.ui-noboxshadow .ui-overlay-shadow,
-.ui-noboxshadow .ui-shadow-icon.ui-btn:after,
-.ui-noboxshadow .ui-shadow-icon .ui-btn:after,
-.ui-noboxshadow .ui-focus,
-.ui-noboxshadow .ui-btn:focus,
-.ui-noboxshadow  input:focus,
-.ui-noboxshadow .ui-panel {
-	-webkit-box-shadow: none !important;
-	-moz-box-shadow: none !important;
-	box-shadow: none !important;
-}
-.ui-noboxshadow .ui-btn:focus,
-.ui-noboxshadow .ui-focus {
-	outline-width: 1px;
-	outline-style: auto;
 }

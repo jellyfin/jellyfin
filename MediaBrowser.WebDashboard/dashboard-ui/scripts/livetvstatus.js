@@ -81,7 +81,7 @@
             html += '</td>';
 
             html += '<td>';
-            html += '<button data-tunerid="' + tuner.Id + '" type="button" data-inline="true" data-icon="refresh" data-mini="true" data-iconpos="notext" class="btnResetTuner organizerButton" title="' + Globalize.translate('ButtonResetTuner') + '">' + Globalize.translate('ButtonResetTuner') + '</button>';
+            html += '<paper-icon-button data-tunerid="' + tuner.Id + '" icon="refresh" class="btnResetTuner" title="' + Globalize.translate('ButtonResetTuner') + '"></paper-icon-button>';
             html += '</td>';
 
             html += '</tr>';

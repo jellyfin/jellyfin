@@ -217,16 +217,6 @@
 
             html += '<tr>';
 
-            html += '<td class="organizerButtonCell">';
-
-
-            if (item.Status != 'Success') {
-                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="delete" data-mini="true" data-iconpos="notext" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '">' + Globalize.translate('ButtonDeleteFile') + '</button>';
-                html += '<button data-resultid="' + item.Id + '" type="button" data-inline="true" data-icon="action" data-mini="true" data-iconpos="notext" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '">' + Globalize.translate('ButtonOrganizeFile') + '</button>';
-            }
-
-            html += '</td>';
-
             html += '<td>';
 
             var date = parseISO8601Date(item.Date, { toLocal: true });
@@ -255,6 +245,16 @@
 
             html += '<td>';
             html += item.TargetPath || '';
+            html += '</td>';
+
+            html += '<td class="organizerButtonCell">';
+
+
+            if (item.Status != 'Success') {
+                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="folder" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"></paper-icon-button>';
+                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="delete" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"></paper-icon-button>';
+            }
+
             html += '</td>';
 
             html += '</tr>';
