@@ -89,7 +89,7 @@
 
         html += servers.map(getServerHtml).join('');
 
-        var elem = $('.serverList', page).html(html).trigger('create');
+        var elem = $('.serverList', page).html(html);
 
         $('.lnkServer', elem).on('click', function () {
 
@@ -286,7 +286,7 @@
 
         var html = list.map(getPendingInviteHtml).join('');
 
-        var elem = $('.invitationList', page).html(html).trigger('create');
+        var elem = $('.invitationList', page).html(html);
 
         $('.btnInviteMenu', elem).on('click', function () {
             showPendingInviteMenu(this);

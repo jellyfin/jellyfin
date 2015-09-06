@@ -54,7 +54,6 @@
 
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
-        $(elem).trigger('create');
     }
 
     function selectCurrentChapter(elem, positionTicks) {
@@ -699,7 +698,6 @@
         var itemsContainer = page.querySelector('.playlist');
         itemsContainer.innerHTML = html;
         ImageLoader.lazyChildren(itemsContainer);
-        $(itemsContainer).trigger('create');
     }
 
     function onListItemClick(e) {

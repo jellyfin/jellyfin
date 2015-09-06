@@ -992,7 +992,7 @@
             };
         };
 
-        var lastBitrateDetect = 0;
+        self.lastBitrateDetect = 0;
 
         self.playInternal = function (item, startPosition, callback) {
 
@@ -1014,14 +1014,14 @@
                 return;
             }
 
-            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - lastBitrateDetect) > 1000) {
+            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - self.lastBitrateDetect) > 300000) {
 
                 Dashboard.showModalLoadingMsg();
 
                 ApiClient.detectBitrate().done(function (bitrate) {
 
                     Logger.log('Max bitrate auto detected to ' + bitrate);
-                    lastBitrateDetect = new Date().getTime();
+                    self.lastBitrateDetect = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
 
                     playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
@@ -1900,9 +1900,16 @@
 
     window.MediaPlayer = new mediaPlayer();
 
+    function onConnectionChange() {
+        window.MediaPlayer.lastBitrateDetect = 0;
+    }
+
     Dashboard.ready(function () {
         window.MediaController.registerPlayer(window.MediaPlayer);
         window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+
+        Events.on(ConnectionManager, 'localusersignedin', onConnectionChange);
+        Events.on(ConnectionManager, 'localusersignedout', onConnectionChange);
     });
 
 

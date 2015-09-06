@@ -67,7 +67,6 @@
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page, viewPanel);
-            var trigger = false;
 
             if (view == "List") {
 
@@ -76,7 +75,6 @@
                     context: 'music',
                     sortBy: query.SortBy
                 });
-                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -107,10 +105,6 @@
             var elem = page.querySelector('#items');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

@@ -830,7 +830,6 @@
         promise.done(function (result) {
 
             var html = '';
-            var trigger = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -844,7 +843,6 @@
                     defaultAction: 'playallfromhere',
                     lazy: true
                 });
-                trigger = true;
 
             }
             else if (item.Type == "Series") {
@@ -884,10 +882,6 @@
             var elem = page.querySelector('.childrenItemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             if (item.Type == "BoxSet") {
 
@@ -990,7 +984,7 @@
             renderCollectionItemType(page, { name: Globalize.translate('HeaderItems') }, items, user);
         }
 
-        $('.collectionItems', page).trigger('create').createCardMenus();
+        $('.collectionItems', page).createCardMenus();
     }
 
     function renderCollectionItemType(page, type, items, user, context) {
@@ -1163,7 +1157,7 @@
                 smallIcon: true
             });
 
-            $('#themeSongsContent', page).html(html).trigger('create');
+            $('#themeSongsContent', page).html(html);
         } else {
             $('#themeSongsCollapsible', page).hide();
         }
@@ -1175,7 +1169,7 @@
 
             $('#themeVideosCollapsible', page).show();
 
-            $('#themeVideosContent', page).html(getVideosHtml(items, user)).lazyChildren().trigger('create');
+            $('#themeVideosContent', page).html(getVideosHtml(items, user)).lazyChildren();
         } else {
             $('#themeVideosCollapsible', page).hide();
         }
@@ -1197,7 +1191,7 @@
 
                 $('#musicVideosCollapsible', page).show();
 
-                $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).lazyChildren().trigger('create');
+                $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
             } else {
                 $('#musicVideosCollapsible', page).hide();
             }
@@ -1213,7 +1207,7 @@
 
                 $('#additionalPartsCollapsible', page).show();
 
-                $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).lazyChildren().trigger('create');
+                $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
             } else {
                 $('#additionalPartsCollapsible', page).hide();
             }

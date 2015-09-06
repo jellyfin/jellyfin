@@ -501,17 +501,17 @@
                 Size: byteSize
             });
 
-            var now = new Date().getTime();
-
             var deferred = DeferredBuilder.Deferred();
+
+            var now = new Date().getTime();
 
             self.get(url).done(function () {
 
-                var responseTime = new Date().getTime() - now;
-                var bytesPerSecond = byteSize / responseTime;
-                bytesPerSecond *= 1000;
+                var responseTimeSeconds = (new Date().getTime() - now) / 1000;
+                var bytesPerSecond = byteSize / responseTimeSeconds;
+                var bitrate = Math.round(bytesPerSecond * 8);
 
-                deferred.resolveWith(null, [bytesPerSecond]);
+                deferred.resolveWith(null, [bitrate]);
 
             }).fail(function () {
 

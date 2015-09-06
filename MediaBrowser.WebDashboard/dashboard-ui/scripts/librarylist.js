@@ -172,10 +172,13 @@
     function onCardTapHold(e) {
 
         var card = parentWithClass(e.target, 'card');
-        showContextMenu(card, {});
 
-        e.preventDefault();
-        return false;
+        if (card) {
+            showContextMenu(card, {});
+
+            e.preventDefault();
+            return false;
+        }
     }
 
     function showContextMenu(card, options) {

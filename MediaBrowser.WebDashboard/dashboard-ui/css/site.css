@@ -430,6 +430,10 @@ h1 a:hover {
     margin: -10px 0 0 -10px;
 }
 
+fieldset {
+    border: none;
+}
+
 input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
@@ -464,6 +468,7 @@ input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='ra
     color: #000;
     margin: 0 0 3px 0;
     border-radius: 4px;
+    display: block;
 }
 
 select {
@@ -486,6 +491,10 @@ select {
     padding: .6em .8em .5em .8em;
     text-align: center;
 }
+
+    select:not([data-inline='true']) {
+        display: block;
+    }
 
 .ui-page-theme-b select {
     border-color: #1f1f1f;
@@ -783,7 +792,7 @@ paper-input + .fieldDescription {
 }
 
 .background-theme-a {
-    background-color: #f5f5f5;
+    background-color: #f7f7f7;
 }
 
 .ui-page-theme-a .content-secondary {

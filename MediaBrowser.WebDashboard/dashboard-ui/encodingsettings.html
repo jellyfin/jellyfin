@@ -41,14 +41,12 @@
                             <div class="fieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
                         </li>
                         <li>
-                            <label for="txtTranscodingTempPath">${LabelTranscodingTempPath}</label>
-                            <div style="display: inline-block; width: 85%;">
-                                <input type="text" id="txtTranscodingTempPath" />
-                            </div>
-                            <button id="btnSelectTranscodingTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <paper-input id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" style="width:80%;display:inline-block;"></paper-input>
+                            <paper-icon-button id="btnSelectTranscodingTempPath" icon="search"></paper-icon-button>
                             <div class="fieldDescription">
                                 ${LabelTranscodingTempPathHelp}
                             </div>
+                            <br/>
                         </li>
                         <li>
                             <label for="txtDownMixAudioBoost">${LabelDownMixAudioScale}</label>

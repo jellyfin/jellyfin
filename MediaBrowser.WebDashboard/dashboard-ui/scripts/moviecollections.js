@@ -69,8 +69,6 @@
 
             })).trigger('create');
 
-            var trigger = false;
-
             if (result.TotalRecordCount) {
 
                 var context = getParameterByName('context');
@@ -82,7 +80,6 @@
                         context: context,
                         sortBy: query.SortBy
                     });
-                    trigger = true;
                 }
                 else if (view == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
@@ -139,10 +136,6 @@
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

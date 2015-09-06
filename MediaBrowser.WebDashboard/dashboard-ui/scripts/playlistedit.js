@@ -75,7 +75,7 @@
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
             elem.innerHTML = html;
-            $(elem).trigger('create');
+
             ImageLoader.lazyChildren(elem);
 
             $(elem).off('needsrefresh').on('needsrefresh', function () {

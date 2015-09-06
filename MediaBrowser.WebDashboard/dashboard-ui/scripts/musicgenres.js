@@ -59,7 +59,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
+            }));
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({

@@ -4869,11 +4869,6 @@ $.fn.fieldcontain = function(/* options */) {
 	var	$html = $( "html" ),
 		$window = $.mobile.window;
 
-	//remove initial build class (only present on first pageshow)
-	function hideRenderingClass() {
-		$html.removeClass( "ui-mobile-rendering" );
-	}
-
 	// trigger mobileinit event - useful hook for configuring $.mobile settings before they're used
 	$( window.document ).trigger( "mobileinit" );
 
@@ -4890,27 +4885,15 @@ $.fn.fieldcontain = function(/* options */) {
 		$.mobile.ajaxEnabled = false;
 	}
 
-	// Add mobile, initial load "rendering" classes to docEl
-	$html.addClass( "ui-mobile ui-mobile-rendering" );
-
-	// This is a fallback. If anything goes wrong (JS errors, etc), or events don't fire,
-	// this ensures the rendering class is removed after 5 seconds, so content is visible and accessible
-	setTimeout( hideRenderingClass, 5000 );
-
 	$.extend( $.mobile, {
 		// find and enhance the pages in the dom and transition to the first page.
 		initializePage: function() {
 			// find present pages
 			var path = $.mobile.path,
-				$pages = $("*[data-role='page'], *[data-role='dialog']"),
+				$pages = $("div[data-role='page']"),
 				hash = path.stripHash( path.stripQueryParams(path.parseLocation().hash) ),
 				theLocation = $.mobile.path.parseLocation(),
 				hashPage = hash ? document.getElementById( hash ) : undefined;
-
-			// if no pages are found, create one with body's inner html
-			if ( !$pages.length ) {
-				$pages = $( "body" ).wrapInner( "<div data-" + $.mobile.ns + "role='page'></div>" ).children( 0 );
-			}
 
 			// add dialogs, set data-url attrs
 			$pages.each(function() {
@@ -4935,16 +4918,6 @@ $.fn.fieldcontain = function(/* options */) {
 			// initialize navigation events now, after mobileinit has occurred and the page container
 			// has been created but before the rest of the library is alerted to that fact
 			$.mobile.navreadyDeferred.resolve();
-
-			// alert listeners that the pagecontainer has been determined for binding
-			// to events triggered on it
-			$window.trigger( "pagecontainercreate" );
-
-			// cue page loading message
-			$.mobile.loading( "show" );
-
-			//remove initial build class (only present on first pageshow)
-			hideRenderingClass();
 
 			// if hashchange listening is disabled, there's no hash deeplink,
 			// the hash is not valid (contains more than one # or does not start with #)

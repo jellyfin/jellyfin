@@ -87,7 +87,7 @@
             html += '</div>';
         }
 
-        var elem = $('#items', page).html(html).trigger('create');
+        var elem = $('#items', page).html(html);
 
         $('.btnCancelSeries', elem).on('click', function () {
 

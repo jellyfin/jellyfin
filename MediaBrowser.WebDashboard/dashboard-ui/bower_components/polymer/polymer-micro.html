@@ -56,10 +56,10 @@ prototype = {};
 }
 var factory = desugar(prototype);
 prototype = factory.prototype;
-var options = {
-prototype: prototype,
-extends: prototype.extends
-};
+var options = { prototype: prototype };
+if (prototype.extends) {
+options.extends = prototype.extends;
+}
 Polymer.telemetry._registrate(prototype);
 document.registerElement(prototype.is, options);
 return factory;
@@ -576,7 +576,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.2';
+Polymer.version = '1.1.3';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

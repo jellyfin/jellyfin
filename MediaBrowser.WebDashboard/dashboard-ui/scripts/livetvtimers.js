@@ -110,7 +110,7 @@
             html += '</div>';
         }
 
-        var elem = $('#items', page).html(html).trigger('create');
+        var elem = $('#items', page).html(html);
 
         $('.btnDeleteTimer', elem).on('click', function () {
 

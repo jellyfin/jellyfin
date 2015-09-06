@@ -24,7 +24,7 @@
             showLimit: false,
             viewPanelClass: 'channelViewPanel'
 
-        })).trigger('create');
+        }));
 
         updateFilterControls(viewPanel);
 
@@ -33,7 +33,6 @@
         var elem = page.querySelector('#items');
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
-        $(elem).trigger('create');
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;

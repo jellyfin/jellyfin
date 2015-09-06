@@ -8,7 +8,9 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -47,10 +49,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly IFileOrganizationService _organizationService;
+        private readonly IMediaEncoder _mediaEncoder;
 
         public static EmbyTV Current;
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder)
         {
             Current = this;
 
@@ -64,6 +67,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _organizationService = organizationService;
+            _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
 
@@ -428,6 +432,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 if (mediaSourceInfo != null)
                 {
+                    await AddMediaInfo(mediaSourceInfo, false, cancellationToken).ConfigureAwait(false);
+
                     mediaSourceInfo.Id = Guid.NewGuid().ToString("N");
                     return mediaSourceInfo;
                 }
@@ -456,6 +462,84 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             throw new NotImplementedException();
+        }
+
+        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        {
+            var originalRuntime = mediaSource.RunTimeTicks;
+
+            var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                InputPath = mediaSource.Path,
+                Protocol = mediaSource.Protocol,
+                MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                ExtractChapters = false
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            mediaSource.Bitrate = info.Bitrate;
+            mediaSource.Container = info.Container;
+            mediaSource.Formats = info.Formats;
+            mediaSource.MediaStreams = info.MediaStreams;
+            mediaSource.RunTimeTicks = info.RunTimeTicks;
+            mediaSource.Size = info.Size;
+            mediaSource.Timestamp = info.Timestamp;
+            mediaSource.Video3DFormat = info.Video3DFormat;
+            mediaSource.VideoType = info.VideoType;
+
+            mediaSource.DefaultSubtitleStreamIndex = null;
+
+            // Null this out so that it will be treated like a live stream
+            if (!originalRuntime.HasValue)
+            {
+                mediaSource.RunTimeTicks = null;
+            }
+
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
+
+            if (audioStream == null || audioStream.Index == -1)
+            {
+                mediaSource.DefaultAudioStreamIndex = null;
+            }
+            else
+            {
+                mediaSource.DefaultAudioStreamIndex = audioStream.Index;
+            }
+
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
+            if (videoStream != null)
+            {
+                if (!videoStream.BitRate.HasValue)
+                {
+                    var width = videoStream.Width ?? 1920;
+
+                    if (width >= 1900)
+                    {
+                        videoStream.BitRate = 8000000;
+                    }
+
+                    else if (width >= 1260)
+                    {
+                        videoStream.BitRate = 3000000;
+                    }
+
+                    else if (width >= 700)
+                    {
+                        videoStream.BitRate = 1000000;
+                    }
+                }
+            }
+
+            // Try to estimate this
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
+
+                if (total > 0)
+                {
+                    mediaSource.Bitrate = total;
+                }
+            }
         }
 
         public Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)
