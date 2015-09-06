@@ -101,32 +101,6 @@ div.ui-mobile-viewport {
 	font-size: 1em;
 	display: inline-block;
 }
-.ui-header,
-.ui-footer {
-	border-width: 1px 0;
-	border-style: solid;
-	position: relative;
-}
-.ui-header:empty,
-.ui-footer:empty {
-	min-height: 2.6875em;
-}
-.ui-header .ui-title,
-.ui-footer .ui-title {
-	font-size: 1em;
-	min-height: 1.1em;
-	text-align: center;
-	display: block;
-	margin: 0 30%;
-	padding: .7em 0;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
-	outline: 0 !important;
-}
-.ui-footer .ui-title {
-	margin: 0 1em;
-}
 .ui-content {
 	border-width: 0;
 	overflow: visible;
@@ -134,17 +108,13 @@ div.ui-mobile-viewport {
 	padding: 1em;
 }
 /* Corner styling for dialogs and popups */
-.ui-corner-all > .ui-header:first-child,
-.ui-corner-all > .ui-content:first-child,
-.ui-corner-all > .ui-footer:first-child {
+.ui-corner-all > .ui-content:first-child {
 	-webkit-border-top-left-radius: inherit;
 	border-top-left-radius: inherit;
 	-webkit-border-top-right-radius: inherit;
 	border-top-right-radius: inherit;
 }
-.ui-corner-all > .ui-header:last-child,
-.ui-corner-all > .ui-content:last-child,
-.ui-corner-all > .ui-footer:last-child {
+.ui-corner-all > .ui-content:last-child {
 	-webkit-border-bottom-left-radius: inherit;
 	border-bottom-left-radius: inherit;
 	-webkit-border-bottom-right-radius: inherit;
@@ -168,9 +138,7 @@ div.ui-mobile-viewport {
 	-ms-user-select: none;
 	user-select: none;
 }
-.ui-btn-icon-notext,
-.ui-header button.ui-btn.ui-btn-icon-notext,
-.ui-footer button.ui-btn.ui-btn-icon-notext {
+.ui-btn-icon-notext {
 	padding: 0;
 	width: 1.75em;
 	height: 1.75em;
@@ -183,27 +151,8 @@ div.ui-mobile-viewport {
 .ui-mini .ui-btn {
 	font-size: inherit;
 }
-/* Make buttons in toolbars default to mini and inline. */
-.ui-header .ui-btn,
-.ui-footer .ui-btn {
-	font-size: 12.5px;
-	display: inline-block;
-	vertical-align: middle;
-}
-.ui-header .ui-controlgroup .ui-btn-icon-notext,
-.ui-footer .ui-controlgroup .ui-btn-icon-notext {
-    font-size: 12.5px;
-}
-
-/* To ensure same top and left/right position when ui-btn-left/right are added to something other than buttons. */
-.ui-header .ui-btn-left,
-.ui-header .ui-btn-right {
-	font-size: 12.5px;
-}
 .ui-mini.ui-btn-icon-notext,
-.ui-mini .ui-btn-icon-notext,
-.ui-header .ui-btn-icon-notext,
-.ui-footer .ui-btn-icon-notext {
+.ui-mini .ui-btn-icon-notext {
 	font-size: 16px;	
 	padding: 0;
 }
@@ -223,13 +172,6 @@ div.ui-mobile-viewport {
 }
 .ui-btn-icon-bottom {
 	padding-bottom: 2.5em;
-}
-.ui-header .ui-btn-icon-top,
-.ui-footer .ui-btn-icon-top,
-.ui-header .ui-btn-icon-bottom,
-.ui-footer .ui-btn-icon-bottom {
-	padding-left: .3125em;
-	padding-right: .3125em;
 }
 .ui-btn-icon-left:after,
 .ui-btn-icon-right:after,
@@ -255,15 +197,11 @@ div.ui-mobile-viewport {
 	right: .5625em;
 }
 .ui-mini.ui-btn-icon-left:after,
-.ui-mini .ui-btn-icon-left:after,
-.ui-header .ui-btn-icon-left:after,
-.ui-footer .ui-btn-icon-left:after {
+.ui-mini .ui-btn-icon-left:after {
 	left: .37em;
 }
 .ui-mini.ui-btn-icon-right:after,
-.ui-mini .ui-btn-icon-right:after,
-.ui-header .ui-btn-icon-right:after,
-.ui-footer .ui-btn-icon-right:after {
+.ui-mini .ui-btn-icon-right:after {
 	right: .37em;
 }
 .ui-btn-icon-notext:after,
@@ -280,8 +218,6 @@ div.ui-mobile-viewport {
 	bottom: .5625em;
 }
 /* Buttons in header position classes */
-.ui-header .ui-btn-left,
-.ui-header .ui-btn-right,
 .ui-btn-left > [class*="ui-"],
 .ui-btn-right > [class*="ui-"] {
 	margin: 0;
@@ -316,9 +252,7 @@ button.ui-btn,
 	-moz-appearance: none;
 	width: 100%;
 }
-button.ui-btn-inline,
-.ui-header button.ui-btn,
-.ui-footer button.ui-btn {
+button.ui-btn-inline {
 	width: auto;
 }
 /* Firefox adds a 1px border in a button element. We negate this to make sure they have the same height as other buttons in controlgroups. */
@@ -480,9 +414,7 @@ li.ui-block-e {
 [class*="ui-block-"] > .ui-checkbox,
 [class*="ui-block-"] > .ui-radio,
 [class*="ui-block-"] > button.ui-btn-inline,
-[class*="ui-block-"] > button.ui-btn-icon-notext,
-.ui-header [class*="ui-block-"] > button.ui-btn,
-.ui-footer [class*="ui-block-"] > button.ui-btn {
+[class*="ui-block-"] > button.ui-btn-icon-notext {
 	margin-right: .3125em;
 	margin-left: .3125em;
 }
@@ -611,144 +543,6 @@ li.ui-block-e {
 	animation-duration: 225ms;
 	animation-name: fadein;
 }
-
-
-.ui-controlgroup,
-fieldset.ui-controlgroup {
-	padding: 0;
-	margin: .5em 0;
-}
-.ui-field-contain .ui-controlgroup,
-.ui-field-contain fieldset.ui-controlgroup {
-	margin: 0;
-}
-.ui-mini .ui-controlgroup-label {
-	font-size: 16px;
-}
-.ui-controlgroup.ui-mini .ui-btn-icon-notext,
-.ui-controlgroup .ui-mini.ui-btn-icon-notext {
-	font-size: inherit;
-}
-.ui-controlgroup-controls .ui-btn,
-.ui-controlgroup-controls .ui-checkbox,
-.ui-controlgroup-controls .ui-radio,
-.ui-controlgroup-controls .ui-select {
-	margin: 0;
-}
-.ui-controlgroup-controls .ui-btn:focus,
-.ui-controlgroup-controls .ui-btn.ui-focus {
-	z-index: 1;
-}
-.ui-controlgroup-controls li {
-	list-style: none;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls {
-	display: inline-block;
-	vertical-align: middle;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls:before,
-.ui-controlgroup-horizontal .ui-controlgroup-controls:after {
-	content: "";
-	display: table;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls:after {
-	clear: both;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls > .ui-btn,
-.ui-controlgroup-horizontal .ui-controlgroup-controls li > .ui-btn,
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-checkbox,
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-radio,
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-select {
-	float: left;
-	clear: none;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls button.ui-btn,
-.ui-controlgroup-controls .ui-btn-icon-notext {
-	width: auto;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn-icon-notext,
-.ui-controlgroup-horizontal .ui-controlgroup-controls button.ui-btn-icon-notext {
-	width: 1.5em;
-}
- .ui-controlgroup-controls .ui-btn-icon-notext {
-	height: auto;
-	padding: .7em 1em;
-}
-.ui-controlgroup-vertical .ui-controlgroup-controls .ui-btn {
-	border-bottom-width: 0;
-}
-.ui-controlgroup-vertical .ui-controlgroup-controls .ui-btn.ui-last-child {
-	border-bottom-width: 1px;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn {
-	border-right-width: 0;
-}
-.ui-controlgroup-horizontal .ui-controlgroup-controls .ui-btn.ui-last-child {
-	border-right-width: 1px;
-}
-.ui-controlgroup-controls .ui-btn-corner-all,
-.ui-controlgroup-controls .ui-btn.ui-corner-all {
-	-webkit-border-radius: 0;
-	border-radius: 0;
-}
-.ui-controlgroup-controls,
-.ui-controlgroup-controls .ui-radio,
-.ui-controlgroup-controls .ui-checkbox,
-.ui-controlgroup-controls .ui-select,
-.ui-controlgroup-controls li {
-	-webkit-border-radius: inherit;
-	border-radius: inherit;
-}
-.ui-controlgroup-vertical .ui-btn.ui-first-child {
-	-webkit-border-top-left-radius: inherit;
-	border-top-left-radius: inherit;
-	-webkit-border-top-right-radius: inherit;
-	border-top-right-radius: inherit;
-}
-.ui-controlgroup-vertical .ui-btn.ui-last-child {
-	-webkit-border-bottom-left-radius: inherit;
-	border-bottom-left-radius: inherit;
-	-webkit-border-bottom-right-radius: inherit;
-	border-bottom-right-radius: inherit;
-}
-.ui-controlgroup-horizontal .ui-btn.ui-first-child {
-	-webkit-border-top-left-radius: inherit;
-	border-top-left-radius: inherit;
-	-webkit-border-bottom-left-radius: inherit;
-	border-bottom-left-radius: inherit;
-}
-.ui-controlgroup-horizontal .ui-btn.ui-last-child {
-	-webkit-border-top-right-radius: inherit;
-	border-top-right-radius: inherit;
-	-webkit-border-bottom-right-radius: inherit;
-	border-bottom-right-radius: inherit;
-}
-.ui-controlgroup-controls a.ui-shadow:not(:focus),
-.ui-controlgroup-controls button.ui-shadow:not(:focus),
-.ui-controlgroup-controls div.ui-shadow:not(.ui-focus) {
-	-moz-box-shadow: none;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-}
-/* Fixes legend not wrapping on IE10 */
-.ui-controlgroup-label legend {
-	max-width: 100%;
-}
-.ui-controlgroup-controls > label {
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	clip: rect(1px,1px,1px,1px);
-}
-
-.ui-textinput-autogrow-resize {
-	-webkit-transition: height 0.25s;
-	-o-transition: height 0.25s;
-	-moz-transition: height 0.25s;
-	transition: height 0.25s;
-}
-
 
 /* Hide the native input element */
 .ui-input-btn input {

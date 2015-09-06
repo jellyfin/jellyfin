@@ -2111,6 +2111,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css');
+            return {};
+        });
+
         define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible"], function () {
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.collapsible.css');
             return {};
@@ -2206,6 +2211,7 @@ var AppInfo = {};
                         depends.push('jqmpopup');
                         depends.push('jqmlistview');
                         depends.push('jqmcollapsible');
+                        depends.push('jqmcontrolgroup');
                     }
 
                     require(depends, function () {
