@@ -1776,10 +1776,10 @@
             renderCriticReviews(page, currentItem);
         });
 
-        var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        for (var i = 0, length = btnMore.length; i < length; i++) {
-            btnMore[i].icon = AppInfo.moreIcon;
-        }
+        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
+        //for (var i = 0, length = btnMore.length; i < length; i++) {
+        //    btnMore[i].icon = AppInfo.moreIcon;
+        //}
 
     }).on('pagebeforeshow', "#itemDetailPage", function () {
 
