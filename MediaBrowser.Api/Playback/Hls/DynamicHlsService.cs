@@ -285,20 +285,23 @@ namespace MediaBrowser.Api.Playback.Hls
         private double[] GetSegmentLengths(StreamState state)
         {
             var result = new List<double>();
-            var encoder = GetVideoEncoder(state);
-
-            if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
+            if (state.VideoRequest != null)
             {
-                var videoStream = state.VideoStream;
-                if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
+                var encoder = GetVideoEncoder(state);
+
+                if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach (var frame in videoStream.KeyFrames)
+                    var videoStream = state.VideoStream;
+                    if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
                     {
-                        var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
-                        seconds -= result.Sum();
-                        result.Add(seconds);
+                        foreach (var frame in videoStream.KeyFrames)
+                        {
+                            var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
+                            seconds -= result.Sum();
+                            result.Add(seconds);
+                        }
+                        return result.ToArray();
                     }
-                    return result.ToArray();
                 }
             }
 
