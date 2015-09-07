@@ -344,9 +344,6 @@ paper-menu-item {
 
 .libraryViewNav #tabsContainer {
     margin: auto;
-    -ms-flex: auto;
-    -webkit-flex: auto;
-    flex: auto;
     -ms-flex: none;
     -webkit-flex: none;
     flex: none;
@@ -367,35 +364,12 @@ paper-menu-item {
     flex-grow: 0;
 }
 
-/*.scrollablePaperTabs #tabsContainer {
-    text-align: center;
-    overflow-x: scroll;
-    -webkit-overflow-scrolling: touch;
-    overflow-y: hidden;
-    white-space: nowrap;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
-}
-
-.scrollablePaperTabs #tabsContainer::-webkit-scrollbar {
-    height: 0 !important;
-    display: none;
-}
-
-.scrollablePaperTabs #tabsContent {
-    position: static !important;
-}*/
-
 .ui-page-theme-b paper-item-body [secondary] {
     color: #aaa;
 }
 
-.ui-page-theme-b paper-checkbox {
-    color: #fff;
-}
-
     .ui-page-theme-b paper-checkbox paper-ripple {
-        color: inherit !important;
+        color: #fff !important;
     }
 
     .ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {

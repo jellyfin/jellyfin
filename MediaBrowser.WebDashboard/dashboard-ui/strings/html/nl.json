@@ -1376,6 +1376,7 @@
     "HeaderVideoTypes": "Video types",
     "HeaderYears": "Jaren",
     "HeaderAddTag": "Voeg tag toe",
+    "HeaderBlockItemsWithNoRating": "Blokkeer inhoud zonder- of met niet herkende classificatiegegevens:",
     "LabelBlockContentWithTags": "Blokkeer inhoud met labels:",
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Beperk tot \u00e9\u00e9n enkele ingesloten afbeelding",

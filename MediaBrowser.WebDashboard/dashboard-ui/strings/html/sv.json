@@ -1376,6 +1376,7 @@
     "HeaderVideoTypes": "Videotyper",
     "HeaderYears": "\u00c5r",
     "HeaderAddTag": "Add Tag",
+    "HeaderBlockItemsWithNoRating": "Block content with no or unrecognized rating information:",
     "LabelBlockContentWithTags": "Block content with tags:",
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Limit to single embedded image",

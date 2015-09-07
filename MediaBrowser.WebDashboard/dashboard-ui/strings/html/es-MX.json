@@ -1376,6 +1376,7 @@
     "HeaderVideoTypes": "Tipos de Video",
     "HeaderYears": "A\u00f1os",
     "HeaderAddTag": "Agregar Etiqueta",
+    "HeaderBlockItemsWithNoRating": "Bloquear contenido sin clasificaci\u00f3n o con informaci\u00f3n de clasificaci\u00f3n desconocida:",
     "LabelBlockContentWithTags": "Bloquear contenidos con etiquetas:",
     "LabelTag": "Etiqueta:",
     "LabelEnableSingleImageInDidlLimit": "Limitar a una sola imagen incrustada.",

@@ -1376,6 +1376,7 @@
     "HeaderVideoTypes": "Videotyper",
     "HeaderYears": "\u00c5r",
     "HeaderAddTag": "Tilf\u00f8j tag",
+    "HeaderBlockItemsWithNoRating": "Block content with no or unrecognized rating information:",
     "LabelBlockContentWithTags": "Bloker indhold med disse tags:",
     "LabelTag": "Tag:",
     "LabelEnableSingleImageInDidlLimit": "Begr\u00e6ns til et enkelt indlejret billede",

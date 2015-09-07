@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="jqmcheckbox,jqmcontrolgroup,jqmpanel,scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
+    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="jqmpanel,scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons>
@@ -134,29 +134,25 @@
         </div>
 
         <div data-role="panel" class="viewPanel channelViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
-                <div class="tabView viewTab">
+            <div class="ui-panel-inner">
+                <form>
                     <div>
-                        <label for="selectPageSize">${LabelPageSize}</label>
-                        <select id="selectPageSize" class="selectPageSize"></select>
+                        <h1>${HeaderFilters}</h1>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true" data-role="none">
+                            <label for="chkLikes">${OptionLikes}</label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true" data-role="none">
+                            <label for="chkDislikes">${OptionDislikes}</label>
+                        </div>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true" data-role="none">
+                            <label for="chkFavorite">${OptionFavorite}</label>
+                        </div>
                     </div>
-                </div>
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderFilters}</legend>
-                        <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkFavorite">${OptionFavorite}</label>
-                        <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true">
-                        <label for="chkLikes">${OptionLikes}</label>
-                        <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikes">${OptionDislikes}</label>
-                    </fieldset>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
         <div data-role="content">
         </div>

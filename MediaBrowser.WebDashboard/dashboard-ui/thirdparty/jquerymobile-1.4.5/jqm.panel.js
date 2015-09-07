@@ -25,13 +25,11 @@
             positionFixed: false
         },
 
-        _closeLink: null,
         _parentPage: null,
         _page: null,
         _modal: null,
         _panelInner: null,
         _wrapper: null,
-        _fixedToolbars: null,
 
         _create: function () {
             var el = this.element,
@@ -39,12 +37,10 @@
 
             // expose some private props to other methods
             $.extend(this, {
-                _closeLink: el.find(":jqmData(rel='close')"),
                 _parentPage: (parentPage.length > 0) ? parentPage : false,
                 _openedPage: null,
                 _page: this._getPage,
-                _panelInner: this._getPanelInner(),
-                _fixedToolbars: this._getFixedToolbars
+                _panelInner: this._getPanelInner()
             });
             if (this.options.display !== "overlay") {
                 this._getWrapper();
@@ -69,10 +65,11 @@
         },
 
         _getPanelInner: function () {
-            var panelInner = this.element.find("." + this.options.classes.panelInner);
-
-            if (panelInner.length === 0) {
+            var panelInner = this.element[0].querySelector("." + this.options.classes.panelInner);
+            if (!panelInner) {
                 panelInner = this.element.children().wrapAll("<div class='" + this.options.classes.panelInner + "' />").parent();
+            } else {
+                panelInner = $(panelInner);
             }
 
             return panelInner;
@@ -106,14 +103,6 @@
             this._wrapper = wrapper;
         },
 
-        _getFixedToolbars: function () {
-            var extFixedToolbars = $("body").children(".ui-header-fixed, .ui-footer-fixed"),
-                intFixedToolbars = this._page().find(".ui-header-fixed, .ui-footer-fixed"),
-                fixedToolbars = extFixedToolbars.add(intFixedToolbars).addClass(this.options.classes.pageFixedToolbar);
-
-            return fixedToolbars;
-        },
-
         _getPosDisplayClasses: function (prefix) {
             return prefix + "-position-" + this.options.position + " " + prefix + "-display-" + this.options.display;
         },
@@ -142,13 +131,6 @@
         },
 
         _bindCloseEvents: function () {
-            this._on(this._closeLink, {
-                "click": "_handleCloseClick"
-            });
-
-            this._on({
-                "click a:jqmData(ajax='false')": "_handleCloseClick"
-            });
         },
 
         _positionPanel: function (scrollToTop) {
@@ -298,7 +280,6 @@
 
                         if ($.support.cssTransform3d && !!o.animate && o.display !== "overlay") {
                             self._wrapper.addClass(o.classes.animate);
-                            self._fixedToolbars().addClass(o.classes.animate);
                         }
 
                         if (!immediate && $.support.cssTransform3d && !!o.animate) {
@@ -324,7 +305,6 @@
                         if (o.display !== "overlay") {
                             self._page().parent().addClass(o.classes.pageContainer);
                             self._wrapper.addClass(self._pageContentOpenClasses);
-                            self._fixedToolbars().addClass(self._pageContentOpenClasses);
                         }
 
                         self._modalOpenClasses = self._getPosDisplayClasses(o.classes.modal) + " " + o.classes.modalOpen;
@@ -343,7 +323,6 @@
 
                         if (o.display !== "overlay") {
                             self._wrapper.addClass(o.classes.pageContentPrefix + "-open");
-                            self._fixedToolbars().addClass(o.classes.pageContentPrefix + "-open");
                         }
 
                         self._bindFixListener();
@@ -378,7 +357,6 @@
 
                         if (o.display !== "overlay") {
                             self._wrapper.removeClass(self._pageContentOpenClasses);
-                            self._fixedToolbars().removeClass(self._pageContentOpenClasses);
                         }
 
                         if (!immediate && $.support.cssTransform3d && !!o.animate) {
@@ -404,12 +382,10 @@
                         if (o.display !== "overlay") {
                             self._page().parent().removeClass(o.classes.pageContainer);
                             self._wrapper.removeClass(o.classes.pageContentPrefix + "-open");
-                            self._fixedToolbars().removeClass(o.classes.pageContentPrefix + "-open");
                         }
 
                         if ($.support.cssTransform3d && !!o.animate && o.display !== "overlay") {
                             self._wrapper.removeClass(o.classes.animate);
-                            self._fixedToolbars().removeClass(o.classes.animate);
                         }
 
                         self._fixPanel();
@@ -449,12 +425,6 @@
                 }
 
                 if (this._open) {
-
-                    this._fixedToolbars().removeClass(o.classes.pageContentPrefix + "-open");
-
-                    if ($.support.cssTransform3d && !!o.animate) {
-                        this._fixedToolbars().removeClass(o.classes.animate);
-                    }
 
                     this._page().parent().removeClass(o.classes.pageContainer);
 

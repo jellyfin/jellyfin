@@ -8,7 +8,7 @@
 
     $.widget("mobile.checkboxradio", $.extend({
 
-        initSelector: "input[type='checkbox'],input[type='radio']",
+        initSelector: "input[type='checkbox']:not([data-role='none']),input[type='radio']:not([data-role='none'])",
 
         options: {
             theme: "inherit",
@@ -75,7 +75,6 @@
                 blur: "_handleInputBlur"
             });
 
-            this._handleFormReset();
             this.refresh();
         },
 

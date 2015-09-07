@@ -548,14 +548,14 @@ a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
         box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
     }
 
-    button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
-        width: 100%;
-    }
+button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+    width: 100%;
+}
 
-    a[data-role='button'][data-theme='b'], button[data-theme='b']:not([data-role='none']):not(.clearButton) {
-        background: #4285f4 !important;
-        color: #fff !important;
-    }
+a[data-role='button'][data-theme='b'], button[data-theme='b']:not([data-role='none']):not(.clearButton) {
+    background: #4285f4 !important;
+    color: #fff !important;
+}
 
 div[data-role="controlgroup"] a[data-role='button'] {
     display: inline-block !important;
@@ -673,6 +673,25 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .largePanelModalOpen.ui-panel-dismiss-position-left {
     left: 270px !important;
 }
+
+.checkboxContainer {
+    white-space: nowrap;
+}
+
+    .checkboxContainer input {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+    }
+
+    .checkboxContainer label {
+        vertical-align: middle;
+        display: inline-block;
+        padding: .7em .5em;
+    }
 
 @media all and (min-width: 340px) {
 

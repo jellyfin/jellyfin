@@ -877,9 +877,6 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            //ApiClient.detectBitrate().done(function (b) {
-            //    alert(b);
-            //});
             requirejs(['videorenderer'], function () {
 
                 var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
@@ -906,10 +903,6 @@
                 }
             });
         };
-
-        function supportsContentOverVideoPlayer() {
-            return true;
-        }
 
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 

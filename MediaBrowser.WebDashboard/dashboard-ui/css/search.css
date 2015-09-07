@@ -120,6 +120,7 @@
     outline: none;
     vertical-align: middle;
     width: 85%!important;
+    display: inline-block!important;
 }
 
 .searchInputIcon {

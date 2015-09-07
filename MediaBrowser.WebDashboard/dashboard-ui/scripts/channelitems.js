@@ -1,34 +1,42 @@
 ﻿(function ($, document) {
 
-    var maxPageSize;
+    var data = {};
 
-    // The base query options
-    var query = {
+    function getPageData() {
+        var key = getSavedQueryKey();
+        var pageData = data[key];
 
-        SortBy: "",
-        SortOrder: "Ascending",
-        Fields: "PrimaryImageAspectRatio,SyncInfo",
-        StartIndex: 0
-    };
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "",
+                    SortOrder: "Ascending",
+                    Fields: "PrimaryImageAspectRatio,SyncInfo",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
 
-    function getSavedQueryId() {
-        return 'channels-1-' + getParameterByName('id') + (getParameterByName('folderId') || '');
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData;
     }
 
-    function showLoadingMessage(page) {
+    function getQuery() {
 
-        Dashboard.showModalLoadingMsg();
+        return getPageData().query;
     }
 
-    function hideLoadingMessage(page) {
-        Dashboard.hideModalLoadingMsg();
+    function getSavedQueryKey() {
+
+        return getWindowUrl() + 'movies';
     }
 
     function reloadFeatures(page) {
 
         var channelId = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features", query)).done(function (features) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features")).done(function (features) {
 
             if (features.CanFilter) {
 
@@ -45,47 +53,26 @@
                 $('.sortOrderToggle', page).hide();
             }
 
-            maxPageSize = features.MaxPageSize;
+            var maxPageSize = features.MaxPageSize;
 
             if (maxPageSize) {
                 query.Limit = Math.min(maxPageSize, query.Limit || maxPageSize);
             }
 
-            updateSortOrders(page, features.DefaultSortFields);
+            getPageData().sortFields = features.DefaultSortFields;
 
             reloadItems(page);
         });
     }
 
-    function updateSortOrders(page, fields) {
-
-        updateSortOrder(page, fields, 'Name');
-        updateSortOrder(page, fields, 'CommunityRating');
-        updateSortOrder(page, fields, 'PremiereDate');
-        updateSortOrder(page, fields, 'PlayCount');
-        updateSortOrder(page, fields, 'Runtime');
-        updateSortOrder(page, fields, 'DateCreated');
-    }
-
-    function updateSortOrder(page, fields, name) {
-
-        var cssClass = "sortby" + name;
-
-        if (fields.indexOf(name) == -1) {
-
-            $('.' + cssClass, page).hide();
-        } else {
-            $('.' + cssClass, page).show();
-        }
-    }
-
     function reloadItems(page) {
 
-        showLoadingMessage(page);
+        Dashboard.showModalLoadingMsg();
 
         var channelId = getParameterByName('id');
         var folderId = getParameterByName('folderId');
 
+        var query = getQuery();
         query.UserId = Dashboard.getCurrentUserId();
 
         if (folderId) {
@@ -117,7 +104,9 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                updatePageSizeSetting: false
+                updatePageSizeSetting: false,
+                viewIcon: 'filter-list',
+                sortButton: true
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -150,30 +139,77 @@
                 reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryId(), query);
-
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                showSortMenu(page);
+            });
 
         }).always(function () {
 
-            hideLoadingMessage(page);
+            Dashboard.hideModalLoadingMsg();
+        });
+    }
+
+    function showSortMenu(page) {
+
+        var sortFields = getPageData().sortFields;
+
+        var items = [];
+
+        items.push({
+            name: Globalize.translate('OptionDefaultSort'),
+            id: ''
+        });
+
+        if (sortFields.indexOf('Name') != -1) {
+            items.push({
+                name: Globalize.translate('OptionNameSort'),
+                id: 'SortName'
+            });
+        }
+        if (sortFields.indexOf('CommunityRating') != -1) {
+            items.push({
+                name: Globalize.translate('OptionCommunityRating'),
+                id: 'CommunityRating'
+            });
+        }
+        if (sortFields.indexOf('DateCreated') != -1) {
+            items.push({
+                name: Globalize.translate('OptionDateAdded'),
+                id: 'DateCreated'
+            });
+        }
+        if (sortFields.indexOf('PlayCount') != -1) {
+            items.push({
+                name: Globalize.translate('OptionPlayCount'),
+                id: 'PlayCount'
+            });
+        }
+        if (sortFields.indexOf('PremiereDate') != -1) {
+            items.push({
+                name: Globalize.translate('OptionReleaseDate'),
+                id: 'PremiereDate'
+            });
+        }
+        if (sortFields.indexOf('Runtime') != -1) {
+            items.push({
+                name: Globalize.translate('OptionRuntime'),
+                id: 'Runtime'
+            });
+        }
+
+        LibraryBrowser.showSortMenu({
+            items: items,
+            callback: function () {
+                reloadItems(page);
+            },
+            query: getQuery()
         });
     }
 
     function updateFilterControls(page) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
+        var query = getQuery();
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -181,7 +217,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
@@ -190,20 +226,9 @@
 
         var page = this;
 
-        $('.radioSortBy', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
-        });
-
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -221,6 +246,7 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -228,6 +254,7 @@
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
@@ -236,18 +263,7 @@
     }).on('pagebeforeshow', "#channelItemsPage", function () {
 
         var page = this;
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-        }
-        query.StartIndex = 0;
-
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryId(), query);
-
         reloadFeatures(page);
-
         updateFilterControls(page);
     });
 

@@ -46,16 +46,6 @@ var Dashboard = {
         //$.event.special.swipe.verticalDistanceThreshold = 40;
         //$.mobile.page.prototype.options.domCache = true;
 
-
-
-
-        $.mobile.loadingMessage = false;
-        //$.mobile.loader.prototype.options.disabled = true;
-        //$.mobile.loader.prototype.options.html = "";
-        //$.mobile.loader.prototype.options.textVisible = false;
-        //$.mobile.loader.prototype.options.textOnly = true;
-        //$.mobile.loader.prototype.options.text = "";
-
         $.mobile.hideUrlBar = false;
         $.mobile.autoInitializePage = false;
         $.mobile.changePage.defaults.showLoadMsg = false;

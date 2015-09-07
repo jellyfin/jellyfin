@@ -1376,6 +1376,7 @@
     "HeaderVideoTypes": "\u89c6\u9891\u7c7b\u578b",
     "HeaderYears": "\u5e74\u4efd",
     "HeaderAddTag": "\u6dfb\u52a0\u6807\u7b7e",
+    "HeaderBlockItemsWithNoRating": "Block content with no or unrecognized rating information:",
     "LabelBlockContentWithTags": "Block content with tags:",
     "LabelTag": "\u6807\u7b7e\uff1a",
     "LabelEnableSingleImageInDidlLimit": "\u4ec5\u9650\u5355\u4e00\u7684\u5d4c\u5165\u5f0f\u56fe\u50cf",

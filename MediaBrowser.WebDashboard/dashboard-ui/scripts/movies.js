@@ -260,7 +260,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.chkVideoTypeFilter', viewPanel).each(function () {
 
@@ -269,11 +269,11 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('.chk3DFilter', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
-        $('.chkHDFilter', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
-        $('.chkSDFilter', viewPanel).checked(query.IsHD == false).checkboxradio('refresh');
+        $('.chk3DFilter', viewPanel).checked(query.Is3D == true);
+        $('.chkHDFilter', viewPanel).checked(query.IsHD == true);
+        $('.chkSDFilter', viewPanel).checked(query.IsHD == false);
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }

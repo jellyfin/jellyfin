@@ -6,10 +6,10 @@
 
         if (items.length) {
 
-            elem = $(selector, page).show();
+            elem = $(selector, page).show()[0];
 
         } else {
-            elem = $(selector, page).hide();
+            elem = $(selector, page).hide()[0];
         }
 
         var html = '';
@@ -25,8 +25,12 @@
             var itemHtml = '';
 
             var id = idPrefix + index;
+            itemHtml += '<div class="checkboxContainer">';
+            itemHtml += '<input id="' + id + '" type="checkbox" data-filter="' + filter + '" data-role="none" class="' + cssClass + '" />';
             itemHtml += '<label for="' + id + '">' + filter + '</label>';
-            itemHtml += '<input id="' + id + '" type="checkbox" data-filter="' + filter + '" data-mini="true" class="' + cssClass + '" />';
+            itemHtml += '</div>';
+
+            //itemHtml += '<paper-checkbox id="' + id + '" data-filter="' + filter + '" class="' + cssClass + '">' + filter + '</paper-checkbox>';
 
             index++;
 
@@ -36,7 +40,7 @@
 
         html += '</div>';
 
-        $('.filterOptions', elem).html(html).trigger('create');
+        elem.querySelector('.filterOptions').innerHTML = html;
     }
 
     function renderFilters(page, result) {

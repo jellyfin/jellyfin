@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,scripts/musicrecommended">
+    <div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="jqmpanel,jqmcollapsible,scripts/musicrecommended">
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
                 <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
@@ -131,156 +131,197 @@
         </div>
 
         <div data-role="panel" class="viewPanel albumsViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>${HeaderFilters}</legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteAlbums" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteAlbums">${OptionFavorite}</label>
+                    <div>
+                        <h1>${HeaderFilters}</h1>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesAlbums" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesAlbums">${OptionLikes}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteAlbums" data-filter="IsFavorite" data-role="none">
+                            <label for="chkIsFavoriteAlbums">${OptionFavorite}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesAlbums" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesAlbums">${OptionDislikes}</label>
-                </fieldset>
-                <br />
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkLikesAlbums" data-filter="Likes" data-role="none">
+                            <label for="chkLikesAlbums">${OptionLikes}</label>
+                        </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
-
-                    <div class="filterOptions">
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkDislikesAlbums" data-filter="Dislikes" data-role="none">
+                            <label for="chkDislikesAlbums">${OptionDislikes}</label>
+                        </div>
                     </div>
-                </div>
+                    <br />
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
-                    <h2>${HeaderParentalRatings}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
-                    <h2>${HeaderTags}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
+                        <h2>${HeaderParentalRatings}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
-                    <h2>${HeaderYears}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
+                        <h2>${HeaderTags}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-            </form>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
+                        <h2>${HeaderYears}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
         </div>
 
         <div data-role="panel" class="viewPanel artistsViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>${HeaderFilters}</legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteArtist" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteArtist">${OptionFavorite}</label>
+                    <div>
+                        <h1>${HeaderFilters}</h1>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesArtist" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesArtist">${OptionLikes}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteArtist" data-filter="IsFavorite" data-role="none">
+                            <label for="chkIsFavoriteArtist">${OptionFavorite}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesArtist" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesArtist">${OptionDislikes}</label>
-                </fieldset>
-                <br />
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkLikesArtist" data-filter="Likes" data-role="none">
+                            <label for="chkLikesArtist">${OptionLikes}</label>
+                        </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
-
-                    <div class="filterOptions">
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkDislikesArtist" data-filter="Dislikes" data-role="none">
+                            <label for="chkDislikesArtist">${OptionDislikes}</label>
+                        </div>
                     </div>
-                </div>
+                    <br />
 
-            </form>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
         </div>
 
         <div data-role="panel" class="viewPanel albumArtistsViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>${HeaderFilters}</legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteAlbumArtist" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteAlbumArtist">${OptionFavorite}</label>
+                    <div>
+                        <h1>${HeaderFilters}</h1>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesAlbumArtist" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesAlbumArtist">${OptionLikes}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteAlbumArtist" data-filter="IsFavorite" data-role="none">
+                            <label for="chkIsFavoriteAlbumArtist">${OptionFavorite}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesAlbumArtist" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesAlbumArtist">${OptionDislikes}</label>
-                </fieldset>
-                <br />
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkLikesAlbumArtist" data-filter="Likes" data-role="none">
+                            <label for="chkLikesAlbumArtist">${OptionLikes}</label>
+                        </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkDislikesAlbumArtist" data-filter="Dislikes" data-role="none">
+                            <label for="chkDislikesAlbumArtist">${OptionDislikes}</label>
+                        </div>
 
-                    <div class="filterOptions">
                     </div>
-                </div>
+                    <br />
 
-            </form>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
         </div>
 
         <div data-role="panel" class="viewPanel songsViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>${HeaderFilters}</legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkPlayedSongs" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayedSongs">${OptionPlayed}</label>
+                    <div>
+                        <h1>${HeaderFilters}</h1>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkUnplayedSongs" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayedSongs">${OptionUnplayed}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkPlayedSongs" data-filter="IsPlayed" data-mini="true" data-role="none">
+                            <label for="chkPlayedSongs">${OptionPlayed}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteSongs" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteSongs">${OptionFavorite}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkUnplayedSongs" data-filter="IsUnPlayed" data-mini="true" data-role="none">
+                            <label for="chkUnplayedSongs">${OptionUnplayed}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesSongs" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesSongs">${OptionLikes}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteSongs" data-filter="IsFavorite" data-mini="true" data-role="none">
+                            <label for="chkIsFavoriteSongs">${OptionFavorite}</label>
+                        </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesSongs" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesSongs">${OptionDislikes}</label>
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkLikesSongs" data-filter="Likes" data-mini="true" data-role="none">
+                            <label for="chkLikesSongs">${OptionLikes}</label>
+                        </div>
 
-                </fieldset>
-                <br />
+                        <div class="checkboxContainer">
+                            <input class="chkStandardFilter" type="checkbox" id="chkDislikesSongs" data-filter="Dislikes" data-mini="true" data-role="none">
+                            <label for="chkDislikesSongs">${OptionDislikes}</label>
+                        </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
-
-                    <div class="filterOptions">
                     </div>
-                </div>
+                    <br />
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
-                    <h2>${HeaderParentalRatings}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
-                    <h2>${HeaderTags}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
+                        <h2>${HeaderParentalRatings}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
-                    <h2>${HeaderYears}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
+                        <h2>${HeaderTags}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-            </form>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
+                        <h2>${HeaderYears}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
         </div>
 
         <div data-role="content">
