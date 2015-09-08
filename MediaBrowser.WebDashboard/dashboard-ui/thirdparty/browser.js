@@ -961,6 +961,8 @@
         browser.tv = true;
     }
 
+    browser.androidVersion = md.version('Android');
+
     if (browser.ipad || browser.iphone) {
         if (userAgent.toLowerCase().indexOf('cpu os 9') != -1) {
             browser.iOSVersion = 9;

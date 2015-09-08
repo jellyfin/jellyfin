@@ -2,7 +2,7 @@
 
     function renderHeader() {
 
-        var html = '<div class="viewMenuBar ui-bar-b">';
+        var html = '';
 
         var backIcon = $.browser.safari ? 'chevron-left' : 'arrow-back';
 
@@ -38,9 +38,13 @@
 
         html += '</div>';
 
-        html += '</div>';
+        var viewMenuBar = document.createElement('div');
+        viewMenuBar.classList.add('viewMenuBar');
+        viewMenuBar.classList.add('ui-bar-b');
+        viewMenuBar.innerHTML = html;
 
-        $(document.body).append(html);
+        document.body.appendChild(viewMenuBar);
+
         ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
         Events.trigger(document, 'headercreated');
@@ -114,17 +118,24 @@
 
     function bindMenuEvents() {
 
-        if (AppInfo.isTouchPreferred) {
+        var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
-            $('.mainDrawerButton').on('click', openMainDrawer);
+        if (mainDrawerButton) {
+            if (AppInfo.isTouchPreferred) {
 
-        } else {
-            $('.mainDrawerButton').createHoverTouch().on('hovertouch', openMainDrawer);
+                Events.on(mainDrawerButton, 'click', openMainDrawer);
+
+            } else {
+                $(mainDrawerButton).createHoverTouch().on('hovertouch', openMainDrawer);
+            }
         }
 
-        $('.headerBackButton').on('click', onBackClick);
+        var headerBackButton = document.querySelector('.headerBackButton');
+        if (headerBackButton) {
+            Events.on(headerBackButton, 'click', onBackClick);
+        }
 
-        var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
+        var viewMenuBar = document.querySelector(".viewMenuBar");
         initHeadRoom(viewMenuBar);
     }
 
@@ -780,7 +791,7 @@
         }
     }
 
-    $(document).on('pagebeforeshow', ".page", function () {
+    pageClassOn('pagebeforeshow', 'page', function () {
 
         var page = this;
 
@@ -788,18 +799,23 @@
 
         onPageBeforeShowDocumentReady(page);
 
-    }).on('pageshowready', ".page", function () {
+    });
+
+    pageClassOn('pageshowready', 'page', function () {
 
         var page = this;
 
         onPageShowDocumentReady(page);
 
-    }).on('pagebeforehide', ".page", function () {
+    });
+
+    pageClassOn('pagebeforehide', 'page', function () {
 
         var headroomEnabled = document.querySelectorAll('.headroomEnabled');
         for (var i = 0, length = headroomEnabled.length; i < length; i++) {
             headroomEnabled[i].classList.add('headroomDisabled');
         }
+
     });
 
     function onPageBeforeShowDocumentReady(page) {
@@ -852,10 +868,10 @@
 
             } else {
 
-                $('.libraryViewNav', page).each(function () {
-
-                    initHeadRoom(this);
-                });
+                var navs = page.querySelectorAll('.libraryViewNav');
+                for (var i = 0, length = navs.length; i < length; i++) {
+                    initHeadRoom(navs[i]);
+                }
             }
         }
         else if (page.classList.contains('type-interior')) {
@@ -906,35 +922,13 @@
                 backButton.classList.add('hide');
             }
         }
-
-        //Events.off(page, 'swiperight', onPageSwipeLeft);
-
-        if (canGoBack) {
-            //Events.on(page, 'swiperight', onPageSwipeLeft);
-        }
-    }
-
-    function onPageSwipeLeft(e) {
-
-        var target = e.target;
-
-        if (!target.classList.contains('hiddenScrollX') && !$(target).parents('.hiddenScrollX').length) {
-            history.back();
-        }
     }
 
     function onPageShowDocumentReady(page) {
 
         if (!NavHelper.isBack()) {
-            var elems = page.querySelectorAll('.libraryViewNav .ui-btn-active');
-            elems = $(elems).filter(':visible');
-
-            if (elems.length) {
-                elems[0].scrollIntoView();
-
-                // Scroll back up so in case vertical scroll was messed with
-                window.scrollTo(0, 0);
-            }
+            // Scroll back up so in case vertical scroll was messed with
+            window.scrollTo(0, 0);
         }
     }
 
@@ -1059,7 +1053,7 @@ $.fn.createHoverTouch = function () {
 
     var backUrl;
 
-    $(document).on('pagebeforeshow', ".page", function () {
+    pageClassOn('pagebeforeshow', "page", function () {
 
         if (getWindowUrl() != backUrl) {
             backUrl = null;

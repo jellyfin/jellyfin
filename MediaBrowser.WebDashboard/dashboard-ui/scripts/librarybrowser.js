@@ -123,8 +123,25 @@
             elem.classList.add('hasrefreshtime');
         },
 
+        enableFullPaperTabs: function () {
+            return AppInfo.isNativeApp;
+        },
+
         animatePaperTabs: function () {
-            return !$.browser.safari;
+
+            if (!LibraryBrowser.enableFullPaperTabs()) {
+                return false;
+            }
+
+            if ($.browser.safari) {
+                return false;
+            }
+
+            if (typeof ($.browser.androidVersion) == 'number' && !isNaN($.browser.androidVersion)) {
+                return $.browser.androidVersion >= 5;
+            }
+
+            return true;
         },
 
         configureSwipeTabs: function (ownerpage, tabs, pages) {
@@ -174,8 +191,10 @@
                     if (allowSwipe(e)) {
                         var selected = parseInt(pages.selected || '0');
                         if (selected < (pageCount - 1)) {
-                            pages.entryAnimation = 'slide-from-right-animation';
-                            pages.exitAnimation = 'slide-left-animation';
+                            if (LibraryBrowser.animatePaperTabs()) {
+                                pages.entryAnimation = 'slide-from-right-animation';
+                                pages.exitAnimation = 'slide-left-animation';
+                            }
                             tabs.selectNext();
                         }
                     }
@@ -185,17 +204,15 @@
                     if (allowSwipe(e)) {
                         var selected = parseInt(pages.selected || '0');
                         if (selected > 0) {
-                            pages.entryAnimation = 'slide-from-left-animation';
-                            pages.exitAnimation = 'slide-right-animation';
+                            if (LibraryBrowser.animatePaperTabs()) {
+                                pages.entryAnimation = 'slide-from-left-animation';
+                                pages.exitAnimation = 'slide-right-animation';
+                            }
                             tabs.selectPrevious();
                         }
                     }
                 });
             });
-        },
-
-        enableFullPaperTabs: function () {
-            return AppInfo.isNativeApp;
         },
 
         navigateOnLibraryTabSelect: function () {

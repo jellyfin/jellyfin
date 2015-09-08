@@ -1,5 +1,5 @@
 ﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
-    background-color: #1b1b1b;
+    background-color: #1d1d1d;
 }
 
     .viewMenuBar.semiTransparent {
@@ -7,7 +7,7 @@
     }
 
 .background-theme-b {
-    background-color: #242424;
+    background-color: #2d2d2d;
 }
 
 .backdropContainer .pageBackground {

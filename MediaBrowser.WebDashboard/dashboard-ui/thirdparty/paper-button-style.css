@@ -281,19 +281,19 @@ paper-fab {
     vertical-align: middle;
 }
 
-paper-fab.mini {
-    width: 22px;
-    height: 22px;
-}
-
-paper-fab.subdued {
-    background: #484848;
-    color: #fff;
-}
-
-    paper-fab.subdued paper-material.keyboard-focus {
-        background: #686868 !important;
+    paper-fab.mini {
+        width: 22px;
+        height: 22px;
     }
+
+    paper-fab.subdued {
+        background: #484848;
+        color: #fff;
+    }
+
+        paper-fab.subdued paper-material.keyboard-focus {
+            background: #686868 !important;
+        }
 
 .ui-page-theme-b paper-fab[disabled].subdued {
     background: #222;
@@ -348,12 +348,13 @@ paper-menu-item {
     -webkit-flex: none;
     flex: none;
     flex-shrink: 0;
+    flex-grow: 1;
 }
 
 .libraryViewNav paper-tabs {
     flex: none;
     flex-shrink: 0;
-    flex-grow: 0;
+    flex-grow: 1;
     overflow-x: visible !important;
 }
 
@@ -361,20 +362,20 @@ paper-menu-item {
     display: inline-block !important;
     flex: none;
     flex-shrink: 0;
-    flex-grow: 0;
+    flex-grow: 1;
 }
 
 .ui-page-theme-b paper-item-body [secondary] {
     color: #aaa;
 }
 
-    .ui-page-theme-b paper-checkbox paper-ripple {
-        color: #fff !important;
-    }
+.ui-page-theme-b paper-checkbox paper-ripple {
+    color: #fff !important;
+}
 
-    .ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {
-        color: inherit;
-    }
+.ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {
+    color: inherit;
+}
 
 .ui-page-theme-b .paperCheckboxFieldDescription {
     color: #ccc;

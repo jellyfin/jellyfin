@@ -2767,236 +2767,6 @@ $.widget( "mobile.page", {
 
 })( jQuery );
 
-
-
-(function( $, window, undefined ) {
-
-	// TODO remove direct references to $.mobile and properties, we should
-	//      favor injection with params to the constructor
-	$.mobile.Transition = function() {
-		this.init.apply( this, arguments );
-	};
-
-	$.extend($.mobile.Transition.prototype, {
-		toPreClass: " ui-page-pre-in",
-
-		init: function( name, reverse, $to, $from ) {
-			$.extend(this, {
-				name: name,
-				reverse: reverse,
-				$to: $to,
-				$from: $from,
-				deferred: new $.Deferred()
-			});
-		},
-
-		cleanFrom: function() {
-			this.$from
-				.removeClass( $.mobile.activePageClass + " out in reverse " + this.name )
-				.height( "" );
-		},
-
-		// NOTE overridden by child object prototypes, noop'd here as defaults
-		beforeDoneIn: function() {},
-		beforeDoneOut: function() {},
-		beforeStartOut: function() {},
-
-		doneIn: function() {
-			this.beforeDoneIn();
-
-			this.$to.removeClass( "out in reverse " + this.name ).height( "" );
-
-			this.toggleViewportClass();
-
-			// In some browsers (iOS5), 3D transitions block the ability to scroll to the desired location during transition
-			// This ensures we jump to that spot after the fact, if we aren't there already.
-			if ( $.mobile.window.scrollTop() !== this.toScroll ) {
-				this.scrollPage();
-			}
-			if ( !this.sequential ) {
-				this.$to.addClass( $.mobile.activePageClass );
-			}
-			this.deferred.resolve( this.name, this.reverse, this.$to, this.$from, true );
-		},
-
-		doneOut: function( screenHeight, reverseClass, none, preventFocus ) {
-			this.beforeDoneOut();
-			this.startIn( screenHeight, reverseClass, none, preventFocus );
-		},
-
-		hideIn: function( callback ) {
-			// Prevent flickering in phonegap container: see comments at #4024 regarding iOS
-			this.$to.css( "z-index", -10 );
-			callback.call( this );
-			this.$to.css( "z-index", "" );
-		},
-
-		scrollPage: function() {
-
-		    //if we are hiding the url bar or the page was previously scrolled scroll to hide or return to position
-			if ( $.mobile.hideUrlBar || this.toScroll !== $.mobile.defaultHomeScroll ) {
-				window.scrollTo( 0, this.toScroll );
-			}
-		},
-
-		startIn: function( screenHeight, reverseClass, none, preventFocus ) {
-			this.hideIn(function() {
-				this.$to.addClass( $.mobile.activePageClass + this.toPreClass );
-
-				// Send focus to page as it is now display: block
-				if ( !preventFocus ) {
-					$.mobile.focusPage( this.$to );
-				}
-
-				// Set to page height
-				this.$to.height( screenHeight + this.toScroll );
-
-                if ( !none ) {
-                    this.scrollPage();
-                }
-			});
-
-			this.$to
-				.removeClass( this.toPreClass )
-				.addClass( this.name + " in " + reverseClass );
-
-			if ( !none ) {
-				this.$to.animationComplete( $.proxy(function() {
-					this.doneIn();
-				}, this ));
-			} else {
-				this.doneIn();
-			}
-
-		},
-
-		startOut: function( screenHeight, reverseClass, none ) {
-			this.beforeStartOut( screenHeight, reverseClass, none );
-
-			// Set the from page's height and start it transitioning out
-			// Note: setting an explicit height helps eliminate tiling in the transitions
-			this.$from
-				.height( screenHeight + $.mobile.window.scrollTop() )
-				.addClass( this.name + " out" + reverseClass );
-		},
-
-		toggleViewportClass: function() {
-			$.mobile.pageContainer.toggleClass( "ui-mobile-viewport-transitioning viewport-" + this.name );
-		},
-
-		transition: function() {
-			// NOTE many of these could be calculated/recorded in the constructor, it's my
-			//      opinion that binding them as late as possible has value with regards to
-			//      better transitions with fewer bugs. Ie, it's not guaranteed that the
-			//      object will be created and transition will be run immediately after as
-			//      it is today. So we wait until transition is invoked to gather the following
-			var none,
-				reverseClass = this.reverse ? " reverse" : "",
-				screenHeight = $.mobile.getScreenHeight(),
-				maxTransitionOverride = $.mobile.maxTransitionWidth !== false &&
-					$.mobile.window.width() > $.mobile.maxTransitionWidth;
-
-			this.toScroll = $.mobile.navigate.history.getActive().lastScroll || $.mobile.defaultHomeScroll;
-
-			none = !$.support.cssTransitions || !$.support.cssAnimations ||
-				maxTransitionOverride || !this.name || this.name === "none" ||
-				Math.max( $.mobile.window.scrollTop(), this.toScroll ) >
-					$.mobile.getMaxScrollForTransition();
-
-			this.toggleViewportClass();
-
-			if ( this.$from && !none ) {
-				this.startOut( screenHeight, reverseClass, none );
-			} else {
-				this.doneOut( screenHeight, reverseClass, none, true );
-			}
-
-			return this.deferred.promise();
-		}
-	});
-})( jQuery, this );
-
-
-(function( $ ) {
-
-	$.mobile.SerialTransition = function() {
-		this.init.apply(this, arguments);
-	};
-
-	$.extend($.mobile.SerialTransition.prototype, $.mobile.Transition.prototype, {
-		sequential: true,
-
-		beforeDoneOut: function() {
-			if ( this.$from ) {
-				this.cleanFrom();
-			}
-		},
-
-		beforeStartOut: function( screenHeight, reverseClass, none ) {
-			this.$from.animationComplete($.proxy(function() {
-				this.doneOut( screenHeight, reverseClass, none );
-			}, this ));
-		}
-	});
-
-})( jQuery );
-
-
-(function( $ ) {
-
-	$.mobile.ConcurrentTransition = function() {
-		this.init.apply(this, arguments);
-	};
-
-	$.extend($.mobile.ConcurrentTransition.prototype, $.mobile.Transition.prototype, {
-		sequential: false,
-
-		beforeDoneIn: function() {
-			if ( this.$from ) {
-				this.cleanFrom();
-			}
-		},
-
-		beforeStartOut: function( screenHeight, reverseClass, none ) {
-			this.doneOut( screenHeight, reverseClass, none );
-		}
-	});
-
-})( jQuery );
-
-
-(function( $ ) {
-
-	// generate the handlers from the above
-	var defaultGetMaxScrollForTransition = function() {
-		return $.mobile.getScreenHeight() * 3;
-	};
-
-	//transition handler dictionary for 3rd party transitions
-	$.mobile.transitionHandlers = {
-		"sequential": $.mobile.SerialTransition,
-		"simultaneous": $.mobile.ConcurrentTransition
-	};
-
-	// Make our transition handler the public default.
-	$.mobile.defaultTransitionHandler = $.mobile.transitionHandlers.sequential;
-
-	$.mobile.transitionFallbacks = {};
-
-	// If transition is defined, check if css 3D transforms are supported, and if not, if a fallback is specified
-	$.mobile._maybeDegradeTransition = function( transition ) {
-		if ( transition && !$.support.cssTransform3d && $.mobile.transitionFallbacks[ transition ] ) {
-			transition = $.mobile.transitionFallbacks[ transition ];
-		}
-
-		return transition;
-	};
-
-	// Set the getMaxScrollForTransition to default if no implementation was set by user
-	$.mobile.getMaxScrollForTransition = $.mobile.getMaxScrollForTransition || defaultGetMaxScrollForTransition;
-
-})( jQuery );
-
 (function( $, undefined ) {
 
     var pageCache = {};
@@ -3788,8 +3558,7 @@ $.widget( "mobile.page", {
 				active, activeIsInitialPage,
 				historyDir, pageTitle, isDialog,
 				alreadyThere, newPageTitle,
-				params,	cssTransitionDeferred,
-				beforeTransition;
+				params;
 
 			triggerData.prevPage = settings.fromPage;
 
@@ -3830,8 +3599,7 @@ $.widget( "mobile.page", {
 			// the developer that turns on the allowSamePageTransitiona option to
 			// either turn off transition animations, or make sure that an appropriate
 			// animation transition is used.
-			if ( fromPage && fromPage[0] === toPage[0] &&
-				!settings.allowSamePageTransition ) {
+			if ( fromPage && fromPage[0] === toPage[0] ) {
 
 				this._triggerWithDeprecated( "transition", triggerData );
 				this._triggerWithDeprecated( "change", triggerData );
@@ -3908,9 +3676,6 @@ $.widget( "mobile.page", {
 				toPage.jqmData( "title", pageTitle );
 			}
 
-			// Make sure we have a transition defined.
-			settings.transition = "none";
-
 			//add page to history stack if it's not back or forward
 			if ( !historyDir && alreadyThere ) {
 				$.mobile.navigate.history.getActive().pageUrl = pageUrl;
@@ -3927,7 +3692,6 @@ $.widget( "mobile.page", {
 
 				// TODO the property names here are just silly
 				params = {
-					transition: settings.transition,
 					title: pageTitle,
 					pageUrl: pageUrl,
 					role: settings.role
@@ -3972,10 +3736,6 @@ $.widget( "mobile.page", {
 	// The following handlers should be bound after mobileinit has been triggered
 	// the following deferred is resolved in the init file
 	$.mobile.navreadyDeferred = $.Deferred();
-
-	//these variables make all page containers use the same queue and only navigate one at a time
-	// queue to hold simultanious page transitions
-	var pageTransitionQueue = [];
 
 })( jQuery );
 
@@ -4043,11 +3803,6 @@ $.widget( "mobile.page", {
 	$.mobile.focusPage = function ( page ) {
 	};
 
-	// No-op implementation of transition degradation
-	$.mobile._maybeDegradeTransition = $.mobile._maybeDegradeTransition || function( transition ) {
-		return transition;
-	};
-
 	// Exposed $.mobile methods
 
 	$.mobile.changePage = function( to, options ) {
@@ -4055,7 +3810,6 @@ $.widget( "mobile.page", {
 	};
 
 	$.mobile.changePage.defaults = {
-		transition: undefined,
 		reverse: false,
 		changeHash: true,
 		fromHashChange: false,
@@ -4064,8 +3818,7 @@ $.widget( "mobile.page", {
 		pageContainer: undefined,
 		showLoadMsg: true, //loading message shows by default when pages are being fetched during changePage
 		dataUrl: undefined,
-		fromPage: undefined,
-		allowSamePageTransition: false
+		fromPage: undefined
 	};
 
 	function parentWithTag(elem, tagName) {
@@ -4095,7 +3848,7 @@ $.widget( "mobile.page", {
 
 				baseUrl, href,
 				useDefaultUrlHandling, isExternal,
-				transition, reverse, role;
+				reverse, role;
 
 			// If there is no link associated with the click or its not a left
 			// click we want to ignore the click
@@ -4163,7 +3916,6 @@ $.widget( "mobile.page", {
 			}
 
 			//use ajax
-			transition = $link.jqmData( "transition" );
 			reverse = $link.jqmData( "direction" ) === "reverse" ||
 						// deprecated - remove by 1.0
 						$link.jqmData( "back" );
@@ -4171,7 +3923,7 @@ $.widget( "mobile.page", {
 			//this may need to be more specific as we use data-rel more
 			role = link.getAttribute("data-" + $.mobile.ns + "rel") || undefined;
 
-			$.mobile.changePage( href, { transition: transition, reverse: reverse, role: role, link: $link } );
+			$.mobile.changePage( href, { reverse: reverse, role: role, link: $link } );
 			event.preventDefault();
 		});
 
@@ -4244,7 +3996,7 @@ $.widget( "mobile.page", {
 		initializePage: function() {
 			// find present pages
 			var path = $.mobile.path,
-				$pages = $("div[data-role='page']"),
+				$pages = $(document.querySelectorAll("div[data-role='page']")),
 				hash = path.stripHash( path.stripQueryParams(path.parseLocation().hash) ),
 				theLocation = $.mobile.path.parseLocation(),
 				hashPage = hash ? document.getElementById( hash ) : undefined;
@@ -4290,7 +4042,6 @@ $.widget( "mobile.page", {
 				}
 
 				$.mobile.changePage( $.mobile.firstPage, {
-					transition: "none",
 					reverse: true,
 					changeHash: false,
 					fromHashChange: true

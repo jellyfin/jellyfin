@@ -613,8 +613,7 @@
 		},
 
 		_openPrerequisitesComplete: function () {
-			var id = this.element.attr("id"),
-				firstFocus = this._ui.container.find(":focusable").first();
+			var id = this.element.attr("id");
 
 			this._ui.container.addClass("ui-popup-active");
 			this._isOpen = true;
@@ -623,9 +622,6 @@
 			// Check to see if currElement is not a child of the container.  If it's not, blur
 			if (!$.contains(this._ui.container[0], this.document[0].activeElement)) {
 				this._safelyBlur(this.document[0].activeElement);
-			}
-			if (firstFocus.length > 0) {
-				this._ui.focusElement = firstFocus;
 			}
 			this._ignoreResizeEvents();
 			if (id) {

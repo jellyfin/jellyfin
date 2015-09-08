@@ -1551,6 +1551,16 @@ var Dashboard = {
             }
         }
 
+        if (typeof ($.browser.androidVersion) == 'number' && !isNaN($.browser.androidVersion)) {
+            if ($.browser.androidVersion < 5) {
+                quality -= 10;
+
+                if ($.browser.androidVersion < 4.4) {
+                    quality -= 10;
+                }
+            }
+        }
+
         return quality;
     },
 

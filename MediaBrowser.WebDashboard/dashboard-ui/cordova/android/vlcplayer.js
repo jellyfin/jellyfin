@@ -140,6 +140,7 @@
             if (tIndex != -1) {
                 startPosMs = val.substring(tIndex + 3);
                 startPosMs = parseFloat(startPosMs) * 1000;
+                val = val.split('#')[0];
             }
 
             if (options.type == 'audio') {
