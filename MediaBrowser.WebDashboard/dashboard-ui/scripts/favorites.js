@@ -111,16 +111,16 @@
 
         var i, length;
 
-        var elem = $('.sections', page);
+        var elem = page.querySelector('.sections');
 
-        if (!elem.html().length) {
+        if (!elem.innerHTML) {
             var html = '';
             for (i = 0, length = sections.length; i < length; i++) {
 
                 html += '<div class="homePageSection section' + sections[i].id + '"></div>';
             }
 
-            elem.html(html);
+            elem.innerHTML = html;
         }
 
         var promises = [];

@@ -1211,7 +1211,7 @@
         });
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    pageClassOn('pageinit', "libraryPage", function () {
 
         var page = this;
 
@@ -1270,7 +1270,9 @@
             $(itemsContainers[i]).createCardMenus();
         }
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    });
+
+    pageClassOn('pagebeforeshow', "libraryPage", function () {
 
         var page = this;
 

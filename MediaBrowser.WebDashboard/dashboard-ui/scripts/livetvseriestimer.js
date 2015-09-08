@@ -141,87 +141,15 @@
 
         var timers = result.Items;
 
-        var html = '';
+        var html = LiveTvHelpers.getTimersHtml(timers);
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+        var elem = $('.scheduleTab', page).html(html);
 
-        var index = '';
+        $('.btnDeleteTimer', elem).on('click', function () {
 
-        for (var i = 0, length = timers.length; i < length; i++) {
+            var id = this.getAttribute('data-timerid');
 
-            var timer = timers[i];
-
-            var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
-
-            if (startDateText != index) {
-                html += '<li data-role="list-divider">' + startDateText + '</li>';
-                index = startDateText;
-            }
-
-            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
-
-            var program = timer.ProgramInfo || {};
-            var imgUrl;
-
-            var programImages = program.ImageTags || {};
-            if (programImages.Primary) {
-
-                imgUrl = ApiClient.getScaledImageUrl(program.Id, {
-                    height: 80,
-                    tag: programImages.Primary,
-                    type: "Primary"
-                });
-            } else {
-                imgUrl = "css/images/items/searchhintsv2/tv.png";
-            }
-
-            html += '<img src="css/images/items/searchhintsv2/tv.png" style="display:none;">';
-            html += '<div class="ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');width:5em;height:5em;background-repeat:no-repeat;background-position:center center;background-size: cover;"></div>';
-
-            html += '<h3>';
-            html += program.EpisodeTitle || timer.Name;
-            html += '</h3>';
-
-            html += '<p>';
-
-            if (program.IsLive) {
-                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
-            }
-            else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
-            }
-            else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
-            }
-
-            html += LibraryBrowser.getDisplayTime(timer.StartDate);
-            html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
-            html += '</p>';
-
-
-            if (timer.SeriesTimerId) {
-                html += '<div class="ui-li-aside" style="right:0;">';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '</div>';
-            }
-
-            html += '</a>';
-
-            html += '<a data-timerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnCancelTimer">' + Globalize.translate('ButonCancelRecording') + '</a>';
-
-            html += '</li>';
-        }
-
-        html += '</ul>';
-
-        var elem = $('.scheduleTab', page).html(html).trigger('create');
-
-        $('.btnCancelTimer', elem).on('click', function () {
-
-            deleteTimer(page, this.getAttribute('data-timerid'));
-
+            deleteTimer(page, id);
         });
     }
 

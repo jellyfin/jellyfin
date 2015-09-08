@@ -59,7 +59,7 @@
         });
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    pageClassOn('pageinit', "libraryPage", function () {
 
         var page = this;
 
@@ -78,7 +78,6 @@
         } else {
             init(page, pickers[0]);
         }
-
     });
 
     $.fn.alphaValue = function (val) {

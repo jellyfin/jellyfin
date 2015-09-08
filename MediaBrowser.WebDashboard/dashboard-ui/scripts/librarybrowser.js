@@ -315,7 +315,12 @@
 
                 if (LibraryBrowser.enableFullPaperTabs()) {
 
-                    page.querySelector('paper-tabs').selected = selected;
+                    var tabs = page.querySelector('paper-tabs');
+                    if (tabs.selected) {
+                        // showTab was called
+                        return;
+                    }
+                    tabs.selected = selected;
 
                 } else {
                     page.querySelector('neon-animated-pages').selected = selected;

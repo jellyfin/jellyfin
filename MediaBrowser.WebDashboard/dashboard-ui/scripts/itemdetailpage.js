@@ -1157,7 +1157,7 @@
                 smallIcon: true
             });
 
-            $('#themeSongsContent', page).html(html);
+            page.querySelector('#themeSongsContent').innerHTML = html;
         } else {
             $('#themeSongsCollapsible', page).hide();
         }

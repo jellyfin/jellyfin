@@ -204,7 +204,7 @@
         }
     }
 
-    Events.on(document, 'pagebeforeshow', ".page", function () {
+    pageClassOn('pagebeforeshow', "page", function () {
 
         var page = this;
 
