@@ -740,7 +740,7 @@
         });
     }
 
-    $(document).on('pageinit', "#nowPlayingPage", function () {
+    pageIdOn('pageinit', "nowPlayingPage", function () {
 
         var page = this;
 
@@ -768,7 +768,8 @@
             updateCastIcon(page);
         });
 
-    }).on('pagebeforeshow', "#nowPlayingPage", function () {
+    });
+    pageIdOn('pagebeforeshow', "nowPlayingPage", function () {
 
         $(document.body).addClass('hiddenViewMenuBar').addClass('hiddenNowPlayingBar');
         var page = this;
@@ -787,7 +788,8 @@
 
         updateCastIcon(page);
 
-    }).on('pagebeforehide', "#nowPlayingPage", function () {
+    });
+    pageIdOn('pagebeforehide', "nowPlayingPage", function () {
 
         releaseCurrentPlayer();
 
