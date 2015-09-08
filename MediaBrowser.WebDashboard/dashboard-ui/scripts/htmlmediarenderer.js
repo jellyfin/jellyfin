@@ -489,6 +489,8 @@
                     $(elem).remove();
                 }
             }
+
+            showStatusBar();
         };
 
         self.supportsTextTracks = function () {
