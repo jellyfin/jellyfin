@@ -208,24 +208,21 @@
 
         var page = this;
 
-        if (!page.classList.contains('staticBackdropPage')) {
+        if (page.classList.contains('backdropPage')) {
 
-            if (page.classList.contains('backdropPage')) {
+            if (enabled()) {
+                var type = page.getAttribute('data-backdroptype');
 
-                if (enabled()) {
-                    var type = page.getAttribute('data-backdroptype');
+                var parentId = page.classList.contains('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
 
-                    var parentId = page.classList.contains('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
+                showBackdrop(type, parentId);
 
-                    showBackdrop(type, parentId);
-
-                } else {
-                    page.classList.remove('backdropPage');
-                    clearBackdrop();
-                }
             } else {
+                page.classList.remove('backdropPage');
                 clearBackdrop();
             }
+        } else {
+            clearBackdrop();
         }
 
     });

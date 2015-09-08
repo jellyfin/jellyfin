@@ -135,10 +135,12 @@
             }
 
             if (typeof ($.browser.androidVersion) == 'number' && !isNaN($.browser.androidVersion)) {
-                return $.browser.androidVersion >= 5;
+                if ($.browser.androidVersion < 5) {
+                    return false;
+                }
             }
 
-            return true;
+            return false;
         },
 
         configureSwipeTabs: function (ownerpage, tabs, pages) {
@@ -230,9 +232,8 @@
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
-                tabs.noSlide = true;
-
                 if ($.browser.safari) {
+                    tabs.noSlide = true;
                     tabs.noBar = true;
                 } else {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
@@ -262,11 +263,10 @@
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
                 var pgs = this;
-                var delay = LibraryBrowser.animatePaperTabs() ? 500 : 0;
+                var delay = LibraryBrowser.animatePaperTabs() || !tabs.noSlide ? 500 : 0;
 
                 setTimeout(function () {
                     $(pgs).trigger('tabchange');
-                    LibraryBrowser.fixAlphabetPicker(pages);
                 }, delay);
             });
 
@@ -274,20 +274,6 @@
                 tabs.addEventListener('iron-select', function () {
                     pages.selected = this.selected;
                 });
-            }
-        },
-
-        fixAlphabetPicker: function (parent) {
-
-            if (!$.browser.android || !AppInfo.isNativeApp) {
-                return;
-            }
-
-            var pickers = parent.querySelectorAll('.alphabetPicker');
-            for (var i = 0, length = pickers.length; i < length; i++) {
-                var picker = pickers[i];
-                picker.classList.add('hide');
-                picker.classList.remove('hide');
             }
         },
 
