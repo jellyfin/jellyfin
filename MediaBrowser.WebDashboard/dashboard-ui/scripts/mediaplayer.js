@@ -912,11 +912,18 @@
 
                     if (mediaSource.SupportsDirectStream) {
 
-                        mediaUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, {
+                        var directOptions = {
                             Static: true,
                             mediaSourceId: mediaSource.Id,
+                            deviceId: ApiClient.deviceId(),
                             api_key: ApiClient.accessToken()
-                        });
+                        };
+
+                        if (mediaSource.LiveStreamId) {
+                            directOptions.LiveStreamId = mediaSource.LiveStreamId;
+                        }
+
+                        mediaUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, directOptions);
                         mediaUrl += seekParam;
 
                         playMethod = 'DirectStream';
@@ -957,12 +964,19 @@
 
                         var outputContainer = (mediaSource.Container || '').toLowerCase();
 
-                        mediaUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, {
+                        var directOptions = {
+                            Static: true,
                             mediaSourceId: mediaSource.Id,
                             deviceId: ApiClient.deviceId(),
                             api_key: ApiClient.accessToken()
-                        });
-                        mediaUrl += "&static=true" + seekParam;
+                        };
+
+                        if (mediaSource.LiveStreamId) {
+                            directOptions.LiveStreamId = mediaSource.LiveStreamId;
+                        }
+
+                        mediaUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, directOptions);
+                        mediaUrl += seekParam;
 
                         playMethod = 'DirectStream';
 
