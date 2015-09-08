@@ -49,10 +49,6 @@
         background-color: rgba(0, 0, 0, .7);
     }
 
-.videoControlButtons {
-    padding: 0 .5em;
-}
-
 .videoTopControls {
     padding: 0 1em;
     background-color: rgba(0, 0, 0, .5);
@@ -70,8 +66,8 @@
 }
 
     .videoAdvancedControls iron-icon {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
     }
 
 .nowPlayingInfo {
@@ -97,6 +93,36 @@
     width: 70%;
     font-weight: normal;
     font-size: 14px;
+}
+
+.videoPositionSlider {
+    width: 300px;
+    vertical-align: middle;
+    margin-left: -1em;
+}
+
+@media all and (max-width: 440px) {
+    .videoPositionSlider {
+        width: 240px;
+    }
+}
+
+@media all and (max-width: 400px) {
+    .videoPositionSlider {
+        width: 220px;
+    }
+}
+
+@media all and (max-width: 350px) {
+    .videoPositionSlider {
+        width: 200px;
+    }
+}
+
+@media all and (max-width: 320px) {
+    .videoPositionSlider {
+        width: 170px;
+    }
 }
 
 @media all and (max-width: 1200px) {
@@ -202,7 +228,6 @@
 @media all and (max-width: 1200px), all and (max-height: 720px) {
     .videoControls .currentTime {
         margin-right: 0;
-        min-width: 120px;
     }
 }
 

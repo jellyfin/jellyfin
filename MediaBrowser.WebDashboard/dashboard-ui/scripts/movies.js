@@ -133,7 +133,7 @@
                     lazy: true,
                     cardLayout: true,
                     showDetailsMenu: true
-                });
+                });re
             }
             else if (view == "Timeline") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -168,7 +168,7 @@
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
                 getPageData().view = layout;
                 LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             // On callback make sure to set StartIndex = 0

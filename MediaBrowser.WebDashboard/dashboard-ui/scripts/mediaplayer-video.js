@@ -654,7 +654,7 @@
             // Embedding onclicks due to issues not firing in cordova safari
             html += '<paper-icon-button icon="audiotrack" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"></paper-icon-button>';
 
-            html += '<paper-icon-button icon="subtitles" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
+            html += '<paper-icon-button icon="closed-caption" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
 
             html += '<paper-icon-button icon="settings" class="mediaButton videoQualityButton" onclick="MediaPlayer.showQualityFlyout();"></paper-icon-button>';
 
@@ -679,7 +679,7 @@
 
             html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
-            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="width:300px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
+            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider"></paper-slider>';
 
             html += '<div class="currentTime">--:--</div>';
 
@@ -953,10 +953,10 @@
 
             var requiresNativeControls = !mediaRenderer.enableCustomVideoControls();
 
-            if (requiresNativeControls) {
+            if (requiresNativeControls || AppInfo.isNativeApp) {
                 $('#video-fullscreenButton', videoControls).hide();
             } else {
-                $('#video-fullscreenButton', videoControls).show();
+                $('#video-fullscreenButton', videoControls).hide();
             }
 
             if (AppInfo.hasPhysicalVolumeButtons) {

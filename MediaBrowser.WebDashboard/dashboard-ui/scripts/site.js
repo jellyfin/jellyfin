@@ -1763,7 +1763,7 @@ var AppInfo = {};
 
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
-
+        AppInfo.hasPhysicalVolumeButtons = true;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsFullScreen = isCordova && isAndroid;

@@ -9,7 +9,20 @@
         var mediaElement;
         var self = this;
 
+        function hideStatusBar() {
+            if (options.type == 'video' && window.StatusBar) {
+                StatusBar.hide();
+            }
+        }
+
+        function showStatusBar() {
+            if (options.type == 'video' && window.StatusBar) {
+                StatusBar.show();
+            }
+        }
+
         function onEnded() {
+            showStatusBar();
             $(self).trigger('ended');
         }
 
@@ -66,6 +79,7 @@
             var errorCode = this.error ? this.error.code : '';
             Logger.log('Media element error code: ' + errorCode);
 
+            showStatusBar();
             $(self).trigger('error');
         }
 
@@ -141,6 +155,8 @@
         }
 
         function onOneVideoPlaying() {
+
+            hideStatusBar();
 
             var requiresNativeControls = !self.enableCustomVideoControls();
 
@@ -552,6 +568,10 @@
         };
 
         self.enableCustomVideoControls = function () {
+
+            if (AppInfo.isNativeApp && $.browser.safari) {
+                return true;
+            }
 
             return self.canAutoPlayVideo() && !$.browser.mobile;
         };

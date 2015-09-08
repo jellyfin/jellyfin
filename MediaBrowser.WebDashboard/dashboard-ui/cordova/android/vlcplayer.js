@@ -186,8 +186,6 @@
 
                 playerState.currentSrc = val;
                 self.report('playing', null, startPosMs, false, 100);
-
-                playerState.currentSrc = val;
             }
         };
 
@@ -256,13 +254,9 @@
             return deferred.promise();
         };
 
-        self.onActivityClosed = function (wasStopped, hasError, endPositionMs, currentSrc) {
+        self.onActivityClosed = function (wasStopped, hasError, endPositionMs) {
 
             playerState.currentTime = endPositionMs;
-
-            if (currentSrc) {
-                playerState.currentSrc = currentSrc;
-            }
 
             if (wasStopped) {
                 MediaPlayer.stop(false);

@@ -100,12 +100,9 @@
 
             if (AppInfo.isNativeApp) {
                 cacheDuration = 300000;
-            }
-            else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
+            } else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
-            }
-
-            else {
+            } else {
                 cacheDuration = 60000;
             }
 
@@ -237,8 +234,7 @@
 
                 if ($.browser.safari) {
                     tabs.noBar = true;
-                }
-                else {
+                } else {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
                 }
 
@@ -269,8 +265,8 @@
                 var delay = LibraryBrowser.animatePaperTabs() ? 500 : 0;
 
                 setTimeout(function () {
-
                     $(pgs).trigger('tabchange');
+                    LibraryBrowser.fixAlphabetPicker(pages);
                 }, delay);
             });
 
@@ -278,6 +274,20 @@
                 tabs.addEventListener('iron-select', function () {
                     pages.selected = this.selected;
                 });
+            }
+        },
+
+        fixAlphabetPicker: function (parent) {
+
+            if (!$.browser.android || !AppInfo.isNativeApp) {
+                return;
+            }
+
+            var pickers = parent.querySelectorAll('.alphabetPicker');
+            for (var i = 0, length = pickers.length; i < length; i++) {
+                var picker = pickers[i];
+                picker.classList.add('hide');
+                picker.classList.remove('hide');
             }
         },
 

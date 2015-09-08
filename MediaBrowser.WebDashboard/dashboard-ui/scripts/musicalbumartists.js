@@ -183,7 +183,7 @@
             reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
             var query = getQuery();
 
