@@ -244,7 +244,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                         if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                         {
-                            if (ConfigurationManager.Configuration.EnableVideoFrameAnalysis && mediaInfo.Size.HasValue && mediaInfo.Size.Value <= ConfigurationManager.Configuration.VideoFrameAnalysisLimitBytes)
+                            if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
                             {
                                 foreach (var stream in mediaInfo.MediaStreams)
                                 {

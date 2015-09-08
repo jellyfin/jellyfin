@@ -222,8 +222,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisableXmlSavers { get; set; }
         public bool EnableWindowsShortcuts { get; set; }
 
-        public bool EnableVideoFrameAnalysis { get; set; }
-        public long VideoFrameAnalysisLimitBytes { get; set; }
+        public bool EnableVideoFrameByFrameAnalysis { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -273,8 +272,7 @@ namespace MediaBrowser.Model.Configuration
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            EnableVideoFrameAnalysis = true;
-            VideoFrameAnalysisLimitBytes = 800000000;
+            EnableVideoFrameByFrameAnalysis = false;
 
             InsecureApps9 = new[]
             {
