@@ -316,7 +316,7 @@
     "LabelSeasonNumber": "Staffelnummer:",
     "HeaderChannels": "Kan\u00e4le",
     "HeaderMediaFolders": "Medienverzeichnisse",
-    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
+    "HeaderBlockItemsWithNoRating": "Blockiere Inhalte mit fehlender Altersfreigabe",
     "OptionBlockOthers": "Andere",
     "OptionBlockTvShows": "TV Serien",
     "OptionBlockTrailers": "Trailer",
@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "Trenne von Player",
     "ConfirmEndPlayerSession": "M\u00f6chten Sie die App auf dem entfernten Ger\u00e4t beenden?",
     "ButtonYes": "Ja",
-    "ButtonNo": "Nein"
+    "ButtonNo": "Nein",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }

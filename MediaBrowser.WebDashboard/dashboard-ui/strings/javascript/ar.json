@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "Disconnect from Player",
     "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
     "ButtonYes": "Yes",
-    "ButtonNo": "No"
+    "ButtonNo": "No",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }

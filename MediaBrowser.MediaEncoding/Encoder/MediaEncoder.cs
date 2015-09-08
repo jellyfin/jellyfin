@@ -7,6 +7,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
@@ -247,10 +248,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             {
                                 foreach (var stream in mediaInfo.MediaStreams)
                                 {
-                                    if (stream.Type == MediaStreamType.Video &&
-                                        string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
-                                        !stream.IsInterlaced &&
-                                        !(stream.IsAnamorphic ?? false))
+                                    if (EnableKeyframeExtraction(mediaInfo, stream))
                                     {
                                         try
                                         {
@@ -287,6 +285,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
         }
 
+        private bool EnableKeyframeExtraction(MediaSourceInfo mediaSource, MediaStream videoStream)
+        {
+            if (videoStream.Type == MediaStreamType.Video && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
+                !videoStream.IsInterlaced &&
+                !(videoStream.IsAnamorphic ?? false))
+            {
+                var audioStreams = mediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
+
+                // If it has aac audio then it will probably direct stream anyway, so don't bother with this
+                if (audioStreams.Count == 1 && string.Equals(audioStreams[0].Codec, "aac", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
         private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
         {
             inputPath = inputPath.Split(new[] { ':' }, 2).Last().Trim('"');
@@ -313,7 +330,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             using (process)
             {
@@ -339,7 +356,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 process.WaitForExit();
 
-                _logger.Debug("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
+                _logger.Info("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
                 //_logger.Debug("Found keyframes {0}", string.Join(",", lines.ToArray()));
                 return lines;
             }

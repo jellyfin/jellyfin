@@ -46,6 +46,11 @@
         store.order(id);
     }
 
+    function restorePurchase(id) {
+        id = normalizeId(id);
+        store.refresh();
+    }
+
     function validateProduct(product, callback) {
 
         // product attributes:
@@ -123,7 +128,8 @@
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         getProductInfo: getProduct,
-        beginPurchase: beginPurchase
+        beginPurchase: beginPurchase,
+        restorePurchase: restorePurchase
     };
 
     initializeStore();

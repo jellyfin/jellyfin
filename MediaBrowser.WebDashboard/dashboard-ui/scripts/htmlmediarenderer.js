@@ -11,6 +11,8 @@
 
         function hideStatusBar() {
             if (options.type == 'video' && window.StatusBar) {
+                StatusBar.backgroundColorByName("black");
+                StatusBar.overlaysWebView(true);
                 StatusBar.hide();
             }
         }
@@ -18,6 +20,7 @@
         function showStatusBar() {
             if (options.type == 'video' && window.StatusBar) {
                 StatusBar.show();
+                StatusBar.overlaysWebView(false);
             }
         }
 

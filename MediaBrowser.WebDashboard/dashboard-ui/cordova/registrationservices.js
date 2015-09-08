@@ -136,6 +136,12 @@
             html += '<p>';
             html += '<paper-button raised class="secondary block btnAppUnlock"><iron-icon icon="check"></iron-icon><span>' + unlockText + '</span></paper-button>';
             html += '</p>';
+
+            if (IapManager.restorePurchase) {
+                html += '<p>';
+                html += '<paper-button raised class="secondary block btnRestorePurchase" style="background-color: #673AB7;"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonRestorePreviousPurchase') + '</span></paper-button>';
+                html += '</p>';
+            }
         }
 
         if (info.enableSupporterUnlock) {
@@ -181,6 +187,11 @@
         $('.btnAppUnlock', elem).on('click', function () {
 
             IapManager.beginPurchase(info.id);
+        });
+
+        $('.btnRestorePurchase', elem).on('click', function () {
+
+            IapManager.restorePurchase(info.id);
         });
 
         $('.btnCancel', elem).on('click', function () {

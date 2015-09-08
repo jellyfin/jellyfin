@@ -316,7 +316,7 @@
     "LabelSeasonNumber": "N\u00famero da temporada:",
     "HeaderChannels": "Canais",
     "HeaderMediaFolders": "Pastas de M\u00eddia",
-    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
+    "HeaderBlockItemsWithNoRating": "Bloquear conte\u00fado que n\u00e3o tenha informa\u00e7\u00e3o de classifica\u00e7\u00e3o:",
     "OptionBlockOthers": "Outros",
     "OptionBlockTvShows": "S\u00e9ries de TV",
     "OptionBlockTrailers": "Trailers",
@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "Desconectar do Reprodutor",
     "ConfirmEndPlayerSession": "Voc\u00ea deseja fechar o app no dispositivo remoto?",
     "ButtonYes": "Sim",
-    "ButtonNo": "N\u00e3o"
+    "ButtonNo": "N\u00e3o",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }

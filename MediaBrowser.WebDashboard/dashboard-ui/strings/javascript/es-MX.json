@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "Desconectar del Reproductor",
     "ConfirmEndPlayerSession": "\u00bfDesea detener la app en el dispositivo remoto?",
     "ButtonYes": "Si",
-    "ButtonNo": "No"
+    "ButtonNo": "No",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }

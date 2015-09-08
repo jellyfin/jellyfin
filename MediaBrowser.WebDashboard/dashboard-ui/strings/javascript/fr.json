@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "D\u00e9connexion du lecteur",
     "ConfirmEndPlayerSession": "Voulez-vous \u00e9teindre l'application sur l'appareil distant",
     "ButtonYes": "Oui",
-    "ButtonNo": "Non"
+    "ButtonNo": "Non",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }

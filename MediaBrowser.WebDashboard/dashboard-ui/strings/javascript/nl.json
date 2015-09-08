@@ -873,5 +873,6 @@
     "HeaderDisconnectFromPlayer": "Loskoppelen van Speler",
     "ConfirmEndPlayerSession": "Wilt u de app op het externe apparaat afsluiten?",
     "ButtonYes": "Ja",
-    "ButtonNo": "Nee"
+    "ButtonNo": "Nee",
+    "ButtonRestorePreviousPurchase": "Restore Purchase"
 }
