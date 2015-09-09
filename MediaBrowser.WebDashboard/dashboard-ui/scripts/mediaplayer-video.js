@@ -568,11 +568,24 @@
             return html;
         }
 
+        function getSeekableDuration() {
+
+            if (self.currentMediaSource && self.currentMediaSource.RunTimeTicks) {
+                return self.currentMediaSource.RunTimeTicks;
+            }
+
+            if (self.currentMediaRenderer) {
+                return self.getCurrentTicks(self.currentMediaRenderer);
+            }
+
+            return null;
+        }
+
         function onPositionSliderChange() {
 
             var newPercent = parseInt(this.value);
 
-            var newPositionTicks = (newPercent / 100) * self.currentMediaSource.RunTimeTicks;
+            var newPositionTicks = (newPercent / 100) * getSeekableDuration();
 
             self.changeStream(Math.floor(newPositionTicks));
         }
@@ -718,12 +731,13 @@
 
             positionSlider._setPinValue = function (value) {
 
-                if (!self.currentMediaSource || !self.currentMediaSource.RunTimeTicks) {
+                var seekableDuration = getSeekableDuration();
+                if (!self.currentMediaSource || !seekableDuration) {
                     this.pinValue = '--:--';
                     return;
                 }
 
-                var ticks = self.currentMediaSource.RunTimeTicks;
+                var ticks = seekableDuration;
                 ticks /= 100;
                 ticks *= value;
 

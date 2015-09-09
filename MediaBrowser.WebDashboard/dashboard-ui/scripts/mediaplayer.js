@@ -503,9 +503,14 @@
 
         self.updateCanClientSeek = function (mediaRenderer) {
 
-            var duration = mediaRenderer.duration();
+            var currentSrc = self.getCurrentSrc(mediaRenderer);
 
-            canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
+            if ((currentSrc || '').indexOf('.m3u8') != -1) {
+                canClientSeek = true;
+            } else {
+                var duration = mediaRenderer.duration();
+                canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
+            }
         };
 
         self.getCurrentSrc = function (mediaRenderer) {
@@ -709,6 +714,7 @@
             ticks = Math.floor(ticks);
 
             var timeText = Dashboard.getDisplayTime(ticks);
+            var mediaRenderer = self.currentMediaRenderer;
 
             if (self.currentDurationTicks) {
 
@@ -719,22 +725,20 @@
                     var percent = ticks / self.currentDurationTicks;
                     percent *= 100;
 
-                    positionSlider.disabled = false;
                     positionSlider.value = percent;
                 }
-            } else {
+            }
 
-                if (positionSlider) {
+            if (positionSlider) {
 
-                    positionSlider.disabled = true;
-                }
+                positionSlider.disabled = !canClientSeek;
             }
 
             if (currentTimeElement) {
                 currentTimeElement.html(timeText);
             }
 
-            var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
             Events.trigger(self, 'positionchange', [state]);
         };
@@ -1552,6 +1556,8 @@
                 PlayState: {}
             };
 
+            var currentSrc = mediaRenderer ? mediaRenderer.currentSrc() : null;
+
             if (mediaRenderer) {
 
                 state.PlayState.VolumeLevel = mediaRenderer.volume() * 100;
@@ -1559,8 +1565,6 @@
                 state.PlayState.IsPaused = mediaRenderer.paused();
                 state.PlayState.PositionTicks = self.getCurrentTicks(mediaRenderer);
                 state.PlayState.RepeatMode = self.getRepeatMode();
-
-                var currentSrc = mediaRenderer.currentSrc();
 
                 if (currentSrc) {
 
@@ -1588,7 +1592,7 @@
                     RunTimeTicks: mediaSource.RunTimeTicks
                 };
 
-                state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+                state.PlayState.CanSeek = (mediaSource.RunTimeTicks || 0) > 0 || canClientSeek;
             }
 
             if (item) {

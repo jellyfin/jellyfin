@@ -79,11 +79,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   position: absolute;
   top: 15px;
   left: 0;
-  height: 2px;
   width: 100%;
   padding: 8px 0;
   margin: -8px 0;
   background-color: var(--paper-slider-bar-color, transparent);
+  --paper-progress-height: 2px;
 }
 
 .ring #sliderBar {

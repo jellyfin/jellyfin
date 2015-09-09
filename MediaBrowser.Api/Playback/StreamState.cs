@@ -74,7 +74,7 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                return ReadInputAtNativeFramerate ? 1000 : 0;
+                return 0;
             }
         }
 

@@ -521,7 +521,6 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/jquery.unveil-custom.js",
                 "apiclient/logger.js",
                 "apiclient/md5.js",
-                "apiclient/sha1.js",
                 "apiclient/store.js",
                 "apiclient/device.js",
                 "apiclient/credentials.js",

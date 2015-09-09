@@ -126,6 +126,17 @@
             return credentialProvider.credentials().ConnectAccessToken;
         };
 
+        self.getServerInfo = function (id) {
+
+            var servers = credentialProvider.credentials().Servers;
+
+            return servers.filter(function () {
+
+                return s.Id == id;
+
+            })[0];
+        };
+
         self.getLastUsedServer = function () {
 
             var servers = credentialProvider.credentials().Servers;
@@ -287,7 +298,9 @@
 
             var server = servers.length ? servers[0] : apiClient.serverInfo();
 
-            server.DateLastAccessed = new Date().getTime();
+            if (options.updateDateLastAccessed !== false) {
+                server.DateLastAccessed = new Date().getTime();
+            }
             server.Id = result.ServerId;
 
             if (saveCredentials) {
@@ -879,6 +892,7 @@
 
             var wakeOnLanSendTime = new Date().getTime();
 
+            options = options || {};
             testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
 
             return deferred.promise();
@@ -987,7 +1001,9 @@
 
             updateServerInfo(server, systemInfo);
 
-            server.DateLastAccessed = new Date().getTime();
+            if (options.updateDateLastAccessed !== false) {
+                server.DateLastAccessed = new Date().getTime();
+            }
             server.LastConnectionMode = connectionMode;
             credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);

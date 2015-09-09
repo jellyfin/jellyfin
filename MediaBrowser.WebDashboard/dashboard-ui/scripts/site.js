@@ -1763,7 +1763,6 @@ var AppInfo = {};
 
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
-        AppInfo.hasPhysicalVolumeButtons = true;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsFullScreen = isCordova && isAndroid;
@@ -2009,6 +2008,8 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
             define("localassetmanager", ["cordova/android/localassetmanager"]);
+        } else if (Dashboard.isRunningInCordova()) {
+            define("localassetmanager", ["cordova/localassetmanager"]);
         } else {
             define("localassetmanager", ["apiclient/localassetmanager"]);
         }
@@ -2135,7 +2136,26 @@ var AppInfo = {};
             return Hammer;
         });
 
-        $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
+        define("cryptojs-sha1", ["apiclient/sha1"]);
+
+        define("contentuploader", ["apiclient/contentuploader"]);
+        define("serversync", ["apiclient/serversync"]);
+        define("multiserversync", ["apiclient/multiserversync"]);
+
+        var deps = [];
+
+        if (!deviceId) {
+            deps.push('cryptojs-sha1');
+        }
+
+        require(deps, function () {
+            $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
+
+            initAfterDependencies(deferred, capabilities);
+        });
+    }
+
+    function initAfterDependencies(deferred, capabilities) {
 
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');

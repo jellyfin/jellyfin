@@ -533,7 +533,7 @@
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    self.getDownloadSpeed(3000000).done(function (bitrate) {
+                    self.getDownloadSpeed(2400000).done(function (bitrate) {
 
                         deferred.resolveWith(null, [Math.round(bitrate * .8)]);
 
@@ -1587,6 +1587,36 @@
             });
         };
 
+        /**
+         * Gets the current server configuration
+         */
+        self.getDevicesOptions = function () {
+
+            var url = self.getUrl("System/Configuration/devices");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Gets the current server configuration
+         */
+        self.getContentUploadHistory = function () {
+
+            var url = self.getUrl("Devices/CameraUploads", {
+                DeviceId: self.deviceId()
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getNamedConfiguration = function (name) {
 
             var url = self.getUrl("System/Configuration/" + name);
@@ -2538,29 +2568,31 @@
 
             var url = self.getUrl("Users/authenticatebyname");
 
-            var postData = {
-                password: CryptoJS.SHA1(password || "").toString(),
-                Username: name
-            };
+            require(["cryptojs-sha1"], function () {
+                var postData = {
+                    password: CryptoJS.SHA1(password || "").toString(),
+                    Username: name
+                };
 
-            self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(postData),
-                dataType: "json",
-                contentType: "application/json"
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: JSON.stringify(postData),
+                    dataType: "json",
+                    contentType: "application/json"
 
-            }).done(function (result) {
+                }).done(function (result) {
 
-                if (self.onAuthenticated) {
-                    self.onAuthenticated(self, result);
-                }
+                    if (self.onAuthenticated) {
+                        self.onAuthenticated(self, result);
+                    }
 
-                deferred.resolveWith(null, [result]);
+                    deferred.resolveWith(null, [result]);
 
-            }).fail(function () {
+                }).fail(function () {
 
-                deferred.reject();
+                    deferred.reject();
+                });
             });
 
             return deferred.promise();
@@ -2574,20 +2606,35 @@
          */
         self.updateUserPassword = function (userId, currentPassword, newPassword) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!userId) {
-                throw new Error("null userId");
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/" + userId + "/Password");
 
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: {
-                    currentPassword: CryptoJS.SHA1(currentPassword).toString(),
-                    newPassword: CryptoJS.SHA1(newPassword).toString()
-                }
+            require(["cryptojs-sha1"], function () {
+
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        currentPassword: CryptoJS.SHA1(currentPassword).toString(),
+                        newPassword: CryptoJS.SHA1(newPassword).toString()
+                    }
+                }).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+
+                    deferred.reject();
+                });
             });
+
+            return deferred.promise();
         };
 
         /**
@@ -2597,19 +2644,34 @@
          */
         self.updateEasyPassword = function (userId, newPassword) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!userId) {
-                throw new Error("null userId");
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/" + userId + "/EasyPassword");
 
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: {
-                    newPassword: CryptoJS.SHA1(newPassword).toString()
-                }
+            require(["cryptojs-sha1"], function () {
+
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        newPassword: CryptoJS.SHA1(newPassword).toString()
+                    }
+                }).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+
+                    deferred.reject();
+                });
             });
+
+            return deferred.promise();
         };
 
         /**

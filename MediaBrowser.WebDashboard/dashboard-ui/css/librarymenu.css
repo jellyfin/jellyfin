@@ -193,6 +193,11 @@
     -webkit-overflow-scrolling: touch;
 }
 
+    .libraryViewNav::-webkit-scrollbar {
+        height: 0 !important;
+        display: none;
+    }
+
 .libraryViewNavWithMinHeight {
     min-height: 48px;
 }

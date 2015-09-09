@@ -1549,7 +1549,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     width: 80px;
     height: 80px;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     background-position: center center;
 }
 
@@ -1557,7 +1557,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         width: 70px;
         height: 70px;
         background-repeat: no-repeat;
-        background-size: cover;
+        background-size: contain;
         background-position: center center;
     }
 
