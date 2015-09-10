@@ -10,8 +10,16 @@
         return null;
     }
 
+    function getCameraPhotos() {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [[]]);
+        return deferred.promise();
+    }
+
     window.LocalAssetManager = {
-        getLocalMediaSource: getLocalMediaSource
+        getLocalMediaSource: getLocalMediaSource,
+        saveOfflineUser: saveOfflineUser,
+        getCameraPhotos: getCameraPhotos
     };
 
 })();

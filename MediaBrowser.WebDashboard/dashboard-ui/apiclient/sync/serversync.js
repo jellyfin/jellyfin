@@ -12,7 +12,7 @@
 
                 Logger.log('Skipping sync to server ' + server.Id + ' because there is no saved authentication information.');
                 deferred.resolve();
-                return;
+                return deferred.promise();
             }
 
             var connectionOptions = {
@@ -66,7 +66,7 @@
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                new MediaBrowser.OfflineUserSync().sync(apiClient).done(function () {
+                new MediaBrowser.OfflineUserSync().sync(apiClient, server).done(function () {
 
                     Logger.log("OfflineUserSync succeeded to server: " + server.Id);
 

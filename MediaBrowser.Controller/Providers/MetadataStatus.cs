@@ -78,9 +78,9 @@ namespace MediaBrowser.Controller.Providers
 
         public bool IsDirty { get; private set; }
 
-        public void SetDateLastMetadataRefresh(DateTime date)
+        public void SetDateLastMetadataRefresh(DateTime? date)
         {
-            if (date != (DateLastMetadataRefresh ?? DateTime.MinValue))
+            if (date != DateLastMetadataRefresh)
             {
                 IsDirty = true;
             }
@@ -88,9 +88,9 @@ namespace MediaBrowser.Controller.Providers
             DateLastMetadataRefresh = date;
         }
 
-        public void SetDateLastImagesRefresh(DateTime date)
+        public void SetDateLastImagesRefresh(DateTime? date)
         {
-            if (date != (DateLastImagesRefresh ?? DateTime.MinValue))
+            if (date != DateLastImagesRefresh)
             {
                 IsDirty = true;
             }

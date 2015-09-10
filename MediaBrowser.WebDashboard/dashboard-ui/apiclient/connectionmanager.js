@@ -322,12 +322,12 @@
 
         function saveUserInfoIntoCredentials(server, user) {
 
-            //ServerUserInfo info = new ServerUserInfo();
-            //info.setIsSignedInOffline(true);
-            //info.setId(user.getId());
+            var info = new {
+                Id: user.Id,
+                IsSignedInOffline: true
+            }
 
-            //// Record user info here
-            //server.AddOrUpdate(info);
+            credentialProvider.addOrUpdateUser(server, info);
         }
 
         function afterConnected(apiClient, options) {

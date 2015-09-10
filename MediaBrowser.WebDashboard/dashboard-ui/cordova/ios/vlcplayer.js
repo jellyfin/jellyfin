@@ -4,38 +4,41 @@
 
         var self = this;
 
+        // Need to use this to fire events because the iOS vlc callbacks always go to the first instance
+        window.AudioRenderer.Current = self;
+
         self.enableProgressReporting = options.type == 'audio';
 
         function onEnded() {
-            Events.trigger(self, 'ended');
+            Events.trigger(window.AudioRenderer.Current, 'ended');
         }
 
         function onTimeUpdate() {
-            Events.trigger(self, 'timeupdate');
+            Events.trigger(window.AudioRenderer.Current, 'timeupdate');
         }
 
         function onVolumeChange() {
-            Events.trigger(self, 'volumechange');
+            Events.trigger(window.AudioRenderer.Current, 'volumechange');
         }
 
         function onPlaying() {
-            Events.trigger(self, 'playing');
+            Events.trigger(window.AudioRenderer.Current, 'playing');
         }
 
         function onPlay() {
-            Events.trigger(self, 'play');
+            Events.trigger(window.AudioRenderer.Current, 'play');
         }
 
         function onPause() {
-            Events.trigger(self, 'pause');
+            Events.trigger(window.AudioRenderer.Current, 'pause');
         }
 
         function onClick() {
-            Events.trigger(self, 'click');
+            Events.trigger(window.AudioRenderer.Current, 'click');
         }
 
         function onDblClick() {
-            Events.trigger(self, 'dblclick');
+            Events.trigger(window.AudioRenderer.Current, 'dblclick');
         }
 
         function onError() {
@@ -43,10 +46,10 @@
             var errorCode = this.error ? this.error.code : '';
             Logger.log('Media element error code: ' + errorCode);
 
-            Events.trigger(self, 'error');
+            Events.trigger(window.AudioRenderer.Current, 'error');
         }
 
-        var playerState = {};
+        self.playerState = {};
 
         self.currentTime = function (val) {
 
@@ -60,16 +63,12 @@
                 return;
             }
 
-            return playerState.currentTime;
+            return self.playerState.currentTime;
         };
 
         self.duration = function (val) {
 
-            if (playerState) {
-                return playerState.duration;
-            }
-
-            return null;
+            return self.playerState.duration;
         };
 
         self.stop = function () {
@@ -103,14 +102,12 @@
         };
 
         self.volume = function (val) {
-            if (playerState) {
-                if (val != null) {
-                    // TODO
-                    return;
-                }
-
-                return playerState.volume;
+            if (val != null) {
+                // TODO
+                return;
             }
+
+            return self.playerState.volume;
         };
 
         self.setCurrentSrc = function (val, item, mediaSource, tracks) {
@@ -161,31 +158,22 @@
 
             }
 
-            playerState.currentSrc = val;
+            AudioRenderer.Current.playerState.currentSrc = val;
             reportEvent('playing', {});
         };
 
         self.currentSrc = function () {
-            return playerState.currentSrc;
+            return self.playerState.currentSrc;
         };
 
         self.paused = function () {
 
-            if (playerState) {
-                return playerState.paused;
-            }
-
-            return false;
+            return self.playerState.paused;
         };
 
         self.cleanup = function (destroyRenderer) {
 
-            playerState = {};
-        };
-
-        self.enableCustomVideoControls = function () {
-
-            return false;
+            self.playerState = {};
         };
 
         function reportEvent(eventName, result) {
@@ -195,13 +183,11 @@
 
             Logger.log('eventName: ' + eventName + '. position: ' + position);
 
-            var isPaused = result.state == 3 || eventName == 'paused';
-
-            var state = playerState;
+            var state = AudioRenderer.Current.playerState;
 
             state.duration = duration;
             state.currentTime = position;
-            state.paused = isPaused;
+            state.paused = result.state == 3 || eventName == 'paused';
             state.volume = 0;
 
             if (eventName == 'playbackstop') {
@@ -237,17 +223,20 @@
             }
         }
 
+        function errorHandler() {
+            onError();
+        }
+
         self.init = function () {
 
             var deferred = DeferredBuilder.Deferred();
 
-            window.audioplayer.configure(function () {
-                Logger.log('audioplayer.configure success');
+            window.audioplayer.configure(successHandler, errorHandler);
+
+            setTimeout(function () {
                 deferred.resolve();
-            }, function () {
-                Logger.log('audioplayer.configure error');
-                deferred.resolve();
-            });
+            }, 500);
+
             return deferred.promise();
         };
     }

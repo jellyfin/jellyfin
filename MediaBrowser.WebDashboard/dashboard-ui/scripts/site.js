@@ -1516,7 +1516,7 @@ var Dashboard = {
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova()) {
             caps.SupportsOfflineAccess = true;
             caps.SupportsSync = true;
             caps.SupportsContentUploading = true;
@@ -2148,6 +2148,12 @@ var AppInfo = {};
         define("offlineusersync", ["apiclient/sync/offlineusersync"]);
         define("mediasync", ["apiclient/sync/mediasync"]);
 
+        if (Dashboard.isRunningInCordova()) {
+            define("fileupload", ["cordova/fileupload"]);
+        } else {
+            define("fileupload", ["apiclient/fileupload"]);
+        }
+
         var deps = [];
 
         if (!deviceId) {
@@ -2270,6 +2276,10 @@ var AppInfo = {};
         Dashboard.initPromiseDone = true;
         $.mobile.initializePage();
         deferred.resolve();
+
+        if (AppInfo.isNativeApp && !$.browser.android) {
+            require(['localsync']);
+        }
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {

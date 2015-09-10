@@ -331,7 +331,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Container = "ts",
                 Id = profile,
                 SupportsDirectPlay = true,
-                SupportsDirectStream = false,
+                SupportsDirectStream = true,
                 SupportsTranscoding = true
             };
 

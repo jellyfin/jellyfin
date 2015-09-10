@@ -839,15 +839,23 @@
 
         self.supportsDirectPlay = function (mediaSource) {
 
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+            if (mediaSource.SupportsDirectPlay) {
 
-                // TODO: Need to verify the host is going to be reachable
-                return true;
-            }
+                if (mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
 
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'File') {
+                    // If this is the only way it can be played, then allow it
+                    if (!mediaSource.SupportsDirectStream && !mediaSource.SupportsTranscoding) {
+                        return true;
+                    }
 
-                return FileSystemBridge.fileExists(mediaSource.Path);
+                    // TODO: Need to verify the host is going to be reachable
+                    return mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                }
+
+                if (mediaSource.Protocol == 'File') {
+
+                    return FileSystemBridge.fileExists(mediaSource.Path);
+                }
             }
 
             return false;

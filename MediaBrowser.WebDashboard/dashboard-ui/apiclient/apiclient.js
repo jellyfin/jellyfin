@@ -398,7 +398,7 @@
 
         self.openWebSocket = function () {
 
-            var accessToken = self.serverInfo().AccessToken;
+            var accessToken = self.accessToken();
 
             if (!accessToken) {
                 throw new Error("Cannot open web socket without access token.");
@@ -653,7 +653,7 @@
                 self.setAuthenticationInfo(null, null);
             };
 
-            if (self.serverInfo().AccessToken) {
+            if (self.accessToken()) {
                 var url = self.getUrl("Sessions/Logout");
 
                 return self.ajax({
@@ -663,8 +663,9 @@
             }
 
             var deferred = DeferredBuilder.Deferred();
+            done();
             deferred.resolveWith(null, []);
-            return deferred.promise().always(done);
+            return deferred.promise();
         };
 
         function getRemoteImagePrefix(options) {
@@ -2214,6 +2215,25 @@
             }
 
             var url = self.getUrl("Users/" + id);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Gets a user by id
+         * @param {String} id
+         */
+        self.getOfflineUser = function (id) {
+
+            if (!id) {
+                throw new Error("Must supply a userId");
+            }
+
+            var url = self.getUrl("Users/" + id + "/Offline");
 
             return self.ajax({
                 type: "GET",

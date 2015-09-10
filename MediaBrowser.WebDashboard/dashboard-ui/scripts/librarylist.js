@@ -824,59 +824,6 @@
         return elem;
     }
 
-    function onCardClick(e) {
-
-        var targetElem = parentWithClass(e.target, 'mediaItem');
-
-        if (!targetElem) {
-            return;
-        }
-
-        if (isClickable(targetElem)) {
-            return;
-        }
-
-        if (targetElem.classList.contains('itemSelectionPanel') || this.querySelector('.itemSelectionPanel')) {
-            return;
-        }
-
-        var info = LibraryBrowser.getListItemInfo(this);
-        var itemId = info.id;
-        var context = info.context;
-
-        var card = this;
-
-        if (card.classList.contains('itemWithAction')) {
-            return;
-        }
-
-        if (!card.classList.contains('card')) {
-            card = $(card).parents('.card')[0];
-        }
-
-        if (card.classList.contains('groupedCard')) {
-            return;
-        }
-
-        if (card.getAttribute('data-detailsmenu') != 'true') {
-            return;
-        }
-
-        var target = $(targetElem);
-        if (target.parents('a').length || target.parents('button').length) {
-            return;
-        }
-
-        if (AppSettings.enableItemPreviews()) {
-            showItemsOverlay({
-                ids: [itemId],
-                context: context
-            });
-
-            return false;
-        }
-    }
-
     $.fn.createCardMenus = function (options) {
 
         var preventHover = false;
@@ -980,9 +927,6 @@
             this.off("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
             this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
         }
-
-        this.off('click', onCardClick);
-        this.on('click', onCardClick);
 
         return this;
     };
@@ -1192,7 +1136,14 @@
     function playAllFromHere(index, itemsContainer, method) {
 
         var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
-            return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid') || i.parentNode.parentNode.getAttribute('data-itemid');
+
+            var node = i;
+            var id = node.getAttribute('data-itemid');
+            while (!id) {
+                node = node.parentNode;
+                id = node.getAttribute('data-itemid');
+            }
+            return id;
         });
 
         ids = ids.slice(index);

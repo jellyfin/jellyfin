@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// The start date of the program, in UTC.
         /// </summary>
+        [IgnoreDataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>

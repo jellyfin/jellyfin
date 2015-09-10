@@ -147,7 +147,14 @@ namespace MediaBrowser.Providers.Manager
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
-                    refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
+                    if (result.Failures == 0)
+                    {
+                        refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
+                    }
+                    else
+                    {
+                        refreshResult.SetDateLastMetadataRefresh(null);
+                    }
 
                     MergeIdentities(itemOfType, id);
                 }
@@ -164,7 +171,14 @@ namespace MediaBrowser.Providers.Manager
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
-                    refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
+                    if (result.Failures == 0)
+                    {
+                        refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
+                    }
+                    else
+                    {
+                        refreshResult.SetDateLastImagesRefresh(null);
+                    }
                 }
             }
 
@@ -503,7 +517,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 return false;
             }
-            
+
             return true;
         }
 

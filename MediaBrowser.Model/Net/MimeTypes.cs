@@ -318,7 +318,7 @@ namespace MediaBrowser.Model.Net
             {
                 return result;
             }
-            throw new ArgumentNullException("Unable to determine extension for mimeType: " + mimeType);
+            return null;
         }
     }
 }

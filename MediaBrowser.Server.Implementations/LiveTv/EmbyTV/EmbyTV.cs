@@ -370,6 +370,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            try
+            {
+                return await GetProgramsAsyncInternal(channelId, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting programs", ex);
+                return GetEpgDataForChannel(channelId).Where(i => i.StartDate <= endDateUtc && i.EndDate >= startDateUtc);
+            }
+        }
+
+        private async Task<IEnumerable<ProgramInfo>> GetProgramsAsyncInternal(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        {
             var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
             var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
@@ -377,6 +390,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
+
                 var list = programs.ToList();
 
                 // Replace the value that came from the provider with a normalized value

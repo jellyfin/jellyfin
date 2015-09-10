@@ -1095,7 +1095,7 @@
 
             var requiresNativeControls = false;
 
-            if (self.currentMediaRenderer && !self.currentMediaRenderer.enableCustomVideoControls) {
+            if (self.currentMediaRenderer && self.currentMediaRenderer.enableCustomVideoControls) {
                 requiresNativeControls = self.currentMediaRenderer.enableCustomVideoControls();
             }
 

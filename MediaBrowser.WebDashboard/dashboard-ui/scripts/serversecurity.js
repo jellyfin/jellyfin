@@ -10,7 +10,7 @@
 
                 ApiClient.ajax({
                     type: "DELETE",
-                    url: ApiClient.getUrl('Auth/Keys/' + key)
+                    url: ApiClient.getUrl('Auth/Keys' + key)
 
                 }).done(function () {
 
@@ -103,7 +103,7 @@
 
         ApiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl('Auth/Keys/', {
+            url: ApiClient.getUrl('Auth/Keys', {
 
                 App: $('#txtAppName', form).val()
 

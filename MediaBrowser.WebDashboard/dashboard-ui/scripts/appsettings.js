@@ -56,14 +56,6 @@
 
             return appStorage.getItem('externalplayers') == 'true';
         },
-        enableItemPreviews: function (val) {
-
-            if (val != null) {
-                update('enableItemPreviews', val.toString());
-            }
-
-            return appStorage.getItem('enableItemPreviews') == 'true';
-        },
         enableFullScreen: function (val) {
 
             if (val != null) {
