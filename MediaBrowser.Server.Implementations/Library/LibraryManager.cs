@@ -2181,7 +2181,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            return item.People ?? new List<PersonInfo>();
+            return new List<PersonInfo>();
         }
 
         public List<Person> GetPeopleItems(InternalPeopleQuery query)

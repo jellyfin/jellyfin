@@ -110,12 +110,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets a value indicating whether this instance is movie.
         /// </summary>
         /// <value><c>true</c> if this instance is movie; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsMovie { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>
         /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsSports { get; set; }
 
         /// <summary>
@@ -140,6 +142,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets a value indicating whether this instance is kids.
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsKids { get; set; }
 
         /// <summary>

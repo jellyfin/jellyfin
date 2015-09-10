@@ -17,6 +17,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// <summary>
     /// Class GetVideoStream
     /// </summary>
+    [Route("/Videos/{Id}/stream.mpegts", "GET")]
     [Route("/Videos/{Id}/stream.ts", "GET")]
     [Route("/Videos/{Id}/stream.webm", "GET")]
     [Route("/Videos/{Id}/stream.asf", "GET")]

@@ -22,10 +22,13 @@ namespace MediaBrowser.Controller.LiveTv
         public string SeriesTimerId { get; set; }
         public DateTime StartDate { get; set; }
         public RecordingStatus Status { get; set; }
+        [IgnoreDataMember]
         public bool IsSports { get; set; }
         public bool IsNews { get; set; }
+        [IgnoreDataMember]
         public bool IsKids { get; set; }
         public bool IsRepeat { get; set; }
+        [IgnoreDataMember]
         public bool IsMovie { get; set; }
         public bool? IsHD { get; set; }
         public bool IsLive { get; set; }
