@@ -2,6 +2,8 @@
 
     function serverSync(connectionManager) {
 
+        var self = this;
+
         self.sync = function (server) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -45,11 +47,57 @@
 
                 new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).done(function () {
 
+                    Logger.log("ContentUploaded succeeded to server: " + server.Id);
+
+                    syncOfflineUsers(server, deferred);
+
+                }).fail(function () {
+
+                    Logger.log("ContentUploaded failed to server: " + server.Id);
+
+                    syncOfflineUsers(server, deferred);
+                });
+            });
+        }
+
+        function syncOfflineUsers(server, deferred) {
+
+            require(['offlineusersync'], function () {
+
+                var apiClient = connectionManager.getApiClient(server.Id);
+
+                new MediaBrowser.OfflineUserSync().sync(apiClient).done(function () {
+
+                    Logger.log("OfflineUserSync succeeded to server: " + server.Id);
+
+                    syncMedia(server, deferred);
+
+                }).fail(function () {
+
+                    Logger.log("OfflineUserSync failed to server: " + server.Id);
+
+                    deferred.reject();
+                });
+            });
+        }
+
+        function syncMedia(server, deferred) {
+
+            require(['mediasync'], function () {
+
+                var apiClient = connectionManager.getApiClient(server.Id);
+
+                new MediaBrowser.MediaSync().sync(apiClient).done(function () {
+
+                    Logger.log("MediaSync succeeded to server: " + server.Id);
+
                     deferred.resolve();
 
                 }).fail(function () {
 
-                    deferred.resolve();
+                    Logger.log("MediaSync failed to server: " + server.Id);
+
+                    deferred.reject();
                 });
             });
         }

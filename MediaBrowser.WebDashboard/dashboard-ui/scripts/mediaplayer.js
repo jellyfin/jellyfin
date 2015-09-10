@@ -213,7 +213,7 @@
                     Protocol: 'hls'
                 });
 
-                if (canPlayAac && $.browser.safari) {
+                if (canPlayAac && $.browser.safari && !AppInfo.isNativeApp) {
                     profile.TranscodingProfiles.push({
                         Container: 'ts',
                         Type: 'Audio',
@@ -255,6 +255,7 @@
             });
 
             if (canPlayAac && $.browser.safari) {
+
                 profile.TranscodingProfiles.push({
                     Container: 'aac',
                     Type: 'Audio',
@@ -262,6 +263,7 @@
                     Context: 'Streaming',
                     Protocol: 'http'
                 });
+
                 profile.TranscodingProfiles.push({
                     Container: 'aac',
                     Type: 'Audio',
@@ -269,6 +271,7 @@
                     Context: 'Static',
                     Protocol: 'http'
                 });
+
             } else {
                 profile.TranscodingProfiles.push({
                     Container: 'mp3',
@@ -570,7 +573,6 @@
 
             var media = document.createElement('video');
 
-            // safari
             if (media.canPlayType('application/x-mpegURL').replace(/no/, '') ||
                 media.canPlayType('application/vnd.apple.mpegURL').replace(/no/, '')) {
                 return true;
@@ -1119,11 +1121,6 @@
         }
 
         self.getPosterUrl = function (item) {
-
-            // Safari often shows the poster under the video, which doesn't look good
-            if ($.browser.safari) {
-                return null;
-            }
 
             var screenWidth = Math.max(screen.height, screen.width);
 
@@ -1859,10 +1856,6 @@
                 poster: self.getPosterUrl(item)
             });
 
-            // Set volume first to avoid an audible change
-            mediaRenderer.volume(initialVolume);
-            mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
-
             Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
 
                 Logger.log('audio element event: volumechange');
@@ -1904,6 +1897,14 @@
 
             self.currentMediaRenderer = mediaRenderer;
             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+            mediaRenderer.init().done(function () {
+
+                // Set volume first to avoid an audible change
+                mediaRenderer.volume(initialVolume);
+
+                mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
+            });
         }
 
         var getItemFields = "MediaSources,Chapters";

@@ -133,7 +133,7 @@
                     lazy: true,
                     cardLayout: true,
                     showDetailsMenu: true
-                });re
+                });
             }
             else if (view == "Timeline") {
                 html = LibraryBrowser.getPosterViewHtml({

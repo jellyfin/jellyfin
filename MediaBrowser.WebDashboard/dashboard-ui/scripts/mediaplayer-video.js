@@ -962,6 +962,7 @@
             }
 
             var mediaRenderer = new VideoRenderer({
+
                 poster: self.getPosterUrl(item)
             });
 

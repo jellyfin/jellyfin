@@ -187,11 +187,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
-        private string[] _retriveItemColumns =
+        private readonly string[] _retriveItemColumns =
         {
             "type",
             "data",
-            "IsOffline"
+            "EndDate",
+            "IsOffline",
+            "ChannelId",
+            "IsMovie",
+            "IsSports",
+            "IsKids"
         };
 
         /// <summary>
@@ -511,7 +516,36 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(2))
             {
-                item.IsOffline = reader.GetBoolean(2);
+                item.EndDate = reader.GetDateTime(2).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(3))
+            {
+                item.IsOffline = reader.GetBoolean(3);
+            }
+
+            if (!reader.IsDBNull(4))
+            {
+                item.ChannelId = reader.GetString(4);
+            }
+
+            var hasProgramAttributes = item as IHasProgramAttributes;
+            if (hasProgramAttributes != null)
+            {
+                if (!reader.IsDBNull(5))
+                {
+                    hasProgramAttributes.IsMovie = reader.GetBoolean(5);
+                }
+
+                if (!reader.IsDBNull(6))
+                {
+                    hasProgramAttributes.IsSports = reader.GetBoolean(6);
+                }
+
+                if (!reader.IsDBNull(7))
+                {
+                    hasProgramAttributes.IsKids = reader.GetBoolean(7);
+                }
             }
 
             return item;

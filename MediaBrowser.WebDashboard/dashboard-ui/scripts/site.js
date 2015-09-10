@@ -2032,6 +2032,10 @@ var AppInfo = {};
             define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
+        else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            define("audiorenderer", ["cordova/ios/vlcplayer"]);
+            define("videorenderer", ["scripts/htmlmediarenderer"]);
+        }
         else {
             define("audiorenderer", ["scripts/htmlmediarenderer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
@@ -2138,9 +2142,11 @@ var AppInfo = {};
 
         define("cryptojs-sha1", ["apiclient/sha1"]);
 
-        define("contentuploader", ["apiclient/contentuploader"]);
-        define("serversync", ["apiclient/serversync"]);
-        define("multiserversync", ["apiclient/multiserversync"]);
+        define("contentuploader", ["apiclient/sync/contentuploader"]);
+        define("serversync", ["apiclient/sync/serversync"]);
+        define("multiserversync", ["apiclient/sync/multiserversync"]);
+        define("offlineusersync", ["apiclient/sync/offlineusersync"]);
+        define("mediasync", ["apiclient/sync/mediasync"]);
 
         var deps = [];
 
@@ -2191,6 +2197,15 @@ var AppInfo = {};
                 }
 
                 AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
+            }
+            else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+
+                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
+
+                // TODO: This is going to exclude it from both playback and sync, so improve on this
+                if (AppSettings.syncLosslessAudio()) {
+                    AppInfo.directPlayAudioContainers.push('flac');
+                }
             }
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));

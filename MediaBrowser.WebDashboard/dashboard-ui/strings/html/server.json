@@ -351,7 +351,7 @@
     "LabelImagesByNamePath": "Images by name path:",
     "LabelImagesByNamePathHelp": "Specify a custom location for downloaded actor, genre and studio images.",
     "LabelMetadataPath": "Metadata path:",
-    "LabelMetadataPathHelp": "Specify a custom location for downloaded artwork and metadata, if not saving within media folders.",
+    "LabelMetadataPathHelp": "Specify a custom location for downloaded artwork and metadata.",
     "LabelTranscodingTempPath": "Transcoding temporary path:",
     "LabelTranscodingTempPathHelp": "This folder contains working files used by the transcoder. Specify a custom path, or leave empty to use the default within the server's data folder.",
     "TabBasics": "Basics",

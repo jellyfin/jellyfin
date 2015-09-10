@@ -2,11 +2,13 @@
 
     function contentUploader(connectionManager) {
 
+        var self = this;
+
         self.uploadImages = function (server) {
 
             var deferred = DeferredBuilder.Deferred();
 
-            var apiClient = self.getApiClient(server.Id);
+            var apiClient = connectionManager.getApiClient(server.Id);
 
             apiClient.getDevicesOptions().done(function (devicesOptions) {
 

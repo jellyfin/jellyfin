@@ -233,7 +233,8 @@
 
             var requiresNativeControls = !self.enableCustomVideoControls();
 
-            var poster = options.poster ? (' poster="' + options.poster + '"') : '';
+            // Safari often displays the poster under the video and it doesn't look good
+            var poster = !$.browser.safari && options.poster ? (' poster="' + options.poster + '"') : '';
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {

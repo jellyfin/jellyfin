@@ -213,7 +213,7 @@ namespace MediaBrowser.Api.Reports
             };
             foreach (var item in t)
             {
-                var ps = items.Where(x => x.People != null && x.SupportsPeople).SelectMany(x => x.People)
+                var ps = items.SelectMany(x => _libraryManager.GetPeople(x))
                                 .Where(n => n.Type == item.ToString())
                                 .GroupBy(x => x.Name)
                                 .OrderByDescending(x => x.Count())

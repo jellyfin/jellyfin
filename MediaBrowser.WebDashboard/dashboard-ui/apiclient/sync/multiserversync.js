@@ -2,6 +2,8 @@
 
     function multiServerSync(connectionManager) {
 
+        var self = this;
+
         self.sync = function () {
 
             var deferred = DeferredBuilder.Deferred();
@@ -20,11 +22,6 @@
             if (index >= length) {
 
                 deferred.resolve();
-                return;
-            }
-
-            if (progress.isCancelled) {
-                deferred.reject();
                 return;
             }
 

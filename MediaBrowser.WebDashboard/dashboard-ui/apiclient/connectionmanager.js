@@ -130,7 +130,7 @@
 
             var servers = credentialProvider.credentials().Servers;
 
-            return servers.filter(function () {
+            return servers.filter(function (s) {
 
                 return s.Id == id;
 

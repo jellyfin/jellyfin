@@ -62,6 +62,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
+        [IgnoreDataMember]
         public string ChannelId { get; set; }
 
         [IgnoreDataMember]
@@ -554,6 +555,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the end date.
         /// </summary>
         /// <value>The end date.</value>
+        [IgnoreDataMember]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -585,12 +587,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-
-        /// <summary>
-        /// Gets or sets the people.
-        /// </summary>
-        /// <value>The people.</value>
-        public List<PersonInfo> People { get; set; }
 
         /// <summary>
         /// Gets or sets the studios.
