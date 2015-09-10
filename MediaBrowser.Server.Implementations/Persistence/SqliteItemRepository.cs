@@ -191,6 +191,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             "type",
             "data",
+            "StartDate",
             "EndDate",
             "IsOffline",
             "ChannelId",
@@ -516,35 +517,44 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(2))
             {
-                item.EndDate = reader.GetDateTime(2).ToUniversalTime();
+                var hasStartDate = item as IHasStartDate;
+                if (hasStartDate != null)
+                {
+                    hasStartDate.StartDate = reader.GetDateTime(2).ToUniversalTime();
+                }
             }
 
             if (!reader.IsDBNull(3))
             {
-                item.IsOffline = reader.GetBoolean(3);
+                item.EndDate = reader.GetDateTime(3).ToUniversalTime();
             }
 
             if (!reader.IsDBNull(4))
             {
-                item.ChannelId = reader.GetString(4);
+                item.IsOffline = reader.GetBoolean(4);
+            }
+
+            if (!reader.IsDBNull(5))
+            {
+                item.ChannelId = reader.GetString(5);
             }
 
             var hasProgramAttributes = item as IHasProgramAttributes;
             if (hasProgramAttributes != null)
             {
-                if (!reader.IsDBNull(5))
-                {
-                    hasProgramAttributes.IsMovie = reader.GetBoolean(5);
-                }
-
                 if (!reader.IsDBNull(6))
                 {
-                    hasProgramAttributes.IsSports = reader.GetBoolean(6);
+                    hasProgramAttributes.IsMovie = reader.GetBoolean(6);
                 }
 
                 if (!reader.IsDBNull(7))
                 {
-                    hasProgramAttributes.IsKids = reader.GetBoolean(7);
+                    hasProgramAttributes.IsSports = reader.GetBoolean(7);
+                }
+
+                if (!reader.IsDBNull(8))
+                {
+                    hasProgramAttributes.IsKids = reader.GetBoolean(8);
                 }
             }
 

@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
         public bool IsSeries { get; set; }
         public string SeriesTimerId { get; set; }
+        [IgnoreDataMember]
         public DateTime StartDate { get; set; }
         public RecordingStatus Status { get; set; }
         [IgnoreDataMember]
