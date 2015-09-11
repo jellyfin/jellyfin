@@ -10,7 +10,7 @@
     $('.lnkMyProfile', page).attr('href', 'myprofile.html?userId=' + userId);
     $('.lnkSync', page).attr('href', 'mysyncsettings.html?userId=' + userId);
 
-    if (AppInfo.supportsSyncPathSetting) {
+    if (Dashboard.capabilities().SupportsSync) {
         page.querySelector('.lnkSync').classList.remove('hide');
     } else {
         page.querySelector('.lnkSync').classList.add('hide');

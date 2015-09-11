@@ -122,7 +122,9 @@ var Dashboard = {
 
         if (!Dashboard.getUserPromise) {
 
-            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(Dashboard.logout);
+            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(function () {
+                Dashboard.getUserPromise = null;
+            });
         }
 
         return Dashboard.getUserPromise;

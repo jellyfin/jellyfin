@@ -2,6 +2,11 @@
     font-family: San Francisco, Helvetica Neue;
 }
 
+.backdropContainer {
+    /* This isn't implemented right and ends up looking terrible */
+    background-attachment: initial;
+}
+
 .background-theme-b {
     background-color: #1c1c1c;
 }

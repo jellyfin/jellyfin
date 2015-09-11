@@ -98,11 +98,11 @@ paper-button[raised].cancelDark {
 }
 
 .ui-page-theme-b paper-button.subdued:not([disabled]) {
-    color: #484848;
+    color: #404040;
 }
 
 .ui-page-theme-b paper-button[raised].subdued:not([disabled]) {
-    background: #484848;
+    background: #404040;
     color: #fff;
 }
 
@@ -112,14 +112,6 @@ paper-button[raised].cancelDark {
 
 paper-button.hover:hover {
     background: #eee;
-}
-
-paper-button.ripple::shadow paper-ripple {
-    color: var(--paper-pink-a200);
-}
-
-paper-button.ripple paper-ripple {
-    color: var(--paper-pink-a200);
 }
 
 paper-button span {
@@ -287,7 +279,7 @@ paper-fab {
     }
 
     paper-fab.subdued {
-        background: #484848;
+        background: #404040;
         color: #fff;
     }
 

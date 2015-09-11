@@ -130,7 +130,7 @@
             var profile = {};
 
             profile.MaxStreamingBitrate = bitrateSetting;
-            profile.MaxStaticBitrate = 4000000;
+            profile.MaxStaticBitrate = 8000000;
             profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
             profile.DirectPlayProfiles = [];

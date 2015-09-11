@@ -197,7 +197,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "ChannelId",
             "IsMovie",
             "IsSports",
-            "IsKids"
+            "IsKids",
+            "CommunityRating",
+            "CustomRating",
+            "IndexNumber",
+            "IsLocked"
         };
 
         /// <summary>
@@ -556,6 +560,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     hasProgramAttributes.IsKids = reader.GetBoolean(8);
                 }
+            }
+
+            if (!reader.IsDBNull(9))
+            {
+                item.CommunityRating = reader.GetFloat(9);
+            }
+
+            if (!reader.IsDBNull(10))
+            {
+                item.CustomRating = reader.GetString(10);
+            }
+
+            if (!reader.IsDBNull(11))
+            {
+                item.IndexNumber = reader.GetInt32(11);
+            }
+
+            if (!reader.IsDBNull(12))
+            {
+                item.IsLocked = reader.GetBoolean(12);
             }
 
             return item;

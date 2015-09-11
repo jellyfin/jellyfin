@@ -322,7 +322,7 @@
 
         function saveUserInfoIntoCredentials(server, user) {
 
-            var info = new {
+            var info = {
                 Id: user.Id,
                 IsSignedInOffline: true
             }

@@ -109,13 +109,13 @@
 
             this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
 
-        }).checkboxradio('refresh');
+        });
 
         $('.radioSortOrder', page).each(function () {
 
             this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
-        }).checkboxradio('refresh');
+        });
 
         $('.chkStandardFilter', page).each(function () {
 
@@ -124,7 +124,7 @@
 
             this.checked = filters.toLowerCase().indexOf(',' + filterName.toLowerCase()) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.chkVideoTypeFilter', page).each(function () {
 
@@ -133,21 +133,21 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('#selectView', page).val(view);
 
-        $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
-        $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
+        $('#chkHD', page).checked(query.IsHD == true);
+        $('#chkSD', page).checked(query.IsHD == false);
 
-        $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-        $('#chkSpecialFeature', page).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
+        $('#chkSubtitle', page).checked(query.HasSubtitles == true);
+        $('#chkTrailer', page).checked(query.HasTrailer == true);
+        $('#chkThemeSong', page).checked(query.HasThemeSong == true);
+        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true);
+        $('#chkSpecialFeature', page).checked(query.ParentIndexNumber == 0);
 
-        $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
-        $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
+        $('#chkMissingEpisode', page).checked(query.IsMissing == true);
+        $('#chkFutureEpisode', page).checked(query.IsUnaired == true);
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
         $('#selectPageSize', page).val(query.Limit);

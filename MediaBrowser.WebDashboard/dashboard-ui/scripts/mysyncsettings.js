@@ -64,6 +64,12 @@
 
             loadForm(page, user);
         });
+
+        if (AppInfo.supportsSyncPathSetting) {
+            page.querySelector('.fldSyncPath').classList.remove('hide');
+        } else {
+            page.querySelector('.fldSyncPath').classList.add('hide');
+        }
     });
 
 })(jQuery, window, document);

@@ -10,6 +10,12 @@
         return null;
     }
 
+    function saveOfflineUser(user) {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolve();
+        return deferred.promise();
+    }
+
     function getCameraPhotos() {
         var deferred = DeferredBuilder.Deferred();
         deferred.resolveWith(null, [[]]);

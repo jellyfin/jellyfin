@@ -92,39 +92,39 @@
 
         function getPlaybackStartInfoForVideoActivity(videoUrl, mediaSource, item) {
 
-            var state = {
-                PlayState: {}
+            var playbackStartInfo = {
+                QueueableMediaTypes: item.MediaType,
+                ItemId: item.Id,
+                NowPlayingItem: {},
+                MediaSourceId: mediaSource.Id
             };
+
+            if (mediaSource.RunTimeTicks) {
+                playbackStartInfo.NowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
+            }
 
             var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
 
             if (audioStreamIndex) {
-                state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
+                playbackStartInfo.AudioStreamIndex = parseInt(audioStreamIndex);
             }
-            state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+            if (self.currentSubtitleStreamIndex != null) {
+                playbackStartInfo.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+            }
 
-            state.PlayState.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
+            playbackStartInfo.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
                 'DirectStream' :
                 'Transcode';
 
-            state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
-            state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
+            playbackStartInfo.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
+            playbackStartInfo.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
 
-            state.PlayState.MediaSourceId = mediaSource.Id;
+            // Seeing some deserialization errors around this property
+            if (mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0) {
+                playbackStartInfo.CanSeek = true;
+            }
 
-            state.NowPlayingItem = {
-                RunTimeTicks: mediaSource.RunTimeTicks
-            };
-
-            state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
-
-            var playbackStartInfo = {
-                QueueableMediaTypes: item.MediaType,
-                ItemId: item.Id,
-                NowPlayingItem: state.NowPlayingItem
-            };
-
-            return $.extend(playbackStartInfo, state.PlayState);
+            return playbackStartInfo;
         }
 
         self.setCurrentSrc = function (val, item, mediaSource, tracks) {
