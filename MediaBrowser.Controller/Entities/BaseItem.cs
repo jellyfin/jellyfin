@@ -332,25 +332,8 @@ namespace MediaBrowser.Controller.Entities
             return Name;
         }
 
-        /// <summary>
-        /// Returns true if this item should not attempt to fetch metadata
-        /// </summary>
-        /// <value><c>true</c> if [dont fetch meta]; otherwise, <c>false</c>.</value>
-        [Obsolete("Please use IsLocked instead of DontFetchMeta")]
-        public bool DontFetchMeta { get; set; }
-
         [IgnoreDataMember]
-        public bool IsLocked
-        {
-            get
-            {
-                return DontFetchMeta;
-            }
-            set
-            {
-                DontFetchMeta = value;
-            }
-        }
+        public bool IsLocked { get; set; }
 
         public bool IsUnidentified { get; set; }
 
@@ -580,6 +563,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
+        [IgnoreDataMember]
         public string CustomRating { get; set; }
 
         /// <summary>
@@ -610,6 +594,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
+        [IgnoreDataMember]
         public float? CommunityRating { get; set; }
 
         /// <summary>
@@ -635,6 +620,7 @@ namespace MediaBrowser.Controller.Entities
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
+        [IgnoreDataMember]
         public int? IndexNumber { get; set; }
 
         /// <summary>
