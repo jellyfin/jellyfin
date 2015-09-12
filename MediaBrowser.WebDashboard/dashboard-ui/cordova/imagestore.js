@@ -71,14 +71,14 @@
             var deferred = DeferredBuilder.Deferred();
             var key = getCacheKey(originalUrl);
 
-            Logger.log('getImageUrl:' + originalUrl);
+            //Logger.log('getImageUrl:' + originalUrl);
 
             getFileSystem().done(function (fileSystem) {
                 var path = fileSystem.root.toURL() + "/emby/cache/" + key;
 
                 resolveLocalFileSystemURL(path, function (fileEntry) {
                     var localUrl = normalizeReturnUrl(fileEntry.toURL());
-                    Logger.log('returning cached file: ' + localUrl);
+                    //Logger.log('returning cached file: ' + localUrl);
                     deferred.resolveWith(null, [localUrl]);
 
                 }, function () {

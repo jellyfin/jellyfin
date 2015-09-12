@@ -170,7 +170,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>ILogger.</returns>
-        public ILogger GetLogger(string name)
+        public Model.Logging.ILogger GetLogger(string name)
         {
             return new NLogger(name, this);
         }

@@ -581,7 +581,7 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
-            Container.RegisterSingle(obj);
+            Container.RegisterSingleton(obj);
 
             if (manageLifetime)
             {
@@ -607,7 +607,7 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(Func<T> func)
             where T : class
         {
-            Container.RegisterSingle(func);
+            Container.RegisterSingleton(func);
         }
 
         void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)

@@ -527,14 +527,12 @@
                             minScale: 2
                         });
 
+                        personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:' + height + 'px;"></div>';
                     } else {
 
                         imgUrl = "css/images/items/list/person.png";
+                        personHtml += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');height:' + height + 'px;"></div>';
                     }
-
-                    personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:' + height + 'px;"></div>';
-
-
 
                     personHtml += '<div class="tileContent">';
 
