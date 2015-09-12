@@ -127,9 +127,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     var supportsExternalStream = StreamSupportsExternalStream(subStream);
 
-                    if (supportsExternalStream && videoBitrate >= maxAllowedBitrateForExternalSubtitleStream)
+                    if (!subStream.IsExternal)
                     {
-                        supportsExternalStream = false;
+                        if (supportsExternalStream && videoBitrate >= maxAllowedBitrateForExternalSubtitleStream)
+                        {
+                            supportsExternalStream = false;
+                        }
                     }
 
                     subStream.SupportsExternalStream = supportsExternalStream;

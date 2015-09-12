@@ -759,14 +759,12 @@ namespace MediaBrowser.Model.Dlna
 
                 if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    if (!requiresConversion)
+                    if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
                     {
-                        return profile;
-                    }
-
-                    if (subtitleStream.SupportsExternalStream)
-                    {
-                        return profile;
+                        if (subtitleStream.SupportsExternalStream)
+                        {
+                            return profile;
+                        }
                     }
 
                     // For sync we can handle the longer extraction times
