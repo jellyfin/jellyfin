@@ -504,6 +504,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     max-height: 300px;
 }
 
+.portraitDetailImageContainer img {
+    max-width: 220px;
+}
+
 .squareDetailImageContainer {
     margin-top: -150px;
 }

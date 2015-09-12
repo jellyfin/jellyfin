@@ -227,6 +227,9 @@ namespace Emby.Drawing
                     imageProcessingLockTaken = true;
 
                     _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options);
+
+                    // ImageMagick doesn't seem to always release it right away
+                    await Task.Delay(100).ConfigureAwait(false);
                 }
             }
             finally

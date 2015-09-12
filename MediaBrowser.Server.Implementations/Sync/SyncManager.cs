@@ -539,11 +539,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                         return false;
                     }
 
-                    if (video.IsStacked)
-                    {
-                        return false;
-                    }
-
                     if (video.IsShortcut)
                     {
                         return false;

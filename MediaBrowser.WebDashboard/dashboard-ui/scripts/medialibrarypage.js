@@ -378,7 +378,7 @@ var WizardLibraryPage = {
         // on here
         $('.btnRefresh', page).taskButton({
             mode: 'on',
-            progressElem: $('.refreshProgress', page),
+            progressElem: page.querySelector('.refreshProgress'),
             lastResultElem: $('.lastRefreshResult', page),
             taskKey: 'RefreshLibrary'
         });

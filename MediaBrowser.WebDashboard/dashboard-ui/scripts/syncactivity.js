@@ -317,7 +317,7 @@
         // on here
         $('.btnSync', page).taskButton({
             mode: 'on',
-            progressElem: $('.syncProgress', page),
+            progressElem: page.querySelector('.syncProgress'),
             taskKey: 'SyncPrepare'
         });
 

@@ -278,6 +278,11 @@ paper-fab {
         height: 22px;
     }
 
+        paper-fab.mini iron-icon {
+            width: 22px;
+            height: 22px;
+        }
+
     paper-fab.subdued {
         background: #404040;
         color: #fff;

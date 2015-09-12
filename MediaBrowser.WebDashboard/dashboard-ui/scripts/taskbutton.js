@@ -39,12 +39,12 @@ $.fn.taskButton = function (options) {
         var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
         if (options.progressElem) {
-            var progressElem = options.progressElem.val(progress);
+            options.progressElem.value = progress;
 
             if (task.State == 'Running') {
-                progressElem.show();
+                options.progressElem.classList.remove('hide');
             } else {
-                progressElem.hide();
+                options.progressElem.classList.add('hide');
             }
         }
 

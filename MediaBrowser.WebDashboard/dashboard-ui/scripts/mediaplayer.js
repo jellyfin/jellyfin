@@ -438,28 +438,36 @@
                         Format: 'srt',
                         Method: 'Embed'
                     });
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'ass',
-                    //    Method: 'Embed'
-                    //});
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'ssa',
-                    //    Method: 'Embed'
-                    //});
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'pgs',
-                    //    Method: 'Embed'
-                    //});
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'pgssub',
-                    //    Method: 'Embed'
-                    //});
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'dvdsub',
-                    //    Method: 'Embed'
-                    //});
+                    profile.SubtitleProfiles.push({
+                        Format: 'ass',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ssa',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'pgs',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'pgssub',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvdsub',
+                        Method: 'Embed'
+                    });
                     profile.SubtitleProfiles.push({
                         Format: 'vtt',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'sub',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'idx',
                         Method: 'Embed'
                     });
                 } else {
@@ -733,7 +741,7 @@
 
             if (positionSlider) {
 
-                positionSlider.disabled = !canClientSeek;
+                positionSlider.disabled = !((self.currentDurationTicks || 0) > 0 || canClientSeek);
             }
 
             if (currentTimeElement) {

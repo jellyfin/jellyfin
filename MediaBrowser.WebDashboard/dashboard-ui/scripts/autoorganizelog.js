@@ -361,7 +361,7 @@
         // on here
         $('.btnOrganize', page).taskButton({
             mode: 'on',
-            progressElem: $('.organizeProgress', page),
+            progressElem: page.querySelector('.organizeProgress'),
             panel: $('.organizeTaskPanel', page),
             taskKey: 'AutoOrganize'
         });
