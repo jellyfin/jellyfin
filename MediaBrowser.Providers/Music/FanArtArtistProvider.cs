@@ -433,7 +433,7 @@ namespace MediaBrowser.Providers.Music
 
             var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(xmlPath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(xmlPath));
 
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {

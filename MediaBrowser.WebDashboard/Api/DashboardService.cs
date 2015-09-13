@@ -274,8 +274,8 @@ namespace MediaBrowser.WebDashboard.Api
 
         private void CopyFile(string src, string dst)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(dst));
-            File.Copy(src, dst, true);
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dst));
+			_fileSystem.CopyFile(src, dst, true);
         }
 
         public async Task<object> Get(GetDashboardPackage request)
@@ -306,17 +306,17 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Overwrite certain files with cordova specific versions
                 var cordovaVersion = Path.Combine(path, "cordova", "registrationservices.js");
-                File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
-                File.Delete(cordovaVersion);
+				_fileSystem.CopyFile(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
+				_fileSystem.DeleteFile(cordovaVersion);
 
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
-                Directory.Delete(Path.Combine(path, "css", "images", "tour"), true);
-                Directory.Delete(Path.Combine(path, "apiclient", "alt"), true);
+				_fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
+				_fileSystem.DeleteDirectory(Path.Combine(path, "apiclient", "alt"), true);
 
-                File.Delete(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
+				_fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
 
-                Directory.Delete(Path.Combine(path, "bower_components"), true);
-                Directory.Delete(Path.Combine(path, "thirdparty", "viblast"), true);
+				_fileSystem.DeleteDirectory(Path.Combine(path, "bower_components"), true);
+				_fileSystem.DeleteDirectory(Path.Combine(path, "thirdparty", "viblast"), true);
 
                 // But we do need this
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.js"));
@@ -355,7 +355,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 try
                 {
-                    var text = File.ReadAllText(file, Encoding.UTF8);
+					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
 
                     var result = new KristensenCssMinifier().Minify(text, false, Encoding.UTF8);
 
@@ -366,7 +366,7 @@ namespace MediaBrowser.WebDashboard.Api
                     else
                     {
                         text = result.MinifiedContent;
-                        File.WriteAllText(file, text, Encoding.UTF8);
+						_fileSystem.WriteAllText(file, text, Encoding.UTF8);
                     }
                 }
                 catch (Exception ex)
@@ -382,7 +382,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 try
                 {
-                    var text = File.ReadAllText(file, Encoding.UTF8);
+					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
 
                     var result = new CrockfordJsMinifier().Minify(text, false, Encoding.UTF8);
 
@@ -393,7 +393,7 @@ namespace MediaBrowser.WebDashboard.Api
                     else
                     {
                         text = result.MinifiedContent;
-                        File.WriteAllText(file, text, Encoding.UTF8);
+						_fileSystem.WriteAllText(file, text, Encoding.UTF8);
                     }
                 }
                 catch (Exception ex)
@@ -422,7 +422,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in excludeFiles)
             {
-                File.Delete(Path.Combine(destination, file));
+				_fileSystem.DeleteFile(Path.Combine(destination, file));
             }
         }
 
@@ -449,17 +449,17 @@ namespace MediaBrowser.WebDashboard.Api
 
         private void CopyDirectory(string source, string destination)
         {
-            Directory.CreateDirectory(destination);
+			_fileSystem.CreateDirectory(destination);
 
             //Now Create all of the directories
             foreach (string dirPath in Directory.GetDirectories(source, "*",
                 SearchOption.AllDirectories))
-                Directory.CreateDirectory(dirPath.Replace(source, destination));
+				_fileSystem.CreateDirectory(dirPath.Replace(source, destination));
 
             //Copy all the files & Replaces any files with the same name
             foreach (string newPath in Directory.GetFiles(source, "*.*",
                 SearchOption.AllDirectories))
-                File.Copy(newPath, newPath.Replace(source, destination), true);
+				_fileSystem.CopyFile(newPath, newPath.Replace(source, destination), true);
         }
     }
 

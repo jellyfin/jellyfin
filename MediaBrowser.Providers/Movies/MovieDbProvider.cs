@@ -115,7 +115,7 @@ namespace MediaBrowser.Providers.Movies
         public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
-            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager);
+			var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager, _fileSystem);
 
             return movieDb.GetMetadata(id, cancellationToken);
         }
@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.Movies
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }

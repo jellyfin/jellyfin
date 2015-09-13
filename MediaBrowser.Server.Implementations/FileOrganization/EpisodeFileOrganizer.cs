@@ -182,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _logger.Info("Sorting file {0} to new path {1}", sourcePath, newPath);
             result.TargetPath = newPath;
 
-            var fileExists = File.Exists(result.TargetPath);
+			var fileExists = _fileSystem.FileExists(result.TargetPath);
             var otherDuplicatePaths = GetOtherDuplicatePaths(result.TargetPath, series, seasonNumber, episodeNumber, endingEpiosdeNumber);
 
             if (!overwriteExisting)
@@ -272,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     var destination = Path.Combine(directory, filename);
 
-                    File.Move(file, destination);
+					_fileSystem.MoveFile(file, destination);
                 }
             }
         }
@@ -332,19 +332,19 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             _libraryMonitor.ReportFileSystemChangeBeginning(result.TargetPath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
 
-            var targetAlreadyExists = File.Exists(result.TargetPath);
+			var targetAlreadyExists = _fileSystem.FileExists(result.TargetPath);
 
             try
             {
                 if (targetAlreadyExists || options.CopyOriginalFile)
                 {
-                    File.Copy(result.OriginalPath, result.TargetPath, true);
+					_fileSystem.CopyFile(result.OriginalPath, result.TargetPath, true);
                 }
                 else
                 {
-                    File.Move(result.OriginalPath, result.TargetPath);
+					_fileSystem.MoveFile(result.OriginalPath, result.TargetPath);
                 }
 
                 result.Status = FileSortingStatus.Success;

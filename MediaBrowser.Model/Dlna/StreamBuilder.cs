@@ -725,7 +725,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, EncodingContext context, PlayMethod playMethod)
         {
-            if (playMethod != PlayMethod.Transcode)
+			if (playMethod != PlayMethod.Transcode && !subtitleStream.IsExternal)
             {
                 // Look for supported embedded subs
                 foreach (SubtitleProfile profile in subtitleProfiles)
@@ -749,17 +749,22 @@ namespace MediaBrowser.Model.Dlna
 
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
-            {
-                bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+			{
+				if (profile.Method != SubtitleDeliveryMethod.External)
+				{
+					continue;
+				}
 
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
                     continue;
                 }
 
-                if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
+					bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+
+					if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
                     {
                         if (subtitleStream.SupportsExternalStream)
                         {

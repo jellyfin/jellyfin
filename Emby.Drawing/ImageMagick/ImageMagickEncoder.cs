@@ -8,6 +8,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -15,13 +16,15 @@ namespace Emby.Drawing.ImageMagick
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
-        private readonly IHttpClient _httpClient;
+		private readonly IHttpClient _httpClient;
+		private readonly IFileSystem _fileSystem;
 
-        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient)
+        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
+			_fileSystem = fileSystem;
 
             LogImageMagickVersion();
         }
@@ -77,7 +80,7 @@ namespace Emby.Drawing.ImageMagick
             try
             {
                 var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".webp");
-                Directory.CreateDirectory(Path.GetDirectoryName(tmpPath));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                 using (var wand = new MagickWand(1, 1, new PixelWand("none", 1)))
                 {
@@ -181,7 +184,7 @@ namespace Emby.Drawing.ImageMagick
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    var task = new PlayedIndicatorDrawer(_appPaths, _httpClient).DrawPlayedIndicator(wand, currentImageSize);
+					var task = new PlayedIndicatorDrawer(_appPaths, _httpClient, _fileSystem).DrawPlayedIndicator(wand, currentImageSize);
                     Task.WaitAll(task);
                 }
                 else if (options.UnplayedCount.HasValue)

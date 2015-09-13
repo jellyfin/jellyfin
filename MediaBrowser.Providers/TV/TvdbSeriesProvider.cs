@@ -252,7 +252,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.Equals(downloadLangaugeXmlFile, saveAsLanguageXmlFile, StringComparison.OrdinalIgnoreCase))
             {
-                File.Copy(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
+				_fileSystem.CopyFile(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
             }
 
             await ExtractEpisodes(seriesDataPath, downloadLangaugeXmlFile, lastTvDbUpdateTime).ConfigureAwait(false);
@@ -268,9 +268,9 @@ namespace MediaBrowser.Providers.TV
         {
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesId);
 
-            Directory.CreateDirectory(seriesDataPath);
+			_fileSystem.CreateDirectory(seriesDataPath);
 
-            var files = new DirectoryInfo(seriesDataPath).EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly)
+			var files = _fileSystem.GetFiles(seriesDataPath)
                 .ToList();
 
             var seriesXmlFilename = preferredMetadataLanguage + ".xml";
@@ -1107,7 +1107,7 @@ namespace MediaBrowser.Providers.TV
             var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber, episodeNumber));
 
             // Only save the file if not already there, or if the episode has changed
-            if (hasEpisodeChanged || !File.Exists(file))
+			if (hasEpisodeChanged || !_fileSystem.FileExists(file))
             {
                 using (var writer = XmlWriter.Create(file, new XmlWriterSettings
                 {
@@ -1124,7 +1124,7 @@ namespace MediaBrowser.Providers.TV
                 file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", absoluteNumber));
 
                 // Only save the file if not already there, or if the episode has changed
-                if (hasEpisodeChanged || !File.Exists(file))
+				if (hasEpisodeChanged || !_fileSystem.FileExists(file))
                 {
                     using (var writer = XmlWriter.Create(file, new XmlWriterSettings
                     {
@@ -1167,8 +1167,7 @@ namespace MediaBrowser.Providers.TV
         {
             try
             {
-                foreach (var file in new DirectoryInfo(path)
-                    .EnumerateFiles("*.xml", SearchOption.AllDirectories)
+				foreach (var file in _fileSystem.GetFiles(path, true)
                     .ToList())
                 {
                     _fileSystem.DeleteFile(file.FullName);

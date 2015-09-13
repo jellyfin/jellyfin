@@ -93,7 +93,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The _XML serializer
         /// </summary>
-        protected readonly IXmlSerializer XmlSerializer = new XmlSerializer();
+        protected readonly IXmlSerializer XmlSerializer;
 
         /// <summary>
         /// Gets assemblies that failed to load
@@ -180,7 +180,7 @@ namespace MediaBrowser.Common.Implementations
             {
                 if (_deviceId == null)
                 {
-                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"));
+                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"), FileSystemManager);
                 }
 
                 return _deviceId.Value;
@@ -199,6 +199,7 @@ namespace MediaBrowser.Common.Implementations
             ILogManager logManager, 
             IFileSystem fileSystem)
         {
+			XmlSerializer = new MediaBrowser.Common.Implementations.Serialization.XmlSerializer (fileSystem);
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -473,7 +474,7 @@ namespace MediaBrowser.Common.Implementations
 			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
 			RegisterSingleInstance(InstallationManager);
 
-			ZipClient = new ZipClient();
+			ZipClient = new ZipClient(FileSystemManager);
 			RegisterSingleInstance(ZipClient);
 
 			IsoManager = new IsoManager();
@@ -650,7 +651,7 @@ namespace MediaBrowser.Common.Implementations
         {
             try
             {
-                return Assembly.Load(File.ReadAllBytes((file)));
+                return Assembly.Load(FileSystemManager.ReadAllBytes((file)));
             }
             catch (Exception ex)
             {

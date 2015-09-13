@@ -198,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+				if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
@@ -218,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+				if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }

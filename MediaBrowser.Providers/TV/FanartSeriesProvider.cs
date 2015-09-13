@@ -309,7 +309,7 @@ namespace MediaBrowser.Providers.TV
 
             var path = GetFanartJsonPath(tvdbId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {

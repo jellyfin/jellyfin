@@ -157,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {

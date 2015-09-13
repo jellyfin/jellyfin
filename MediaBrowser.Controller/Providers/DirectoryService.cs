@@ -4,23 +4,26 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
         private readonly ILogger _logger;
+		private readonly IFileSystem _fileSystem;
 
         private readonly ConcurrentDictionary<string, Dictionary<string,FileSystemInfo>> _cache =
             new ConcurrentDictionary<string, Dictionary<string, FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
 
-        public DirectoryService(ILogger logger)
+		public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
+			_fileSystem = fileSystem;
         }
 
-        public DirectoryService()
-            : this(new NullLogger())
+		public DirectoryService(IFileSystem fileSystem)
+            : this(new NullLogger(), fileSystem)
         {
         }
 
@@ -59,8 +62,7 @@ namespace MediaBrowser.Controller.Providers
                 try
                 {
                     // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-                    var list = new DirectoryInfo(path).EnumerateDirectories("*", SearchOption.TopDirectoryOnly)
-                        .Concat<FileSystemInfo>(new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly));
+					var list = _fileSystem.GetFileSystemEntries(path);
 
                     // Seeing dupes on some users file system for some reason
                     foreach (var item in list)

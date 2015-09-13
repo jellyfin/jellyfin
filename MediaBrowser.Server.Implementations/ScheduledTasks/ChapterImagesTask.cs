@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             try
             {
-                previouslyFailedImages = File.ReadAllText(failHistoryPath)
+				previouslyFailedImages = _fileSystem.ReadAllText(failHistoryPath)
                     .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .ToList();
             }
@@ -132,9 +132,9 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                     var parentPath = Path.GetDirectoryName(failHistoryPath);
 
-                    Directory.CreateDirectory(parentPath);
+					_fileSystem.CreateDirectory(parentPath);
 
-                    File.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
+					_fileSystem.WriteAllText(failHistoryPath, string.Join("|", previouslyFailedImages.ToArray()));
                 }
 
                 numComplete++;

@@ -239,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    File.Delete(remove.Path);
+                    _filesystem.DeleteFile(remove.Path);
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -643,7 +643,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)) + ".ts";
 
             recordPath = Path.Combine(recordPath, recordingFileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(recordPath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
 
             var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.ProgramId, info.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -697,7 +697,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _logger.Info("Writing file to path: " + recordPath);
                 using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
                 {
-                    using (var output = File.Open(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+					using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
                         await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
                     }
@@ -858,7 +858,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private void SaveEpgDataForChannel(string channelId, List<ProgramInfo> epgData)
         {
             var path = GetChannelEpgCachePath(channelId);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
             lock (_epgLock)
             {
                 _jsonSerializer.SerializeToFile(epgData, path);

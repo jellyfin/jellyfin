@@ -4,6 +4,8 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Common.Implementations.IO
 {
@@ -75,7 +77,7 @@ namespace MediaBrowser.Common.Implementations.IO
 
             if (string.Equals(Path.GetExtension(filename), ".mblink", StringComparison.OrdinalIgnoreCase))
             {
-                var path = File.ReadAllText(filename);
+                var path = ReadAllText(filename);
 
                 return NormalizePath(path);
             }
@@ -105,7 +107,7 @@ namespace MediaBrowser.Common.Implementations.IO
                 throw new ArgumentNullException("target");
             }
 
-            File.WriteAllText(shortcutPath, target);
+			_fileSystem.WriteAllText(shortcutPath, target);
         }
 
         /// <summary>
@@ -230,7 +232,7 @@ namespace MediaBrowser.Common.Implementations.IO
         /// <param name="share">The share.</param>
         /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
         /// <returns>FileStream.</returns>
-        public FileStream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false)
+        public Stream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false)
         {
             if (_supportsAsyncFileStreams && isAsync)
             {
@@ -264,11 +266,11 @@ namespace MediaBrowser.Common.Implementations.IO
             RemoveHiddenAttribute(file1);
             RemoveHiddenAttribute(file2);
 
-            File.Copy(file1, temp1, true);
-            File.Copy(file2, temp2, true);
+			CopyFile(file1, temp1, true);
+			CopyFile(file2, temp2, true);
 
-            File.Copy(temp1, file2, true);
-            File.Copy(temp2, file1, true);
+			CopyFile(temp1, file2, true);
+            CopyFile(temp2, file1, true);
 
             DeleteFile(temp1);
             DeleteFile(temp2);
@@ -410,24 +412,42 @@ namespace MediaBrowser.Common.Implementations.IO
             //return Path.IsPathRooted(path);
         }
 
-        public void DeleteFile(string path, bool sendToRecycleBin)
+        public void DeleteFile(string path)
         {
             File.Delete(path);
         }
 
-        public void DeleteDirectory(string path, bool recursive, bool sendToRecycleBin)
-        {
-            Directory.Delete(path, recursive);
-        }
-
-        public void DeleteFile(string path)
-        {
-            DeleteFile(path, false);
-        }
-
         public void DeleteDirectory(string path, bool recursive)
         {
-            DeleteDirectory(path, recursive, false);
-        }
+            Directory.Delete(path, recursive);
+		}
+
+		public void CreateDirectory(string path)
+		{
+			Directory.CreateDirectory(path);
+		}
+			
+		public IEnumerable<DirectoryInfo> GetDirectories(string path, bool recursive = false) 
+		{
+			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+			return new DirectoryInfo (path).EnumerateDirectories("*", searchOption);
+		}
+
+		public IEnumerable<FileInfo> GetFiles(string path, bool recursive = false) 
+		{
+			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+			return new DirectoryInfo (path).EnumerateFiles("*", searchOption);
+		}
+
+		public IEnumerable<FileSystemInfo> GetFileSystemEntries(string path, bool recursive = false) 
+		{
+			var directoryInfo = new DirectoryInfo (path);
+			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+			return directoryInfo.EnumerateDirectories("*", searchOption)
+							.Concat<FileSystemInfo>(directoryInfo.EnumerateFiles("*", searchOption));
+		}
     }
 }

@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.News
         {
             DateTime? lastUpdate = null;
 
-            if (File.Exists(path))
+			if (_fileSystem.FileExists(path))
             {
                 lastUpdate = _fileSystem.GetLastWriteTimeUtc(path);
             }

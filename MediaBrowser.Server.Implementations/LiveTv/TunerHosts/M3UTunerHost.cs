@@ -119,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            if (!File.Exists(info.Url))
+			if (!_fileSystem.FileExists(info.Url))
             {
                 throw new FileNotFoundException();
             }

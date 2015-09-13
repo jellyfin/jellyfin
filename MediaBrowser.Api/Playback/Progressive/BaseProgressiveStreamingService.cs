@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             var outputPath = state.OutputFilePath;
-            var outputPathExists = File.Exists(outputPath);
+			var outputPathExists = FileSystem.FileExists(outputPath);
 
             var isTranscodeCached = outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive);
 
@@ -325,7 +325,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 TranscodingJob job;
 
-                if (!File.Exists(outputPath))
+				if (!FileSystem.FileExists(outputPath))
                 {
                     job = await StartFfMpeg(state, outputPath, cancellationTokenSource).ConfigureAwait(false);
                 }

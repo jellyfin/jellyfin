@@ -154,7 +154,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 _lastExecutionResult = value;
 
                 var path = GetHistoryFilePath();
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 lock (_lastExecutionResultSyncLock)
                 {
@@ -552,7 +552,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var path = GetConfigurationFilePath();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), path);
         }

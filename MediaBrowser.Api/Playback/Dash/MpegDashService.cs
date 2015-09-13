@@ -174,7 +174,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
                                 var workingDirectory = Path.Combine(Path.GetDirectoryName(playlistPath), (startNumber == -1 ? 0 : startNumber).ToString(CultureInfo.InvariantCulture));
                                 state.WaitForPath = Path.Combine(workingDirectory, Path.GetFileName(playlistPath));
-                                Directory.CreateDirectory(workingDirectory);
+                                FileSystem.CreateDirectory(workingDirectory);
                                 job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, workingDirectory).ConfigureAwait(false);
                                 await WaitForMinimumDashSegmentCount(Path.Combine(workingDirectory, Path.GetFileName(playlistPath)), 1, cancellationTokenSource.Token).ConfigureAwait(false);
                             }
@@ -328,8 +328,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             try
             {
-                return new DirectoryInfo(folder)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
+				return fileSystem.GetFiles(folder)
                     .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .Take(count)
@@ -348,12 +347,12 @@ namespace MediaBrowser.Api.Playback.Dash
             if (requestedIndex == -1)
             {
                 var path = Path.Combine(folder, "0", "stream" + representationId + "-" + "init" + segmentExtension);
-                return File.Exists(path) ? path : null;
+				return FileSystem.FileExists(path) ? path : null;
             }
 
             try
             {
-                foreach (var subfolder in new DirectoryInfo(folder).EnumerateDirectories().ToList())
+				foreach (var subfolder in FileSystem.GetDirectories(folder).ToList())
                 {
                     var subfolderName = Path.GetFileNameWithoutExtension(subfolder.FullName);
                     int startNumber;
@@ -361,7 +360,7 @@ namespace MediaBrowser.Api.Playback.Dash
                     {
                         var segmentIndex = requestedIndex - startNumber + 1;
                         var path = Path.Combine(folder, subfolderName, "stream" + representationId + "-" + segmentIndex.ToString("00000", CultureInfo.InvariantCulture) + segmentExtension);
-                        if (File.Exists(path))
+						if (FileSystem.FileExists(path))
                         {
                             return path;
                         }
