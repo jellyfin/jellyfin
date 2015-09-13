@@ -109,23 +109,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 foreach (var host in hostsWithChannel)
                 {
-                    // Check to make sure the tuner is available
-                    // If there's only one tuner, don't bother with the check and just let the tuner be the one to throw an error
-                    if (hostsWithChannel.Count > 1 && !await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
+                    try
                     {
-                        Logger.Error("Tuner is not currently available");
-                        continue;
+                        var mediaSources = await GetChannelStreamMediaSources(host, channelId, cancellationToken).ConfigureAwait(false);
+
+                        // Prefix the id with the host Id so that we can easily find it
+                        foreach (var mediaSource in mediaSources)
+                        {
+                            mediaSource.Id = host.Id + mediaSource.Id;
+                        }
+
+                        return mediaSources;
                     }
-
-                    var mediaSources = await GetChannelStreamMediaSources(host, channelId, cancellationToken).ConfigureAwait(false);
-
-                    // Prefix the id with the host Id so that we can easily find it
-                    foreach (var mediaSource in mediaSources)
+                    catch (Exception ex)
                     {
-                        mediaSource.Id = host.Id + mediaSource.Id;
+                        Logger.Error("Error opening tuner", ex);
                     }
-
-                    return mediaSources;
                 }
             }
 
@@ -163,44 +162,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 foreach (var host in hostsWithChannel)
                 {
-                    // Check to make sure the tuner is available
-                    // If there's only one tuner, don't bother with the check and just let the tuner be the one to throw an error
-                    // If a streamId is specified then availibility has already been checked in GetChannelStreamMediaSources
-                    if (string.IsNullOrWhiteSpace(streamId) && hostsWithChannel.Count > 1)
+                    try
                     {
-                        if (!await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
+                        var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+                        if (stream != null)
                         {
-                            Logger.Error("Tuner is not currently available");
-                            continue;
+                            return stream;
                         }
                     }
-
-                    var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
-
-                    if (stream != null)
+                    catch (Exception ex)
                     {
-                        return stream;
+                        Logger.Error("Error opening tuner", ex);
                     }
                 }
             }
 
             throw new LiveTvConflictException();
         }
-
-        protected async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
-        {
-            try
-            {
-                return await IsAvailableInternal(tuner, channelId, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error checking tuner availability", ex);
-                return false;
-            }
-        }
-
-        protected abstract Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
 
         protected abstract bool IsValidChannelId(string channelId);
 

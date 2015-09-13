@@ -398,12 +398,5 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
             }
         }
-
-        protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
-        {
-            var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
-
-            return info.Any(i => i.Status == LiveTvTunerStatus.Available || string.Equals(i.ChannelId, channelId, StringComparison.OrdinalIgnoreCase));
-        }
     }
 }
