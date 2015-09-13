@@ -374,9 +374,6 @@
 		// where it is provided on the window object
 		phonegapNavigationEnabled: false,
 
-		//automatically initialize the DOM when it's ready
-		autoInitializePage: true,
-
 		pushStateEnabled: true,
 
 		// allows users to opt in to ignoring content by marking a parent element as
@@ -614,19 +611,8 @@ $.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
 		}
 	});
 
-	$.addDependents = function( elem, newDependents ) {
-		var $elem = $( elem ),
-			dependents = $elem.jqmData( "dependents" ) || $();
-
-		$elem.jqmData( "dependents", $( dependents ).add( newDependents ) );
-	};
-
 	// plugins
 	$.fn.extend({
-		removeWithDependents: function() {
-			$.removeWithDependents( this );
-		},
-
 		// Enhance child elements
 		enhanceWithin: function() {
 			var index,
@@ -656,10 +642,6 @@ $.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
 			return this;
 		},
 
-		addDependents: function( newDependents ) {
-			$.addDependents( this, newDependents );
-		},
-
 		// note that this helper doesn't attempt to handle the callback
 		// or setting of an html element's text, its only purpose is
 		// to return the html encoded version of the text in all cases. (thus the name)
@@ -667,19 +649,6 @@ $.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
 			return $( "<a>" ).text( this.text() ).html();
 		}
 	});
-
-	$.removeWithDependents = function( nativeElement ) {
-		var element = $( nativeElement );
-
-		( element.jqmData( "dependents" ) || $() ).remove();
-		element.remove();
-	};
-	$.addDependents = function( nativeElement, newDependents ) {
-		var element = $( nativeElement ),
-			dependents = element.jqmData( "dependents" ) || $();
-
-		element.jqmData( "dependents", $( dependents ).add( newDependents ) );
-	};
 
 	$.find.matches = function( expr, set ) {
 		return $.find( expr, null, null, set );
@@ -934,20 +903,8 @@ $.mobile.ajaxBlacklist =
 		dummyFnToInitNavigate = function() {
 		};
 
-	$.event.special.beforenavigate = {
-		setup: function() {
-			$win.on( "navigate", dummyFnToInitNavigate );
-		},
-
-		teardown: function() {
-			$win.off( "navigate", dummyFnToInitNavigate );
-		}
-	};
-
 	$.event.special.navigate = self = {
 		bound: false,
-
-		pushStateEnabled: true,
 
 		originalEventName: undefined,
 
@@ -955,7 +912,6 @@ $.mobile.ajaxBlacklist =
 		// be true on the mobile namespace.
 		isPushStateEnabled: function() {
 			return $.support.pushState &&
-				$.mobile.pushStateEnabled === true &&
 				this.isHashChangeEnabled();
 		},
 
@@ -967,15 +923,7 @@ $.mobile.ajaxBlacklist =
 		// TODO a lot of duplication between popstate and hashchange
 		popstate: function( event ) {
 			var newEvent = new $.Event( "navigate" ),
-				beforeNavigate = new $.Event( "beforenavigate" ),
 				state = event.originalEvent.state || {};
-
-			beforeNavigate.originalEvent = event;
-			$win.trigger( beforeNavigate );
-
-			if ( beforeNavigate.isDefaultPrevented() ) {
-				return;
-			}
 
 			if ( event.historyState ) {
 				$.extend(state, event.historyState);
@@ -997,15 +945,7 @@ $.mobile.ajaxBlacklist =
 		},
 
 		hashchange: function( event /*, data */ ) {
-			var newEvent = new $.Event( "navigate" ),
-				beforeNavigate = new $.Event( "beforenavigate" );
-
-			beforeNavigate.originalEvent = event;
-			$win.trigger( beforeNavigate );
-
-			if ( beforeNavigate.isDefaultPrevented() ) {
-				return;
-			}
+			var newEvent = new $.Event( "navigate" );
 
 			// Make sure the original event is tracked for the end
 			// user to inspect incase they want to do something special
@@ -1750,12 +1690,8 @@ $.widget( "mobile.page", {
 	},
 
 	_create: function () {
-		// If false is returned by the callbacks do not create the page
-		if ( this._trigger( "beforecreate" ) === false ) {
-			return false;
-		}
 
-		if ( !this.options.enhanced ) {
+	    if (!this.options.enhanced) {
 			this._enhance();
 		}
 
@@ -2779,33 +2715,11 @@ $.widget( "mobile.page", {
 		initSelector: false,
 
 		_create: function() {
-			this._trigger( "beforecreate" );
-			this.setLastScrollEnabled = true;
-
-			this._on( this.window, {
-				// disable an scroll setting when a hashchange has been fired,
-				// this only works because the recording of the scroll position
-				// is delayed for 100ms after the browser might have changed the
-				// position because of the hashchange
-				navigate: "_disableRecordScroll",
-
-				// bind to scrollstop for the first page, "pagechange" won't be
-				// fired in that case
-				scrollstop: "_delayedRecordScroll"
-			});
 
 			// TODO consider moving the navigation handler OUT of widget into
 			//      some other object as glue between the navigate event and the
 			//      content widget load and change methods
 			this._on( this.window, { navigate: "_filterNavigateEvents" });
-
-			// TODO move from page* events to content* events
-			this._on({ pagechange: "_afterContentChange" });
-
-			// handle initial hashchange from chrome :(
-			this.window.one( "navigate", $.proxy(function() {
-				this.setLastScrollEnabled = true;
-			}, this));
 		},
 
 		_setOptions: function( options ) {
@@ -2817,66 +2731,6 @@ $.widget( "mobile.page", {
 			}
 
 			this._super( options );
-		},
-
-		_disableRecordScroll: function() {
-			this.setLastScrollEnabled = false;
-		},
-
-		_enableRecordScroll: function() {
-			this.setLastScrollEnabled = true;
-		},
-
-		// TODO consider the name here, since it's purpose specific
-		_afterContentChange: function() {
-			// once the page has changed, re-enable the scroll recording
-			this.setLastScrollEnabled = true;
-
-			// remove any binding that previously existed on the get scroll
-			// which may or may not be different than the scroll element
-			// determined for this page previously
-			this._off( this.window, "scrollstop" );
-
-			// determine and bind to the current scoll element which may be the
-			// window or in the case of touch overflow the element touch overflow
-			this._on( this.window, { scrollstop: "_delayedRecordScroll" });
-		},
-
-		_recordScroll: function() {
-			// this barrier prevents setting the scroll value based on
-			// the browser scrolling the window based on a hashchange
-			if ( !this.setLastScrollEnabled ) {
-				return;
-			}
-
-			var active = this._getActiveHistory(),
-				currentScroll, minScroll, defaultScroll;
-
-			if ( active ) {
-				currentScroll = this._getScroll();
-				minScroll = this._getMinScroll();
-				defaultScroll = this._getDefaultScroll();
-
-				// Set active page's lastScroll prop. If the location we're
-				// scrolling to is less than minScrollBack, let it go.
-				active.lastScroll = currentScroll < minScroll ? defaultScroll : currentScroll;
-			}
-		},
-
-		_delayedRecordScroll: function() {
-			setTimeout( $.proxy(this, "_recordScroll"), 100 );
-		},
-
-		_getScroll: function() {
-			return this.window.scrollTop();
-		},
-
-		_getMinScroll: function() {
-			return $.mobile.minScrollBack;
-		},
-
-		_getDefaultScroll: function() {
-			return $.mobile.defaultHomeScroll;
 		},
 
 		_filterNavigateEvents: function( e, data ) {
@@ -3372,15 +3226,6 @@ $.widget( "mobile.page", {
 				deferred: deferred,
 				options: settings
 			};
-
-			// Let listeners know we're about to load content.
-			pblEvent = this._triggerWithDeprecated( "beforeload", triggerData );
-
-			// If the default behavior is prevented, stop here!
-			if ( pblEvent.deprecatedEvent.isDefaultPrevented() ||
-				pblEvent.event.isDefaultPrevented() ) {
-				return deferred.promise();
-			}
 
 			// Reset base to the default document base.
 			// only reset if we are not prefetching
@@ -4079,11 +3924,6 @@ $.widget( "mobile.page", {
 		// so if it's 1, use 0 from now on
 		$.mobile.defaultHomeScroll = ( !$.support.scrollTop || $.mobile.window.scrollTop() === 1 ) ? 0 : 1;
 
-		//dom-ready inits
-		if ( $.mobile.autoInitializePage ) {
-			$.mobile.initializePage();
-		}
-
 		// window load event
 		// hide iOS browser chrome on load if hideUrlBar is true this is as fall back incase we were too early before
 		if ( $.mobile.hideUrlBar ) {
@@ -4106,54 +3946,6 @@ $.widget( "mobile.page", {
 		}
 	});
 }( jQuery, this ));
-
-(function( $, undefined ) {
-
-var uiScreenHiddenRegex = /\bui-screen-hidden\b/;
-function noHiddenClass( elements ) {
-	var index,
-		length = elements.length,
-		result = [];
-
-	for ( index = 0; index < length; index++ ) {
-		if ( !elements[ index ].className.match( uiScreenHiddenRegex ) ) {
-			result.push( elements[ index ] );
-		}
-	}
-
-	return $( result );
-}
-
-$.mobile.behaviors.addFirstLastClasses = {
-	_getVisibles: function( $els, create ) {
-		var visibles;
-
-		if ( create ) {
-			visibles = noHiddenClass( $els );
-		} else {
-			visibles = $els.filter( ":visible" );
-			if ( visibles.length === 0 ) {
-				visibles = noHiddenClass( $els );
-			}
-		}
-
-		return visibles;
-	},
-
-	_addFirstLastClasses: function( $els, $visibles, create ) {
-		$els.removeClass( "ui-first-child ui-last-child" );
-		$visibles.eq( 0 ).addClass( "ui-first-child" ).end().last().addClass( "ui-last-child" );
-		if ( !create ) {
-			this.element.trigger( "updatelayout" );
-		}
-	},
-
-	_removeFirstLastClasses: function( $els ) {
-		$els.removeClass( "ui-first-child ui-last-child" );
-	}
-};
-
-})( jQuery );
 
 (function( $, undefined ) {
 
