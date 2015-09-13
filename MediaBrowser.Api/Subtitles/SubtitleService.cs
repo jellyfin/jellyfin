@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api.Subtitles
 {
@@ -127,14 +128,16 @@ namespace MediaBrowser.Api.Subtitles
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
             _mediaSourceManager = mediaSourceManager;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         public async Task<object> Get(GetSubtitlePlaylist request)

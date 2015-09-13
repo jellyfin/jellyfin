@@ -79,6 +79,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _containerAdapter = new ContainerAdapter(applicationHost);
         }
 
+        public string GlobalResponse { get; set; }
+        
         public override void Configure(Container container)
         {
             HostConfig.Instance.DefaultRedirectPath = DefaultRedirectPath;
@@ -333,6 +335,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (string.IsNullOrEmpty(localPath))
             {
                 httpRes.RedirectToUrl("/" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+
+            if (!string.IsNullOrWhiteSpace(GlobalResponse))
+            {
+                httpRes.Write(GlobalResponse);
+                httpRes.ContentType = "text/plain";
                 return Task.FromResult(true);
             }
 

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -39,6 +40,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         private readonly IApplicationPaths _appPaths;
 
         private readonly IEncodingManager _encodingManager;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
@@ -46,13 +48,14 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <param name="logManager">The log manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="itemRepo">The item repo.</param>
-        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager)
+        public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger(GetType().Name);
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
             _encodingManager = encodingManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>

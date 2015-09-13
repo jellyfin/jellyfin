@@ -150,8 +150,8 @@ namespace MediaBrowser.Common.IO
         /// <param name="path">The path.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         void DeleteDirectory(string path, bool recursive);
-
-		IEnumerable<DirectoryInfo> GetDirectories(string path, bool recursive = false);
+        
+        IEnumerable<DirectoryInfo> GetDirectories(string path, bool recursive = false);
 
 		IEnumerable<FileInfo> GetFiles(string path, bool recursive = false);
 
@@ -169,22 +169,12 @@ namespace MediaBrowser.Common.IO
 
 		bool FileExists(string path);
 
-		string ReadAllText(string path, Encoding encoding);
-
 		string ReadAllText(string path);
 
-		byte[] ReadAllBytes(string path);
+        void WriteAllText(string path, string text);
+        
+        void WriteAllText(string path, string text, Encoding encoding);
 
-		void WriteAllBytes(string path, byte[] bytes);
-
-		void WriteAllText(string path, string text, Encoding encoding);
-
-		void WriteAllText(string path, string text);
-
-		void CreateFile(string path);
-
-		void WriteAllLines(string path, string[] lines);
-
-		string[] ReadAllLines(string path);
+        string ReadAllText(string path, Encoding encoding);
     }
 }

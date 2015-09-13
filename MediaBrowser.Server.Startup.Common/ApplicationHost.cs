@@ -42,7 +42,6 @@ using MediaBrowser.Controller.Social;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
-using MediaBrowser.Controller.Themes;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Dlna;
 using MediaBrowser.Dlna.ConnectionManager;
@@ -87,7 +86,6 @@ using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Social;
 using MediaBrowser.Server.Implementations.Sync;
-using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.TV;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using MediaBrowser.Server.Startup.Common.Migrations;
@@ -124,7 +122,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>IConfigurationManager.</returns>
         protected override IConfigurationManager GetConfigurationManager()
         {
-            return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer);
+            return new ServerConfigurationManager(ApplicationPaths, LogManager, XmlSerializer, FileSystemManager);
         }
 
         /// <summary>
@@ -314,6 +312,7 @@ namespace MediaBrowser.Server.Startup.Common
             await base.RunStartupTasks().ConfigureAwait(false);
 
             Logger.Info("Core startup complete");
+            HttpServer.GlobalResponse = null;
 
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
             {
@@ -434,6 +433,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
             HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, "Emby", "web/index.html");
+            HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -458,7 +458,7 @@ namespace MediaBrowser.Server.Startup.Common
             var encryptionManager = new EncryptionManager();
             RegisterSingleInstance<IEncryptionManager>(encryptionManager);
 
-            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager);
+            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager, FileSystemManager);
             RegisterSingleInstance(ConnectManager);
 
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
@@ -475,14 +475,11 @@ namespace MediaBrowser.Server.Startup.Common
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
             RegisterSingleInstance(ChannelManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer);
+            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager);
             RegisterSingleInstance(MediaSourceManager);
 
             SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             RegisterSingleInstance(SessionManager);
-
-            var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
-            RegisterSingleInstance<IAppThemeManager>(appThemeManager);
 
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer, this);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
@@ -573,7 +570,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 try
                 {
-                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient);
+                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient, FileSystemManager);
                 }
                 catch (Exception ex)
                 {
@@ -598,7 +595,7 @@ namespace MediaBrowser.Server.Startup.Common
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment)
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
-            new FFmpegValidator(Logger, ApplicationPaths).Validate(info);
+            new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(info);
 
             MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,

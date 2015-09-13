@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _dataDirectory = Path.Combine(ProgramDataPath, "data");
 
-                    FileSystem.CreateDirectory(_dataDirectory);
+                    Directory.CreateDirectory(_dataDirectory);
                 }
 
                 return _dataDirectory;
@@ -152,7 +152,7 @@ namespace MediaBrowser.Common.Implementations
                 {
                     _cachePath = Path.Combine(ProgramDataPath, "cache");
 
-                    FileSystem.CreateDirectory(_cachePath);
+                    Directory.CreateDirectory(_cachePath);
                 }
 
                 return _cachePath;

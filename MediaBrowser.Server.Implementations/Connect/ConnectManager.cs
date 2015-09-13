@@ -23,6 +23,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
@@ -40,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
         private readonly ISecurityManager _securityManager;
+        private readonly IFileSystem _fileSystem;
 
         private ConnectData _data = new ConnectData();
 
@@ -104,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             IEncryptionManager encryption,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config, IUserManager userManager, IProviderManager providerManager, ISecurityManager securityManager)
+            IServerConfigurationManager config, IUserManager userManager, IProviderManager providerManager, ISecurityManager securityManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -116,6 +118,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _userManager = userManager;
             _providerManager = providerManager;
             _securityManager = securityManager;
+            _fileSystem = fileSystem;
 
             _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
             _config.ConfigurationUpdated += _config_ConfigurationUpdated;
@@ -943,7 +946,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         {
                             await _providerManager.SaveImage(user, imageUrl, _connectImageSemaphore, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
 
-                            await user.RefreshMetadata(new MetadataRefreshOptions
+                            await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
                             {
                                 ForceSave = true,
 

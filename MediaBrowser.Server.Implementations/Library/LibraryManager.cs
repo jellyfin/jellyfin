@@ -548,7 +548,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public BaseItem ResolvePath(FileSystemInfo fileInfo,
             Folder parent = null)
         {
-            return ResolvePath(fileInfo, new DirectoryService(_logger), parent);
+            return ResolvePath(fileInfo, new DirectoryService(_logger, _fileSystem), parent);
         }
 
         private BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
@@ -1009,7 +1009,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Ensure the location is available.
 			_fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
-            return new PeopleValidator(this, _logger, ConfigurationManager).ValidatePeople(cancellationToken, progress);
+            return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
 
         /// <summary>
@@ -1064,7 +1064,7 @@ namespace MediaBrowser.Server.Implementations.Library
             progress.Report(.5);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), recursive: false);
+            await RootFolder.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false);
 
             progress.Report(1);
 
@@ -1072,7 +1072,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             await userRoot.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await userRoot.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(), recursive: false).ConfigureAwait(false);
+            await userRoot.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
             progress.Report(2);
 
             var innerProgress = new ActionableProgress<double>();
@@ -1080,7 +1080,7 @@ namespace MediaBrowser.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(2 + pct * .73));
 
             // Now validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: true).ConfigureAwait(false);
 
             progress.Report(75);
 
@@ -1702,7 +1702,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (refresh)
             {
                 await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {
                     // Not sure why this is necessary but need to figure it out
                     // View images are not getting utilized without this
@@ -1790,7 +1790,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true
@@ -1860,7 +1860,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
                 {
                     // Need to force save to increment DateLastSaved
                     ForceSave = true

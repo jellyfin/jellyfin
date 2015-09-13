@@ -208,7 +208,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         {
             LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".txt");
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(LogFilePath));
+			Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
 
             AddFileTarget(LogFilePath, level);
 

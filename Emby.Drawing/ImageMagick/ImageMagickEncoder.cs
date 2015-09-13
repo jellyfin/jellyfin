@@ -191,7 +191,7 @@ namespace Emby.Drawing.ImageMagick
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new UnplayedCountIndicator(_appPaths).DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
+                    new UnplayedCountIndicator(_appPaths, _fileSystem).DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
                 }
 
                 if (options.PercentPlayed > 0)
@@ -212,15 +212,15 @@ namespace Emby.Drawing.ImageMagick
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(_appPaths).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(_appPaths).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
             else
             {
-                new StripCollageBuilder(_appPaths).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
         }
 

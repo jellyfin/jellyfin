@@ -71,9 +71,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
 
-            _recordingProvider = new ItemDataProvider<RecordingInfo>(jsonSerializer, _logger, Path.Combine(DataPath, "recordings"), (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase));
-            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers"));
+            _recordingProvider = new ItemDataProvider<RecordingInfo>(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "recordings"), (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase));
+            _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
+            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"));
             _timerProvider.TimerFired += _timerProvider_TimerFired;
         }
 
@@ -239,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _filesystem.DeleteFile(remove.Path);
+                    _fileSystem.DeleteFile(remove.Path);
                 }
                 catch (DirectoryNotFoundException)
                 {

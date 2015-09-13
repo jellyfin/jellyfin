@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {
@@ -9,8 +10,11 @@ namespace MediaBrowser.Common.Implementations.Serialization
     /// </summary>
     public class JsonSerializer : IJsonSerializer
     {
-        public JsonSerializer()
+        private readonly IFileSystem _fileSystem;
+        
+        public JsonSerializer(IFileSystem fileSystem)
         {
+            _fileSystem = fileSystem;
             Configure();
         }
 

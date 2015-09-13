@@ -107,7 +107,7 @@ namespace MediaBrowser.Common.Implementations.IO
                 throw new ArgumentNullException("target");
             }
 
-			_fileSystem.WriteAllText(shortcutPath, target);
+			File.WriteAllText(shortcutPath, target);
         }
 
         /// <summary>
@@ -449,5 +449,55 @@ namespace MediaBrowser.Common.Implementations.IO
 			return directoryInfo.EnumerateDirectories("*", searchOption)
 							.Concat<FileSystemInfo>(directoryInfo.EnumerateFiles("*", searchOption));
 		}
+
+        public Stream OpenRead(string path)
+        {
+            return File.OpenRead(path);
+        }
+
+        public void CopyFile(string source, string target, bool overwrite)
+        {
+            File.Copy(source, target, overwrite);
+        }
+
+        public void MoveFile(string source, string target)
+        {
+            File.Move(source, target);
+        }
+
+        public void MoveDirectory(string source, string target)
+        {
+            Directory.Move(source, target);
+        }
+
+        public bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        public bool FileExists(string path)
+        {
+            return File.Exists(path);
+        }
+
+        public string ReadAllText(string path)
+        {
+            return File.ReadAllText(path);
+        }
+
+        public void WriteAllText(string path, string text, Encoding encoding)
+        {
+            File.WriteAllText(path, text, encoding);
+        }
+
+        public void WriteAllText(string path, string text)
+        {
+            File.WriteAllText(path, text);
+        }
+
+        public string ReadAllText(string path, Encoding encoding)
+        {
+            return File.ReadAllText(path, encoding);
+        }
     }
 }

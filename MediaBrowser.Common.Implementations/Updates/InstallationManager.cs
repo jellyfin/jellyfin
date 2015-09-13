@@ -573,7 +573,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-					_fileSystem.WriteAllText(target + ".ver", package.versionStr);
+					File.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
             catch (IOException e)

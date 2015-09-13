@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {
@@ -13,11 +14,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths)
+        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public void Validate(FFMpegInfo info)
