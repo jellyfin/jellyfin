@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-            using (Stream stream = File.Open(file, FileMode.Create))
+			using (Stream stream = _fileSystem.GetFileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 SerializeToStream(obj, stream);
             }

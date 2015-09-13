@@ -170,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (source.Protocol == MediaProtocol.File)
                 {
                     // TODO: Path substitution
-                    if (!File.Exists(source.Path))
+					if (!_fileSystem.FileExists(source.Path))
                     {
                         source.SupportsDirectStream = false;
                     }

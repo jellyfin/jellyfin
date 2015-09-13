@@ -208,7 +208,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
                 var file = new FileInfo(path);

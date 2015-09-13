@@ -122,8 +122,7 @@ namespace MediaBrowser.Api.System
 
             try
             {
-                files = new DirectoryInfo(_appPaths.LogDirectoryPath)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
+				files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                     .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
@@ -149,8 +148,7 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetLogFile request)
         {
-            var file = new DirectoryInfo(_appPaths.LogDirectoryPath)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
+			var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);

@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.Music
 
             }).ConfigureAwait(false))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 using (var xmlFileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {

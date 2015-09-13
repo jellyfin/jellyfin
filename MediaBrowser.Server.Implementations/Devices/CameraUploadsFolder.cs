@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             var path = Path.Combine(_appPaths.DataPath, "camerauploads");
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
 
             return new CameraUploadsFolder
             {

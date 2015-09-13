@@ -90,8 +90,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllText(path, address, Encoding.UTF8);
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.WriteAllText(path, address, Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -105,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                var endpoint = File.ReadAllText(path, Encoding.UTF8);
+				var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
                 if (IsValid(endpoint))
                 {

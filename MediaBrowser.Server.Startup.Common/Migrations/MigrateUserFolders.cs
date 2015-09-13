@@ -23,7 +23,8 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 var rootPath = _appPaths.RootFolderPath;
 
-                var folders = new DirectoryInfo(rootPath).EnumerateDirectories("*", SearchOption.TopDirectoryOnly).Where(i => !string.Equals(i.Name, "default", StringComparison.OrdinalIgnoreCase))
+				var folders = _fileSystem.GetDirectories(rootPath)
+					.Where(i => !string.Equals(i.Name, "default", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 foreach (var folder in folders)

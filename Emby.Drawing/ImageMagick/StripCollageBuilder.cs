@@ -2,16 +2,19 @@
 using MediaBrowser.Common.Configuration;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Common.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
     public class StripCollageBuilder
     {
         private readonly IApplicationPaths _appPaths;
+		private readonly IFileSystem _fileSystem;
 
-        public StripCollageBuilder(IApplicationPaths appPaths)
+		public StripCollageBuilder(IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+			_fileSystem = fileSystem;
         }
 
         public void BuildPosterCollage(List<string> paths, string outputPath, int width, int height, string text)
@@ -490,7 +493,7 @@ namespace Emby.Drawing.ImageMagick
 
         private string MontserratLightFont
         {
-            get { return PlayedIndicatorDrawer.ExtractFont("MontserratLight.otf", _appPaths); }
+			get { return PlayedIndicatorDrawer.ExtractFont("MontserratLight.otf", _appPaths, _fileSystem); }
         }
     }
 }

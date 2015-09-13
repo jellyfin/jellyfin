@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations.Collections
         {
             var path = Path.Combine(_appPaths.DataPath, "collections");
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
 
             return new ManualCollectionsFolder
             {

@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = GetAudioImagePath(item);
 
-            if (!File.Exists(path))
+			if (!_fileSystem.FileExists(path))
             {
                 var semaphore = GetLock(path);
 
@@ -65,9 +65,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 try
                 {
                     // Check again in case it was saved while waiting for the lock
-                    if (!File.Exists(path))
+					if (!_fileSystem.FileExists(path))
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+						_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                         using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, cancellationToken).ConfigureAwait(false))
                         {

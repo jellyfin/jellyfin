@@ -358,7 +358,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (deleted)
             {
-                item.ValidateImages(new DirectoryService(_logger));
+                item.ValidateImages(new DirectoryService(_logger, _fileSystem));
             }
         }
 
@@ -392,7 +392,7 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     var existing = item.GetImageInfo(type, 0);
-                    if (existing != null && !File.Exists(existing.Path))
+					if (existing != null && !_fileSystem.FileExists(existing.Path))
                     {
                         item.RemoveImage(existing);
                         changed = true;

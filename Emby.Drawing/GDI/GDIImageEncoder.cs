@@ -66,7 +66,7 @@ namespace Emby.Drawing.GDI
             {
                 using (var croppedImage = image.CropWhitespace())
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+					_fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                     using (var outputStream = _fileSystem.GetFileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                     {
@@ -120,7 +120,7 @@ namespace Emby.Drawing.GDI
 
                         var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+						_fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                         // Save to the cache location
                         using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))

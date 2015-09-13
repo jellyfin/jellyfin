@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Music
 
             var path = FanartArtistProvider.GetArtistDataPath(_config.CommonApplicationPaths);
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
 
             var timestampFile = Path.Combine(path, "time.txt");
 
@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Music
             }
 
             // Find out the last time we queried for updates
-            var lastUpdateTime = timestampFileInfo.Exists ? File.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
+			var lastUpdateTime = timestampFileInfo.Exists ? _fileSystem.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
 
             var existingDirectories = Directory.EnumerateDirectories(path).Select(Path.GetFileName).ToList();
 
@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Music
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
             
-            File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
+			_fileSystem.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
 
             progress.Report(100);
         }

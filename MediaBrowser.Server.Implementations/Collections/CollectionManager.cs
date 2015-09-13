@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             try
             {
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 var collection = new BoxSet
                 {
