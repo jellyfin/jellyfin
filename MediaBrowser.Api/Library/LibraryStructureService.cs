@@ -210,7 +210,10 @@ namespace MediaBrowser.Api.Library
                 {
                     var path = Path.Combine(virtualFolderPath, request.CollectionType + ".collection");
 
-                    _fileSystem.CreateFile(path);
+                    using (File.Create(path))
+                    {
+
+                    }
                 }
             }
             finally

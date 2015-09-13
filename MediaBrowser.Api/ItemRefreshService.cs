@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using ServiceStack;
 using System.Threading;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api
 {
@@ -37,11 +38,13 @@ namespace MediaBrowser.Api
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
+        private readonly IFileSystem _fileSystem;
 
-        public ItemRefreshService(ILibraryManager libraryManager, IProviderManager providerManager)
+        public ItemRefreshService(ILibraryManager libraryManager, IProviderManager providerManager, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>

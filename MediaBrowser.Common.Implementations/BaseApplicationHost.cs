@@ -321,7 +321,7 @@ namespace MediaBrowser.Common.Implementations
 
         protected virtual IJsonSerializer CreateJsonSerializer()
         {
-            return new JsonSerializer();
+            return new JsonSerializer(FileSystemManager);
         }
 
         private void SetHttpLimit()
@@ -450,7 +450,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger);
+			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, FileSystemManager);
 
 			RegisterSingleInstance(JsonSerializer);
 			RegisterSingleInstance(XmlSerializer);
@@ -651,7 +651,7 @@ namespace MediaBrowser.Common.Implementations
         {
             try
             {
-                return Assembly.Load(FileSystemManager.ReadAllBytes((file)));
+                return Assembly.Load(File.ReadAllBytes((file)));
             }
             catch (Exception ex)
             {

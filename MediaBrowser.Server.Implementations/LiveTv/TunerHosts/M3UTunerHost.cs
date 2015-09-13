@@ -12,14 +12,18 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost
     {
-        public M3UTunerHost(IConfigurationManager config, ILogger logger)
+        private readonly IFileSystem _fileSystem;
+        
+        public M3UTunerHost(IConfigurationManager config, ILogger logger, IFileSystem fileSystem)
             : base(config, logger)
         {
+            _fileSystem = fileSystem;
         }
 
         public override string Type

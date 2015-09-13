@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
@@ -50,6 +51,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         /// <value>The logger.</value>
         private ILogger Logger { get; set; }
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
@@ -58,11 +60,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentException">kernel</exception>
-        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger)
+        public TaskManager(IApplicationPaths applicationPaths, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem)
         {
             ApplicationPaths = applicationPaths;
             JsonSerializer = jsonSerializer;
             Logger = logger;
+            _fileSystem = fileSystem;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
         }
@@ -175,7 +178,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             var myTasks = ScheduledTasks.ToList();
 
             var list = tasks.ToList();
-            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger)));
+            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem)));
 
             ScheduledTasks = myTasks.ToArray();
         }

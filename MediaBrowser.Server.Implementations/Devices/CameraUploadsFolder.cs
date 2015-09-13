@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -51,10 +52,12 @@ namespace MediaBrowser.Server.Implementations.Devices
     public class CameraUploadsDynamicFolder : IVirtualFolderCreator
     {
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public CameraUploadsDynamicFolder(IApplicationPaths appPaths)
+        public CameraUploadsDynamicFolder(IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public BasePluginFolder GetFolder()

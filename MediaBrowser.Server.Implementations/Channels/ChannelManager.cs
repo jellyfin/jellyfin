@@ -448,7 +448,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Name = channelInfo.Name;
             }
 
-            await item.RefreshMetadata(new MetadataRefreshOptions
+            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
                 ForceSave = isNew
 

@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
 
-                await collection.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), CancellationToken.None)
+                await collection.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), CancellationToken.None)
                     .ConfigureAwait(false);
 
                 if (options.ItemIdList.Count > 0)

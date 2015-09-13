@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Library.Validators
 {
@@ -29,17 +30,19 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         private readonly ILogger _logger;
 
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidator" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config)
+        public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         private bool DownloadMetadata(PersonInfo i, PeopleMetadataOptions options)
@@ -121,7 +124,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                     validIds.Add(item.Id);
                     
-                    var options = new MetadataRefreshOptions
+                    var options = new MetadataRefreshOptions(_fileSystem)
                     {
                          MetadataRefreshMode = person.Value ? MetadataRefreshMode.Default : MetadataRefreshMode.ValidationOnly,
                          ImageRefreshMode = person.Value ? ImageRefreshMode.Default : ImageRefreshMode.ValidationOnly

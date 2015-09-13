@@ -8,6 +8,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -26,11 +27,13 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
+        private readonly IFileSystem _fileSystem;
 
-        public GameXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
+        public GameXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _config = config;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -101,7 +104,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     "GameSystem",
                     "NesBox",
                     "NesBoxRom"
-                }, _config);
+                }, _config, _fileSystem);
         }
 
         public string GetSavePath(IHasMetadata item)

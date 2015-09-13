@@ -454,7 +454,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task RefreshUsersMetadata(CancellationToken cancellationToken)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken)).ToList();
+            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken)).ToList();
 
             return Task.WhenAll(tasks);
         }

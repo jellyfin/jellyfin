@@ -580,7 +580,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Name = channelInfo.Name;
             }
 
-            await item.RefreshMetadata(new MetadataRefreshOptions
+            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
                 ForceSave = isNew,
                 ReplaceImages = replaceImages.Distinct().ToList()
@@ -659,7 +659,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
 
             return item;
         }
@@ -759,7 +759,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
 
             return item.Id;
         }

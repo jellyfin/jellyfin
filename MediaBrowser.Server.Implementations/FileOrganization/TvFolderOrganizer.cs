@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     try
                     {
                         _logger.Debug("Deleting empty directory {0}", path);
-                        _fileSystem.DeleteDirectory(path);
+                        _fileSystem.DeleteDirectory(path, false);
                     }
                     catch (UnauthorizedAccessException) { }
                     catch (DirectoryNotFoundException) { }

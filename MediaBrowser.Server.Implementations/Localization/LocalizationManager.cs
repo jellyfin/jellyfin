@@ -212,7 +212,7 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private void LoadRatings(string file)
         {
-			var dict = _fileSystem.ReadAllLines(file).Select(i =>
+			var dict = File.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {

@@ -26,7 +26,7 @@ namespace MediaBrowser.Common.Implementations.Devices
             {
                 lock (_syncLock)
                 {
-					var value = _fileSystem.ReadAllText(CachePath, Encoding.UTF8);
+					var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
                     Guid guid;
                     if (Guid.TryParse(value, out guid))

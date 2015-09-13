@@ -15,6 +15,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Configuration
 {
@@ -23,15 +24,18 @@ namespace MediaBrowser.Server.Implementations.Configuration
     /// </summary>
     public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
     {
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer)
+        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
             : base(applicationPaths, logManager, xmlSerializer)
         {
+            _fileSystem = fileSystem;
             UpdateItemsByNamePath();
             UpdateMetadataPath();
         }
