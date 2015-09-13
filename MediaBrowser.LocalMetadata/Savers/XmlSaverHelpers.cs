@@ -14,6 +14,7 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -130,9 +131,9 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="xml">The XML.</param>
         /// <param name="path">The path.</param>
         /// <param name="xmlTagsUsed">The XML tags used.</param>
-        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed, IServerConfigurationManager config)
+        public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed, IServerConfigurationManager config, IFileSystem fileSystem)
         {
-            if (File.Exists(path))
+			if (fileSystem.FileExists(path))
             {
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
                 xml.Insert(position, GetCustomTags(path, xmlTagsUsed));
@@ -144,7 +145,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             //Add the new node to the document.
             xmlDocument.InsertBefore(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "yes"), xmlDocument.DocumentElement);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             var wasHidden = false;
 

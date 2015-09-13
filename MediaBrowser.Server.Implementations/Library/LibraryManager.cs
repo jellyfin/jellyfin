@@ -395,12 +395,12 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {
-                    if (Directory.Exists(path))
+					if (_fileSystem.DirectoryExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteDirectory(path, true);
                     }
-                    else if (File.Exists(path))
+					else if (_fileSystem.FileExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteFile(path);
@@ -691,7 +691,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-            Directory.CreateDirectory(rootFolderPath);
+			_fileSystem.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
 
@@ -742,7 +742,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                        Directory.CreateDirectory(userRootPath);
+						_fileSystem.CreateDirectory(userRootPath);
 
                         var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
@@ -1007,7 +1007,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is available.
-            Directory.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+			_fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager).ValidatePeople(cancellationToken, progress);
         }
@@ -1671,7 +1671,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (item == null ||
                 !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1758,7 +1758,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1828,7 +1828,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {

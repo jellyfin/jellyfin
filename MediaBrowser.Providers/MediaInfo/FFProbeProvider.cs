@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(Video video)
         {
-            video.ShortcutPath = File.ReadAllText(video.Path);
+			video.ShortcutPath = _fileSystem.ReadAllText(video.Path);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)

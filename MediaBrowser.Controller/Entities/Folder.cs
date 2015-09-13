@@ -371,7 +371,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService()));
+			return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(FileSystem)));
         }
 
         /// <summary>
@@ -693,7 +693,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if the specified path is offline; otherwise, <c>false</c>.</returns>
         private bool IsPathOffline(string path)
         {
-            if (File.Exists(path))
+			if (FileSystem.FileExists(path))
             {
                 return false;
             }
@@ -703,7 +703,7 @@ namespace MediaBrowser.Controller.Entities
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
             while (!string.IsNullOrEmpty(path) && path.Length > 1)
             {
-                if (Directory.Exists(path))
+				if (FileSystem.DirectoryExists(path))
                 {
                     return false;
                 }

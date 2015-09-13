@@ -35,7 +35,7 @@ namespace MediaBrowser.MediaEncoding.Configuration
                 && !string.Equals(oldEncodingConfig.TranscodingTempPath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+				if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }

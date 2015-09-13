@@ -355,7 +355,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private async Task CacheResponse(HttpResponseInfo response, string responseCachePath)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(responseCachePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
             using (var responseStream = response.Content)
             {
@@ -599,7 +599,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(options);
 
-            Directory.CreateDirectory(_appPaths.TempDirectory);
+			_fileSystem.CreateDirectory(_appPaths.TempDirectory);
 
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 

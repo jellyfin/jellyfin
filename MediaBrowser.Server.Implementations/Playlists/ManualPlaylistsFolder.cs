@@ -56,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
         {
             var path = Path.Combine(_appPaths.DataPath, "playlists");
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
 
             return new PlaylistsFolder
             {

@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _json.SerializeToFile(mainResult, dataFilePath);
         }

@@ -851,9 +851,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             if (generateCertificate)
             {
-                if (!File.Exists(certPath))
+                if (!FileSystemManager.FileExists(certPath))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(certPath));
+                    FileSystemManager.CreateDirectory(Path.GetDirectoryName(certPath));
 
                     try
                     {

@@ -645,7 +645,7 @@ namespace MediaBrowser.Server.Implementations.IO
             if (item != null)
             {
                 // If the item has been deleted find the first valid parent that still exists
-                while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
+				while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
                 {
                     item = item.Parent;
 

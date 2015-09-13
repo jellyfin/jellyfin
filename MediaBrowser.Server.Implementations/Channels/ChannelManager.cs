@@ -318,7 +318,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             try
             {
-                var files = new DirectoryInfo(parentPath).EnumerateFiles("*", SearchOption.TopDirectoryOnly);
+				var files = _fileSystem.GetFiles(parentPath);
 
                 if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
@@ -411,7 +411,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 _logger.Debug("Creating directory {0}", path);
 
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
                 fileInfo = new DirectoryInfo(path);
 
                 if (!fileInfo.Exists)
@@ -1082,7 +1082,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 _jsonSerializer.SerializeToFile(result, path);
             }
@@ -1462,7 +1462,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 options.RequestHeaders[header.Key] = header.Value;
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(destination));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(destination));
 
             // Determine output extension
             var response = await _httpClient.GetTempFileResponse(options).ConfigureAwait(false);
@@ -1500,7 +1500,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
             }
 
-            File.Copy(response.TempFilePath, destination, true);
+			_fileSystem.CopyFile(response.TempFilePath, destination, true);
 
             try
             {

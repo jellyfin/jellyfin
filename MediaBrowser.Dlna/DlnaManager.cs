@@ -279,8 +279,7 @@ namespace MediaBrowser.Dlna
         {
             try
             {
-                return new DirectoryInfo(path)
-                    .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+				return _fileSystem.GetFiles(path)
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
                     .Select(i => ParseProfileXmlFile(i.FullName, type))
                     .Where(i => i != null)
@@ -342,8 +341,7 @@ namespace MediaBrowser.Dlna
         {
             try
             {
-                return new DirectoryInfo(path)
-                    .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+				return _fileSystem.GetFiles(path)
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
                     .Select(i => new InternalProfileInfo
                     {
@@ -385,7 +383,7 @@ namespace MediaBrowser.Dlna
 
                     if (!fileInfo.Exists || fileInfo.Length != stream.Length)
                     {
-                        Directory.CreateDirectory(systemProfilesPath);
+						_fileSystem.CreateDirectory(systemProfilesPath);
 
                         using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
@@ -396,7 +394,7 @@ namespace MediaBrowser.Dlna
             }
 
             // Not necessary, but just to make it easy to find
-            Directory.CreateDirectory(UserProfilesPath);
+			_fileSystem.CreateDirectory(UserProfilesPath);
         }
 
         public void DeleteProfile(string id)

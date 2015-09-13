@@ -557,7 +557,7 @@ namespace MediaBrowser.Api.Library
             {
                 throw new ArgumentException("This command cannot be used for remote or virtual items.");
             }
-            if (Directory.Exists(item.Path))
+			if (_fileSystem.DirectoryExists(item.Path))
             {
                 throw new ArgumentException("This command cannot be used for directories.");
             }

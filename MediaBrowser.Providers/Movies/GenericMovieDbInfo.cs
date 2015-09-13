@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -22,14 +23,16 @@ namespace MediaBrowser.Providers.Movies
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILibraryManager _libraryManager;
+		private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer, ILibraryManager libraryManager)
+		public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _libraryManager = libraryManager;
+			_fileSystem = fileSystem;
         }
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
@@ -88,7 +91,7 @@ namespace MediaBrowser.Providers.Movies
                 tmdbId = movieInfo.id.ToString(_usCulture);
 
                 dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-                Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
                 _jsonSerializer.SerializeToFile(movieInfo, dataFilePath);
             }
 

@@ -889,7 +889,7 @@ namespace MediaBrowser.Api.Playback
             CancellationTokenSource cancellationTokenSource,
             string workingDirectory = null)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
@@ -942,7 +942,7 @@ namespace MediaBrowser.Api.Playback
             Logger.Info(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
@@ -972,7 +972,7 @@ namespace MediaBrowser.Api.Playback
             StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-            while (!File.Exists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+			while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }

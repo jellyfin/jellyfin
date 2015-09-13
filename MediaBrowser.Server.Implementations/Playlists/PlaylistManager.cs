@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
             try
             {
-                Directory.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 var playlist = new Playlist
                 {
@@ -150,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         private string GetTargetPath(string path)
         {
-            while (Directory.Exists(path))
+			while (_fileSystem.DirectoryExists(path))
             {
                 path += "1";
             }

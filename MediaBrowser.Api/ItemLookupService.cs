@@ -200,7 +200,7 @@ namespace MediaBrowser.Api
             //}
             item.ProviderIds = request.ProviderIds;
 
-            var task = _providerManager.RefreshFullItem(item, new MetadataRefreshOptions
+			var task = _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(_fileSystem)
             {
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
@@ -230,7 +230,7 @@ namespace MediaBrowser.Api
                     contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                if (File.Exists(contentPath))
+				if (_fileSystem.FileExists(contentPath))
                 {
                     return ToStaticFileResult(contentPath);
                 }
@@ -271,7 +271,7 @@ namespace MediaBrowser.Api
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
@@ -280,7 +280,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
             using (var writer = new StreamWriter(pointerCachePath))
             {
                 await writer.WriteAsync(fullCachePath).ConfigureAwait(false);

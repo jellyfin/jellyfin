@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         public Task SaveDevice(DeviceInfo device)
         {
             var path = Path.Combine(GetDevicePath(device.Id), "device.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {
@@ -178,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         public void AddCameraUpload(string deviceId, LocalFileInfo file)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {

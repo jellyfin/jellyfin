@@ -33,7 +33,7 @@ namespace Emby.Drawing.ImageMagick
                     pixel.Opacity = 0;
                     pixel.Color = "white";
                     draw.FillColor = pixel;
-                    draw.Font = PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths);
+                    draw.Font = PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths, _fileSystem);
                     draw.FontStyle = FontStyleType.NormalStyle;
                     draw.TextAlignment = TextAlignType.CenterAlign;
                     draw.FontWeight = FontWeightType.RegularStyle;

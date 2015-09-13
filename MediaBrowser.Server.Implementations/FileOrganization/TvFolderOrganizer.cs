@@ -132,8 +132,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             try
             {
-                return new DirectoryInfo(path)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
+				return _fileSystem.GetFiles(path, true)
                     .ToList();
             }
             catch (IOException ex)
@@ -151,8 +150,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
-            var eligibleFiles = new DirectoryInfo(path)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
+			var eligibleFiles = _fileSystem.GetFiles(path, true)
                 .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
@@ -189,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     try
                     {
                         _logger.Debug("Deleting empty directory {0}", path);
-                        Directory.Delete(path);
+                        _fileSystem.DeleteDirectory(path);
                     }
                     catch (UnauthorizedAccessException) { }
                     catch (DirectoryNotFoundException) { }

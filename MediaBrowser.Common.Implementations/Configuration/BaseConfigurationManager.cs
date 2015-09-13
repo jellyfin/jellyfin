@@ -121,7 +121,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         {
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {
@@ -276,7 +276,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
             var path = GetConfigurationFile(key);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configurationSyncLock)
             {

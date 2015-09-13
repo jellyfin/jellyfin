@@ -40,9 +40,9 @@ namespace MediaBrowser.Providers.ImagesByName
 
                     }).ConfigureAwait(false);
 
-                    Directory.CreateDirectory(Path.GetDirectoryName(file));
+					fileSystem.CreateDirectory(Path.GetDirectoryName(file));
 
-                    File.Copy(temp, file, true);
+					fileSystem.CopyFile(temp, file, true);
                 }
                 finally
                 {

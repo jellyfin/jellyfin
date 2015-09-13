@@ -683,7 +683,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+				.SelectMany(i => directoryService.GetFiles(i.FullName))
                 .ToList();
 
             // Support plex/xbmc convention
@@ -719,7 +719,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
+				.SelectMany(i => directoryService.GetFiles(i.FullName));
 
             return LibraryManager.ResolvePaths(files, directoryService, null)
                 .OfType<Video>()
@@ -743,7 +743,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), cancellationToken);
+            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
         }
 
         /// <summary>
@@ -1396,7 +1396,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions());
+			ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem));
             return Task.FromResult(true);
         }
 
@@ -1613,7 +1613,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-                    .Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
+					.Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
                     .ToList();
 
                 ImageInfos = ImageInfos.Except(deleted).ToList();
