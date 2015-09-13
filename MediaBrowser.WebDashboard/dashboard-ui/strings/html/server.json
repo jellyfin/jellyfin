@@ -333,7 +333,6 @@
     "TabServer": "Server",
     "TabTranscoding": "Transcoding",
     "TitleAdvanced": "Advanced",
-    "LabelAutomaticUpdateLevel": "Automatic update level:",
     "OptionRelease": "Official Release",
     "OptionBeta": "Beta",
     "OptionDev": "Dev (Unstable)",
