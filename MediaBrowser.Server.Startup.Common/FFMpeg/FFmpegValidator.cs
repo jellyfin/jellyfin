@@ -51,7 +51,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             string output = null;
             try
             {
-                output = File.ReadAllText(cachePath, Encoding.UTF8);
+				output = _fileSystem.ReadAllText(cachePath, Encoding.UTF8);
             }
             catch
             {
@@ -71,8 +71,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-                    File.WriteAllText(cachePath, output, Encoding.UTF8);
+					_fileSystem.CreateDirectory(Path.GetDirectoryName(cachePath));
+					_fileSystem.WriteAllText(cachePath, output, Encoding.UTF8);
                 }
                 catch
                 {

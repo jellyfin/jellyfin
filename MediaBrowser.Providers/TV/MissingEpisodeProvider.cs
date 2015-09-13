@@ -119,7 +119,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var series in group)
                 {
-                    var directoryService = new DirectoryService();
+                    var directoryService = new DirectoryService(_fileSystem);
 
                     await series.RefreshMetadata(new MetadataRefreshOptions(directoryService)
                     {
@@ -413,7 +413,7 @@ namespace MediaBrowser.Providers.TV
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
 
-            await episode.RefreshMetadata(new MetadataRefreshOptions
+			await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
             }, cancellationToken).ConfigureAwait(false);
         }

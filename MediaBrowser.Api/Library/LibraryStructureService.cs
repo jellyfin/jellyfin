@@ -195,7 +195,7 @@ namespace MediaBrowser.Api.Library
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
 
-            if (Directory.Exists(virtualFolderPath))
+            if (_fileSystem.DirectoryExists(virtualFolderPath))
             {
                 throw new ArgumentException("There is already a media collection with the name " + name + ".");
             }
@@ -204,13 +204,13 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                Directory.CreateDirectory(virtualFolderPath);
+				_fileSystem.CreateDirectory(virtualFolderPath);
 
                 if (!string.IsNullOrEmpty(request.CollectionType))
                 {
                     var path = Path.Combine(virtualFolderPath, request.CollectionType + ".collection");
 
-                    File.Create(path);
+                    _fileSystem.CreateFile(path);
                 }
             }
             finally
@@ -256,12 +256,12 @@ namespace MediaBrowser.Api.Library
             var currentPath = Path.Combine(rootFolderPath, request.Name);
             var newPath = Path.Combine(rootFolderPath, request.NewName);
 
-            if (!Directory.Exists(currentPath))
+			if (!_fileSystem.DirectoryExists(currentPath))
             {
                 throw new DirectoryNotFoundException("The media collection does not exist");
             }
 
-            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
+			if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && _fileSystem.DirectoryExists(newPath))
             {
                 throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
             }
@@ -276,11 +276,11 @@ namespace MediaBrowser.Api.Library
                     //Create an unique name
                     var temporaryName = Guid.NewGuid().ToString();
                     var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
-                    Directory.Move(currentPath, temporaryPath);
+					_fileSystem.MoveDirectory(currentPath, temporaryPath);
                     currentPath = temporaryPath;
                 }
 
-                Directory.Move(currentPath, newPath);
+				_fileSystem.MoveDirectory(currentPath, newPath);
             }
             finally
             {
@@ -319,7 +319,7 @@ namespace MediaBrowser.Api.Library
 
             var path = Path.Combine(rootFolderPath, request.Name);
 
-            if (!Directory.Exists(path))
+			if (!_fileSystem.DirectoryExists(path))
             {
                 throw new DirectoryNotFoundException("The media folder does not exist");
             }

@@ -1,25 +1,6 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MediaBrowser.Common/Properties/AssemblyInfo.cs">
-    <Files>
-      <File FileName="MediaBrowser.Server.Mac/ImageMagickSharp.dll.config" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Server.Startup.Common/ApplicationHost.cs" Line="1" Column="18" />
-      <File FileName="MediaBrowser.Api/ConnectService.cs" Line="7" Column="22" />
-      <File FileName="MediaBrowser.Server.Mac/AppController.cs" Line="22" Column="1" />
-      <File FileName="MediaBrowser.Server.Mac/AppDelegate.cs" Line="24" Column="1" />
-      <File FileName="MediaBrowser.Server.Mac/Main.cs" Line="60" Column="4" />
-      <File FileName="SharedVersion.cs" Line="1" Column="1" />
-      <File FileName="MediaBrowser.Common/Properties/AssemblyInfo.cs" Line="9" Column="12" />
-    </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="Emby.Server.Mac" selected="True" />
-          <Node name="OpenSubtitlesHandler" expanded="True" />
-        </State>
-      </Pad>
-    </Pads>
-  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Users/luke/MediaBrowser/MediaBrowser.Common.Implementations/BaseApplicationPaths.cs" line="233" column="1" />

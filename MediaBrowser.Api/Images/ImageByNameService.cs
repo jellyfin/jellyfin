@@ -130,8 +130,7 @@ namespace MediaBrowser.Api.Images
         {
             try
             {
-                return new DirectoryInfo(path)
-                    .GetFiles("*", SearchOption.AllDirectories)
+				return _fileSystem.GetFiles(path)
                     .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.Ordinal))
                     .Select(i => new ImageByNameInfo
                     {
@@ -184,7 +183,7 @@ namespace MediaBrowser.Api.Images
 
             var paths = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(_appPaths.GeneralPath, request.Name, filename + i)).ToList();
 
-            var path = paths.FirstOrDefault(File.Exists) ?? paths.FirstOrDefault();
+			var path = paths.FirstOrDefault(_fileSystem.FileExists) ?? paths.FirstOrDefault();
 
             return ToStaticFileResult(path);
         }
@@ -198,11 +197,11 @@ namespace MediaBrowser.Api.Images
         {
             var themeFolder = Path.Combine(_appPaths.RatingsPath, request.Theme);
 
-            if (Directory.Exists(themeFolder))
+			if (_fileSystem.DirectoryExists(themeFolder))
             {
                 var path = BaseItem.SupportedImageExtensions
                     .Select(i => Path.Combine(themeFolder, request.Name + i))
-                    .FirstOrDefault(File.Exists);
+					.FirstOrDefault(_fileSystem.FileExists);
 
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -212,14 +211,14 @@ namespace MediaBrowser.Api.Images
 
             var allFolder = Path.Combine(_appPaths.RatingsPath, "all");
 
-            if (Directory.Exists(allFolder))
+			if (_fileSystem.DirectoryExists(allFolder))
             {
                 // Avoid implicitly captured closure
                 var currentRequest = request;
 
                 var path = BaseItem.SupportedImageExtensions
                     .Select(i => Path.Combine(allFolder, currentRequest.Name + i))
-                    .FirstOrDefault(File.Exists);
+					.FirstOrDefault(_fileSystem.FileExists);
 
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -239,10 +238,10 @@ namespace MediaBrowser.Api.Images
         {
             var themeFolder = Path.Combine(_appPaths.MediaInfoImagesPath, request.Theme);
 
-            if (Directory.Exists(themeFolder))
+			if (_fileSystem.DirectoryExists(themeFolder))
             {
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, request.Name + i))
-                    .FirstOrDefault(File.Exists);
+					.FirstOrDefault(_fileSystem.FileExists);
 
                 if (!string.IsNullOrEmpty(path))
                 {
@@ -252,13 +251,13 @@ namespace MediaBrowser.Api.Images
 
             var allFolder = Path.Combine(_appPaths.MediaInfoImagesPath, "all");
 
-            if (Directory.Exists(allFolder))
+			if (_fileSystem.DirectoryExists(allFolder))
             {
                 // Avoid implicitly captured closure
                 var currentRequest = request;
 
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, currentRequest.Name + i))
-                    .FirstOrDefault(File.Exists);
+					.FirstOrDefault(_fileSystem.FileExists);
 
                 if (!string.IsNullOrEmpty(path))
                 {

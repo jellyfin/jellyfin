@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             CancellationToken cancellationToken)
         {
             var outputPath = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid() + ".png");
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
             var imageCreated = await CreateImage(item, itemsWithImages, outputPath, imageType, 0).ConfigureAwait(false);
 
             if (!imageCreated)
@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         private Task<bool> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var options = new ImageCollageOptions
             {
