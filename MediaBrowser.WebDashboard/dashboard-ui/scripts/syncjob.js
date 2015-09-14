@@ -260,8 +260,8 @@
         $('#txtSyncJobName', page).val(job.Name);
         $('#selectProfile', page).val(job.Profile || '').trigger('change');
         $('#selectQuality', page).val(job.Quality || '').trigger('change');
-        $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly).checkboxradio('refresh');
-        $('#chkSyncNewContent', page).checked(job.SyncNewContent).checkboxradio('refresh');
+        $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly);
+        $('#chkSyncNewContent', page).checked(job.SyncNewContent);
         $('#txtItemLimit', page).val(job.ItemLimit);
 
         if (job.Bitrate) {

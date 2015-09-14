@@ -3449,6 +3449,56 @@
             });
         };
 
+        self.reportOfflineActions = function (actions) {
+
+            if (!actions) {
+                throw new Error("null actions");
+            }
+
+            var url = self.getUrl("Sync/OfflineActions");
+
+            return self.ajax({
+                type: "POST",
+                data: JSON.stringify(actions),
+                contentType: "application/json",
+                url: url
+            });
+        };
+
+        self.syncData = function (data) {
+
+            if (!data) {
+                throw new Error("null data");
+            }
+
+            var url = self.getUrl("Sync/Data");
+
+            return self.ajax({
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getReadySyncItems = function (deviceId) {
+
+            if (!deviceId) {
+                throw new Error("null deviceId");
+            }
+
+            var url = self.getUrl("Sync/Items/Ready", {
+                TargetId: deviceId
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Reports a user has stopped playing an item
          * @param {String} userId

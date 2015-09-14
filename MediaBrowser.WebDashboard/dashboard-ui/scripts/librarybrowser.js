@@ -1103,7 +1103,12 @@
 
                         outerHtml += '</div>';
 
-                        html += '<h1>';
+                        if (index == 0) {
+                            html += '<h1>';
+                        }
+                        else {
+                            html += '<h1 style="margin-top:2em;">';
+                        }
                         html += itemGroupTitle;
                         html += '</h1>';
 

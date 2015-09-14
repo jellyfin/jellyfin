@@ -87,7 +87,7 @@
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                new MediaBrowser.MediaSync().sync(apiClient).done(function () {
+                new MediaBrowser.MediaSync().sync(apiClient, server).done(function () {
 
                     Logger.log("MediaSync succeeded to server: " + server.Id);
 

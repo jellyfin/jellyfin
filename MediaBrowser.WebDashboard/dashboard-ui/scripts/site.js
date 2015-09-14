@@ -2008,9 +2008,7 @@ var AppInfo = {};
             define("wakeonlan", ["apiclient/wakeonlan"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("localassetmanager", ["cordova/android/localassetmanager"]);
-        } else if (Dashboard.isRunningInCordova()) {
+        if (Dashboard.isRunningInCordova()) {
             define("localassetmanager", ["cordova/localassetmanager"]);
         } else {
             define("localassetmanager", ["apiclient/localassetmanager"]);
