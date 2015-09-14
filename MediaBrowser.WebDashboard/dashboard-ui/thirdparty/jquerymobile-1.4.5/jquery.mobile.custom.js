@@ -348,9 +348,6 @@
 		// Automatically handle clicks and form submissions through Ajax, when same-domain
 		ajaxEnabled: true,
 
-		// Automatically load and show pages based on location.hash
-		hashListeningEnabled: true,
-
 		// disable to prevent jquery from bothering with links
 		linkBindingEnabled: true,
 
@@ -373,8 +370,6 @@
 		// replace calls to window.history.back with phonegaps navigation helper
 		// where it is provided on the window object
 		phonegapNavigationEnabled: false,
-
-		pushStateEnabled: true,
 
 		// allows users to opt in to ignoring content by marking a parent element as
 		// data-ignored
@@ -441,17 +436,6 @@
 		nsNormalize: function( prop ) {
 			return nsNormalizeDict[ prop ] ||
 				( nsNormalizeDict[ prop ] = $.camelCase( $.mobile.ns + prop ) );
-		},
-
-		// Find the closest javascript page element to gather settings data jsperf test
-		// http://jsperf.com/single-complex-selector-vs-many-complex-selectors/edit
-		// possibly naive, but it shows that the parsing overhead for *just* the page selector vs
-		// the page and dialog selector is negligable. This could probably be speed up by
-		// doing a similar parent node traversal to the one found in the inherited theme code above
-		closestPageData: function( $target ) {
-			return $target
-				.closest( ":jqmData(role='page'), :jqmData(role='dialog')" )
-				.data( "mobile-page" );
 		}
 
 	});
@@ -855,16 +839,6 @@ $.mobile.browser.oldIE = (function() {
 })();
 
 $.extend( $.support, {
-	// Note, Chrome for iOS has an extremely quirky implementation of popstate.
-	// We've chosen to take the shortest path to a bug fix here for issue #5426
-	// See the following link for information about the regex chosen
-	// https://developers.google.com/chrome/mobile/docs/user-agent#chrome_for_ios_user-agent
-	pushState: "pushState" in history &&
-		"replaceState" in history &&
-		// When running inside a FF iframe, calling replaceState causes an error
-		!( window.navigator.userAgent.indexOf( "Firefox" ) >= 0 && window.top !== window ) &&
-		( window.navigator.userAgent.search(/CriOS/) === -1 ),
-
 	mediaquery: $.mobile.media( "only all" ),
 	cssPseudoElement: !!propExists( "content" ),
 	touchOverflow: !!propExists( "overflowScrolling" ),
@@ -907,18 +881,6 @@ $.mobile.ajaxBlacklist =
 		bound: false,
 
 		originalEventName: undefined,
-
-		// If pushstate support is present and push state support is defined to
-		// be true on the mobile namespace.
-		isPushStateEnabled: function() {
-			return $.support.pushState &&
-				this.isHashChangeEnabled();
-		},
-
-		// !! assumes mobile namespace is present
-		isHashChangeEnabled: function() {
-			return $.mobile.hashListeningEnabled === true;
-		},
 
 		// TODO a lot of duplication between popstate and hashchange
 		popstate: function( event ) {
@@ -973,13 +935,8 @@ $.mobile.ajaxBlacklist =
 
 			self.bound = true;
 
-			if ( self.isPushStateEnabled() ) {
-				self.originalEventName = "popstate";
-				$win.bind( "popstate.navigate", self.popstate );
-			} else if ( self.isHashChangeEnabled() ) {
-				self.originalEventName = "hashchange";
-				$win.bind( "hashchange.navigate", self.hashchange );
-			}
+			self.originalEventName = "popstate";
+			$win.bind("popstate.navigate", self.popstate);
 		}
 	};
 })( jQuery );
@@ -2360,8 +2317,7 @@ $.widget( "mobile.page", {
 		this.ignoreInitialHashChange = true;
 
 		$.mobile.window.bind({
-			"popstate.history": $.proxy( this.popstate, this ),
-			"hashchange.history": $.proxy( this.hashchange, this )
+			"popstate.history": $.proxy( this.popstate, this )
 		});
 	};
 
@@ -2420,8 +2376,7 @@ $.widget( "mobile.page", {
 
 		// TODO reconsider name
 		go: function( url, data, noEvents ) {
-			var state, href, hash, popstateEvent,
-				isPopStateEvent = $.event.special.navigate.isPushStateEnabled();
+			var state, href, hash, popstateEvent;
 
 			// Get the url as it would look squashed on to the current resolution url
 			href = path.squash( url );
@@ -2464,21 +2419,19 @@ $.widget( "mobile.page", {
 				title: document.title
 			}, data);
 
-			if ( isPopStateEvent ) {
-				popstateEvent = new $.Event( "popstate" );
-				popstateEvent.originalEvent = {
-					type: "popstate",
-					state: null
-				};
+			popstateEvent = new $.Event("popstate");
+			popstateEvent.originalEvent = {
+			    type: "popstate",
+			    state: null
+			};
 
-				this.squash( url, state );
+			this.squash(url, state);
 
-				// Trigger a new faux popstate event to replace the one that we
-				// caught that was triggered by the hash setting above.
-				if ( !noEvents ) {
-					this.ignorePopState = true;
-					$.mobile.window.trigger( popstateEvent );
-				}
+		    // Trigger a new faux popstate event to replace the one that we
+		    // caught that was triggered by the hash setting above.
+			if (!noEvents) {
+			    this.ignorePopState = true;
+			    $.mobile.window.trigger(popstateEvent);
 			}
 
 			// record the history entry so that the information can be included
@@ -2496,12 +2449,6 @@ $.widget( "mobile.page", {
 		//      second half of the navigate execution that will follow this binding
 		popstate: function( event ) {
 			var hash, state;
-
-			// Partly to support our test suite which manually alters the support
-			// value to test hashchange. Partly to prevent all around weirdness
-			if ( !$.event.special.navigate.isPushStateEnabled() ) {
-				return;
-			}
 
 			// If this is the popstate triggered by the actual alteration of the hash
 			// prevent it completely. History is tracked manually
@@ -2570,62 +2517,6 @@ $.widget( "mobile.page", {
 					// make sure to create a new object to pass down as the navigate event data
 					event.historyState = $.extend({}, historyEntry);
 					event.historyState.direction = direction;
-				}
-			});
-		},
-
-		// NOTE must bind before `navigate` special event hashchange binding otherwise the
-		//      navigation data won't be attached to the hashchange event in time for those
-		//      bindings to attach it to the `navigate` special event
-		// TODO add a check here that `hashchange.navigate` is bound already otherwise it's
-		//      broken (exception?)
-		hashchange: function( event ) {
-			var history, hash;
-
-			// If hashchange listening is explicitly disabled or pushstate is supported
-			// avoid making use of the hashchange handler.
-			if (!$.event.special.navigate.isHashChangeEnabled() ||
-				$.event.special.navigate.isPushStateEnabled() ) {
-				return;
-			}
-
-			// On occasion explicitly want to prevent the next hash from propogating because we only
-			// with to alter the url to represent the new state do so here
-			if ( this.preventNextHashChange ) {
-				this.preventNextHashChange = false;
-				event.stopImmediatePropagation();
-				return;
-			}
-
-			history = this.history;
-			hash = path.parseLocation().hash;
-
-			// If this is a hashchange caused by the back or forward button
-			// make sure to set the state of our history stack properly
-			this.history.direct({
-				url: hash,
-
-				// When the url is either forward or backward in history include the entry
-				// as data on the event object for merging as data in the navigate event
-				present: function( historyEntry, direction ) {
-					// make sure to create a new object to pass down as the navigate event data
-					event.hashchangeState = $.extend({}, historyEntry);
-					event.hashchangeState.direction = direction;
-				},
-
-				// When we don't find a hash in our history clearly we're aiming to go there
-				// record the entry as new for future traversal
-				//
-				// NOTE it's not entirely clear that this is the right thing to do given that we
-				//      can't know the users intention. It might be better to explicitly _not_
-				//      support location.hash assignment in preference to $.navigate calls
-				// TODO first arg to add should be the href, but it causes issues in identifying
-				//      embeded pages
-				missing: function() {
-					history.add( hash, {
-						hash: hash,
-						title: document.title
-					});
 				}
 			});
 		}
@@ -2792,24 +2683,7 @@ $.widget( "mobile.page", {
 
 		go: function( steps ) {
 
-			//if hashlistening is enabled use native history method
-			if ( $.mobile.hashListeningEnabled ) {
-				window.history.go( steps );
-			} else {
-
-				//we are not listening to the hash so handle history internally
-				var activeIndex = $.mobile.navigate.history.activeIndex,
-					index = activeIndex + parseInt( steps, 10 ),
-					url = $.mobile.navigate.history.stack[ index ].url,
-					direction = ( steps >= 1 )? "forward" : "back";
-
-				//update the history object
-				$.mobile.navigate.history.activeIndex = index;
-				$.mobile.navigate.history.previousIndex = activeIndex;
-
-				//change to the new page
-				this.change( url, { direction: direction, changeHash: false, fromHashChange: true } );
-			}
+		    window.history.go(steps);
 		},
 
 		// TODO rename _handleDestination
@@ -3542,7 +3416,7 @@ $.widget( "mobile.page", {
 					role: settings.role
 				};
 
-				if ( settings.changeHash !== false && $.mobile.hashListeningEnabled ) {
+				if ( settings.changeHash !== false ) {
 					$.mobile.navigate( this.window[ 0 ].encodeURI( url ), params, true);
 				} else if ( toPage[ 0 ] !== $.mobile.firstPage[ 0 ] ) {
 					$.mobile.navigate.history.add( url, params );
@@ -3874,17 +3748,14 @@ $.widget( "mobile.page", {
 			// the hash is not valid (contains more than one # or does not start with #)
 			// or there is no page with that hash, change to the first page in the DOM
 			// Remember, however, that the hash can also be a path!
-			if ( ! ( $.mobile.hashListeningEnabled &&
-				$.mobile.path.isHashValid( location.hash ) &&
+			if ( ! ( $.mobile.path.isHashValid( location.hash ) &&
 				( $( hashPage ).is( "[data-role='page']" ) ||
 					$.mobile.path.isPath( hash ) ||
 					hash === $.mobile.dialogHashKey ) ) ) {
 
 				// make sure to set initial popstate state if it exists
 				// so that navigation back to the initial page works properly
-				if ( $.event.special.navigate.isPushStateEnabled() ) {
-					$.mobile.navigate.navigator.squash( path.parseLocation().href );
-				}
+			    $.mobile.navigate.navigator.squash(path.parseLocation().href);
 
 				$.mobile.changePage( $.mobile.firstPage, {
 					reverse: true,
@@ -3892,16 +3763,10 @@ $.widget( "mobile.page", {
 					fromHashChange: true
 				});
 			} else {
-				// trigger hashchange or navigate to squash and record the correct
-				// history entry for an initial hash path
-				if ( !$.event.special.navigate.isPushStateEnabled() ) {
-					$window.trigger( "hashchange", [true] );
-				} else {
-					// TODO figure out how to simplify this interaction with the initial history entry
-					// at the bottom js/navigate/navigate.js
-					$.mobile.navigate.history.stack = [];
-					$.mobile.navigate( $.mobile.path.isPath( location.hash ) ? location.hash : location.href );
-				}
+			    // TODO figure out how to simplify this interaction with the initial history entry
+			    // at the bottom js/navigate/navigate.js
+			    $.mobile.navigate.history.stack = [];
+			    $.mobile.navigate($.mobile.path.isPath(location.hash) ? location.hash : location.href);
 			}
 		}
 	});
