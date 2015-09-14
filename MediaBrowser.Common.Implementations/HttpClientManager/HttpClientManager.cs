@@ -869,25 +869,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             Task<WebResponse> asyncTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
 
             ThreadPool.RegisterWaitForSingleObject((asyncTask as IAsyncResult).AsyncWaitHandle, TimeoutCallback, request, timeout, true);
-            asyncTask.ContinueWith(task =>
-            {
-                taskCompletion.TrySetResult(task.Result);
-
-            }, TaskContinuationOptions.NotOnFaulted);
+            var callback = new TaskCallback { taskCompletion = taskCompletion };
+            asyncTask.ContinueWith(callback.OnSuccess, TaskContinuationOptions.NotOnFaulted);
 
             // Handle errors
-            asyncTask.ContinueWith(task =>
-            {
-                if (task.Exception != null)
-                {
-                    taskCompletion.TrySetException(task.Exception);
-                }
-                else
-                {
-                    taskCompletion.TrySetException(new List<Exception>());
-                }
-
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            asyncTask.ContinueWith(callback.OnError, TaskContinuationOptions.OnlyOnFaulted);
 
             return taskCompletion.Task;
         }
@@ -900,6 +886,28 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 if (state != null)
                 {
                     request.Abort();
+                }
+            }
+        }
+
+        private class TaskCallback
+        {
+            public TaskCompletionSource<WebResponse> taskCompletion;
+
+            public void OnSuccess(Task<WebResponse> task)
+            {
+                taskCompletion.TrySetResult(task.Result);
+            }
+
+            public void OnError(Task<WebResponse> task)
+            {
+                if (task.Exception != null)
+                {
+                    taskCompletion.TrySetException(task.Exception);
+                }
+                else
+                {
+                    taskCompletion.TrySetException(new List<Exception>());
                 }
             }
         }

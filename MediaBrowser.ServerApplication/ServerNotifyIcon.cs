@@ -21,9 +21,6 @@ namespace MediaBrowser.ServerApplication
         private ToolStripMenuItem cmdRestart;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem cmdCommunity;
-        private ToolStripMenuItem cmdApiDocs;
-        private ToolStripMenuItem cmdSwagger;
-        private ToolStripMenuItem cmdGtihub;
 
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
@@ -66,9 +63,6 @@ namespace MediaBrowser.ServerApplication
             toolStripSeparator2 = new ToolStripSeparator();
             cmdConfigure = new ToolStripMenuItem();
             cmdBrowse = new ToolStripMenuItem();
-            cmdApiDocs = new ToolStripMenuItem();
-            cmdSwagger = new ToolStripMenuItem();
-            cmdGtihub = new ToolStripMenuItem();
             
             // 
             // notifyIcon1
@@ -86,7 +80,6 @@ namespace MediaBrowser.ServerApplication
             toolStripSeparator2,
             cmdRestart,
             toolStripSeparator1,
-            cmdApiDocs,
             cmdCommunity,
             cmdExit});
             contextMenuStrip1.Name = "contextMenuStrip1";
@@ -128,33 +121,12 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdBrowse.Name = "cmdBrowse";
             cmdBrowse.Size = new System.Drawing.Size(208, 22);
-            // 
-            // cmdApiDocs
-            // 
-            cmdApiDocs.DropDownItems.AddRange(new ToolStripItem[] {
-            cmdSwagger,
-            cmdGtihub});
-            cmdApiDocs.Name = "cmdApiDocs";
-            cmdApiDocs.Size = new System.Drawing.Size(208, 22);
-            // 
-            // cmdSwagger
-            // 
-            cmdSwagger.Name = "cmdSwagger";
-            cmdSwagger.Size = new System.Drawing.Size(136, 22);
-            // 
-            // cmdGtihub
-            // 
-            cmdGtihub.Name = "cmdGtihub";
-            cmdGtihub.Size = new System.Drawing.Size(136, 22);
 
             cmdExit.Click += cmdExit_Click;
             cmdRestart.Click += cmdRestart_Click;
             cmdConfigure.Click += cmdConfigure_Click;
             cmdCommunity.Click += cmdCommunity_Click;
             cmdBrowse.Click += cmdBrowse_Click;
-
-            cmdSwagger.Click += cmdSwagger_Click;
-            cmdGtihub.Click += cmdGtihub_Click;
 
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
 
@@ -181,9 +153,6 @@ namespace MediaBrowser.ServerApplication
 
             cmdExit.Text = _localization.GetLocalizedString("LabelExit");
             cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
-            cmdGtihub.Text = _localization.GetLocalizedString("LabelGithub");
-            cmdSwagger.Text = _localization.GetLocalizedString("LabelApiDocumentation");
-            cmdApiDocs.Text = _localization.GetLocalizedString("LabelDeveloperResources");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureServer");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
@@ -227,16 +196,6 @@ namespace MediaBrowser.ServerApplication
         void cmdExit_Click(object sender, EventArgs e)
         {
             _appHost.Shutdown();
-        }
-
-        void cmdGtihub_Click(object sender, EventArgs e)
-        {
-            BrowserLauncher.OpenGithub(_logger);
-        }
-
-        void cmdSwagger_Click(object sender, EventArgs e)
-        {
-            BrowserLauncher.OpenSwagger(_appHost, _logger);
         }
 
         ~ServerNotifyIcon()
