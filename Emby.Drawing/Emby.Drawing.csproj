@@ -36,6 +36,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageMagickSharp.1.0.0.16\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
+    <Reference Include="policy.2.0.taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -44,6 +47,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -56,7 +62,6 @@
     <Compile Include="GDI\PlayedIndicatorDrawer.cs" />
     <Compile Include="GDI\UnplayedCountIndicator.cs" />
     <Compile Include="IImageEncoder.cs" />
-    <Compile Include="Common\ImageHeader.cs" />
     <Compile Include="ImageHelpers.cs" />
     <Compile Include="ImageMagick\ImageMagickEncoder.cs" />
     <Compile Include="ImageMagick\StripCollageBuilder.cs" />
