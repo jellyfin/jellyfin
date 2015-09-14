@@ -404,6 +404,7 @@
     <EmbeddedResource Include="Localization\Core\vi.json" />
     <EmbeddedResource Include="Localization\Core\zh-CN.json" />
     <EmbeddedResource Include="Localization\Core\zh-TW.json" />
+    <EmbeddedResource Include="Localization\Core\zh-HK.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

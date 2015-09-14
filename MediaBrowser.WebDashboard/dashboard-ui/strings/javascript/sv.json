@@ -45,6 +45,8 @@
     "ButtonDonate": "Donera",
     "LabelRecurringDonationCanBeCancelledHelp": "St\u00e5ende donationer kan avbrytas n\u00e4r som helst via ditt PayPal-konto.",
     "HeaderMyMedia": "My Media",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notifications",
     "ErrorLaunchingChromecast": "Det gick inte att starta Chromecast. Kontrollera att enheten \u00e4r ansluten till det tr\u00e5dl\u00f6sa n\u00e4tverket.",
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",

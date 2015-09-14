@@ -45,6 +45,8 @@
     "ButtonDonate": "Donazione",
     "LabelRecurringDonationCanBeCancelledHelp": "Donazioni ricorrenti possono essere cancellati in qualsiasi momento dal tuo conto PayPal.",
     "HeaderMyMedia": "I mei media",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notifiche",
     "ErrorLaunchingChromecast": "Si \u00e8 verificato un errore all'avvio di chromecast. Assicurati che il tuo dispositivo sia connesso alla rete wireless.",
     "MessageErrorLoadingSupporterInfo": "Si \u00e8 verificato un errore caricando le  informazioni sui supporter. Si prega di riprovare pi\u00f9 tardi.",

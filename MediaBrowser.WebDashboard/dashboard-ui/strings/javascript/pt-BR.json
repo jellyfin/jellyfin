@@ -45,6 +45,8 @@
     "ButtonDonate": "Doar",
     "LabelRecurringDonationCanBeCancelledHelp": "Doa\u00e7\u00f5es recorrentes podem ser canceladas a qualquer momento dentro da conta do PayPal.",
     "HeaderMyMedia": "Minha M\u00eddia",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notifica\u00e7\u00f5es",
     "ErrorLaunchingChromecast": "Ocorreu um erro ao iniciar o chromecast. Por favor verifique se seu dispositivo est\u00e1 conectado \u00e0 sua rede sem fio.",
     "MessageErrorLoadingSupporterInfo": "Ocorreu um erro ao carregar a informa\u00e7\u00e3o do colaborador. Por favor, tente novamente mais tarde.",
@@ -874,5 +876,5 @@
     "ConfirmEndPlayerSession": "Voc\u00ea deseja fechar o app no dispositivo remoto?",
     "ButtonYes": "Sim",
     "ButtonNo": "N\u00e3o",
-    "ButtonRestorePreviousPurchase": "Restore Purchase"
+    "ButtonRestorePreviousPurchase": "Restaurar Compra"
 }

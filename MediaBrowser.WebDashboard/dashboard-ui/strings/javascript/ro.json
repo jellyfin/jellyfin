@@ -45,6 +45,8 @@
     "ButtonDonate": "Donate",
     "LabelRecurringDonationCanBeCancelledHelp": "Dona\u021biile recurente pot fi anulate \u00een orice moment din contul dvs. PayPal.",
     "HeaderMyMedia": "My Media",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notificari",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",

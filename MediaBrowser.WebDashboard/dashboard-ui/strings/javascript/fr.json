@@ -45,6 +45,8 @@
     "ButtonDonate": "Faire un don",
     "LabelRecurringDonationCanBeCancelledHelp": "Des donations r\u00e9currentes peuvent \u00eatre annul\u00e9es \u00e0 tout moment depuis votre compte PayPal.",
     "HeaderMyMedia": "Mes medias",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notifications",
     "ErrorLaunchingChromecast": "Une erreur a \u00e9t\u00e9 rencontr\u00e9e lors du lancement de Chromecast. Veuillez vous assurer que votre appareil est bien connect\u00e9 \u00e0 votre r\u00e9seau sans-fil.",
     "MessageErrorLoadingSupporterInfo": "Il y a eu une erreur lors du chargement des informations de supporter. Veuillez r\u00e9essayer plus tard.",
@@ -874,5 +876,5 @@
     "ConfirmEndPlayerSession": "Voulez-vous \u00e9teindre l'application sur l'appareil distant",
     "ButtonYes": "Oui",
     "ButtonNo": "Non",
-    "ButtonRestorePreviousPurchase": "Restore Purchase"
+    "ButtonRestorePreviousPurchase": "Restaurer l'achat"
 }

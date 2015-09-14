@@ -45,6 +45,8 @@
     "ButtonDonate": "Donate",
     "LabelRecurringDonationCanBeCancelledHelp": "Donaciones recurrentes se pueden cancelar en cualquier momento desde su cuenta de PayPal.",
     "HeaderMyMedia": "My Media",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notificaciones",
     "ErrorLaunchingChromecast": "Ha habido un error al lanzar chromecast. Asegurese que su dispositivo est\u00e1 conectado a su red inal\u00e1mbrica.",
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",

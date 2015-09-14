@@ -45,6 +45,8 @@
     "ButtonDonate": "Don\u00e9r",
     "LabelRecurringDonationCanBeCancelledHelp": "Tilbagevendende donationer kan afmeldes n\u00e5r som helst fra din PayPal konto.",
     "HeaderMyMedia": "Mine medier",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Underretninger",
     "ErrorLaunchingChromecast": "Der opstod en fejl ved start af cromecast. Tjek venligst at din enhed er forbundet til det tr\u00e5dl\u00f8se netv\u00e6rk.",
     "MessageErrorLoadingSupporterInfo": "Det opstod en fejl ved indl\u00e6sning at supporter information. Pr\u00f8v igen senere.",

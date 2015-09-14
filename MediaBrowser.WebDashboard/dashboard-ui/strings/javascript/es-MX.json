@@ -45,6 +45,8 @@
     "ButtonDonate": "Donar",
     "LabelRecurringDonationCanBeCancelledHelp": "Las donaciones recurrentes pueden ser canceladas en cualquier momento desde su cuenta PayPal.",
     "HeaderMyMedia": "Mis Medios",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Notificaciones",
     "ErrorLaunchingChromecast": "Hubo un error iniciando chromecast. Por favor aseg\u00farate de que tu dispositivo este conectado a tu red inalambrica",
     "MessageErrorLoadingSupporterInfo": "Se present\u00f3 un error al cargar la informaci\u00f3n del aficionado. Por favor int\u00e9ntelo m\u00e1s tarde.",
@@ -874,5 +876,5 @@
     "ConfirmEndPlayerSession": "\u00bfDesea detener la app en el dispositivo remoto?",
     "ButtonYes": "Si",
     "ButtonNo": "No",
-    "ButtonRestorePreviousPurchase": "Restore Purchase"
+    "ButtonRestorePreviousPurchase": "Restaurar Compra"
 }

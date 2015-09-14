@@ -45,6 +45,8 @@
     "ButtonDonate": "Spenden",
     "LabelRecurringDonationCanBeCancelledHelp": "Fortlaufende Spenden k\u00f6nnen jederzeit \u00fcber deinen PayPal Account gek\u00fcndigt werden.",
     "HeaderMyMedia": "Meine Medien",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
+    "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "TitleNotifications": "Benachrichtigungen",
     "ErrorLaunchingChromecast": "W\u00e4hrend des startens von Chromecast ist ein Fehler aufgetreten. Bitte stelle sicher, dass dein Ger\u00e4te mit dem WLAN verbunden ist.",
     "MessageErrorLoadingSupporterInfo": "Es trat ein Fehler beim laden der Unterst\u00fctzer-Informationen auf. Bitte versuchen Sie es sp\u00e4ter erneut.",
@@ -874,5 +876,5 @@
     "ConfirmEndPlayerSession": "M\u00f6chten Sie die App auf dem entfernten Ger\u00e4t beenden?",
     "ButtonYes": "Ja",
     "ButtonNo": "Nein",
-    "ButtonRestorePreviousPurchase": "Restore Purchase"
+    "ButtonRestorePreviousPurchase": "Kauf wiederherstellen"
 }
