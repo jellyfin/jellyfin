@@ -729,6 +729,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         font-size: 20px;
     }
 
+.detailSectionHeader paper-button {
+    font-size: 13px;
+}
+
 .ui-page-theme-b .detailSectionHeader {
     background-color: #141414;
 }

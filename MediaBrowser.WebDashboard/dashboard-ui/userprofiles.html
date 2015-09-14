@@ -10,18 +10,24 @@
             <div class="content-primary">
                 <br />
                 <div class="detailSectionHeader">
-                    <h3 style="margin:.6em 0;">
+                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                         <span style="vertical-align:middle;">${HeaderUsers}</span>
-                        <paper-fab class="btnAddUser mini" icon="add" title="${ButtonAddUser}" style="margin-left:1em;"></paper-fab>
                     </h3>
+                    <paper-button raised class="btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                        <iron-icon icon="add"></iron-icon>
+                        <span>${ButtonAdd}</span>
+                    </paper-button>
                 </div>
                 <div class="localUsers" style="text-align:left;margin-top:.5em;"></div>
 
                 <div class="detailSectionHeader" style="margin-top:2.5em;">
-                    <h3 style="margin:.6em 0;">
-                        <span style="vertical-align:middle;">${HeaderGuests}</span>
-                        <paper-fab class="btnInvite mini" icon="add" title="${ButtonInviteUser}" style="margin-left:1em;"></paper-fab>
+                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                        ${HeaderGuests}
                     </h3>
+                    <paper-button raised class="btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
+                        <iron-icon icon="add"></iron-icon>
+                        <span>${ButtonAdd}</span>
+                    </paper-button>
                 </div>
                 <div class="connectUsers" style="text-align:left;margin-top:.5em;"></div>
 

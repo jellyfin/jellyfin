@@ -21,7 +21,10 @@
 
                         <div>
                             <h1 style="display:inline-block;vertical-align:middle;">${HeaderTunerDevices}</h1>
-                            <paper-fab class="btnAddDevice mini" icon="add" title="${ButtonAdd}" style="margin-left:1em;"></paper-fab>
+                            <paper-button raised class="btnAddDevice submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                                <iron-icon icon="add"></iron-icon>
+                                <span>${ButtonAdd}</span>
+                            </paper-button>
                         </div>
                         <div class="devicesList">
                         </div>
@@ -30,7 +33,10 @@
                             <br />
                             <div>
                                 <h1 style="display:inline-block;vertical-align:middle;">${HeaderGuideProviders}</h1>
-                                <paper-fab class="btnAddProvider mini" icon="add" title="${ButtonAdd}" style="margin-left:1em;"></paper-fab>
+                                <paper-button raised class="btnAddProvider submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                                    <iron-icon icon="add"></iron-icon>
+                                    <span>${ButtonAdd}</span>
+                                </paper-button>
                             </div>
                             <p>${AddGuideProviderHelp}</p>
                             <div class="providerList">

@@ -94,6 +94,4 @@
         }
     });
 
-    window.CinemaModeConfigurationPage = new cinemaModeConfigurationPage();
-
 })(jQuery, document, window);
