@@ -172,5 +172,6 @@
     "HeaderProducer": "Produzenten",
     "HeaderWriter": "Autoren",
     "HeaderParentalRatings": "Altersbeschr\u00e4nkung",
-    "HeaderCommunityRatings": "Community Bewertungen"
+    "HeaderCommunityRatings": "Community Bewertungen",
+    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
 }
