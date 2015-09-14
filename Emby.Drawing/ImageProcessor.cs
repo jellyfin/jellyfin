@@ -1,5 +1,4 @@
-﻿using Emby.Drawing.Common;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -399,6 +398,8 @@ namespace Emby.Drawing
             {
                 size = GetImageSizeInternal(path, allowSlowMethod);
 
+                StartSaveImageSizeTimer();
+                
                 _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
             }
 
@@ -413,28 +414,18 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
-            ImageSize size;
+            using (var file = TagLib.File.Create(path))
+            {
+                var image = file as TagLib.Image.File;
 
-            try
-            {
-                size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
-            }
-            catch
-            {
-                if (!allowSlowMethod)
+                var properties = image.Properties;
+                
+                return new ImageSize
                 {
-                    throw;
-                }
-                //_logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
-
-                CheckDisposed();
-
-                size = _imageEncoder.GetImageSize(path);
+                    Height = properties.PhotoHeight,
+                    Width = properties.PhotoWidth
+                };
             }
-
-            StartSaveImageSizeTimer();
-
-            return size;
         }
 
         private readonly Timer _saveImageSizeTimer;

@@ -15404,14 +15404,14 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String,System.IFormatProvider)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
@@ -15419,7 +15419,7 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.GetObject(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.Object"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
@@ -15429,11 +15429,11 @@
             Checks whether the specified item exists in current thread MDC.
             </summary>
             <param name="item">Item name.</param>
-            <returns>A boolean indicating whether the specified item exists in current thread MDC.</returns>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current thread MDC.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Remove(System.String)">
             <summary>
-            Removes the specified item from current thread MDC.
+            Removes the specified <paramref name="item"/> from current thread MDC.
             </summary>
             <param name="item">Item name.</param>
         </member>
@@ -15447,7 +15447,6 @@
             Async version of Mapped Diagnostics Context - a logical context structure that keeps a dictionary
             of strings and provides methods to output them in layouts.  Allows for maintaining state across
             asynchronous tasks and call contexts.
-            Mostly for compatibility with log4net (log4net.ThreadLogicalContext).
             </summary>
             <remarks>
             Ideally, these changes should be incorporated as a new version of the MappedDiagnosticsContext class in the original
@@ -15456,10 +15455,25 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String)">
             <summary>
-            Gets the current logical context named item.
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
-            <returns>The item value of string.Empty if the value is not present.</returns>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String,System.IFormatProvider)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetObject(System.String)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.Object"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.String)">
             <summary>
@@ -15468,16 +15482,23 @@
             <param name="item">Item name.</param>
             <param name="value">Item value.</param>
         </member>
-        <member name="M:NLog.MappedDiagnosticsLogicalContext.Contains(System.String)">
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.Object)">
             <summary>
-            Checks whether the specified item exists in current logical context.
+            Sets the current logical context item to the specified value.
             </summary>
             <param name="item">Item name.</param>
-            <returns>A boolean indicating whether the specified item exists in current thread MDC.</returns>
+            <param name="value">Item value.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Contains(System.String)">
+            <summary>
+            Checks whether the specified <paramref name="item"/> exists in current logical context.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current logical context.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsLogicalContext.Remove(System.String)">
             <summary>
-            Removes the specified item from current logical context.
+            Removes the specified <paramref name="item"/> from current logical context.
             </summary>
             <param name="item">Item name.</param>
         </member>
@@ -18677,166 +18698,6 @@
             Gets or sets the performance counter type.
             </summary>
             <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.RichTextBoxRowColoringRule">
-            <summary>
-            The row-coloring condition.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#cctor">
-            <summary>
-            Initializes static members of the RichTextBoxRowColoringRule class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor(System.String,System.String,System.String,System.Drawing.FontStyle)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-            <param name="condition">The condition.</param>
-            <param name="fontColor">Color of the foreground text.</param>
-            <param name="backColor">Color of the background text.</param>
-            <param name="fontStyle">The font style.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor(System.String,System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-            <param name="condition">The condition.</param>
-            <param name="fontColor">Color of the text.</param>
-            <param name="backColor">Color of the background.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.CheckCondition(NLog.LogEventInfo)">
-            <summary>
-            Checks whether the specified log event matches the condition (if any).
-            </summary>
-            <param name="logEvent">
-            Log event.
-            </param>
-            <returns>
-            A value of <see langword="true"/> if the condition is not defined or 
-            if it matches, <see langword="false"/> otherwise.
-            </returns>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Default">
-            <summary>
-            Gets the default highlighting rule. Doesn't change the color.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Condition">
-            <summary>
-            Gets or sets the condition that must be met in order to set the specified font color.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.FontColor">
-            <summary>
-            Gets or sets the font color.
-            </summary>
-            <remarks>
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.BackgroundColor">
-            <summary>
-            Gets or sets the background color.
-            </summary>
-            <remarks>
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Style">
-            <summary>
-            Gets or sets the font style of matched text. 
-            </summary>
-            <remarks>
-            Possible values are the same as in <c>FontStyle</c> enum in <c>System.Drawing</c>
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.RichTextBoxWordColoringRule">
-            <summary>
-            Highlighting rule for Win32 colorful console.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor(System.String,System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-            <param name="text">The text to be matched..</param>
-            <param name="fontColor">Color of the text.</param>
-            <param name="backgroundColor">Color of the background.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor(System.String,System.String,System.String,System.Drawing.FontStyle)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-            <param name="text">The text to be matched..</param>
-            <param name="textColor">Color of the text.</param>
-            <param name="backgroundColor">Color of the background.</param>
-            <param name="fontStyle">The font style.</param>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Regex">
-            <summary>
-            Gets or sets the regular expression to be matched. You must specify either <c>text</c> or <c>regex</c>.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Text">
-            <summary>
-            Gets or sets the text to be matched. You must specify either <c>text</c> or <c>regex</c>.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.WholeWords">
-            <summary>
-            Gets or sets a value indicating whether to match whole words only.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.IgnoreCase">
-            <summary>
-            Gets or sets a value indicating whether to ignore case when comparing texts.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Style">
-            <summary>
-            Gets or sets the font style of matched text. 
-            Possible values are the same as in <c>FontStyle</c> enum in <c>System.Drawing</c>.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.CompiledRegex">
-            <summary>
-            Gets the compiled regular expression that matches either Text or Regex property.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.FontColor">
-            <summary>
-            Gets or sets the font color.
-            Names are identical with KnownColor enum extended with Empty value which means that font color won't be changed.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.BackgroundColor">
-            <summary>
-            Gets or sets the background color. 
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
         </member>
         <member name="T:NLog.Targets.SmtpAuthenticationMode">
             <summary>

@@ -2751,6 +2751,61 @@
             </summary>
             <docgen category='Filtering Options' order='10' />
         </member>
+        <member name="T:NLog.Fluent.Log">
+            <summary>
+            A global logging class using caller info to find the logger.
+            </summary>
+        </member>
+        <member name="M:NLog.Fluent.Log.Level(NLog.LogLevel,System.String)">
+            <summary>
+            Starts building a log event with the specified <see cref="T:NLog.LogLevel"/>.
+            </summary>
+            <param name="logLevel">The log level.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Trace(System.String)">
+            <summary>
+            Starts building a log event at the <c>Trace</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Debug(System.String)">
+            <summary>
+            Starts building a log event at the <c>Debug</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Info(System.String)">
+            <summary>
+            Starts building a log event at the <c>Info</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Warn(System.String)">
+            <summary>
+            Starts building a log event at the <c>Warn</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Error(System.String)">
+            <summary>
+            Starts building a log event at the <c>Error</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
+        <member name="M:NLog.Fluent.Log.Fatal(System.String)">
+            <summary>
+            Starts building a log event at the <c>Fatal</c> level.
+            </summary>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is the file path at the time of compile.</param>
+            <returns>An instance of the fluent <see cref="T:NLog.Fluent.LogBuilder"/>.</returns>
+        </member>
         <member name="T:NLog.Fluent.LogBuilder">
             <summary>
             A fluent class to build log events for NLog.
@@ -2875,22 +2930,31 @@
             <param name="userStackFrame">Index of the first user stack frame within the stack trace.</param>
             <returns></returns>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.Write">
+        <member name="M:NLog.Fluent.LogBuilder.Write(System.String,System.String,System.Int32)">
             <summary>
             Writes the log event to the underlying logger.
             </summary>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean})">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Func{System.Boolean},System.String,System.String,System.Int32)">
             <summary>
-            Writes the log event to the underlying logger.
+            Writes the log event to the underlying logger if the condition delegate is true.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
-        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean)">
+        <member name="M:NLog.Fluent.LogBuilder.WriteIf(System.Boolean,System.String,System.String,System.Int32)">
             <summary>
-            Writes the log event to the underlying logger.
+            Writes the log event to the underlying logger if the condition is true.
             </summary>
             <param name="condition">If condition is true, write log event; otherwise ignore event.</param>
+            <param name="callerMemberName">The method or property name of the caller to the method. This is set at by the compiler.</param>
+            <param name="callerFilePath">The full path of the source file that contains the caller. This is set at by the compiler.</param>
+            <param name="callerLineNumber">The line number in the source file at which the method is called. This is set at by the compiler.</param>
         </member>
         <member name="P:NLog.Fluent.LogBuilder.LogEventInfo">
             <summary>
@@ -3548,6 +3612,42 @@
             </summary>
             <typeparam name="T">Return type of the provided function.</typeparam>
             <param name="func">Function to run.</param>
+            <param name="fallback">Fallback value to return in case of exception. Defaults to default value of type T.</param>
+            <returns>Result returned by the provided function or fallback value in case of exception.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync(System.Threading.Tasks.Task)">
+            <summary>
+            If the task causes an exception or is canceled, the exception is logged at <c>Error</c> level. Exception is not propagated outside of this method.
+            </summary>
+            <param name="task">Task for which to log an exception or cancellation.</param>
+            <returns>A task that completes when after <paramref name="task"/> completes.</returns>
+            <remarks>
+            This task returned by this method does not include a return value, even if <paramref name="task"/> is of type <see cref="T:System.Threading.Tasks.Task`1"/> because the value is not present if the task causes an exception or is canceled.
+            If your code requires the return value, do not use this method to swallow the exception; instead, await the task normally and catch the exception to handle the case of no return value.
+            </remarks>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Runs async action. If the action throws, the exception is logged at <c>Error</c> level. Exception is not propagated outside of this method.
+            </summary>
+            <param name="asyncAction">Async action to execute.</param>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
+            <summary>
+            Runs the provided async function and returns its result. If exception is thrown, it is logged at <c>Error</c> level.
+            Exception is not propagated outside of this method. Fallback value is returned instead.
+            </summary>
+            <typeparam name="T">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <returns>Result returned by the provided function or fallback value in case of exception.</returns>
+        </member>
+        <member name="M:NLog.ISuppress.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
+            <summary>
+            Runs the provided async function and returns its result. If exception is thrown, it is logged at <c>Error</c> level.
+            Exception is not propagated outside of this method. Fallback value is returned instead.
+            </summary>
+            <typeparam name="T">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
             <param name="fallback">Fallback value to return in case of exception. Defaults to default value of type T.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
         </member>
@@ -6656,11 +6756,6 @@
             Supports mocking of SMTP Client code.
             </summary>
         </member>
-        <member name="M:NLog.Internal.MySmtpClient.Dispose">
-            <summary>
-            Sends a QUIT message to the SMTP server, gracefully ends the TCP connection, and releases all resources used by the current instance of the <see cref="T:System.Net.Mail.SmtpClient"/> class.
-            </summary>
-        </member>
         <member name="T:NLog.Internal.NetworkSenders.HttpNetworkSender">
             <summary>
             Network sender which uses HTTP or HTTPS POST.
@@ -7516,11 +7611,32 @@
             <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
             <param name="logEvent">Logging event.</param>
         </member>
+        <member name="F:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.CallerInformationAttributeNames">
+            <summary>
+            The names of caller information attributes.
+            https://msdn.microsoft.com/en-us/library/hh534540.aspx
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.GetProperties(NLog.LogEventInfo)">
+            <summary>
+            Also render the call attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
+            <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
+            </summary>
+            
+        </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Separator">
             <summary>
             Gets or sets string that will be used to separate key/value pairs.
             </summary>
             <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.IncludeCallerInformation">
+            <summary>
+            Also render the caller information attributes? (<see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>,
+            <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>, <see cref="T:System.Runtime.CompilerServices.CallerLineNumberAttribute"/>). 
+            
+            See https://msdn.microsoft.com/en-us/library/hh534540.aspx
+            </summary>
         </member>
         <member name="P:NLog.LayoutRenderers.AllEventPropertiesLayoutRenderer.Format">
             <summary>
@@ -8413,6 +8529,24 @@
             <param name="logEvent">Logging event.</param>
         </member>
         <member name="P:NLog.LayoutRenderers.MdcLayoutRenderer.Item">
+            <summary>
+            Gets or sets the name of the item.
+            </summary>
+            <docgen category='Rendering Options' order='10' />
+        </member>
+        <member name="T:NLog.LayoutRenderers.MdlcLayoutRenderer">
+            <summary>
+            Mapped Diagnostic Logical Context item (based on CallContext).
+            </summary>
+        </member>
+        <member name="M:NLog.LayoutRenderers.MdlcLayoutRenderer.Append(System.Text.StringBuilder,NLog.LogEventInfo)">
+            <summary>
+            Renders the specified MDLC item and appends it to the specified <see cref="T:System.Text.StringBuilder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:System.Text.StringBuilder"/> to append the rendered data to.</param>
+            <param name="logEvent">Logging event.</param>
+        </member>
+        <member name="P:NLog.LayoutRenderers.MdlcLayoutRenderer.Item">
             <summary>
             Gets or sets the name of the item.
             </summary>
@@ -10979,6 +11113,44 @@
             </summary>
             <typeparam name="T">Return type of the provided function.</typeparam>
             <param name="func">Function to run.</param>
+            <param name="fallback">Fallback value to return in case of exception. Defaults to default value of type T.</param>
+            <returns>Result returned by the provided function or fallback value in case of exception.</returns>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync(System.Threading.Tasks.Task)">
+            <summary>
+            If the task causes an exception or is canceled, the exception is logged at <c>Error</c> level. Exception is not propagated outside of this method.
+            </summary>
+            <param name="task">Task for which to log an exception or cancellation.</param>
+            <returns>A task that completes when after <paramref name="task"/> completes.</returns>
+            <remarks>
+            This task returned by this method does not include a return value, even if <paramref name="task"/> is of type <see cref="T:System.Threading.Tasks.Task`1"/> because the value is not present if the task causes an exception or is canceled.
+            If your code requires the return value, do not use this method to swallow the exception; instead, await the task normally and catch the exception to handle the case of no return value.
+            </remarks>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            Runs async action. If the action causes an exception, or the task it returns causes an exception or is canceled, the exception is logged at <c>Error</c> level. Exception is not propagated outside of this method.
+            </summary>
+            <param name="asyncAction">Async action to execute.</param>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}})">
+            <summary>
+            Runs the provided async function and returns its result.
+            If the function causes an exception, or the task it returns causes an exception or is canceled, the exception is logged at <c>Error</c> level.
+            Exception is not propagated outside of this method.
+            </summary>
+            <typeparam name="T">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
+            <returns>Result returned by the provided task or a default value in case of exception.</returns>
+        </member>
+        <member name="M:NLog.Logger.SwallowAsync``1(System.Func{System.Threading.Tasks.Task{``0}},``0)">
+            <summary>
+            Runs the provided async function and returns its result.
+            If the function causes an exception, or the task it returns causes an exception or is canceled, the exception is thrown, it is logged at <c>Error</c> level.
+            Exception is not propagated outside of this method. Fallback value is returned instead.
+            </summary>
+            <typeparam name="T">Return type of the provided function.</typeparam>
+            <param name="asyncFunc">Async function to run.</param>
             <param name="fallback">Fallback value to return in case of exception. Defaults to default value of type T.</param>
             <returns>Result returned by the provided function or fallback value in case of exception.</returns>
         </member>
@@ -14682,6 +14854,12 @@
             Gets the target endpoint for the service to which the WCF client can connect.
             </summary>
         </member>
+        <member name="P:NLog.LogReceiverService.IWcfLogReceiverClient.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
+        </member>
         <member name="T:NLog.LogReceiverService.LogReceiverForwardingService">
             <summary>
             Implementation of <see cref="T:NLog.LogReceiverService.ILogReceiverServer"/> which forwards received logs through <see cref="T:NLog.LogManager"/> or a given <see cref="T:NLog.LogFactory"/>.
@@ -14948,6 +15126,12 @@
             <summary>
             Occurs when Close operation has completed.
             </summary>
+        </member>
+        <member name="P:NLog.LogReceiverService.WcfLogReceiverClientBase`1.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
         </member>
         <member name="M:NLog.LogReceiverService.WcfILogReceiverClient.#ctor">
             <summary>
@@ -15217,6 +15401,12 @@
             Occurs when the communication object first enters the closing state.
             </summary>
         </member>
+        <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.CookieContainer">
+            <summary>
+            Gets or sets the cookie container.
+            </summary>
+            <value>The cookie container.</value>
+        </member>
         <member name="P:NLog.LogReceiverService.WcfLogReceiverClient.Endpoint">
             <summary>
             Gets the target endpoint for the service to which the WCF client can connect.
@@ -15391,14 +15581,14 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String,System.IFormatProvider)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
@@ -15406,7 +15596,7 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.GetObject(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.Object"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
@@ -15416,17 +15606,82 @@
             Checks whether the specified item exists in current thread MDC.
             </summary>
             <param name="item">Item name.</param>
-            <returns>A boolean indicating whether the specified item exists in current thread MDC.</returns>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current thread MDC.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Remove(System.String)">
             <summary>
-            Removes the specified item from current thread MDC.
+            Removes the specified <paramref name="item"/> from current thread MDC.
             </summary>
             <param name="item">Item name.</param>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Clear">
             <summary>
             Clears the content of current thread MDC.
+            </summary>
+        </member>
+        <member name="T:NLog.MappedDiagnosticsLogicalContext">
+            <summary>
+            Async version of Mapped Diagnostics Context - a logical context structure that keeps a dictionary
+            of strings and provides methods to output them in layouts.  Allows for maintaining state across
+            asynchronous tasks and call contexts.
+            </summary>
+            <remarks>
+            Ideally, these changes should be incorporated as a new version of the MappedDiagnosticsContext class in the original
+            NLog library so that state can be maintained for multiple threads in asynchronous situations.
+            </remarks>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Get(System.String,System.IFormatProvider)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.String"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.GetObject(System.String)">
+            <summary>
+            Gets the current logical context named item, as <see cref="T:System.Object"/>.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.String)">
+            <summary>
+            Sets the current logical context item to the specified value.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="value">Item value.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Set(System.String,System.Object)">
+            <summary>
+            Sets the current logical context item to the specified value.
+            </summary>
+            <param name="item">Item name.</param>
+            <param name="value">Item value.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Contains(System.String)">
+            <summary>
+            Checks whether the specified <paramref name="item"/> exists in current logical context.
+            </summary>
+            <param name="item">Item name.</param>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current logical context.</returns>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Remove(System.String)">
+            <summary>
+            Removes the specified <paramref name="item"/> from current logical context.
+            </summary>
+            <param name="item">Item name.</param>
+        </member>
+        <member name="M:NLog.MappedDiagnosticsLogicalContext.Clear">
+            <summary>
+            Clears the content of current logical context.
             </summary>
         </member>
         <member name="T:NLog.MDC">
@@ -17324,11 +17579,6 @@
             </summary>
             <seealso href="https://github.com/nlog/nlog/wiki/File-target">Documentation on NLog Wiki</seealso>
         </member>
-        <member name="F:NLog.Targets.FileTarget.EnableArchiveFileCompression">
-            <summary>
-            Gets or sets a value indicating whether to compress archive files into the zip archive format.
-            </summary>
-        </member>
         <member name="M:NLog.Targets.FileTarget.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:NLog.Targets.FileTarget"/> class.
@@ -17694,6 +17944,12 @@
         <member name="P:NLog.Targets.FileTarget.ArchiveNumbering">
             <summary>
             Gets or sets the way file archives are numbered. 
+            </summary>
+            <docgen category='Archival Options' order='10' />
+        </member>
+        <member name="P:NLog.Targets.FileTarget.EnableArchiveFileCompression">
+            <summary>
+            Gets or sets a value indicating whether to compress archive files into the zip archive format.
             </summary>
             <docgen category='Archival Options' order='10' />
         </member>
@@ -18620,166 +18876,6 @@
             Gets or sets the performance counter type.
             </summary>
             <docgen category='Performance Counter Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.RichTextBoxRowColoringRule">
-            <summary>
-            The row-coloring condition.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#cctor">
-            <summary>
-            Initializes static members of the RichTextBoxRowColoringRule class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor(System.String,System.String,System.String,System.Drawing.FontStyle)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-            <param name="condition">The condition.</param>
-            <param name="fontColor">Color of the foreground text.</param>
-            <param name="backColor">Color of the background text.</param>
-            <param name="fontStyle">The font style.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.#ctor(System.String,System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxRowColoringRule"/> class.
-            </summary>
-            <param name="condition">The condition.</param>
-            <param name="fontColor">Color of the text.</param>
-            <param name="backColor">Color of the background.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxRowColoringRule.CheckCondition(NLog.LogEventInfo)">
-            <summary>
-            Checks whether the specified log event matches the condition (if any).
-            </summary>
-            <param name="logEvent">
-            Log event.
-            </param>
-            <returns>
-            A value of <see langword="true"/> if the condition is not defined or 
-            if it matches, <see langword="false"/> otherwise.
-            </returns>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Default">
-            <summary>
-            Gets the default highlighting rule. Doesn't change the color.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Condition">
-            <summary>
-            Gets or sets the condition that must be met in order to set the specified font color.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.FontColor">
-            <summary>
-            Gets or sets the font color.
-            </summary>
-            <remarks>
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.BackgroundColor">
-            <summary>
-            Gets or sets the background color.
-            </summary>
-            <remarks>
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxRowColoringRule.Style">
-            <summary>
-            Gets or sets the font style of matched text. 
-            </summary>
-            <remarks>
-            Possible values are the same as in <c>FontStyle</c> enum in <c>System.Drawing</c>
-            </remarks>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="T:NLog.Targets.RichTextBoxWordColoringRule">
-            <summary>
-            Highlighting rule for Win32 colorful console.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor(System.String,System.String,System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-            <param name="text">The text to be matched..</param>
-            <param name="fontColor">Color of the text.</param>
-            <param name="backgroundColor">Color of the background.</param>
-        </member>
-        <member name="M:NLog.Targets.RichTextBoxWordColoringRule.#ctor(System.String,System.String,System.String,System.Drawing.FontStyle)">
-            <summary>
-            Initializes a new instance of the <see cref="T:NLog.Targets.RichTextBoxWordColoringRule"/> class.
-            </summary>
-            <param name="text">The text to be matched..</param>
-            <param name="textColor">Color of the text.</param>
-            <param name="backgroundColor">Color of the background.</param>
-            <param name="fontStyle">The font style.</param>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Regex">
-            <summary>
-            Gets or sets the regular expression to be matched. You must specify either <c>text</c> or <c>regex</c>.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Text">
-            <summary>
-            Gets or sets the text to be matched. You must specify either <c>text</c> or <c>regex</c>.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.WholeWords">
-            <summary>
-            Gets or sets a value indicating whether to match whole words only.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.IgnoreCase">
-            <summary>
-            Gets or sets a value indicating whether to ignore case when comparing texts.
-            </summary>
-            <docgen category='Rule Matching Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.Style">
-            <summary>
-            Gets or sets the font style of matched text. 
-            Possible values are the same as in <c>FontStyle</c> enum in <c>System.Drawing</c>.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.CompiledRegex">
-            <summary>
-            Gets the compiled regular expression that matches either Text or Regex property.
-            </summary>
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.FontColor">
-            <summary>
-            Gets or sets the font color.
-            Names are identical with KnownColor enum extended with Empty value which means that font color won't be changed.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
-        </member>
-        <member name="P:NLog.Targets.RichTextBoxWordColoringRule.BackgroundColor">
-            <summary>
-            Gets or sets the background color. 
-            Names are identical with KnownColor enum extended with Empty value which means that background color won't be changed.
-            </summary>
-            <docgen category='Formatting Options' order='10' />
         </member>
         <member name="T:NLog.Targets.SmtpAuthenticationMode">
             <summary>

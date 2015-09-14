@@ -10928,14 +10928,14 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <see cref="F:System.String.Empty"/>.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Get(System.String,System.IFormatProvider)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.String"/>.
             </summary>
             <param name="item">Item name.</param>
             <param name="formatProvider">The <see cref="T:System.IFormatProvider"/> to use when converting a value to a string.</param>
@@ -10943,7 +10943,7 @@
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.GetObject(System.String)">
             <summary>
-            Gets the current thread MDC named item.
+            Gets the current thread MDC named item, as <see cref="T:System.Object"/>.
             </summary>
             <param name="item">Item name.</param>
             <returns>The value of <paramref name="item"/>, if defined; otherwise <c>null</c>.</returns>
@@ -10953,11 +10953,11 @@
             Checks whether the specified item exists in current thread MDC.
             </summary>
             <param name="item">Item name.</param>
-            <returns>A boolean indicating whether the specified item exists in current thread MDC.</returns>
+            <returns>A boolean indicating whether the specified <paramref name="item"/> exists in current thread MDC.</returns>
         </member>
         <member name="M:NLog.MappedDiagnosticsContext.Remove(System.String)">
             <summary>
-            Removes the specified item from current thread MDC.
+            Removes the specified <paramref name="item"/> from current thread MDC.
             </summary>
             <param name="item">Item name.</param>
         </member>
