@@ -65,30 +65,23 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var list = new List<Folder>();
 
-            if (_config.Configuration.EnableUserSpecificUserViews)
+            foreach (var folder in standaloneFolders)
             {
-                foreach (var folder in standaloneFolders)
-                {
-                    var collectionFolder = folder as ICollectionFolder;
-                    var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                var collectionFolder = folder as ICollectionFolder;
+                var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
 
-                    if (plainFolderIds.Contains(folder.Id))
-                    {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
-                    }
-                    else if (!string.IsNullOrWhiteSpace(folderViewType))
-                    {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
-                    }
-                    else
-                    {
-                        list.Add(folder);
-                    }
+                if (plainFolderIds.Contains(folder.Id))
+                {
+                    list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
                 }
-            }
-            else
-            {
-                list.AddRange(standaloneFolders);
+                else if (!string.IsNullOrWhiteSpace(folderViewType))
+                {
+                    list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                }
+                else
+                {
+                    list.Add(folder);
+                }
             }
 
             var parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.GetViewType(user)))
@@ -120,7 +113,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, list, CollectionType.Games, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Games);
+                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Games, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
@@ -128,7 +122,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, list, CollectionType.BoxSets, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.BoxSets);
+                list.Add(await _libraryManager.GetNamedView(name, CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
