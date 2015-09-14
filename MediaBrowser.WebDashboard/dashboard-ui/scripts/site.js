@@ -2280,6 +2280,7 @@ var AppInfo = {};
         if (AppInfo.isNativeApp && !$.browser.android) {
             require(['localsync']);
         }
+        //require(['localsync']);
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {

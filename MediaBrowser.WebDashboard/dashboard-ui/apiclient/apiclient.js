@@ -3499,6 +3499,20 @@
             });
         };
 
+        self.reportSyncJobItemTransferred = function (syncJobItemId) {
+
+            if (!syncJobItemId) {
+                throw new Error("null syncJobItemId");
+            }
+
+            var url = self.getUrl("Sync/JobItems/" + syncJobItemId + "/Transferred");
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         /**
          * Reports a user has stopped playing an item
          * @param {String} userId

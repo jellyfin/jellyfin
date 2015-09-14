@@ -76,6 +76,29 @@
         return deferred.promise();
     }
 
+    function createLocalItem(libraryItem, serverId, originalFileName) {
+
+        var item = {};
+
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [item]);
+        return deferred.promise();
+    }
+
+    function downloadFile(url, localPath) {
+
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, []);
+        return deferred.promise();
+    }
+
+    function downloadSubtitles(url, localItem, subtitleStreamh) {
+
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [""]);
+        return deferred.promise();
+    }
+
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
@@ -84,7 +107,10 @@
         getServerItemIds: getServerItemIds,
         removeLocalItem: removeLocalItem,
         getLocalItem: getLocalItem,
-        addOrUpdateLocalItem: addOrUpdateLocalItem
+        addOrUpdateLocalItem: addOrUpdateLocalItem,
+        createLocalItem: createLocalItem,
+        downloadFile: downloadFile,
+        downloadSubtitles: downloadSubtitles
     };
 
 })();

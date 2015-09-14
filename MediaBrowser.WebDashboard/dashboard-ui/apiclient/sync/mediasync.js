@@ -14,7 +14,7 @@
                 syncData(apiClient, serverInfo, false).done(function () {
 
                     // Download new content
-                    getNewMedia(apiClient).done(function () {
+                    getNewMedia(apiClient, serverInfo).done(function () {
 
                         // Do the second data sync
                         syncData(apiClient, serverInfo, false).done(function () {
@@ -156,7 +156,7 @@
             return deferred.promise();
         }
 
-        function getNewMedia(apiClient) {
+        function getNewMedia(apiClient, serverInfo) {
 
             Logger.log('Begin getNewMedia');
 
@@ -164,14 +164,14 @@
 
             apiClient.getReadySyncItems(apiClient.deviceId()).done(function (jobItems) {
 
-                getNextNewItem(jobItems, 0, apiClient, deferred);
+                getNextNewItem(jobItems, 0, apiClient, serverInfo, deferred);
 
             }).fail(getOnFail(deferred));
 
             return deferred.promise();
         }
 
-        function getNextNewItem(jobItems, index, apiClient, deferred) {
+        function getNextNewItem(jobItems, index, apiClient, serverInfo, deferred) {
 
             var length = jobItems.length;
 
@@ -181,17 +181,224 @@
                 return;
             }
 
-            getNewItem(jobItems[index], apiClient).done(function () {
+            getNewItem(jobItems[index], apiClient, serverInfo).done(function () {
 
-                getNextNewItem(jobItems, index + 1, apiClient, deferred);
+                getNextNewItem(jobItems, index + 1, apiClient, serverInfo, deferred);
             }).fail(function () {
-                getNextNewItem(jobItems, index + 1, apiClient, deferred);
+                getNextNewItem(jobItems, index + 1, apiClient, serverInfo, deferred);
             });
         }
 
-        function getNewItem(jobItem, apiClient) {
+        function getNewItem(jobItem, apiClient, serverInfo) {
+
+            Logger.log('Begin getNewItem');
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require(['localassetmanager'], function () {
+
+                var libraryItem = jobItem.Item;
+                LocalAssetManager.createLocalItem(libraryItem, serverInfo.Id, jobItem.OriginalFileName).done(function (localItem) {
+
+                    downloadMedia(apiClient, jobItem, localItem).done(function () {
+
+                        getImages(apiClient, jobItem, localItem).done(function () {
+
+                            getSubtitles(apiClient, jobItem, localItem).done(function () {
+
+                                apiClient.reportSyncJobItemTransferred(jobItem.SyncJobItemId).done(function () {
+
+                                    deferred.resolve();
+
+                                }).fail(getOnFail(deferred));
+
+                            }).fail(getOnFail(deferred));
+
+                        }).fail(getOnFail(deferred));
+
+                    }).fail(getOnFail(deferred));
+
+                }).fail(getOnFail(deferred));
+            });
+
+            return deferred.promise();
+        }
+
+        function downloadMedia(apiClient, jobItem, localItem) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require(['localassetmanager'], function () {
+
+                var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File");
+                var localPath = localItem.LocalPath;
+
+                Logger.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
+
+                localAssetManager.downloadFile(url, localPath).done(function () {
+
+                    localAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+
+                        deferred.resolve();
+
+                    }).fail(getOnFail(deferred));
+
+                }).fail(getOnFail(deferred));
+
+            });
+
+            return deferred.promise();
+        }
+
+        function getImages(apiClient, jobItem, localItem) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            getNextImage(0, apiClient, localItem, deferred);
+
+            return deferred.promise();
+        }
+
+        function getNextImage(index, apiClient, localItem, deferred) {
+
+            if (index >= 4) {
+
+                deferred.resolve();
+                return;
+            }
+
+            var libraryItem = item.Item;
+
+            var serverId = libraryItem.ServerId;
+            var itemId = null;
+            var imageTag = null;
+            var imageType = "Primary";
+
+            switch (index) {
+
+                case 0:
+                    itemId = libraryItem.Id;
+                    imageType = "Primary";
+                    imageTag = (libraryItem.ImageTags || {})["Primary"];
+                    break;
+                case 1:
+                    itemId = libraryItem.SeriesId;
+                    imageType = "Primary";
+                    imageTag = libraryItem.SeriesPrimaryImageTag;
+                    break;
+                case 2:
+                    itemId = libraryItem.SeriesId;
+                    imageType = "Thumb";
+                    imageTag = libraryItem.SeriesPrimaryImageTag;
+                    break;
+                case 3:
+                    itemId = libraryItem.AlbumId;
+                    imageType = "Primary";
+                    imageTag = libraryItem.AlbumPrimaryImageTag;
+                    break;
+                default:
+                    break;
+            }
+
+            if (!itemId) {
+                deferred.resolve();
+                return;
+            }
+
+            if (!imageTag) {
+                getNextImage(index + 1, apiClient, localItem, deferred);
+                return;
+            }
+
+            downloadImage(apiClient, serverId, itemId, imageTag, imageType).done(function () {
+
+                getNextImage(index + 1, apiClient, localItem, deferred);
+
+            }).fail(getOnFail(deferred));
+        }
+
+        function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
             var deferred = DeferredBuilder.Deferred();
             deferred.resolve();
+            return deferred.promise();
+        }
+
+        function getSubtitles(apiClient, jobItem, localItem) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require(['localassetmanager'], function () {
+
+                if (!jobItem.Item.MediaSources.length) {
+                    logger.Error("Cannot download subtitles because video has no media source info.");
+                    deferred.resolve();
+                    return;
+                }
+
+                var files = jobItem.AdditionalFiles.filter(function (f) {
+                    return f.Type == 'Subtitles';
+                });
+
+                var mediaSource = jobItem.Item.MediaSources[0];
+
+                getNextSubtitle(files, 0, apiClient, jobItem, localItem, mediaSource);
+            });
+
+            return deferred.promise();
+        }
+
+        function getNextSubtitle(files, index, apiClient, jobItem, localItem, mediaSource) {
+
+            var length = files.length;
+
+            if (index >= length) {
+
+                deferred.resolve();
+                return;
+            }
+
+            getItemSubtitle(file, apiClient, jobItem, localItem, mediaSource).done(function () {
+
+                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource);
+
+            }).fail(function () {
+                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource);
+            });
+        }
+
+        function getItemSubtitle(file, apiClient, jobItem, localItem, mediaSource) {
+
+            Logger.log('Begin getItemSubtitle');
+            var deferred = DeferredBuilder.Deferred();
+
+            var subtitleStream = mediaSource.MediaStreams.filter(function (m) {
+                return m.Type == 'Subtitle' && m.Index == file.Index;
+            })[0];
+
+            if (!subtitleStream) {
+
+                // We shouldn't get in here, but let's just be safe anyway
+                Logger.log("Cannot download subtitles because matching stream info wasn't found.");
+                deferred.reject();
+                return;
+            }
+
+            var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/AdditionalFiles", {
+                Name: file.Name
+            });
+
+            require(['localassetmanager'], function () {
+
+                LocalAssetManager.downloadSubtitles(url, localItem, subtitleStream).done(function (subtitlePath) {
+
+                    subtitleStream.Path = subtitlePath;
+                    localAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+                        deferred.resolve();
+                    }).fail(getOnFail(deferred));
+
+                }).fail(getOnFail(deferred));
+            });
+
             return deferred.promise();
         }
 
