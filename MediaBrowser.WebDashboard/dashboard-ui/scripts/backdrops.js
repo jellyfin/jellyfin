@@ -29,6 +29,7 @@
 
         var elem = document.documentElement;
         elem.classList.remove('backdropContainer');
+        elem.removeAttribute('data-url');
         elem.style.backgroundImage = '';
     }
 
@@ -81,6 +82,11 @@
 
     function setBackdropImage(elem, url) {
 
+        if (url == elem.getAttribute('data-url')) {
+            return;
+        }
+
+        elem.setAttribute('data-url', url);
         ImageLoader.lazyImage(elem, url);
     }
 
@@ -119,7 +125,9 @@
 
     function setDefault(page) {
 
-        getElement().style.backgroundImage = "url(css/images/splash.jpg)";
+        var elem = getElement();
+        elem.style.backgroundImage = "url(css/images/splash.jpg)";
+        elem.setAttribute('data-url', 'css/images/splash.jpg');
         page = $(page)[0];
         page.classList.add('backdropPage');
         page.classList.add('staticBackdropPage');

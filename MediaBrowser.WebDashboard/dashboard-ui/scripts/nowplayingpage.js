@@ -595,9 +595,12 @@
 
         setImageUrl(page, url);
 
-        Backdrops.setBackdropUrl(page, backdropUrl);
-
         if (item) {
+
+            // This should be outside of the IF
+            // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
+            Backdrops.setBackdropUrl(page, backdropUrl);
+
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).done(function (fullItem) {
                 page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
             });

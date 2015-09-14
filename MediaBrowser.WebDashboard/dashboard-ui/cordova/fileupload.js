@@ -4,7 +4,7 @@
 
         var self = this;
 
-        self.upload = function (file, name, url) {
+        self.upload = function (file, mimeType, name, url) {
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -24,7 +24,7 @@
             var options = new FileUploadOptions();
             options.fileKey = "file";
             options.fileName = name;
-            options.mimeType = 'image/jpg';
+            options.mimeType = mimeType;
 
             var params = {};
             options.params = params;

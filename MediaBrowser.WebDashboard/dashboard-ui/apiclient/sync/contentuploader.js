@@ -113,7 +113,10 @@
 
                 Logger.log('Uploading file to ' + url);
 
-                new MediaBrowser.FileUpload().upload(file, name, url).done(function () {
+                // TODO: Need to get this from cordova file api instead of trying to infer the content type from the path
+                var mimeType = file.toLowerCase().indexOf('mp4') != -1 || file.toLowerCase().indexOf('m4v') != -1 ? 'video/mp4' : (file.toLowerCase().indexOf('png') != -1 ? 'image/png' : 'image/jpg');
+
+                new MediaBrowser.FileUpload().upload(file, mimeType, name, url).done(function () {
 
                     Logger.log('File upload succeeded');
                     deferred.resolve();

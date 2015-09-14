@@ -39,7 +39,9 @@
 
         $('.activityItems', page).activityLogList();
 
-        $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html'));
+        $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html', {
+            api_key: ApiClient.accessToken()
+        }));
     },
 
     onPageHide: function () {
