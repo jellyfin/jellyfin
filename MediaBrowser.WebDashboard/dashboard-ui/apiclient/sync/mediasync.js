@@ -318,13 +318,39 @@
         }
 
         function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
+
+            Logger.log('Begin downloadImage');
             var deferred = DeferredBuilder.Deferred();
-            deferred.resolve();
+
+            require(['localassetmanager'], function () {
+
+                localAssetManager.hasImage(serverId, itemId, imageTag).done(function (hasImage) {
+
+                    if (hasImage) {
+                        deferred.resolve();
+                        return;
+                    }
+
+                    var imageUrl = apiClient.getImageUrl(itemId, {
+                        Tag: imageTag,
+                        ImageType: imageType
+                    });
+
+                    localAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).done(function () {
+
+                        deferred.resolve();
+
+                    }).fail(getOnFail(deferred));
+
+                });
+            });
+
             return deferred.promise();
         }
 
         function getSubtitles(apiClient, jobItem, localItem) {
 
+            Logger.log('Begin getSubtitles');
             var deferred = DeferredBuilder.Deferred();
 
             require(['localassetmanager'], function () {

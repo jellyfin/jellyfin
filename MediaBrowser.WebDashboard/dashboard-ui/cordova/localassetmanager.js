@@ -99,6 +99,18 @@
         return deferred.promise();
     }
 
+    function hasImage(serverId, itemId, imageTag) {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [false]);
+        return deferred.promise();
+    }
+
+    function downloadImage(url, serverId, itemId, imageTag) {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [false]);
+        return deferred.promise();
+    }
+
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
@@ -110,7 +122,9 @@
         addOrUpdateLocalItem: addOrUpdateLocalItem,
         createLocalItem: createLocalItem,
         downloadFile: downloadFile,
-        downloadSubtitles: downloadSubtitles
+        downloadSubtitles: downloadSubtitles,
+        hasImage: hasImage,
+        downloadImage: downloadImage
     };
 
 })();

@@ -462,9 +462,6 @@
                     itemId = "livetv";
                 }
 
-                if (i.Type == 'Channel') {
-                }
-
                 if (i.CollectionType == "photos") {
                     icon = 'photo-library';
                     color = "#009688";

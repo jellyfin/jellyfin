@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -8,7 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api
 {
@@ -97,14 +97,14 @@ namespace MediaBrowser.Api
         /// The _network manager
         /// </summary>
         private readonly INetworkManager _networkManager;
-		private IFileSystem _fileSystem;
+        private IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentService" /> class.
         /// </summary>
         /// <param name="networkManager">The network manager.</param>
         /// <exception cref="System.ArgumentNullException">networkManager</exception>
-		public EnvironmentService(INetworkManager networkManager, IFileSystem fileSystem)
+        public EnvironmentService(INetworkManager networkManager, IFileSystem fileSystem)
         {
             if (networkManager == null)
             {
@@ -112,7 +112,7 @@ namespace MediaBrowser.Api
             }
 
             _networkManager = networkManager;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -138,7 +138,15 @@ namespace MediaBrowser.Api
                 return ToOptimizedSerializedResultUsingCache(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
+            try
+            {
+                return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Don't throw the original UnauthorizedAccessException because it will cause a 401 response
+                throw new ApplicationException("Access to the path " + request.Path + " is denied.");
+            }
         }
 
         public object Get(GetNetworkShares request)
@@ -225,7 +233,7 @@ namespace MediaBrowser.Api
         private IEnumerable<FileSystemEntryInfo> GetFileSystemEntries(GetDirectoryContents request)
         {
             // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-			var entries = _fileSystem.GetFileSystemEntries(request.Path).Where(i =>
+            var entries = _fileSystem.GetFileSystemEntries(request.Path).Where(i =>
             {
                 if (!request.IncludeHidden && i.Attributes.HasFlag(FileAttributes.Hidden))
                 {
