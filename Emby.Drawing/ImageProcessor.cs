@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Drawing.Common;
 
 namespace Emby.Drawing
 {
@@ -414,18 +415,26 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
-            using (var file = TagLib.File.Create(path))
+            try
             {
-                var image = file as TagLib.Image.File;
-
-                var properties = image.Properties;
-                
-                return new ImageSize
+                using (var file = TagLib.File.Create(path))
                 {
-                    Height = properties.PhotoHeight,
-                    Width = properties.PhotoWidth
-                };
+                    var image = file as TagLib.Image.File;
+
+                    var properties = image.Properties;
+
+                    return new ImageSize
+                    {
+                        Height = properties.PhotoHeight,
+                        Width = properties.PhotoWidth
+                    };
+                }
             }
+            catch
+            {
+            }
+
+            return ImageHeader.GetDimensions(path, _logger, _fileSystem);
         }
 
         private readonly Timer _saveImageSizeTimer;
