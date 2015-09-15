@@ -46,7 +46,7 @@
                 style += 'position:fixed;top:' + pos.top + 'px;left:' + pos.left + 'px';
             }
 
-            html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop style="' + style + '">';
+            html += '<paper-dialog id="' + id + '" with-backdrop style="' + style + '">';
 
             if (options.title) {
                 html += '<h2>';

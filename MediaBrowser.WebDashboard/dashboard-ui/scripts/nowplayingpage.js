@@ -700,6 +700,18 @@
 
         var itemsContainer = page.querySelector('.playlist');
         itemsContainer.innerHTML = html;
+
+        var index = MediaController.currentPlaylistIndex();
+
+        if (index != -1) {
+
+            var item = itemsContainer.querySelectorAll('.listItem')[index];
+            var img = item.querySelector('.listviewImage');
+
+            img.classList.remove('lazy');
+            img.classList.add('playlistIndexIndicatorImage');
+        }
+
         ImageLoader.lazyChildren(itemsContainer);
     }
 

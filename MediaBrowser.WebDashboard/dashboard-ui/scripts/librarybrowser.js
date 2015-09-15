@@ -1561,8 +1561,8 @@
                 posterWidth = 200;
             }
             else if (options.shape == 'detailPageSquare') {
-                posterWidth = 200;
-                squareSize = 200;
+                posterWidth = 240;
+                squareSize = 240;
             }
             else if (options.shape == 'detailPage169') {
                 posterWidth = 320;

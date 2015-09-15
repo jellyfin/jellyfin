@@ -198,7 +198,7 @@
             require(['localassetmanager'], function () {
 
                 var libraryItem = jobItem.Item;
-                LocalAssetManager.createLocalItem(libraryItem, serverInfo.Id, jobItem.OriginalFileName).done(function (localItem) {
+                LocalAssetManager.createLocalItem(libraryItem, serverInfo, jobItem.OriginalFileName).done(function (localItem) {
 
                     downloadMedia(apiClient, jobItem, localItem).done(function () {
 

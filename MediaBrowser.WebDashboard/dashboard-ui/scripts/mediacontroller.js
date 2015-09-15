@@ -587,6 +587,11 @@
         };
 
         self.currentPlaylistIndex = function (i) {
+
+            if (i == null) {
+                return currentPlayer.currentPlaylistIndex();
+            }
+
             currentPlayer.currentPlaylistIndex(i);
         };
 

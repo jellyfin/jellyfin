@@ -105,6 +105,9 @@
     vertical-align: middle;
     text-align: center;
     margin-top: 12px;
+    position: relative;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
+    z-index: 2;
 }
 
 .nowPlayingBarPositionContainer {
@@ -150,6 +153,8 @@
     bottom: 12px;
     right: 10px;
     vertical-align: middle;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
+    z-index: 2;
 }
 
 .mediaButton img {
@@ -159,8 +164,6 @@
 .nowPlayingBarCurrentTime {
     vertical-align: middle;
     font-weight: normal;
-    position: absolute;
-    bottom: 31px;
     text-align: center;
     display: inline-block;
     margin: 0 auto;
@@ -204,8 +207,9 @@
 
     .nowPlayingBarCurrentTime {
         padding-left: 0;
-        bottom: 30px;
+        top: 12px;
         right: 130px;
+        position: absolute;
     }
 
     .nowPlayingBarCenter > *:not(.nowPlayingBarCurrentTime) {

@@ -46,7 +46,7 @@
         return deferred.promise();
     }
 
-    function createLocalItem(libraryItem, serverId, originalFileName) {
+    function createLocalItem(libraryItem, serverInfo, originalFileName) {
 
         var item = {};
 

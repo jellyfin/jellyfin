@@ -73,11 +73,24 @@
     box-shadow: 0 0 12px 7px #cc3333;
 }
 
+.playlistIndexIndicatorImage {
+    background-size: initial !important;
+    background-image: url(images/ani_equalizer_white.gif) !important;
+}
+
 @media all and (max-width: 700px) {
 
     .nowPlayingPageImage img {
         max-height: 160px;
         max-width: 200px;
+    }
+}
+
+@media all and (max-width: 600px) and (orientation: portrait) {
+
+    .btnSlideshow {
+        display: block;
+        margin-top: 1em;
     }
 }
 
