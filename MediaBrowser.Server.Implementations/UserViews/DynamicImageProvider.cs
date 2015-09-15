@@ -66,14 +66,14 @@ namespace MediaBrowser.Server.Implementations.UserViews
             }
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
-            var recursive = isUsingCollectionStrip && !new[] { CollectionType.Playlists, CollectionType.Channels }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var recursive = isUsingCollectionStrip && !new[] { CollectionType.Channels, CollectionType.BoxSets, CollectionType.Playlists }.Contains(view.ViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
             var result = await view.GetItems(new InternalItemsQuery
             {
                 User = (view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null),
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder" }
 
             }).ConfigureAwait(false);
 
@@ -147,7 +147,14 @@ namespace MediaBrowser.Server.Implementations.UserViews
             {
                 CollectionType.Movies,
                 CollectionType.TvShows,
-                CollectionType.Music
+                CollectionType.Music,
+                CollectionType.Games,
+                CollectionType.Books,
+                CollectionType.MusicVideos,
+                CollectionType.HomeVideos,
+                CollectionType.BoxSets,
+                CollectionType.Playlists,
+                CollectionType.Photos
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);

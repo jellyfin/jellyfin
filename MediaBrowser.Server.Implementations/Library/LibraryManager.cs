@@ -1637,7 +1637,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+        //private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromMinutes(1);
 
         public Task<UserView> GetNamedView(User user,
             string name,
@@ -1645,12 +1646,7 @@ namespace MediaBrowser.Server.Implementations.Library
             string sortName,
             CancellationToken cancellationToken)
         {
-            if (ConfigurationManager.Configuration.EnableUserSpecificUserViews)
-            {
-                return GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken);
-            }
-
-            return GetNamedView(name, viewType, sortName, cancellationToken);
+            return GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken);
         }
 
         public async Task<UserView> GetNamedView(string name,
@@ -1767,7 +1763,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = viewType,
-                    ForcedSortName = sortName
+                    ForcedSortName = sortName,
+                    UserId = user.Id
                 };
 
                 if (!string.IsNullOrWhiteSpace(parentId))
@@ -1778,6 +1775,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
                 isNew = true;
+            }
+
+            if (!item.UserId.HasValue)
+            {
+                item.UserId = user.Id;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))

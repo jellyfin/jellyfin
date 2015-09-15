@@ -1808,6 +1808,13 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<Folder> GetMediaFolders(User user)
         {
+            if (user == null)
+            {
+                return _libraryManager.RootFolder
+                    .Children
+                    .OfType<Folder>()
+                    .Where(i => !UserView.IsExcludedFromGrouping(i));
+            }
             return user.RootFolder
                 .GetChildren(user, true, true)
                 .OfType<Folder>()
@@ -1816,6 +1823,16 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
+            if (user == null)
+            {
+                return GetMediaFolders(null)
+                    .Where(i =>
+                    {
+                        var folder = i as ICollectionFolder;
+
+                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                    });
+            }
             return GetMediaFolders(user)
                 .Where(i =>
                 {
@@ -1839,7 +1856,17 @@ namespace MediaBrowser.Controller.Entities
         {
             if (parent == null || parent is UserView)
             {
+                if (user == null)
+                {
+                    return GetMediaFolders(null, viewTypes).SelectMany(i => i.GetRecursiveChildren());
+                }
+
                 return GetMediaFolders(user, viewTypes).SelectMany(i => i.GetRecursiveChildren(user));
+            }
+
+            if (user == null)
+            {
+                return parent.GetRecursiveChildren();
             }
 
             return parent.GetRecursiveChildren(user);
@@ -1849,7 +1876,17 @@ namespace MediaBrowser.Controller.Entities
         {
             if (parent == null || parent is UserView)
             {
+                if (user == null)
+                {
+                    return GetMediaFolders(null, viewTypes).SelectMany(i => i.GetRecursiveChildren(filter));
+                }
+
                 return GetMediaFolders(user, viewTypes).SelectMany(i => i.GetRecursiveChildren(user, filter));
+            }
+
+            if (user == null)
+            {
+                return parent.GetRecursiveChildren(filter);
             }
 
             return parent.GetRecursiveChildren(user, filter);

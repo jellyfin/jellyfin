@@ -77,11 +77,11 @@ namespace MediaBrowser.Providers.Folders
 
             if (string.Equals(viewType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "books.png";
+                //return urlPrefix + "books.png";
             }
             if (string.Equals(viewType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "games.png";
+                //return urlPrefix + "games.png";
             }
             if (string.Equals(viewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
@@ -109,23 +109,23 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "playlists.png";
+                //return urlPrefix + "playlists.png";
             }
             if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "homevideos.png";
+                //return urlPrefix + "homevideos.png";
             }
             if (string.Equals(viewType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "musicvideos.png";
+                //return urlPrefix + "musicvideos.png";
             }
             if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "generic.png";
+                //return urlPrefix + "generic.png";
             }
             if (string.IsNullOrWhiteSpace(viewType))
             {
-                return urlPrefix + "generic.png";
+                //return urlPrefix + "generic.png";
             }
 
             return null;

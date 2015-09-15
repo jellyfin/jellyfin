@@ -82,7 +82,27 @@ namespace MediaBrowser.Controller.Entities
             {
                 CollectionType.Books,
                 CollectionType.HomeVideos,
-                CollectionType.Photos
+                CollectionType.Photos,
+                CollectionType.Playlists,
+                CollectionType.BoxSets
+            };
+
+            var collectionFolder = folder as ICollectionFolder;
+
+            if (collectionFolder == null)
+            {
+                return false;
+            }
+
+            return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        }
+
+        public static bool IsUserSpecific(Folder folder)
+        {
+            var standaloneTypes = new List<string>
+            {
+                CollectionType.Playlists,
+                CollectionType.BoxSets
             };
 
             var collectionFolder = folder as ICollectionFolder;
