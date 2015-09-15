@@ -2,16 +2,21 @@
 
     function getLocalMediaSource(serverId, itemId) {
 
+        var deferred = DeferredBuilder.Deferred();
+
         // android
         if (window.ApiClientBridge) {
             var json = ApiClientBridge.getLocalMediaSource(serverId, itemId);
 
             if (json) {
-                return JSON.parse(json);
+                deferred.resolveWith(null, [JSON.parse(json)]);
             }
+            else {
+                deferred.resolveWith(null, [null]);
+            }
+            return deferred.promise();
         }
 
-        var deferred = DeferredBuilder.Deferred();
         getLocalItem(itemId, serverId).done(function (localItem) {
 
             if (localItem && localItem.MediaSources.length) {

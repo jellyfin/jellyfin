@@ -755,26 +755,33 @@
                 var serverInfo = ApiClient.serverInfo();
 
                 if (serverInfo.Id) {
-                    var localMediaSource = window.LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId);
+                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).done(function (localMediaSource) {
+                        // Use the local media source if a specific one wasn't requested, or the smae one was requested
+                        if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
 
-                    // Use the local media source if a specific one wasn't requested, or the smae one was requested
-                    if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
+                            var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
 
-                        var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
+                            deferred.resolveWith(null, [playbackInfo]);
+                            return;
+                        }
 
-                        deferred.resolveWith(null, [playbackInfo]);
-                        return;
-                    }
+                        getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred);
+                    });
+                    return;
                 }
 
-                self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
-                    deferred.resolveWith(null, [result]);
-                }).fail(function () {
-                    deferred.reject();
-                });
+                getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred);
             });
 
             return deferred.promise();
+        }
+
+        function getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred) {
+            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+                deferred.resolveWith(null, [result]);
+            }).fail(function () {
+                deferred.reject();
+            });
         }
 
         self.getPlaybackInfoInternal = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
@@ -859,7 +866,9 @@
 
                 if (mediaSource.Protocol == 'File') {
 
-                    return FileSystemBridge.fileExists(mediaSource.Path);
+                    var exists = FileSystemBridge.fileExists(mediaSource.Path);
+                    Logger.log('FileSystemBridge.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
+                    return exists;
                 }
             }
 

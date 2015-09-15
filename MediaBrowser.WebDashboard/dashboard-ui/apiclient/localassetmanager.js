@@ -1,7 +1,9 @@
 ﻿(function () {
 
     function getLocalMediaSource(serverId, itemId) {
-        return null;
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [null]);
+        return deferred.promise();
     }
 
     function saveOfflineUser(user) {

@@ -19,6 +19,7 @@
 
         self.isLocalPlayer = true;
         self.isDefaultPlayer = true;
+        self.streamInfo = {};
 
         self.name = 'Html5 Player';
 
@@ -649,13 +650,12 @@
 
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                    currentSrc = streamInfo.url;
-                    changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, streamInfo.startTimeTicksOffset || 0);
+                    changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, streamInfo.startTimeTicksOffset || 0);
                 }
             });
         };
 
-        function changeStreamToUrl(mediaRenderer, playSessionId, url, newPositionTicks) {
+        function changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, newPositionTicks) {
 
             clearProgressInterval();
 
@@ -679,7 +679,7 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     //self.startTimeTicksOffset = newPositionTicks;
-                    self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
+                    self.setSrcIntoRenderer(mediaRenderer, streamInfo, self.currentItem, self.currentMediaSource);
 
                 });
 
@@ -687,11 +687,11 @@
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks || 0;
-                self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
+                self.setSrcIntoRenderer(mediaRenderer, streamInfo, self.currentItem, self.currentMediaSource);
             }
         }
 
-        self.setSrcIntoRenderer = function (mediaRenderer, url, item, mediaSource) {
+        self.setSrcIntoRenderer = function (mediaRenderer, streamInfo, item, mediaSource) {
 
             var subtitleStreams = mediaSource.MediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle';
@@ -715,7 +715,8 @@
                 });
             }
 
-            mediaRenderer.setCurrentSrc(url, item, mediaSource, tracks);
+            mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource, tracks);
+            self.streamInfo = streamInfo;
         };
 
         self.setCurrentTime = function (ticks, positionSlider, currentTimeElement) {
@@ -1523,6 +1524,8 @@
                     self.currentMediaRenderer = null;
                     self.currentItem = null;
                     self.currentMediaSource = null;
+                    self.currentSubtitleStreamIndex = null;
+                    self.streamInfo = {};
 
                 });
 
@@ -1532,6 +1535,8 @@
                 self.currentMediaRenderer = null;
                 self.currentItem = null;
                 self.currentMediaSource = null;
+                self.currentSubtitleStreamIndex = null;
+                self.streamInfo = {};
             }
 
             if (self.isFullScreen()) {
@@ -1561,8 +1566,6 @@
                 PlayState: {}
             };
 
-            var currentSrc = mediaRenderer ? mediaRenderer.currentSrc() : null;
-
             if (mediaRenderer) {
 
                 state.PlayState.VolumeLevel = mediaRenderer.volume() * 100;
@@ -1570,6 +1573,8 @@
                 state.PlayState.IsPaused = mediaRenderer.paused();
                 state.PlayState.PositionTicks = self.getCurrentTicks(mediaRenderer);
                 state.PlayState.RepeatMode = self.getRepeatMode();
+
+                var currentSrc = mediaRenderer.currentSrc();
 
                 if (currentSrc) {
 
@@ -1580,11 +1585,9 @@
                     }
                     state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
 
-                    state.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
-                        'DirectStream' :
-                        'Transcode';
+                    state.PlayState.PlayMethod = self.streamInfo.playMethod;
 
-                    state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', currentSrc);
+                    state.PlayState.LiveStreamId = mediaSource.LiveStreamId;
                     state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', currentSrc);
                 }
             }
@@ -1911,7 +1914,8 @@
                 // Set volume first to avoid an audible change
                 mediaRenderer.volume(initialVolume);
 
-                mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
+                mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource);
+                self.streamInfo = streamInfo;
             });
         }
 

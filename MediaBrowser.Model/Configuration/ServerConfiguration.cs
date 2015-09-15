@@ -45,12 +45,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableHttps { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable user specific user views].
-        /// </summary>
-        /// <value><c>true</c> if [enable user specific user views]; otherwise, <c>false</c>.</value>
-        public bool EnableUserSpecificUserViews { get; set; }
-
-        /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
         /// </summary>
         /// <value>The value pointing to the file system where the ssl certiifcate is located..</value>
@@ -103,6 +97,12 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
         public bool DisableStartupScan { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable user views].
+        /// </summary>
+        /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
+        public bool EnableUserViews { get; set; }
         
         /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].

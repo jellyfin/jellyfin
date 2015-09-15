@@ -331,7 +331,7 @@
         };
 
         var currentSrc;
-        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
+        self.setCurrentSrc = function (streamInfo, item, mediaSource, tracks) {
 
             var elem = mediaElement;
 
@@ -340,7 +340,7 @@
                 return;
             }
 
-            if (!val) {
+            if (!streamInfo) {
                 currentSrc = null;
                 elem.src = null;
                 elem.src = "";
@@ -354,6 +354,7 @@
                 return;
             }
 
+            var val = streamInfo.url;
             requiresSettingStartTimeOnStart = false;
             var startTime = getStartTime(val);
             var playNow = false;

@@ -72,6 +72,7 @@ namespace MediaBrowser.Api
             _config.Configuration.EnableCustomPathSubFolders = true;
             _config.Configuration.DisableXmlSavers = true;
             _config.Configuration.DisableStartupScan = true;
+            _config.Configuration.EnableUserViews = true;
             _config.SaveConfiguration();
         }
 

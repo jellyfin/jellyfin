@@ -918,8 +918,6 @@
 
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
-            var videoUrl = streamInfo.url;
-
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -928,8 +926,8 @@
             });
 
             // Reports of stuttering with h264 stream copy in IE
-            if (streamInfo.playMethod == 'Transcode' && videoUrl.indexOf('.m3u8') == -1) {
-                videoUrl += '&EnableAutoStreamCopy=false';
+            if (streamInfo.playMethod == 'Transcode' && streamInfo.url.indexOf('.m3u8') == -1) {
+                streamInfo.url += '&EnableAutoStreamCopy=false';
             }
 
             // Create video player
@@ -1079,7 +1077,8 @@
 
             mediaRenderer.init().done(function () {
 
-                self.setSrcIntoRenderer(mediaRenderer, videoUrl, item, self.currentMediaSource);
+                self.setSrcIntoRenderer(mediaRenderer, streamInfo, item, self.currentMediaSource);
+                self.streamInfo = streamInfo;
 
                 if (callback) {
                     callback();

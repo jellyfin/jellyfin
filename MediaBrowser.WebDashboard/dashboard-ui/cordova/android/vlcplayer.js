@@ -90,7 +90,7 @@
             }
         };
 
-        function getPlaybackStartInfoForVideoActivity(videoUrl, mediaSource, item) {
+        function getPlaybackStartInfoForVideoActivity(streamInfo, mediaSource, item) {
 
             var playbackStartInfo = {
                 QueueableMediaTypes: item.MediaType,
@@ -103,20 +103,21 @@
                 playbackStartInfo.NowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
             }
 
+            var videoUrl = streamInfo.url;
             var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
 
             if (audioStreamIndex) {
                 playbackStartInfo.AudioStreamIndex = parseInt(audioStreamIndex);
             }
-            if (self.currentSubtitleStreamIndex != null) {
-                playbackStartInfo.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+
+            // TODO: This should be passed in rather than going out to get it
+            if (MediaPlayer.currentSubtitleStreamIndex != null) {
+                playbackStartInfo.SubtitleStreamIndex = MediaPlayer.currentSubtitleStreamIndex;
             }
 
-            playbackStartInfo.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
-                'DirectStream' :
-                'Transcode';
+            playbackStartInfo.PlayMethod = streamInfo.playMethod;
 
-            playbackStartInfo.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
+            playbackStartInfo.LiveStreamId = mediaSource.LiveStreamId;
             playbackStartInfo.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
 
             // Seeing some deserialization errors around this property
@@ -127,13 +128,14 @@
             return playbackStartInfo;
         }
 
-        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
+        self.setCurrentSrc = function (streamInfo, item, mediaSource, tracks) {
 
-            if (!val) {
+            if (!streamInfo) {
                 self.destroy();
                 return;
             }
 
+            var val = streamInfo.url;
             var tIndex = val.indexOf('#t=');
             var startPosMs = 0;
 
@@ -148,7 +150,7 @@
                 AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), options.poster);
             } else {
 
-                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(val, mediaSource, item);
+                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(streamInfo, mediaSource, item);
 
                 var serverUrl = ApiClient.serverAddress();
 
