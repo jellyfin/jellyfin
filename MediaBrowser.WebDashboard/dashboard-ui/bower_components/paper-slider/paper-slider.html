@@ -104,7 +104,7 @@ Custom property | Description | Default
             class="circle"
             hidden$="[[!receivedFocusFromKeyboard]]">
           </paper-ripple>
-          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
+          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
       </div>
     </div>
 
@@ -313,6 +313,7 @@ Custom property | Description | Default
 
     _positionKnob: function(ratio) {
       this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+      this._setPinValue(this.immediateValue);
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
@@ -367,8 +368,11 @@ Custom property | Description | Default
       // update knob's position
       var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+      this._setPinValue(immediateValue);
     },
-
+    _setPinValue: function (value) {
+        this.pinValue = value;
+    },
     _trackEnd: function() {
       var s = this.$.sliderKnob.style;
 
