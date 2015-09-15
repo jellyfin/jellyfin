@@ -17,24 +17,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
-
-:host(:not([disabled])) #sliderBar {
   --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
-}
-
-:host(:not([disabled])) #sliderBar {
   --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
+  --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
+  --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
 }
 
-:host([disabled]) #sliderBar {
-  --paper-progress-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-}
-
-:host([disabled]) #sliderBar {
-  --paper-progress-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
-}
-
+/* focus shows the ripple */
 :host(:focus) {
   outline: none;
 }
@@ -83,7 +72,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   padding: 8px 0;
   margin: -8px 0;
   background-color: var(--paper-slider-bar-color, transparent);
-  --paper-progress-height: 2px;
+  --paper-progress-height: var(--paper-slider-height, 2px);
 }
 
 .ring #sliderBar {
@@ -234,7 +223,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 .slider-input {
   --paper-input-container-input: {
-      text-align: center;
+    text-align: center;
   };
 }
 

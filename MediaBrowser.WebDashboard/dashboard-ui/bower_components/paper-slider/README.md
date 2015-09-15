@@ -32,6 +32,7 @@ Custom property | Description | Default
 `--paper-slider-font-color` | The pin's text color | `#fff`
 `--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
 `--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
+`--paper-slider-height` | Height of the progress bar | `2px`
 
 Example:
 
@@ -45,5 +46,6 @@ paper-slider {
   --paper-slider-secondary-color: #0f9d58;
   --paper-slider-disabled-active-color: #ccc;
   --paper-slider-disabled-secondary-color: #ccc;
+  --paper-slider-height: 5px;
 }
 ```

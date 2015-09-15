@@ -52,6 +52,7 @@ Custom property | Description | Default
 `--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
 `--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
 `--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
+`--paper-slider-height` | Height of the progress bar | `2px`
 
 @group Paper Elements
 @element paper-slider
@@ -69,7 +70,7 @@ Custom property | Description | Default
 
       <div class="bar-container">
         <paper-progress
-          class$="[[_getProgressClass(transiting)]]"
+          disabled$="[[disabled]]"
           id="sliderBar"
           aria-hidden="true"
           min="[[min]]"
@@ -103,7 +104,7 @@ Custom property | Description | Default
             class="circle"
             hidden$="[[!receivedFocusFromKeyboard]]">
           </paper-ripple>
-          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
+          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
 
@@ -180,7 +181,8 @@ Custom property | Description | Default
       immediateValue: {
         type: Number,
         value: 0,
-        readOnly: true
+        readOnly: true,
+        notify: true
       },
 
       /**
@@ -311,7 +313,6 @@ Custom property | Description | Default
 
     _positionKnob: function(ratio) {
       this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
-      this._setPinValue(this.immediateValue);
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
@@ -366,7 +367,6 @@ Custom property | Description | Default
       // update knob's position
       var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
-      this._setPinValue(immediateValue);
     },
 
     _trackEnd: function() {
@@ -443,23 +443,15 @@ Custom property | Description | Default
     },
 
     _getClassNames: function() {
-      var classes = {};
-
-      classes.disabled = this.disabled;
-      classes.pin = this.pin;
-      classes.snaps = this.snaps;
-      classes.ring = this.immediateValue <= this.min;
-      classes.expand = this.expand;
-      classes.dragging = this.dragging;
-      classes.transiting = this.transiting;
-      classes.editable = this.editable;
-
-      return this._mergeClasses(classes);
-    },
-
-    _getProgressClass: function() {
       return this._mergeClasses({
-        transiting: this.transiting
+        disabled: this.disabled,
+        pin: this.pin,
+        snaps: this.snaps,
+        ring: this.immediateValue <= this.min,
+        expand: this.expand,
+        dragging: this.dragging,
+        transiting: this.transiting,
+        editable: this.editable
       });
     },
 
@@ -479,9 +471,6 @@ Custom property | Description | Default
         this.decrement();
       }
       this.fire('change');
-    },
-    _setPinValue: function (value) {
-        this.pinValue = value;
     }
   });
 

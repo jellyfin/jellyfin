@@ -1,6 +1,6 @@
 {
   "name": "paper-input",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Material design text fields",
   "authors": [
     "The Polymer Authors"
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "web-component-tester": "*",
+    "web-component-tester": "Polymer/web-component-tester#^3.3.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-icon": "PolymerElements/iron-icon#^1.0.0",

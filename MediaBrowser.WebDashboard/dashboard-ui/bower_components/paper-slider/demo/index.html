@@ -64,7 +64,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <h4>Default</h4>
     <div class="vertical-section">
       <div>Oxygen</div>
-      <paper-slider value="21"></paper-slider><br><br>
+      <paper-slider value="21" id="test"></paper-slider><br><br>
       <div>Argon</div>
       <paper-slider value="1"></paper-slider><br><br>
       <div>Hydrogen</div>
@@ -109,6 +109,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var ratings = document.querySelector('#ratings');
     ratings.addEventListener('value-change', function() {
       document.querySelector('#ratingsLabel').textContent = ratings.value;
+    });
+
+    test.addEventListener('value-changed', function(e) {
+      console.log(e);
     });
 
   </script>
