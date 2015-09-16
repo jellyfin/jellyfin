@@ -13,7 +13,7 @@
                     SortOrder: "Ascending",
                     IncludeItemTypes: "Movie",
                     Recursive: true,
-                    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,

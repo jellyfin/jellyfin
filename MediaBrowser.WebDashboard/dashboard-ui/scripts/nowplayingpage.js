@@ -677,7 +677,7 @@
         //    SortOrder: "Ascending",
         //    IncludeItemTypes: "Audio",
         //    Recursive: true,
-        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
+        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
         //    StartIndex: 0,
         //    ImageTypeLimit: 1,
         //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",

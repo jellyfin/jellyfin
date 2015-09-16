@@ -1146,27 +1146,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1.2;
 }
 
-.unidentifiedIndicator {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(204, 0, 0);
-    background: rgba(204, 0, 0, .8);
-    line-height: 19px;
-}
-
-    .unidentifiedIndicator .fa {
-        margin-top: 5px;
-        display: inline-block;
-    }
-
 .itemProgress {
     vertical-align: top;
     font-size: 19px;

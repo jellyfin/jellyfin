@@ -1928,9 +1928,6 @@
             if (mediaSourceCount > 1) {
                 html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
             }
-            if (item.IsUnidentified) {
-                html += '<div class="unidentifiedIndicator"><iron-icon icon="error"></iron-icon></div>';
-            }
 
             var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 

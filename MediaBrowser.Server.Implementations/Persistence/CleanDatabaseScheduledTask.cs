@@ -214,7 +214,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             return new ITaskTrigger[] 
             { 
-                new IntervalTrigger{ Interval = TimeSpan.FromDays(7)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(6)}
             };
         }
     }

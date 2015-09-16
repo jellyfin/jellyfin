@@ -74,8 +74,6 @@ namespace MediaBrowser.Model.Dto
         public string ShareUrl { get; set; }
 
         public float? Metascore { get; set; }
-
-        public bool? IsUnidentified { get; set; }
         public bool? HasDynamicCategories { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
