@@ -98,7 +98,9 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsCurrentSchema { get; set; }
         public bool? HasDeadParentId { get; set; }
-    
+        public bool? IsOffline { get; set; }
+        public LocationType? LocationType { get; set; }
+
         public InternalItemsQuery()
         {
             Tags = new string[] { };

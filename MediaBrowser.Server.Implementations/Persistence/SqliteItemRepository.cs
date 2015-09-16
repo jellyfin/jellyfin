@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 6;
+        private const int LatestSchemaVersion = 7;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -175,6 +175,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.AddColumn(_logger, "TypedBaseItems", "ForcedSortName", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsOffline", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "LocationType", "Text");
 
             PrepareStatements();
 
@@ -245,7 +246,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateCreated",
                 "DateModified",
                 "ForcedSortName",
-                "IsOffline"
+                "IsOffline",
+                "LocationType"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -415,6 +417,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.ForcedSortName;
                     _saveItemCommand.GetParameter(index++).Value = item.IsOffline;
+                    _saveItemCommand.GetParameter(index++).Value = item.LocationType.ToString();
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -617,7 +620,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public Task SaveCriticReviews(Guid itemId, IEnumerable<ItemReview> criticReviews)
         {
-			Directory.CreateDirectory(_criticReviewsPath);
+            Directory.CreateDirectory(_criticReviewsPath);
 
             var path = Path.Combine(_criticReviewsPath, itemId + ".json");
 
@@ -950,6 +953,75 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public QueryResult<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            CheckDisposed();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select guid,path from TypedBaseItems";
+
+                var whereClauses = GetWhereClauses(query, cmd, false);
+
+                var whereTextWithoutPaging = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                whereClauses = GetWhereClauses(query, cmd, true);
+
+                var whereText = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                cmd.CommandText += whereText;
+
+                cmd.CommandText += GetOrderByText(query);
+
+                if (query.Limit.HasValue)
+                {
+                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
+                cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
+
+                var list = new List<Tuple<Guid, string>>();
+                var count = 0;
+
+                _logger.Debug(cmd.CommandText);
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetGuid(0);
+                        string path = null;
+
+                        if (!reader.IsDBNull(1))
+                        {
+                            path = reader.GetString(1);
+                        }
+                        list.Add(new Tuple<Guid, string>(id, path));
+                    }
+
+                    if (reader.NextResult() && reader.Read())
+                    {
+                        count = reader.GetInt32(0);
+                    }
+                }
+
+                return new QueryResult<Tuple<Guid, string>>()
+                {
+                    Items = list.ToArray(),
+                    TotalRecordCount = count
+                };
+            }
+        }
+
         public QueryResult<Guid> GetItemIds(InternalItemsQuery query)
         {
             if (query == null)
@@ -1027,6 +1099,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     whereClauses.Add("(SchemaVersion is null or SchemaVersion<>@SchemaVersion)");
                 }
                 cmd.Parameters.Add(cmd, "@SchemaVersion", DbType.Int32).Value = LatestSchemaVersion;
+            }
+            if (query.IsOffline.HasValue)
+            {
+                whereClauses.Add("IsOffline=@IsOffline");
+                cmd.Parameters.Add(cmd, "@IsOffline", DbType.Boolean).Value = query.IsOffline;
+            }
+            if (query.LocationType.HasValue)
+            {
+                whereClauses.Add("LocationType=@LocationType");
+                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationType.Value;
             }
             if (query.IsMovie.HasValue)
             {

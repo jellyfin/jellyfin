@@ -3205,7 +3205,16 @@ $.widget( "mobile.page", {
                 //    pages[i].style.display = 'none';
                 //}
 			}
-			to[0].style.display = 'block';
+
+			var toPage = to[0];
+
+			toPage.style.display = 'block';
+
+			//var transition = toPage.getAttribute('data-transition');
+			//if (transition == 'zoom') {
+			//    zoomIn(toPage);
+			//}
+
 			this._triggerCssTransitionEvents(to, from);
 		},
 
@@ -3452,7 +3461,14 @@ $.widget( "mobile.page", {
 		}
 	});
 
-	// The following handlers should be bound after mobileinit has been triggered
+	function zoomIn(elem) {
+	    var keyframes = [{ transform: 'scale3d(.3, .3, .3)  ', opacity: '0', offset: 0 },
+          { transform: 'none', opacity: '1', offset: 1 }];
+	    var timing = { duration: 200, iterations: 1 };
+	    return elem.animate(keyframes, timing);
+	}
+
+    // The following handlers should be bound after mobileinit has been triggered
 	// the following deferred is resolved in the init file
 	$.mobile.navreadyDeferred = $.Deferred();
 
