@@ -79,8 +79,7 @@ namespace MediaBrowser.Providers.Omdb
 
         public bool Supports(IHasImages item)
         {
-            // Save the http requests since we know it's not currently supported
-            // TODO: Check again periodically
+            // We'll hammer Omdb if we enable this
             if (item is Person)
             {
                 return false;

@@ -31,7 +31,6 @@ namespace MediaBrowser.Server.Implementations.Channels
     public class ChannelManager : IChannelManager, IDisposable
     {
         private IChannel[] _channels;
-        private IChannelFactory[] _factories;
 
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -76,10 +75,9 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
         }
 
-        public void AddParts(IEnumerable<IChannel> channels, IEnumerable<IChannelFactory> factories)
+        public void AddParts(IEnumerable<IChannel> channels)
         {
-            _channels = channels.Where(i => !(i is IFactoryChannel)).ToArray();
-            _factories = factories.ToArray();
+            _channels = channels.ToArray();
         }
 
         public string ChannelDownloadPath
@@ -99,20 +97,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private IEnumerable<IChannel> GetAllChannels()
         {
-            return _factories
-                .SelectMany(i =>
-                {
-                    try
-                    {
-                        return i.GetChannels().ToList();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error getting channel list", ex);
-                        return new List<IChannel>();
-                    }
-                })
-                .Concat(_channels)
+            return _channels
                 .OrderBy(i => i.Name);
         }
 
