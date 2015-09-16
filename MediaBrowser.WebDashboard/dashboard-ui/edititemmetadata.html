@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmcheckbox,jqmcollapsible,jqmlistview,jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmcheckbox,jqmcollapsible,jqmlistview,jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,scripts/edititemsubtitles,scripts/edititemimages">
         <div>
             <div class="editPageSidebar" style="overflow:auto;">
                 <div class="libraryTree">
@@ -17,7 +17,6 @@
                 <paper-tabs hidescrollbuttons>
                     <paper-tab class="metadataTabButton">${TabMetadata}</paper-tab>
                     <paper-tab class="subtitleTabButton hide">${TabSubtitles}</paper-tab>
-                    <paper-tab class="collectionItemsTabButton hide">${TabCollectionTitles}</paper-tab>
                     <paper-tab class="imagesTabButton">${TabImages}</paper-tab>
                 </paper-tabs>
 
@@ -367,18 +366,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="editorTab collectionItemsTabContent">
-                    <p style="margin:1.5em 0;">
-                        ${EditCollectionItemsHelp}
-                    </p>
-
-                    <div>
-                        <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">${ButtonAdd}</button>
-                        <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">${ButtonRemove}</button>
-                    </div>
-                    <br />
-                    <div class="collectionItems"></div>
-                </div>
                 <div class="editorTab imageEditorTab">
                     <div style="margin:2em 0 .5em;text-align:center;">
 
@@ -566,41 +553,6 @@
             <div class="subtitleViewerContent">
                 <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>
             </div>
-        </div>
-
-        <div data-role="popup" class="popupIdentifyCollection popup popupIdentify" data-theme="a">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>
-                    ${HeaderAddTitles}
-                </h3>
-            </div>
-
-            <div data-role="content">
-
-                <form class="collectionItemSearchForm" style="max-width: initial;">
-
-                    <div>
-                        <label for="txtLookupName">${LabelName}</label>
-
-                        <div style="display: inline-block; width: 75%;">
-                            <input type="text" id="txtLookupName" required="required" />
-                        </div>
-
-                        <button type="submit" class="clearButton" style="width:auto;">
-                            <paper-icon-button icon="search" title="${ButtonSearch}"></paper-icon-button>
-                        </button>
-                    </div>
-
-                    <div class="collectionItemSearchResults">
-                    </div>
-
-                    <button id="btnAddItems" type="button" data-icon="plus" data-mini="true">
-                        ${ButtonAdd}
-                    </button>
-                </form>
-            </div>
-
         </div>
 
         <div data-role="popup" id="popupUpload" data-theme="a">

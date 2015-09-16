@@ -90,7 +90,6 @@ if (!Array.prototype.filter) {
     };
 }
 
-// TODO: There should be notification services, where each defines what it supports and the best service is chosen based on params
 var WebNotifications = {
 
     show: function (data) {

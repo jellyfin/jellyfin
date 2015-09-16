@@ -790,7 +790,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
-            ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
+            ChannelManager.AddParts(GetExports<IChannel>());
 
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 

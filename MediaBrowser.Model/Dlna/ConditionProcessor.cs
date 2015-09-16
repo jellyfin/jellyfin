@@ -28,7 +28,6 @@ namespace MediaBrowser.Model.Dlna
                     // TODO: Implement
                     return true;
                 case ProfileConditionValue.Has64BitOffsets:
-                    // TODO: Implement
                     return true;
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);

@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {

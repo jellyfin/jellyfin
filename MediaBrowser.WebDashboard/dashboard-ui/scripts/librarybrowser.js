@@ -1375,8 +1375,14 @@
                 }
             }
 
-            if (BoxSetEditor.supportsAddingToCollection(item)) {
-                itemCommands.push('addtocollection');
+            if (options.showAddToCollection !== false) {
+                if (BoxSetEditor.supportsAddingToCollection(item)) {
+                    itemCommands.push('addtocollection');
+                }
+            }
+
+            if (options.showRemoveFromCollection) {
+                itemCommands.push('removefromcollection');
             }
 
             if (options.playFromHere) {

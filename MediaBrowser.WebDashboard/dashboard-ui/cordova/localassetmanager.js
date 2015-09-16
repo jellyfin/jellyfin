@@ -68,46 +68,300 @@
         return deferred.promise();
     }
 
+    var offlineUserDatabase;
+    function getOfflineUserdb(callback) {
+
+        if (offlineUserDatabase) {
+            callback(offlineUserDatabase);
+            return;
+        }
+
+        // Create/open database
+        offlineUserDatabase = window.sqlitePlugin.openDatabase({ name: "offlineusers.db" });
+
+        offlineUserDatabase.transaction(function (tx) {
+
+            tx.executeSql('CREATE TABLE IF NOT EXISTS users (id text primary key, data text)');
+            tx.executeSql('create index if not exists idx_users on users(id)');
+
+            callback(offlineUserDatabase);
+        });
+    }
+
     function saveOfflineUser(user) {
 
-        // TODO
         var deferred = DeferredBuilder.Deferred();
-        deferred.resolve();
+
+        getOfflineUserdb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("REPLACE INTO offlineusers (id, data) VALUES (?,?)", [user.Id, JSON.stringify(user)], function (tx, res) {
+
+                    deferred.resolve();
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
         return deferred.promise();
+    }
+
+    function deleteOfflineUser(id) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        getOfflineUserdb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("DELETE from offlineusers where id=?", [user.Id], function (tx, res) {
+
+                    deferred.resolve();
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
+        return deferred.promise();
+    }
+
+    var offlineActionsDatabase;
+    function getOfflineActionsDb(callback) {
+
+        if (offlineActionsDatabase) {
+            callback(offlineActionsDatabase);
+            return;
+        }
+
+        // Create/open database
+        offlineActionsDatabase = window.sqlitePlugin.openDatabase({ name: "offlineactions.db" });
+
+        offlineActionsDatabase.transaction(function (tx) {
+
+            tx.executeSql('CREATE TABLE IF NOT EXISTS offlineactions (Id text primary key, ServerId text not null, Json text not null)');
+            tx.executeSql('create index if not exists idx_offlineactions on offlineactions(id)');
+
+            callback(offlineActionsDatabase);
+        });
     }
 
     function getOfflineActions(serverId) {
-        // TODO
+
         var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
+
+        getOfflineActionsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("SELECT json from offlineactions where ServerId=?", [serverId], function (tx, res) {
+
+                    var actions = [];
+                    for (var i = 0, length = res.rows.length; i < length; i++) {
+                        actions.push(JSON.parse(res.rows.item(i).json));
+                    }
+
+                    deferred.resolveWith(null, [actions]);
+
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
         return deferred.promise();
+    }
+
+    function deleteOfflineActions(actions) {
+
+        var ids = actions.map(function (a) { return "'" + a.Id + "'"; }).join(',');
+
+        var deferred = DeferredBuilder.Deferred();
+
+        getOfflineActionsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("DELETE from offlineactions where Id in (" + ids + ")", [], function (tx, res) {
+
+                    deferred.resolve();
+
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
+        return deferred.promise();
+    }
+
+    var offlineItemsDatabase;
+    function getOfflineItemsDb(callback) {
+
+        if (offlineItemsDatabase) {
+            callback(offlineItemsDatabase);
+            return;
+        }
+
+        // Create/open database
+        offlineItemsDatabase = window.sqlitePlugin.openDatabase({ name: "offlineitems.db" });
+
+        offlineItemsDatabase.transaction(function (tx) {
+
+            tx.executeSql('CREATE TABLE IF NOT EXISTS Items ( Id text primary key, ItemId text not null, ItemType text not null, MediaType text, ServerId text not null, LocalPath text not null, UserIdsWithAccess text, AlbumId text, AlbumName text, SeriesId text, SeriesName text, Json text not null)');
+            tx.executeSql('create index if not exists idx_items on Items(Id)');
+
+            tx.executeSql('CREATE TABLE IF NOT EXISTS AlbumArtists ( Id text not null, Name text not null, ItemId text not null)');
+            tx.executeSql('create index if not exists idx_AlbumArtists on AlbumArtists(id)');
+
+            callback(offlineItemsDatabase);
+        });
     }
 
     function getServerItemIds(serverId) {
-        // TODO
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
-        return deferred.promise();
-    }
 
-    function removeLocalItem(itemId, serverId) {
-        // TODO
         var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
+
+        getOfflineItemsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("SELECT ItemId from Items where ServerId=?", [serverId], function (tx, res) {
+
+                    var itemIds = [];
+                    for (var i = 0, length = res.rows.length; i < length; i++) {
+                        itemIds.push(res.rows.item(i).ItemId);
+                    }
+
+                    deferred.resolveWith(null, [itemIds]);
+
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
         return deferred.promise();
     }
 
     function getLocalItem(itemId, serverId) {
-        // TODO
+
         var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
+
+        getOfflineItemsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("SELECT Json from Items where itemId=? AND serverId=?", [itemId, serverId], function (tx, res) {
+
+                    if (res.rows.length) {
+
+                        var localItem = JSON.parse(res.rows.item(0).Json);
+
+                        deferred.resolveWith(null, [item]);
+                    }
+                    else {
+                        deferred.resolveWith(null, [null]);
+                    }
+
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
         return deferred.promise();
     }
 
-    function addOrUpdateLocalItem(localItem) {
-        // TODO
+    function addOrUpdateLocalItem(item) {
+
         var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [null]);
+
+        getOfflineItemsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                var values = [item.Id, item.ItemId, item.Item.Type, item.Item.MediaType, item.ServerId, item.LocalPath, item.UserIdsWithAccess.join(','), item.Item.AlbumId, item.Item.AlbumName, item.Item.SeriesId, item.Item.SeriesName, JSON.stringify(item)];
+                tx.executeSql("REPLACE INTO Items (Id, ItemId, ItemType, MediaType, ServerId, LocalPath, UserIdsWithAccess, AlbumId, AlbumName, SeriesId, SeriesName, Json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", values);
+            });
+        });
+
+        return deferred.promise();
+    }
+
+    function removeLocalItem(itemId, serverId) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        getLocalItem(itemId, serverId).done(function (item) {
+
+            getOfflineItemsDb(function (db) {
+
+                db.transaction(function (tx) {
+
+                    tx.executeSql("DELETE from Items where itemId=? AND serverId=?", [itemId, serverId]);
+
+                    var files = item.AdditionalFiles || [];
+                    files.push(item.LocalPath);
+
+                    deleteFiles(files).done(function () {
+
+                        deferred.resolve();
+
+                    }).fail(getOnFail(deferred));
+
+                });
+            });
+
+        }).fail(getOnFail(deferred));
+
+        return deferred.promise();
+    }
+
+    function deleteFiles(files) {
+        var deferred = DeferredBuilder.Deferred();
+        deleteNextFile(files, 0, deferred);
+        return deferred.promise();
+    }
+
+    function deleteNextFile(files, index, deferred) {
+
+        if (index >= files.length) {
+            deferred.resolve();
+            return;
+        }
+
+        deleteFile(file).done(function () {
+            deleteNextFile(files, index + 1, deferred);
+        }).fail(function () {
+            deleteNextFile(files, index + 1, deferred);
+        });
+    }
+
+    function deleteFile(path) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        Logger.log('Deleting ' + path);
+        resolveLocalFileSystemURL(path, function (fileEntry) {
+
+            fileEntry.remove(function () {
+                Logger.log('Deleted ' + path);
+                deferred.resolve();
+            }, function () {
+
+                Logger.log('Error deleting ' + path);
+                deferred.reject();
+            });
+
+        }, function () {
+
+            Logger.log('Skipping deletion because file does not exist: ' + path);
+            deferred.resolve();
+        });
+
         return deferred.promise();
     }
 
@@ -122,15 +376,15 @@
 
         getFileSystem().done(function (fileSystem) {
 
-            var localPath = fileSystem.root.toURL() + "/" + path.join('/');
+            var localPath = trimEnd(fileSystem.root.toURL()) + "/" + path.join('/');
 
             item.LocalPath = localPath;
 
             for (var i = 0, length = libraryItem.MediaSources.length; i < length; i++) {
 
                 var mediaSource = libraryItem.MediaSources[i];
-                mediaSource.setPath(localPath);
-                mediaSource.setProtocol(MediaProtocol.File);
+                mediaSource.Path = localPath;
+                mediaSource.Protocol = 'File';
             }
 
             item.ServerId = serverInfo.Id;
@@ -143,9 +397,23 @@
         return deferred.promise();
     }
 
-    function getDirectoryPath(item, serverInfo) {
+    function trimEnd(str) {
+
+        var charEnd = '/';
+
+        if (str.charAt(str.length - 1) == charEnd) {
+
+            str = str.substring(0, str.length - 1);
+        }
+
+        return str;
+    }
+
+    function getDirectoryPath(item, server) {
 
         var parts = [];
+        parts.push("emby");
+        parts.push("sync");
         parts.push(server.Name);
 
         if (item.Type == "Episode") {
@@ -186,7 +454,7 @@
 
         var filename = originalFileName || libraryItem.Name;
 
-        return fileRepository.getValidFileName(filename);
+        return getValidFileName(filename);
     }
 
     function getValidFileName(filename) {
@@ -306,7 +574,7 @@
         var deferred = DeferredBuilder.Deferred();
 
         getFileSystem().done(function (fileSystem) {
-            var path = fileSystem.root.toURL() + "/emby/images/" + serverId + "/" + itemId + "/" + imageTag;
+            var path = trimEnd(fileSystem.root.toURL()) + "/emby/images/" + serverId + "/" + itemId + "/" + imageTag;
 
             deferred.resolveWith(null, [path]);
         });
@@ -357,8 +625,10 @@
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
+        deleteOfflineUser: deleteOfflineUser,
         getCameraPhotos: getCameraPhotos,
         getOfflineActions: getOfflineActions,
+        deleteOfflineActions: deleteOfflineActions,
         getServerItemIds: getServerItemIds,
         removeLocalItem: removeLocalItem,
         getLocalItem: getLocalItem,

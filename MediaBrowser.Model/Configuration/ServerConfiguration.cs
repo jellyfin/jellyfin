@@ -276,11 +276,7 @@ namespace MediaBrowser.Model.Configuration
 
             InsecureApps9 = new[]
             {
-                "Chromecast",
-                "iOS",
                 "Unknown app",
-                "iPad",
-                "iPhone",
                 "Windows Phone"
             };
 

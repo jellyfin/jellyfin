@@ -48,7 +48,17 @@
                 });
 
             }).fail(function () {
-                deferred.reject();
+
+                // TODO: We should only delete if there's a 401 response
+
+                require(['localassetmanager'], function () {
+
+                    LocalAssetManager.deleteOfflineUser(user.Id).done(function () {
+                        deferred.resolve();
+                    }).fail(function () {
+                        deferred.resolve();
+                    });
+                });
             });
 
             return deferred.promise();

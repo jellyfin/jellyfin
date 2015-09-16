@@ -46,12 +46,6 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
-            if (item.Type == "BoxSet") {
-                page.querySelector('.collectionItemsTabButton').classList.remove('hide');
-            } else {
-                page.querySelector('.collectionItemsTabButton').classList.add('hide');
-            }
-
             if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
                 page.querySelector('.subtitleTabButton').classList.remove('hide');
             } else {

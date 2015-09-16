@@ -4,7 +4,7 @@
 
         var self = this;
 
-        self.upload = function (file, mimeType, name, url) {
+        self.upload = function (file, name, url) {
 
             var deferred = DeferredBuilder.Deferred();
 

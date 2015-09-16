@@ -12,6 +12,12 @@
         return deferred.promise();
     }
 
+    function deleteOfflineUser(id) {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolve();
+        return deferred.promise();
+    }
+
     function getCameraPhotos() {
         var deferred = DeferredBuilder.Deferred();
         deferred.resolveWith(null, [[]]);
@@ -19,6 +25,12 @@
     }
 
     function getOfflineActions(serverId) {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [[]]);
+        return deferred.promise();
+    }
+
+    function deleteOfflineActions(actions) {
         var deferred = DeferredBuilder.Deferred();
         deferred.resolveWith(null, [[]]);
         return deferred.promise();
@@ -86,8 +98,10 @@
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
+        deleteOfflineUser: deleteOfflineUser,
         getCameraPhotos: getCameraPhotos,
         getOfflineActions: getOfflineActions,
+        deleteOfflineActions: deleteOfflineActions,
         getServerItemIds: getServerItemIds,
         removeLocalItem: removeLocalItem,
         getLocalItem: getLocalItem,

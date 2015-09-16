@@ -962,8 +962,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return false;
             }
 
-            // TODO: Make sure it hasn't been deleted
-
             return true;
         }
 

@@ -27,7 +27,7 @@
 
         ApiClientBridge.init(AppInfo.appName, AppInfo.appVersion, AppInfo.deviceId, AppInfo.deviceName, JSON.stringify(capabilities));
 
-        initAjax();
+        //initAjax();
     }
 
     var baseAjaxMethod;

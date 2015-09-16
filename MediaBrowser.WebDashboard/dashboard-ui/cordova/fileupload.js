@@ -4,32 +4,51 @@
 
         var self = this;
 
-        self.upload = function (file, mimeType, name, url) {
+        self.upload = function (path, name, url) {
 
             var deferred = DeferredBuilder.Deferred();
 
-            var onSuccess = function (r) {
-                console.log("Code = " + r.responseCode);
-                console.log("Response = " + r.response);
-                console.log("Sent = " + r.bytesSent);
-                deferred.resolve();
-            }
+            resolveLocalFileSystemURL(path, function (fileEntry) {
 
-            var onFail = function (error) {
-                console.log("upload error source " + error.source);
-                console.log("upload error target " + error.target);
+                fileEntry.file(function (file) {
+
+                    var mimeType = file.type;
+
+                    Logger.log('mimeType for file ' + path + ' is ' + file);
+
+                    var onSuccess = function (r) {
+                        console.log("Code = " + r.responseCode);
+                        console.log("Response = " + r.response);
+                        console.log("Sent = " + r.bytesSent);
+                        deferred.resolve();
+                    }
+
+                    var onFail = function (error) {
+                        console.log("upload error source " + error.source);
+                        console.log("upload error target " + error.target);
+                        deferred.reject();
+                    }
+
+                    var options = new FileUploadOptions();
+                    options.fileKey = "file";
+                    options.fileName = name;
+                    options.mimeType = mimeType;
+
+                    var params = {};
+                    options.params = params;
+
+                    new FileTransfer().upload(file, url, onSuccess, onFail, options);
+
+                }, function () {
+                    Logger.log('File upload failed. fileEntry.file returned an error');
+                    deferred.reject();
+                });
+
+            }, function () {
+
+                Logger.log('File upload failed. resolveLocalFileSystemURL returned an error');
                 deferred.reject();
-            }
-
-            var options = new FileUploadOptions();
-            options.fileKey = "file";
-            options.fileName = name;
-            options.mimeType = mimeType;
-
-            var params = {};
-            options.params = params;
-
-            new FileTransfer().upload(file, url, onSuccess, onFail, options);
+            });
 
             return deferred.promise();
         };

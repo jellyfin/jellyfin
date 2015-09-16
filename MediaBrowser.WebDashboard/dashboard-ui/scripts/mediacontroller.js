@@ -860,7 +860,6 @@
                         return true;
                     }
 
-                    // TODO: Need to verify the host is going to be reachable
                     return mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
                 }
 

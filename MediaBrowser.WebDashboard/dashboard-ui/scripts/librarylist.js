@@ -327,6 +327,14 @@
                 });
             }
 
+            if (commands.indexOf('removefromcollection') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonRemoveFromCollection'),
+                    id: 'removefromcollection',
+                    ironIcon: 'remove'
+                });
+            }
+
             if (commands.indexOf('removefromplaylist') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonRemoveFromPlaylist'),
@@ -475,6 +483,9 @@
                                 break;
                             case 'removefromplaylist':
                                 $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);
+                                break;
+                            case 'removefromcollection':
+                                $(card).parents('.collectionItems').trigger('removefromcollection', [itemId]);
                                 break;
                             default:
                                 break;

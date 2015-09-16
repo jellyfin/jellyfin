@@ -49,7 +49,11 @@
 
                     apiClient.reportOfflineActions(actions).done(function () {
 
-                        deferred.resolve();
+                        LocalAssetManager.deleteOfflineActions(actions).done(function () {
+
+                            deferred.resolve();
+
+                        }).fail(getOnFail(deferred));
 
                     }).fail(getOnFail(deferred));
 
@@ -235,9 +239,9 @@
 
                 Logger.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
 
-                localAssetManager.downloadFile(url, localPath).done(function () {
+                LocalAssetManager.downloadFile(url, localPath).done(function () {
 
-                    localAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+                    LocalAssetManager.addOrUpdateLocalItem(localItem).done(function () {
 
                         deferred.resolve();
 
@@ -324,7 +328,7 @@
 
             require(['localassetmanager'], function () {
 
-                localAssetManager.hasImage(serverId, itemId, imageTag).done(function (hasImage) {
+                LocalAssetManager.hasImage(serverId, itemId, imageTag).done(function (hasImage) {
 
                     if (hasImage) {
                         deferred.resolve();
@@ -336,7 +340,7 @@
                         ImageType: imageType
                     });
 
-                    localAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).done(function () {
+                    LocalAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).done(function () {
 
                         deferred.resolve();
 
@@ -418,7 +422,7 @@
                 LocalAssetManager.downloadSubtitles(url, localItem, subtitleStream).done(function (subtitlePath) {
 
                     subtitleStream.Path = subtitlePath;
-                    localAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+                    LocalAssetManager.addOrUpdateLocalItem(localItem).done(function () {
                         deferred.resolve();
                     }).fail(getOnFail(deferred));
 
@@ -479,7 +483,7 @@
                     else {
 
                         localItem.UserIdsWithAccess = userIdsWithAccess;
-                        localAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+                        LocalAssetManager.addOrUpdateLocalItem(localItem).done(function () {
                             deferred.resolve();
                         }).fail(getOnFail(deferred));
                     }

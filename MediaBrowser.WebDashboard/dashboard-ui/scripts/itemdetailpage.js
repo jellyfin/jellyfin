@@ -893,7 +893,7 @@
                     { name: Globalize.translate('HeaderBooks'), type: 'Book' }
                 ];
 
-                renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
+                renderCollectionItems(page, item, collectionItemTypes, result.Items, user, context);
             }
         });
 
@@ -947,7 +947,10 @@
         });
     }
 
-    function renderCollectionItems(page, types, items, user) {
+    function renderCollectionItems(page, parentItem, types, items, user) {
+
+        // First empty out existing content
+        page.querySelector('.collectionItems').innerHTML = '';
 
         for (var i = 0, length = types.length; i < length; i++) {
 
@@ -960,7 +963,7 @@
             });
 
             if (typeItems.length) {
-                renderCollectionItemType(page, type, typeItems, user);
+                renderCollectionItemType(page, parentItem, type, typeItems, user);
             }
         }
 
@@ -977,17 +980,17 @@
         });
 
         if (otherTypeItems.length) {
-            renderCollectionItemType(page, otherType, otherTypeItems, user);
+            renderCollectionItemType(page, parentItem, otherType, otherTypeItems, user);
         }
 
         if (!items.length) {
-            renderCollectionItemType(page, { name: Globalize.translate('HeaderItems') }, items, user);
+            renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items, user);
         }
 
         $('.collectionItems', page).createCardMenus();
     }
 
-    function renderCollectionItemType(page, type, items, user, context) {
+    function renderCollectionItemType(page, parentItem, type, items, user, context) {
 
         var html = '';
 
@@ -995,10 +998,6 @@
 
         html += '<h1>';
         html += '<span>' + type.name + '</span>';
-
-        if (user.Policy.IsAdministrator) {
-            html += '<a class="detailSectionHeaderButton clearLink" style="margin-top:-8px;display:inline-block;" href="edititemmetadata.html?tab=2&id=' + currentItem.Id + '" title="' + Globalize.translate('ButtonEdit') + '" style="display:none;"><paper-icon-button icon="mode-edit"></paper-icon-button></a>';
-        }
 
         html += '</h1>';
 
@@ -1013,7 +1012,10 @@
             centerText: true,
             context: context,
             lazy: true,
-            showDetailsMenu: true
+            showDetailsMenu: true,
+            overlayMoreButton: true,
+            showAddToCollection: false,
+            showRemoveFromCollection: true
         });
         html += '</div>';
 
@@ -1022,6 +1024,31 @@
         var collectionItems = page.querySelector('.collectionItems');
         $(collectionItems).append(html);
         ImageLoader.lazyChildren(collectionItems);
+
+        $(collectionItems).off('removefromcollection').on('removefromcollection', function (e, itemId) {
+
+            removeFromCollection(page, parentItem, [itemId], user, context);
+        });
+    }
+
+    function removeFromCollection(page, parentItem, itemIds, user, context) {
+
+        Dashboard.showLoadingMsg();
+
+        var url = ApiClient.getUrl("Collections/" + parentItem.Id + "/Items", {
+
+            Ids: itemIds.join(',')
+        });
+
+        ApiClient.ajax({
+            type: "DELETE",
+            url: url
+
+        }).done(function () {
+
+            renderChildren(page, parentItem, user, context);
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function renderUserDataIcons(page, item) {

@@ -108,7 +108,6 @@ namespace MediaBrowser.Api.Dlna
         private readonly IConnectionManager _connectionManager;
         private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
-        // TODO: Add utf-8
         private const string XMLContentType = "text/xml; charset=UTF-8";
 
         public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar)

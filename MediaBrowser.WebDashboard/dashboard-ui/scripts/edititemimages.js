@@ -566,7 +566,7 @@
 
         $(page.querySelector('paper-tabs')).on('tabchange', function () {
 
-            if (parseInt(this.selected) == 3) {
+            if (parseInt(this.selected) == 2) {
                 var tabContent = page.querySelector('.imageEditorTab');
 
                 reload(tabContent);
