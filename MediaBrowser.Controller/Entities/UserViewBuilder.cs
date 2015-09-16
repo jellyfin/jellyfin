@@ -577,19 +577,9 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
         {
-            return GetResult(GetMediaFolders(user).SelectMany(i =>
-            {
-                var hasCollectionType = i as ICollectionFolder;
-                Func<BaseItem, bool> filter = b => b is BoxSet;
+            var collections = _collectionManager.GetCollections(user);
 
-                if (hasCollectionType != null && string.Equals(hasCollectionType.CollectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
-                {
-                    return i.GetChildren(user, true).Where(filter);
-                }
-
-                return i.GetRecursiveChildren(user, filter);
-
-            }), parent, query);
+            return GetResult(collections, parent, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetPhotosView(Folder queryParent, User user, InternalItemsQuery query)
@@ -1041,11 +1031,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsUnidentified.HasValue)
-            {
-                return false;
-            }
-
             if (request.IsYearMismatched.HasValue)
             {
                 return false;
@@ -1413,15 +1398,6 @@ namespace MediaBrowser.Controller.Entities
                 var video = item as Video;
 
                 if (video == null || val != video.IsHD)
-                {
-                    return false;
-                }
-            }
-
-            if (query.IsUnidentified.HasValue)
-            {
-                var val = query.IsUnidentified.Value;
-                if (item.IsUnidentified != val)
                 {
                     return false;
                 }

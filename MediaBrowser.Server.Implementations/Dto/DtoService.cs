@@ -908,12 +908,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DisplayMediaType = item.DisplayMediaType;
             }
 
-            // Leave null if false
-            if (item.IsUnidentified)
-            {
-                dto.IsUnidentified = item.IsUnidentified;
-            }
-
             if (fields.Contains(ItemFields.Settings))
             {
                 dto.LockedFields = item.LockedFields;
