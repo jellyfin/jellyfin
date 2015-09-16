@@ -169,6 +169,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
         List<string> GetPeopleNames(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Gets the item ids with path.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;Tuple&lt;Guid, System.String&gt;&gt;.</returns>
+        QueryResult<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
     }
 }
 
