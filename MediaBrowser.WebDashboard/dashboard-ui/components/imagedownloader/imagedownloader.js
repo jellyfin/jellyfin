@@ -5,7 +5,9 @@
     var currentDeferred;
     var hasChanges = false;
 
-    var browsableImagePageSize = 20;
+    // These images can be large and we're seeing memory problems in safari
+    var browsableImagePageSize = $.browser.safari ? 6 : 12;
+
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
     var selectedProvider;

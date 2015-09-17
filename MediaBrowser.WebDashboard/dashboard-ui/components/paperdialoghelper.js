@@ -17,16 +17,11 @@
                     }
                 }
             }
-
-            if (isActive) {
-                document.body.classList.add('bodyWithPopupOpen');
-            }
-            else {
-                document.body.classList.remove('bodyWithPopupOpen');
-            }
         }
 
         function onDialogClosed() {
+
+            Dashboard.onPopupClose();
 
             dlg = null;
             $(window).off('navigate', onHashChange);
@@ -40,6 +35,7 @@
 
         $(dlg).on('iron-overlay-closed', onDialogClosed);
         dlg.open();
+        Dashboard.onPopupOpen();
 
         window.location.hash = hash;
 

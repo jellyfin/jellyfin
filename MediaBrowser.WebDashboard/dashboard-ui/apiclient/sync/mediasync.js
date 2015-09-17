@@ -234,7 +234,10 @@
 
             require(['localassetmanager'], function () {
 
-                var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File");
+                var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File", {
+                    api_key: apiClient.accessToken()
+                });
+
                 var localPath = localItem.LocalPath;
 
                 Logger.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
@@ -337,7 +340,8 @@
 
                     var imageUrl = apiClient.getImageUrl(itemId, {
                         Tag: imageTag,
-                        ImageType: imageType
+                        ImageType: imageType,
+                        api_key: apiClient.accessToken()
                     });
 
                     LocalAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).done(function () {
@@ -414,7 +418,8 @@
             }
 
             var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/AdditionalFiles", {
-                Name: file.Name
+                Name: file.Name,
+                api_key: apiClient.accessToken()
             });
 
             require(['localassetmanager'], function () {

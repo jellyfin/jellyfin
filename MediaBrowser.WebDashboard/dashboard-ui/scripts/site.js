@@ -117,6 +117,20 @@ var Dashboard = {
         }
     },
 
+    onPopupOpen: function(){
+        Dashboard.popupCount = (Dashboard.popupCount || 0) + 1;
+        document.body.classList.add('bodyWithPopupOpen');
+    },
+
+    onPopupClose: function(){
+
+        Dashboard.popupCount = (Dashboard.popupCount || 1) - 1;
+
+        if (!Dashboard.popupCount) {
+            document.body.classList.remove('bodyWithPopupOpen');
+        }
+    },
+
     getCurrentUser: function () {
 
         if (!Dashboard.getUserPromise) {

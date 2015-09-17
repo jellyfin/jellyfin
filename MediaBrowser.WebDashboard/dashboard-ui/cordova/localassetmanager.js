@@ -467,13 +467,37 @@
         var deferred = DeferredBuilder.Deferred();
 
         Logger.log('downloading: ' + url + ' to ' + localPath);
-        var ft = new FileTransfer();
-        ft.download(url, localPath, function (entry) {
 
-            var localUrl = normalizeReturnUrl(entry.toURL());
+        getFileSystem().done(function (fileSystem) {
 
-            Logger.log('Downloaded local url: ' + localUrl);
-            deferred.resolveWith(null, [localUrl]);
+            fileSystem.root.getFile(localPath.replace('file://', ''), {}, function (targetFile) {
+
+                var downloader = new BackgroundTransfer.BackgroundDownloader();
+                // Create a new download operation.
+                var download = downloader.createDownload(url, targetFile);
+                // Start the download and persist the promise to be able to cancel the download.
+                app.downloadPromise = download.startAsync().then(function () {
+
+                    // on success
+                    var localUrl = normalizeReturnUrl(targetFile.toURL());
+
+                    Logger.log('Downloaded local url: ' + localUrl);
+                    deferred.resolveWith(null, [localUrl]);
+
+                }, function () {
+
+                    // on error
+                    Logger.log('download failed: ' + url + ' to ' + localPath);
+                    deferred.reject();
+
+                }, function (value) {
+
+                    // on progress
+                    Logger.log('download progress: ' + value);
+
+                });
+            });
+
         });
 
         return deferred.promise();
@@ -537,7 +561,7 @@
     }
 
     function getLocalId(serverId, itemId) {
-
+        return serverId + '_' + itemId;
     }
 
     function hasImage(serverId, itemId, imageTag) {
