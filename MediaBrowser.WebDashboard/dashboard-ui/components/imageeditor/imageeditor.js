@@ -185,7 +185,7 @@
     function showImageDownloader(page, imageType) {
         require(['components/imagedownloader/imagedownloader'], function () {
 
-            ImageDownloader.show(currentItem.Id, imageType).done(function (hasChanges) {
+            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).done(function (hasChanges) {
 
                 if (hasChanges) {
                     reload(page);

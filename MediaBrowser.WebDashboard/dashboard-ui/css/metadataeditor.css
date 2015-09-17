@@ -49,7 +49,7 @@
     .remoteImageDetails paper-icon-button {
         position: absolute;
         bottom: 0;
-        right: 5px;
+        right: 0;
     }
 
 .remoteImageDetailText {

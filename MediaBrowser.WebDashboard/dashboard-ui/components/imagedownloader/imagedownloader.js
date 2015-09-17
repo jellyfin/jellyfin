@@ -1,10 +1,11 @@
 ﻿(function ($, window, document) {
 
     var currentItemId;
+    var currentItemType;
     var currentDeferred;
     var hasChanges = false;
 
-    var browsableImagePageSize = 10;
+    var browsableImagePageSize = 20;
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
     var selectedProvider;
@@ -152,10 +153,10 @@
         }
         else {
 
-            if (currentItem.Type == "Episode") {
+            if (currentItemType == "Episode") {
                 cssClass += " remoteBackdropImage";
             }
-            else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
+            else if (currentItemType == "MusicAlbum" || currentItemType == "MusicArtist") {
                 cssClass += " remoteDiscImage";
             }
             else {
@@ -252,7 +253,7 @@
         });
     }
 
-    function showEditor(itemId) {
+    function showEditor(itemId, itemType) {
 
         Dashboard.showLoadingMsg();
 
@@ -264,6 +265,7 @@
         }).done(function (template) {
 
             currentItemId = itemId;
+            currentItemType = itemType;
 
             var dlg = document.createElement('paper-dialog');
 
@@ -316,20 +318,19 @@
     }
 
     window.ImageDownloader = {
-        show: function (itemId, imageType) {
+        show: function (itemId, itemType, imageType) {
 
             var deferred = DeferredBuilder.Deferred();
 
             currentDeferred = deferred;
             hasChanges = false;
-            browsableImagePageSize = 10;
             browsableImageStartIndex = 0;
             browsableImageType = imageType || 'Primary';
             selectedProvider = null;
 
             require(['components/paperdialoghelper'], function () {
 
-                showEditor(itemId);
+                showEditor(itemId, itemType);
             });
             return deferred.promise();
         }
