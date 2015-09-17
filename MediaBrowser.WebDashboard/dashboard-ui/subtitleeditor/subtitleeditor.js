@@ -107,12 +107,6 @@
 
                 itemHtml += '<paper-fab class="listAvatar blue" icon="closed-caption" item-icon></paper-fab>';
 
-                itemHtml += '<paper-item-body three-line>';
-
-                itemHtml += '<div>';
-                itemHtml += (s.Language || Globalize.translate('LabelUnknownLanaguage'));
-                itemHtml += '</div>';
-
                 var atts = [];
 
                 atts.push(s.Codec);
@@ -125,7 +119,18 @@
                     atts.push('Forced');
                 }
 
-                itemHtml += '<div secondary>' + atts.join(', ') + '</div>';
+                if (atts.length == 3) {
+                    itemHtml += '<paper-item-body three-line>';
+                }
+                else {
+                    itemHtml += '<paper-item-body two-line>';
+                }
+
+                itemHtml += '<div>';
+                itemHtml += (s.Language || Globalize.translate('LabelUnknownLanaguage'));
+                itemHtml += '</div>';
+
+                itemHtml += '<div secondary>' + atts.join(' - ') + '</div>';
 
                 if (s.Path) {
                     itemHtml += '<div secondary>' + (s.Path) + '</div>';
@@ -202,8 +207,6 @@
 
         $('.noSearchResults', page).hide();
 
-        html += '<ul data-role="listview">';
-
         for (var i = 0, length = results.length; i < length; i++) {
 
             var result = results[i];
@@ -211,29 +214,50 @@
             var provider = result.ProviderName;
 
             if (provider != lastProvider) {
-                html += '<li data-role="list-divider">' + provider + '<span class="ui-li-count ui-body-inherit">' + Globalize.translate('HeaderRatingsDownloads') + '</span></li>';
+
+                if (i > 0) {
+                    html += '</div>';
+                }
+                html += '<h1>' + provider + '</h1>';
+                html += '<div class="paperList">';
                 lastProvider = provider;
             }
 
-            html += '<li><a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
+            html += '<paper-icon-item>';
 
-            html += '<h3>' + (result.Name) + '</h3>';
-            html += '<p>' + (result.Format) + '</p>';
+            html += '<paper-fab class="listAvatar blue" icon="closed-caption" item-icon></paper-fab>';
 
             if (result.Comment) {
-                html += '<p>' + (result.Comment) + '</p>';
+                html += '<paper-item-body three-line>';
+            }
+            else {
+                html += '<paper-item-body two-line>';
             }
 
-            html += '<div class="ui-li-count">' + (result.CommunityRating || 0) + ' / ' + (result.DownloadCount || 0) + '</div>';
+            //html += '<a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
 
-            html += '</a>';
+            html += '<div>' + (result.Name) + '</div>';
+            html += '<div secondary>' + (result.Format) + '</div>';
 
-            html += '<a href="#" class="btnDownload" data-icon="plus" data-subid="' + result.Id + '">' + Globalize.translate('ButtonDownload') + '</a>';
+            if (result.Comment) {
+                html += '<div secondary>' + (result.Comment) + '</div>';
+            }
 
-            html += '</li>';
+            //html += '</a>';
+
+            html += '</paper-item-body>';
+
+            html += '<div style="font-size:86%;opacity:.7;">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
+
+            html += '<paper-icon-button icon="cloud-download" data-subid="' + result.Id + '" title="' + Globalize.translate('ButtonDownload') + '" class="btnDownload"></paper-icon-button>';
+
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        if (results.length) {
+            html += '</div>';
+        }
+
         var elem = $('.subtitleResults', page).html(html).trigger('create');
 
         $('.btnViewSubtitle', elem).on('click', function () {
@@ -317,7 +341,7 @@
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" class="mini"></paper-fab>';
+                html += '<paper-fab icon="arrow-back" class="mini btnCloseDialog"></paper-fab>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
                 html += '</h2>';
 
@@ -333,7 +357,7 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                //document.body.classList.add('bodyWithPopupOpen');
+                document.body.classList.add('bodyWithPopupOpen');
                 dlg.open();
 
                 window.location.hash = getHash(itemId);
@@ -350,7 +374,7 @@
                     fillLanguages(editorContent, languages);
                 });
 
-                $('paper-fab', dlg).on('click', closeDialog);
+                $('.btnCloseDialog', dlg).on('click', closeDialog);
             });
         });
     }
@@ -384,9 +408,9 @@
         currentDialog = null;
 
         window.removeEventListener('hashchange', onHashChange);
-        //document.body.classList.remove('bodyWithPopupOpen');
+        document.body.classList.remove('bodyWithPopupOpen');
         $(this).remove();
-
+        Dashboard.hideLoadingMsg();
         if ((window.location.hash || '').length > 1) {
             history.back();
         }

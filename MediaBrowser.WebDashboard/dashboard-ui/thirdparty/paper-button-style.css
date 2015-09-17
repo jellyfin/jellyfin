@@ -521,4 +521,6 @@ paper-dialog paper-radio-group paper-radio-button {
     font-weight: inherit !important;
     line-height: 1 !important;
     line-height: initial !important;
+    padding: 0 1em;
+    margin-top: 1em;
 }

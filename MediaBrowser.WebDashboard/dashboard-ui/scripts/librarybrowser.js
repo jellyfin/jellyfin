@@ -675,7 +675,12 @@
             }
 
             if (user.Policy.IsAdministrator) {
+
                 commands.push('edit');
+
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
+                    commands.push('managesubtitles');
+                }
             }
 
             commands.push('refresh');
@@ -690,10 +695,6 @@
 
             if (LibraryBrowser.canShare(item, user)) {
                 commands.push('share');
-            }
-
-            if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
-                commands.push('managesubtitles');
             }
 
             return commands;
@@ -736,7 +737,7 @@
 
         editSubtitles: function (itemId) {
 
-            require(['subtitleeditor/edititemsubtitles'], function () {
+            require(['subtitleeditor/subtitleeditor'], function () {
 
                 SubtitleEditor.show(itemId);
             });
