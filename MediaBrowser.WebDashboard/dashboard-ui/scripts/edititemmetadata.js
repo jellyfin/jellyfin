@@ -46,12 +46,6 @@
             setFieldVisibilities(page, item);
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                page.querySelector('.subtitleTabButton').classList.remove('hide');
-            } else {
-                page.querySelector('.subtitleTabButton').classList.add('hide');
-            }
-
             if (item.MediaType == 'Photo') {
                 $('#btnEditImages', page).hide();
             } else {

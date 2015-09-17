@@ -246,6 +246,14 @@
                 });
             }
 
+            if (commands.indexOf('managesubtitles') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonManageSubtitles'),
+                    id: 'managesubtitles',
+                    ironIcon: 'closed-caption'
+                });
+            }
+
             items.push({
                 name: Globalize.translate('ButtonOpen'),
                 id: 'open',
@@ -472,6 +480,9 @@
                                         Id: itemId
                                     }]
                                 });
+                                break;
+                            case 'managesubtitles':
+                                LibraryBrowser.editSubtitles(itemId);
                                 break;
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);

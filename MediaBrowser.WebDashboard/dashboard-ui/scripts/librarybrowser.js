@@ -692,6 +692,10 @@
                 commands.push('share');
             }
 
+            if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
+                commands.push('managesubtitles');
+            }
+
             return commands;
         },
 
@@ -728,6 +732,14 @@
                 });
 
             }, 250);
+        },
+
+        editSubtitles: function (itemId) {
+
+            require(['subtitleeditor/edititemsubtitles'], function () {
+
+                SubtitleEditor.show(itemId);
+            });
         },
 
         showMoreCommands: function (positionTo, itemId, commands) {
@@ -771,6 +783,14 @@
                     name: Globalize.translate('ButtonEdit'),
                     id: 'edit',
                     ironIcon: 'mode-edit'
+                });
+            }
+
+            if (commands.indexOf('managesubtitles') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonManageSubtitles'),
+                    id: 'managesubtitles',
+                    ironIcon: 'closed-caption'
                 });
             }
 
@@ -824,6 +844,9 @@
                                 }
                             case 'edit':
                                 Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+                                break;
+                            case 'managesubtitles':
+                                LibraryBrowser.editSubtitles(itemId);
                                 break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
@@ -1405,6 +1428,10 @@
             if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
 
                 itemCommands.push('record');
+            }
+
+            if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
+                itemCommands.push('managesubtitles');
             }
 
             return itemCommands;
@@ -2583,7 +2610,7 @@
 
                 if (options.addLayoutButton) {
 
-                    html += '<paper-icon-button class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');" icon="view-comfy"></paper-icon-button>';
+                    html += '<paper-icon-button title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');" icon="view-comfy"></paper-icon-button>';
                 }
 
                 if (options.sortButton) {

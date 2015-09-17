@@ -493,3 +493,14 @@ paper-dialog paper-radio-group paper-radio-button {
     color: #858585 !important;
     display: block;
 }
+
+.fullscreen-editor-paper-dialog {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background-color: #222 !important;
+}

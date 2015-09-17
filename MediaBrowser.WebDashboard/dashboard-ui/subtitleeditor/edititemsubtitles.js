@@ -1,6 +1,7 @@
 ﻿(function ($, window, document) {
 
     var currentItem;
+    var currentDialog;
 
     function showLocalSubtitles(page, index) {
 
@@ -65,7 +66,8 @@
 
                 Dashboard.showLoadingMsg();
 
-                var url = 'Videos/' + currentItem.Id + '/Subtitles/' + index;
+                var itemId = currentItem.Id;
+                var url = 'Videos/' + itemId + '/Subtitles/' + index;
 
                 ApiClient.ajax({
 
@@ -74,7 +76,7 @@
 
                 }).done(function () {
 
-                    reload(page);
+                    reload(page, itemId);
                 });
 
             }
@@ -94,52 +96,55 @@
 
         if (subs.length) {
 
-            html += '<br/>';
-            html += '<ul data-role="listview" data-split-icon="delete"><li data-role="list-divider">' + Globalize.translate('HeaderCurrentSubtitles') + '</li>';
+            html += '<h1>' + Globalize.translate('HeaderCurrentSubtitles') + '</h1>';
+            html += '<div class="paperList">';
 
             html += subs.map(function (s) {
 
-                var cssClass = s.Path ? 'btnViewSubtitles' : '';
+                var itemHtml = '';
 
-                var itemHtml = '<li><a class="' + cssClass + '" href="#" data-index="' + s.Index + '">';
+                itemHtml += '<paper-icon-item>';
 
-                itemHtml += '<p>' + (s.Language || Globalize.translate('LabelUnknownLanaguage')) + '</p>';
+                itemHtml += '<paper-fab class="listAvatar blue" icon="closed-caption" item-icon></paper-fab>';
 
-                if (s.IsDefault || s.IsForced) {
+                itemHtml += '<paper-item-body three-line>';
 
-                    var atts = [];
+                itemHtml += '<div>';
+                itemHtml += (s.Language || Globalize.translate('LabelUnknownLanaguage'));
+                itemHtml += '</div>';
 
-                    if (s.IsDefault) {
+                var atts = [];
 
-                        atts.push('Default');
-                    }
-                    if (s.IsForced) {
+                atts.push(s.Codec);
+                if (s.IsDefault) {
 
-                        atts.push('Forced');
-                    }
-
-                    itemHtml += '<p>' + atts.join(', ') + '</p>';
+                    atts.push('Default');
                 }
+                if (s.IsForced) {
+
+                    atts.push('Forced');
+                }
+
+                itemHtml += '<div secondary>' + atts.join(', ') + '</div>';
 
                 if (s.Path) {
-                    itemHtml += '<p>' + (s.Path) + '</p>';
+                    itemHtml += '<div secondary>' + (s.Path) + '</div>';
                 }
 
-                itemHtml += '</a>';
+                html += '</a>';
+                itemHtml += '</paper-item-body>';
 
                 if (s.Path) {
-                    itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
-                } else {
-                    itemHtml += '<a href="#" data-icon="delete" style="display:none;" class="btnDelete" data-index="' + s.Index + '">' + Globalize.translate('Delete') + '</a>';
+                    itemHtml += '<paper-icon-button icon="delete" data-index="' + s.Index + '" title="' + Globalize.translate('Delete') + '" class="btnDelete"></paper-icon-button>';
                 }
 
-                itemHtml += '</li>';
+                itemHtml += '</paper-icon-item>';
 
                 return itemHtml;
 
             }).join('');
 
-            html += '</ul>';
+            html += '</div>';
         }
 
         var elem = $('.subtitleList', page).html(html).trigger('create');
@@ -255,20 +260,24 @@
         });
     }
 
-    function reload(page) {
+    function reload(page, itemId) {
 
         $('.noSearchResults', page).hide();
 
-        MetadataEditor.getItemPromise().done(function (item) {
-
+        function onGetItem(item) {
             currentItem = item;
-
-            LibraryBrowser.renderName(item, $('.itemName', page), true);
 
             fillSubtitleList(page, item);
 
             Dashboard.hideLoadingMsg();
-        });
+        }
+
+        if (typeof itemId == 'string') {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(onGetItem);
+        }
+        else {
+            onGetItem(itemId);
+        }
     }
 
     function onSearchSubmit() {
@@ -276,35 +285,104 @@
 
         var lang = $('#selectLanguage', form).val();
 
-        searchForSubtitles($(form).parents('.page'), lang);
+        searchForSubtitles($(form).parents('.editorContent'), lang);
 
         return false;
     }
 
-    $(document).on('pageinit', "#editItemMetadataPage", function () {
+    function showEditor(itemId) {
 
-        var page = this;
+        Dashboard.showLoadingMsg();
 
-        $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
+        ApiClient.ajax({
 
-        $(page.querySelector('paper-tabs')).on('tabchange', function () {
+            type: 'GET',
+            url: 'subtitleeditor/subtitleeditor.template.html'
 
-            if (parseInt(this.selected) == 1) {
-                var tabContent = page.querySelector('.subtitleTabContent');
+        }).done(function (template) {
 
-                $('.subtitleResults', tabContent).empty();
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
 
-                Dashboard.showLoadingMsg();
+                var dlg = document.createElement('paper-dialog');
 
-                reload(tabContent);
+                dlg.entryAnimation = 'scale-up-animation';
+                dlg.exitAnimation = 'fade-out-animation';
+                dlg.classList.add('fullscreen-editor-paper-dialog');
+                dlg.classList.add('ui-body-b');
 
-                ApiClient.getCultures().done(function (languages) {
+                var html = '';
+                html += '<h2 class="dialogHeader">' + item.Name + '</h2>';
 
-                    fillLanguages(tabContent, languages);
-                });
-            }
+                html += '<div class="editorContent">';
+                html += Globalize.translateDocument(template);
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                $('.subtitleSearchForm', dlg).off('submit', onSearchSubmit).on('submit', onSearchSubmit);
+
+                // Has to be assigned a z-index after the call to .open() 
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
+
+                document.body.classList.add('bodyWithPopupOpen');
+                dlg.open();
+
+                window.location.hash = 'subtitleeditor?id=' + itemId;
+
+                // We need to use a timeout or onHashChange will fire immediately while opening
+                setTimeout(function () {
+
+                    window.addEventListener('hashchange', onHashChange);
+
+                    currentDialog = dlg;
+
+                    var editorContent = dlg.querySelector('.editorContent');
+                    reload(editorContent, item);
+
+                    fillLanguages(editorContent);
+
+                }, 0);
+            });
         });
+    }
 
-    });
+    function onHashChange() {
+
+        if (currentDialog) {
+            closeDialog(false);
+        }
+    }
+
+    function closeDialog(updateHash) {
+
+        window.removeEventListener('hashchange', onHashChange);
+
+        if (updateHash) {
+            window.location.hash = '';
+        }
+
+        if (currentDialog) {
+            currentDialog.close();
+        }
+    }
+
+    function onDialogClosed() {
+        currentDialog = null;
+        window.removeEventListener('hashchange', onHashChange);
+        document.body.classList.remove('bodyWithPopupOpen');
+        $(this).remove();
+    }
+
+    function fillLanguages(editorContent) {
+        ApiClient.getCultures().done(function (languages) {
+
+            fillLanguages(editorContent, languages);
+        });
+    }
+
+    window.SubtitleEditor = {
+        show: showEditor
+    };
 
 })(jQuery, window, document);

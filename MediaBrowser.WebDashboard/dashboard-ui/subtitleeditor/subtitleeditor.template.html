@@ -1,0 +1,24 @@
+﻿<div class="readOnlyContent" style="max-width: 700px;margin:auto;">
+    <div>
+        <div class="subtitleList"></div>
+    </div>
+    <br />
+    <h1>${HeaderSearchForSubtitles}</h1>
+
+    <form class="subtitleSearchForm">
+        <div style="display: inline-block; width: 85%;">
+            <label for="selectLanguage">${LabelLanguage}</label>
+            <select id="selectLanguage" required="required" data-mini="true"></select>
+        </div>
+        <button type="submit" class="clearButton btnSearchSubtitles" style="width:auto;">
+            <paper-icon-button icon="search" title="${ButtonSearch}"></paper-icon-button>
+        </button>
+    </form>
+    <br />
+    <div class="readOnlyContent" style="max-width: 700px;">
+        <div class="subtitleResults"></div>
+        <div class="noSearchResults" style="display: none;">
+            ${MessageNoSubtitleSearchResultsFound}
+        </div>
+    </div>
+</div>

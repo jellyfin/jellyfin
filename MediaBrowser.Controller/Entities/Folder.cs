@@ -371,7 +371,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-			return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(FileSystem)));
+            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(FileSystem)));
         }
 
         /// <summary>
@@ -474,7 +474,7 @@ namespace MediaBrowser.Controller.Entities
                                 currentChild.DateModified = child.DateModified;
                             }
 
-                            currentChild.IsOffline = false;
+                            await UpdateIsOffline(currentChild, false).ConfigureAwait(false);
                             validChildren.Add(currentChild);
                         }
                         else
@@ -509,12 +509,12 @@ namespace MediaBrowser.Controller.Entities
 
                         else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                         {
-                            item.IsOffline = true;
+                            await UpdateIsOffline(item, true).ConfigureAwait(false);
                             validChildren.Add(item);
                         }
                         else
                         {
-                            item.IsOffline = false;
+                            await UpdateIsOffline(item, false).ConfigureAwait(false);
                             actualRemovals.Add(item);
                         }
                     }
@@ -567,6 +567,17 @@ namespace MediaBrowser.Controller.Entities
             }
 
             progress.Report(100);
+        }
+
+        private Task UpdateIsOffline(BaseItem item, bool newValue)
+        {
+            if (item.IsOffline != newValue)
+            {
+                item.IsOffline = newValue;
+                return item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+            }
+
+            return Task.FromResult(true);
         }
 
         private async Task RefreshMetadataRecursive(MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
@@ -693,7 +704,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if the specified path is offline; otherwise, <c>false</c>.</returns>
         private bool IsPathOffline(string path)
         {
-			if (FileSystem.FileExists(path))
+            if (FileSystem.FileExists(path))
             {
                 return false;
             }
@@ -703,7 +714,7 @@ namespace MediaBrowser.Controller.Entities
             // Depending on whether the path is local or unc, it may return either null or '\' at the top
             while (!string.IsNullOrEmpty(path) && path.Length > 1)
             {
-				if (FileSystem.DirectoryExists(path))
+                if (FileSystem.DirectoryExists(path))
                 {
                     return false;
                 }

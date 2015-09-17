@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmcheckbox,jqmcollapsible,jqmlistview,jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,scripts/edititemsubtitles,scripts/edititemimages">
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmcheckbox,jqmcollapsible,jqmlistview,jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,scripts/edititemimages">
         <div>
             <div class="editPageSidebar" style="overflow:auto;">
                 <div class="libraryTree">
@@ -16,7 +16,6 @@
                 <br />
                 <paper-tabs hidescrollbuttons>
                     <paper-tab class="metadataTabButton">${TabMetadata}</paper-tab>
-                    <paper-tab class="subtitleTabButton hide">${TabSubtitles}</paper-tab>
                     <paper-tab class="imagesTabButton">${TabImages}</paper-tab>
                 </paper-tabs>
 
@@ -341,31 +340,6 @@
 
                     </form>
                 </div>
-                <div class="editorTab subtitleTabContent">
-                    <br />
-                    <div class="readOnlyContent" style="max-width: 700px;">
-                        <div class="subtitleList"></div>
-                    </div>
-                    <br />
-                    <h1>${HeaderSearchForSubtitles}</h1>
-
-                    <form class="subtitleSearchForm">
-                        <div style="display: inline-block; width: 85%;">
-                            <label for="selectLanguage">${LabelLanguage}</label>
-                            <select id="selectLanguage" required="required" data-mini="true"></select>
-                        </div>
-                        <button type="submit" class="clearButton btnSearchSubtitles" style="width:auto;">
-                            <paper-icon-button icon="search" title="${ButtonSearch}"></paper-icon-button>
-                        </button>
-                    </form>
-                    <br />
-                    <div class="readOnlyContent" style="max-width: 700px;">
-                        <div class="subtitleResults"></div>
-                        <div class="noSearchResults" style="display: none;">
-                            ${MessageNoSubtitleSearchResultsFound}
-                        </div>
-                    </div>
-                </div>
                 <div class="editorTab imageEditorTab">
                     <div style="margin:2em 0 .5em;text-align:center;">
 
@@ -547,12 +521,6 @@
                 </form>
             </div>
 
-        </div>
-
-        <div data-role="popup" class="popup popupSubtitleViewer">
-            <div class="subtitleViewerContent">
-                <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>
-            </div>
         </div>
 
         <div data-role="popup" id="popupUpload" data-theme="a">
