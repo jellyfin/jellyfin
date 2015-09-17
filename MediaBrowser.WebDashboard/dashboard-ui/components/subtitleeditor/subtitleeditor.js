@@ -339,6 +339,8 @@
 
                 dlg.setAttribute('with-backdrop', 'with-backdrop');
                 dlg.setAttribute('role', 'alertdialog');
+                // without this safari will scroll the background instead of the dialog contents
+                dlg.setAttribute('modal', 'modal');
                 dlg.entryAnimation = 'scale-up-animation';
                 dlg.exitAnimation = 'fade-out-animation';
                 dlg.classList.add('fullscreen-editor-paper-dialog');
@@ -362,7 +364,6 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                document.body.classList.add('bodyWithPopupOpen');
                 PaperDialogHelper.openWithHash(dlg, 'subtitleeditor');
 
                 var editorContent = dlg.querySelector('.editorContent');
@@ -385,7 +386,6 @@
 
     function onDialogClosed() {
 
-        document.body.classList.remove('bodyWithPopupOpen');
         $(this).remove();
         Dashboard.hideLoadingMsg();
     }

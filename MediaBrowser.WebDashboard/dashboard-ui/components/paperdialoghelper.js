@@ -2,17 +2,27 @@
 
     function paperDialogHashHandler(dlg, hash) {
 
+        var isActive = true;
+
         function onHashChange(e, data) {
 
             data = data.state;
+            isActive = data.hash == '#' + hash;
 
             if (data.direction == 'back') {
                 if (dlg) {
-                    if (data.hash != '#' + hash) {
+                    if (!isActive) {
                         dlg.close();
                         dlg = null;
                     }
                 }
+            }
+
+            if (isActive) {
+                document.body.classList.add('bodyWithPopupOpen');
+            }
+            else {
+                document.body.classList.remove('bodyWithPopupOpen');
             }
         }
 

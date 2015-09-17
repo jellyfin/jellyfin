@@ -1,0 +1,36 @@
+﻿<div style="text-align: center;">
+    <div style="margin: 0; display: inline-block;">
+        <label for="selectImageProvider">${LabelSource}</label>
+    </div>
+    <div style="margin: 0; display: inline-block;">
+        <select id="selectImageProvider" name="selectImageProvider" data-mini="true" data-inline="true">
+            <option value="">${OptionAll}</option>
+        </select>
+    </div>
+    <div style="margin: 0; display: inline-block;">
+        <label for="selectBrowsableImageType">${LabelImage}</label>
+    </div>
+    <div style="margin: 0; display: inline-block;">
+        <select id="selectBrowsableImageType" name="selectBrowsableImageType" data-mini="true" data-inline="true">
+            <option value="Primary">${OptionPrimary}</option>
+            <option value="Art">${OptionArt}</option>
+            <option value="Backdrop">${OptionBackdrop}</option>
+            <option value="Banner">${OptionBanner}</option>
+            <option value="Box">${OptionBox}</option>
+            <option value="BoxRear">${OptionBoxRear}</option>
+            <option value="Disc">${OptionDisc}</option>
+            <option value="Icon">${OptionIcon}</option>
+            <option value="Logo">${OptionLogo}</option>
+            <option value="Menu">${OptionMenu}</option>
+            <option value="Screenshot">${OptionScreenshot}</option>
+            <option value="Thumb">${OptionThumb}</option>
+        </select>
+    </div>
+    <div class="availableImagesPaging" style="display: inline-block;vertical-align: middle;margin-left:1em;"></div>
+    <div style="display: inline-block; vertical-align: middle; margin-left: 1em;">
+        <input type="checkbox" id="chkAllLanguages" data-role="none" style="display: inline-block;vertical-align: middle;" />
+        <label for="chkAllLanguages" style="display: inline-block;vertical-align: middle;">${LabelAllLanguages}</label>
+    </div>
+</div>
+
+<div class="availableImagesList" style="text-align:center;"></div>
