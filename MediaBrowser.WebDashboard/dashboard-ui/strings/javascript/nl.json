@@ -805,6 +805,7 @@
     "ButtonPreferences": "Voorkeuren",
     "ButtonViewArtist": "Bekijk artiest",
     "ButtonViewAlbum": "Bekijk album",
+    "ButtonEditImages": "Edit images",
     "ErrorMessagePasswordNotMatchConfirm": "Het wachtwoord en de wachtwoordbevestiging moeten overeenkomen.",
     "ErrorMessageUsernameInUse": "Deze gebruikersnaam is al in gebruik. Kies een andere en probeer het opnieuw.",
     "ErrorMessageEmailInUse": "Dit emailadres is al in gebruik. Kies een ander en probeer het opnieuw, of gebruik de vergeten wachtwoord functie.",

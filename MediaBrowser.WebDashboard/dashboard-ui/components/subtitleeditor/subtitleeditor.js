@@ -1,7 +1,6 @@
 ﻿(function ($, window, document) {
 
     var currentItem;
-    var currentDialog;
 
     function showLocalSubtitles(page, index) {
 
@@ -151,9 +150,6 @@
 
             html += '</div>';
         }
-        else {
-            html += '<br/>';
-        }
 
         var elem = $('.subtitleList', page).html(html).trigger('create');
 
@@ -182,14 +178,21 @@
 
         }));
 
-        Dashboard.getCurrentUser().done(function (user) {
+        var lastLanguage = appStorage.getItem('subtitleeditor-language');
+        if (lastLanguage) {
+            $('#selectLanguage', page).val(lastLanguage);
+        }
+        else {
 
-            var lang = user.Configuration.SubtitleLanguagePreference;
+            Dashboard.getCurrentUser().done(function (user) {
 
-            if (lang) {
-                $('#selectLanguage', page).val(lang);
-            }
-        });
+                var lang = user.Configuration.SubtitleLanguagePreference;
+
+                if (lang) {
+                    $('#selectLanguage', page).val(lang);
+                }
+            });
+        }
     }
 
     function renderSearchResults(page, results) {
@@ -277,6 +280,8 @@
 
     function searchForSubtitles(page, language) {
 
+        appStorage.setItem('subtitleeditor-language', language);
+
         Dashboard.showLoadingMsg();
 
         var url = ApiClient.getUrl('Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + language);
@@ -324,7 +329,7 @@
         ApiClient.ajax({
 
             type: 'GET',
-            url: 'subtitleeditor/subtitleeditor.template.html'
+            url: 'components/subtitleeditor/subtitleeditor.template.html'
 
         }).done(function (template) {
 
@@ -358,13 +363,7 @@
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
                 document.body.classList.add('bodyWithPopupOpen');
-                dlg.open();
-
-                window.location.hash = getHash(itemId);
-
-                window.addEventListener('hashchange', onHashChange);
-
-                currentDialog = dlg;
+                PaperDialogHelper.openWithHash(dlg, 'subtitleeditor');
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
@@ -379,45 +378,26 @@
         });
     }
 
-    function getHash(itemId) {
-        return 'subtitleeditor?id=' + itemId;
-    }
-
-    function onHashChange() {
-
-        // In some browsers this will fire immediately after opening the dialog, despite the fact that we bound the event after setting the hash
-        if (currentItem && window.location.hash == '#' + getHash(currentItem.Id)) {
-            return;
-        }
-
-        if (currentDialog) {
-            closeDialog();
-        }
-    }
-
     function closeDialog() {
 
-        window.removeEventListener('hashchange', onHashChange);
-
-        if (currentDialog) {
-            currentDialog.close();
-        }
+        history.back();
     }
 
     function onDialogClosed() {
-        currentDialog = null;
 
-        window.removeEventListener('hashchange', onHashChange);
         document.body.classList.remove('bodyWithPopupOpen');
         $(this).remove();
         Dashboard.hideLoadingMsg();
-        if ((window.location.hash || '').length > 1) {
-            history.back();
-        }
     }
 
     window.SubtitleEditor = {
-        show: showEditor
+        show: function (itemId) {
+
+            require(['components/paperdialoghelper'], function () {
+
+                showEditor(itemId);
+            });
+        }
     };
 
 })(jQuery, window, document);

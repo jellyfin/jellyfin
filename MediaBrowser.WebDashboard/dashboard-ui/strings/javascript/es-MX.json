@@ -805,6 +805,7 @@
     "ButtonPreferences": "Preferencias",
     "ButtonViewArtist": "Ver artista",
     "ButtonViewAlbum": "Ver album",
+    "ButtonEditImages": "Edit images",
     "ErrorMessagePasswordNotMatchConfirm": "La Contrase\u00f1a y la confirmaci\u00f3n de la contrase\u00f1a deben coincidir.",
     "ErrorMessageUsernameInUse": "El Nombre de Usuario ya esta en uso. Por favor seleccione un nuevo nombre e intente de nuevo.",
     "ErrorMessageEmailInUse": "La direcci\u00f3n de correo electr\u00f3nico ya esta en uso. Por favor ingrese un correo electr\u00f3nico nuevo e intente de nuevo, o si olvido la contrase\u00f1a use la opci\u00f3n \"Olvide mi contrase\u00f1a\".",

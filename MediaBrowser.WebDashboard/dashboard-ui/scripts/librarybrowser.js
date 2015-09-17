@@ -678,9 +678,10 @@
 
                 commands.push('edit');
 
-                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
-                    commands.push('managesubtitles');
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                    commands.push('editsubtitles');
                 }
+                commands.push('editimages');
             }
 
             commands.push('refresh');
@@ -735,9 +736,17 @@
             }, 250);
         },
 
+        editImages: function (itemId) {
+
+            require(['components/imageeditor/imageeditor'], function () {
+
+                ImageEditor.show(itemId);
+            });
+        },
+
         editSubtitles: function (itemId) {
 
-            require(['subtitleeditor/subtitleeditor'], function () {
+            require(['components/subtitleeditor/subtitleeditor'], function () {
 
                 SubtitleEditor.show(itemId);
             });
@@ -787,10 +796,18 @@
                 });
             }
 
-            if (commands.indexOf('managesubtitles') != -1) {
+            if (commands.indexOf('editimages') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonEditImages'),
+                    id: 'editimages',
+                    ironIcon: 'photo'
+                });
+            }
+
+            if (commands.indexOf('editsubtitles') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonEditSubtitles'),
-                    id: 'managesubtitles',
+                    id: 'editsubtitles',
                     ironIcon: 'closed-caption'
                 });
             }
@@ -846,8 +863,11 @@
                             case 'edit':
                                 Dashboard.navigate('edititemmetadata.html?id=' + itemId);
                                 break;
-                            case 'managesubtitles':
+                            case 'editsubtitles':
                                 LibraryBrowser.editSubtitles(itemId);
+                                break;
+                            case 'editimages':
+                                LibraryBrowser.editImages(itemId);
                                 break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
@@ -1431,9 +1451,10 @@
                 itemCommands.push('record');
             }
 
-            if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program') {
-                itemCommands.push('managesubtitles');
+            if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                itemCommands.push('editsubtitles');
             }
+            itemCommands.push('editimages');
 
             return itemCommands;
         },
@@ -3030,7 +3051,7 @@
             return html;
         },
 
-        renderDetailImage: function (elem, item, href, preferThumb) {
+        renderDetailImage: function (elem, item, editable, preferThumb) {
 
             var imageTags = item.ImageTags || {};
 
@@ -3127,8 +3148,8 @@
 
             html += '<div style="position:relative;">';
 
-            if (href) {
-                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
+            if (editable) {
+                html += "<a onclick='LibraryBrowser.editImages(\"" + item.Id + "\");' class='itemDetailGalleryLink' href='#'>";
             }
 
             if (detectRatio && item.PrimaryImageAspectRatio) {
@@ -3142,7 +3163,7 @@
 
             html += "<img class='itemDetailImage' src='" + url + "' />";
 
-            if (href) {
+            if (editable) {
                 html += "</a>";
             }
 

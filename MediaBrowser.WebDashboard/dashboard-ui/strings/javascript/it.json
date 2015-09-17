@@ -805,6 +805,7 @@
     "ButtonPreferences": "Preferenze",
     "ButtonViewArtist": "Visualizza artista",
     "ButtonViewAlbum": "Visualizza album",
+    "ButtonEditImages": "Edit images",
     "ErrorMessagePasswordNotMatchConfirm": "La password e la password di conferma devono corrispondere.",
     "ErrorMessageUsernameInUse": "L' username \u00e8 gi\u00e0 usato. Per favore scegli un nuovo nome e riprova.",
     "ErrorMessageEmailInUse": "L'indirizzo email \u00e8 gi\u00e0 usato.Per favore inserisci un nuovo indirizzo email e riprova, o usa la funzione password dimenticata.",

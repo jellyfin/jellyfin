@@ -238,10 +238,18 @@
                 });
             }
 
-            if (commands.indexOf('managesubtitles') != -1) {
+            if (commands.indexOf('editimages') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonEditImages'),
+                    id: 'editimages',
+                    ironIcon: 'photo'
+                });
+            }
+
+            if (commands.indexOf('editsubtitles') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonEditSubtitles'),
-                    id: 'managesubtitles',
+                    id: 'editsubtitles',
                     ironIcon: 'closed-caption'
                 });
             }
@@ -481,8 +489,11 @@
                                     }]
                                 });
                                 break;
-                            case 'managesubtitles':
+                            case 'editsubtitles':
                                 LibraryBrowser.editSubtitles(itemId);
+                                break;
+                            case 'editimages':
+                                LibraryBrowser.editImages(itemId);
                                 break;
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);

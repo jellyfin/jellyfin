@@ -213,10 +213,7 @@
 
 .editorTile h3 {
     text-transform: uppercase;
-    background: #444;
-    padding: .5em 0;
     text-align: center;
-    margin-top: 0;
     color: #ddd;
 }
 
@@ -225,7 +222,7 @@
 }
 
 .editorTileInner {
-    padding: 1em;
+    padding: .5em;
 }
 
 .editorTile .ui-field-contain {

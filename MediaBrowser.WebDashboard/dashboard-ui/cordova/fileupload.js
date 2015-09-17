@@ -12,7 +12,13 @@
 
                 fileEntry.file(function (file) {
 
-                    var mimeType = file.type;
+                    var mimeType = (file.type || '');
+
+                    if (mimeType.indexOf('image/') != 0) {
+                        Logger.log('Skipping upload because file is not an image. path: ' + path + ' mimeType: ' + mimeType);
+                        deferred.reject();
+                        return;
+                    }
 
                     Logger.log('mimeType for file ' + path + ' is ' + file);
 
@@ -37,7 +43,7 @@
                     var params = {};
                     options.params = params;
 
-                    new FileTransfer().upload(file, url, onSuccess, onFail, options);
+                    new FileTransfer().upload(path, url, onSuccess, onFail, options);
 
                 }, function () {
                     Logger.log('File upload failed. fileEntry.file returned an error');

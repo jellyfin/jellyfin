@@ -805,6 +805,7 @@
     "ButtonPreferences": "Preferences",
     "ButtonViewArtist": "View artist",
     "ButtonViewAlbum": "View album",
+    "ButtonEditImages": "Edit images",
     "ErrorMessagePasswordNotMatchConfirm": "The password and password confirmation must match.",
     "ErrorMessageUsernameInUse": "The username is already in use. Please choose a new name and try again.",
     "ErrorMessageEmailInUse": "The email address is already in use. Please enter a new email address and try again, or use the forgot password feature.",

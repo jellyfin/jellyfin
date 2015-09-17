@@ -1447,7 +1447,7 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                $(page.querySelector('paper-tabs')).trigger('tabchange');
+                reload(page);
             }
         });
 
@@ -1462,25 +1462,6 @@
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
 
-        var tabs = page.querySelector('paper-tabs');
-
-        configurePaperLibraryTabs(page, tabs);
-
-        $(tabs).on('iron-select', function () {
-
-            var self = this;
-
-            setTimeout(function () {
-                Events.trigger(self, 'tabchange');
-            }, 400);
-
-        }).on('tabchange', function () {
-            var selected = this.selected;
-
-            showTab(page, selected);
-            loadTab(page, parseInt(this.selected));
-        });
-
         page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
 
         $('.btnMore', page).on('click', function () {
@@ -1492,10 +1473,7 @@
         var page = this;
 
         $(LibraryBrowser).on('itemdeleting', onItemDeleted);
-
-        var selected = parseInt(getParameterByName('tab') || '0');
-
-        page.querySelector('paper-tabs').selected = selected;
+        reload(page);
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
@@ -1503,49 +1481,7 @@
         $(LibraryBrowser).off('itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
-
     });
-
-    function configurePaperLibraryTabs(ownerpage, tabs) {
-
-        tabs.hideScrollButtons = true;
-        tabs.noSlide = true;
-
-        // Unfortunately we can't disable this because it causes iron-select to not fire in IE and Safari.
-        //tabs.noink = true;
-
-        $(ownerpage).on('pageshowready', function () {
-
-            var selected = tabs.selected;
-
-            if (selected == null) {
-
-                Logger.log('selected tab is null, checking query string');
-
-                selected = parseInt(getParameterByName('tab') || '0');
-
-                Logger.log('selected tab will be ' + selected);
-
-                tabs.selected = selected;
-
-            } else {
-                Events.trigger(tabs, 'tabchange');
-            }
-        });
-    }
-
-    function loadTab(page, index) {
-
-        switch (index) {
-
-            case 0:
-                reload(page);
-                break;
-            default:
-                reload(page);
-                break;
-        }
-    }
 
 })(jQuery, document, window);
 

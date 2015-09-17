@@ -1,7 +1,6 @@
 ﻿(function ($, document, window, FileReader, escape) {
 
     var currentItem;
-    var currentFile;
 
     var browsableImagePageSize = 10;
     var browsableImageStartIndex = 0;
@@ -221,7 +220,7 @@
         return html;
     }
 
-    function reload(page) {
+    function reload(page, item) {
 
         Dashboard.showLoadingMsg();
 
@@ -229,27 +228,34 @@
         browsableImageType = 'Primary';
         selectedProvider = null;
 
-        MetadataEditor.getItemPromise().done(function (item) {
+        if (item) {
+            reloadItem(page, item);
+        }
+        else {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).done(function (item) {
+                reloadItem(page, item);
+            });
+        }
+    }
 
-            currentItem = item;
+    function reloadItem(page, item) {
 
-            LibraryBrowser.renderName(item, $('.itemName', page), true);
+        currentItem = item;
 
-            ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
+        ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
 
-                if (providers.length) {
-                    $('.lnkBrowseAllImages', page).removeClass('hide');
-                } else {
-                    $('.lnkBrowseAllImages', page).addClass('hide');
-                }
+            if (providers.length) {
+                $('.lnkBrowseAllImages', page).removeClass('hide');
+            } else {
+                $('.lnkBrowseAllImages', page).addClass('hide');
+            }
 
-                ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
+            ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
 
-                    renderStandardImages(page, item, imageInfos, providers);
-                    renderBackdrops(page, item, imageInfos, providers);
-                    renderScreenshots(page, item, imageInfos, providers);
-                    Dashboard.hideLoadingMsg();
-                });
+                renderStandardImages(page, item, imageInfos, providers);
+                renderBackdrops(page, item, imageInfos, providers);
+                renderScreenshots(page, item, imageInfos, providers);
+                Dashboard.hideLoadingMsg();
             });
         });
     }
@@ -280,7 +286,7 @@
                 html += '<p>&nbsp;</p>';
             }
 
-            html += '<p>';
+            html += '<div>';
 
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
@@ -303,7 +309,7 @@
 
             html += '<paper-icon-button icon="delete" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
 
-            html += '</p>';
+            html += '</div>';
 
             html += '</div>';
 
@@ -319,12 +325,7 @@
             return i.ImageType != "Screenshot" && i.ImageType != "Backdrop" && i.ImageType != "Chapter";
         });
 
-        if (images.length) {
-            $('#imagesContainer', page).show();
-            renderImages(page, item, images, imageProviders, $('#images', page));
-        } else {
-            $('#imagesContainer', page).hide();
-        }
+        renderImages(page, item, images, imageProviders, $('#images', page));
     }
 
     function renderBackdrops(page, item, imageInfos, imageProviders) {
@@ -361,95 +362,6 @@
         }
     }
 
-    function onFileReaderError(evt) {
-
-        Dashboard.hideLoadingMsg();
-
-        switch (evt.target.error.code) {
-            case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate('MessageFileNotFound'));
-                break;
-            case evt.target.error.ABORT_ERR:
-                break; // noop
-            default:
-                Dashboard.showError(Globalize.translate('MessageFileReadError'));
-                break;
-        };
-    }
-
-    function setFiles(page, files) {
-
-        var file = files[0];
-
-        if (!file || !file.type.match('image.*')) {
-            $('#imageOutput', page).html('');
-            $('#fldUpload', page).hide();
-            currentFile = null;
-            return;
-        }
-
-        currentFile = file;
-
-        var reader = new FileReader();
-
-        reader.onerror = onFileReaderError;
-        reader.onloadstart = function () {
-            $('#fldUpload', page).hide();
-        };
-        reader.onabort = function () {
-            Dashboard.hideLoadingMsg();
-            Logger.log('File read cancelled');
-        };
-
-        // Closure to capture the file information.
-        reader.onload = (function (theFile) {
-            return function (e) {
-
-                // Render thumbnail.
-                var html = ['<img style="max-width:300px;max-height:100px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
-
-                $('#imageOutput', page).html(html);
-                $('#fldUpload', page).show();
-            };
-        })(file);
-
-        // Read in the image file as a data URL.
-        reader.readAsDataURL(file);
-    }
-
-    function processImageChangeResult(page) {
-
-        reload(page);
-    }
-
-    function onSubmit() {
-        var file = currentFile;
-
-        if (!file) {
-            return false;
-        }
-
-        if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
-            return false;
-        }
-
-        Dashboard.showLoadingMsg();
-
-        var page = $.mobile.activePage;
-
-        var imageType = $('#selectImageType', page).val();
-
-        ApiClient.uploadItemImage(currentItem.Id, imageType, file).done(function () {
-
-            $('#uploadImage', page).val('').trigger('change');
-            $('#popupUpload', page).popup("close");
-            processImageChangeResult(page);
-
-        });
-
-        return false;
-    }
-
     function editItemImages() {
 
         var self = this;
@@ -463,14 +375,12 @@
                 if (result) {
                     ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
 
-                        processImageChangeResult(page);
+                        reload(page);
 
                     });
                 }
 
             });
-
-
         };
 
         self.moveImage = function (type, index, newIndex) {
@@ -479,7 +389,7 @@
 
             ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
 
-                processImageChangeResult(page);
+                reload(page);
 
             });
 
@@ -500,9 +410,7 @@
 
     window.EditItemImagesPage = new editItemImages();
 
-    $(document).on('pageinit', "#editItemMetadataPage", function () {
-
-        var page = this;
+    function initEditor(page) {
 
         $('#selectBrowsableImageType', page).on('change', function () {
 
@@ -528,11 +436,17 @@
             reloadBrowsableImages(page);
         });
 
-        $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
-
         $('.btnOpenUploadMenu', page).on('click', function () {
 
-            $('#popupUpload', page).popup('open');
+            require(['components/imageuploader/imageuploader'], function () {
+
+                ImageUploader.show(currentItem.Id).done(function (hasChanges) {
+
+                    if (hasChanges) {
+                        reload(page);
+                    }
+                });
+            });
         });
 
         $('.btnBrowseAllImages', page).on('click', function () {
@@ -542,36 +456,80 @@
             $('.popupDownload', page).popup('open');
             reloadBrowsableImages(page);
         });
+    }
 
-        $('#uploadImage', page).on("change", function () {
-            setFiles(page, this.files);
+    function showEditor(itemId) {
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+
+            type: 'GET',
+            url: 'components/imageeditor/imageeditor.template.html'
+
+        }).done(function (template) {
+
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+
+                var dlg = document.createElement('paper-dialog');
+
+                dlg.setAttribute('with-backdrop', 'with-backdrop');
+                dlg.setAttribute('role', 'alertdialog');
+                dlg.entryAnimation = 'scale-up-animation';
+                dlg.exitAnimation = 'fade-out-animation';
+                dlg.classList.add('fullscreen-editor-paper-dialog');
+                dlg.classList.add('ui-body-b');
+
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" class="mini btnCloseDialog"></paper-fab>';
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
+                html += '</h2>';
+
+                html += '<div class="editorContent">';
+                html += Globalize.translateDocument(template);
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                initEditor(dlg);
+
+                // Has to be assigned a z-index after the call to .open() 
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
+
+                document.body.classList.add('bodyWithPopupOpen');
+                PaperDialogHelper.openWithHash(dlg, 'imageeditor');
+
+                var editorContent = dlg.querySelector('.editorContent');
+                reload(editorContent, item);
+
+                $('.btnCloseDialog', dlg).on('click', closeDialog);
+            });
         });
+    }
 
-        $("#imageDropZone", page).on('dragover', function (e) {
+    function closeDialog() {
 
-            e.preventDefault();
+        history.back();
+    }
 
-            e.originalEvent.dataTransfer.dropEffect = 'Copy';
+    function onDialogClosed() {
 
-            return false;
+        document.body.classList.remove('bodyWithPopupOpen');
+        $(this).remove();
+        Dashboard.hideLoadingMsg();
+    }
 
-        }).on('drop', function (e) {
+    window.ImageEditor = {
+        show: function (itemId) {
 
-            e.preventDefault();
+            require(['components/paperdialoghelper', 'jqmpopup'], function () {
 
-            setFiles(page, e.originalEvent.dataTransfer.files);
-
-            return false;
-        });
-
-        $(page.querySelector('paper-tabs')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 1) {
-                var tabContent = page.querySelector('.imageEditorTab');
-
-                reload(tabContent);
-            }
-        });
-    });
+                Dashboard.importCss('css/metadataeditor.css');
+                showEditor(itemId);
+            });
+        }
+    };
 
 })(jQuery, document, window, window.FileReader, escape);

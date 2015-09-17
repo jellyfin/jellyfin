@@ -1048,22 +1048,16 @@ $.fn.createHoverTouch = function () {
 
 (function () {
 
-    var backUrl;
+    var isCurrentNavBack = false;
 
-    pageClassOn('pagebeforeshow', "page", function () {
-
-        if (getWindowUrl() != backUrl) {
-            backUrl = null;
-        }
-    });
-
-    $(window).on("popstate", function () {
-        backUrl = getWindowUrl();
+    $(window).on("navigate", function (e, data) {
+        data = data.state || {};
+        isCurrentNavBack = data.direction == 'back';
     });
 
     function isBack() {
 
-        return backUrl == getWindowUrl();
+        return isCurrentNavBack;
     }
 
     window.NavHelper = {

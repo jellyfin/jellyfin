@@ -244,9 +244,7 @@
 
     function renderImage(page, item, user) {
 
-        var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemmetadata.html?tab=1&id=" + item.Id : "";
-
-        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, user.Policy.IsAdministrator && item.MediaType != 'Photo');
     }
 
     function refreshImage(page, item, user) {
