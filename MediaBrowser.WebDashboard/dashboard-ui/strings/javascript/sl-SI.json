@@ -801,6 +801,7 @@
     "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
     "MessageNoItemsFound": "No items found.",
     "ButtonManageServer": "Manage Server",
+    "ButtonEditSubtitles": "Edit subtitles",
     "ButtonPreferences": "Preferences",
     "ButtonViewArtist": "View artist",
     "ButtonViewAlbum": "View album",

@@ -224,7 +224,7 @@ html body .ui-group-theme-a .ui-bar-inherit {
 }
 
 /* Page and overlay */
-.ui-overlay-a,
+.ui-body-a,
 .ui-page-theme-a .ui-panel-wrapper {
 	background-color: 			#f9f9f9 /*{a-page-background-color}*/;
 	border-color:	 		#bbb /*{a-page-border}*/;
@@ -241,10 +241,6 @@ html .ui-panel-page-container-a {
 	background-color: 			#fff /*{a-body-background-color}*/;
 	border-color:	 		#ddd /*{a-body-border}*/;
 	color: 					#333 /*{a-body-color}*/;
-}
-.ui-body-a {
-	border-width: 1px;
-	border-style: solid;
 }
 
 /* Links */
@@ -374,7 +370,7 @@ html body .ui-group-theme-b .ui-bar-inherit {
 }
 
 /* Page and overlay */
-.ui-overlay-b,
+.ui-body-b,
 .ui-page-theme-b .ui-panel-wrapper {
 	background-color: 			#252525 /*{b-page-background-color}*/;
 	border-color:	 		#454545 /*{b-page-border}*/;
@@ -391,10 +387,6 @@ html .ui-panel-page-container-b {
 	background-color: 			#2a2a2a /*{b-body-background-color}*/;
 	border-color:	 		#1d1d1d /*{b-body-border}*/;
 	color: 					#fff /*{b-body-color}*/;
-}
-.ui-body-b {
-	border-width: 1px;
-	border-style: solid;
 }
 
 /* Links */

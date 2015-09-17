@@ -238,19 +238,19 @@
                 });
             }
 
+            if (commands.indexOf('managesubtitles') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonEditSubtitles'),
+                    id: 'managesubtitles',
+                    ironIcon: 'closed-caption'
+                });
+            }
+
             if (commands.indexOf('instantmix') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonInstantMix'),
                     id: 'instantmix',
                     ironIcon: 'shuffle'
-                });
-            }
-
-            if (commands.indexOf('managesubtitles') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonManageSubtitles'),
-                    id: 'managesubtitles',
-                    ironIcon: 'closed-caption'
                 });
             }
 

@@ -801,6 +801,7 @@
     "MessageIfYouBlockedVoice": "Si ha negado el acceso a la voz a la aplicaci\u00f3n necesitara reconfigurar antes de intentarlo de nuevo.",
     "MessageNoItemsFound": "No se encontraron \u00edtems.",
     "ButtonManageServer": "Administrar Servidor",
+    "ButtonEditSubtitles": "Edit subtitles",
     "ButtonPreferences": "Preferencias",
     "ButtonViewArtist": "Ver artista",
     "ButtonViewAlbum": "Ver album",

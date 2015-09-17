@@ -79,11 +79,11 @@
         color: #fff;
     }
 
-.ui-page-theme-b paper-button.cancel {
+.ui-body-b paper-button.cancel {
     color: #444;
 }
 
-.ui-page-theme-b paper-button[raised].cancel {
+.ui-body-b paper-button[raised].cancel {
     background: #444;
     color: #fff;
 }
@@ -97,16 +97,16 @@ paper-button[raised].cancelDark {
     color: #fff;
 }
 
-.ui-page-theme-b paper-button.subdued:not([disabled]) {
+.ui-body-b paper-button.subdued:not([disabled]) {
     color: #404040;
 }
 
-.ui-page-theme-b paper-button[raised].subdued:not([disabled]) {
+.ui-body-b paper-button[raised].subdued:not([disabled]) {
     background: #404040;
     color: #fff;
 }
 
-.ui-page-theme-b paper-button[raised][disabled].subdued {
+.ui-body-b paper-button[raised][disabled].subdued {
     background: #111;
 }
 
@@ -234,7 +234,7 @@ paper-icon-button paper-ripple {
     color: inherit !important;
 }
 
-.ui-page-theme-b paper-icon-button[disabled] {
+.ui-body-b paper-icon-button[disabled] {
     color: #444 !important;
 }
 
@@ -292,7 +292,7 @@ paper-fab {
             background: #686868 !important;
         }
 
-.ui-page-theme-b paper-fab[disabled].subdued {
+.ui-body-b paper-fab[disabled].subdued {
     background: #222;
 }
 
@@ -362,27 +362,27 @@ paper-menu-item {
     flex-grow: 1;
 }
 
-.ui-page-theme-b paper-item-body [secondary] {
+.ui-body-b paper-item-body [secondary] {
     color: #aaa;
 }
 
-.ui-page-theme-b paper-checkbox paper-ripple {
+.ui-body-b paper-checkbox paper-ripple {
     color: #fff !important;
 }
 
-.ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {
+.ui-body-b paper-checkbox #checkboxLabel.paper-checkbox {
     color: inherit;
 }
 
-.ui-page-theme-b .paperCheckboxFieldDescription {
+.ui-body-b .paperCheckboxFieldDescription {
     color: #ccc;
 }
 
-.ui-page-theme-b paper-checkbox #checkbox.paper-checkbox {
+.ui-body-b paper-checkbox #checkbox.paper-checkbox {
     border-color: #ccc;
 }
 
-.ui-page-theme-b paper-checkbox #checkbox.checked.paper-checkbox {
+.ui-body-b paper-checkbox #checkbox.checked.paper-checkbox {
     background-color: #2ad;
     border-color: #2ad;
 }
@@ -397,23 +397,23 @@ paper-input label, paper-textarea label {
     font-family: inherit !important;
 }
 
-.ui-page-theme-b paper-input label, .ui-page-theme-b paper-textarea label {
+.ui-body-b paper-input label, .ui-body-b paper-textarea label {
     color: #858585 !important;
 }
 
-.ui-page-theme-a paper-input label, .ui-page-theme-a paper-textarea label {
+.ui-body-a paper-input label, .ui-body-a paper-textarea label {
     color: #656565 !important;
 }
 
-.ui-page-theme-a .label-is-highlighted label {
+.ui-body-a .label-is-highlighted label {
     color: green !important;
 }
 
-.ui-page-theme-b .label-is-highlighted label {
+.ui-body-b .label-is-highlighted label {
     color: #52B54B !important;
 }
 
-.ui-page-theme-b paper-input input, .ui-page-theme-b paper-textarea textarea {
+.ui-body-b paper-input input, .ui-body-b paper-textarea textarea {
     color: #fff !important;
 }
 
@@ -421,7 +421,7 @@ paper-input .focused-line, paper-textarea .focused-line {
     background-color: #52B54B !important;
 }
 
-.ui-page-theme-b .unfocused-line.paper-input-container, .ui-page-theme-b .unfocused-line.paper-textarea-container {
+.ui-body-b .unfocused-line.paper-input-container, .ui-body-b .unfocused-line.paper-textarea-container {
     background: #454545;
 }
 
@@ -445,7 +445,7 @@ paper-textarea.mono textarea {
     background-color: #fff;
 }
 
-.ui-page-theme-b .paperList {
+.ui-body-b .paperList {
     background-color: #303030;
 }
 
@@ -495,7 +495,7 @@ paper-dialog paper-radio-group paper-radio-button {
 }
 
 .fullscreen-editor-paper-dialog {
-    position: absolute !important;
+    position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
@@ -503,4 +503,22 @@ paper-dialog paper-radio-group paper-radio-button {
     margin: 0 !important;
     border-radius: 0 !important;
     background-color: #222 !important;
+    max-height: none !important;
+    max-width: none !important;
+}
+
+@media all and (min-width: 1280px) and (min-height: 720px) {
+
+    .fullscreen-editor-paper-dialog {
+        top: 5% !important;
+        bottom: 5% !important;
+        left: 5% !important;
+        right: 5% !important;
+    }
+}
+
+.fullscreen-editor-paper-dialog .dialogHeader {
+    font-weight: inherit !important;
+    line-height: 1 !important;
+    line-height: initial !important;
 }

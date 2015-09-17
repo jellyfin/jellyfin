@@ -788,7 +788,7 @@
 
             if (commands.indexOf('managesubtitles') != -1) {
                 items.push({
-                    name: Globalize.translate('ButtonManageSubtitles'),
+                    name: Globalize.translate('ButtonEditSubtitles'),
                     id: 'managesubtitles',
                     ironIcon: 'closed-caption'
                 });

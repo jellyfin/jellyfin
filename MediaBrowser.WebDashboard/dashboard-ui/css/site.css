@@ -496,12 +496,12 @@ select {
         display: block;
     }
 
-.ui-page-theme-b select {
+.ui-body-b select {
     border-color: #1f1f1f;
     background: #373737;
 }
 
-    .ui-page-theme-b select option {
+    .ui-body-b select option {
         color: #fff;
     }
 

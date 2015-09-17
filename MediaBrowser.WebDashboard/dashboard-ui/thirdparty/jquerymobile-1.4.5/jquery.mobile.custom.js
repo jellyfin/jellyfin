@@ -2613,14 +2613,7 @@ $.widget( "mobile.page", {
 			this._on( this.window, { navigate: "_filterNavigateEvents" });
 		},
 
-		_setOptions: function( options ) {
-			if ( options.theme !== undefined && options.theme !== "none" ) {
-				this.element.removeClass( "ui-overlay-" + this.options.theme )
-					.addClass( "ui-overlay-" + options.theme );
-			} else if ( options.theme !== undefined ) {
-				this.element.removeClass( "ui-overlay-" + this.options.theme );
-			}
-
+		_setOptions: function (options) {
 			this._super( options );
 		},
 

@@ -2384,9 +2384,13 @@ pageClassOn('pageshow', "page", function () {
     if (currentTheme == 'a') {
         docElem.classList.add('background-theme-a');
         docElem.classList.remove('background-theme-b');
+        docElem.classList.add('ui-body-a');
+        docElem.classList.remove('ui-body-b');
     } else {
         docElem.classList.add('background-theme-b');
         docElem.classList.remove('background-theme-a');
+        docElem.classList.add('ui-body-b');
+        docElem.classList.remove('ui-body-a');
     }
 
     if (currentTheme != 'a' && !$.browser.mobile) {

@@ -96,7 +96,7 @@
 
         if (subs.length) {
 
-            html += '<h1>' + Globalize.translate('HeaderCurrentSubtitles') + '</h1>';
+            html += '<h1 style="margin-top:1.5em;">' + Globalize.translate('HeaderCurrentSubtitles') + '</h1>';
             html += '<div class="paperList">';
 
             html += subs.map(function (s) {
@@ -145,6 +145,9 @@
             }).join('');
 
             html += '</div>';
+        }
+        else {
+            html += '<br/>';
         }
 
         var elem = $('.subtitleList', page).html(html).trigger('create');
@@ -305,13 +308,18 @@
 
                 var dlg = document.createElement('paper-dialog');
 
+                dlg.setAttribute('with-backdrop', 'with-backdrop');
+                dlg.setAttribute('role', 'alertdialog');
                 dlg.entryAnimation = 'scale-up-animation';
                 dlg.exitAnimation = 'fade-out-animation';
                 dlg.classList.add('fullscreen-editor-paper-dialog');
                 dlg.classList.add('ui-body-b');
 
                 var html = '';
-                html += '<h2 class="dialogHeader">' + item.Name + '</h2>';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" class="mini"></paper-fab>';
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
+                html += '</h2>';
 
                 html += '<div class="editorContent">';
                 html += Globalize.translateDocument(template);
@@ -325,42 +333,47 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                document.body.classList.add('bodyWithPopupOpen');
+                //document.body.classList.add('bodyWithPopupOpen');
                 dlg.open();
 
-                window.location.hash = 'subtitleeditor?id=' + itemId;
+                window.location.hash = getHash(itemId);
 
-                // We need to use a timeout or onHashChange will fire immediately while opening
-                setTimeout(function () {
+                window.addEventListener('hashchange', onHashChange);
 
-                    window.addEventListener('hashchange', onHashChange);
+                currentDialog = dlg;
 
-                    currentDialog = dlg;
+                var editorContent = dlg.querySelector('.editorContent');
+                reload(editorContent, item);
 
-                    var editorContent = dlg.querySelector('.editorContent');
-                    reload(editorContent, item);
+                ApiClient.getCultures().done(function (languages) {
 
-                    fillLanguages(editorContent);
+                    fillLanguages(editorContent, languages);
+                });
 
-                }, 0);
+                $('paper-fab', dlg).on('click', closeDialog);
             });
         });
     }
 
+    function getHash(itemId) {
+        return 'subtitleeditor?id=' + itemId;
+    }
+
     function onHashChange() {
 
+        // In some browsers this will fire immediately after opening the dialog, despite the fact that we bound the event after setting the hash
+        if (currentItem && window.location.hash == '#' + getHash(currentItem.Id)) {
+            return;
+        }
+
         if (currentDialog) {
-            closeDialog(false);
+            closeDialog();
         }
     }
 
-    function closeDialog(updateHash) {
+    function closeDialog() {
 
         window.removeEventListener('hashchange', onHashChange);
-
-        if (updateHash) {
-            window.location.hash = '';
-        }
 
         if (currentDialog) {
             currentDialog.close();
@@ -369,16 +382,14 @@
 
     function onDialogClosed() {
         currentDialog = null;
+
         window.removeEventListener('hashchange', onHashChange);
-        document.body.classList.remove('bodyWithPopupOpen');
+        //document.body.classList.remove('bodyWithPopupOpen');
         $(this).remove();
-    }
 
-    function fillLanguages(editorContent) {
-        ApiClient.getCultures().done(function (languages) {
-
-            fillLanguages(editorContent, languages);
-        });
+        if ((window.location.hash || '').length > 1) {
+            history.back();
+        }
     }
 
     window.SubtitleEditor = {

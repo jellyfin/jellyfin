@@ -16,8 +16,9 @@
     background-color: #242424;
 }
 
-.ui-page-theme-b {
-    color: #fff;
+.ui-body-b {
+    /* Need the important tag for paper dialogs with this class */
+    color: #fff !important;
 }
 
 .pageWithAbsoluteTabs {
@@ -716,7 +717,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         font-weight: 400;
     }
 
-.ui-page-theme-a .detailSectionHeader {
+.ui-body-a .detailSectionHeader {
     background-color: transparent;
     border: 1px solid #ddd;
     border-width: 0 0 1px 0;
@@ -725,7 +726,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-bottom: .5em;
 }
 
-    .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
+    .ui-body-a .detailSectionHeader, .ui-body-a .detailSectionHeader h3 {
         font-size: 20px;
     }
 
@@ -733,7 +734,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 13px;
 }
 
-.ui-page-theme-b .detailSectionHeader {
+.ui-body-b .detailSectionHeader {
     background-color: #141414;
 }
 
@@ -1548,7 +1549,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         background-position: center center;
     }
 
-.ui-page-theme-b .listItem:hover {
+.ui-body-b .listItem:hover {
     background-color: rgba(51,51,51,.6) !important;
 }
 
