@@ -308,6 +308,9 @@
     <Content Include="dashboard-ui\shared.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\subtitleeditor\subtitleeditor.template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\themes\android.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1005,7 +1008,7 @@
     <Content Include="dashboard-ui\scripts\dlnasettings.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\edititemsubtitles.js">
+    <Content Include="dashboard-ui\subtitleeditor\edititemsubtitles.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\encodingsettings.js">
