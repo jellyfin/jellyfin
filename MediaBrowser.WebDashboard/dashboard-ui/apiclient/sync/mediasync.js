@@ -230,6 +230,7 @@
 
         function downloadMedia(apiClient, jobItem, localItem) {
 
+            Logger.log('Begin downloadMedia');
             var deferred = DeferredBuilder.Deferred();
 
             require(['localassetmanager'], function () {
@@ -259,6 +260,7 @@
 
         function getImages(apiClient, jobItem, localItem) {
 
+            Logger.log('Begin getImages');
             var deferred = DeferredBuilder.Deferred();
 
             getNextImage(0, apiClient, localItem, deferred);
@@ -268,13 +270,14 @@
 
         function getNextImage(index, apiClient, localItem, deferred) {
 
+            Logger.log('Begin getNextImage');
             if (index >= 4) {
 
                 deferred.resolve();
                 return;
             }
 
-            var libraryItem = item.Item;
+            var libraryItem = localItem.Item;
 
             var serverId = libraryItem.ServerId;
             var itemId = null;
@@ -307,12 +310,7 @@
                     break;
             }
 
-            if (!itemId) {
-                deferred.resolve();
-                return;
-            }
-
-            if (!imageTag) {
+            if (!itemId || !imageTag) {
                 getNextImage(index + 1, apiClient, localItem, deferred);
                 return;
             }
@@ -339,8 +337,8 @@
                     }
 
                     var imageUrl = apiClient.getImageUrl(itemId, {
-                        Tag: imageTag,
-                        ImageType: imageType,
+                        tag: imageTag,
+                        type: imageType,
                         api_key: apiClient.accessToken()
                     });
 
@@ -375,13 +373,13 @@
 
                 var mediaSource = jobItem.Item.MediaSources[0];
 
-                getNextSubtitle(files, 0, apiClient, jobItem, localItem, mediaSource);
+                getNextSubtitle(files, 0, apiClient, jobItem, localItem, mediaSource, deferred);
             });
 
             return deferred.promise();
         }
 
-        function getNextSubtitle(files, index, apiClient, jobItem, localItem, mediaSource) {
+        function getNextSubtitle(files, index, apiClient, jobItem, localItem, mediaSource, deferred) {
 
             var length = files.length;
 
@@ -393,10 +391,10 @@
 
             getItemSubtitle(file, apiClient, jobItem, localItem, mediaSource).done(function () {
 
-                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource);
+                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource, deferred);
 
             }).fail(function () {
-                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource);
+                getNextSubtitle(files, index + 1, apiClient, jobItem, localItem, mediaSource, deferred);
             });
         }
 

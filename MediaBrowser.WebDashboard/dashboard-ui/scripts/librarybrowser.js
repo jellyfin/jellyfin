@@ -2679,17 +2679,18 @@
 
             dlg.setAttribute('with-backdrop', 'with-backdrop');
             dlg.setAttribute('role', 'alertdialog');
-            // without this safari will scroll the background instead of the dialog contents
 
-            dlg.entryAnimation = 'scale-up-animation';
+            dlg.entryAnimation = 'fade-in-animation';
             dlg.exitAnimation = 'fade-out-animation';
 
             var html = '';
 
             // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-            var isScrollable = !$.browser.safari;
             // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
-            isScrollable = false;
+            var isScrollable = false;
+            if ($.browser.android) {
+                isScrollable = true;
+            }
 
             html += '<h2>';
             html += Globalize.translate('HeaderSortBy');
@@ -2733,26 +2734,27 @@
 
             require(['components/paperdialoghelper'], function () {
 
-                PaperDialogHelper.openWithHash(dlg, 'sortmenu');
-            });
+                //PaperDialogHelper.openWithHash(dlg, 'sortmenu');
+                dlg.open();
 
-            $('.groupSortBy', dlg).on('iron-select', function () {
-                options.query.SortBy = this.selected.replace('_', ',');
-                options.query.StartIndex = 0;
+                $('.groupSortBy', dlg).on('iron-select', function () {
+                    options.query.SortBy = this.selected.replace('_', ',');
+                    options.query.StartIndex = 0;
 
-                if (options.callback) {
-                    options.callback();
-                }
-            });
+                    if (options.callback) {
+                        options.callback();
+                    }
+                });
 
-            $('.groupSortOrder', dlg).on('iron-select', function () {
+                $('.groupSortOrder', dlg).on('iron-select', function () {
 
-                options.query.SortOrder = this.selected;
-                options.query.StartIndex = 0;
+                    options.query.SortOrder = this.selected;
+                    options.query.StartIndex = 0;
 
-                if (options.callback) {
-                    options.callback();
-                }
+                    if (options.callback) {
+                        options.callback();
+                    }
+                });
             });
         },
 

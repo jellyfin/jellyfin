@@ -277,14 +277,19 @@
 
     function addOrUpdateLocalItem(item) {
 
+        Logger.log('addOrUpdateLocalItem');
+
         var deferred = DeferredBuilder.Deferred();
 
         getOfflineItemsDb(function (db) {
 
             db.transaction(function (tx) {
 
-                var values = [item.Id, item.ItemId, item.Item.Type, item.Item.MediaType, item.ServerId, item.LocalPath, item.UserIdsWithAccess.join(','), item.Item.AlbumId, item.Item.AlbumName, item.Item.SeriesId, item.Item.SeriesName, JSON.stringify(item)];
+                var libraryItem = item.Item || {};
+
+                var values = [item.Id, item.ItemId, libraryItem.Type, libraryItem.MediaType, item.ServerId, item.LocalPath, (item.UserIdsWithAccess || []).join(','), libraryItem.AlbumId, libraryItem.AlbumName, libraryItem.SeriesId, libraryItem.SeriesName, JSON.stringify(item)];
                 tx.executeSql("REPLACE INTO Items (Id, ItemId, ItemType, MediaType, ServerId, LocalPath, UserIdsWithAccess, AlbumId, AlbumName, SeriesId, SeriesName, Json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", values);
+                deferred.resolve();
             });
         });
 
@@ -376,7 +381,7 @@
 
         getFileSystem().done(function (fileSystem) {
 
-            var localPath = trimEnd(fileSystem.root.toURL()) + "/" + path.join('/');
+            var localPath = fileSystem.root.toURL() + "/" + path.join('/');
 
             item.LocalPath = localPath;
 
@@ -395,18 +400,6 @@
         });
 
         return deferred.promise();
-    }
-
-    function trimEnd(str) {
-
-        var charEnd = '/';
-
-        if (str.charAt(str.length - 1) == charEnd) {
-
-            str = str.substring(0, str.length - 1);
-        }
-
-        return str;
     }
 
     function getDirectoryPath(item, server) {
@@ -470,32 +463,31 @@
 
         getFileSystem().done(function (fileSystem) {
 
-            fileSystem.root.getFile(localPath.replace('file://', ''), {}, function (targetFile) {
+            var targetFile = localPath;
 
-                var downloader = new BackgroundTransfer.BackgroundDownloader();
-                // Create a new download operation.
-                var download = downloader.createDownload(url, targetFile);
-                // Start the download and persist the promise to be able to cancel the download.
-                app.downloadPromise = download.startAsync().then(function () {
+            var downloader = new BackgroundTransfer.BackgroundDownloader();
+            // Create a new download operation.
+            var download = downloader.createDownload(url, targetFile);
+            // Start the download and persist the promise to be able to cancel the download.
+            var downloadPromise = download.startAsync().then(function () {
 
-                    // on success
-                    var localUrl = normalizeReturnUrl(targetFile.toURL());
+                // on success
+                var localUrl = localPath;
 
-                    Logger.log('Downloaded local url: ' + localUrl);
-                    deferred.resolveWith(null, [localUrl]);
+                Logger.log('Downloaded local url: ' + localUrl);
+                deferred.resolveWith(null, [localUrl]);
 
-                }, function () {
+            }, function () {
 
-                    // on error
-                    Logger.log('download failed: ' + url + ' to ' + localPath);
-                    deferred.reject();
+                // on error
+                Logger.log('download failed: ' + url + ' to ' + localPath);
+                deferred.reject();
 
-                }, function (value) {
+            }, function (value) {
 
-                    // on progress
-                    Logger.log('download progress: ' + value);
+                // on progress
+                Logger.log('download progress: ' + value);
 
-                });
             });
 
         });
@@ -598,7 +590,7 @@
         var deferred = DeferredBuilder.Deferred();
 
         getFileSystem().done(function (fileSystem) {
-            var path = trimEnd(fileSystem.root.toURL()) + "/emby/images/" + serverId + "/" + itemId + "/" + imageTag;
+            var path = fileSystem.root.toURL() + "/emby/images/" + serverId + "/" + itemId + "/" + imageTag;
 
             deferred.resolveWith(null, [path]);
         });

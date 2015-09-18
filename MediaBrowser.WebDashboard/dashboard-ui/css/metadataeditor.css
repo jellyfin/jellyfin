@@ -36,14 +36,15 @@
 
 .remoteImageContainer {
     display: inline-block;
-    margin: 8px;
+    margin: 5px;
     vertical-align: top;
 }
 
 .remoteImageDetails {
-    text-align: center;
+    text-align: left;
     background: #282828;
     position: relative;
+    padding: 5px 5px 2px;
 }
 
     .remoteImageDetails paper-icon-button {
@@ -71,8 +72,8 @@
 }
 
 .remotePosterImage {
-    width: 150px;
-    height: 225px;
+    width: 140px;
+    height: 210px;
 }
 
 .remoteBackdropImage {
@@ -88,6 +89,37 @@
 .remoteDiscImage {
     width: 180px;
     height: 180px;
+}
+
+@media all and (min-width: 600px) {
+
+    .remotePosterImage {
+        width: 160px;
+        height: 240px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .remotePosterImage {
+        width: 200px;
+        height: 300px;
+    }
+
+    .remoteBackdropImage {
+        width: 320px;
+        height: 180px;
+    }
+
+    .remoteDiscImage {
+        width: 240px;
+        height: 240px;
+    }
+
+    .remoteBannerImage {
+        width: 544px;
+        height: 100px;
+    }
 }
 
 .editorfieldDescription {
@@ -165,7 +197,6 @@
 }
 
 @media all and (min-width: 600px) {
-
 
     .remoteBannerImage {
         width: 450px;

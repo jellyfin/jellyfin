@@ -88,7 +88,6 @@
         ApiClient.uploadItemImage(currentItemId, imageType, file).done(function () {
 
             $('#uploadImage', page).val('').trigger('change');
-            $('#popupUpload', page).popup("close");
             Dashboard.hideLoadingMsg();
             processImageChangeResult(page);
         });
