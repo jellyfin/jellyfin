@@ -1363,10 +1363,6 @@
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
             atts.push('data-index="' + index + '"');
 
-            if (options.showDetailsMenu) {
-                atts.push('data-detailsmenu="true"');
-            }
-
             if (item.AlbumId) {
                 atts.push('data-albumid="' + item.AlbumId + '"');
             }
@@ -2679,13 +2675,21 @@
 
         showSortMenu: function (options) {
 
-            var id = 'dlg' + new Date().getTime();
-            var html = '';
+            var dlg = document.createElement('paper-dialog');
 
-            html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+            dlg.setAttribute('with-backdrop', 'with-backdrop');
+            dlg.setAttribute('role', 'alertdialog');
+            // without this safari will scroll the background instead of the dialog contents
+
+            dlg.entryAnimation = 'scale-up-animation';
+            dlg.exitAnimation = 'fade-out-animation';
+
+            var html = '';
 
             // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
             var isScrollable = !$.browser.safari;
+            // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
+            isScrollable = false;
 
             html += '<h2>';
             html += Globalize.translate('HeaderSortBy');
@@ -2720,40 +2724,36 @@
             html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
             html += '</div>';
 
-            html += '</paper-dialog>';
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
 
-            $(document.body).append(html);
+            $(dlg).on('iron-overlay-closed', function () {
+                $(this).remove();
+            });
 
-            setTimeout(function () {
-                var dlg = document.getElementById(id);
+            require(['components/paperdialoghelper'], function () {
 
-                dlg.open();
+                PaperDialogHelper.openWithHash(dlg, 'sortmenu');
+            });
 
-                $(dlg).on('iron-overlay-closed', function () {
-                    $(this).remove();
-                });
+            $('.groupSortBy', dlg).on('iron-select', function () {
+                options.query.SortBy = this.selected.replace('_', ',');
+                options.query.StartIndex = 0;
 
-                $('.groupSortBy', dlg).on('iron-select', function () {
-                    options.query.SortBy = this.selected.replace('_', ',');
-                    options.query.StartIndex = 0;
+                if (options.callback) {
+                    options.callback();
+                }
+            });
 
-                    if (options.callback) {
-                        options.callback();
-                    }
-                });
+            $('.groupSortOrder', dlg).on('iron-select', function () {
 
-                $('.groupSortOrder', dlg).on('iron-select', function () {
+                options.query.SortOrder = this.selected;
+                options.query.StartIndex = 0;
 
-                    options.query.SortOrder = this.selected;
-                    options.query.StartIndex = 0;
-
-                    if (options.callback) {
-                        options.callback();
-                    }
-                });
-
-            }, 100);
-
+                if (options.callback) {
+                    options.callback();
+                }
+            });
         },
 
         getRatingHtml: function (item, metascore) {

@@ -211,7 +211,12 @@ paper-button.notext {
 paper-dialog {
     border-radius: 4px;
     z-index: 999999 !important;
+    font-family: inherit !important;
 }
+
+    paper-dialog h2 {
+        font-family: inherit !important;
+    }
 
 iron-overlay-backdrop {
     z-index: 999998 !important;
