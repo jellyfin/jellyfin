@@ -1539,5 +1539,7 @@
     "HeaderVideos": "Videos",
     "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
     "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:",
+    "LabelHardwareVideoDecoder": "Hardware video decoder:",
+    "LabelHardwareVideoDecoderHelp": "Available on supported systems only, and will revert to default when unavailable."
 }

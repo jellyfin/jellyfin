@@ -20,6 +20,14 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
+                            <label for="selectVideoDecoder">${LabelHardwareVideoDecoder}</label>
+                            <select id="selectVideoDecoder" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="qsv">Intel QSV</option>
+                            </select>
+                            <div class="fieldDescription">${LabelHardwareVideoDecoderHelp}</div>
+                        </li>
+                        <li>
                             <label for="selectThreadCount">${LabelTranscodingThreadCount}</label>
                             <select id="selectThreadCount" data-mini="true">
                                 <option value="-1">${OptionAuto}</option>
@@ -46,7 +54,7 @@
                             <div class="fieldDescription">
                                 ${LabelTranscodingTempPathHelp}
                             </div>
-                            <br/>
+                            <br />
                         </li>
                         <li>
                             <label for="txtDownMixAudioBoost">${LabelDownMixAudioScale}</label>

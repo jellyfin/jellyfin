@@ -11,6 +11,7 @@
 
         }).checkboxradio('refresh');
 
+        $('#selectVideoDecoder', page).val(config.HardwareVideoDecoder);
         $('#selectThreadCount', page).val(config.EncodingThreadCount);
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
@@ -31,6 +32,7 @@
             config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
             config.EnableThrottling = $('#chkEnableThrottle', form).checked();
             config.EncodingThreadCount = $('#selectThreadCount', form).val();
+            config.HardwareVideoDecoder = $('#selectVideoDecoder', form).val();
 
             ApiClient.updateNamedConfiguration("encoding", config).done(Dashboard.processServerConfigurationUpdateResult);
         });

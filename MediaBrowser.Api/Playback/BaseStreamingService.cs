@@ -290,13 +290,6 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                var lib = ApiEntryPoint.Instance.GetEncodingOptions().H264Encoder;
-
-                if (!string.IsNullOrWhiteSpace(lib))
-                {
-                    return lib;
-                }
-
                 return "libx264";
             }
         }
@@ -810,13 +803,53 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Gets the name of the output video codec
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        protected string GetVideoDecoder(StreamState state)
+        {
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                {
+                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (MediaEncoder.SupportsDecoder("h264_qsv"))
+                            {
+                                return "-c:v h264_qsv ";
+                            }
+                            break;
+                        case "mpeg2video":
+                            if (MediaEncoder.SupportsDecoder("mpeg2_qsv"))
+                            {
+                                return "-c:v mpeg2_qsv ";
+                            }
+                            break;
+                        case "vc1":
+                            if (MediaEncoder.SupportsDecoder("vc1_qsv"))
+                            {
+                                return "-c:v vc1_qsv ";
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // leave blank so ffmpeg will decide
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the input argument.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            var arg = "-i " + GetInputPathArgument(state);
+            var arg = string.Format("{1}-i {0}", GetInputPathArgument(state), GetVideoDecoder(state));
 
             if (state.SubtitleStream != null)
             {
@@ -826,7 +859,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return arg;
+            return arg.Trim();
         }
 
         private string GetInputPathArgument(StreamState state)
