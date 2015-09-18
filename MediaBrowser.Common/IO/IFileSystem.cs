@@ -176,5 +176,11 @@ namespace MediaBrowser.Common.IO
         void WriteAllText(string path, string text, Encoding encoding);
 
         string ReadAllText(string path, Encoding encoding);
+
+        IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false);
+
+        IEnumerable<string> GetFilePaths(string path, bool recursive = false);
+
+        IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
     }
 }

@@ -111,8 +111,8 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             try
             {
-                return Directory
-                    .EnumerateDirectories(path, "*", SearchOption.TopDirectoryOnly)
+                return _fileSystem
+                    .GetFileSystemEntryPaths(path)
                     .ToList();
             }
             catch (IOException ex)

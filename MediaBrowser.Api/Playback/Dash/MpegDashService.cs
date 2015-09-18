@@ -352,9 +352,9 @@ namespace MediaBrowser.Api.Playback.Dash
 
             try
             {
-				foreach (var subfolder in FileSystem.GetDirectories(folder).ToList())
+                foreach (var subfolder in FileSystem.GetDirectoryPaths(folder).ToList())
                 {
-                    var subfolderName = Path.GetFileNameWithoutExtension(subfolder.FullName);
+                    var subfolderName = Path.GetFileNameWithoutExtension(subfolder);
                     int startNumber;
                     if (int.TryParse(subfolderName, NumberStyles.Any, UsCulture, out startNumber))
                     {

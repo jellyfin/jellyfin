@@ -499,5 +499,23 @@ namespace MediaBrowser.Common.Implementations.IO
         {
             return File.ReadAllText(path, encoding);
         }
+
+        public IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
+        {
+            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return Directory.EnumerateDirectories(path, "*", searchOption);
+        }
+
+        public IEnumerable<string> GetFilePaths(string path, bool recursive = false)
+        {
+            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return Directory.EnumerateFiles(path, "*", searchOption);
+        }
+
+        public IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
+        {
+            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
+        }
     }
 }

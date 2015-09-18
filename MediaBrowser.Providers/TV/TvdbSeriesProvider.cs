@@ -1167,10 +1167,10 @@ namespace MediaBrowser.Providers.TV
         {
             try
             {
-				foreach (var file in _fileSystem.GetFiles(path, true)
+                foreach (var file in _fileSystem.GetFilePaths(path, true)
                     .ToList())
                 {
-                    _fileSystem.DeleteFile(file.FullName);
+                    _fileSystem.DeleteFile(file);
                 }
             }
             catch (DirectoryNotFoundException)
