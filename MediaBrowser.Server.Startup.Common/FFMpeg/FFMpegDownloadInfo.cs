@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 case OperatingSystem.Linux:
 
                     info.ArchiveType = "7z";
-                    info.Version = "20150717";
+                    info.Version = "20150917";
                     break;
                 case OperatingSystem.Osx:
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     switch (environment.SystemArchitecture)
                     {
                         case Architecture.X86_X64:
-                            info.Version = "20150827";
+                            info.Version = "20150917";
                             break;
                         case Architecture.X86:
                             info.Version = "20150110";
@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                     info.FFMpegFilename = "ffmpeg.exe";
                     info.FFProbeFilename = "ffprobe.exe";
-                    info.Version = "20150717";
+                    info.Version = "20150916";
                     info.ArchiveType = "7z";
 
                     switch (environment.SystemArchitecture)
@@ -83,14 +83,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20150717-git-8250943-win64-static.7z",
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150901-git-b54e03c-win64-static.7z"
+                                "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20150916-git-cbbd906-win64-static.7z",
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150916-git-cbbd906-win64-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20150717-git-8250943-win32-static.7z",
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150901-git-b54e03c-win32-static.7z"
+                                "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20150916-git-cbbd906-win32-static.7z",
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150916-git-cbbd906-win32-static.7z"
                             };
                     }
                     break;
@@ -102,7 +102,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.7.2.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.0.7z"
                             };
                         case Architecture.X86:
                             return new[]
@@ -119,12 +119,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.7.1-64bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.8.0-64bit-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.7.1-32bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.8.0-32bit-static.7z"
                             };
                     }
                     break;

@@ -595,9 +595,7 @@ namespace MediaBrowser.Server.Startup.Common
             var info = await new FFMpegDownloader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment)
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
-            new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(info);
-
-            MediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
+            var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
                 info.EncoderPath,
                 info.ProbePath,
@@ -611,7 +609,17 @@ namespace MediaBrowser.Server.Startup.Common
                 SessionManager,
                 () => SubtitleEncoder,
                 () => MediaSourceManager);
+
+            MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
+
+            Task.Run(() =>
+            {
+                var result = new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(info);
+
+                mediaEncoder.SetAvailableDecoders(result.Item1);
+                mediaEncoder.SetAvailableEncoders(result.Item2);
+            });
         }
 
         /// <summary>

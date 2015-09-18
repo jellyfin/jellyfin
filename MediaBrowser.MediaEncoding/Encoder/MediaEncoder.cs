@@ -97,6 +97,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FFMpegPath = ffMpegPath;
         }
 
+        public void SetAvailableEncoders(List<string> list)
+        {
+
+        }
+
+        private List<string> _decoders = new List<string>();
+        public void SetAvailableDecoders(List<string> list)
+        {
+            _decoders = list.ToList();
+        }
+
+        public bool SupportsDecoder(string decoder)
+        {
+            return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets the encoder path.
         /// </summary>
