@@ -197,29 +197,31 @@
 
 .editorTile {
     display: inline-block;
-    margin: .5em;
     text-align: center;
     vertical-align: middle;
 }
 
+.editorTileInner {
+    margin: 1em .5em;
+}
+
 .imageEditorTile {
-    width: 256px;
-    background-color: #282828;
+    width: 100%;
     padding: 0;
 }
 
 .editorTile h3 {
-    text-transform: uppercase;
     text-align: center;
-    color: #ddd;
+    margin: .5em 0 .7em;
 }
 
 .editorTile p {
     margin: .5em 0;
 }
 
-.editorTileInner {
+.editorTileFooter {
     padding: .5em;
+    background-color: #282828;
 }
 
 .editorTile .ui-field-contain {
@@ -259,6 +261,10 @@
     .subtitleViewerContent {
         width: 400px;
     }
+
+    .imageEditorTile {
+        width: 50%;
+    }
 }
 
 @media all and (min-width: 600px) {
@@ -280,6 +286,10 @@
 
     .subtitleViewerContent {
         width: 600px;
+    }
+
+    .imageEditorTile {
+        width: 33.3%;
     }
 }
 
@@ -317,6 +327,10 @@
     .popupIdentify {
         width: 800px;
     }
+
+    .imageEditorTile {
+        width: 25%;
+    }
 }
 
 @media all and (min-width: 1100px) {
@@ -331,6 +345,17 @@
     .popupIdentify {
         width: 1000px;
     }
+
+    .imageEditorTile {
+        width: 20%;
+    }
+}
+
+@media all and (min-width: 1400px) {
+
+    .imageEditorTile {
+        width: 16.666666666666666666666666666667%;
+    }
 }
 
 @media all and (min-width: 1800px) {
@@ -341,6 +366,10 @@
 
     .editPageInnerContent {
         width: 72.5%;
+    }
+
+    .imageEditorTile {
+        width: 14.285714285714285714285714285714%;
     }
 }
 

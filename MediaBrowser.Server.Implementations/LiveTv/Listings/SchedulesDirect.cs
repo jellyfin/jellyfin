@@ -237,8 +237,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             ScheduleDirect.ProgramDetails details)
         {
             //_logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
-            DateTime startAt = DateTime.ParseExact(programInfo.airDateTime, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'",
-                CultureInfo.InvariantCulture);
+            DateTime startAt = GetDate(programInfo.airDateTime);
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
 
@@ -361,6 +360,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return info;
         }
 
+        private DateTime GetDate(string value)
+        {
+            var date = DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'", CultureInfo.InvariantCulture);
+
+            if (date.Kind != DateTimeKind.Utc)
+            {
+                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            }
+            return date;
+        }
+
         private string GetProgramLogo(string apiUrl, ScheduleDirect.ShowImages images)
         {
             string url = "";
@@ -400,7 +410,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     imageIdString += "\"" + i.Substring(0, 10) + "\",";
                 }
-                ;
             });
             imageIdString = imageIdString.TrimEnd(',') + "]";
 

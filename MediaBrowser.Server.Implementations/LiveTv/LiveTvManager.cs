@@ -1082,6 +1082,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await CleanDatabaseInternal(newChannelIdList, new[] { typeof(LiveTvChannel).Name }, progress, cancellationToken).ConfigureAwait(false);
             await CleanDatabaseInternal(newProgramIdList, new[] { typeof(LiveTvProgram).Name }, progress, cancellationToken).ConfigureAwait(false);
 
+            var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
+
+            if (coreService != null)
+            {
+                await coreService.RefreshSeriesTimers(cancellationToken, new Progress<double>()).ConfigureAwait(false);
+            }
+
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
@@ -1155,7 +1162,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     foreach (var program in channelPrograms)
                     {
+                        if (program.StartDate.Kind != DateTimeKind.Utc)
+                        {
+                            _logger.Error("{0} returned StartDate.DateTimeKind.{1} instead of UTC for program {2}", service.Name, program.StartDate.Kind.ToString(), program.Name);
+                        }
+                        else if (program.EndDate.Kind != DateTimeKind.Utc)
+                        {
+                            _logger.Error("{0} returned EndDate.DateTimeKind.{1} instead of UTC for program {2}", service.Name, program.EndDate.Kind.ToString(), program.Name);
+                        }
+
                         var programItem = await GetProgram(program, channelId, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
+
                         programs.Add(programItem.Id);
                     }
                 }

@@ -130,6 +130,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return status;
         }
 
+        public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            var timers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+
+            List<ChannelInfo> channels = null;
+            
+            foreach (var timer in timers)
+            {
+                List<ProgramInfo> epgData;
+
+                if (timer.RecordAnyChannel)
+                {
+                    if (channels == null)
+                    {
+                        channels = (await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false)).ToList();
+                    }
+                    var channelIds = channels.Select(i => i.Id).ToList();
+                    epgData = GetEpgDataForChannels(channelIds);
+                }
+                else
+                {
+                    epgData = GetEpgDataForChannel(timer.ChannelId);
+                }
+                await UpdateTimersForSeriesTimer(epgData, timer).ConfigureAwait(false);
+            }
+        }
+
         private List<ChannelInfo> _channelCache = null;
         private async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(bool enableCache, CancellationToken cancellationToken)
         {

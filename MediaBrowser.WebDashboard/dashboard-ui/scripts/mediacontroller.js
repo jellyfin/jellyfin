@@ -589,7 +589,8 @@
         self.currentPlaylistIndex = function (i) {
 
             if (i == null) {
-                return currentPlayer.currentPlaylistIndex();
+                // TODO: Get this implemented in all of the players
+                return currentPlayer.currentPlaylistIndex ? currentPlayer.currentPlaylistIndex() : -1;
             }
 
             currentPlayer.currentPlaylistIndex(i);

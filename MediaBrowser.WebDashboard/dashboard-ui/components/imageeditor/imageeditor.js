@@ -56,16 +56,17 @@
             var image = images[i];
 
             html += '<div class="editorTile imageEditorTile">';
+            html += '<div class="editorTileInner">';
+
+            var height = 150;
+
+            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center bottom;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
+
+            html += '<div class="editorTileFooter">';
 
             if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
                 html += '<h3>' + image.ImageType + '</h3>';
             }
-
-            var height = 150;
-
-            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center center;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
-
-            html += '<div class="editorTileInner">';
 
             if (image.Width && image.Height) {
                 html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
@@ -89,9 +90,10 @@
                     html += '<paper-icon-button icon="chevron-right" disabled title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
                 }
             }
-
-            if (imageProviders.length) {
-                html += '<paper-icon-button icon="search" data-imagetype="' + image.ImageType + '" class="btnSearchImages" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
+            else {
+                if (imageProviders.length) {
+                    html += '<paper-icon-button icon="search" data-imagetype="' + image.ImageType + '" class="btnSearchImages" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
+                }
             }
 
             html += '<paper-icon-button icon="delete" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
@@ -99,7 +101,7 @@
             html += '</div>';
 
             html += '</div>';
-
+            html += '</div>';
             html += '</div>';
         }
 
@@ -210,7 +212,7 @@
         });
 
         $('.btnBrowseAllImages', page).on('click', function () {
-            showImageDownloader(page, 'Primary');
+            showImageDownloader(page, this.getAttribute('data-imagetype') || 'Primary');
         });
     }
 
@@ -233,10 +235,13 @@
                 dlg.setAttribute('role', 'alertdialog');
                 // without this safari will scroll the background instead of the dialog contents
                 dlg.setAttribute('modal', 'modal');
+                // seeing max call stack size exceeded in the debugger with this
+                dlg.setAttribute('noAutoFocus', 'noAutoFocus');
                 dlg.entryAnimation = 'scale-up-animation';
                 dlg.exitAnimation = 'fade-out-animation';
                 dlg.classList.add('fullscreen-editor-paper-dialog');
                 dlg.classList.add('ui-body-b');
+                dlg.classList.add('smoothScrollY');
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
