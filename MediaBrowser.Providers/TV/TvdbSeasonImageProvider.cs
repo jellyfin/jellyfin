@@ -65,26 +65,23 @@ namespace MediaBrowser.Providers.TV
             var season = (Season)item;
             var series = season.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId) && season.IndexNumber.HasValue)
+            var identity = TvdbSeasonIdentityProvider.ParseIdentity(season.GetProviderId(TvdbSeasonIdentityProvider.FullIdKey));
+            if (identity == null && series != null && season.IndexNumber.HasValue)
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+                identity = new TvdbSeasonIdentity(series.GetProviderId(MetadataProviders.Tvdb), season.IndexNumber.Value);
+            }
+
+            if (identity != null && series != null)
+            {
+                var id = identity.Value;
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(id.SeriesId, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
 
                 // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, id.SeriesId);
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 
-                var identity = season.Identities.OfType<SeasonIdentity>()
-                    .FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString());
-
-                var seasonNumber = season.IndexNumber.Value;
-
-                if (identity != null)
-                {
-                    seasonNumber = AdjustForSeriesOffset(series, identity.SeasonIndex);
-                }
+                var seasonNumber = AdjustForSeriesOffset(series, id.Index);
                 
                 try
                 {

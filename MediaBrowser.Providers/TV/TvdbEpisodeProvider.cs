@@ -24,8 +24,11 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo, EpisodeIdentity>, IHasChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasChangeMonitor
     {
+        private const string FullIdFormat = "{0}:{1}:{2}"; // seriesId:seasonIndex:episodeNumbers
+        private static readonly string FullIdKey = MetadataProviders.Tvdb + "-Full";
+
         internal static TvdbEpisodeProvider Current;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
@@ -45,18 +48,24 @@ namespace MediaBrowser.Providers.TV
         {
             var list = new List<RemoteSearchResult>();
 
-            var identity = searchInfo.Identities.FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString()) ?? await FindIdentity(searchInfo).ConfigureAwait(false);
+            var identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+
+            if (identity == null)
+            {
+                await Identify(searchInfo).ConfigureAwait(false);
+                identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+            }
 
             if (identity != null)
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(identity.SeriesId, searchInfo.MetadataLanguage,
+                await TvdbSeriesProvider.Current.EnsureSeriesInfo(identity.Value.SeriesId, searchInfo.MetadataLanguage,
                         cancellationToken).ConfigureAwait(false);
 
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.SeriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.Value.SeriesId);
 
                 try
                 {
-                    var metadataResult = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    var metadataResult = FetchEpisodeData(searchInfo, identity.Value, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
 
                     if (metadataResult.HasMetadata)
                     {
@@ -95,17 +104,23 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            var identity = searchInfo.Identities.FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString()) ?? await FindIdentity(searchInfo).ConfigureAwait(false);
+            var identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+
+            if (identity == null)
+            {
+                await Identify(searchInfo).ConfigureAwait(false);
+                identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+            }
 
             var result = new MetadataResult<Episode>();
 
             if (identity != null)
             {
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.SeriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.Value.SeriesId);
 
                 try
                 {
-                    result = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    result = FetchEpisodeData(searchInfo, identity.Value, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -231,9 +246,9 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, EpisodeIdentity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, Identity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
-            var episodeNumber = identity.IndexNumber;
+            var episodeNumber = identity.EpisodeNumber;
             var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
             var seasonNumber = identity.SeasonIndex + seasonOffset;
             
@@ -278,7 +293,7 @@ namespace MediaBrowser.Providers.TV
                 usingAbsoluteData = true;
             }
 
-            var end = identity.IndexNumberEnd ?? episodeNumber;
+            var end = identity.EpisodeNumberEnd ?? episodeNumber;
             episodeNumber++;
 
             while (episodeNumber <= end)
@@ -753,28 +768,86 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public Task<EpisodeIdentity> FindIdentity(EpisodeInfo info)
+        public Task Identify(EpisodeInfo info)
         {
+            if (info.ProviderIds.ContainsKey(FullIdKey))
+            {
+                return Task.FromResult<object>(null);
+            }
+
             string seriesTvdbId;
             info.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
 
             if (string.IsNullOrEmpty(seriesTvdbId) || info.IndexNumber == null)
             {
-                return Task.FromResult<EpisodeIdentity>(null);
+                return Task.FromResult<object>(null);
             }
-            
-            var id = new EpisodeIdentity
-            {
-                Type = MetadataProviders.Tvdb.ToString(),
-                SeriesId = seriesTvdbId,
-                SeasonIndex = info.ParentIndexNumber,
-                IndexNumber = info.IndexNumber.Value,
-                IndexNumberEnd = info.IndexNumberEnd
-            };
+
+            var number = info.IndexNumber.Value.ToString();
+            if (info.IndexNumberEnd != null)
+                number += "-" + info.IndexNumberEnd;
+
+            var id = string.Format(
+                FullIdFormat,
+                seriesTvdbId,
+                info.ParentIndexNumber.HasValue ? info.ParentIndexNumber.Value.ToString() : "A",
+                number);
+
+            info.SetProviderId(FullIdKey, FullIdFormat);
 
             return Task.FromResult(id);
         }
 
+        private Identity? ParseIdentity(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return null;
+
+            try
+            {
+                var parts = id.Split(':');
+                var series = parts[0];
+                var season = parts[1] != "A" ? (int?) int.Parse(parts[1]) : null;
+
+                int index;
+                int? indexEnd;
+
+                if (parts[2].Contains("-"))
+                {
+                    var split = parts[2].IndexOf("-", StringComparison.OrdinalIgnoreCase);
+                    index = int.Parse(parts[2].Substring(0, split));
+                    indexEnd = int.Parse(parts[2].Substring(split + 1));
+                }
+                else
+                {
+                    index = int.Parse(parts[2]);
+                    indexEnd = null;
+                }
+
+                return new Identity(series, season, index, indexEnd);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public int Order { get { return 0; } }
+
+        private struct Identity
+        {
+            public string SeriesId { get; private set; }
+            public int? SeasonIndex { get; private set; }
+            public int EpisodeNumber { get; private set; }
+            public int? EpisodeNumberEnd { get; private set; }
+
+            public Identity(string seriesId, int? seasonIndex, int episodeNumber, int? episodeNumberEnd)
+            {
+                SeriesId = seriesId;
+                SeasonIndex = seasonIndex;
+                EpisodeNumber = episodeNumber;
+                EpisodeNumberEnd = episodeNumberEnd;
+            }
+        }
     }
 }
