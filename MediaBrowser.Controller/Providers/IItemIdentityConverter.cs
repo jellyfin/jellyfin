@@ -1,4 +1,4 @@
 namespace MediaBrowser.Controller.Providers
 {
-    public interface IItemIdentityConverter : IHasOrder { }
+    public interface IItemIdentityConverter { }
 }
