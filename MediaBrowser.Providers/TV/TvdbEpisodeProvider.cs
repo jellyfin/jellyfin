@@ -48,12 +48,12 @@ namespace MediaBrowser.Providers.TV
         {
             var list = new List<RemoteSearchResult>();
 
-            var identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+            var identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
 
             if (identity == null)
             {
                 await Identify(searchInfo).ConfigureAwait(false);
-                identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+                identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
             }
 
             if (identity != null)
@@ -104,12 +104,12 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            var identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+            var identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
 
             if (identity == null)
             {
                 await Identify(searchInfo).ConfigureAwait(false);
-                identity = ParseIdentity(searchInfo.GetProviderId(FullIdKey));
+                identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
             }
 
             var result = new MetadataResult<Episode>();
@@ -783,70 +783,70 @@ namespace MediaBrowser.Providers.TV
                 return Task.FromResult<object>(null);
             }
 
-            var number = info.IndexNumber.Value.ToString();
-            if (info.IndexNumberEnd != null)
-                number += "-" + info.IndexNumberEnd;
-
-            var id = string.Format(
-                FullIdFormat,
-                seriesTvdbId,
-                info.ParentIndexNumber.HasValue ? info.ParentIndexNumber.Value.ToString() : "A",
-                number);
-
-            info.SetProviderId(FullIdKey, FullIdFormat);
+            var id = new Identity(seriesTvdbId, info.ParentIndexNumber, info.IndexNumber.Value, info.IndexNumberEnd);
+            info.SetProviderId(FullIdKey, id.ToString());
 
             return Task.FromResult(id);
         }
 
-        private Identity? ParseIdentity(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return null;
-
-            try
-            {
-                var parts = id.Split(':');
-                var series = parts[0];
-                var season = parts[1] != "A" ? (int?) int.Parse(parts[1]) : null;
-
-                int index;
-                int? indexEnd;
-
-                if (parts[2].Contains("-"))
-                {
-                    var split = parts[2].IndexOf("-", StringComparison.OrdinalIgnoreCase);
-                    index = int.Parse(parts[2].Substring(0, split));
-                    indexEnd = int.Parse(parts[2].Substring(split + 1));
-                }
-                else
-                {
-                    index = int.Parse(parts[2]);
-                    indexEnd = null;
-                }
-
-                return new Identity(series, season, index, indexEnd);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public int Order { get { return 0; } }
 
-        private struct Identity
+        public struct Identity
         {
             public string SeriesId { get; private set; }
             public int? SeasonIndex { get; private set; }
             public int EpisodeNumber { get; private set; }
             public int? EpisodeNumberEnd { get; private set; }
 
+            public Identity(string id)
+                : this()
+            {
+                this = ParseIdentity(id).Value;
+            }
+
             public Identity(string seriesId, int? seasonIndex, int episodeNumber, int? episodeNumberEnd)
+                : this()
             {
                 SeriesId = seriesId;
                 SeasonIndex = seasonIndex;
                 EpisodeNumber = episodeNumber;
                 EpisodeNumberEnd = episodeNumberEnd;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("{0}:{1}:{2}",
+                    SeriesId,
+                    SeasonIndex != null ? SeasonIndex.Value.ToString() : "A",
+                    EpisodeNumber + (EpisodeNumberEnd != null ? "-" + EpisodeNumberEnd.Value.ToString() : ""));
+            }
+
+            public static Identity? ParseIdentity(string id)
+            {
+                if (string.IsNullOrEmpty(id))
+                    return null;
+
+                try {
+                    var parts = id.Split(':');
+                    var series = parts[0];
+                    var season = parts[1] != "A" ? (int?)int.Parse(parts[1]) : null;
+
+                    int index;
+                    int? indexEnd;
+
+                    if (parts[2].Contains("-")) {
+                        var split = parts[2].IndexOf("-", StringComparison.OrdinalIgnoreCase);
+                        index = int.Parse(parts[2].Substring(0, split));
+                        indexEnd = int.Parse(parts[2].Substring(split + 1));
+                    } else {
+                        index = int.Parse(parts[2]);
+                        indexEnd = null;
+                    }
+
+                    return new Identity(series, season, index, indexEnd);
+                } catch {
+                    return null;
+                }
             }
         }
     }

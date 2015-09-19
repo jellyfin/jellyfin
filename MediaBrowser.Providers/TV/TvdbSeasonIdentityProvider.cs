@@ -44,7 +44,14 @@ namespace MediaBrowser.Providers.TV
         public string SeriesId { get; private set; }
         public int Index { get; private set; }
 
+        public TvdbSeasonIdentity(string id)
+            : this()
+        {
+            this = TvdbSeasonIdentityProvider.ParseIdentity(id).Value;
+        }
+
         public TvdbSeasonIdentity(string seriesId, int index)
+            : this()
         {
             SeriesId = seriesId;
             Index = index;
