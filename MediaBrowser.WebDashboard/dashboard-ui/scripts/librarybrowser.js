@@ -752,6 +752,16 @@
             });
         },
 
+        editMetadata: function (itemId) {
+
+            Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+            return;
+            require(['components/metadataeditor/metadataeditor'], function () {
+
+                MetadataEditor.show(itemId);
+            });
+        },
+
         showMoreCommands: function (positionTo, itemId, commands) {
 
             var items = [];
@@ -861,7 +871,7 @@
                                     break;
                                 }
                             case 'edit':
-                                Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+                                LibraryBrowser.editMetadata(itemId);
                                 break;
                             case 'editsubtitles':
                                 LibraryBrowser.editSubtitles(itemId);
@@ -2345,26 +2355,19 @@
 
         getSyncIndicator: function (item) {
 
-            if (item.SyncPercent) {
+            if (item.SyncStatus == 'Synced') {
 
-                if (item.SyncPercent >= 100) {
-                    return '<div class="syncIndicator"><iron-icon icon="refresh"></iron-icon></div>';
-                }
-
-                var degree = (item.SyncPercent / 100) * 360;
-                return '<div class="pieIndicator"><iron-icon icon="refresh"></iron-icon><div class="pieBackground"></div><div class="hold"><div class="pie" style="-webkit-transform: rotate(' + degree + 'deg);-moz-transform: rotate(' + degree + 'deg);-o-transform: rotate(' + degree + 'deg);transform: rotate(' + degree + 'deg);"></div></div></div>';
+                return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
             }
 
-            if (item.SyncStatus) {
-                if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
+            var syncPercent = item.SyncPercent;
+            if (syncPercent) {
+                return '<div class="workingSyncIndicator syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+            }
 
-                    return '<div class="syncIndicator syncWorkingIndicator"><iron-icon icon="refresh"></iron-icon></div>';
-                }
+            if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
 
-                if (item.SyncStatus == 'Synced') {
-
-                    return '<div class="syncIndicator"><iron-icon icon="refresh"></iron-icon></div>';
-                }
+                return '<div class="workingSyncIndicator syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
             }
 
             return '';

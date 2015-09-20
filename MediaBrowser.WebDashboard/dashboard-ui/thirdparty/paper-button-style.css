@@ -106,7 +106,7 @@ paper-button[raised].cancelDark {
     color: #fff;
 }
 
-.ui-body-b paper-button[raised][disabled].subdued {
+.ui-body-b paper-button[raised][disabled].subduedd {
     background: #111;
 }
 
@@ -379,12 +379,16 @@ paper-menu-item {
     color: inherit;
 }
 
+.ui-body-a .paperCheckboxFieldDescription {
+    color: #333;
+}
+
 .ui-body-b .paperCheckboxFieldDescription {
     color: #ccc;
 }
 
 .ui-body-b paper-checkbox #checkbox.paper-checkbox {
-    border-color: #ccc;
+    border-color: #eee;
 }
 
 .ui-body-b paper-checkbox #checkbox.checked.paper-checkbox {
@@ -402,24 +406,24 @@ paper-input label, paper-textarea label {
     font-family: inherit !important;
 }
 
-.ui-body-b paper-input label, .ui-body-b paper-textarea label {
-    color: #858585 !important;
+.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label {
+    color: #858585;
 }
 
-.ui-body-a paper-input label, .ui-body-a paper-textarea label {
-    color: #656565 !important;
+.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label {
+    color: #656565;
 }
 
-.ui-body-a .label-is-highlighted label {
-    color: green !important;
+.ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
+    color: green;
 }
 
-.ui-body-b .label-is-highlighted label {
-    color: #52B54B !important;
+.ui-body-b .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
+    color: #52B54B;
 }
 
-.ui-body-b paper-input input, .ui-body-b paper-textarea textarea {
-    color: #fff !important;
+.ui-body-b .paper-input-container-0 .input-content.paper-input-container input, .ui-body-b .paper-input-container-0 .input-content.paper-input-container textarea, .ui-body-b .paper-input-container-0 .input-content.paper-input-container iron-autogrow-textarea, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-input {
+    color: #fff;
 }
 
 paper-input .focused-line, paper-textarea .focused-line {

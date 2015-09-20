@@ -190,8 +190,8 @@ namespace MediaBrowser.Providers.MediaInfo
             var mediaStreams = mediaInfo.MediaStreams;
 
             video.TotalBitrate = mediaInfo.Bitrate;
-            video.FormatName = (mediaInfo.Container ?? string.Empty)
-                .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+            //video.FormatName = (mediaInfo.Container ?? string.Empty)
+            //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
             // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
             var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;

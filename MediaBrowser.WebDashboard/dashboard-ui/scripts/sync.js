@@ -236,7 +236,7 @@
             html += '<div class="formFields"></div>';
 
             html += '<p>';
-            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
+            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
             html += '</p>';
 
             html += '</form>';

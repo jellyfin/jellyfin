@@ -496,15 +496,6 @@ select {
         display: block;
     }
 
-.ui-body-b select {
-    border-color: #1f1f1f;
-    background: #373737;
-}
-
-    .ui-body-b select option {
-        color: #fff;
-    }
-
 .ui-body-a select {
     background: none;
     border-color: rgb(221, 221, 221);
@@ -512,6 +503,15 @@ select {
 
     .ui-body-a select option {
         color: #000;
+    }
+
+.ui-body-b select {
+    border-color: #1f1f1f;
+    background: #373737;
+}
+
+    .ui-body-b select option {
+        color: #fff;
     }
 
 a[data-role='button'], button:not([data-role='none']):not(.clearButton) {

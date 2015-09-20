@@ -650,11 +650,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
+            else if (string.IsNullOrWhiteSpace(info.Etag))
+            {
+                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
             else
             {
-                if (string.IsNullOrWhiteSpace(info.Etag) || !string.Equals(info.Etag, item.Etag, StringComparison.OrdinalIgnoreCase))
+                // Increment this whenver some internal change deems it necessary
+                var etag = info.Etag + "1";
+
+                if (!string.Equals(etag, item.Etag, StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Etag = info.Etag;
+                    item.Etag = etag;
                     await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -1162,15 +1169,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     foreach (var program in channelPrograms)
                     {
-                        if (program.StartDate.Kind != DateTimeKind.Utc)
-                        {
-                            _logger.Error("{0} returned StartDate.DateTimeKind.{1} instead of UTC for program {2}", service.Name, program.StartDate.Kind.ToString(), program.Name);
-                        }
-                        else if (program.EndDate.Kind != DateTimeKind.Utc)
-                        {
-                            _logger.Error("{0} returned EndDate.DateTimeKind.{1} instead of UTC for program {2}", service.Name, program.EndDate.Kind.ToString(), program.Name);
-                        }
-
                         var programItem = await GetProgram(program, channelId, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
 
                         programs.Add(programItem.Id);

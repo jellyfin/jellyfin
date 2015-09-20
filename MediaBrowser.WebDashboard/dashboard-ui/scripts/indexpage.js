@@ -244,6 +244,17 @@
         Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
             takeTour(page, Dashboard.getCurrentUserId());
         });
+    });
+
+    pageIdOn('pageshowready', "indexPage", function () {
+
+        var page = this;
+
+    });
+
+    pageIdOn('pagebeforehide', "indexPage", function () {
+
+        var page = this;
 
     });
 

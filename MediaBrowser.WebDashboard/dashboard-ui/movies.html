@@ -34,7 +34,7 @@
                         <div id="resumableSection" style="display: none;" class="homePageSection">
                             <div>
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                             </div>
 
                             <div id="resumableItems" class="itemsContainer">
@@ -44,7 +44,7 @@
                         <div class="homePageSection">
                             <div>
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                             </div>
 
                             <div id="recentlyAddedItems" class="itemsContainer">
@@ -72,11 +72,11 @@
                                     <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
                                     <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
                                     <button class="btnAddToCollection" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToCollection}">${ButtonAddToCollection}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="refresh" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
+                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="itemsContainer"></div>
+                        <div class="itemsContainer" style="text-align:center;"></div>
                     </div>
                 </neon-animatable>
                 <neon-animatable>
@@ -87,7 +87,7 @@
                             <div class="listTopPaging">
                             </div>
                         </div>
-                        <div class="itemsContainer"></div>
+                        <div class="itemsContainer" style="text-align:center;"></div>
                         <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
                     </div>
                 </neon-animatable>
@@ -139,7 +139,7 @@
             </neon-animated-pages>
         </div>
 
-        <div data-role="panel" class="viewPanel movieViewPanel hide" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+        <div data-role="panel" class="viewPanel movieViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
             <div class="ui-panel-inner">
                 <form>
 
@@ -248,7 +248,7 @@
             </div>
         </div>
 
-        <div data-role="panel" class="viewPanel trailerViewPanel hide" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+        <div data-role="panel" class="viewPanel trailerViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
             <div class="ui-panel-inner">
                 <form>
 
@@ -290,7 +290,7 @@
                 </form>
             </div>
         </div>
-        <div data-role="panel" class="viewPanel peopleViewPanel hide" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+        <div data-role="panel" class="viewPanel peopleViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
             <div class="ui-panel-inner">
                 <form>
 

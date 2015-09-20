@@ -78,7 +78,7 @@ $.fn.taskButton = function (options) {
         var id = button.getAttribute('data-taskid');
 
         var key = 'scheduledTaskButton' + options.taskKey;
-        var expectedValue = '4';
+        var expectedValue = new Date().getMonth() + '5';
 
         if (appStorage.getItem(key) == expectedValue) {
             onScheduledTaskMessageConfirmed(button, id);
@@ -86,8 +86,9 @@ $.fn.taskButton = function (options) {
 
             var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
             msg += '<br/>';
-            msg += '<br/>';
-            msg += '<a href="scheduledtasks.html">' + Globalize.translate('ButtonScheduledTasks') + '</a>';
+            msg += '<div style="margin-top:1em;">';
+            msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
+            msg += '</div>';
 
             Dashboard.confirm(msg, Globalize.translate('HeaderConfirmation'), function (result) {
 

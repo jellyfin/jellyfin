@@ -68,7 +68,10 @@
 
         self.duration = function (val) {
 
-            return self.playerState.duration;
+            // TODO
+            // This value doesn't seem to be getting reported properly
+            // Right now it's only used to determine if the player can seek, so for now we can mock it
+            return 1;
         };
 
         self.stop = function () {

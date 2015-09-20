@@ -117,12 +117,12 @@ var Dashboard = {
         }
     },
 
-    onPopupOpen: function(){
+    onPopupOpen: function () {
         Dashboard.popupCount = (Dashboard.popupCount || 0) + 1;
         document.body.classList.add('bodyWithPopupOpen');
     },
 
-    onPopupClose: function(){
+    onPopupClose: function () {
 
         Dashboard.popupCount = (Dashboard.popupCount || 1) - 1;
 
@@ -1592,7 +1592,7 @@ var Dashboard = {
         }
     },
 
-    getAppInfo: function (appName, deviceId, deviceName) {
+    getAppInfo: function (appName, appVersion, deviceId, deviceName) {
 
         function generateDeviceName() {
 
@@ -1624,7 +1624,7 @@ var Dashboard = {
             return name;
         }
 
-        var appVersion = window.dashboardVersion;
+        appVersion = appVersion || window.dashboardVersion;
         appName = appName || "Emby Web Client";
 
         deviceName = deviceName || generateDeviceName();
@@ -1991,7 +1991,7 @@ var AppInfo = {};
         }
     }
 
-    function init(deferred, capabilities, appName, deviceId, deviceName) {
+    function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
 
         requirejs.config({
             urlArgs: "v=" + window.dashboardVersion,
@@ -2174,7 +2174,7 @@ var AppInfo = {};
         }
 
         require(deps, function () {
-            $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
+            $.extend(AppInfo, Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName));
 
             initAfterDependencies(deferred, capabilities);
         });
@@ -2300,11 +2300,13 @@ var AppInfo = {};
 
         require(['cordova/imagestore']);
 
-        var capablities = Dashboard.capabilities();
+        cordova.getAppVersion.getVersionNumber(function (appVersion) {
+            var capablities = Dashboard.capabilities();
 
-        var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+            var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
 
-        init(deferred, capablities, name, deviceId, device.model);
+            init(deferred, capablities, name, appVersion, deviceId, device.model);
+        });
     }
 
     function initCordova(deferred) {
@@ -2398,13 +2400,13 @@ pageClassOn('pageshow', "page", function () {
     if (currentTheme == 'a') {
         docElem.classList.add('background-theme-a');
         docElem.classList.remove('background-theme-b');
-        docElem.classList.add('ui-body-a');
-        docElem.classList.remove('ui-body-b');
+        page.classList.add('ui-body-a');
+        page.classList.remove('ui-body-b');
     } else {
         docElem.classList.add('background-theme-b');
         docElem.classList.remove('background-theme-a');
-        docElem.classList.add('ui-body-b');
-        docElem.classList.remove('ui-body-a');
+        page.classList.add('ui-body-b');
+        page.classList.remove('ui-body-a');
     }
 
     if (currentTheme != 'a' && !$.browser.mobile) {

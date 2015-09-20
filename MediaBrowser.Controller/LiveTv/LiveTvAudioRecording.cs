@@ -18,6 +18,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string ProviderImagePath { get; set; }
         public string ProviderImageUrl { get; set; }
         public string EpisodeTitle { get; set; }
+        [IgnoreDataMember]
         public bool IsSeries { get; set; }
         public string SeriesTimerId { get; set; }
         [IgnoreDataMember]
@@ -25,6 +26,7 @@ namespace MediaBrowser.Controller.LiveTv
         public RecordingStatus Status { get; set; }
         [IgnoreDataMember]
         public bool IsSports { get; set; }
+        [IgnoreDataMember]
         public bool IsNews { get; set; }
         [IgnoreDataMember]
         public bool IsKids { get; set; }
@@ -32,7 +34,9 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public bool IsMovie { get; set; }
         public bool? IsHD { get; set; }
+        [IgnoreDataMember]
         public bool IsLive { get; set; }
+        [IgnoreDataMember]
         public bool IsPremiere { get; set; }
         public ChannelType ChannelType { get; set; }
         public string ProgramId { get; set; }

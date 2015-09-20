@@ -880,7 +880,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.IsThemeMedia = true;
+                    i.ExtraType = ExtraType.ThemeVideo;
                     subOptions.ForceSave = true;
                 }
 
@@ -910,7 +910,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.IsThemeMedia = true;
+                    i.ExtraType = ExtraType.ThemeSong;
                     subOptions.ForceSave = true;
                 }
 

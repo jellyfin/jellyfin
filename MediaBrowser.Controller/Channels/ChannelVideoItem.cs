@@ -115,7 +115,11 @@ namespace MediaBrowser.Controller.Channels
             var info = GetItemLookupInfo<ChannelItemLookupInfo>();
 
             info.ContentType = ContentType;
-            info.ExtraType = ExtraType;
+
+            if (ExtraType.HasValue)
+            {
+                info.ExtraType = ExtraType.Value;
+            }
 
             return info;
         }

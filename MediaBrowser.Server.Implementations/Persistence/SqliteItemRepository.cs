@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 7;
+        private const int LatestSchemaVersion = 9;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -177,6 +177,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsOffline", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "LocationType", "Text");
 
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsSeries", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsLive", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsNews", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsPremiere", "BIT");
+            
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
@@ -199,6 +204,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "IsMovie",
             "IsSports",
             "IsKids",
+            "IsSeries",
+            "IsLive",
+            "IsNews",
+            "IsPremiere",
             "CommunityRating",
             "CustomRating",
             "IndexNumber",
@@ -222,6 +231,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsKids",
                 "IsMovie",
                 "IsSports",
+                "IsSeries",
+                "IsLive",
+                "IsNews",
+                "IsPremiere",
                 "CommunityRating",
                 "CustomRating",
                 "IndexNumber",
@@ -369,9 +382,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsKids;
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsMovie;
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsSports;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsSeries;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsLive;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsNews;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsPremiere;
                     }
                     else
                     {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
@@ -563,26 +584,46 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     hasProgramAttributes.IsKids = reader.GetBoolean(8);
                 }
+
+                if (!reader.IsDBNull(9))
+                {
+                    hasProgramAttributes.IsSeries = reader.GetBoolean(9);
+                }
+
+                if (!reader.IsDBNull(10))
+                {
+                    hasProgramAttributes.IsLive = reader.GetBoolean(10);
+                }
+
+                if (!reader.IsDBNull(11))
+                {
+                    hasProgramAttributes.IsNews = reader.GetBoolean(11);
+                }
+
+                if (!reader.IsDBNull(12))
+                {
+                    hasProgramAttributes.IsPremiere = reader.GetBoolean(12);
+                }
             }
 
-            if (!reader.IsDBNull(9))
+            if (!reader.IsDBNull(13))
             {
-                item.CommunityRating = reader.GetFloat(9);
+                item.CommunityRating = reader.GetFloat(13);
             }
 
-            if (!reader.IsDBNull(10))
+            if (!reader.IsDBNull(14))
             {
-                item.CustomRating = reader.GetString(10);
+                item.CustomRating = reader.GetString(14);
             }
 
-            if (!reader.IsDBNull(11))
+            if (!reader.IsDBNull(15))
             {
-                item.IndexNumber = reader.GetInt32(11);
+                item.IndexNumber = reader.GetInt32(15);
             }
 
-            if (!reader.IsDBNull(12))
+            if (!reader.IsDBNull(16))
             {
-                item.IsLocked = reader.GetBoolean(12);
+                item.IsLocked = reader.GetBoolean(16);
             }
 
             return item;

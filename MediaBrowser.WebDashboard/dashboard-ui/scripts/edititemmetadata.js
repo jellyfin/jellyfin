@@ -1378,6 +1378,12 @@
                 });
             }
 
+            menuItems.push({
+                name: Globalize.translate('ButtonEditImages'),
+                id: 'editimages',
+                ironIcon: 'photo'
+            });
+
             require(['actionsheet'], function () {
 
                 ActionSheetElement.show({
@@ -1392,6 +1398,9 @@
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItem(currentItem.Id);
+                                break;
+                            case 'editimages':
+                                LibraryBrowser.editImages(currentItem.Id);
                                 break;
                             default:
                                 break;
@@ -1442,8 +1451,6 @@
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
-
-                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;

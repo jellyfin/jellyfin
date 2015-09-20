@@ -5,7 +5,6 @@
         var self = this;
 
         var currentProgressInterval;
-        var canClientSeek;
         var currentPlaylistIndex = 0;
 
         self.currentMediaRenderer = null;
@@ -513,17 +512,19 @@
             return supportsTextTracks;
         };
 
-        self.updateCanClientSeek = function (mediaRenderer) {
+        // Returns true if the player can seek using native client-side seeking functions
+        function canPlayerSeek() {
 
+            var mediaRenderer = self.currentMediaRenderer;
             var currentSrc = self.getCurrentSrc(mediaRenderer);
 
             if ((currentSrc || '').indexOf('.m3u8') != -1) {
-                canClientSeek = true;
+                return true;
             } else {
                 var duration = mediaRenderer.duration();
-                canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
+                return duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
             }
-        };
+        }
 
         self.getCurrentSrc = function (mediaRenderer) {
             return mediaRenderer.currentSrc();
@@ -610,7 +611,7 @@
 
             var mediaRenderer = self.currentMediaRenderer;
 
-            if (canClientSeek && params == null) {
+            if (canPlayerSeek() && params == null) {
 
                 mediaRenderer.currentTime(ticks / 10000);
                 return;
@@ -663,8 +664,6 @@
             Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
             $(mediaRenderer).one("play", function () {
-
-                self.updateCanClientSeek(this);
 
                 Events.on(this, 'ended', self.onPlaybackStopped);
 
@@ -742,7 +741,7 @@
 
             if (positionSlider) {
 
-                positionSlider.disabled = !((self.currentDurationTicks || 0) > 0 || canClientSeek);
+                positionSlider.disabled = !((self.currentDurationTicks || 0) > 0 || canPlayerSeek());
             }
 
             if (currentTimeElement) {
@@ -1600,7 +1599,7 @@
                     RunTimeTicks: mediaSource.RunTimeTicks
                 };
 
-                state.PlayState.CanSeek = (mediaSource.RunTimeTicks || 0) > 0 || canClientSeek;
+                state.PlayState.CanSeek = (mediaSource.RunTimeTicks || 0) > 0 || canPlayerSeek();
             }
 
             if (item) {
@@ -1693,8 +1692,6 @@
         };
 
         self.onPlaybackStart = function (mediaRenderer, item, mediaSource) {
-
-            self.updateCanClientSeek(mediaRenderer);
 
             var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 

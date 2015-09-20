@@ -1,6 +1,7 @@
 ﻿(function () {
 
     var syncPromise;
+    var lastStart = 0;
 
     window.LocalSync = {
 
@@ -13,6 +14,7 @@
             if (!syncPromise) {
                 require(['multiserversync'], function () {
 
+                    lastStart = new Date().getTime();
                     syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync().done(function () {
 
                         syncPromise = null;
@@ -34,15 +36,23 @@
         }
     };
 
-    Dashboard.ready(function () {
+    var syncInterval = 1800000;
+
+    function restartInterval() {
         if (LocalSync.isSupported) {
             setInterval(function () {
 
                 LocalSync.startSync();
 
-            }, 3600000);
+            }, syncInterval);
+
+            if (lastStart > 0 && (now - lastStart) >= syncInterval) {
+                LocalSync.startSync();
+            }
         }
         //LocalSync.startSync();
-    });
+    }
 
+    Dashboard.ready(restartInterval);
+    document.addEventListener("resume", restartInterval, false);
 })();

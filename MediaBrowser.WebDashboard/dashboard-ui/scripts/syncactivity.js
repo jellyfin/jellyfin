@@ -55,7 +55,7 @@
         html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '" style="' + style + '">';
 
         if (job.Progress && job.Progress < 100) {
-            html += '<div class="cardFooter">';
+            html += '<div class="cardFooter fullCardFooter lightCardFooter">';
             html += "<div class='cardText cardProgress'>";
             html += '<progress class="itemProgressBar" min="0" max="100" value="' + job.Progress + '"></progress>';
             html += "</div>";
@@ -147,31 +147,36 @@
         var cardBoxCssClass = 'cardBox visualCardBox';
 
         var syncJobPage = 'syncjob.html';
+        var showTargetName = true;
 
         if ($(page).hasClass('mySyncPage')) {
             syncJobPage = 'mysyncjob.html';
+
+            showTargetName = !hasLocalSync();
         }
 
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
-            var targetName = job.TargetName || 'Unknown';
+            if (showTargetName) {
+                var targetName = job.TargetName || 'Unknown';
 
-            if (targetName != lastTargetName) {
+                if (targetName != lastTargetName) {
 
-                if (lastTargetName) {
-                    html += '<br/>';
-                    html += '<br/>';
-                    html += '<br/>';
+                    if (lastTargetName) {
+                        html += '<br/>';
+                        html += '<br/>';
+                        html += '<br/>';
+                    }
+
+                    lastTargetName = targetName;
+
+                    html += '<div class="detailSectionHeader">';
+
+                    html += '<div>' + targetName + '</div>';
+
+                    html += '</div>';
                 }
-
-                lastTargetName = targetName;
-
-                html += '<div class="detailSectionHeader">';
-
-                html += '<div style="display:inline-block;vertical-align:middle;">' + targetName + '</div>';
-
-                html += '</div>';
             }
 
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
@@ -236,6 +241,10 @@
         });
     }
 
+    function hasLocalSync() {
+        return Dashboard.capabilities().SupportsSync;
+    }
+
     function reloadData(page) {
 
         Dashboard.showLoadingMsg();
@@ -246,6 +255,10 @@
 
             if ($(page).hasClass('mySyncPage')) {
                 options.UserId = Dashboard.getCurrentUserId();
+
+                if (hasLocalSync()) {
+                    options.TargetId = ApiClient.deviceId();
+                }
             }
 
             ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).done(function (response) {
@@ -263,7 +276,16 @@
         var page = $.mobile.activePage;
 
         if (msg.MessageType == "SyncJobs") {
-            loadData(page, msg.Data);
+
+            var data = msg.Data;
+
+            if (hasLocalSync()) {
+                var targetId = ApiClient.deviceId();
+                data = data.filter(function (j) {
+                    return TargetId = targetId;
+                });
+            }
+            loadData(page, data);
         }
     }
 

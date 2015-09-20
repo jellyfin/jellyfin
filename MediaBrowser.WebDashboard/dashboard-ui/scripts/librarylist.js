@@ -428,7 +428,7 @@
                                     break;
                                 }
                             case 'edit':
-                                Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+                                LibraryBrowser.editMetadata(itemId);
                                 break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
@@ -796,7 +796,7 @@
             contentHtml += '<paper-button data-href="' + LibraryBrowser.getHref(item, context) + '" raised class="submit" style="background-color: #673AB7;" onclick="Dashboard.navigate(this.getAttribute(\'data-href\'));"><iron-icon icon="folder-open"></iron-icon><span>' + Globalize.translate('ButtonOpen') + '</span></paper-button>';
 
             if (SyncManager.isAvailable(item, user)) {
-                contentHtml += '<paper-button raised class="submit btnSync"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button>';
+                contentHtml += '<paper-button raised class="submit btnSync"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button>';
             }
 
             contentHtml += '</div>';
@@ -1273,7 +1273,6 @@
                 $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
             }
             $('.playedIndicator', card).html('<iron-icon icon="check"></iron-icon>');
-            $('.cardProgress', card).remove();
         }
         else if (userData.UnplayedItemCount) {
 
@@ -1283,13 +1282,23 @@
             }
             $('.playedIndicator', card).html(userData.UnplayedItemCount);
         }
+
+        var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
+
+        if (progressHtml) {
+            var cardProgress = card.querySelector('.cardProgress');
+
+            if (!cardProgress) {
+                cardProgress = document.createElement('div');
+                cardProgress.classList.add('cardProgress');
+
+                $('.cardFooter', card).append(cardProgress);
+            }
+
+            cardProgress.innerHTML = progressHtml;
+        }
         else {
-
-            $('.playedIndicator', card).remove();
-
-            var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
-
-            $('.cardProgress', card).html(progressHtml);
+            $('.cardProgress', card).remove();
         }
     }
 
