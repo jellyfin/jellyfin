@@ -14,8 +14,7 @@
         $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata).checkboxradio("refresh");
         $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata).checkboxradio("refresh");
 
-        $('.chkEnableVideoFrameAnalysis', page).checked(config.EnableVideoFrameAnalysis);
-        $('.txtVideoFrameAnalysisLimit', page).val((config.VideoFrameAnalysisLimitBytes / 1000000) || '');
+        $('.chkEnableVideoFrameAnalysis', page).checked(config.EnableVideoFrameByFrameAnalysis);
 
         Dashboard.hideLoadingMsg();
     }
@@ -272,8 +271,7 @@
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 
-            config.EnableVideoFrameAnalysis = $('.chkEnableVideoFrameAnalysis', form).checked();
-            config.VideoFrameAnalysisLimitBytes = parseInt(parseFloat(($('.txtVideoFrameAnalysisLimit', form).val() || '0')) * 1000000);
+            config.EnableVideoFrameByFrameAnalysis = $('.chkEnableVideoFrameAnalysis', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();

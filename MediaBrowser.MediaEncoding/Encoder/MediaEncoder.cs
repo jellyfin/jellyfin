@@ -7,6 +7,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
@@ -243,14 +244,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                         if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                         {
-                            if (ConfigurationManager.Configuration.EnableVideoFrameAnalysis && mediaInfo.Size.HasValue && mediaInfo.Size.Value <= ConfigurationManager.Configuration.VideoFrameAnalysisLimitBytes)
+                            if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
                             {
                                 foreach (var stream in mediaInfo.MediaStreams)
                                 {
-                                    if (stream.Type == MediaStreamType.Video &&
-                                        string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
-                                        !stream.IsInterlaced &&
-                                        !(stream.IsAnamorphic ?? false))
+                                    if (EnableKeyframeExtraction(mediaInfo, stream))
                                     {
                                         try
                                         {
@@ -285,6 +283,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+        }
+
+        private bool EnableKeyframeExtraction(MediaSourceInfo mediaSource, MediaStream videoStream)
+        {
+            if (videoStream.Type == MediaStreamType.Video && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
+                !videoStream.IsInterlaced &&
+                !(videoStream.IsAnamorphic ?? false))
+            {
+                var audioStreams = mediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
+
+                // If it has aac audio then it will probably direct stream anyway, so don't bother with this
+                if (audioStreams.Count == 1 && string.Equals(audioStreams[0].Codec, "aac", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            return false;
         }
 
         private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)

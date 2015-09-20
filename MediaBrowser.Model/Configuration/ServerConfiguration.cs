@@ -222,8 +222,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisableXmlSavers { get; set; }
         public bool EnableWindowsShortcuts { get; set; }
 
-        public bool EnableVideoFrameAnalysis { get; set; }
-        public long VideoFrameAnalysisLimitBytes { get; set; }
+        public bool EnableVideoFrameByFrameAnalysis { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -272,9 +271,6 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
-
-            EnableVideoFrameAnalysis = true;
-            VideoFrameAnalysisLimitBytes = 600000000;
 
             InsecureApps9 = new[]
             {
