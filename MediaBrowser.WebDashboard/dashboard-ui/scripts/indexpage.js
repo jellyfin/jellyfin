@@ -249,14 +249,24 @@
     pageIdOn('pageshowready', "indexPage", function () {
 
         var page = this;
-
+        $(MediaController).on('playbackstop', onPlaybackStop);
     });
 
     pageIdOn('pagebeforehide', "indexPage", function () {
 
         var page = this;
-
+        $(MediaController).off('playbackstop', onPlaybackStop);
     });
+
+    function onPlaybackStop(e, state) {
+
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $($.mobile.activePage)[0];
+            var pages = page.querySelector('neon-animated-pages');
+
+            $(pages).trigger('tabchange');
+        }
+    }
 
     function getDisplayPreferences(key, userId) {
 

@@ -316,7 +316,7 @@
     window.MoviesPage = window.MoviesPage || {};
     window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
 
-    $(document).on('pageinit', "#moviesPage", function () {
+    pageIdOn('pageinit', "moviesPage", function () {
 
         var page = this;
 
@@ -336,8 +336,9 @@
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
         });
+    });
 
-    }).on('pageshowready', "#moviesPage", function () {
+    pageIdOn('pageshowready', "moviesPage", function () {
 
         var page = this;
 
@@ -360,6 +361,23 @@
             }
         }
 
+        $(MediaController).on('playbackstop', onPlaybackStop);
     });
+
+    pageIdOn('pagebeforehide', "moviesPage", function () {
+
+        var page = this;
+        $(MediaController).off('playbackstop', onPlaybackStop);
+    });
+
+    function onPlaybackStop(e, state) {
+
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $($.mobile.activePage)[0];
+            var pages = page.querySelector('neon-animated-pages');
+
+            $(pages).trigger('tabchange');
+        }
+    }
 
 })(jQuery, document);

@@ -247,7 +247,13 @@
             if (player.isLocalPlayer) {
                 monitorPlayer(player);
             }
+
+            Events.on(player, 'playbackstop', onPlaybackStop);
         };
+
+        function onPlaybackStop(e, state) {
+            $(self).trigger('playbackstop', [state]);
+        }
 
         self.getPlayerInfo = function () {
 
