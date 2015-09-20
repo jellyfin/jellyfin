@@ -1,5 +1,4 @@
-﻿using Emby.Drawing.Common;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -17,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Drawing.Common;
 
 namespace Emby.Drawing
 {
@@ -215,12 +215,12 @@ namespace Emby.Drawing
             {
                 CheckDisposed();
 
-                if (!File.Exists(cacheFilePath))
+                if (!_fileSystem.FileExists(cacheFilePath))
                 {
                     var newWidth = Convert.ToInt32(newSize.Width);
                     var newHeight = Convert.ToInt32(newSize.Height);
 
-                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                     await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -270,7 +270,7 @@ namespace Emby.Drawing
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             // Check again in case of contention
-            if (File.Exists(croppedImagePath))
+            if (_fileSystem.FileExists(croppedImagePath))
             {
                 semaphore.Release();
                 return GetResult(croppedImagePath);
@@ -280,7 +280,7 @@ namespace Emby.Drawing
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
 
                 await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
                 imageProcessingLockTaken = true;
@@ -366,7 +366,7 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         public ImageSize GetImageSize(string path)
         {
-            return GetImageSize(path, File.GetLastWriteTimeUtc(path), false);
+            return GetImageSize(path, _fileSystem.GetLastWriteTimeUtc(path), false);
         }
 
         public ImageSize GetImageSize(ItemImageInfo info)
@@ -399,6 +399,8 @@ namespace Emby.Drawing
             {
                 size = GetImageSizeInternal(path, allowSlowMethod);
 
+                StartSaveImageSizeTimer();
+
                 _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
             }
 
@@ -413,28 +415,26 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
-            ImageSize size;
-
             try
             {
-                size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+                using (var file = TagLib.File.Create(path))
+                {
+                    var image = file as TagLib.Image.File;
+
+                    var properties = image.Properties;
+
+                    return new ImageSize
+                    {
+                        Height = properties.PhotoHeight,
+                        Width = properties.PhotoWidth
+                    };
+                }
             }
             catch
             {
-                if (!allowSlowMethod)
-                {
-                    throw;
-                }
-                //_logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
-
-                CheckDisposed();
-
-                size = _imageEncoder.GetImageSize(path);
             }
 
-            StartSaveImageSizeTimer();
-
-            return size;
+            return ImageHeader.GetDimensions(path, _logger, _fileSystem);
         }
 
         private readonly Timer _saveImageSizeTimer;
@@ -452,7 +452,7 @@ namespace Emby.Drawing
                 try
                 {
                     var path = ImageSizeFile;
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
                     _jsonSerializer.SerializeToFile(_cachedImagedSizes, path);
                 }
                 catch (Exception ex)
@@ -624,7 +624,7 @@ namespace Emby.Drawing
             await semaphore.WaitAsync().ConfigureAwait(false);
 
             // Check again in case of contention
-            if (File.Exists(enhancedImagePath))
+            if (_fileSystem.FileExists(enhancedImagePath))
             {
                 semaphore.Release();
                 return enhancedImagePath;
@@ -634,7 +634,7 @@ namespace Emby.Drawing
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
 
                 await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
 
