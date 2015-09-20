@@ -353,7 +353,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    var lines = StringHelper.RegexSplit(text, "\r\n");
+                    var lines = StringHelper.RegexSplit(text, "[\r\n]+");
                     foreach (var line in lines)
                     {
                         if (string.IsNullOrWhiteSpace(line))
