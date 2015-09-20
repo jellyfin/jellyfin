@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Devices;
+﻿using System;
+using System.Linq;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
@@ -128,15 +130,32 @@ namespace MediaBrowser.Api.Devices
             var id = Request.QueryString["Id"];
             var name = Request.QueryString["Name"];
 
-            var task = _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
+            if (Request.ContentType.IndexOf("multi", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                MimeType = Request.ContentType,
-                Album = album,
-                Name = name,
-                Id = id
-            });
+                var task = _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
+                {
+                    MimeType = Request.ContentType,
+                    Album = album,
+                    Name = name,
+                    Id = id
+                });
 
-            Task.WaitAll(task);
+                Task.WaitAll(task);
+            }
+            else
+            {
+                var file = Request.Files.First();
+
+                var task = _deviceManager.AcceptCameraUpload(deviceId, file.InputStream, new LocalFileInfo
+                {
+                    MimeType = file.ContentType,
+                    Album = album,
+                    Name = name,
+                    Id = id
+                });
+
+                Task.WaitAll(task);
+            }
         }
     }
 }
