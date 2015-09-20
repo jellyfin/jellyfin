@@ -66,6 +66,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// Gets the tracks.
         /// </summary>
         /// <value>The tracks.</value>
+        [IgnoreDataMember]
         public IEnumerable<Audio> Tracks
         {
             get

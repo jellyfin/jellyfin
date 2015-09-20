@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var audio = (Audio)item;
 
             // Can't extract if we didn't find a video stream in the file
-            if (!audio.HasEmbeddedImage)
+            if (!audio.GetMediaSources(false).Take(1).SelectMany(i => i.MediaStreams).Any(i => i.Type == MediaStreamType.EmbeddedImage))
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }

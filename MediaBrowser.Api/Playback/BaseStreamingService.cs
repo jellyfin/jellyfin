@@ -839,7 +839,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // leave blank so ffmpeg will decide
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -849,7 +849,7 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            var arg = string.Format("{1}-i {0}", GetInputPathArgument(state), GetVideoDecoder(state));
+            var arg = string.Format("-i {0}", GetInputPathArgument(state));
 
             if (state.SubtitleStream != null)
             {
@@ -1060,6 +1060,7 @@ namespace MediaBrowser.Api.Playback
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -2189,6 +2190,12 @@ namespace MediaBrowser.Api.Playback
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
+            }
+
+            var videoDecoder = GetVideoDecoder(state);
+            if (!string.IsNullOrWhiteSpace(videoDecoder))
+            {
+                inputModifier += " " + videoDecoder;
             }
 
             return inputModifier;

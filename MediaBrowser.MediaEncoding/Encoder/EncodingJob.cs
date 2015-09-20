@@ -56,7 +56,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool EnableMpegtsM2TsMode { get; set; }
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
         public long? EncodingDurationTicks { get; set; }
-        public string LiveTvStreamId { get; set; }
+        public string LiveStreamId { get; set; }
         public long? RunTimeTicks;
 
         public string ItemType { get; set; }

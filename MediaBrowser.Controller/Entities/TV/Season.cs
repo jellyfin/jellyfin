@@ -62,17 +62,13 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// The _series
-        /// </summary>
-        private Series _series;
-        /// <summary>
         /// This Episode's Series Instance
         /// </summary>
         /// <value>The series.</value>
         [IgnoreDataMember]
         public Series Series
         {
-            get { return _series ?? (_series = FindParent<Series>()); }
+            get { return FindParent<Series>(); }
         }
 
         [IgnoreDataMember]

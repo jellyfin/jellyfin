@@ -33,14 +33,20 @@ namespace MediaBrowser.Controller.Entities
         public List<string> LocalAlternateVersions { get; set; }
         public List<LinkedChild> LinkedAlternateVersions { get; set; }
 
-        public bool IsThemeMedia { get; set; }
+        [IgnoreDataMember]
+        public bool IsThemeMedia
+        {
+            get
+            {
+                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeVideo;
+            }
+        }
 
-        public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
         public string ShortOverview { get; set; }
-        public ExtraType ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata country code.
@@ -498,7 +504,6 @@ namespace MediaBrowser.Controller.Entities
                 VideoType = i.VideoType,
                 Container = i.Container,
                 Size = i.Size,
-                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                 Timestamp = i.Timestamp,
                 Type = type,
                 PlayableStreamFileNames = i.PlayableStreamFileNames.ToList(),
