@@ -157,7 +157,7 @@ namespace MediaBrowser.Model.Dlna
                     if (all)
                     {
                         if (item.Protocol == MediaProtocol.File &&
-                            directPlayMethods.Contains(PlayMethod.DirectPlay) && 
+                            directPlayMethods.Contains(PlayMethod.DirectPlay) &&
                             _localPlayer.CanAccessFile(item.Path))
                         {
                             playlistItem.PlayMethod = PlayMethod.DirectPlay;
@@ -288,7 +288,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 _logger.Debug("Profile: {0}, No direct play profiles found for Path: {1}",
                     options.Profile.Name ?? "Unknown Profile",
-                    item.Path ?? "Unknown path"); 
+                    item.Path ?? "Unknown path");
             }
 
             return playMethods;
@@ -306,7 +306,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         highestScore = stream.Score.Value;
                     }
-                }    
+                }
             }
 
             List<MediaStream> topStreams = new List<MediaStream>();
@@ -540,8 +540,8 @@ namespace MediaBrowser.Model.Dlna
             {
                 _logger.Debug("Profile: {0}, No direct play profiles found for Path: {1}",
                     profile.Name ?? "Unknown Profile",
-                    mediaSource.Path ?? "Unknown path"); 
-                
+                    mediaSource.Path ?? "Unknown path");
+
                 return null;
             }
 
@@ -658,7 +658,7 @@ namespace MediaBrowser.Model.Dlna
                     if (!conditionProcessor.IsVideoAudioConditionSatisfied(i, audioChannels, audioBitrate, audioProfile, isSecondaryAudio))
                     {
                         LogConditionFailure(profile, "VideoAudioCodecProfile", i, mediaSource);
-                        
+
                         return null;
                     }
                 }
@@ -725,7 +725,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, EncodingContext context, PlayMethod playMethod)
         {
-			if (playMethod != PlayMethod.Transcode && !subtitleStream.IsExternal)
+            if (playMethod != PlayMethod.Transcode && !subtitleStream.IsExternal)
             {
                 // Look for supported embedded subs
                 foreach (SubtitleProfile profile in subtitleProfiles)
@@ -749,11 +749,11 @@ namespace MediaBrowser.Model.Dlna
 
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
-			{
-				if (profile.Method != SubtitleDeliveryMethod.External)
-				{
-					continue;
-				}
+            {
+                if (profile.Method != SubtitleDeliveryMethod.External)
+                {
+                    continue;
+                }
 
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
@@ -762,9 +762,9 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-					bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+                    bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 
-					if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
+                    if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
                     {
                         if (subtitleStream.SupportsExternalStream)
                         {
