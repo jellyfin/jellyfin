@@ -51,8 +51,11 @@
         return false;
     }
 
-    $(document).on('pageinit', '#forgotPasswordPinPage', function () {
-        $('.forgotPasswordPinForm').off('submit', onSubmit).on('submit', onSubmit);
+    $(document).on('pageinit', '.forgotPasswordPinPage', function () {
+
+        var page = this;
+
+        $('form', page).off('submit', onSubmit).on('submit', onSubmit);
     });
 
 })(window);
