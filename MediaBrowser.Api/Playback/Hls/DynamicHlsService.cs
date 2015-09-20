@@ -285,20 +285,23 @@ namespace MediaBrowser.Api.Playback.Hls
         private double[] GetSegmentLengths(StreamState state)
         {
             var result = new List<double>();
-            var encoder = GetVideoEncoder(state);
-
-            if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
+            if (state.VideoRequest != null)
             {
-                var videoStream = state.VideoStream;
-                if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
+                var encoder = GetVideoEncoder(state);
+
+                if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach (var frame in videoStream.KeyFrames)
+                    var videoStream = state.VideoStream;
+                    if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
                     {
-                        var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
-                        seconds -= result.Sum();
-                        result.Add(seconds);
+                        foreach (var frame in videoStream.KeyFrames)
+                        {
+                            var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
+                            seconds -= result.Sum();
+                            result.Add(seconds);
+                        }
+                        return result.ToArray();
                     }
-                    return result.ToArray();
                 }
             }
 
@@ -959,6 +962,31 @@ namespace MediaBrowser.Api.Playback.Hls
         protected string GetSegmentFileExtension(bool isOutputVideo)
         {
             return isOutputVideo ? ".ts" : ".ts";
+        }
+
+        protected override bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        {
+            if (videoStream.KeyFrames == null || videoStream.KeyFrames.Count == 0)
+            {
+                Logger.Debug("Cannot stream copy video due to missing keyframe info");
+                return false;
+            }
+
+            var previousSegment = 0;
+            foreach (var frame in videoStream.KeyFrames)
+            {
+                var length = frame - previousSegment;
+
+                // Don't allow really long segments because this could result in long download times
+                if (length > 10000)
+                {
+                    Logger.Debug("Cannot stream copy video due to long segment length of {0}ms", length);
+                    return false;
+                }
+                previousSegment = frame;
+            }
+
+            return base.CanStreamCopyVideo(request, videoStream);
         }
     }
 }
