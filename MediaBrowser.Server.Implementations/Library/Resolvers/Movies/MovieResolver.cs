@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
                 else if (IsIgnored(child.Name))
                 {
-                    
+
                 }
                 else
                 {
@@ -309,20 +309,26 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 //we need to only look at the name of this actual item (not parents)
                 var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
 
-                // check for tmdb id
-                var tmdbid = justName.GetAttributeValue("tmdbid");
-
-                if (!string.IsNullOrEmpty(tmdbid))
+                if (!string.IsNullOrWhiteSpace(justName))
                 {
-                    item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
+                    // check for tmdb id
+                    var tmdbid = justName.GetAttributeValue("tmdbid");
+
+                    if (!string.IsNullOrWhiteSpace(tmdbid))
+                    {
+                        item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
+                    }
                 }
 
-                // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
-                var imdbid = item.Path.GetAttributeValue("imdbid");
-
-                if (!string.IsNullOrEmpty(imdbid))
+                if (!string.IsNullOrWhiteSpace(item.Path))
                 {
-                    item.SetProviderId(MetadataProviders.Imdb, imdbid);
+                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
+                    var imdbid = item.Path.GetAttributeValue("imdbid");
+
+                    if (!string.IsNullOrWhiteSpace(imdbid))
+                    {
+                        item.SetProviderId(MetadataProviders.Imdb, imdbid);
+                    }
                 }
             }
         }
