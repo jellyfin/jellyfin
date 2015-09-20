@@ -15,7 +15,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -25,19 +24,17 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IFileSystem _fileSystem;
 
         private IMediaSourceProvider[] _providers;
         private readonly ILogger _logger;
 
-        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
+        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-            _fileSystem = fileSystem;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -173,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (source.Protocol == MediaProtocol.File)
                 {
                     // TODO: Path substitution
-					if (!_fileSystem.FileExists(source.Path))
+                    if (!File.Exists(source.Path))
                     {
                         source.SupportsDirectStream = false;
                     }
