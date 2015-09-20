@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
                 else if (IsIgnored(child.Name))
                 {
-                    
+
                 }
                 else
                 {
