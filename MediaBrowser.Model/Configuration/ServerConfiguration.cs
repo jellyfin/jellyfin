@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
         public bool DisableStartupScan { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].
         /// </summary>
@@ -223,7 +223,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableWindowsShortcuts { get; set; }
 
         public bool EnableVideoFrameByFrameAnalysis { get; set; }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
