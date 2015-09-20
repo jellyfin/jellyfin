@@ -8,6 +8,7 @@ using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
@@ -151,11 +152,12 @@ namespace MediaBrowser.Server.Implementations.Devices
                 path = Path.Combine(path, _fileSystem.GetValidFilename(file.Album));
             }
 
-            Directory.CreateDirectory(path);
-
             path = Path.Combine(path, file.Name);
+            path = Path.ChangeExtension(path, MimeTypes.ToExtension(file.MimeType) ?? "jpg");
 
             _libraryMonitor.ReportFileSystemChangeBeginning(path);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {
