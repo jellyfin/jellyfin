@@ -1027,7 +1027,7 @@ var Dashboard = {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
             selected: page.classList.contains('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'refresh'
+            icon: 'sync'
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -1965,8 +1965,6 @@ var AppInfo = {};
             return false;
         });
 
-        require(['filesystem']);
-
         if (Dashboard.isRunningInCordova()) {
             require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
 
@@ -2025,16 +2023,6 @@ var AppInfo = {};
             define("localassetmanager", ["cordova/localassetmanager"]);
         } else {
             define("localassetmanager", ["apiclient/localassetmanager"]);
-        }
-
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("filesystem", ["cordova/android/filesystem"]);
-        }
-        else if (Dashboard.isRunningInCordova()) {
-            define("filesystem", ["cordova/filesystem"]);
-        }
-        else {
-            define("filesystem", ["thirdparty/filesystem"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {

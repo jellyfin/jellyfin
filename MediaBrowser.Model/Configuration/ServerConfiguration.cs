@@ -272,8 +272,6 @@ namespace MediaBrowser.Model.Configuration
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
 
-            EnableVideoFrameByFrameAnalysis = false;
-
             InsecureApps9 = new[]
             {
                 "Unknown app",

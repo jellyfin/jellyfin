@@ -104,40 +104,6 @@
         return profile;
     }
 
-    function validatePlaybackInfoResult(result) {
-
-        if (result.ErrorCode) {
-
-            MediaController.showPlaybackInfoErrorMessage(result.ErrorCode);
-            return false;
-        }
-
-        return true;
-    }
-
-    function getOptimalMediaSource(mediaType, versions) {
-
-        var optimalVersion = versions.filter(function (v) {
-
-            v.enableDirectPlay = MediaController.supportsDirectPlay(v);
-
-            return v.enableDirectPlay;
-
-        })[0];
-
-        if (!optimalVersion) {
-            optimalVersion = versions.filter(function (v) {
-
-                return v.SupportsDirectStream;
-
-            })[0];
-        }
-
-        return optimalVersion || versions.filter(function (s) {
-            return s.SupportsTranscoding;
-        })[0];
-    }
-
     var currentMediaSource;
     var currentItem;
     var basePlayerState;
@@ -146,37 +112,13 @@
     function getVideoStreamInfo(item) {
 
         var deferred = $.Deferred();
-        Dashboard.showModalLoadingMsg();
 
         var deviceProfile = getDeviceProfile();
         var startPosition = 0;
 
-        MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
+        MediaPlayer.tryStartPlayback(deviceProfile, item, startPosition, function (mediaSource) {
 
-            if (validatePlaybackInfoResult(playbackInfoResult)) {
-
-                var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
-
-                if (mediaSource) {
-
-                    if (mediaSource.RequiresOpening) {
-
-                        MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
-
-                            openLiveStreamResult.MediaSource.enableDirectPlay = MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource);
-
-                            playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, deferred);
-                        });
-
-                    } else {
-                        playInternalPostMediaSourceSelection(item, mediaSource, startPosition, deferred);
-                    }
-                } else {
-                    Dashboard.hideModalLoadingMsg();
-                    MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
-                }
-            }
-
+            playInternalPostMediaSourceSelection(item, mediaSource, startPosition, deferred);
         });
 
         return deferred.promise();

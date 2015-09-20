@@ -852,27 +852,36 @@
 
         self.supportsDirectPlay = function (mediaSource) {
 
+            var deferred = $.Deferred();
             if (mediaSource.SupportsDirectPlay) {
 
                 if (mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
 
                     // If this is the only way it can be played, then allow it
                     if (!mediaSource.SupportsDirectStream && !mediaSource.SupportsTranscoding) {
-                        return true;
+                        deferred.resolveWith(null, [true]);
                     }
-
-                    return mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                    else {
+                        var val = mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                        deferred.resolveWith(null, [val]);
+                    }
                 }
 
                 if (mediaSource.Protocol == 'File') {
 
-                    var exists = FileSystemBridge.fileExists(mediaSource.Path);
-                    Logger.log('FileSystemBridge.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
-                    return exists;
+                    require(['localassetmanager'], function () {
+
+                        LocalAssetManager.fileExists(mediaSource.Path).done(function (exists) {
+                            Logger.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
+                            deferred.resolveWith(null, [exists]);
+                        });
+                    });
                 }
             }
-
-            return false;
+            else {
+                deferred.resolveWith(null, [false]);
+            }
+            return deferred.promise();
         };
 
         self.showPlayerSelection = showPlayerSelection;

@@ -282,7 +282,7 @@
             if (hasLocalSync()) {
                 var targetId = ApiClient.deviceId();
                 data = data.filter(function (j) {
-                    return TargetId = targetId;
+                    return j.TargetId == targetId;
                 });
             }
             loadData(page, data);

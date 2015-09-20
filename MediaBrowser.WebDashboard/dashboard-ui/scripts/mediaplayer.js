@@ -878,25 +878,39 @@
 
         function getOptimalMediaSource(mediaType, versions) {
 
-            var optimalVersion = versions.filter(function (v) {
+            var deferred = $.Deferred();
 
-                v.enableDirectPlay = MediaController.supportsDirectPlay(v);
+            var promises = versions.map(function (v) {
+                return MediaController.supportsDirectPlay(v);
+            });
 
-                return v.enableDirectPlay;
+            $.when.apply($, promises).done(function () {
 
-            })[0];
+                for (var i = 0, length = versions.length; i < length; i++) {
+                    versions[i].enableDirectPlay = arguments[i] || false;
+                }
+                var optimalVersion = versions.filter(function (v) {
 
-            if (!optimalVersion) {
-                optimalVersion = versions.filter(function (v) {
-
-                    return v.SupportsDirectStream;
+                    return v.enableDirectPlay;
 
                 })[0];
-            }
 
-            return optimalVersion || versions.filter(function (s) {
-                return s.SupportsTranscoding;
-            })[0];
+                if (!optimalVersion) {
+                    optimalVersion = versions.filter(function (v) {
+
+                        return v.SupportsDirectStream;
+
+                    })[0];
+                }
+
+                optimalVersion = optimalVersion || versions.filter(function (s) {
+                    return s.SupportsTranscoding;
+                })[0];
+
+                deferred.resolveWith(null, [optimalVersion]);
+            });
+
+            return deferred.promise();
         }
 
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
@@ -915,10 +929,6 @@
 
                 if (mediaSource.enableDirectPlay) {
                     mediaUrl = mediaSource.Path;
-
-                    if (mediaSource.Protocol == 'File') {
-                        mediaUrl = FileSystemBridge.translateFilePath(mediaUrl);
-                    }
 
                     playMethod = 'DirectPlay';
 
@@ -965,9 +975,6 @@
 
                     mediaUrl = mediaSource.Path;
 
-                    if (mediaSource.Protocol == 'File') {
-                        mediaUrl = FileSystemBridge.translateFilePath(mediaUrl);
-                    }
                     playMethod = 'DirectPlay';
 
                 } else {
@@ -1063,7 +1070,7 @@
             }
         };
 
-        function playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback) {
+        self.tryStartPlayback = function (deviceProfile, item, startPosition, callback) {
 
             if (item.MediaType === "Video") {
 
@@ -1074,27 +1081,38 @@
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-                    var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
+                    getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources).done(function (mediaSource) {
+                        if (mediaSource) {
 
-                    if (mediaSource) {
+                            if (mediaSource.RequiresOpening) {
 
-                        if (mediaSource.RequiresOpening) {
+                                MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
-                            MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                                    MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource).done(function (result) {
 
-                                openLiveStreamResult.MediaSource.enableDirectPlay = MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource);
+                                        openLiveStreamResult.MediaSource.enableDirectPlay = result;
+                                        callback(openLiveStreamResult.MediaSource);
+                                    });
 
-                                playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
-                            });
+                                });
 
+                            } else {
+                                callback(mediaSource);
+                            }
                         } else {
-                            playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
+                            Dashboard.hideModalLoadingMsg();
+                            MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
                         }
-                    } else {
-                        Dashboard.hideModalLoadingMsg();
-                        MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
-                    }
+                    });
                 }
+            });
+        };
+
+        function playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback) {
+
+            self.tryStartPlayback(deviceProfile, item, startPosition, function (mediaSource) {
+
+                playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
             });
         }
 
