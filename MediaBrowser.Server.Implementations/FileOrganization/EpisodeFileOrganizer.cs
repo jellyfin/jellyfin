@@ -435,7 +435,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var newPath = GetSeasonFolderPath(series, seasonNumber, options);
 
-            var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options);
+            var episodeFileName = GetEpisodeFileName(newPath.Length, sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options);
 
             newPath = Path.Combine(newPath, episodeFileName);
 
@@ -492,7 +492,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return Path.Combine(path, _fileSystem.GetValidFilename(seasonFolderName));
         }
 
-        private string GetEpisodeFileName(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, string episodeTitle, TvFileOrganizationOptions options)
+        private string GetEpisodeFileName(int destPathLength, string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, string episodeTitle, TvFileOrganizationOptions options)
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
             episodeTitle = _fileSystem.GetValidFilename(episodeTitle).Trim();
@@ -508,9 +508,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 .Replace("%0s", seasonNumber.ToString("00", _usCulture))
                 .Replace("%00s", seasonNumber.ToString("000", _usCulture))
                 .Replace("%ext", sourceExtension)
-                .Replace("%en", episodeTitle)
-                .Replace("%e.n", episodeTitle.Replace(" ", "."))
-                .Replace("%e_n", episodeTitle.Replace(" ", "_"));
+                .Replace("%en", "%#1")
+                .Replace("%e.n", "%#2")
+                .Replace("%e_n", "%#3");
 
             if (endingEpisodeNumber.HasValue)
             {
@@ -519,9 +519,29 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 .Replace("%00ed", endingEpisodeNumber.Value.ToString("000", _usCulture));
             }
 
-            return result.Replace("%e", episodeNumber.ToString(_usCulture))
+            result = result.Replace("%e", episodeNumber.ToString(_usCulture))
                 .Replace("%0e", episodeNumber.ToString("00", _usCulture))
                 .Replace("%00e", episodeNumber.ToString("000", _usCulture));
+
+            // Add +1 because it is unsure if destpathlength includes a trailing backslash
+            int currentTotalLength = destPathLength + 1 + result.Length;
+            
+            // MAX_PATH - trailing <NULL> charachter - drive component: 260 - 1 - 3 = 256
+            // Usually maxRemainingTitleLength would include the drive component, but use 256 to be sure
+            // Substract 3 for the temp token length (%#1, %#2 or %#3)
+            int maxRemainingTitleLength = 256 - currentTotalLength + 3;
+            string shortenedEpisodeTitle = string.Empty;
+
+            if (maxRemainingTitleLength > 5)
+            {
+                // A title with fewer than 5 letters wouldn't be of much value
+                shortenedEpisodeTitle = episodeTitle.Substring(0, Math.Min(maxRemainingTitleLength, episodeTitle.Length));
+            }
+
+            return result.Replace("%#1", shortenedEpisodeTitle)
+                .Replace("%#2", shortenedEpisodeTitle.Replace(" ", "."))
+                .Replace("%#3", shortenedEpisodeTitle.Replace(" ", "_"));
+
         }
 
         private bool IsSameEpisode(string sourcePath, string newPath)
