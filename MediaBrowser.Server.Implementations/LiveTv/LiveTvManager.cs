@@ -580,7 +580,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Name = channelInfo.Name;
             }
 
-            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+            await item.RefreshMetadata(new MetadataRefreshOptions
             {
                 ForceSave = isNew,
                 ReplaceImages = replaceImages.Distinct().ToList()
@@ -650,23 +650,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (string.IsNullOrWhiteSpace(info.Etag))
-            {
-                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-            }
             else
             {
-                // Increment this whenver some internal change deems it necessary
-                var etag = info.Etag + "1";
-
-                if (!string.Equals(etag, item.Etag, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(info.Etag) || !string.Equals(info.Etag, item.Etag, StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Etag = etag;
+                    item.Etag = info.Etag;
                     await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 }
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
 
             return item;
         }
@@ -766,7 +759,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
 
             return item.Id;
         }
@@ -1170,7 +1163,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     foreach (var program in channelPrograms)
                     {
                         var programItem = await GetProgram(program, channelId, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
-
                         programs.Add(programItem.Id);
                     }
                 }

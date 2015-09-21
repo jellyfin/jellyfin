@@ -362,13 +362,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private DateTime GetDate(string value)
         {
-            var date = DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'", CultureInfo.InvariantCulture);
-
-            if (date.Kind != DateTimeKind.Utc)
-            {
-                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-            }
-            return date;
+            return DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'",
+                CultureInfo.InvariantCulture);
         }
 
         private string GetProgramLogo(string apiUrl, ScheduleDirect.ShowImages images)
