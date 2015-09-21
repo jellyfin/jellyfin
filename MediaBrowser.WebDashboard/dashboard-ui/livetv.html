@@ -138,17 +138,10 @@
                 <form>
                     <div>
                         <h1>${HeaderFilters}</h1>
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true" data-role="none">
-                            <label for="chkLikes">${OptionLikes}</label>
-                        </div>
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true" data-role="none">
-                            <label for="chkDislikes">${OptionDislikes}</label>
-                        </div>
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true" data-role="none">
-                            <label for="chkFavorite">${OptionFavorite}</label>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
                         </div>
                     </div>
                 </form>

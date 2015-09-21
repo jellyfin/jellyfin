@@ -270,9 +270,26 @@
                 }, delay);
             });
 
+            function fadeOutLeftBig(elem, iterations) {
+                var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
+                  { opacity: '0', transform: 'translate3d(-2000px, 0, 0)', offset: 1 }];
+                var timing = { duration: 700, iterations: iterations };
+                return elem.animate(keyframes, timing);
+            }
+
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                 tabs.addEventListener('iron-select', function () {
-                    pages.selected = this.selected;
+
+                    var selected = pages.selected;
+                    if (selected != null) {
+                        var newValue = this.selected;
+                        fadeOutLeftBig(pages.querySelectorAll('.pageTabContent')[selected], 1).onfinish = function () {
+                            pages.selected = newValue;
+                        };
+                    }
+                    else {
+                        pages.selected = this.selected;
+                    }
                 });
             }
         },
@@ -2362,12 +2379,12 @@
 
             var syncPercent = item.SyncPercent;
             if (syncPercent) {
-                return '<div class="workingSyncIndicator syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
             }
 
             if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
 
-                return '<div class="workingSyncIndicator syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
             }
 
             return '';

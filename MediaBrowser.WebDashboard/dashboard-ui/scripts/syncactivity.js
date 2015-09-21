@@ -22,6 +22,39 @@
         });
     }
 
+    function getSyncStatusBanner(job) {
+
+        var opacity = '.85';
+        var background = 'rgba(204,51,51,' + opacity + ')';
+        var text = Globalize.translate('SyncJobStatus' + job.Status);
+
+        if (job.Status == 'Completed') {
+            background = 'rgba(82, 181, 75, ' + opacity + ')';
+        }
+        else if (job.Status == 'CompletedWithError') {
+
+        }
+        else if (job.Status == 'Queued') {
+            background = 'rgba(51, 136, 204, ' + opacity + ')';
+        }
+        else if (job.Status == 'ReadyToTransfer') {
+            background = 'rgba(51, 136, 204, ' + opacity + ')';
+        }
+        else if (job.Status == 'Transferring') {
+            background = 'rgba(72, 0, 255, ' + opacity + ')';
+        }
+        else if (job.Status == 'Converting') {
+            background = 'rgba(255, 106, 0, ' + opacity + ')';
+        }
+
+        var html = '';
+        html += '<div class="syncStatusBanner" data-status="' + job.Status + '" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; text-transform:uppercase; border-bottom-left-radius: 3px;">';
+        html += text;
+        html += '</div>';
+
+        return html;
+    }
+
     function getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage) {
 
         var html = '';
@@ -54,42 +87,23 @@
 
         html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '" style="' + style + '">';
 
-        if (job.Progress && job.Progress < 100) {
-            html += '<div class="cardFooter fullCardFooter lightCardFooter">';
-            html += "<div class='cardText cardProgress'>";
-            html += '<progress class="itemProgressBar" min="0" max="100" value="' + job.Progress + '"></progress>';
-            html += "</div>";
-            html += "</div>";
+        var progress = job.Progress || 0;
+
+        var footerClass = 'cardFooter fullCardFooter lightCardFooter';
+
+        if (progress == 0 || progress >= 100) {
+            footerClass += ' hide';
         }
+
+        html += '<div class="' + footerClass + '">';
+        html += "<div class='cardText cardProgress'>";
+        html += '<progress class="itemProgressBar" min="0" max="100" value="' + progress + '"></progress>';
+        html += "</div>";
+        html += "</div>";
 
         html += "</div>";
 
-        var opacity = '.85';
-        var background = 'rgba(204,51,51,' + opacity + ')';
-        var text = Globalize.translate('SyncJobStatus' + job.Status);
-
-        if (job.Status == 'Completed') {
-            background = 'rgba(82, 181, 75, ' + opacity + ')';
-        }
-        else if (job.Status == 'CompletedWithError') {
-
-        }
-        else if (job.Status == 'Queued') {
-            background = 'rgba(51, 136, 204, ' + opacity + ')';
-        }
-        else if (job.Status == 'ReadyToTransfer') {
-            background = 'rgba(51, 136, 204, ' + opacity + ')';
-        }
-        else if (job.Status == 'Transferring') {
-            background = 'rgba(72, 0, 255, ' + opacity + ')';
-        }
-        else if (job.Status == 'Converting') {
-            background = 'rgba(255, 106, 0, ' + opacity + ')';
-        }
-
-        html += '<div class="syncStatusBanner" style="background-color:' + background + ';position:absolute;top:0;right:0;padding:.5em .5em; text-align:left;color: #fff; font-weight: 500; text-transform:uppercase; border-bottom-left-radius: 3px;">';
-        html += text;
-        html += '</div>';
+        html += getSyncStatusBanner(job);
 
         // cardContent
         html += "</a>";
@@ -139,7 +153,16 @@
         return html;
     }
 
+    var lastDataLoad = 0;
+
     function loadData(page, jobs) {
+
+        if ((new Date().getTime() - lastDataLoad) < 60000) {
+            refreshData(page, jobs);
+            return;
+        }
+
+        lastDataLoad = new Date().getTime();
 
         var html = '';
         var lastTargetName = '';
@@ -192,6 +215,46 @@
         if (!jobs.length) {
 
             elem.html('<div style="padding:1em .25em;">' + Globalize.translate('MessageNoSyncJobsFound') + '</div>');
+        }
+    }
+
+    function refreshData(page, jobs) {
+
+        for (var i = 0, length = jobs.length; i < length; i++) {
+
+            var job = jobs[i];
+            refreshJob(page, job);
+        }
+    }
+
+    function refreshJob(page, job) {
+
+        var card = page.querySelector('.card[data-id=\'' + job.Id + '\']');
+
+        if (!card) {
+            return;
+        }
+
+        var banner = card.querySelector('.syncStatusBanner');
+
+        if (banner.getAttribute('data-status') == job.Status) {
+            var elem = document.createElement('div');
+            elem.innerHTML = getSyncStatusBanner(job);
+            elem = elem.querySelector('.syncStatusBanner');
+            elem.parentNode.removeChild(elem);
+
+            banner.parentNode.replaceChild(elem, banner);
+        }
+
+        var progress = job.Progress || 0;
+        var cardFooter = card.querySelector('.cardFooter');
+
+        if (progress == 0 || progress >= 100) {
+            cardFooter.classList.add('hide');
+        }
+        else {
+            cardFooter.classList.remove('hide');
+            cardFooter.querySelector('.itemProgressBar').value = progress;
         }
     }
 
@@ -265,6 +328,9 @@
 
                 loadData(page, response.Items);
 
+                setTimeout(function () {
+                    loadData(page, response.Items);
+                }, 2000);
                 Dashboard.hideLoadingMsg();
 
             });
@@ -314,6 +380,7 @@
     $(document).on('pageshowready', ".syncActivityPage", function () {
 
         var page = this;
+        lastDataLoad = 0;
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 

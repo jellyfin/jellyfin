@@ -467,36 +467,93 @@
 
         getFileSystem().done(function (fileSystem) {
 
-            fileSystem.root.getFile(fileName, { create: true }, function (targetFile) {
+            createDirectory(getParentDirectoryPath(localPath)).done(function () {
 
-                var downloader = new BackgroundTransfer.BackgroundDownloader();
-                // Create a new download operation.
-                var download = downloader.createDownload(url, targetFile.toURL());
-                // Start the download and persist the promise to be able to cancel the download.
-                var downloadPromise = download.startAsync().then(function () {
+                fileSystem.root.getFile(localPath, { create: true }, function (targetFile) {
 
-                    // on success
-                    var localUrl = localPath;
+                    var downloader = new BackgroundTransfer.BackgroundDownloader();
+                    // Create a new download operation.
+                    var download = downloader.createDownload(url, targetFile);
+                    // Start the download and persist the promise to be able to cancel the download.
+                    var downloadPromise = download.startAsync().then(function () {
 
-                    Logger.log('Downloaded local url: ' + localUrl);
-                    deferred.resolveWith(null, [localUrl]);
+                        // on success
+                        var localUrl = localPath;
 
-                }, function () {
+                        Logger.log('Downloaded local url: ' + localUrl);
+                        deferred.resolveWith(null, [localUrl]);
 
-                    // on error
-                    Logger.log('download failed: ' + url + ' to ' + localPath);
-                    deferred.reject();
+                    }, function () {
 
-                }, function (value) {
+                        // on error
+                        Logger.log('download failed: ' + url + ' to ' + localPath);
+                        deferred.reject();
 
-                    // on progress
-                    Logger.log('download progress: ' + value);
+                    }, function (value) {
 
+                        // on progress
+                        Logger.log('download progress: ' + value);
+
+                    });
                 });
-            });
-        });
+
+            }).fail(getOnFail(deferred));;
+
+        }).fail(getOnFail(deferred));
 
         return deferred.promise();
+    }
+
+    function createDirectory(path) {
+
+        var deferred = DeferredBuilder.Deferred();
+        createDirectoryPart(path, 0, deferred);
+        return deferred.promise();
+    }
+
+    function createDirectoryPart(path, index, deferred) {
+
+        var parts = path.split('/');
+        if (index >= parts.length) {
+            deferred.resolve();
+            return;
+        }
+
+        parts.length = index + 1;
+        var pathToCreate = parts.join('/');
+
+        createDirectoryInternal(pathToCreate).done(function () {
+
+            createDirectoryPart(path, index + 1, deferred);
+
+        }).fail(getOnFail(deferred));
+    }
+
+    function createDirectoryInternal(path) {
+
+        Logger.log('creating directory: ' + path);
+        var deferred = DeferredBuilder.Deferred();
+
+        getFileSystem().done(function (fileSystem) {
+
+            fileSystem.root.getDirectory(path, { create: true, exclusive: false }, function (targetFile) {
+
+                Logger.log('createDirectory succeeded');
+                deferred.resolve();
+
+            }, function () {
+
+                Logger.log('createDirectory failed');
+                deferred.reject();
+            });
+
+        }).fail(getOnFail(deferred));
+
+        return deferred.promise();
+    }
+
+    function getParentDirectoryPath(path) {
+        return path.substring(0, path.lastIndexOf('/'));;
     }
 
     function downloadSubtitles(url, localItem, subtitleStream) {
@@ -593,7 +650,7 @@
     function getImageLocalPath(serverId, itemId, imageTag) {
         var deferred = DeferredBuilder.Deferred();
 
-        var path = "images/" + serverId + "-" + itemId + "/" + imageTag;
+        var path = "images/" + serverId + "/" + itemId + "/" + imageTag;
 
         deferred.resolveWith(null, [path]);
 
@@ -640,6 +697,23 @@
         };
     }
 
+    function translateFilePath(path) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        resolveFile(path, function (fileEntry) {
+            Logger.log('translateFilePath fileExists: true - path: ' + path);
+            Logger.log('translateFilePath resolving with: ' + fileEntry.toURL());
+            deferred.resolveWith(null, [fileEntry.toURL()]);
+
+        }, function () {
+            Logger.log('translateFilePath fileExists: false - path: ' + path);
+            deferred.resolveWith(null, [path]);
+        });
+
+        return deferred.promise();
+    }
+
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
@@ -656,7 +730,8 @@
         downloadSubtitles: downloadSubtitles,
         hasImage: hasImage,
         downloadImage: downloadImage,
-        fileExists: fileExists
+        fileExists: fileExists,
+        translateFilePath: translateFilePath
     };
 
 })();

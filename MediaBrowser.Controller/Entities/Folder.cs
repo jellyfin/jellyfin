@@ -702,7 +702,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if the specified path is offline; otherwise, <c>false</c>.</returns>
-        private bool IsPathOffline(string path)
+        public static bool IsPathOffline(string path)
         {
             if (FileSystem.FileExists(path))
             {
@@ -736,12 +736,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="folders">The folders.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if the specified folders contains path; otherwise, <c>false</c>.</returns>
-        private bool ContainsPath(IEnumerable<VirtualFolderInfo> folders, string path)
+        private static bool ContainsPath(IEnumerable<VirtualFolderInfo> folders, string path)
         {
             return folders.SelectMany(i => i.Locations).Any(i => ContainsPath(i, path));
         }
 
-        private bool ContainsPath(string parent, string path)
+        private static bool ContainsPath(string parent, string path)
         {
             return string.Equals(parent, path, StringComparison.OrdinalIgnoreCase) || FileSystem.ContainsSubPath(parent, path);
         }

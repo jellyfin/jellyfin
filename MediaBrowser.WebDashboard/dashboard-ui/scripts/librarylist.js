@@ -617,6 +617,13 @@
                 return;
             }
 
+            var url = 'itemdetails.html?id=' + itemId;
+            if (context) {
+                url += '&context=' + context;
+            }
+            Dashboard.navigate(url);
+            return;
+
             var ids = items.map(function (i) {
                 return i.Id;
             });

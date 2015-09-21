@@ -891,28 +891,29 @@
 
             requirejs(['videorenderer'], function () {
 
-                var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
+                self.createStreamInfo('Video', item, mediaSource, startPosition).done(function (streamInfo) {
 
-                // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
-                // This will start the transcoding process before actually feeding the video url into the player
-                if ($.browser.safari && !mediaSource.RunTimeTicks) {
+                    // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
+                    // This will start the transcoding process before actually feeding the video url into the player
+                    if ($.browser.safari && !mediaSource.RunTimeTicks) {
 
-                    Dashboard.showLoadingMsg();
+                        Dashboard.showLoadingMsg();
 
-                    ApiClient.ajax({
-                        type: 'GET',
-                        url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                    }).always(function () {
+                        ApiClient.ajax({
+                            type: 'GET',
+                            url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
+                        }).always(function () {
 
-                        Dashboard.hideLoadingMsg();
+                            Dashboard.hideLoadingMsg();
 
-                    }).done(function () {
+                        }).done(function () {
+                            self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                        });
+
+                    } else {
                         self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
-                    });
-
-                } else {
-                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
-                }
+                    }
+                });
             });
         };
 

@@ -96,16 +96,16 @@
     function updateFilterControls(page) {
 
         var query = getQuery();
-        $('#chkFavorite', page).checked(query.IsFavorite == true);
-        $('#chkLikes', page).checked(query.IsLiked == true);
-        $('#chkDislikes', page).checked(query.IsDisliked == true);
+        $('.chkFavorite', page).checked(query.IsFavorite == true);
+        $('.chkLikes', page).checked(query.IsLiked == true);
+        $('.chkDislikes', page).checked(query.IsDisliked == true);
     }
 
     window.LiveTvPage.initChannelsTab = function (page, tabContent) {
 
         var viewPanel = page.querySelector('.channelViewPanel');
 
-        $('#chkFavorite', viewPanel).on('change', function () {
+        $('.chkFavorite', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
@@ -115,7 +115,7 @@
         });
 
 
-        $('#chkLikes', viewPanel).on('change', function () {
+        $('.chkLikes', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
@@ -124,7 +124,7 @@
             reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkDislikes', viewPanel).on('change', function () {
+        $('.chkDislikes', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;

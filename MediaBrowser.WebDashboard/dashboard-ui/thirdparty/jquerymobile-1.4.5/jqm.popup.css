@@ -1,63 +1,81 @@
-﻿.ui-popup-open .ui-header-fixed,
+﻿.ui-popup.ui-body-a {
+    background: #f4f4f4;
+}
+.ui-popup.ui-body-b {
+    background: #222;
+}
+.ui-popup-open .ui-header-fixed,
 .ui-popup-open .ui-footer-fixed {
-	position: absolute !important; /* See issues #4816, #4844 and #4874 and popup.js */
+    position: absolute !important; /* See issues #4816, #4844 and #4874 and popup.js */
 }
+
 .ui-popup-screen {
-	background-image: url("data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="); /* Necessary to set some form of background to ensure element is clickable in IE6/7. While legacy IE won't understand the data-URI'd image, it ensures no additional requests occur in all other browsers with little overhead. */
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 1px;
-	position: absolute;
-	filter: Alpha(Opacity=0);
-	opacity: 0;
-	z-index: 1099;
+    background-image: url("data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="); /* Necessary to set some form of background to ensure element is clickable in IE6/7. While legacy IE won't understand the data-URI'd image, it ensures no additional requests occur in all other browsers with little overhead. */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 1px;
+    position: absolute;
+    filter: Alpha(Opacity=0);
+    opacity: 0;
+    z-index: 1099;
 }
-.ui-popup-screen.in {
-	opacity: 0.5;
-	filter: Alpha(Opacity=50);
-}
-.ui-popup-screen.out {
-	opacity: 0;
-	filter: Alpha(Opacity=0);
-}
+
+    .ui-popup-screen.in {
+        opacity: 0.5;
+        filter: Alpha(Opacity=50);
+    }
+
+    .ui-popup-screen.out {
+        opacity: 0;
+        filter: Alpha(Opacity=0);
+    }
+
 .ui-popup-container {
-	z-index: 1100;
-	display: inline-block;
-	position: absolute;
-	padding: 0;
-	outline: 0;
+    z-index: 1100;
+    display: inline-block;
+    position: absolute;
+    padding: 0;
+    outline: 0;
 }
+
 .ui-popup {
-	position: relative;
+    position: relative;
 }
-.ui-popup.ui-body-inherit {
-	border-width: 1px;
-	border-style: solid;
-}
+
+    .ui-popup.ui-body-inherit {
+        border-width: 1px;
+        border-style: solid;
+    }
+
 .ui-popup-hidden {
-	left: 0;
-	top: 0;
-	position: absolute !important;
-	visibility: hidden;
+    left: 0;
+    top: 0;
+    position: absolute !important;
+    visibility: hidden;
 }
+
 .ui-popup-truncate {
-	height: 1px;
-	width: 1px;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(1px,1px,1px,1px);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(1px,1px,1px,1px);
 }
+
 .ui-popup.ui-content,
 .ui-popup .ui-content {
-	overflow: visible;
+    overflow: visible;
 }
+
 .ui-popup > .ui-header {
-	border-top-width: 0;
+    border-top-width: 0;
 }
+
 .ui-popup > .ui-footer {
-	border-bottom-width: 0;
+    border-bottom-width: 0;
 }
+
 .ui-popup > p,
 .ui-popup > h1,
 .ui-popup > h2,
@@ -65,12 +83,14 @@
 .ui-popup > h4,
 .ui-popup > h5,
 .ui-popup > h6 {
-	margin: .5em .4375em;
+    margin: .5em .4375em;
 }
+
 .ui-popup > span {
-	display: block;
-	margin: .5em .4375em;
+    display: block;
+    margin: .5em .4375em;
 }
+
 .ui-popup-container .ui-content > p,
 .ui-popup-container .ui-content > h1,
 .ui-popup-container .ui-content > h2,
@@ -78,11 +98,13 @@
 .ui-popup-container .ui-content > h4,
 .ui-popup-container .ui-content > h5,
 .ui-popup-container .ui-content > h6 {
-	margin: .5em 0;
+    margin: .5em 0;
 }
+
 .ui-popup-container .ui-content > span {
-	margin: 0;
+    margin: 0;
 }
+
 .ui-popup-container .ui-content > p:first-child,
 .ui-popup-container .ui-content > h1:first-child,
 .ui-popup-container .ui-content > h2:first-child,
@@ -90,8 +112,9 @@
 .ui-popup-container .ui-content > h4:first-child,
 .ui-popup-container .ui-content > h5:first-child,
 .ui-popup-container .ui-content > h6:first-child {
-	margin-top: 0;
+    margin-top: 0;
 }
+
 .ui-popup-container .ui-content > p:last-child,
 .ui-popup-container .ui-content > h1:last-child,
 .ui-popup-container .ui-content > h2:last-child,
@@ -99,81 +122,121 @@
 .ui-popup-container .ui-content > h4:last-child,
 .ui-popup-container .ui-content > h5:last-child,
 .ui-popup-container .ui-content > h6:last-child {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
+
 .ui-popup > img {
-	max-width: 100%;
-	max-height: 100%;
-	vertical-align: middle;
+    max-width: 100%;
+    max-height: 100%;
+    vertical-align: middle;
 }
+
 .ui-popup:not(.ui-content) > img:only-child,
 .ui-popup:not(.ui-content) > .ui-btn-left:first-child + img:last-child,
 .ui-popup:not(.ui-content) > .ui-btn-right:first-child + img:last-child {
-	-webkit-border-radius: inherit;
-	border-radius: inherit;
+    -webkit-border-radius: inherit;
+    border-radius: inherit;
 }
+
 .ui-popup iframe {
-	vertical-align: middle;
+    vertical-align: middle;
 }
+
 .ui-popup > .ui-btn-left,
 .ui-popup > .ui-btn-right {
-	position: absolute; 
-	top: -11px;
-	margin: 0;
-	z-index: 1101;
+    position: absolute;
+    top: -11px;
+    margin: 0;
+    z-index: 1101;
 }
+
 .ui-popup > .ui-btn-left {
-	left: -11px;
+    left: -11px;
 }
+
 .ui-popup > .ui-btn-right {
-	right: -11px;
+    right: -11px;
 }
 
 
 @-webkit-keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
+
 @-moz-keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
+
 @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @-webkit-keyframes fadeout {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
+
 @-moz-keyframes fadeout {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
+
 @keyframes fadeout {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 .fade.out {
-	opacity: 0;
-	-webkit-animation-duration: 125ms;
-	-webkit-animation-name: fadeout;
-	-moz-animation-duration: 125ms;
-	-moz-animation-name: fadeout;
-	animation-duration: 125ms;
-	animation-name: fadeout;
+    opacity: 0;
+    -webkit-animation-duration: 125ms;
+    -webkit-animation-name: fadeout;
+    -moz-animation-duration: 125ms;
+    -moz-animation-name: fadeout;
+    animation-duration: 125ms;
+    animation-name: fadeout;
 }
 
 .fade.in {
-	opacity: 1;
-	-webkit-animation-duration: 225ms;
-	-webkit-animation-name: fadein;
-	-moz-animation-duration: 225ms;
-	-moz-animation-name: fadein;
-	animation-duration: 225ms;
-	animation-name: fadein;
+    opacity: 1;
+    -webkit-animation-duration: 225ms;
+    -webkit-animation-name: fadein;
+    -moz-animation-duration: 225ms;
+    -moz-animation-name: fadein;
+    animation-duration: 225ms;
+    animation-name: fadein;
 }
 
 
@@ -222,32 +285,32 @@
  **/
 
 .ui-popup-arrow-container {
-	width: 20px;
-	height: 20px;
+    width: 20px;
+    height: 20px;
 }
 
-/* aside from the "infinities" (-1000,2000), triangle height is used */
-.ui-popup-arrow-container.ui-popup-arrow-l {
-	left: -10px;
-	clip: rect(-1000px,10px,2000px,-1000px);
-}
+    /* aside from the "infinities" (-1000,2000), triangle height is used */
+    .ui-popup-arrow-container.ui-popup-arrow-l {
+        left: -10px;
+        clip: rect(-1000px,10px,2000px,-1000px);
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-t {
-	top: -10px;
-	clip: rect(-1000px,2000px,10px,-1000px);
-}
+    .ui-popup-arrow-container.ui-popup-arrow-t {
+        top: -10px;
+        clip: rect(-1000px,2000px,10px,-1000px);
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-r {
-	right: -10px;
-	clip: rect(-1000px,2000px,2000px,10px);
-}
+    .ui-popup-arrow-container.ui-popup-arrow-r {
+        right: -10px;
+        clip: rect(-1000px,2000px,2000px,10px);
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-b {
-	bottom: -10px;
-	clip: rect(10px,2000px,1000px,-1000px);
-}
+    .ui-popup-arrow-container.ui-popup-arrow-b {
+        bottom: -10px;
+        clip: rect(10px,2000px,1000px,-1000px);
+    }
 
-/**
+    /**
  * For each side, the arrow is twice the desired size and its corner is aligned
  * with the edge of the container:
  *                                           
@@ -268,85 +331,82 @@
  *                     (clips arrow)
  **/
 
-.ui-popup-arrow-container .ui-popup-arrow {
-	/* (4*desired triangle height)/sqrt(2) - does not account for border - centred within the outer rectangle */
-	width: 28.284271247px;
-	height: 28.284271247px;
-	border-width: 1px;
-	border-style: solid;
-}
+    .ui-popup-arrow-container .ui-popup-arrow {
+        /* (4*desired triangle height)/sqrt(2) - does not account for border - centred within the outer rectangle */
+        width: 28.284271247px;
+        height: 28.284271247px;
+        border-width: 1px;
+        border-style: solid;
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-t .ui-popup-arrow {
-	left: -4.142135623px;
-	top: 5.857864376px;
-}
+    .ui-popup-arrow-container.ui-popup-arrow-t .ui-popup-arrow {
+        left: -4.142135623px;
+        top: 5.857864376px;
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-b .ui-popup-arrow {
-	left: -4.142135623px;
-	top: -14.142135623px;
-}
+    .ui-popup-arrow-container.ui-popup-arrow-b .ui-popup-arrow {
+        left: -4.142135623px;
+        top: -14.142135623px;
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-l .ui-popup-arrow {
-	left: 5.857864376px;
-	top: -4.142135623px;
-}
+    .ui-popup-arrow-container.ui-popup-arrow-l .ui-popup-arrow {
+        left: 5.857864376px;
+        top: -4.142135623px;
+    }
 
-.ui-popup-arrow-container.ui-popup-arrow-r .ui-popup-arrow {
-	left: -14.142135623px;
-	top: -4.142135623px;
-}
+    .ui-popup-arrow-container.ui-popup-arrow-r .ui-popup-arrow {
+        left: -14.142135623px;
+        top: -4.142135623px;
+    }
 
-/* Fix rotation center for oldIE - see http://www.useragentman.com/IETransformsTranslator/ */
-.ui-popup-arrow-container.ui-popup-arrow-t.ie .ui-popup-arrow {
-    margin-left: -5.857864376269049px;
-    margin-top: -7.0710678118654755px;
-}
-.ui-popup-arrow-container.ui-popup-arrow-b.ie .ui-popup-arrow {
-    margin-left: -5.857864376269049px;
-    margin-top: -4.142135623730951px;
-}
- 
-.ui-popup-arrow-container.ui-popup-arrow-l.ie .ui-popup-arrow {
-    margin-left: -7.0710678118654755px;
-    margin-top: -5.857864376269049px;
-}
-.ui-popup-arrow-container.ui-popup-arrow-r.ie .ui-popup-arrow {
-    margin-left: -4.142135623730951px;
-    margin-top: -5.857864376269049px;
-}
+    /* Fix rotation center for oldIE - see http://www.useragentman.com/IETransformsTranslator/ */
+    .ui-popup-arrow-container.ui-popup-arrow-t.ie .ui-popup-arrow {
+        margin-left: -5.857864376269049px;
+        margin-top: -7.0710678118654755px;
+    }
+
+    .ui-popup-arrow-container.ui-popup-arrow-b.ie .ui-popup-arrow {
+        margin-left: -5.857864376269049px;
+        margin-top: -4.142135623730951px;
+    }
+
+    .ui-popup-arrow-container.ui-popup-arrow-l.ie .ui-popup-arrow {
+        margin-left: -7.0710678118654755px;
+        margin-top: -5.857864376269049px;
+    }
+
+    .ui-popup-arrow-container.ui-popup-arrow-r.ie .ui-popup-arrow {
+        margin-left: -4.142135623730951px;
+        margin-top: -5.857864376269049px;
+    }
 
 /* structure */
 .ui-popup > .ui-popup-arrow-guide {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	visibility: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    visibility: hidden;
 }
 
 .ui-popup-arrow-container {
-	position: absolute;
+    position: absolute;
 }
 
 .ui-popup-arrow {
-	-webkit-transform: rotate(45deg);
-	-moz-transform: rotate(45deg);
-	-ms-transform: rotate(45deg);
-	transform: rotate(45deg);
-	position: absolute;
-	overflow: hidden;
-	box-sizing: border-box;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+    position: absolute;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .ui-popup-arrow-container.ie .ui-popup-arrow {
-	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.7071067811865474, M12=-0.7071067811865477, M21=0.7071067811865477, M22=0.7071067811865474, SizingMethod='auto expand')";
-	filter: progid:DXImageTransform.Microsoft.Matrix(
-	      	M11=0.7071067811865474,
-        	M12=-0.7071067811865477,
-        	M21=0.7071067811865477,
-        	M22=0.7071067811865474,
-        	SizingMethod='auto expand');
+    -ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.7071067811865474, M12=-0.7071067811865477, M21=0.7071067811865477, M22=0.7071067811865474, SizingMethod='auto expand')";
+    filter: progid:DXImageTransform.Microsoft.Matrix( M11=0.7071067811865474, M12=-0.7071067811865477, M21=0.7071067811865477, M22=0.7071067811865474, SizingMethod='auto expand');
 }
 
 
@@ -355,8 +415,8 @@
 
 /* Popup arrow */
 .ui-popup.ui-corner-all > .ui-popup-arrow-guide {
-	left: .6em /*{global-radii-blocks}*/;
-	right: .6em /*{global-radii-blocks}*/;
-	top: .6em /*{global-radii-blocks}*/;
-	bottom: .6em /*{global-radii-blocks}*/;
+    left: .6em /*{global-radii-blocks}*/;
+    right: .6em /*{global-radii-blocks}*/;
+    top: .6em /*{global-radii-blocks}*/;
+    bottom: .6em /*{global-radii-blocks}*/;
 }

@@ -291,8 +291,6 @@
 
             profile.ContainerProfiles = [];
 
-            var maxAudioChannels = isVlc ? '6' : '2';
-
             profile.CodecProfiles = [];
             profile.CodecProfiles.push({
                 Type: 'Audio',
@@ -300,16 +298,6 @@
                     Condition: 'LessThanEqual',
                     Property: 'AudioChannels',
                     Value: '2'
-                }]
-            });
-
-            profile.CodecProfiles.push({
-                Type: 'VideoAudio',
-                Codec: 'mp3',
-                Conditions: [{
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: maxAudioChannels
                 }]
             });
 
@@ -340,7 +328,7 @@
                     {
                         Condition: 'LessThanEqual',
                         Property: 'AudioChannels',
-                        Value: maxAudioChannels
+                        Value: '6'
                     }
                 ]
             });
@@ -641,17 +629,18 @@
                 if (validatePlaybackInfoResult(result)) {
 
                     self.currentMediaSource = result.MediaSources[0];
-                    var streamInfo = self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks);
+                    self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks).done(function (streamInfo) {
 
-                    if (!streamInfo.url) {
-                        MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
-                        self.stop();
-                        return false;
-                    }
+                        if (!streamInfo.url) {
+                            MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
+                            self.stop();
+                            return;
+                        }
 
-                    self.currentSubtitleStreamIndex = subtitleStreamIndex;
+                        self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                    changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, streamInfo.startTimeTicksOffset || 0);
+                        changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, streamInfo.startTimeTicksOffset || 0);
+                    });
                 }
             });
         };
@@ -915,6 +904,8 @@
 
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
 
+            var deferred = $.Deferred();
+
             var mediaUrl;
             var contentType;
             var startTimeTicksOffset = 0;
@@ -1018,13 +1009,32 @@
                 }
             }
 
-            return {
+            var resultInfo = {
                 url: mediaUrl,
                 mimeType: contentType,
                 startTimeTicksOffset: startTimeTicksOffset,
                 startPositionInSeekParam: startPositionInSeekParam,
                 playMethod: playMethod
             };
+
+            if (playMethod == 'DirectPlay' && mediaSource.Protocol == 'File') {
+
+                require(['localassetmanager'], function () {
+
+                    LocalAssetManager.translateFilePath(resultInfo.url).done(function (path) {
+
+                        resultInfo.url = path;
+                        Logger.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
+                        deferred.resolveWith(null, [resultInfo]);
+                    });
+                });
+
+            }
+            else {
+                deferred.resolveWith(null, [resultInfo]);
+            }
+
+            return deferred.promise();
         };
 
         self.lastBitrateDetect = 0;
@@ -1872,65 +1882,67 @@
 
         function playAudioInternal(item, mediaSource, startPositionTicks) {
 
-            var streamInfo = self.createStreamInfo('Audio', item, mediaSource, startPositionTicks);
-            var audioUrl = streamInfo.url;
-            self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
+            self.createStreamInfo('Audio', item, mediaSource, startPositionTicks).done(function (streamInfo) {
 
-            var initialVolume = self.getSavedVolume();
+                var audioUrl = streamInfo.url;
+                self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
-            var mediaRenderer = new AudioRenderer({
-                poster: self.getPosterUrl(item)
-            });
+                var initialVolume = self.getSavedVolume();
 
-            Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
+                var mediaRenderer = new AudioRenderer({
+                    poster: self.getPosterUrl(item)
+                });
 
-                Logger.log('audio element event: volumechange');
+                Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
 
-                self.onVolumeChanged(this);
+                    Logger.log('audio element event: volumechange');
 
-            });
+                    self.onVolumeChanged(this);
 
-            $(mediaRenderer).one("playing.mediaplayerevent", function () {
+                });
 
-                Logger.log('audio element event: playing');
+                $(mediaRenderer).one("playing.mediaplayerevent", function () {
 
-                // For some reason this is firing at the start, so don't bind until playback has begun
-                Events.on(this, 'ended', self.onPlaybackStopped);
+                    Logger.log('audio element event: playing');
 
-                $(this).one('ended', self.playNextAfterEnded);
+                    // For some reason this is firing at the start, so don't bind until playback has begun
+                    Events.on(this, 'ended', self.onPlaybackStopped);
 
-                self.onPlaybackStart(this, item, mediaSource);
+                    $(this).one('ended', self.playNextAfterEnded);
 
-            }).on("pause.mediaplayerevent", function () {
+                    self.onPlaybackStart(this, item, mediaSource);
 
-                Logger.log('audio element event: pause');
+                }).on("pause.mediaplayerevent", function () {
 
-                self.onPlaystateChange(this);
+                    Logger.log('audio element event: pause');
 
-                // In the event timeupdate isn't firing, at least we can update when this happens
-                self.setCurrentTime(self.getCurrentTicks());
+                    self.onPlaystateChange(this);
 
-            }).on("playing.mediaplayerevent", function () {
+                    // In the event timeupdate isn't firing, at least we can update when this happens
+                    self.setCurrentTime(self.getCurrentTicks());
 
-                Logger.log('audio element event: playing');
+                }).on("playing.mediaplayerevent", function () {
 
-                self.onPlaystateChange(this);
+                    Logger.log('audio element event: playing');
 
-                // In the event timeupdate isn't firing, at least we can update when this happens
-                self.setCurrentTime(self.getCurrentTicks());
+                    self.onPlaystateChange(this);
 
-            }).on("timeupdate.mediaplayerevent", onTimeUpdate);
+                    // In the event timeupdate isn't firing, at least we can update when this happens
+                    self.setCurrentTime(self.getCurrentTicks());
 
-            self.currentMediaRenderer = mediaRenderer;
-            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                }).on("timeupdate.mediaplayerevent", onTimeUpdate);
 
-            mediaRenderer.init().done(function () {
+                self.currentMediaRenderer = mediaRenderer;
+                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
-                // Set volume first to avoid an audible change
-                mediaRenderer.volume(initialVolume);
+                mediaRenderer.init().done(function () {
 
-                mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource);
-                self.streamInfo = streamInfo;
+                    // Set volume first to avoid an audible change
+                    mediaRenderer.volume(initialVolume);
+
+                    mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource);
+                    self.streamInfo = streamInfo;
+                });
             });
         }
 

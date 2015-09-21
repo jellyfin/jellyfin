@@ -184,15 +184,24 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 try
                 {
-                    if (!_fileSystem.FileExists(path) && !_fileSystem.DirectoryExists(path))
+                    if (_fileSystem.FileExists(path) || _fileSystem.DirectoryExists(path))
                     {
-                        var libraryItem = _libraryManager.GetItemById(item.Item1);
-
-                        await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
-                        {
-                            DeleteFileLocation = false
-                        });
+                        continue;
                     }
+
+                    var libraryItem = _libraryManager.GetItemById(item.Item1);
+
+                    if (Folder.IsPathOffline(path))
+                    {
+                        libraryItem.IsOffline = true;
+                        await libraryItem.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    });
                 }
                 catch (OperationCanceledException)
                 {

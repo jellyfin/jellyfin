@@ -137,28 +137,30 @@
             }
         };
 
-        var streamInfo = MediaPlayer.createStreamInfo('Video', item, mediaSource, startPosition);
-        var currentSrc = streamInfo.url;
+        MediaPlayer.createStreamInfo('Video', item, mediaSource, startPosition).done(function (streamInfo) {
 
-        var audioStreamIndex = getParameterByName('AudioStreamIndex', currentSrc);
+            var currentSrc = streamInfo.url;
 
-        if (audioStreamIndex) {
-            basePlayerState.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
-        }
-        basePlayerState.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+            var audioStreamIndex = getParameterByName('AudioStreamIndex', currentSrc);
 
-        basePlayerState.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
-            'DirectStream' :
-            'Transcode';
+            if (audioStreamIndex) {
+                basePlayerState.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
+            }
+            basePlayerState.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
 
-        basePlayerState.PlayState.LiveStreamId = getParameterByName('LiveStreamId', currentSrc);
-        basePlayerState.PlayState.PlaySessionId = getParameterByName('PlaySessionId', currentSrc);
+            basePlayerState.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
+                'DirectStream' :
+                'Transcode';
 
-        basePlayerState.PlayState.MediaSourceId = mediaSource.Id;
-        basePlayerState.PlayState.CanSeek = false;
-        basePlayerState.NowPlayingItem = MediaPlayer.getNowPlayingItemForReporting(item, mediaSource);
+            basePlayerState.PlayState.LiveStreamId = getParameterByName('LiveStreamId', currentSrc);
+            basePlayerState.PlayState.PlaySessionId = getParameterByName('PlaySessionId', currentSrc);
 
-        deferred.resolveWith(null, [streamInfo]);
+            basePlayerState.PlayState.MediaSourceId = mediaSource.Id;
+            basePlayerState.PlayState.CanSeek = false;
+            basePlayerState.NowPlayingItem = MediaPlayer.getNowPlayingItemForReporting(item, mediaSource);
+
+            deferred.resolveWith(null, [streamInfo]);
+        });
     }
 
     function getPlayerState(positionTicks) {

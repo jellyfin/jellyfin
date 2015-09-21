@@ -85,6 +85,10 @@
         }
         html += '</div>';
 
+        html += '<div secondary style="padding-top:5px;">';
+        html += '<paper-progress class="mini" style="width:100%;" value="' + (jobItem.Progress || 0) + '"></paper-progress>';
+        html += '</div>';
+
         html += '</paper-item-body>';
 
         if (hasActions) {

@@ -12,7 +12,7 @@
         function hideStatusBar() {
             if (options.type == 'video' && window.StatusBar) {
                 StatusBar.backgroundColorByName("black");
-                StatusBar.overlaysWebView(true);
+                //StatusBar.overlaysWebView(true);
                 StatusBar.hide();
             }
         }
@@ -20,7 +20,7 @@
         function showStatusBar() {
             if (options.type == 'video' && window.StatusBar) {
                 StatusBar.show();
-                StatusBar.overlaysWebView(false);
+                //StatusBar.overlaysWebView(false);
             }
         }
 
@@ -355,6 +355,11 @@
             }
 
             var val = streamInfo.url;
+
+            if (AppInfo.isNativeApp && $.browser.safari) {
+                val = val.replace('file://', '');
+            }
+
             requiresSettingStartTimeOnStart = false;
             var startTime = getStartTime(val);
             var playNow = false;

@@ -108,7 +108,8 @@ Custom property                             | Description                       
       background-color: var(--paper-progress-container-color, --google-grey-300);
     }
 
-    :host(.transiting) > * {
+    :host(.transiting) #primaryProgress,
+    :host(.transiting) #secondaryProgress {
       -webkit-transition-property: -webkit-transform;
       transition-property: transform;
 

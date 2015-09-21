@@ -16614,7 +16614,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       background-color: var(--paper-progress-container-color, --google-grey-300);
     }
 
-    :host(.transiting) > * {
+    :host(.transiting) #primaryProgress,
+    :host(.transiting) #secondaryProgress {
       -webkit-transition-property: -webkit-transform;
       transition-property: transform;
 

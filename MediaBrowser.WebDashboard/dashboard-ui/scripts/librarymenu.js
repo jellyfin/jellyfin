@@ -121,7 +121,7 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            if (AppInfo.isTouchPreferred) {
+            if (AppInfo.isTouchPreferred || $.browser.mobile) {
 
                 Events.on(mainDrawerButton, 'click', openMainDrawer);
 
@@ -178,32 +178,35 @@
             document.body.classList.add('bodyWithPopupOpen');
         }
 
-        var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
+        var pageElem = $($.mobile.activePage)[0];
 
-        ConnectionManager.user(window.ApiClient).done(function (user) {
+        if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
 
-            if (requiresDrawerRefresh) {
-                ensureDrawerStructure(drawer);
+            ConnectionManager.user(window.ApiClient).done(function (user) {
 
-                refreshUserInfoInDrawer(user, drawer);
-                refreshLibraryInfoInDrawer(user, drawer);
-                refreshBottomUserInfoInDrawer(user, drawer);
+                var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
 
-                Events.trigger(document, 'libraryMenuCreated');
-                updateLibraryMenu(user.localUser);
-            }
+                if (requiresDrawerRefresh) {
+                    ensureDrawerStructure(drawer);
 
-            var pageElem = $($.mobile.activePage)[0];
+                    refreshUserInfoInDrawer(user, drawer);
+                    refreshLibraryInfoInDrawer(user, drawer);
+                    refreshBottomUserInfoInDrawer(user, drawer);
 
-            if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
-                refreshDashboardInfoInDrawer(pageElem, user, drawer);
-                requiresDashboardDrawerRefresh = false;
-            }
+                    Events.trigger(document, 'libraryMenuCreated');
+                    updateLibraryMenu(user.localUser);
+                }
 
-            requiresDrawerRefresh = false;
+                if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
+                    refreshDashboardInfoInDrawer(pageElem, user, drawer);
+                    requiresDashboardDrawerRefresh = false;
+                }
 
-            updateLibraryNavLinks(pageElem);
-        });
+                requiresDrawerRefresh = false;
+            });
+        }
+
+        updateLibraryNavLinks(pageElem);
 
         document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
@@ -714,26 +717,33 @@
                 lnkMediaFolder.classList.remove('selectedMediaFolder');
             }
         }
+    }
 
+    function updateTabLinks(page) {
         var context = getParameterByName('context');
 
-        if (context !== 'playlists') {
+        var elems = page.querySelectorAll('.scopedLibraryViewNav a');
 
-            elems = page.querySelectorAll('.scopedLibraryViewNav a');
+        var id = page.classList.contains('liveTvPage') || page.classList.contains('channelsPage') || page.classList.contains('metadataEditorPage') || page.classList.contains('reportsPage') || page.classList.contains('mySyncPage') || page.classList.contains('allLibraryPage') ?
+            '' :
+            getTopParentId() || '';
 
-            for (i = 0, length = elems.length; i < length; i++) {
+        if (!id) {
+            return;
+        }
 
-                var lnk = elems[i];
-                var src = lnk.href;
+        for (i = 0, length = elems.length; i < length; i++) {
 
-                if (src.indexOf('#') != -1) {
-                    continue;
-                }
+            var lnk = elems[i];
+            var src = lnk.href;
 
-                src = replaceQueryString(src, 'topParentId', id);
-
-                lnk.href = src;
+            if (src.indexOf('#') != -1) {
+                continue;
             }
+
+            src = replaceQueryString(src, 'topParentId', id);
+
+            lnk.href = src;
         }
     }
 
@@ -792,7 +802,9 @@
 
         var page = this;
 
-        requiresDashboardDrawerRefresh = true;
+        if (page.classList.contains('type-interior')) {
+            requiresDashboardDrawerRefresh = true;
+        }
 
         onPageBeforeShowDocumentReady(page);
 
@@ -861,7 +873,12 @@
             if (AppInfo.enableBottomTabs) {
                 page.classList.add('noSecondaryNavPage');
 
-                document.querySelector('.footer').classList.add('footerOverBottomTabs');
+                if (page.classList.contains('pageWithAbsoluteTabs')) {
+                    document.querySelector('.footer').classList.add('footerOverBottomTabs');
+                }
+                else {
+                    document.querySelector('.footer').classList.remove('footerOverBottomTabs');
+                }
 
             } else {
 
@@ -927,6 +944,7 @@
             // Scroll back up so in case vertical scroll was messed with
             window.scrollTo(0, 0);
         }
+        updateTabLinks(page);
     }
 
     function initHeadRoom(elem) {

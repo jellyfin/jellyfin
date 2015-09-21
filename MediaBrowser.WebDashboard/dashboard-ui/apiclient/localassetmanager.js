@@ -102,6 +102,13 @@
         return deferred.promise();
     }
 
+    function translateFilePath(path) {
+
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [path]);
+        return deferred.promise();
+    }
+
     window.LocalAssetManager = {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
@@ -118,7 +125,8 @@
         downloadSubtitles: downloadSubtitles,
         hasImage: hasImage,
         downloadImage: downloadImage,
-        fileExists: fileExists
+        fileExists: fileExists,
+        translateFilePath: translateFilePath
     };
 
 })();

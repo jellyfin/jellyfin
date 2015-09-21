@@ -1036,7 +1036,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .syncIndicator {
     display: block;
     position: absolute;
-    top: 32px;
+    top: 5px;
     right: 5px;
     text-align: center;
     vertical-align: middle;
@@ -1044,15 +1044,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     height: 24px;
     border-radius: 50%;
     color: #fff;
-    background: rgba(0, 0, 0, .8);
     line-height: 19px;
+    background-color: #38c;
 }
 
-.workingSyncIndicator iron-icon {
-    -webkit-animation: spin 3s infinite linear;
-    -moz-animation: spin 3s infinite linear;
-    -o-animation: spin 3s infinite linear;
-    -ms-animation: spin 3s infinite linear;
+.playedIndicator + .syncIndicator {
+    top: 32px;
 }
 
 .playedIndicator {
