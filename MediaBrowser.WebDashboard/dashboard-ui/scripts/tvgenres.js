@@ -32,7 +32,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'genres';
     }
 
     function reloadItems(page) {
@@ -132,10 +132,11 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#tvGenresPage", function () {
+    window.TvPage.renderGenresTab = function (page, tabContent) {
 
-        var page = this;
-        reloadItems(page);
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadItems(tabContent);
+        }
+    };
 
 })(jQuery, document);

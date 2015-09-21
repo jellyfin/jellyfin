@@ -63,7 +63,6 @@
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "portrait",
-                context: 'movies',
                 showTitle: true,
                 showItemCounts: true,
                 coverImage: true,

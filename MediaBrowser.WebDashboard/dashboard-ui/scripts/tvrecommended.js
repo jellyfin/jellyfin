@@ -185,5 +185,147 @@
         }
     });
 
+    function loadSuggestionsTab(page, tabContent) {
+
+        if (enableScrollX()) {
+            tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
+        } else {
+            tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+        }
+
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    }
+
+    function loadTab(page, index) {
+
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'TvPage';
+        var renderMethod = '';
+        var initMethod = '';
+
+        switch (index) {
+
+            case 0:
+                renderMethod = 'renderSuggestedTab';
+                break;
+            case 1:
+                depends.push('scripts/tvlatest');
+                renderMethod = 'renderLatestTab';
+                break;
+            case 2:
+                depends.push('scripts/tvupcoming');
+                renderMethod = 'renderUpcomingTab';
+                break;
+            case 3:
+                depends.push('scripts/tvshows');
+                depends.push('scripts/queryfilters');
+                renderMethod = 'renderSeriesTab';
+                initMethod = 'initSeriesTab';
+                break;
+            case 4:
+                depends.push('scripts/episodes');
+                renderMethod = 'renderEpisodesTab';
+                initMethod = 'initEpisodesTab';
+                break;
+            case 5:
+                depends.push('scripts/tvgenres');
+                renderMethod = 'renderGenresTab';
+                break;
+            case 6:
+                depends.push('scripts/tvpeople');
+                renderMethod = 'renderPeopleTab';
+                initMethod = 'initPeopleTab';
+                break;
+            case 7:
+                depends.push('scripts/tvstudios');
+                renderMethod = 'renderStudiosTab';
+                break;
+            default:
+                break;
+        }
+
+        require(depends, function () {
+
+            if (initMethod && !tabContent.initComplete) {
+
+                window[scope][initMethod](page, tabContent);
+                tabContent.initComplete = true;
+            }
+
+            window[scope][renderMethod](page, tabContent);
+
+        });
+    }
+
+    window.TvPage = window.TvPage || {};
+    window.TvPage.renderSuggestedTab = loadSuggestionsTab;
+
+    pageIdOn('pageinit', "tvRecommendedPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        var baseUrl = 'tvrecommended.html';
+        var topParentId = LibraryMenu.getTopParentId();
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+    });
+
+    pageIdOn('pageshowready', "tvRecommendedPage", function () {
+
+        var page = this;
+
+        if (!page.getAttribute('data-title')) {
+
+            var parentId = LibraryMenu.getTopParentId();
+
+            if (parentId) {
+
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+
+                    page.setAttribute('data-title', item.Name);
+                    LibraryMenu.setTitle(item.Name);
+                });
+
+
+            } else {
+                page.setAttribute('data-title', Globalize.translate('TabShows'));
+                LibraryMenu.setTitle(Globalize.translate('TabShows'));
+            }
+        }
+
+        $(MediaController).on('playbackstop', onPlaybackStop);
+    });
+
+    pageIdOn('pagebeforehide', "tvRecommendedPage", function () {
+
+        var page = this;
+        $(MediaController).off('playbackstop', onPlaybackStop);
+    });
+
+    function onPlaybackStop(e, state) {
+
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $($.mobile.activePage)[0];
+            var pages = page.querySelector('neon-animated-pages');
+
+            $(pages).trigger('tabchange');
+        }
+    }
+
 
 })(jQuery, document);

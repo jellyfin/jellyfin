@@ -865,6 +865,8 @@
     "OptionAscending": "Ascending",
     "OptionDescending": "Descending",
     "OptionNameSort": "Name",
+    "OptionTvdbRating": "Tvdb Rating",
+    "OptionPremiereDate": "Premiere Date",
     "OptionImdbRating": "IMDb Rating",
     "OptionDatePlayed": "Date Played",
     "OptionDateAdded": "Date Added",
