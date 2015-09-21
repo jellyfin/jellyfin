@@ -334,7 +334,7 @@
                 </form>
             </div>
         </div>
-        <div data-role="popup" class="popupIdentify popupIdentifyItem popup" data-theme="a">
+        <div data-role="popup" class="popupIdentify popupIdentifyItem popup" data-theme="b">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">
 
@@ -362,12 +362,10 @@
                     </div>
 
                     <p>
-                        <button type="submit" data-theme="b" data-icon="search" data-mini="true">
-                            ${ButtonSearch}
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></paper-button>
                         </button>
-                        <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
+                        <paper-button raised class="cancel block btnCancel" onclick="jQuery(this).parents('.popup').popup('close');"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                     </p>
                 </form>
 
@@ -386,18 +384,16 @@
                         <input id="chkIdentifyReplaceImages" type="checkbox" checked="checked" data-mini="true" />
                     </div>
                     <br />
-                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                        ${ButtonSubmit}
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></paper-button>
                     </button>
-                    <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">
-                        ${ButtonCancel}
-                    </button>
+                    <paper-button raised class="cancel block btnCancel" onclick="jQuery(this).parents('.popup').popup('close');"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </form>
             </div>
 
         </div>
 
-        <div data-role="popup" id="popupEditPerson" class="popup" data-theme="a">
+        <div data-role="popup" id="popupEditPerson" class="popup" data-theme="b">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderPersonInfo}</h3>
@@ -406,11 +402,13 @@
             <div data-role="content">
                 <form class="popupEditPersonForm">
 
+                    <br />
                     <div>
                         <label for="txtPersonName">${LabelName}</label>
                         <input type="text" id="txtPersonName" required="required" />
                     </div>
 
+                    <br />
                     <div>
                         <label for="selectPersonType">${LabelType}</label>
                         <select id="selectPersonType" data-mini="true">
@@ -423,7 +421,7 @@
                             <option value="Writer">${OptionWriter}</option>
                         </select>
                     </div>
-
+                    <br />
                     <div>
                         <label for="txtPersonRole">${LabelPersonRole}</label>
                         <input type="text" id="txtPersonRole" />
@@ -432,19 +430,17 @@
                     <br />
                     <input type="hidden" id="fldPersonIndex" />
                     <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonOk}</span></paper-button>
                         </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
+                        <paper-button raised class="cancel block btnCancel" onclick="jQuery(this).parents('.popup').popup('close');"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                     </p>
                 </form>
             </div>
 
         </div>
 
-        <div data-role="popup" class="popup popupAdvancedRefresh" data-theme="a">
+        <div data-role="popup" class="popup popupAdvancedRefresh" data-theme="b">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                 <h3>${HeaderRefreshMetadata}</h3>
@@ -474,12 +470,10 @@
                     </div>
                     <br />
                     <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonOk}</span></paper-button>
                         </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
+                        <paper-button raised class="cancel block btnCancel" onclick="jQuery(this).parents('.popup').popup('close');"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                     </p>
                 </form>
             </div>

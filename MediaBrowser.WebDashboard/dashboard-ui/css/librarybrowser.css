@@ -1,4 +1,8 @@
-﻿/* Fixes the issue of jqm panels altering the page background. */
+﻿.hidingAnimatedTab{
+    visibility: hidden;
+}
+
+/* Fixes the issue of jqm panels altering the page background. */
 .ui-panel-content-wrap {
     background: none !important;
 }

@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series" data-require="jqmpanel,jqmcollapsible,scripts/tvrecommended">
+    <div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series" data-require="jqmpanel,jqmcollapsible,scripts/tvrecommended">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
@@ -12,20 +12,20 @@
                 <paper-tab><iron-icon icon="new-releases"></iron-icon>${TabLatest}</paper-tab>
                 <paper-tab><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</paper-tab>
                 <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabShows}</paper-tab>
-                <paper-tab><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</paper-tab>
-                <paper-tab class="tvEpisodesTab"><iron-icon icon="video-library"></iron-icon>${TabGenres}</paper-tab>
+                <paper-tab class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</paper-tab>
+                <paper-tab><iron-icon icon="video-library"></iron-icon>${TabGenres}</paper-tab>
                 <paper-tab class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</paper-tab>
                 <paper-tab class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
-                <a href="tvrecommended.html">${TabSuggestions}</a>
-                <a href="tvrecommended.html?tab=1"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
-                <a href="tvrecommended.html?tab=2"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
-                <a href="tvrecommended.html?tab=3"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
-                <a href="tvrecommended.html?tab=4" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
-                <a href="tvrecommended.html?tab=5"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-                <a href="tvrecommended.html?tab=6" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
-                <a href="tvrecommended.html?tab=7" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
+                <a href="tv.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="tv.html?tab=1"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+                <a href="tv.html?tab=2"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+                <a href="tv.html?tab=3"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+                <a href="tv.html?tab=4" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+                <a href="tv.html?tab=5"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+                <a href="tv.html?tab=6" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+                <a href="tv.html?tab=7" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
             </div>
         </div>
 

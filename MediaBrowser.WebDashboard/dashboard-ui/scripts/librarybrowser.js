@@ -270,21 +270,28 @@
                 }, delay);
             });
 
-            function fadeOutLeftBig(elem, iterations) {
+            function fadeOutLeft(elem, iterations) {
                 var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
-                  { opacity: '0', transform: 'translate3d(-2000px, 0, 0)', offset: 1 }];
-                var timing = { duration: 700, iterations: iterations };
+                  { opacity: '0', transform: 'translate3d(-100%, 0, 0)', offset: 1 }];
+                var timing = { duration: 600, iterations: iterations };
                 return elem.animate(keyframes, timing);
             }
-
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                 tabs.addEventListener('iron-select', function () {
 
                     var selected = pages.selected;
                     if (selected != null) {
                         var newValue = this.selected;
-                        fadeOutLeftBig(pages.querySelectorAll('.pageTabContent')[selected], 1).onfinish = function () {
+                        var currentTab = pages.querySelectorAll('.pageTabContent')[selected];
+
+                        if ($.browser.safari) {
+                            // Need this it flashes the previous content after the animation
+                            currentTab.classList.add('hidingAnimatedTab');
+                        }
+                        fadeOutLeft(currentTab, 1).onfinish = function () {
                             pages.selected = newValue;
+
+                            setTimeout(function () { currentTab.classList.remove('hidingAnimatedTab'); }, 500);
                         };
                     }
                     else {
@@ -965,7 +972,7 @@
                 }
 
                 if (item.CollectionType == 'tvshows') {
-                    return 'tvrecommended.html?topParentId=' + item.Id;
+                    return 'tv.html?topParentId=' + item.Id;
                 }
 
                 if (item.CollectionType == 'music') {

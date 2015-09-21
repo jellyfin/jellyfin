@@ -272,7 +272,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        var baseUrl = 'tvrecommended.html';
+        var baseUrl = 'tv.html';
         var topParentId = LibraryMenu.getTopParentId();
         if (topParentId) {
             baseUrl += '?topParentId=' + topParentId;
