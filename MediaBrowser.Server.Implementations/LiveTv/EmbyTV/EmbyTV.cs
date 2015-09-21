@@ -364,7 +364,47 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
         }
 
+        public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            var timers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+
+            List<ChannelInfo> channels = null;
+
+            foreach (var timer in timers)
+            {
+                List<ProgramInfo> epgData;
+
+                if (timer.RecordAnyChannel)
+                {
+                    if (channels == null)
+                    {
+                        channels = (await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false)).ToList();
+                    }
+                    var channelIds = channels.Select(i => i.Id).ToList();
+                    epgData = GetEpgDataForChannels(channelIds);
+                }
+                else
+                {
+                    epgData = GetEpgDataForChannel(timer.ChannelId);
+                }
+                await UpdateTimersForSeriesTimer(epgData, timer).ConfigureAwait(false);
+            }
+        }
+
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await GetProgramsAsyncInternal(channelId, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting programs", ex);
+                return GetEpgDataForChannel(channelId).Where(i => i.StartDate <= endDateUtc && i.EndDate >= startDateUtc);
+            }
+        }
+
+        private async Task<IEnumerable<ProgramInfo>> GetProgramsAsyncInternal(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
             var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
@@ -373,6 +413,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
+
                 var list = programs.ToList();
 
                 // Replace the value that came from the provider with a normalized value
@@ -483,7 +524,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var timer = e.Argument;
 
             _logger.Info("Recording timer fired.");
-            
+
             try
             {
                 var cancellationTokenSource = new CancellationTokenSource();
@@ -500,14 +541,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (Exception ex)
             {
                 _logger.ErrorException("Error recording stream", ex);
-
-                if (DateTime.UtcNow < timer.EndDate)
-                {
-                    const int retryIntervalSeconds = 60;
-                    _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
-
-                    _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
-                }
             }
         }
 
@@ -626,15 +659,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _logger.ErrorException("Error recording", ex);
                 recording.Status = RecordingStatus.Error;
             }
+            finally
+            {
+                CancellationTokenSource removed;
+                _activeRecordings.TryRemove(timer.Id, out removed);
+            }
 
             recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
-            _timerProvider.Delete(timer);
-            _logger.Info("Recording was a success");
 
             if (recording.Status == RecordingStatus.Completed)
             {
                 OnSuccessfulRecording(recording);
+                _timerProvider.Delete(timer);
+            }
+            else if (DateTime.UtcNow < timer.EndDate)
+            {
+                const int retryIntervalSeconds = 60;
+                _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
+
+                _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+            }
+            else
+            {
+                _timerProvider.Delete(timer);
+                _recordingProvider.Delete(recording);
             }
         }
 

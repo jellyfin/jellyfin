@@ -216,20 +216,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     //  Helper.logger.Info("Modifyin channel " + channel.Number);
                     if (_channelPair.ContainsKey(channel.Number))
                     {
-                        string channelName;
                         if (_channelPair[channel.Number].logo != null)
                         {
                             channel.ImageUrl = _channelPair[channel.Number].logo.URL;
                             channel.HasImage = true;
                         }
-                        if (_channelPair[channel.Number].affiliate != null)
-                        {
-                            channelName = _channelPair[channel.Number].affiliate;
-                        }
-                        else
-                        {
-                            channelName = _channelPair[channel.Number].name;
-                        }
+                        string channelName = _channelPair[channel.Number].name;
                         channel.Name = channelName;
                     }
                     else
@@ -245,8 +237,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             ScheduleDirect.ProgramDetails details)
         {
             //_logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
-            DateTime startAt = DateTime.ParseExact(programInfo.airDateTime, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'",
-                CultureInfo.InvariantCulture);
+            DateTime startAt = GetDate(programInfo.airDateTime);
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
 
@@ -369,6 +360,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return info;
         }
 
+        private DateTime GetDate(string value)
+        {
+            return DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'",
+                CultureInfo.InvariantCulture);
+        }
+
         private string GetProgramLogo(string apiUrl, ScheduleDirect.ShowImages images)
         {
             string url = "";
@@ -408,7 +405,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     imageIdString += "\"" + i.Substring(0, 10) + "\",";
                 }
-                ;
             });
             imageIdString = imageIdString.TrimEnd(',') + "]";
 
