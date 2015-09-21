@@ -58,7 +58,7 @@ namespace MediaBrowser.Common.ScheduledTasks
             {
                 if (isApplicationStartup)
                 {
-                    triggerDate = DateTime.UtcNow.AddMinutes(2);
+                    triggerDate = DateTime.UtcNow.AddMinutes(1);
                 }
                 else
                 {

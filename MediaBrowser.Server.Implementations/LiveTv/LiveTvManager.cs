@@ -1082,6 +1082,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await CleanDatabaseInternal(newChannelIdList, new[] { typeof(LiveTvChannel).Name }, progress, cancellationToken).ConfigureAwait(false);
             await CleanDatabaseInternal(newProgramIdList, new[] { typeof(LiveTvProgram).Name }, progress, cancellationToken).ConfigureAwait(false);
 
+            var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
+
+            if (coreService != null)
+            {
+                await coreService.RefreshSeriesTimers(cancellationToken, new Progress<double>()).ConfigureAwait(false);
+            }
+
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
