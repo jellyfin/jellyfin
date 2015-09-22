@@ -302,7 +302,13 @@
         $('.itemTabs', page).hide();
 
         if (context == 'tv') {
-            $(page).removeClass('noSecondaryNavPage');
+
+            if (AppInfo.enableBottomTabs) {
+                $(page).addClass('noSecondaryNavPage');
+            }
+            else {
+                $(page).removeClass('noSecondaryNavPage');
+            }
 
             $('#tvShowsTabs', page).show();
             LibraryMenu.setMenuButtonVisible(true);

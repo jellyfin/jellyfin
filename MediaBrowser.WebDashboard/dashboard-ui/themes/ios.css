@@ -17,7 +17,7 @@
 
 
 .viewMenuBar, .libraryViewNav, paper-tabs {
-    background-color: rgba(28,28,28,.97);
+    background-color: rgb(28,28,28);
 }
 
     .viewMenuBar.semiTransparent {
@@ -79,10 +79,6 @@
     .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
         color: #FF2D55 !important;
     }
-
-.viewMenuBar .headerButtonLeft {
-    color: #FF2D55 !important;
-}
 
 .channelTimeslotHeader {
     border-right-color: #FF2D55 !important;

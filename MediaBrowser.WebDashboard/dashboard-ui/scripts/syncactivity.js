@@ -339,7 +339,7 @@
 
     function onWebSocketMessage(e, msg) {
 
-        var page = $.mobile.activePage;
+        var page = $($.mobile.activePage)[0];
 
         if (msg.MessageType == "SyncJobs") {
 

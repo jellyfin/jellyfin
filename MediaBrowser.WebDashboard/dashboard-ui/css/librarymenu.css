@@ -135,10 +135,6 @@
     display: none;
 }
 
-.barsMenuButton:hover {
-    opacity: .5 !important;
-}
-
 .libraryMenuButtonText {
     color: #fff !important;
     text-decoration: none;
@@ -234,10 +230,6 @@
     padding: 7px .5em 6px;
     display: inline-block;
     vertical-align: middle;
-}
-
-.headerButtonRight:hover {
-    opacity: .5;
 }
 
 .viewMenuLink:hover {
@@ -374,11 +366,11 @@
     display: none !important;
 }
 
-.libraryDocument .sidebarLinkNotifications {
+.dashboardDocument .lnkMySync {
     display: none !important;
 }
 
-.dashboardDocument .lnkMySync {
+.dashboardDocument .dashboardEntryHeaderButton {
     display: none !important;
 }
 
@@ -387,6 +379,10 @@
 }
 
 .dashboardDocument .headerVoiceButton {
+    display: none !important;
+}
+
+body:not(.dashboardDocument) .btnNotifications{
     display: none !important;
 }
 

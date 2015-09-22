@@ -4,18 +4,18 @@
 
         var self = this;
 
-        self.sync = function () {
+        self.sync = function (options) {
 
             var deferred = DeferredBuilder.Deferred();
 
             connectionManager.getAvailableServers().done(function (result) {
-                syncNext(result, 0, deferred);
+                syncNext(result, 0, options, deferred);
             });
 
             return deferred.promise();
         };
 
-        function syncNext(servers, index, deferred) {
+        function syncNext(servers, index, options, deferred) {
 
             var length = servers.length;
 
@@ -34,13 +34,13 @@
 
             require(['serversync'], function () {
 
-                new MediaBrowser.ServerSync(connectionManager).sync(server).done(function () {
+                new MediaBrowser.ServerSync(connectionManager).sync(server, options).done(function () {
 
-                    syncNext(servers, index + 1, deferred);
+                    syncNext(servers, index + 1, options, deferred);
 
                 }).fail(function () {
 
-                    syncNext(servers, index + 1, deferred);
+                    syncNext(servers, index + 1, options, deferred);
                 });
             });
         }

@@ -9,22 +9,29 @@
             return AppInfo.isNativeApp;
         },
 
-        startSync: function () {
+        sync: function (options) {
 
-            if (!syncPromise) {
-                require(['multiserversync'], function () {
-
-                    lastStart = new Date().getTime();
-                    syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync().done(function () {
-
-                        syncPromise = null;
-
-                    }).fail(function () {
-
-                        syncPromise = null;
-                    });
-                });
+            if (syncPromise) {
+                return syncPromise.promise();
             }
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require(['multiserversync'], function () {
+
+                lastStart = new Date().getTime();
+                syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).done(function () {
+
+                    syncPromise = null;
+                    deferred.resolve();
+
+                }).fail(function () {
+
+                    syncPromise = null;
+                });
+            });
+
+            return deferred.promise();
         },
 
         getSyncStatus: function () {
@@ -42,12 +49,12 @@
         if (LocalSync.isSupported) {
             setInterval(function () {
 
-                LocalSync.startSync();
+                //LocalSync.startSync();
 
             }, syncInterval);
 
             if (lastStart > 0 && (now - lastStart) >= syncInterval) {
-                LocalSync.startSync();
+                //LocalSync.startSync();
             }
         }
         //LocalSync.startSync();

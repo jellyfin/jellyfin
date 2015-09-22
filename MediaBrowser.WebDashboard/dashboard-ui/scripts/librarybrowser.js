@@ -273,25 +273,20 @@
             function fadeOutLeft(elem, iterations) {
                 var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
                   { opacity: '0', transform: 'translate3d(-100%, 0, 0)', offset: 1 }];
-                var timing = { duration: 600, iterations: iterations };
+                var timing = { duration: 400, iterations: iterations };
                 return elem.animate(keyframes, timing);
             }
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                 tabs.addEventListener('iron-select', function () {
 
+                    var animateTab = !$.browser.safari;
                     var selected = pages.selected;
-                    if (selected != null) {
+                    if (selected != null && animateTab) {
                         var newValue = this.selected;
                         var currentTab = pages.querySelectorAll('.pageTabContent')[selected];
 
-                        if ($.browser.safari) {
-                            // Need this it flashes the previous content after the animation
-                            currentTab.classList.add('hidingAnimatedTab');
-                        }
                         fadeOutLeft(currentTab, 1).onfinish = function () {
                             pages.selected = newValue;
-
-                            setTimeout(function () { currentTab.classList.remove('hidingAnimatedTab'); }, 500);
                         };
                     }
                     else {
@@ -926,16 +921,16 @@
 
             var href = LibraryBrowser.getHrefInternal(item, context);
 
-            //if (context != 'livetv') {
-            //    if (topParentId == null && context != 'playlists') {
-            //        topParentId = LibraryMenu.getTopParentId();
-            //    }
+            if (context == 'tv') {
+                if (!topParentId) {
+                    topParentId = LibraryMenu.getTopParentId();
+                }
 
-            //    if (topParentId) {
-            //        href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
-            //        href += topParentId;
-            //    }
-            //}
+                if (topParentId) {
+                    href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
+                    href += topParentId;
+                }
+            }
 
             return href;
         },

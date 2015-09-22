@@ -6,7 +6,7 @@
             return true;
         },
 
-        startSync: function () {
+        sync: function () {
             AndroidSync.startSync();
         },
 

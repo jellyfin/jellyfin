@@ -4,7 +4,7 @@
 
         var self = this;
 
-        self.sync = function (server) {
+        self.sync = function (server, options) {
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -24,7 +24,7 @@
             connectionManager.connectToServer(server, connectionOptions).done(function (result) {
 
                 if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-                    performSync(server, deferred);
+                    performSync(server, options, deferred);
                 } else {
                     Logger.log('Unable to connect to server id: ' + server.Id);
                     deferred.reject();
@@ -39,9 +39,20 @@
             return deferred.promise();
         };
 
-        function performSync(server, deferred) {
+        function performSync(server, options, deferred) {
 
             Logger.log("Creating ContentUploader to server: " + server.Id);
+
+            var nextAction = function () {
+                syncOfflineUsers(server, deferred);
+            };
+
+            options = options || {};
+
+            if (options.uploadPhotos === false) {
+                nextAction();
+                return;
+            }
 
             require(['contentuploader'], function () {
 
@@ -49,13 +60,13 @@
 
                     Logger.log("ContentUploaded succeeded to server: " + server.Id);
 
-                    syncOfflineUsers(server, deferred);
+                    nextAction();
 
                 }).fail(function () {
 
                     Logger.log("ContentUploaded failed to server: " + server.Id);
 
-                    syncOfflineUsers(server, deferred);
+                    nextAction();
                 });
             });
         }

@@ -117,7 +117,7 @@
 
         var query = {
             StartIndex: DashboardPage.newsStartIndex,
-            Limit: 5
+            Limit: 7
         };
 
         ApiClient.getProductNews(query).done(function (result) {
@@ -126,14 +126,30 @@
 
                 var itemHtml = '';
 
-                itemHtml += '<div class="newsItem">';
-                itemHtml += '<a class="newsItemHeader" href="' + item.Link + '" target="_blank">' + item.Title + '</a>';
+                itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">';
+                itemHtml += '<paper-icon-item>';
 
-                var date = parseISO8601Date(item.Date, { toLocal: true });
-                itemHtml += '<div class="newsItemDate">' + date.toLocaleDateString() + '</div>';
+                itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
 
-                itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
+                itemHtml += '<paper-item-body three-line>';
+
+                itemHtml += '<div>';
+                itemHtml += item.Title;
                 itemHtml += '</div>';
+
+                itemHtml += '<div secondary>';
+                var date = parseISO8601Date(item.Date, { toLocal: true });
+                itemHtml += date.toLocaleDateString();
+                itemHtml += '</div>';
+
+                itemHtml += '<div secondary>';
+                itemHtml += item.Description;
+                itemHtml += '</div>';
+
+                itemHtml += '</paper-item-body>';
+
+                itemHtml += '</paper-icon-item>';
+                itemHtml += '</a>';
 
                 return itemHtml;
             });
@@ -1068,60 +1084,42 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
         var html = '';
 
-        html += '<div class="newsItem" style="padding: .5em 0;">';
+        html += '<paper-icon-item>';
 
-        html += '<div class="notificationContent" style="display:block;">';
+        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : '#52B54B';
 
-        var date = parseISO8601Date(entry.Date, { toLocal: true });
-
-        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : 'green';
-
-        html += '<div style="margin: 0;color:' + color + ';">';
         if (entry.UserId && entry.UserPrimaryImageTag) {
 
             var userImgUrl = ApiClient.getUserImageUrl(entry.UserId, {
                 type: 'Primary',
                 tag: entry.UserPrimaryImageTag,
-                height: 20
+                height: 40
             });
-            html += '<img src="' + userImgUrl + '" style="height:20px;vertical-align:middle;margin-right:5px;" />';
+
+            html += '<paper-fab class="listAvatar" style="background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+        }
+        else {
+            html += '<paper-fab class="listAvatar" icon="dvr" style="background-color:' + color + '" item-icon></paper-fab>';
         }
 
-        html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
-        html += '</div>';
+        html += '<paper-item-body three-line>';
 
-        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
+        html += '<div>';
         html += entry.Name;
         html += '</div>';
 
-        entry.ShortOverview = entry.ShortOverview || '&nbsp;';
-
-        if (entry.ShortOverview) {
-
-            html += '<div class="newsItemDescription" style="margin: .5em 0 0;">';
-
-            if (entry.Overview) {
-                html += '<a href="#" class="btnShowOverview" style="text-decoration:none;font-weight:500;">';
-            }
-            html += entry.ShortOverview;
-            if (entry.Overview) {
-                html += '</a>';
-            }
-
-            html += '</div>';
-
-            if (entry.Overview) {
-                html += '<div class="newsItemLongDescription" style="display:none;">' + entry.Overview + '</div>';
-            }
-        }
-
-        //if (notification.Url) {
-        //    html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
-        //}
-
+        html += '<div secondary>';
+        var date = parseISO8601Date(entry.Date, { toLocal: true });
+        html += date.toLocaleDateString();
         html += '</div>';
 
+        html += '<div secondary>';
+        html += entry.ShortOverview || '';
         html += '</div>';
+
+        html += '</paper-item-body>';
+
+        html += '</paper-icon-item>';
 
         return html;
     }

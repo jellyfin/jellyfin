@@ -28,12 +28,14 @@
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
+        //html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
+
         if (!showUserAtTop()) {
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
         if (!$.browser.mobile && !Dashboard.isConnectMode()) {
-            html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
+            html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
         html += '</div>';
@@ -349,11 +351,6 @@
         html += '<div class="userMenuOptions">';
 
         html += '<div class="sidebarDivider"></div>';
-
-        html += '<a class="sidebarLink lnkMediaFolder sidebarLinkNotifications" data-itemid="inbox" onclick="return LibraryMenu.onLinkClicked(event, this);" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
-        html += Globalize.translate('ButtonInbox');
-        html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
-        html += '</a>';
 
         if (user.localUser && showUserAtTop()) {
             html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" data-itemid="mysync" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';

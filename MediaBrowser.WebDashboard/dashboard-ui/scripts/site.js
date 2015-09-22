@@ -1408,10 +1408,14 @@ var Dashboard = {
 
     setPageTitle: function (title) {
 
-        var elem = $($.mobile.activePage)[0].querySelector('.pageTitle');
+        var page = $.mobile.activePage;
 
-        if (elem) {
-            elem.innerHTML = title;
+        if (page) {
+            var elem = $(page)[0].querySelector('.pageTitle');
+
+            if (elem) {
+                elem.innerHTML = title;
+            }
         }
 
         if (title) {
@@ -2280,6 +2284,9 @@ var AppInfo = {};
 
         if (AppInfo.isNativeApp && !$.browser.android) {
             require(['localsync']);
+        }
+        if (AppInfo.isNativeApp && $.browser.safari) {
+            require(['cordova/ios/backgroundfetch']);
         }
         //require(['localsync']);
     }
