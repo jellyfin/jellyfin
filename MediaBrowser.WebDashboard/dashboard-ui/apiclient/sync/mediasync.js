@@ -287,6 +287,10 @@
                 return;
             }
 
+            // Just for now while media syncing gets worked out
+            deferred.resolve();
+            return;
+
             var libraryItem = localItem.Item;
 
             var serverId = libraryItem.ServerId;

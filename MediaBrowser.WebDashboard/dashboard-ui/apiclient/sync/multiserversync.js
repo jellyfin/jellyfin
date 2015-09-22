@@ -27,9 +27,6 @@
 
             var server = servers[index];
 
-            // get fresh info from connection manager
-            server = connectionManager.getServerInfo(server.Id) || server;
-
             Logger.log("Creating ServerSync to server: " + server.Id);
 
             require(['serversync'], function () {
