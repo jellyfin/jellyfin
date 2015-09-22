@@ -1079,20 +1079,25 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
 
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey}
+                };
+
+            options.SetPostData(postData);
+
             SetServerAccessToken(options);
             SetApplicationHeader(options);
 
             // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "GET").ConfigureAwait(false)).Content)
+            using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
             {
                 return _json.DeserializeFromStream<ConnectSupporterSummary>(stream);
             }
@@ -1107,15 +1112,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-            url += "&userId=" + id;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey},
+                    {"userId", id}
+                };
+
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
             SetApplicationHeader(options);
@@ -1135,15 +1145,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-            url += "&userId=" + id;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey},
+                    {"userId", id}
+                };
+
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
             SetApplicationHeader(options);
