@@ -112,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             try
             {
                 return _fileSystem
-                    .GetFileSystemEntryPaths(path)
+                    .GetDirectoryPaths(path)
                     .ToList();
             }
             catch (IOException ex)
