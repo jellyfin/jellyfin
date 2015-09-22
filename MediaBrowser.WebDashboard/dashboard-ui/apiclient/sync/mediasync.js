@@ -4,7 +4,7 @@
 
         var self = this;
 
-        self.sync = function (apiClient, serverInfo) {
+        self.sync = function (apiClient, serverInfo, options) {
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -14,7 +14,7 @@
                 syncData(apiClient, serverInfo, false).done(function () {
 
                     // Download new content
-                    getNewMedia(apiClient, serverInfo).done(function () {
+                    getNewMedia(apiClient, serverInfo, options).done(function () {
 
                         // Do the second data sync
                         syncData(apiClient, serverInfo, false).done(function () {
@@ -160,7 +160,7 @@
             return deferred.promise();
         }
 
-        function getNewMedia(apiClient, serverInfo) {
+        function getNewMedia(apiClient, serverInfo, options) {
 
             Logger.log('Begin getNewMedia');
 
@@ -168,14 +168,14 @@
 
             apiClient.getReadySyncItems(apiClient.deviceId()).done(function (jobItems) {
 
-                getNextNewItem(jobItems, 0, apiClient, serverInfo, deferred);
+                getNextNewItem(jobItems, 0, apiClient, serverInfo, options, deferred);
 
             }).fail(getOnFail(deferred));
 
             return deferred.promise();
         }
 
-        function getNextNewItem(jobItems, index, apiClient, serverInfo, deferred) {
+        function getNextNewItem(jobItems, index, apiClient, serverInfo, options, deferred) {
 
             var length = jobItems.length;
 
@@ -185,12 +185,22 @@
                 return;
             }
 
-            getNewItem(jobItems[index], apiClient, serverInfo).done(function () {
+            var hasGoneNext = false;
+            var goNext = function () {
 
-                getNextNewItem(jobItems, index + 1, apiClient, serverInfo, deferred);
-            }).fail(function () {
-                getNextNewItem(jobItems, index + 1, apiClient, serverInfo, deferred);
-            });
+                if (!hasGoneNext) {
+                    hasGoneNext = true;
+                    getNextNewItem(jobItems, index + 1, apiClient, serverInfo, options, deferred);
+                }
+            };
+
+            getNewItem(jobItems[index], apiClient, serverInfo).done(goNext).fail(goNext);
+
+            options = options || {};
+            if (options.enableBackgroundTransfer) {
+                // Give it 2 seconds, then move on
+                setTimeout(goNext, 2000);
+            }
         }
 
         function getNewItem(jobItem, apiClient, serverInfo) {
@@ -316,6 +326,10 @@
             }
 
             downloadImage(apiClient, serverId, itemId, imageTag, imageType).done(function () {
+
+                // For the sake of simplicity, limit to one image
+                deferred.resolve();
+                return;
 
                 getNextImage(index + 1, apiClient, localItem, deferred);
 

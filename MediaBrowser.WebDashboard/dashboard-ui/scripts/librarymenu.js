@@ -28,7 +28,7 @@
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
-        //html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
+        html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
         if (!showUserAtTop()) {
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
@@ -143,20 +143,20 @@
 
     function updateViewMenuBarHeadroom(page, viewMenuBar) {
 
-        if (page.classList.contains('libraryPage')) {
-            // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
-            setTimeout(reEnableHeadroom, 700);
-        } else {
-            viewMenuBar.classList.add('headroomDisabled');
-        }
+        //if (page.classList.contains('libraryPage')) {
+        //    // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
+        //    setTimeout(reEnableHeadroom, 700);
+        //} else {
+        //    viewMenuBar.classList.add('headroomDisabled');
+        //}
     }
 
     function reEnableHeadroom() {
 
-        var headroomDisabled = document.querySelectorAll('.headroomDisabled');
-        for (var i = 0, length = headroomDisabled.length; i < length; i++) {
-            headroomDisabled[i].classList.remove('headroomDisabled');
-        }
+        //var headroomDisabled = document.querySelectorAll('.headroomDisabled');
+        //for (var i = 0, length = headroomDisabled.length; i < length; i++) {
+        //    headroomDisabled[i].classList.remove('headroomDisabled');
+        //}
     }
 
     function getItemHref(item, context) {
@@ -815,14 +815,14 @@
 
     });
 
-    pageClassOn('pagebeforehide', 'page', function () {
+    //pageClassOn('pagebeforehide', 'page', function () {
 
-        var headroomEnabled = document.querySelectorAll('.headroomEnabled');
-        for (var i = 0, length = headroomEnabled.length; i < length; i++) {
-            headroomEnabled[i].classList.add('headroomDisabled');
-        }
+    //    var headroomEnabled = document.querySelectorAll('.headroomEnabled');
+    //    for (var i = 0, length = headroomEnabled.length; i < length; i++) {
+    //        headroomEnabled[i].classList.add('headroomDisabled');
+    //    }
 
-    });
+    //});
 
     function onPageBeforeShowDocumentReady(page) {
 

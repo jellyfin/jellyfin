@@ -20,6 +20,13 @@
             require(['multiserversync'], function () {
 
                 lastStart = new Date().getTime();
+
+                options = options || {};
+
+                if ($.browser.safari) {
+                    options.enableBackgroundTransfer = true;
+                }
+
                 syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).done(function () {
 
                     syncPromise = null;

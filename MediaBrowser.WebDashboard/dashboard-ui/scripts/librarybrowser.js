@@ -280,6 +280,7 @@
                 tabs.addEventListener('iron-select', function () {
 
                     var animateTab = !$.browser.safari;
+                    animateTab = false;
                     var selected = pages.selected;
                     if (selected != null && animateTab) {
                         var newValue = this.selected;

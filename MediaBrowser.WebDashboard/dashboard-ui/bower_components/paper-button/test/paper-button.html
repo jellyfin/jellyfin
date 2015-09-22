@@ -54,10 +54,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }, 1);
       });
 
-      test('has aria role "button"', function() {
-        expect(button.getAttribute('role')).to.be.eql('button');
-      });
-
       test('can be disabled imperatively', function() {
         button.disabled = true;
         expect(button.getAttribute('aria-disabled')).to.be.eql('true');
@@ -78,6 +74,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         MockInteractions.pressEnter(button);
       });
     });
+
+    suite('<paper-button>', function() {
+      var button;
+
+      setup(function() {
+        button = fixture('TrivialButton');
+      });
+
+      test('has aria role "button"', function() {
+        expect(button.getAttribute('role')).to.be.eql('button');
+      });
+      
+      a11ySuite('TrivialButton');
+    });
+
   </script>
 </body>
 </html>

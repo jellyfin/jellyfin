@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
 <!--
 
@@ -23,10 +24,10 @@ shadow.
 
 Example:
 
-    <paper-button>flat button</paper-button>
-    <paper-button raised>raised button</paper-button>
+    <paper-button>Flat button</paper-button>
+    <paper-button raised>Raised button</paper-button>
     <paper-button noink>No ripple effect</paper-button>
-    <paper-button toggles>toggle-able button</paper-button>
+    <paper-button toggles>Toggle-able button</paper-button>
 
 A button that has `toggles` true will remain `active` after being clicked (and
 will have an `active` attribute set). For more information, see the `Polymer.IronButtonState`
@@ -44,29 +45,32 @@ create a button with an icon and some text:
 
 Style the button with CSS as you would a normal DOM element.
 
-    /* make #my-button green with yellow text */
-    #my-button {
-        background: green;
-        color: yellow;
+    paper-button.fancy {
+      background: green;
+      color: yellow;
+    }
+
+    paper-button.fancy:hover {
+      background: lime;
+    }
+
+    paper-button[disabled],
+    paper-button[toggles][active] {
+      background: red;
     }
 
 By default, the ripple is the same color as the foreground at 25% opacity. You may
-customize the color using this selector:
-
-    /* make #my-button use a blue ripple instead of foreground color */
-    #my-button::shadow paper-ripple {
-      color: blue;
-    }
-
-The opacity of the ripple is not customizable via CSS.
+customize the color using the `--paper-button-ink-color` custom property.
 
 The following custom properties and mixins are also available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--paper-button-flat-focus-color` | Background color of a focused flat button | `--paper-grey-200`
+`--paper-button-ink-color` | Background color of the ripple | `Based on the button's color`
 `--paper-button` | Mixin applied to the button | `{}`
-`--paper-button-disabled` | Mixin applied to the disabled button | `{}`
+`--paper-button-disabled` | Mixin applied to the disabled button. Note that you can also use the `paper-button[disabled]` selector | `{}`
+`--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after it's been focused using the keyboard | `{}`
+`--paper-button-raised-keyboard-focus` | Mixin applied to a raised button after it's been focused using the keyboard | `{}`
 
 @demo demo/index.html
 -->
@@ -93,12 +97,19 @@ Custom property | Description | Default
         user-select: none;
         cursor: pointer;
         z-index: 0;
+        padding: 0.7em 0.57em;
 
         @apply(--paper-button);
       }
 
-      .keyboard-focus {
+      :host([raised]) .keyboard-focus {
         font-weight: bold;
+        @apply(paper-button-raised-keyboard-focus);
+      }
+
+      :host(:not([raised])) .keyboard-focus {
+        font-weight: bold;
+        @apply(paper-button-flat-keyboard-focus);
       }
 
       :host([disabled]) {
@@ -114,24 +125,25 @@ Custom property | Description | Default
         display: none;
       }
 
+      paper-ripple {
+        color: var(--paper-button-ink-color);
+      }
+
       paper-material {
         border-radius: inherit;
+        @apply(--layout-fit);
       }
 
       .content > ::content * {
         text-transform: inherit;
       }
-
-      .content {
-        padding: 0.7em 0.57em
-      }
     </style>
 
     <paper-ripple></paper-ripple>
 
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated>
-      <content></content>
-    </paper-material>
+    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated></paper-material>
+
+    <content></content>
 
   </template>
 </dom-module>

@@ -44,7 +44,7 @@
             Logger.log("Creating ContentUploader to server: " + server.Id);
 
             var nextAction = function () {
-                syncOfflineUsers(server, deferred);
+                syncOfflineUsers(server, options, deferred);
             };
 
             options = options || {};
@@ -71,7 +71,7 @@
             });
         }
 
-        function syncOfflineUsers(server, deferred) {
+        function syncOfflineUsers(server, options, deferred) {
 
             require(['offlineusersync'], function () {
 
@@ -81,7 +81,7 @@
 
                     Logger.log("OfflineUserSync succeeded to server: " + server.Id);
 
-                    syncMedia(server, deferred);
+                    syncMedia(server, options, deferred);
 
                 }).fail(function () {
 
@@ -92,13 +92,13 @@
             });
         }
 
-        function syncMedia(server, deferred) {
+        function syncMedia(server, options, deferred) {
 
             require(['mediasync'], function () {
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                new MediaBrowser.MediaSync().sync(apiClient, server).done(function () {
+                new MediaBrowser.MediaSync().sync(apiClient, server, options).done(function () {
 
                     Logger.log("MediaSync succeeded to server: " + server.Id);
 

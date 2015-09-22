@@ -388,7 +388,7 @@ paper-menu-item {
 }
 
 .ui-body-b paper-checkbox #checkbox.paper-checkbox {
-    border-color: #eee;
+    border-color: #dedede;
 }
 
 .ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {

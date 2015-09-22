@@ -253,26 +253,11 @@
                 Events.trigger(self, 'apiclientcreated', [apiClient]);
             }
 
-            if (server.AccessToken && server.UserId) {
-
-                apiClient.setAuthenticationInfo(server.AccessToken, server.UserId);
-            }
-            else {
-
-                apiClient.clearAuthenticationInfo();
-            }
-
             logger.log('returning instance from getOrAddApiClient');
             return apiClient;
         }
 
         self.getOrCreateApiClient = function (serverId) {
-
-            var apiClient = self.getApiClient(serverId);
-
-            if (apiClient) {
-                return apiClient;
-            }
 
             var credentials = credentialProvider.credentials();
             var servers = credentials.Servers.filter(function (s) {

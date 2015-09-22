@@ -492,7 +492,7 @@
                     }, function (value) {
 
                         // on progress
-                        Logger.log('download progress: ' + value);
+                        //Logger.log('download progress: ' + value);
 
                     });
                 });

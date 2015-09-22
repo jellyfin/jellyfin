@@ -121,54 +121,41 @@
 
     function getNotificationHtml(notification) {
 
-        var html = '';
+        var itemHtml = '';
 
-        var cssClass = notification.IsRead ? "flyoutNotification" : "flyoutNotification unreadFlyoutNotification";
-
-        html += '<div data-notificationid="' + notification.Id + '" class="' + cssClass + '">';
-
-        html += '<div class="notificationImage">';
-        html += getImageHtml(notification);
-        html += '</div>';
-
-        html += '<div class="notificationContent">';
-
-        html += '<p style="font-size:16px;margin: .5em 0 .5em;" class="notificationName">';
         if (notification.Url) {
-            html += '<a href="' + notification.Url + '" target="_blank" style="text-decoration:none;">' + notification.Name + '</a>';
-        } else {
-            html += notification.Name;
+            itemHtml += '<a class="clearLink" href="' + notification.Url + '" target="_blank">';
         }
-        html += '</p>';
 
-        html += '<p class="notificationTime" style="margin: .5em 0;">' + humane_date(notification.Date) + '</p>';
+        itemHtml += '<paper-icon-item>';
+
+        itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
+
+        itemHtml += '<paper-item-body three-line>';
+
+        itemHtml += '<div>';
+        itemHtml += notification.Name;
+        itemHtml += '</div>';
+
+        itemHtml += '<div secondary>';
+        itemHtml += humane_date(notification.Date);
+        itemHtml += '</div>';
 
         if (notification.Description) {
-            html += '<p style="margin: .5em 0;max-height:150px;overflow:hidden;text-overflow:ellipsis;">' + notification.Description + '</p>';
+            itemHtml += '<div secondary>';
+            itemHtml += notification.Description;
+            itemHtml += '</div>';
         }
 
-        html += '</div>';
+        itemHtml += '</paper-item-body>';
 
-        html += '</div>';
+        itemHtml += '</paper-icon-item>';
 
-        return html;
-    }
-
-    function getImageHtml(notification) {
-
-        if (notification.Level == "Error") {
-
-            return '<div class="imgNotification imgNotificationError"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
-
-        }
-        if (notification.Level == "Warning") {
-
-            return '<div class="imgNotification imgNotificationWarning"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
-
+        if (notification.Url) {
+            itemHtml += '</a>';
         }
 
-        return '<div class="imgNotification imgNotificationNormal"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
-
+        return itemHtml;
     }
 
     window.Notifications = new notifications();
@@ -186,6 +173,12 @@
     function initializeApiClient(apiClient) {
         $(apiClient).off("websocketmessage", onWebSocketMessage).on("websocketmessage", onWebSocketMessage);
     }
+
+    $(document).on('headercreated', function (e, apiClient) {
+        $('.btnNotifications').on('click', function () {
+            Dashboard.navigate('notificationlist.html');
+        });
+    });
 
     Dashboard.ready(function () {
 
