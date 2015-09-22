@@ -1165,7 +1165,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
         private IEnumerable<VirtualFolderInfo> GetView(string path)
         {
-            return _fileSystem.GetFileSystemEntryPaths(path)
+            return _fileSystem.GetDirectoryPaths(path)
                 .Select(dir => new VirtualFolderInfo
                 {
                     Name = Path.GetFileName(dir),

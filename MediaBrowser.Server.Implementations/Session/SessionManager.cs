@@ -1322,8 +1322,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (existing.Items.Length > 0)
             {
-                _logger.Debug("Reissuing access token");
-                return existing.Items[0].AccessToken;
+                var token = existing.Items[0].AccessToken;
+                _logger.Debug("Reissuing access token: " + token);
+                return token;
             }
 
             var newToken = new AuthenticationInfo
