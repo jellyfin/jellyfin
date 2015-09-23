@@ -268,7 +268,6 @@
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\DynamicImageInfo.cs" />
     <Compile Include="Providers\DynamicImageResponse.cs" />
-    <Compile Include="Providers\EpisodeIdentity.cs" />
     <Compile Include="Providers\EpisodeInfo.cs" />
     <Compile Include="Providers\ExtraInfo.cs" />
     <Compile Include="Providers\ExtraSource.cs" />
@@ -282,14 +281,12 @@
     <Compile Include="Providers\IForcedProvider.cs" />
     <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />
-    <Compile Include="Providers\IHasIdentities.cs" />
     <Compile Include="Providers\IHasItemChangeMonitor.cs" />
     <Compile Include="Providers\IHasLookupInfo.cs" />
     <Compile Include="Providers\IHasOrder.cs" />
     <Compile Include="Providers\IImageFileSaver.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
     <Compile Include="Providers\IImageSaver.cs" />
-    <Compile Include="Providers\IItemIdentity.cs" />
     <Compile Include="Providers\IItemIdentityConverter.cs" />
     <Compile Include="Providers\IItemIdentityProvider.cs" />
     <Compile Include="Providers\ILocalImageFileProvider.cs" />
@@ -314,9 +311,7 @@
     <Compile Include="Providers\MusicVideoInfo.cs" />
     <Compile Include="Providers\PersonLookupInfo.cs" />
     <Compile Include="Providers\RemoteSearchQuery.cs" />
-    <Compile Include="Providers\SeasonIdentity.cs" />
     <Compile Include="Providers\SeasonInfo.cs" />
-    <Compile Include="Providers\SeriesIdentity.cs" />
     <Compile Include="Providers\SeriesInfo.cs" />
     <Compile Include="Providers\SeriesOrderTypes.cs" />
     <Compile Include="Providers\SongInfo.cs" />

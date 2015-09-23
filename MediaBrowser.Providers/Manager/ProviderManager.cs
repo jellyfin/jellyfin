@@ -298,17 +298,16 @@ namespace MediaBrowser.Providers.Manager
                 .ThenBy(GetDefaultOrder);
         }
 
-        public IEnumerable<IItemIdentityProvider<TLookupInfo, TIdentity>> GetItemIdentityProviders<TLookupInfo, TIdentity>()
+        public IEnumerable<IItemIdentityProvider<TLookupInfo>> GetItemIdentityProviders<TLookupInfo>()
             where TLookupInfo : ItemLookupInfo
-            where TIdentity : IItemIdentity
         {
-            return _identityProviders.OfType<IItemIdentityProvider<TLookupInfo, TIdentity>>();
+            return _identityProviders.OfType<IItemIdentityProvider<TLookupInfo>>();
         }
 
-        public IEnumerable<IItemIdentityConverter<TIdentity>> GetItemIdentityConverters<TIdentity>()
-            where TIdentity : IItemIdentity
+        public IEnumerable<IItemIdentityConverter<TLookupInfo>> GetItemIdentityConverters<TLookupInfo>()
+            where TLookupInfo : ItemLookupInfo
         {
-            return _identityConverters.OfType<IItemIdentityConverter<TIdentity>>();
+            return _identityConverters.OfType<IItemIdentityConverter<TLookupInfo>>();
         }
 
         private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item, bool includeDisabled)

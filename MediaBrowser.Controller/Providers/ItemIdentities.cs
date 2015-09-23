@@ -2,20 +2,15 @@
 
 namespace MediaBrowser.Controller.Providers
 {
-    public interface IItemIdentityProvider<in TLookupInfo, TIdentity> : IItemIdentityProvider
+    public interface IItemIdentityProvider<in TLookupInfo> : IItemIdentityProvider
         where TLookupInfo : ItemLookupInfo
-        where TIdentity : IItemIdentity
     {
-        Task<TIdentity> FindIdentity(TLookupInfo info);
+        Task Identify(TLookupInfo info);
     }
 
-    public interface IItemIdentityConverter<TIdentity> : IItemIdentityConverter
-        where TIdentity : IItemIdentity
+    public interface IItemIdentityConverter<in TLookupInfo> : IItemIdentityConverter
+        where TLookupInfo : ItemLookupInfo
     {
-        Task<TIdentity> Convert(TIdentity identity);
-
-        string SourceType { get; }
-
-        string ResultType { get; }
+        Task<bool> Convert(TLookupInfo info);
     }
 }
