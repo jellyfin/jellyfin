@@ -30,7 +30,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             var msg = Encoding.ASCII.GetBytes(Message);
 
-            var socket = CreateSocket(!IgnoreBindFailure);
+            var socket = CreateSocket();
 
             if (socket == null)
             {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     }
                     catch (Exception ex)
                     {
-                        if (!IgnoreBindFailure || EnableDebugLogging)
+                        if (EnableDebugLogging)
                         {
                             _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
                         }
@@ -102,7 +102,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        private Socket CreateSocket(bool isBroadcast)
+        private Socket CreateSocket()
         {
             try
             {
@@ -110,11 +110,8 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
-                if (isBroadcast)
-                {
-                    socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-                }
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
 
                 return socket;
             }
