@@ -10804,34 +10804,38 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   Polymer.IronSelectableBehavior = {
 
       /**
-       *  Fired when iron-selector is activated (selected or deselected).
-       *  It is fired before the selected items are changed.
-       *  Cancel the event to abort selection.
+       * Fired when iron-selector is activated (selected or deselected).
+       * It is fired before the selected items are changed.
+       * Cancel the event to abort selection.
        *
        * @event iron-activate
-       *
-       **/
+       */
+
       /**
-       *  Fired when an item is selected
+       * Fired when an item is selected
        *
        * @event iron-select
-       *
-       **/
+       */
+
       /**
-       *  Fired when an item is deselected
+       * Fired when an item is deselected
        *
        * @event iron-deselect
+       */
+
+      /**
+       * Fired when the list of selectable items changes (e.g., items are
+       * added or removed). The detail of the event is a list of mutation
+       * records that describe what changed.
        *
-       **/
+       * @event iron-items-changed
+       */
 
     properties: {
 
       /**
        * If you want to use the attribute value of an element for `selected` instead of the index,
        * set this to the name of the attribute.
-       *
-       * @attribute attrForSelected
-       * @type {string}
        */
       attrForSelected: {
         type: String,
@@ -10840,9 +10844,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * Gets or sets the selected element. The default is to use the index of the item.
-       *
-       * @attribute selected
-       * @type {string}
        */
       selected: {
         type: String,
@@ -10851,9 +10852,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * Returns the currently selected item.
-       *
-       * @attribute selectedItem
-       * @type {Object}
        */
       selectedItem: {
         type: Object,
@@ -10865,10 +10863,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        * The event that fires from items when they are selected. Selectable
        * will listen for this event from items and update the selection state.
        * Set to empty string to listen to no events.
-       *
-       * @attribute activateEvent
-       * @type {string}
-       * @default 'tap'
        */
       activateEvent: {
         type: String,
@@ -10879,17 +10873,11 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       /**
        * This is a CSS selector string.  If this is set, only items that match the CSS selector
        * are selectable.
-       *
-       * @attribute selectable
-       * @type {string}
        */
       selectable: String,
 
       /**
        * The class to set on elements when selected.
-       *
-       * @attribute selectedClass
-       * @type {string}
        */
       selectedClass: {
         type: String,
@@ -10898,9 +10886,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * The attribute to set on elements when selected.
-       *
-       * @attribute selectedAttribute
-       * @type {string}
        */
       selectedAttribute: {
         type: String,
@@ -10911,10 +10896,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        * The set of excluded elements where the key is the `localName` 
        * of the element that will be ignored from the item list.
        *
-       * @type {object}
        * @default {template: 1}
        */
-
       excludedLocalNames: {
         type: Object,
         value: function() {
@@ -11083,7 +11066,15 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
     // observe items change under the given node.
     _observeItems: function(node) {
-      var observer = new MutationObserver(function() {
+      // TODO(cdata): Update this when we get distributed children changed.
+      var observer = new MutationObserver(function(mutations) {
+        // Let other interested parties know about the change so that
+        // we don't have to recreate mutation observers everywher.
+        this.fire('iron-items-changed', mutations, {
+          bubbles: false,
+          cancelable: false
+        });
+
         if (this.selected != null) {
           this._updateSelected();
         }
@@ -13791,12 +13782,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       :host([raised]) .keyboard-focus {
         font-weight: bold;
-        @apply(paper-button-raised-keyboard-focus);
+        @apply(--paper-button-raised-keyboard-focus);
       }
 
       :host(:not([raised])) .keyboard-focus {
         font-weight: bold;
-        @apply(paper-button-flat-keyboard-focus);
+        @apply(--paper-button-flat-keyboard-focus);
       }
 
       :host([disabled]) {
@@ -18931,126 +18922,113 @@ paper-ripple {
 
 </script>
 <dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
-
-  <style>
-/**
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
-:host {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-:host(:focus) {
-  outline: none;
-}
-
-#radioContainer {
-  display: inline-block;
-  position: relative;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-:host #ink {
-  position: absolute;
-  top: -16px;
-  left: -16px;
-  width: 48px;
-  height: 48px;
-  color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-:host #ink[checked] {
-  color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
-}
-
-:host #offRadio {
-  position: absolute;
-  box-sizing: content-box;
-  top: 0px;
-  left: 0px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: solid 2px;
-  background-color: var(--paper-radio-button-unchecked-background-color, transparent);
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  transition: border-color 0.28s;
-}
-
-:host #onRadio {
-  position: absolute;
-  box-sizing: content-box;
-  top: 4px;
-  left: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--paper-radio-button-checked-color, --default-primary-color);
-  -webkit-transform: scale(0);
-  transform: scale(0);
-  transition: -webkit-transform ease 0.28s;
-  transition: transform ease 0.28s;
-}
-
-:host([checked]) #offRadio {
-  border-color: var(--paper-radio-button-checked-color, --default-primary-color);
-}
-
-:host([checked]) #onRadio {
-  -webkit-transform: scale(1);
-  transform: scale(1);
-}
-
-#radioLabel {
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 10px;
-  white-space: normal;
-  pointer-events: none;
-  color: var(--paper-radio-button-label-color, --primary-text-color);
-}
-
-#radioLabel[hidden] {
-  display: none;
-}
-
-/* disabled state */
-:host([disabled]) {
-  pointer-events: none;
-}
-
-:host([disabled]) #offRadio {
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled][checked]) #onRadio {
-  background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled]) #radioLabel {
-  /* slightly darker than the button, so that it's readable */
-  opacity: 0.65;
-}
-
-</style>
-
   <template>
+    <style>
+      :host {
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      :host(:focus) {
+        outline: none;
+      }
+
+      #radioContainer {
+        display: inline-block;
+        position: relative;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        vertical-align: middle;
+      }
+
+      :host #ink {
+        position: absolute;
+        top: -16px;
+        left: -16px;
+        width: 48px;
+        height: 48px;
+        color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      :host #ink[checked] {
+        color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
+      }
+
+      :host #offRadio {
+        position: absolute;
+        box-sizing: content-box;
+        top: 0px;
+        left: 0px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: solid 2px;
+        background-color: var(--paper-radio-button-unchecked-background-color, transparent);
+        border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        transition: border-color 0.28s;
+      }
+
+      :host #onRadio {
+        position: absolute;
+        box-sizing: content-box;
+        top: 4px;
+        left: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        -webkit-transform: scale(0);
+        transform: scale(0);
+        transition: -webkit-transform ease 0.28s;
+        transition: transform ease 0.28s;
+      }
+
+      :host([checked]) #offRadio {
+        border-color: var(--paper-radio-button-checked-color, --default-primary-color);
+      }
+
+      :host([checked]) #onRadio {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+      }
+
+      #radioLabel {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        white-space: normal;
+        pointer-events: none;
+        color: var(--paper-radio-button-label-color, --primary-text-color);
+      }
+
+      #radioLabel[hidden] {
+        display: none;
+      }
+
+      /* disabled state */
+      :host([disabled]) {
+        pointer-events: none;
+      }
+
+      :host([disabled]) #offRadio {
+        border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        opacity: 0.5;
+      }
+
+      :host([disabled][checked]) #onRadio {
+        background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        opacity: 0.5;
+      }
+
+      :host([disabled]) #radioLabel {
+        /* slightly darker than the button, so that it's readable */
+        opacity: 0.65;
+      }
+    </style>
 
     <div id="radioContainer">
       <div id="offRadio"></div>

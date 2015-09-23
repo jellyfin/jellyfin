@@ -94,6 +94,12 @@ var Dashboard = {
 
             var url = data.url.toLowerCase();
 
+            // Don't bounce to login on failures to contact our external servers
+            if (url.indexOf('emby.media') != -1) {
+                Dashboard.hideLoadingMsg();
+                return;
+            }
+
             // Bounce to the login screen, but not if a password entry fails, obviously
             if (url.indexOf('/password') == -1 &&
                 url.indexOf('/authenticate') == -1 &&

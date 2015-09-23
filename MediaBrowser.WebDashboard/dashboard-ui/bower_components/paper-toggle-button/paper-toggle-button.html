@@ -98,7 +98,7 @@ Custom property | Description | Default
         height: 14px;
       }
 
-      #toggleBar {
+      .toggle-bar {
         position: absolute;
         height: 100%;
         width: 100%;
@@ -108,16 +108,16 @@ Custom property | Description | Default
         transition: background-color linear .08s;
       }
 
-      :host([checked]) #toggleBar {
+      :host([checked]) .toggle-bar {
         opacity: 0.5;
       }
 
-      :host([disabled]) #toggleBar {
+      :host([disabled]) .toggle-bar {
         background-color: #000;
         opacity: 0.12;
       }
 
-      #toggleButton {
+      .toggle-button {
         position: absolute;
         top: -3px;
         height: 20px;
@@ -129,22 +129,22 @@ Custom property | Description | Default
         will-change: transform;
       }
 
-      #toggleButton.dragging {
+      .toggle-button.dragging {
         -webkit-transition: none;
         transition: none;
       }
 
-      :host([checked]) #toggleButton {
+      :host([checked]) .toggle-button {
         -webkit-transform: translate(16px, 0);
         transform: translate(16px, 0);
       }
 
-      :host([disabled]) #toggleButton {
+      :host([disabled]) .toggle-button {
         background-color: #bdbdbd;
         opacity: 1;
       }
 
-      #ink {
+      .toggle-ink {
         position: absolute;
         top: -14px;
         left: -14px;

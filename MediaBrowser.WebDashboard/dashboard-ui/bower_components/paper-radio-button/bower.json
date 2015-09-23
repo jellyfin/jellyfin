@@ -1,6 +1,6 @@
 {
   "name": "paper-radio-button",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A material design radio button",
   "authors": [
     "The Polymer Authors"
@@ -24,7 +24,7 @@
     "paper-styles": "PolymerLabs/paper-styles#^1.0.0",
     "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
     "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^3.3.0",

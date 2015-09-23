@@ -61,6 +61,7 @@
         var info = IapManager.getProductInfo(id) || {};
 
         if (info.owned) {
+            notifyServer(id);
             validatedFeatures.push(id);
             deferred.resolve();
             return;
@@ -88,6 +89,33 @@
 
         }).fail(function () {
             deferred.reject();
+        });
+    }
+
+    function notifyServer(id) {
+
+        if (!$.browser.android) {
+            return;
+        }
+
+        HttpClient.send({
+            type: "POST",
+            url: "https://mb3admin.com/test/admin/service/appstore/addDeviceFeature",
+            data: {
+                deviceId: ConnectionManager.deviceId(),
+                feature: 'com.mb.android.unlock'
+            },
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            headers: {
+                "X-EMBY-TOKEN": "EMBY_DEVICE"
+            }
+
+        }).done(function (result) {
+
+            Logger.log('addDeviceFeature succeeded');
+
+        }).fail(function () {
+            Logger.log('addDeviceFeature failed');
         });
     }
 

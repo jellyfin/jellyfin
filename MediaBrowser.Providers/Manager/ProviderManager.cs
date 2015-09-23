@@ -495,8 +495,6 @@ namespace MediaBrowser.Providers.Manager
                 ParentId = Guid.NewGuid()
             };
 
-            dummy.SetParent(new Folder());
-
             var options = GetMetadataOptions(dummy);
 
             var summary = new MetadataPluginSummary
