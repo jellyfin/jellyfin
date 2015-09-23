@@ -8,22 +8,22 @@
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
-                <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
-                <paper-tab><iron-icon icon="local-movies"></iron-icon>${TabMovies}</paper-tab>
-                <paper-tab class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</paper-tab>
-                <paper-tab><iron-icon icon="video-library"></iron-icon>${TabCollections}</paper-tab>
-                <paper-tab><iron-icon icon="video-library"></iron-icon>${TabGenres}</paper-tab>
-                <paper-tab class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</paper-tab>
-                <paper-tab class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</paper-tab>
+                <paper-tab>${TabSuggestions}</paper-tab>
+                <paper-tab>${TabMovies}</paper-tab>
+                <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
+                <paper-tab>${TabCollections}</paper-tab>
+                <paper-tab>${TabGenres}</paper-tab>
+                <paper-tab class="moviePeopleTab">${TabPeople}</paper-tab>
+                <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
-                <a href="movies.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-                <a href="movies.html?tab=1"><iron-icon icon="local-movies"></iron-icon>${TabMovies}</a>
-                <a href="movies.html?tab=2" class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</a>
-                <a href="movies.html?tab=3"><iron-icon icon="video-library"></iron-icon>${TabCollections}</a>
-                <a href="movies.html?tab=4"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-                <a href="movies.html?tab=5" class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
-                <a href="movies.html?tab=6" class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</a>
+                <a href="movies.html">${TabSuggestions}</a>
+                <a href="movies.html?tab=1">${TabMovies}</a>
+                <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
+                <a href="movies.html?tab=3">${TabCollections}</a>
+                <a href="movies.html?tab=4">${TabGenres}</a>
+                <a href="movies.html?tab=5" class="moviePeopleTab">${TabPeople}</a>
+                <a href="movies.html?tab=6" class="movieStudiosTab">${TabStudios}</a>
             </div>
         </div>
 
@@ -65,15 +65,6 @@
                         </div>
                         <div class="viewSettings">
                             <div class="listTopPaging">
-                            </div>
-
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
-                                    <button class="btnAddToCollection" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToCollection}">${ButtonAddToCollection}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
                             </div>
                         </div>
                         <div class="itemsContainer" style="text-align:center;"></div>

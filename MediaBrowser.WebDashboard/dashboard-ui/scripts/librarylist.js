@@ -169,7 +169,7 @@
         return false;
     }
 
-    function onCardTapHold(e) {
+    function onContextMenu(e) {
 
         var card = parentWithClass(e.target, 'card');
 
@@ -945,9 +945,6 @@
             preventHover = true;
         }
 
-        this.off('contextmenu', onCardTapHold);
-        this.on('contextmenu', onCardTapHold);
-
         this.off('click', onGroupedCardClick);
         this.on('click', onGroupedCardClick);
 
@@ -957,7 +954,14 @@
         this.off('click', onListViewPlayButtonClick);
         this.on('click', onListViewPlayButtonClick);
 
-        if (!AppInfo.isTouchPreferred) {
+        if (AppInfo.isTouchPreferred) {
+            this.off('contextmenu', disableEvent);
+            this.on('contextmenu', disableEvent);
+        }
+        else {
+            this.off('contextmenu', onContextMenu);
+            this.on('contextmenu', onContextMenu);
+
             this.off('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
             this.on('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
 
@@ -968,8 +972,31 @@
             this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
         }
 
+        for (var i = 0, length = this.length; i < length; i++) {
+            initTapHold(this[i]);
+        }
+
         return this;
     };
+
+    function disableEvent(e) {
+        e.preventDefault();
+        return false;
+    }
+
+    function onTapHold(e) {
+        onContextMenu(e);
+    }
+
+    function initTapHold(element) {
+
+        require(['hammer'], function (Hammer) {
+
+            var hammertime = new Hammer(element);
+
+            hammertime.on('press', onTapHold);
+        });
+    }
 
     function toggleSelections(page) {
 

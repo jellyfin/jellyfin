@@ -7,20 +7,20 @@
     <div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="jqmpanel,jqmcollapsible,scripts/musicrecommended">
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
-                <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
-                <paper-tab><iron-icon icon="album"></iron-icon>${TabAlbums}</paper-tab>
-                <paper-tab><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</paper-tab>
-                <paper-tab><iron-icon icon="music-note"></iron-icon>${TabArtists}</paper-tab>
-                <paper-tab><iron-icon icon="music-note"></iron-icon>${TabSongs}</paper-tab>
-                <paper-tab><iron-icon icon="library-music"></iron-icon>${TabGenres}</paper-tab>
+                <paper-tab>${TabSuggestions}</paper-tab>
+                <paper-tab>${TabAlbums}</paper-tab>
+                <paper-tab>${TabAlbumArtists}</paper-tab>
+                <paper-tab>${TabArtists}</paper-tab>
+                <paper-tab>${TabSongs}</paper-tab>
+                <paper-tab>${TabGenres}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
-                <a href="music.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-                <a href="music.html?tab=1"><iron-icon icon="album"></iron-icon>${TabAlbums}</a>
-                <a href="music.html?tab=2"><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</a>
-                <a href="music.html?tab=3"><iron-icon icon="music-note"></iron-icon>${TabArtists}</a>
-                <a href="music.html?tab=4"><iron-icon icon="music-note"></iron-icon>${TabSongs}</a>
-                <a href="music.html?tab=5"><iron-icon icon="library-music"></iron-icon>${TabGenres}</a>
+                <a href="music.html">${TabSuggestions}</a>
+                <a href="music.html?tab=1">${TabAlbums}</a>
+                <a href="music.html?tab=2">${TabAlbumArtists}</a>
+                <a href="music.html?tab=3">${TabArtists}</a>
+                <a href="music.html?tab=4">${TabSongs}</a>
+                <a href="music.html?tab=5">${TabGenres}</a>
             </div>
         </div>
 
@@ -65,12 +65,6 @@
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
-                            </div>
                         </div>
                         <div id="items" class="itemsContainer paddedItemsContainer"></div>
                     </div>
@@ -82,12 +76,6 @@
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
-                            </div>
                         </div>
                         <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
                     </div>
@@ -98,12 +86,6 @@
                         </div>
                         <div class="viewSettings">
                             <div class="listTopPaging">
-                            </div>
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
                             </div>
                         </div>
                         <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
@@ -122,12 +104,6 @@
                     <div class="pageTabContent" data-index="5">
                         <div class="viewSettings">
                             <div class="listTopPaging">
-                            </div>
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="sync" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
                             </div>
                         </div>
                         <div id="items" class="itemsContainer paddedItemsContainer"></div>

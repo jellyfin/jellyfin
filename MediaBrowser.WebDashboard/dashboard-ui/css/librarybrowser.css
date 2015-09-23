@@ -807,7 +807,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-height: 900px), (max-width: 800px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 550px;
+        height: 500px;
     }
 
     .smallBackdrop:not(.noBackdrop) {
@@ -1212,10 +1212,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-.bottomSecondaryNav .alphabetPicker {
-    bottom: 55px;
-}
-
 .alphabetPicker a {
     display: block;
     text-decoration: none;
@@ -1237,10 +1233,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 1.5em;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.selectionCommands {
-    margin: 1em 0;
 }
 
 .itemSelectionPanel {

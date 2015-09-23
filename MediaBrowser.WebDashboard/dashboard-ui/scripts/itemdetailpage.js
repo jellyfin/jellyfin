@@ -303,12 +303,7 @@
 
         if (context == 'tv') {
 
-            if (AppInfo.enableBottomTabs) {
-                $(page).addClass('noSecondaryNavPage');
-            }
-            else {
-                $(page).removeClass('noSecondaryNavPage');
-            }
+            $(page).removeClass('noSecondaryNavPage');
 
             $('#tvShowsTabs', page).show();
             LibraryMenu.setMenuButtonVisible(true);

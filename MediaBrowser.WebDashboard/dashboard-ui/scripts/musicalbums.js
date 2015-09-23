@@ -56,7 +56,6 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                addSelectionButton: true,
                 sortButton: true,
                 viewPanelClass: 'albumsViewPanel',
                 addLayoutButton: true,

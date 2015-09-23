@@ -59,7 +59,6 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                addSelectionButton: true,
                 viewPanelClass: 'episodesViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,

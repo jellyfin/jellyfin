@@ -59,7 +59,6 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                addSelectionButton: true,
                 viewPanelClass: 'seriesViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,

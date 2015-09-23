@@ -55,7 +55,6 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 showLimit: false,
-                addSelectionButton: true,
                 viewPanelClass: 'albumArtistsViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,

@@ -8,7 +8,9 @@
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
 
-        html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
+        if (AppInfo.enableNavDrawer) {
+            html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
+        }
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
@@ -17,14 +19,16 @@
         html += '<span class="headerSelectedPlayer"></span>';
         html += '<paper-icon-button icon="cast" class="btnCast headerButton headerButtonRight hide"></paper-icon-button>';
 
-        html += '<paper-icon-button icon="search" class="headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"></paper-icon-button>';
-        html += '<div class="viewMenuSearch hide">';
-        html += '<form class="viewMenuSearchForm">';
-        html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-        html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
-        html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
-        html += '</form>';
-        html += '</div>';
+        if (AppInfo.enableSearchInTopMenu) {
+            html += '<paper-icon-button icon="search" class="headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"></paper-icon-button>';
+            html += '<div class="viewMenuSearch hide">';
+            html += '<form class="viewMenuSearchForm">';
+            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
+            html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
+            html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
+            html += '</form>';
+            html += '</div>';
+        }
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
@@ -67,9 +71,14 @@
 
         var header = document.querySelector('.viewMenuBar');
 
+        var headerSearchButton = document.querySelector('.headerSearchButton')
+
         if (user.localUser) {
             $('.btnCast', header).visible(true);
-            document.querySelector('.headerSearchButton').classList.remove('hide');
+
+            if (headerSearchButton) {
+                headerSearchButton.classList.remove('hide');
+            }
 
             requirejs(['voice/voice'], function () {
 
@@ -84,7 +93,9 @@
         } else {
             $('.btnCast', header).visible(false);
             document.querySelector('.headerVoiceButton').classList.add('hide');
-            document.querySelector('.headerSearchButton').classList.add('hide');
+            if (headerSearchButton) {
+                headerSearchButton.classList.add('hide');
+            }
         }
 
         var dashboardEntryHeaderButton = document.querySelector('.dashboardEntryHeaderButton');
@@ -867,22 +878,9 @@
             document.body.classList.remove('dashboardDocument');
             document.body.classList.remove('hideMainDrawer');
 
-            if (AppInfo.enableBottomTabs) {
-                page.classList.add('noSecondaryNavPage');
-
-                if (page.classList.contains('pageWithAbsoluteTabs')) {
-                    document.querySelector('.footer').classList.add('footerOverBottomTabs');
-                }
-                else {
-                    document.querySelector('.footer').classList.remove('footerOverBottomTabs');
-                }
-
-            } else {
-
-                var navs = page.querySelectorAll('.libraryViewNav');
-                for (var i = 0, length = navs.length; i < length; i++) {
-                    initHeadRoom(navs[i]);
-                }
+            var navs = page.querySelectorAll('.libraryViewNav');
+            for (var i = 0, length = navs.length; i < length; i++) {
+                initHeadRoom(navs[i]);
             }
         }
         else if (page.classList.contains('type-interior')) {

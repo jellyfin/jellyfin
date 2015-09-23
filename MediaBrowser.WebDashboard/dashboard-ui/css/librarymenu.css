@@ -214,11 +214,6 @@
     display: none;
 }
 
-.bottomSecondaryNav .libraryViewNav {
-    top: initial;
-    bottom: 0;
-}
-
 .libraryViewNav::-webkit-scrollbar {
     height: 0 !important;
     display: none;
@@ -280,6 +275,28 @@
     color: inherit !important;
     text-decoration: none;
     text-align: center;
+}
+
+.libraryViewNav #tabsContainer {
+    margin: auto;
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+
+.libraryViewNav paper-tabs {
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+    overflow-x: visible !important;
+}
+
+.libraryViewNav paper-tab {
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
 }
 
 .basicPaperLibraryTabs .libraryViewNav paper-tabs {

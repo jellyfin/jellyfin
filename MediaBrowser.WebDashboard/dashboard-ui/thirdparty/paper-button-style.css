@@ -156,15 +156,13 @@ paper-button.mini {
     min-width: initial;
 }
 
-    paper-button.mini .content {
-        padding: 0.5em 0.7em;
+paper-button.mini {
+    padding: 0.4em 0.7em;
+}
+
+    paper-button.mini.noIcon {
+        padding: 0.4em 0.7em;
     }
-
-    paper-button.mini.noIcon .content {
-        padding: 0.5em 0.7em;
-    }
-
-
 
     paper-button.mini iron-icon {
         height: 20px;
@@ -342,29 +340,6 @@ paper-menu-item {
 
 .scrollablePaperTabs paper-icon-button {
     display: none !important;
-}
-
-.libraryViewNav #tabsContainer {
-    margin: auto;
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-}
-
-.libraryViewNav paper-tabs {
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    overflow-x: visible !important;
-}
-
-.libraryViewNav paper-tab {
-    display: inline-block !important;
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
 }
 
 .ui-body-b paper-item-body [secondary] {

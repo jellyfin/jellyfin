@@ -15,18 +15,9 @@
     position: static;
 }
 
-.bottomSecondaryNav .tvGuideHeader {
-    top: 48px;
-}
-
 .tvGuideHeader.headroom--unpinned {
     -webkit-transform: translateY(-98px);
     transform: translateY(-98px);
-}
-
-.bottomSecondaryNav .tvGuideHeader.headroom--unpinned {
-    -webkit-transform: translateY(-48px);
-    transform: translateY(-48px);
 }
 
 .tvProgramSectionHeader {

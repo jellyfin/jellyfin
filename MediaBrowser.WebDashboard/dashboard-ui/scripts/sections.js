@@ -327,8 +327,6 @@
 
             var html = '';
 
-            var cardLayout = AppInfo.hasLowImageBandwidth;
-
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 if (enableScrollX()) {
@@ -340,14 +338,14 @@
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
-                    overlayText: screenWidth >= 800 && !cardLayout,
+                    overlayText: false,
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,
-                    cardLayout: cardLayout,
                     showDetailsMenu: true,
                     overlayPlayButton: true,
-                    context: 'home'
+                    context: 'home',
+                    centerText: true
                 });
                 html += '</div>';
             }

@@ -893,5 +893,9 @@
     "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
     "ButtonYes": "Yes",
     "ButtonNo": "No",
-    "ButtonRestorePreviousPurchase": "Restore Purchase"
+    "ButtonRestorePreviousPurchase": "Restore Purchase",
+    "ButtonForYou": "For You",
+    "ButtonLibrary": "Library",
+    "ButtonSearch": "Search",
+    "ButtonNowPlaying": "Now Playing"
 }

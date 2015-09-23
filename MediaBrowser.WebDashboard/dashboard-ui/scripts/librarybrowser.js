@@ -121,6 +121,7 @@
         },
 
         enableFullPaperTabs: function () {
+            return true;
             return AppInfo.isNativeApp;
         },
 
@@ -2633,7 +2634,7 @@
                 html += '</span>';
             }
 
-            if (showControls || options.viewButton || options.sortButton || options.addLayoutButton || options.addSelectionButton || options.additionalButtonsHtml) {
+            if (showControls || options.viewButton || options.sortButton || options.addLayoutButton) {
 
                 html += '<div style="display:inline-block;margin-left:10px;">';
 
@@ -2641,12 +2642,6 @@
 
                     html += '<paper-icon-button class="btnPreviousPage" icon="arrow-back" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
                     html += '<paper-icon-button class="btnNextPage" icon="arrow-forward" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
-                }
-
-                html += (options.additionalButtonsHtml || '');
-
-                if (options.addSelectionButton) {
-                    html += '<paper-icon-button class="btnToggleSelections" icon="check"></paper-icon-button>';
                 }
 
                 if (options.addLayoutButton) {

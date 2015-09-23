@@ -60,7 +60,6 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                addSelectionButton: true,
                 viewPanelClass: 'movieViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,

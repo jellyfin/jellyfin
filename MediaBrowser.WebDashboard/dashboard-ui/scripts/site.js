@@ -1566,10 +1566,6 @@ var Dashboard = {
 
                 quality -= 10;
 
-                if (isBackdrop) {
-                    quality -= 15;
-                }
-
             } else {
 
                 quality -= 40;
@@ -1726,6 +1722,8 @@ var AppInfo = {};
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
+        AppInfo.enableNavDrawer = true;
+        AppInfo.enableSearchInTopMenu = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1740,8 +1738,9 @@ var AppInfo = {};
             }
 
             if (isCordova) {
-                AppInfo.enableBottomTabs = true;
                 //AppInfo.enableSectionTransitions = true;
+                AppInfo.enableNavDrawer = false;
+                AppInfo.enableSearchInTopMenu = false;
 
             } else {
                 if (isMobile) {
@@ -1884,10 +1883,6 @@ var AppInfo = {};
 
         var elem = document.documentElement;
 
-        if (AppInfo.enableBottomTabs) {
-            elem.classList.add('bottomSecondaryNav');
-        }
-
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
         }
@@ -1932,6 +1927,7 @@ var AppInfo = {};
                 Dashboard.importCss('themes/ios.css');
             }
         }
+        Dashboard.importCss('themes/ios.css');
 
         if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
             Dashboard.importCss('thirdparty/paper-ie10.css');
@@ -2191,7 +2187,7 @@ var AppInfo = {};
 
         drawer.drawerWidth = drawerWidth + "px";
 
-        if ($.browser.safari && !AppInfo.isNativeApp) {
+        if ($.browser.safari) {
             drawer.disableEdgeSwipe = true;
         }
 
@@ -2284,16 +2280,21 @@ var AppInfo = {};
 
     function onAppReady(deferred) {
         onDocumentReady();
-        Dashboard.initPromiseDone = true;
-        $.mobile.initializePage();
-        deferred.resolve();
 
-        if (AppInfo.isNativeApp && !$.browser.android) {
-            require(['localsync']);
-        }
+        var deps = [];
+
         if (AppInfo.isNativeApp && $.browser.safari) {
-            require(['cordova/ios/backgroundfetch']);
+            deps.push('cordova/ios/backgroundfetch');
+            deps.push('cordova/ios/tabbar');
+            deps.push('localsync');
         }
+
+        require(deps, function () {
+
+            Dashboard.initPromiseDone = true;
+            $.mobile.initializePage();
+            deferred.resolve();
+        });
         //require(['localsync']);
     }
 
