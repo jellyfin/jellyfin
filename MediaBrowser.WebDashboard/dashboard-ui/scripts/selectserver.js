@@ -59,9 +59,9 @@
         html += server.Name;
         html += '</div>';
 
-        html += '<div secondary>';
-        html += MediaBrowser.ServerInfo.getServerAddress(server, server.LastConnectionMode);
-        html += '</div>';
+        //html += '<div secondary>';
+        //html += MediaBrowser.ServerInfo.getServerAddress(server, server.LastConnectionMode);
+        //html += '</div>';
 
         html += '</a>';
         html += '</paper-item-body>';

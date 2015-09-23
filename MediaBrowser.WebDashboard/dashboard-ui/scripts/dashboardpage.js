@@ -1110,7 +1110,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
         html += '<div secondary>';
         var date = parseISO8601Date(entry.Date, { toLocal: true });
-        html += date.toLocaleDateString();
+        html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
         html += '</div>';
 
         html += '<div secondary>';

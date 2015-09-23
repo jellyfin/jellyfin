@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
@@ -16,14 +17,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
     {
         protected readonly IConfigurationManager Config;
         protected readonly ILogger Logger;
+        protected IJsonSerializer JsonSerializer;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        public BaseTunerHost(IConfigurationManager config, ILogger logger)
+        public BaseTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer)
         {
             Config = config;
             Logger = logger;
+            JsonSerializer = jsonSerializer;
         }
 
         protected abstract Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
@@ -44,6 +47,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
             var result = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
             var list = result.ToList();
+            Logger.Debug("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
             if (!string.IsNullOrWhiteSpace(key))
             {

@@ -13,17 +13,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost
     {
         private readonly IFileSystem _fileSystem;
-        
-        public M3UTunerHost(IConfigurationManager config, ILogger logger, IFileSystem fileSystem)
-            : base(config, logger)
+        private IHttpClient _httpClient;
+
+        public M3UTunerHost(IConfigurationManager config, ILogger logger, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer jsonSerializer)
+            : base(config, logger, jsonSerializer)
         {
             _fileSystem = fileSystem;
+            _httpClient = httpClient;
         }
 
         public override string Type
@@ -45,47 +49,48 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
             string line;
             // Read the file and display it line by line.
-            var file = new StreamReader(url);
-            var channels = new List<M3UChannel>();
-
-            string channnelName = null;
-            string channelNumber = null;
-
-            while ((line = file.ReadLine()) != null)
+            using (var file = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                line = line.Trim();
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
+                var channels = new List<M3UChannel>();
 
-                if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+                string channnelName = null;
+                string channelNumber = null;
 
-                if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
+                while ((line = file.ReadLine()) != null)
                 {
-                    var parts = line.Split(new[] { ':' }, 2).Last().Split(new[] { ',' }, 2);
-                    channelNumber = parts[0];
-                    channnelName = parts[1];
-                }
-                else if (!string.IsNullOrWhiteSpace(channelNumber))
-                {
-                    channels.Add(new M3UChannel
+                    line = line.Trim();
+                    if (string.IsNullOrWhiteSpace(line))
                     {
-                        Name = channnelName,
-                        Number = channelNumber,
-                        Id = ChannelIdPrefix + urlHash + channelNumber,
-                        Path = line
-                    });
+                        continue;
+                    }
 
-                    channelNumber = null;
-                    channnelName = null;
+                    if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var parts = line.Split(new[] { ':' }, 2).Last().Split(new[] { ',' }, 2);
+                        channelNumber = parts[0];
+                        channnelName = parts[1];
+                    }
+                    else if (!string.IsNullOrWhiteSpace(channelNumber))
+                    {
+                        channels.Add(new M3UChannel
+                        {
+                            Name = channnelName,
+                            Number = channelNumber,
+                            Id = ChannelIdPrefix + urlHash + channelNumber,
+                            Path = line
+                        });
+
+                        channelNumber = null;
+                        channnelName = null;
+                    }
                 }
+                return channels;
             }
-            file.Close();
-            return channels;
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -123,15 +128,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-			if (!_fileSystem.FileExists(info.Url))
+            using (var stream = await GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
             {
-                throw new FileNotFoundException();
+
             }
         }
 
         protected override bool IsValidChannelId(string channelId)
         {
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            if (info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return _httpClient.Get(info.Url, cancellationToken);
+            }
+            return Task.FromResult(_fileSystem.OpenRead(info.Url));
         }
 
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
