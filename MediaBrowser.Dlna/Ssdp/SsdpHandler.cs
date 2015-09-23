@@ -230,8 +230,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null, true, 1);
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true, 1);
+                    SendDatagram(header, values, endpoint, null, false, 1);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), false, 1);
                     //SendDatagram(header, values, endpoint, null, true);
 
                     if (enableDebugLogging)
