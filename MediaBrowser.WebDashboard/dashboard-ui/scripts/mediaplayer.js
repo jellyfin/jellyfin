@@ -151,13 +151,13 @@
                     VideoCodec: 'h264',
                     AudioCodec: 'aac,mp3'
                 });
-                // TODO: Test this
-                //profile.DirectPlayProfiles.push({
-                //    Container: 'mov',
-                //    Type: 'Video',
-                //    VideoCodec: 'h264',
-                //    AudioCodec: 'aac,mp3'
-                //});
+
+                profile.DirectPlayProfiles.push({
+                    Container: 'mov',
+                    Type: 'Video',
+                    VideoCodec: 'h264',
+                    AudioCodec: 'aac,mp3'
+                });
             }
 
             var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
@@ -311,7 +311,9 @@
                             Condition: 'NotEquals',
                             Property: 'AudioProfile',
                             Value: 'HE-AAC'
-                        },
+                        }
+                        // Disabling this is going to require us to learn why it was disabled in the first place
+                        ,
                         {
                             Condition: 'NotEquals',
                             Property: 'AudioProfile',
@@ -468,17 +470,17 @@
 
             profile.ResponseProfiles = [];
 
-            profile.ResponseProfiles.push({
-                Type: 'Video',
-                Container: 'm4v',
-                MimeType: 'video/mp4'
-            });
-
             //profile.ResponseProfiles.push({
             //    Type: 'Video',
             //    Container: 'mkv',
             //    MimeType: 'video/webm'
             //});
+
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'm4v',
+                MimeType: 'video/mp4'
+            });
 
             profile.ResponseProfiles.push({
                 Type: 'Video',
