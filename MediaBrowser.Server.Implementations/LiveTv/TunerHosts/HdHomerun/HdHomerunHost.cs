@@ -20,13 +20,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunHost : BaseTunerHost, ITunerHost
     {
         private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
 
         public HdHomerunHost(IConfigurationManager config, ILogger logger, IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(config, logger)
+            : base(config, logger, jsonSerializer)
         {
             _httpClient = httpClient;
-            _jsonSerializer = jsonSerializer;
         }
 
         public string Name
@@ -55,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             };
             using (var stream = await _httpClient.Get(options))
             {
-                var root = _jsonSerializer.DeserializeFromStream<List<Channels>>(stream);
+                var root = JsonSerializer.DeserializeFromStream<List<Channels>>(stream);
 
                 if (root != null)
                 {
@@ -380,7 +378,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
-            Logger.Debug("GetChannelStream: channel id: {0}. stream id: {1}", channelId, streamId ?? string.Empty);
+            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1}", channelId, streamId ?? string.Empty);
 
             if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
             {
