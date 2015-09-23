@@ -5,7 +5,7 @@
         var self = this;
 
         var currentProgressInterval;
-        var currentPlaylistIndex = 0;
+        var currentPlaylistIndex = -1;
 
         self.currentMediaRenderer = null;
         self.currentItem = null;

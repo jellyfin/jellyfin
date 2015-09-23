@@ -1927,7 +1927,6 @@ var AppInfo = {};
                 Dashboard.importCss('themes/ios.css');
             }
         }
-        Dashboard.importCss('themes/ios.css');
 
         if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
             Dashboard.importCss('thirdparty/paper-ie10.css');

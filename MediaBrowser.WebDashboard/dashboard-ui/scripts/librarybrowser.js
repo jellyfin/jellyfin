@@ -121,7 +121,6 @@
         },
 
         enableFullPaperTabs: function () {
-            return true;
             return AppInfo.isNativeApp;
         },
 

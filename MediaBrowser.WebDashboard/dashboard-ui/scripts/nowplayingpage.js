@@ -706,10 +706,12 @@
         if (index != -1) {
 
             var item = itemsContainer.querySelectorAll('.listItem')[index];
-            var img = item.querySelector('.listviewImage');
+            if (item) {
+                var img = item.querySelector('.listviewImage');
 
-            img.classList.remove('lazy');
-            img.classList.add('playlistIndexIndicatorImage');
+                img.classList.remove('lazy');
+                img.classList.add('playlistIndexIndicatorImage');
+            }
         }
 
         ImageLoader.lazyChildren(itemsContainer);

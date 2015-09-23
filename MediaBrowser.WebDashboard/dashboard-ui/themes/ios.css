@@ -19,6 +19,11 @@ body {
     background-color: rgba(28,28,28,.92) !important;
 }
 
+.viewMenuBar {
+    /* It needs this in order to retain height since we're positioning the contents absolutely */
+    height: 50px;
+}
+
 .viewMenuBar, .libraryViewNav, paper-tabs {
     background-color: #000;
 }
