@@ -141,7 +141,8 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
+                    var id = itemOfType.GetLookupInfo();
+                    await ItemIdentifier<TIdType>.FindIdentities(id, ProviderManager, cancellationToken);
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
@@ -155,8 +156,6 @@ namespace MediaBrowser.Providers.Manager
                     {
                         refreshResult.SetDateLastMetadataRefresh(null);
                     }
-
-                    MergeIdentities(itemOfType, id);
                 }
             }
 
@@ -223,16 +222,7 @@ namespace MediaBrowser.Providers.Manager
             item.AfterMetadataRefresh();
             return _cachedTask;
         }
-
-        private void MergeIdentities(TItemType item, TIdType id)
-        {
-            var hasIdentity = id as IHasIdentities<IItemIdentity>;
-            if (hasIdentity != null)
-            {
-                item.Identities = hasIdentity.Identities.ToList();
-            }
-        }
-
+        
         private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.
@@ -621,26 +611,6 @@ namespace MediaBrowser.Providers.Manager
                     hasTrailers.RemoteTrailers.Clear();
                 }
             }
-        }
-
-        private async Task<TIdType> CreateInitialLookupInfo(TItemType item, CancellationToken cancellationToken)
-        {
-            var info = item.GetLookupInfo();
-
-            var hasIdentity = info as IHasIdentities<IItemIdentity>;
-            if (hasIdentity != null)
-            {
-                try
-                {
-                    await hasIdentity.FindIdentities(ProviderManager, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error in identity providers", ex);
-                }
-            }
-
-            return info;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)
