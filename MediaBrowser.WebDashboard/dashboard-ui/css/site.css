@@ -352,10 +352,6 @@ body {
     text-decoration: none;
 }
 
-    .textlink:hover {
-        text-decoration: underline;
-    }
-
 h1, h1 a {
     font-weight: 300 !important;
     font-size: 24px;
@@ -382,7 +378,7 @@ h2 {
     font-weight: 500 !important;
 }
 
-a {
+a, a:active, a:hover {
     text-decoration: none;
 }
 
@@ -1105,10 +1101,6 @@ paper-input + .fieldDescription {
     background-color: rgba(26,26,26,.94);
 }
 
-.footerOverBottomTabs {
-    bottom: 52px !important;
-}
-
 .footerNotification {
     padding: .75em 1em;
     margin: 0;
@@ -1587,4 +1579,23 @@ progress {
 
 .supporterMembershipDisabled .tabSupporterMembership {
     display: none;
+}
+
+.syncActivityForTarget {
+    margin: 0 0 3em 0;
+}
+
+.syncActivityForTarget paper-fab {
+    border-radius: 0;
+}
+
+@media all and (min-width: 800px) {
+
+    .syncActivityForTarget {
+        max-width: 600px;
+        margin: 0 3em 3em 0;
+        display: inline-block;
+        vertical-align: top;
+        min-width: 400px;
+    }
 }

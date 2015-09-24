@@ -1,4 +1,4 @@
-﻿$(document).on('pageshowready', "#myPreferencesMenuPage", function () {
+﻿$(document).on('pageshow', "#myPreferencesMenuPage", function () {
 
     var page = this;
 
@@ -14,5 +14,11 @@
         page.querySelector('.lnkSync').classList.remove('hide');
     } else {
         page.querySelector('.lnkSync').classList.add('hide');
+    }
+
+    if (AppInfo.isNativeApp && $.browser.safari) {
+        page.querySelector('.lnkServer').classList.remove('hide');
+    } else {
+        page.querySelector('.lnkServer').classList.add('hide');
     }
 });

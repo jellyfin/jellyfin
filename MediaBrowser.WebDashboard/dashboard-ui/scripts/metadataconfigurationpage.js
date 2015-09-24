@@ -42,7 +42,7 @@
 
         $('.metadataConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataConfigurationPage", function () {
+    }).on('pageshow', "#metadataConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

@@ -79,7 +79,7 @@
 
         });
 
-    }).on('pageshowready', "#publicSharedItemPage", function () {
+    }).on('pageshow', "#publicSharedItemPage", function () {
 
         var page = this;
 

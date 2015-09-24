@@ -75,7 +75,7 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#kidsPage", function () {
+    $(document).on('pageshow', "#kidsPage", function () {
 
         var page = this;
 

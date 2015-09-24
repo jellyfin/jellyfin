@@ -47,7 +47,7 @@
             syncNow(page);
         });
 
-    }).on('pageshowready', "#mySyncActivityPage", function () {
+    }).on('pageshow', "#mySyncActivityPage", function () {
 
         var page = this;
 

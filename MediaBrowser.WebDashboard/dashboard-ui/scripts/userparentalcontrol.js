@@ -388,7 +388,7 @@
         $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
         $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
 
-    }).on('pageshowready', "#userParentalControlPage", function () {
+    }).on('pageshow', "#userParentalControlPage", function () {
 
         var page = this;
 

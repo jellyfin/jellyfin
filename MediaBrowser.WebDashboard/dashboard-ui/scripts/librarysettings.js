@@ -39,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#librarySettingsPage", function () {
+    $(document).on('pageshow', "#librarySettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

@@ -143,7 +143,7 @@
         $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#languagePreferencesPage", function () {
+    }).on('pageshow', "#languagePreferencesPage", function () {
 
         var page = this;
 

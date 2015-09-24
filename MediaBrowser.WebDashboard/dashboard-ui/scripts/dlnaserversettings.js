@@ -43,7 +43,7 @@
 
         $('.dlnaServerSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#dlnaServerSettingsPage", function () {
+    }).on('pageshow', "#dlnaServerSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

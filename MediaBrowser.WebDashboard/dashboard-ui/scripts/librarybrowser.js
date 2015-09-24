@@ -223,11 +223,6 @@
                 tabs.noink = true;
             }
 
-            if (AppInfo.enableBottomTabs) {
-                tabs.alignBottom = true;
-                tabs.classList.add('bottomTabs');
-            }
-
             if (LibraryBrowser.enableFullPaperTabs()) {
 
                 if ($.browser.safari) {
@@ -255,7 +250,7 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pageshowready', LibraryBrowser.onTabbedpagebeforeshow);
+            $(ownerpage).on('pageshow', LibraryBrowser.onTabbedpagebeforeshow);
 
             pages.addEventListener('iron-select', function () {
                 // When transition animations are used, add a content loading delay to allow the animations to finish
@@ -389,13 +384,20 @@
                         pages.exitAnimation = null;
 
                         var tabs = this.querySelector('paper-tabs');
-                        var noSlide = tabs.noSlide;
-                        tabs.noSlide = true;
-                        tabs.selected = index;
 
-                        pages.entryAnimation = entryAnimation;
-                        pages.exitAnimation = exitAnimation;
-                        tabs.noSlide = noSlide;
+                        // For some reason the live tv page will not switch tabs in IE and safari
+                        var delay = $.browser.chrome ? 0 : 100;
+
+                        setTimeout(function () {
+                            var noSlide = tabs.noSlide;
+                            tabs.noSlide = true;
+                            tabs.selected = index;
+
+                            pages.entryAnimation = entryAnimation;
+                            pages.exitAnimation = exitAnimation;
+                            tabs.noSlide = noSlide;
+
+                        }, delay);
                     }
                 }
             };
@@ -404,7 +406,7 @@
 
                 afterNavigate.call($($.mobile.activePage)[0]);
             } else {
-                $(document).one('pageshowready', '.page', afterNavigate);
+                $(document).one('pageshow', '.page', afterNavigate);
                 Dashboard.navigate(url);
             }
         },

@@ -1,6 +1,6 @@
 {
   "name": "iron-autogrow-textarea",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A textarea element that automatically grows with input",
   "authors": [
     "The Polymer Authors"

@@ -68,7 +68,7 @@
         $('.encodingSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#encodingSettingsPage", function () {
+    }).on('pageshow', "#encodingSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

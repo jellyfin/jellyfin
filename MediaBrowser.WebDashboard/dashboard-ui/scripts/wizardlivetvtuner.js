@@ -89,7 +89,7 @@
 
         $('.btnSkip', page).on('click', skip);
 
-    }).on('pageshowready', "#wizardTunerPage", function () {
+    }).on('pageshow', "#wizardTunerPage", function () {
 
         var page = this;
 

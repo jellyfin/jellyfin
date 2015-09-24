@@ -87,6 +87,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var finalHeight = autogrow.offsetHeight
           assert.isTrue(finalHeight < initialHeight);
         });
+
+        test('textarea selection works', function() {
+          var autogrow = fixture('basic');
+          var textarea = autogrow.textarea;
+          autogrow.bindValue = 'batman\nand\nrobin';
+
+          autogrow.selectionStart = 3;
+          autogrow.selectionEnd = 5;
+
+          assert.equal(textarea.selectionStart, 3);
+          assert.equal(textarea.selectionEnd, 5);
+        });
       });
 
       suite('focus/blur events', function() {

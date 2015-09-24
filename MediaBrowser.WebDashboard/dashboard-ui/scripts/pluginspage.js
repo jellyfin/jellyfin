@@ -219,7 +219,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#pluginsPage", function () {
+    $(document).on('pageshow', "#pluginsPage", function () {
 
         reloadList(this);
     });

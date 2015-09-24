@@ -60,7 +60,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#notificationSettingsPage", function () {
+    $(document).on('pageshow', "#notificationSettingsPage", function () {
 
         var page = this;
 

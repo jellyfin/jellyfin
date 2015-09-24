@@ -288,7 +288,7 @@
             loadTab(page, parseInt(this.selected));
         });
 
-    }).on('pageshowready', "#musicRecommendedPage", function () {
+    }).on('pageshow', "#musicRecommendedPage", function () {
 
         var page = this;
 

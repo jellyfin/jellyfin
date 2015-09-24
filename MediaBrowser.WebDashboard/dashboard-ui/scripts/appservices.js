@@ -98,7 +98,7 @@
         $('.sectionTabs', page).hide();
         $('.' + context + 'SectionTabs', page).show();
 
-    }).on('pageshowready', "#appServicesPage", function () {
+    }).on('pageshow', "#appServicesPage", function () {
 
         var page = this;
 

@@ -172,7 +172,7 @@
 
         $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
 
-    }).on('pageshowready', "#addPluginPage", function () {
+    }).on('pageshow', "#addPluginPage", function () {
 
         var page = this;
 

@@ -199,7 +199,7 @@
         });
     });
 
-    pageClassOn('pageshowready', "type-interior", function () {
+    pageClassOn('pageshow', "type-interior", function () {
 
         var page = $(this);
 

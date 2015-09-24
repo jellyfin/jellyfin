@@ -219,7 +219,7 @@
             });
         });
 
-    }).on('pageshowready', "#scheduledTasksPage", function () {
+    }).on('pageshow', "#scheduledTasksPage", function () {
 
         var page = this;
 

@@ -347,7 +347,7 @@
     }
 };
 
-$(document).on('pageinit', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshowready', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+$(document).on('pageinit', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
 
 var WizardLibraryPage = {
 
@@ -371,7 +371,7 @@ var WizardLibraryPage = {
 
 (function ($, document, window) {
 
-    $(document).on('pageshowready', "#mediaLibraryPage", function () {
+    $(document).on('pageshow', "#mediaLibraryPage", function () {
 
         var page = this;
 

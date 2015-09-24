@@ -60,7 +60,7 @@
             return false;
         });
 
-    }).on('pageshowready', "#liveTvTunerProviderM3UPage", function () {
+    }).on('pageshow', "#liveTvTunerProviderM3UPage", function () {
 
         var providerId = getParameterByName('id');
         var page = this;

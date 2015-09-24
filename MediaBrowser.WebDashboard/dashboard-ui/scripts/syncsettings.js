@@ -52,7 +52,7 @@
         $('.syncSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#syncSettingsPage", function () {
+    }).on('pageshow', "#syncSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

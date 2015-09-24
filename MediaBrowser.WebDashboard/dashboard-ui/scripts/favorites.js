@@ -141,10 +141,24 @@
         });
     }
 
-    window.HomePage.renderFavorites = function (page, tabContent) {
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            loadSections(tabContent, Dashboard.getCurrentUserId());
+    function initHomePage() {
+
+        window.HomePage.renderFavorites = function (page, tabContent) {
+            if (LibraryBrowser.needsRefresh(tabContent)) {
+                loadSections(tabContent, Dashboard.getCurrentUserId());
+            }
+        };
+    }
+
+    initHomePage();
+
+    pageIdOn('pageshow', "favoritesPage", function () {
+
+        var page = this;
+
+        if (LibraryBrowser.needsRefresh(page)) {
+            loadSections(page, Dashboard.getCurrentUserId());
         }
-    };
+    });
 
 })(jQuery, document);

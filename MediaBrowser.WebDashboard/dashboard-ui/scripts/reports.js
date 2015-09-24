@@ -847,7 +847,7 @@
             reloadItems(page);
         });
     })
-	.on('pageshowready', "#libraryReportManagerPage", function () {
+	.on('pageshow', "#libraryReportManagerPage", function () {
 
 	    query.UserId = Dashboard.getCurrentUserId();
 	    var page = this;

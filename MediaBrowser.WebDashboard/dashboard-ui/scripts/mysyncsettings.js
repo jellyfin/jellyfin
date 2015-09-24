@@ -52,7 +52,7 @@
             });
         });
 
-    }).on('pageshowready', "#syncPreferencesPage", function () {
+    }).on('pageshow', "#syncPreferencesPage", function () {
 
         var page = this;
 

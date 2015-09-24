@@ -818,7 +818,7 @@
 
     });
 
-    pageClassOn('pageshowready', 'page', function () {
+    pageClassOn('pageshow', 'page', function () {
 
         var page = this;
 

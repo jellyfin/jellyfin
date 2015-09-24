@@ -46,7 +46,7 @@
 
         $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#wizardStartPage", function () {
+    }).on('pageshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
         var page = this;

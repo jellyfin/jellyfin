@@ -151,7 +151,7 @@
 
         $('.newUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#newUserPage", function () {
+    }).on('pageshow', "#newUserPage", function () {
 
         var page = this;
 

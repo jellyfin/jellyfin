@@ -136,7 +136,7 @@
         $('.devicesUploadForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#devicesUploadPage", function () {
+    }).on('pageshow', "#devicesUploadPage", function () {
 
         var page = this;
 

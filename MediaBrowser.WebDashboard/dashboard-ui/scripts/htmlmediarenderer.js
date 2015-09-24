@@ -40,7 +40,7 @@
                 if (duration) {
                     if (time >= (duration - 1)) {
 
-                        onEnded();
+                        //onEnded();
                         return;
                     }
                 }

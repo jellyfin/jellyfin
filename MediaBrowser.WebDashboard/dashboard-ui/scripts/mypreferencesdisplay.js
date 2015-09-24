@@ -59,7 +59,7 @@
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#displayPreferencesPage", function () {
+    }).on('pageshow', "#displayPreferencesPage", function () {
 
         var page = this;
 

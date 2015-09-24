@@ -458,10 +458,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding: 0;
 }
 
-    .lnkSibling:hover {
-        text-decoration: underline;
-    }
-
     .lnkSibling:not(.hide) {
         display: block;
     }
@@ -973,10 +969,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-decoration: none;
 }
 
-    .detailPageParentLink:hover {
-        text-decoration: underline;
-    }
-
 .itemMiscInfo {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -1049,7 +1041,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border-radius: 50%;
     color: #fff;
     line-height: 19px;
-    background-color: #38c;
+    background-color: #52B54B;
 }
 
 .playedIndicator + .syncIndicator {
@@ -1553,6 +1545,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .movieTrailersTabDisabled .movieTrailersTab {
+    display: none !important;
+}
+
+.homeFavoritesDisabled .homeFavoritesTab {
     display: none !important;
 }
 

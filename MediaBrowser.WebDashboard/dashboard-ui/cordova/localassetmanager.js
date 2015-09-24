@@ -459,9 +459,19 @@
         return filename;
     }
 
-    function downloadFile(url, localPath) {
+    function downloadFile(url, localPath, enableBackground) {
+
+        if (!enableBackground) {
+            return downloadWithFileTransfer(url, localPath);
+        }
 
         var deferred = DeferredBuilder.Deferred();
+
+        if (localStorage.getItem('sync-' + url) == '1') {
+            Logger.log('file was downloaded previously');
+            deferred.resolveWith(null, [localPath]);
+            return deferred.promise();
+        }
 
         Logger.log('downloading: ' + url + ' to ' + localPath);
 
@@ -478,10 +488,8 @@
                     var downloadPromise = download.startAsync().then(function () {
 
                         // on success
-                        var localUrl = localPath;
-
-                        Logger.log('Downloaded local url: ' + localUrl);
-                        deferred.resolveWith(null, [localUrl]);
+                        Logger.log('Downloaded local url: ' + localPath);
+                        localStorage.setItem('sync-' + url, '1');
 
                     }, function () {
 
@@ -495,6 +503,34 @@
                         //Logger.log('download progress: ' + value);
 
                     });
+
+                    // true indicates that it's queued
+                    deferred.resolveWith(null, [localPath, true]);
+                });
+
+            }).fail(getOnFail(deferred));;
+
+        }).fail(getOnFail(deferred));
+
+        return deferred.promise();
+    }
+
+    function downloadWithFileTransfer(url, localPath) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        Logger.log('downloading: ' + url + ' to ' + localPath);
+
+        getFileSystem().done(function (fileSystem) {
+
+            createDirectory(getParentDirectoryPath(localPath)).done(function () {
+
+                var path = fileSystem.root.toURL() + "/emby/cache/" + key;
+
+                var ft = new FileTransfer();
+                ft.download(url, path, function (entry) {
+
+                    deferred.resolveWith(null, [localPath]);
                 });
 
             }).fail(getOnFail(deferred));;
@@ -550,10 +586,6 @@
         }).fail(getOnFail(deferred));
 
         return deferred.promise();
-    }
-
-    function getParentDirectoryPath(path) {
-        return path.substring(0, path.lastIndexOf('/'));;
     }
 
     function downloadSubtitles(url, localItem, subtitleStream) {

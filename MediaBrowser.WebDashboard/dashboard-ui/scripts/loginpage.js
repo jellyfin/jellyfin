@@ -226,4 +226,4 @@ $(document).on('pageinit', "#loginPage", function () {
         Dashboard.navigate('forgotpassword.html');
     });
 
-}).on('pageshowready', "#loginPage", LoginPage.onPageShow);
+}).on('pageshow', "#loginPage", LoginPage.onPageShow);

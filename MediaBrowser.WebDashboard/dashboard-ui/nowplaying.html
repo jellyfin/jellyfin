@@ -8,7 +8,7 @@
 
         <div data-role="content" style="overflow:visible;">
 
-            <paper-fab mini icon="arrow-back" class="white" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
+            <paper-fab mini icon="arrow-back" class="white nowPlayingPageBackButton" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
             <div style="float:right;position:relative;top:5px;right:5px;text-align:right;">
                 <div>
                     <span class="nowPlayingSelectedPlayer"></span>
@@ -149,7 +149,7 @@
                 </neon-animatable>
             </neon-animated-pages>
 
-            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs" hidescrollbuttons noink>
+            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs nowPlayingPagePaperTabs" hidescrollbuttons noink>
 
                 <paper-tab>${TabNowPlaying}</paper-tab>
                 <paper-tab>${TabControls}</paper-tab>

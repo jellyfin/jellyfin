@@ -117,7 +117,7 @@
 
         $('.libraryPathMappingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#libraryPathMappingPage", function () {
+    }).on('pageshow', "#libraryPathMappingPage", function () {
 
         Dashboard.showLoadingMsg();
 

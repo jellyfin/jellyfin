@@ -314,7 +314,7 @@
 
         $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#scheduledTaskPage", function () {
+    }).on('pageshow', "#scheduledTaskPage", function () {
 
         ScheduledTaskPage.refreshScheduledTask();
     });

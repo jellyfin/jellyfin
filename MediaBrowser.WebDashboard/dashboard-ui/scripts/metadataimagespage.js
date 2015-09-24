@@ -562,7 +562,7 @@
 
         $('.metadataImagesConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataImagesConfigurationPage", function () {
+    }).on('pageshow', "#metadataImagesConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

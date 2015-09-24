@@ -91,7 +91,7 @@
         $('.btnSkip', page).on('click', skip);
         $('.btnNext', page).on('click', next);
 
-    }).on('pageshowready', "#wizardGuidePage", function () {
+    }).on('pageshow', "#wizardGuidePage", function () {
 
         var page = this;
 

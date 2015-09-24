@@ -352,7 +352,7 @@
 
         $('.episodeCorrectionForm').off('submit', onEpisodeCorrectionFormSubmit).on('submit', onEpisodeCorrectionFormSubmit);
 
-    }).on('pageshowready', "#libraryFileOrganizerLogPage", function () {
+    }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 

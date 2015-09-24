@@ -43,7 +43,7 @@
 
         $('.metadataNfoForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataNfoPage", function () {
+    }).on('pageshow', "#metadataNfoPage", function () {
 
         Dashboard.showLoadingMsg();
 

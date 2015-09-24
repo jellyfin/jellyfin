@@ -94,7 +94,7 @@
         $('.advancedMetadataConfigurationForm').on('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#advancedMetadataConfigurationPage", function () {
+    }).on('pageshow', "#advancedMetadataConfigurationPage", function () {
 
         var page = this;
 

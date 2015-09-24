@@ -1564,7 +1564,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 10;
+                quality -= 5;
 
             } else {
 
@@ -1724,6 +1724,8 @@ var AppInfo = {};
         AppInfo.enableMovieHomeSuggestions = true;
         AppInfo.enableNavDrawer = true;
         AppInfo.enableSearchInTopMenu = true;
+        AppInfo.enableHomeFavorites = true;
+        AppInfo.enableNowPlayingBar = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1741,6 +1743,8 @@ var AppInfo = {};
                 //AppInfo.enableSectionTransitions = true;
                 AppInfo.enableNavDrawer = false;
                 AppInfo.enableSearchInTopMenu = false;
+                AppInfo.enableHomeFavorites = false;
+                AppInfo.enableNowPlayingBar = false;
 
             } else {
                 if (isMobile) {
@@ -1915,6 +1919,10 @@ var AppInfo = {};
         if (AppInfo.isNativeApp) {
             elem.classList.add('nativeApp');
         }
+
+        if (!AppInfo.enableHomeFavorites) {
+            elem.classList.add('homeFavoritesDisabled');
+        }
     }
 
     function onDocumentReady() {
@@ -1988,6 +1996,11 @@ var AppInfo = {};
             if ($.browser.chrome) {
                 require(['scripts/chromecast']);
             }
+        }
+
+        if (AppInfo.enableNowPlayingBar) {
+            require(['scripts/nowplayingbar']);
+            Dashboard.importCss('css/nowplayingbar.css');
         }
 
         if (navigator.splashscreen) {

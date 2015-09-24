@@ -75,7 +75,7 @@
 
         $('.cinemaModeConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#cinemaModeConfigurationPage", function () {
+    }).on('pageshow', "#cinemaModeConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

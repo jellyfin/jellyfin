@@ -1,13 +1,13 @@
 {
   "name": "paper-behaviors",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
   ],
   "main": [
     "paper-button-behavior.html",
-    "paper-radio-button-behavior.html"
+    "paper-inky-focus-behavior.html"
   ],
   "keywords": [
     "web-components",

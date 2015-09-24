@@ -63,7 +63,7 @@
             });
         });
 
-    }).on('pageshowready', "#liveTvSettingsPage", function () {
+    }).on('pageshow', "#liveTvSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

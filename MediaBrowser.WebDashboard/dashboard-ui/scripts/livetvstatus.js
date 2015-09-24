@@ -487,7 +487,7 @@
             addProvider(this);
         });
 
-    }).on('pageshowready', "#liveTvStatusPage", function () {
+    }).on('pageshow', "#liveTvStatusPage", function () {
 
         var page = this;
 

@@ -394,7 +394,7 @@
 
         $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', ".syncJobPage", function () {
+    }).on('pageshow', ".syncJobPage", function () {
 
         var page = this;
         loadJob(page);

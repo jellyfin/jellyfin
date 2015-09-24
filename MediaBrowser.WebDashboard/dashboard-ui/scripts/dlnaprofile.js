@@ -1066,7 +1066,7 @@
         $('.xmlAttributeForm').off('submit', DlnaProfilePage.onXmlAttributeFormSubmit).on('submit', DlnaProfilePage.onXmlAttributeFormSubmit);
         $('.subtitleProfileForm').off('submit', DlnaProfilePage.onSubtitleProfileFormSubmit).on('submit', DlnaProfilePage.onSubtitleProfileFormSubmit);
 
-    }).on('pageshowready', "#dlnaProfilePage", function () {
+    }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
 

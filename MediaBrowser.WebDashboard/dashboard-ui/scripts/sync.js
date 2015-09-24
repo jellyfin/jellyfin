@@ -407,7 +407,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pageshowready', ".libraryPage", function () {
+    }).on('pageshow', ".libraryPage", function () {
 
         var page = this;
 

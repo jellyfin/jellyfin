@@ -120,7 +120,7 @@
 
 };
 
-$(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow);
+$(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
 (function () {
 
@@ -267,7 +267,7 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
         $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
         $('.popupAddUserForm').on('submit', SupporterKeyPage.onAddConnectUserSubmit).on('submit', SupporterKeyPage.onAddConnectUserSubmit);
 
-    }).on('pageshowready', "#supporterKeyPage", function () {
+    }).on('pageshow', "#supporterKeyPage", function () {
 
         var page = this;
         loadConnectSupporters(page);

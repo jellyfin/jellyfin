@@ -70,7 +70,7 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#advancedConfigurationPage", function () {
+    $(document).on('pageshow', "#advancedConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

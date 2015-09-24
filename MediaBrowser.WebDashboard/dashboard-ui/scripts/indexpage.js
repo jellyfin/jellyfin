@@ -246,7 +246,7 @@
         });
     });
 
-    pageIdOn('pageshowready', "indexPage", function () {
+    pageIdOn('pageshow', "indexPage", function () {
 
         var page = this;
         $(MediaController).on('playbackstop', onPlaybackStop);

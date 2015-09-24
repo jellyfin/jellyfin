@@ -271,7 +271,7 @@
             reloadList(page);
         });
 
-    }).on('pageshowready', "#pluginCatalogPage", function () {
+    }).on('pageshow', "#pluginCatalogPage", function () {
 
         var page = this;
 

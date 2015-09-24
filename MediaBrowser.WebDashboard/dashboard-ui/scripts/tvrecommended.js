@@ -285,7 +285,7 @@
         });
     });
 
-    pageIdOn('pageshowready', "tvRecommendedPage", function () {
+    pageIdOn('pageshow', "tvRecommendedPage", function () {
 
         var page = this;
 

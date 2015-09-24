@@ -338,7 +338,7 @@
         });
     });
 
-    pageIdOn('pageshowready', "moviesPage", function () {
+    pageIdOn('pageshow', "moviesPage", function () {
 
         var page = this;
 

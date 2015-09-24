@@ -4,7 +4,7 @@
 
         var options = {
 
-            SortBy: "IsFavoriteOrLike,Random",
+            SortBy: "IsFavoriteOrLiked,Random",
             IncludeItemTypes: "Movie,Series,MusicArtist",
             Limit: 20,
             Recursive: true,
@@ -18,9 +18,9 @@
 
                 var href = LibraryBrowser.getHref(i);
 
-                var itemHtml = '<a href="' + href + '" style="display:block;padding:.5em 0;">';
+                var itemHtml = '<div><a style="display:inline-block;padding:.55em 1em;" href="' + href + '">';
                 itemHtml += i.Name;
-                itemHtml += '</a>';
+                itemHtml += '</a></div>';
                 return itemHtml;
 
             }).join('');
@@ -29,7 +29,7 @@
         });
     }
 
-    pageIdOn('pageshowready', "searchPage", function () {
+    pageIdOn('pageshow', "searchPage", function () {
 
         var page = this;
         loadSuggestions(page);

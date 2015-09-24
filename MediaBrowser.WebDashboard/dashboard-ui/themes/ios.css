@@ -3,7 +3,20 @@
 }
 
 body {
-    font-size: 14px;
+    font-size: 15px;
+}
+
+.ui-body-b a:visited {
+    color: #007AFF /*{b-link-visited}*/;
+}
+
+.ui-body-b a {
+    color: #007AFF /*{b-link-color}*/;
+    font-weight: 500;
+}
+
+.ui-body-b select {
+    -webkit-appearance: none;
 }
 
 .backdropContainer {
@@ -12,11 +25,15 @@ body {
 }
 
 .background-theme-b {
-    background-color: #181818;
+    background-color: #161616;
 }
 
 .backdropContainer .pageBackground {
     background-color: rgba(28,28,28,.92) !important;
+}
+
+.homeTopViews .defaultBackground .cardImage {
+    background-color: #303030;
 }
 
 .viewMenuBar {
@@ -115,7 +132,7 @@ h1, h1 a {
 }
 
 .tvGuideHeader {
-    top: 86px;
+    top: 86px !important;
 }
 
 .libraryMenuButtonText {
@@ -126,6 +143,7 @@ h1, h1 a {
     text-align: center;
     font-size: 16px;
     margin: 0 auto !important;
+    padding: 0 !important;
 }
 
 .libraryPanelHeader span {
@@ -187,4 +205,12 @@ paper-tab {
 #footer {
     /* Eliminate transparency to prevent clicks from passing through to the elements underneath */
     background-color: rgb(26,26,26);
+}
+
+.nowPlayingPageBackButton {
+    display: none !important;
+}
+
+.nowPlayingPagePaperTabs {
+    display: none !important;
 }

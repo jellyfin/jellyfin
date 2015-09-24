@@ -81,7 +81,7 @@
 
         $('.metadataSubtitlesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataSubtitlesPage", function () {
+    }).on('pageshow', "#metadataSubtitlesPage", function () {
 
         Dashboard.showLoadingMsg();
 

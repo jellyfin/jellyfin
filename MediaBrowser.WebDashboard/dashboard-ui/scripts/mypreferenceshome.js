@@ -269,7 +269,7 @@
 
         $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#homeScreenPreferencesPage", function () {
+    }).on('pageshow', "#homeScreenPreferencesPage", function () {
 
         var page = this;
 

@@ -30,7 +30,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#liveTvGuideProviderPage", function () {
+    $(document).on('pageshow', "#liveTvGuideProviderPage", function () {
 
         Dashboard.showLoadingMsg();
 

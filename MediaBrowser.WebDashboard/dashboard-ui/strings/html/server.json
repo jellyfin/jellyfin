@@ -1541,5 +1541,6 @@
     "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
     "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:",
     "LabelHardwareVideoDecoder": "Hardware video decoder:",
-    "LabelHardwareVideoDecoderHelp": "Available on supported systems only."
+    "LabelHardwareVideoDecoderHelp": "Available on supported systems only.",
+    "ButtonManageServer": "Manage Server"
 }

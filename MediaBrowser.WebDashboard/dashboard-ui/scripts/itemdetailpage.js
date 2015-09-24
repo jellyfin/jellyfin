@@ -1085,30 +1085,29 @@
 
         var reviews = result.Items;
 
+        html += '<div class="paperList">';
+
         for (var i = 0, length = reviews.length; i < length; i++) {
 
             var review = reviews[i];
 
-            html += '<div class="criticReview">';
-
-            html += '<div class="reviewScore">';
-
+            html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
 
             if (review.Score != null) {
-                html += review.Score;
+                //html += review.Score;
             }
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<img src="css/images/fresh.png" />';
+                    html += '<paper-fab class="listAvatar" style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
                 } else {
-                    html += '<img src="css/images/rotten.png" />';
+                    html += '<paper-fab class="listAvatar" style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
                 }
             }
 
-            html += '</div>';
+            html += '<paper-item-body three-line>';
 
-            html += '<div class="reviewCaption">' + review.Caption + '</div>';
+            html += '<div style="white-space:normal;">' + review.Caption + '</div>';
 
             var vals = [];
 
@@ -1119,8 +1118,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div class="reviewerName">' + vals.join(', ') + '.';
-
+            html += '<div secondary>' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1134,15 +1132,17 @@
                 }
 
             }
-
             html += '</div>';
 
             if (review.Url) {
-                html += '<div class="reviewLink"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div secondary><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
-            html += '</div>';
+            html += '</paper-item-body>';
+
+            html += '</paper-icon-item>';
         }
+        html += '</div>';
 
         if (limit && result.TotalRecordCount > limit) {
             html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMore') + '</paper-button></p>';

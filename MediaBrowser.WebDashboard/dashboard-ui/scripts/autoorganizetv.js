@@ -153,7 +153,7 @@
 
         $('.libraryFileOrganizerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#libraryFileOrganizerPage", function () {
+    }).on('pageshow', "#libraryFileOrganizerPage", function () {
 
         var page = this;
 

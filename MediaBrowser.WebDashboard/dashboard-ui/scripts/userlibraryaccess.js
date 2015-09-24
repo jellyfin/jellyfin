@@ -201,7 +201,7 @@
 
         $('.userLibraryAccessForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#userLibraryAccessPage", function () {
+    }).on('pageshow', "#userLibraryAccessPage", function () {
 
         var page = this;
 

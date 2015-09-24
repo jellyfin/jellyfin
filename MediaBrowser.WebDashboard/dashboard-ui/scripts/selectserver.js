@@ -346,7 +346,7 @@
         var page = this;
         updatePageStyle(page);
 
-    }).on('pageshowready', "#selectServerPage", function () {
+    }).on('pageshow', "#selectServerPage", function () {
 
         var page = this;
 

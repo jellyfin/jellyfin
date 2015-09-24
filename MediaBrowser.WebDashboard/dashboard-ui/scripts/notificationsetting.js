@@ -177,7 +177,7 @@
 
         $('.notificationSettingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#notificationSettingPage", function () {
+    }).on('pageshow', "#notificationSettingPage", function () {
 
         var page = this;
 

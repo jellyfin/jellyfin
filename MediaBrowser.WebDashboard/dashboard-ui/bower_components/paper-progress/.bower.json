@@ -1,6 +1,6 @@
 {
   "name": "paper-progress",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "A material design progress bar",
   "authors": "The Polymer Authors",
@@ -29,11 +29,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "homepage": "https://github.com/PolymerElements/paper-progress",
-  "_release": "1.0.5",
+  "_release": "1.0.6",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.5",
-    "commit": "baf8049bb33c3f9557d0d3608dc0824847ac34c4"
+    "tag": "v1.0.6",
+    "commit": "520d84592d98cac975bfcedfcc5765e51d2c2871"
   },
   "_source": "git://github.com/PolymerElements/paper-progress.git",
   "_target": "^1.0.0",

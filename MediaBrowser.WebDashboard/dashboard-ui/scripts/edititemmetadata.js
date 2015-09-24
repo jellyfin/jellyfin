@@ -1475,7 +1475,7 @@
             showMoreMenu(page, this);
         });
 
-    }).on('pageshowready', "#editItemMetadataPage", function () {
+    }).on('pageshow', "#editItemMetadataPage", function () {
 
         var page = this;
 

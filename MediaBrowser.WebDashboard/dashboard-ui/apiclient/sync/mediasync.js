@@ -194,16 +194,10 @@
                 }
             };
 
-            getNewItem(jobItems[index], apiClient, serverInfo).done(goNext).fail(goNext);
-
-            options = options || {};
-            if (options.enableBackgroundTransfer) {
-                // Give it 2 seconds, then move on
-                setTimeout(goNext, 2000);
-            }
+            getNewItem(jobItems[index], apiClient, serverInfo, options).done(goNext).fail(goNext);
         }
 
-        function getNewItem(jobItem, apiClient, serverInfo) {
+        function getNewItem(jobItem, apiClient, serverInfo, options) {
 
             Logger.log('Begin getNewItem');
 
@@ -214,7 +208,12 @@
                 var libraryItem = jobItem.Item;
                 LocalAssetManager.createLocalItem(libraryItem, serverInfo, jobItem.OriginalFileName).done(function (localItem) {
 
-                    downloadMedia(apiClient, jobItem, localItem).done(function () {
+                    downloadMedia(apiClient, jobItem, localItem, options).done(function (isQueued) {
+
+                        if (isQueued) {
+                            deferred.resolve();
+                            return;
+                        }
 
                         getImages(apiClient, jobItem, localItem).done(function () {
 
@@ -238,7 +237,7 @@
             return deferred.promise();
         }
 
-        function downloadMedia(apiClient, jobItem, localItem) {
+        function downloadMedia(apiClient, jobItem, localItem, options) {
 
             Logger.log('Begin downloadMedia');
             var deferred = DeferredBuilder.Deferred();
@@ -253,11 +252,17 @@
 
                 Logger.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
 
-                LocalAssetManager.downloadFile(url, localPath).done(function () {
+                options = options || {};
 
+                LocalAssetManager.downloadFile(url, localPath, options.enableBackgroundTransfer).done(function (path, isQueued) {
+
+                    if (isQueued) {
+                        deferred.resolveWith(null, [true]);
+                        return;
+                    }
                     LocalAssetManager.addOrUpdateLocalItem(localItem).done(function () {
 
-                        deferred.resolve();
+                        deferred.resolveWith(null, [false]);
 
                     }).fail(getOnFail(deferred));
 

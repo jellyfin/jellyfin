@@ -103,7 +103,7 @@
 
         $('.dashboardGeneralForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#dashboardGeneralPage", function () {
+    }).on('pageshow', "#dashboardGeneralPage", function () {
 
         Dashboard.showLoadingMsg();
 
