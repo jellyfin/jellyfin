@@ -270,7 +270,6 @@
     "LabelPlayMethodTranscoding": "Transcoderen",
     "LabelPlayMethodDirectStream": "Direct Streamen",
     "LabelPlayMethodDirectPlay": "Direct Afspelen",
-    "LabelEpisodeNumber": "Afleveringsnummer:",
     "LabelAudioCodec": "Geluid: {0}",
     "LabelVideoCodec": "Video: {0}",
     "LabelLocalAccessUrl": "Lokale toegang: {0}",
@@ -317,7 +316,6 @@
     "HeaderArtist": "Artiest",
     "LabelAddedOnDate": "Toegevoegd {0}",
     "ButtonStart": "Start",
-    "LabelSeasonNumber": "Seizoennummer:",
     "HeaderChannels": "Kanalen",
     "HeaderMediaFolders": "Media Mappen",
     "HeaderBlockItemsWithNoRating": "Blokkeer inhoud zonder classificatiegegevens:",
@@ -489,8 +487,10 @@
     "LabelTitleDisplayOrder": "Titel weergave volgorde:",
     "OptionSortName": "Sorteerbaar",
     "OptionReleaseDate": "Uitgave datum",
+    "LabelSeasonNumber": "Seizoennummer:",
     "LabelDiscNumber": "Disc nummer",
     "LabelParentNumber": "Bovenliggend nummer",
+    "LabelEpisodeNumber": "Afleveringsnummer:",
     "LabelTrackNumber": "Tracknummer:",
     "LabelNumber": "Nummer:",
     "LabelReleaseDate": "Uitgave datum:",
@@ -887,5 +887,8 @@
     "ButtonForYou": "For You",
     "ButtonLibrary": "Library",
     "ButtonSearch": "Zoeken",
-    "ButtonNowPlaying": "Now Playing"
+    "ButtonNowPlaying": "Now Playing",
+    "ButtonViewNewApp": "View new app",
+    "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
 }

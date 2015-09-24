@@ -270,7 +270,6 @@
     "LabelPlayMethodTranscoding": "Transcoding",
     "LabelPlayMethodDirectStream": "Direct Streaming",
     "LabelPlayMethodDirectPlay": "Direct Playing",
-    "LabelEpisodeNumber": "Episode number:",
     "LabelAudioCodec": "Audio: {0}",
     "LabelVideoCodec": "Video: {0}",
     "LabelLocalAccessUrl": "Local access: {0}",
@@ -317,7 +316,6 @@
     "HeaderArtist": "Artist",
     "LabelAddedOnDate": "Added {0}",
     "ButtonStart": "Start",
-    "LabelSeasonNumber": "Season number:",
     "HeaderChannels": "\u041a\u0430\u043d\u0430\u043b\u0438",
     "HeaderMediaFolders": "\u041c\u0435\u0434\u0438\u0439\u043d\u0438 \u041f\u0430\u043f\u043a\u0438",
     "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
@@ -489,8 +487,10 @@
     "LabelTitleDisplayOrder": "Title display order:",
     "OptionSortName": "Sort name",
     "OptionReleaseDate": "Release date",
+    "LabelSeasonNumber": "Season number:",
     "LabelDiscNumber": "Disc number",
     "LabelParentNumber": "Parent number",
+    "LabelEpisodeNumber": "Episode number:",
     "LabelTrackNumber": "Track number:",
     "LabelNumber": "Number:",
     "LabelReleaseDate": "Release date:",
@@ -887,5 +887,8 @@
     "ButtonForYou": "For You",
     "ButtonLibrary": "Library",
     "ButtonSearch": "Search",
-    "ButtonNowPlaying": "Now Playing"
+    "ButtonNowPlaying": "Now Playing",
+    "ButtonViewNewApp": "View new app",
+    "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
 }

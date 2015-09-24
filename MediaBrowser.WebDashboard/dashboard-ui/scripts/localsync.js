@@ -1,7 +1,6 @@
 ﻿(function () {
 
     var syncPromise;
-    var lastStart = 0;
 
     window.LocalSync = {
 
@@ -18,8 +17,6 @@
             var deferred = DeferredBuilder.Deferred();
 
             require(['multiserversync'], function () {
-
-                lastStart = new Date().getTime();
 
                 options = options || {};
 
@@ -49,24 +46,4 @@
             return 'Idle';
         }
     };
-
-    var syncInterval = 1800000;
-
-    function restartInterval() {
-        if (LocalSync.isSupported) {
-            setInterval(function () {
-
-                //LocalSync.startSync();
-
-            }, syncInterval);
-
-            if (lastStart > 0 && (now - lastStart) >= syncInterval) {
-                //LocalSync.startSync();
-            }
-        }
-        //LocalSync.startSync();
-    }
-
-    Dashboard.ready(restartInterval);
-    document.addEventListener("resume", restartInterval, false);
 })();

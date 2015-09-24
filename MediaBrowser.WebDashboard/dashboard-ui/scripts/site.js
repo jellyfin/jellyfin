@@ -2301,6 +2301,9 @@ var AppInfo = {};
             deps.push('cordova/ios/tabbar');
             deps.push('localsync');
         }
+        if (AppInfo.isNativeApp && $.browser.android) {
+            deps.push('cordova/android/newapp');
+        }
 
         require(deps, function () {
 

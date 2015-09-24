@@ -897,5 +897,8 @@
     "ButtonForYou": "For You",
     "ButtonLibrary": "Library",
     "ButtonSearch": "Search",
-    "ButtonNowPlaying": "Now Playing"
+    "ButtonNowPlaying": "Now Playing",
+    "ButtonViewNewApp": "View new app",
+    "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
 }

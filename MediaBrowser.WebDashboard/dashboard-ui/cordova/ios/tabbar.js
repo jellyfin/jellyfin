@@ -86,7 +86,7 @@
         showTabs();
 
         ignoreNextSelection = true;
-        TabBar.selectItem('Featured');
+        TabBar.selectItem('Library');
     }
 
     function showTabs() {

@@ -121,7 +121,6 @@
 
     function getInAppPurchaseElement(info) {
 
-        require(['paperbuttonstyle']);
         cancelInAppPurchase();
 
         var html = '';
