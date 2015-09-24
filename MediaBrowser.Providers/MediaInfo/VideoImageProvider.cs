@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -22,14 +23,16 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager, ILogger logger)
+        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
             _libraryManager = libraryManager;
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -101,7 +104,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     ? MediaProtocol.Http
                     : MediaProtocol.File;
 
-                var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, protocol, isoMount, item.PlayableStreamFileNames);
+                var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, isoMount, item.PlayableStreamFileNames);
 
                 var stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
 

@@ -134,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                         var protocol = MediaProtocol.File;
 
-                        var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, protocol, null, video.PlayableStreamFileNames);
+                        var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
 
                         try
                         {
@@ -194,7 +194,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             try
             {
-                return Directory.EnumerateFiles(path)
+                return _fileSystem.GetFilePaths(path)
                     .ToList();
             }
             catch (DirectoryNotFoundException)

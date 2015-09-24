@@ -256,7 +256,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             if (!string.IsNullOrWhiteSpace(originalFilenameWithoutExtension) && !string.IsNullOrWhiteSpace(directory))
             {
                 // Get all related files, e.g. metadata, images, etc
-                var files = Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+                var files = _fileSystem.GetFilePaths(directory)
                     .Where(i => (Path.GetFileNameWithoutExtension(i) ?? string.Empty).StartsWith(originalFilenameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
@@ -313,7 +313,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             try
             {
-                var filesOfOtherExtensions = Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly)
+                var filesOfOtherExtensions = _fileSystem.GetFilePaths(folder)
                     .Where(i => _libraryManager.IsVideoFile(i) && string.Equals(_fileSystem.GetFileNameWithoutExtension(i), targetFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase));
 
                 episodePaths.AddRange(filesOfOtherExtensions);

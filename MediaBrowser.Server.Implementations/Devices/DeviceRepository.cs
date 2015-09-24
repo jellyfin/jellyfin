@@ -111,8 +111,8 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             try
             {
-                return Directory
-                    .EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                return _fileSystem
+                    .GetFilePaths(path, true)
                     .Where(i => string.Equals(Path.GetFileName(i), "device.json", StringComparison.OrdinalIgnoreCase))
                     .ToList()
                     .Select(i =>

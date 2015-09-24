@@ -225,8 +225,8 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
             }
 
-            var shortcutFiles = Directory
-                .EnumerateFiles(collection.Path, "*", SearchOption.TopDirectoryOnly)
+            var shortcutFiles = _fileSystem
+                .GetFilePaths(collection.Path)
                 .Where(i => _fileSystem.IsShortcut(i))
                 .ToList();
 

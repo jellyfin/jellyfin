@@ -873,7 +873,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (!(state.VideoType == VideoType.Iso && state.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(mediaPath, state.InputProtocol, state.IsoMount, state.PlayableStreamFileNames);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(FileSystem, mediaPath, state.InputProtocol, state.IsoMount, state.PlayableStreamFileNames);
                 }
             }
 

@@ -468,7 +468,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (!(job.VideoType == VideoType.Iso && job.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(job.MediaPath, job.InputProtocol, job.IsoMount, job.PlayableStreamFileNames);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(FileSystem, job.MediaPath, job.InputProtocol, job.IsoMount, job.PlayableStreamFileNames);
                 }
             }
 

@@ -175,12 +175,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             try
             {
-                foreach (var d in Directory.EnumerateDirectories(path))
+                foreach (var d in _fileSystem.GetDirectoryPaths(path))
                 {
                     DeleteEmptyFolders(d);
                 }
 
-                var entries = Directory.EnumerateFileSystemEntries(path);
+                var entries = _fileSystem.GetFileSystemEntryPaths(path);
 
                 if (!entries.Any())
                 {
