@@ -252,6 +252,9 @@
     <Content Include="dashboard-ui\components\imageeditor\imageeditor.template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\favorites.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\livetvguideprovider.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
