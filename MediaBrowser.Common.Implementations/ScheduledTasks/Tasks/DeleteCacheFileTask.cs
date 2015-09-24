@@ -122,10 +122,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 
         private void DeleteEmptyFolders(string parent)
         {
-            foreach (var directory in Directory.GetDirectories(parent))
+            foreach (var directory in _fileSystem.GetDirectoryPaths(parent))
             {
                 DeleteEmptyFolders(directory);
-                if (!Directory.EnumerateFileSystemEntries(directory).Any())
+                if (!_fileSystem.GetFileSystemEntryPaths(directory).Any())
                 {
 					_fileSystem.DeleteDirectory(directory, false);
                 }

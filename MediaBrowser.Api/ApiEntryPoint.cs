@@ -95,7 +95,7 @@ namespace MediaBrowser.Api
         {
             var path = _config.ApplicationPaths.TranscodingTempPath;
 
-            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+            foreach (var file in _fileSystem.GetFilePaths(path, true)
                 .ToList())
             {
                 _fileSystem.DeleteFile(file);
@@ -567,7 +567,7 @@ namespace MediaBrowser.Api
             var directory = Path.GetDirectoryName(outputFilePath);
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
-            var filesToDelete = Directory.EnumerateFiles(directory)
+            var filesToDelete = _fileSystem.GetFilePaths(directory)
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList();
 

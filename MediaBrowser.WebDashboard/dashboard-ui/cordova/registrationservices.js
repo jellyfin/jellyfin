@@ -68,7 +68,7 @@
         }
 
         var productInfo = {
-            enableSupporterUnlock: isAndroid(),
+            enableSupporterUnlock: true,
             enableAppUnlock: IapManager.isPurchaseAvailable(id),
             id: id,
             price: info.price
@@ -135,10 +135,12 @@
 
         html += '<p style="margin:2em 0;">';
 
-        if (info.enableSupporterUnlock && info.enableAppUnlock) {
+        var showSupporterInfo = info.enableSupporterUnlock && !$.browser.safari;
+
+        if (showSupporterInfo && info.enableAppUnlock) {
             html += Globalize.translate('MessageUnlockAppWithPurchaseOrSupporter');
         }
-        else if (info.enableSupporterUnlock) {
+        else if (showSupporterInfo) {
             html += Globalize.translate('MessageUnlockAppWithSupporter');
         } else if (info.enableAppUnlock) {
             html += Globalize.translate('MessageUnlockAppWithPurchase');
@@ -149,7 +151,7 @@
         }
         html += '</p>';
 
-        if (info.enableSupporterUnlock) {
+        if (showSupporterInfo) {
             html += '<p style="margin:2em 0;">';
             html += Globalize.translate('MessageToValidateSupporter');
             html += '</p>';
@@ -172,7 +174,7 @@
             }
         }
 
-        if (info.enableSupporterUnlock) {
+        if (showSupporterInfo) {
             html += '<p>';
             html += '<paper-button raised class="submit block btnSignInSupporter"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonUnlockWithSupporter') + '</span></paper-button>';
             html += '</p>';

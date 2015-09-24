@@ -132,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
 
-            var inputFiles = MediaEncoderHelpers.GetInputArgument(request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
             var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
 
@@ -281,6 +281,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                     }
                                 }
                             }
+                        }
+
+                        if (!process.WaitForExit(5000))
+                        {
+                            StopProcess(processWrapper, 100, true);
                         }
 
                         return mediaInfo;
