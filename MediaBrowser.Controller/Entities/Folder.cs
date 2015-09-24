@@ -763,21 +763,24 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            var childrenItems = ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
+            if (ConfigurationManager.Configuration.DisableStartupScan)
+            {
+                return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
+                //return ItemRepository.GetItems(new InternalItemsQuery
+                //{
+                //    ParentId = Id
 
-            //var children = ItemRepository.GetChildren(Id).Select(RetrieveChild).Where(i => i != null).ToList();
-
-            //if (children.Count != childrenItems.Count)
-            //{
-            //    var b = this;
-            //}
-
-            return childrenItems;
+                //}).Items.Select(RetrieveChild).Where(i => i != null);
+            }
+            else
+            {
+                return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
+            }
         }
 
         private BaseItem RetrieveChild(BaseItem child)
         {
-            if (child.Id == Guid.Empty)
+            if (child == null || child.Id == Guid.Empty)
             {
                 Logger.Error("Item found with empty Id: " + (child.Path ?? child.Name));
                 return null;

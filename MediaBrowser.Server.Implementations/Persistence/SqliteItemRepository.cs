@@ -1202,6 +1202,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(string.Format("ChannelId in ({0})", inClause));
             }
 
+            if (query.ParentId.HasValue)
+            {
+                whereClauses.Add("ParentId=@ParentId");
+                cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = query.ParentId.Value;
+            }
+
             if (query.MinEndDate.HasValue)
             {
                 whereClauses.Add("EndDate>=@MinEndDate");
