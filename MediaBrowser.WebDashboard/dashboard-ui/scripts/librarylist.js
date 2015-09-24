@@ -955,8 +955,10 @@
         this.on('click', onListViewPlayButtonClick);
 
         if (AppInfo.isTouchPreferred) {
-            this.off('contextmenu', disableEvent);
-            this.on('contextmenu', disableEvent);
+            //this.off('contextmenu', disableEvent);
+            //this.on('contextmenu', disableEvent);
+            this.off('contextmenu', onContextMenu);
+            this.on('contextmenu', onContextMenu);
         }
         else {
             this.off('contextmenu', onContextMenu);
@@ -973,7 +975,7 @@
         }
 
         for (var i = 0, length = this.length; i < length; i++) {
-            initTapHold(this[i]);
+            //initTapHold(this[i]);
         }
 
         return this;
@@ -989,6 +991,10 @@
     }
 
     function initTapHold(element) {
+
+        if (!LibraryBrowser.allowSwipe(element)) {
+            return;
+        }
 
         require(['hammer'], function (Hammer) {
 

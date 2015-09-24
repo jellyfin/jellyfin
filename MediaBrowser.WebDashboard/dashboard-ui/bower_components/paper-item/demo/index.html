@@ -23,6 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../iron-icons/iron-icons.html">
   <link rel="import" href="../../iron-icons/communication-icons.html">
   <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
   <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
   <link rel="import" href="../paper-icon-item.html">
   <link rel="import" href="../paper-item.html">
@@ -77,7 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <div class="layout wrap inline center-center">
     <div>
       <h4>Single line items</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-item>Inbox</paper-item>
         <paper-item>Starred</paper-item>
         <paper-item>Sent mail</paper-item>
@@ -87,7 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Icon with text</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-icon-item>
           <iron-icon icon="inbox" item-icon></iron-icon> Inbox
         </paper-icon-item>
@@ -105,7 +106,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Avatar with text</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-icon-item>
           <div class="avatar blue" item-icon></div> Alphonso Engelking
         </paper-icon-item>
@@ -123,7 +124,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Avatar with text and icon</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-icon-item>
           <div class="avatar red" item-icon></div>
           <div class="flex">Alphonso</div>
@@ -149,7 +150,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Avatar with text and control</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-icon-item>
           <div class="avatar orange" item-icon></div>
           <div class="flex">Alphonso</div>
@@ -175,7 +176,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Control with text and icon</h4>
-      <div class="list short">
+      <div class="list short" role="list">
         <paper-icon-item>
           <paper-checkbox item-icon></paper-checkbox>
           <div class="flex">Alphonso</div>
@@ -201,7 +202,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Two-line items</h4>
-      <div class="list">
+      <div class="list" role="list">
         <paper-item>
           <paper-item-body two-line class="layout vertical">
             <div>Profile Photo</div>
@@ -225,7 +226,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Icon with two-line text</h4>
-      <div class="list">
+      <div class="list" role="list">
         <paper-icon-item>
           <div class="avatar green" item-icon></div>
           <paper-item-body two-line>
@@ -253,14 +254,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <h4>Avatar with text and icon</h4>
-      <div class="list">
+      <div class="list" role="list">
         <paper-icon-item>
           <div class="avatar blue" item-icon></div>
           <paper-item-body two-line>
             <div>Photos</div>
             <div secondary>Jan 9, 2014</div>
           </paper-item-body>
-          <iron-icon icon="star"></iron-icon>
+          <paper-icon-button icon="star" alt="favourite this!"></paper-icon-button>
         </paper-icon-item>
         <paper-icon-item>
           <div class="avatar red" item-icon></div>
@@ -268,7 +269,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div>Recipes</div>
             <div secondary>Jan 17, 2014</div>
           </paper-item-body>
-          <iron-icon icon="star"></iron-icon>
+          <paper-icon-button icon="star" alt="favourite this!"></paper-icon-button>
         </paper-icon-item>
         <paper-icon-item>
           <div class="avatar orange" item-icon></div>
@@ -276,7 +277,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div>Work</div>
             <div secondary>Jan 28, 2014</div>
           </paper-item-body>
-          <iron-icon icon="star"></iron-icon>
+          <paper-icon-button icon="star" alt="favourite this!"></paper-icon-button>
         </paper-icon-item>
       </div>
     </div>

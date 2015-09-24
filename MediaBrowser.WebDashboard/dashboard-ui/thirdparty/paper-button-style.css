@@ -321,6 +321,10 @@ paper-fab.square {
     border-radius: 5px;
 }
 
+paper-fab.accent {
+    background-color: #52B54B;
+}
+
 paper-slider {
     width: 100%;
 }

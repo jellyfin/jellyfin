@@ -1,4 +1,4 @@
-﻿.hidingAnimatedTab{
+﻿.hidingAnimatedTab {
     visibility: hidden;
 }
 
@@ -1212,16 +1212,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-.alphabetPicker a {
-    display: block;
-    text-decoration: none;
-    padding: 1px 5px 1px 10px;
-    font-weight: 500;
-}
-
-    .alphabetPicker a:not(.selectedCharacter) {
-        color: #bbb !important;
+    .alphabetPicker a {
+        display: block;
+        text-decoration: none;
+        padding: 1px 5px 1px 10px;
+        font-weight: 500;
     }
+
+        .alphabetPicker a:not(.selectedCharacter) {
+            color: #bbb !important;
+        }
 
 
 .selectedCharacter {
@@ -1492,10 +1492,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         background-size: contain;
         background-position: center center;
     }
-
-.ui-body-b .listItem:hover {
-    background-color: rgba(51,51,51,.6) !important;
-}
 
 .listViewUserDataButtons {
     visibility: hidden;

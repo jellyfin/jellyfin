@@ -1762,6 +1762,7 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
+        AppInfo.enableAppLayouts = true;
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
             AppInfo.hasKnownExternalPlayerSupport = true;

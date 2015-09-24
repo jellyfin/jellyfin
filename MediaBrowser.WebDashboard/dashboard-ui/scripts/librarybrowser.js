@@ -143,15 +143,7 @@
             return false;
         },
 
-        configureSwipeTabs: function (ownerpage, tabs, pages) {
-
-            if (LibraryBrowser.animatePaperTabs()) {
-                // Safari doesn't handle the horizontal swiping very well
-                pages.entryAnimation = 'slide-from-right-animation';
-                pages.exitAnimation = 'slide-left-animation';
-            }
-
-            var pageCount = pages.querySelectorAll('neon-animatable').length;
+        allowSwipe: function (target) {
 
             function allowSwipeOn(elem) {
 
@@ -166,20 +158,26 @@
                 return true;
             }
 
-            function allowSwipe(e) {
-
-                var target = e.target;
-
-                var parent = target.parentNode;
-                while (parent != null) {
-                    if (!allowSwipeOn(parent)) {
-                        return false;
-                    }
-                    parent = parent.parentNode;
+            var parent = target;
+            while (parent != null) {
+                if (!allowSwipeOn(parent)) {
+                    return false;
                 }
-
-                return true;
+                parent = parent.parentNode;
             }
+
+            return true;
+        },
+
+        configureSwipeTabs: function (ownerpage, tabs, pages) {
+
+            if (LibraryBrowser.animatePaperTabs()) {
+                // Safari doesn't handle the horizontal swiping very well
+                pages.entryAnimation = 'slide-from-right-animation';
+                pages.exitAnimation = 'slide-left-animation';
+            }
+
+            var pageCount = pages.querySelectorAll('neon-animatable').length;
 
             require(['hammer'], function (Hammer) {
 
@@ -187,7 +185,7 @@
                 hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
                 hammertime.on('swipeleft', function (e) {
-                    if (allowSwipe(e)) {
+                    if (LibraryBrowser.allowSwipe(e.target)) {
                         var selected = parseInt(pages.selected || '0');
                         if (selected < (pageCount - 1)) {
                             if (LibraryBrowser.animatePaperTabs()) {
@@ -200,7 +198,7 @@
                 });
 
                 hammertime.on('swiperight', function (e) {
-                    if (allowSwipe(e)) {
+                    if (LibraryBrowser.allowSwipe(e.target)) {
                         var selected = parseInt(pages.selected || '0');
                         if (selected > 0) {
                             if (LibraryBrowser.animatePaperTabs()) {

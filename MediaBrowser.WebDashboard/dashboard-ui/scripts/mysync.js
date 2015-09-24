@@ -13,7 +13,12 @@
                 page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
                 page.querySelector('.syncSpinner').active = status == "Active";
 
-                page.querySelector('.btnSyncNow').disabled = status == "Active";
+                if (status == "Active") {
+                    page.querySelector('.btnSyncNow').classList.add('hide');
+                }
+                else {
+                    page.querySelector('.btnSyncNow').classList.remove('hide');
+                }
 
             } else {
                 page.querySelector('.localSyncStatus').classList.add('hide');

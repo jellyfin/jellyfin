@@ -249,10 +249,15 @@
             }
 
             Events.on(player, 'playbackstop', onPlaybackStop);
+            Events.on(player, 'playbackstart', onPlaybackStart);
         };
 
+        function onPlaybackStart(e, state) {
+            $(self).trigger('playbackstart', [state, this]);
+        }
+
         function onPlaybackStop(e, state) {
-            $(self).trigger('playbackstop', [state]);
+            $(self).trigger('playbackstop', [state, this]);
         }
 
         self.getPlayerInfo = function () {

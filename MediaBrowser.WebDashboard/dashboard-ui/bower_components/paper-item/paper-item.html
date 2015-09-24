@@ -9,8 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../iron-behaviors/iron-button-state.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="paper-item-shared-styles.html">
 
 <!--
 `<paper-item>` is a non-interactive list item. By default, it is a horizontal flexbox.
@@ -55,41 +57,34 @@ This element has `role="listitem"` by default. Depending on usage, it may be mor
 -->
 
 <dom-module id="paper-item">
-
-  <link rel="import" type="css" href="paper-item-shared.css">
-
-  <style>
-
-    :host {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--paper-font-subhead);
-
-      @apply(--paper-item);
-    }
-
-  </style>
-
   <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
     <content></content>
   </template>
 
+  <script>
+    Polymer({
+      is: 'paper-item',
+
+      hostAttributes: {
+        role: 'listitem',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ]
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-item',
-
-    hostAttributes: {
-      role: 'listitem'
-    }
-
-  });
-
-})();
-
-</script>

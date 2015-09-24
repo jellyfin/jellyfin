@@ -61,6 +61,15 @@ body {
         flex-grow: 0 !important;
     }
 
+.ui-body-b .paperList {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.settingsMenuHeader {
+    display: none;
+}
+
 @media all and (max-width: 600px) {
 
     .libraryViewNav a {

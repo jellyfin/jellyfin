@@ -31,13 +31,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="item">
       <template>
-        <paper-item>item</paper-item>
+        <div role="list">
+          <paper-item>item</paper-item>
+        </div>
       </template>
     </test-fixture>
 
     <test-fixture id="iconItem">
       <template>
-        <paper-icon-item>item</paper-icon-item>
+        <div role="list">
+          <paper-icon-item>item</paper-icon-item>
+        </div>
       </template>
     </test-fixture>
 
@@ -47,8 +51,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var item, iconItem;
 
         setup(function() {
-          item = fixture('item');
-          iconItem = fixture('iconItem');
+          item = fixture('item').querySelector('paper-item');
+          iconItem = fixture('iconItem').querySelector('paper-icon-item');
         });
 
         test('item has role="listitem"', function() {
@@ -58,6 +62,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('icon item has role="listitem"', function() {
           assert.equal(iconItem.getAttribute('role'), 'listitem', 'has role="item"');
         });
+
+        a11ySuite('item');
+        a11ySuite('iconItem');
       });
 
     </script>

@@ -101,6 +101,8 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsOffline { get; set; }
         public LocationType? LocationType { get; set; }
 
+        public Guid? ParentId { get; set; }
+        
         public InternalItemsQuery()
         {
             Tags = new string[] { };

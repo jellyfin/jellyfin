@@ -100,7 +100,7 @@
 
         HttpClient.send({
             type: "POST",
-            url: "https://mb3admin.com/test/admin/service/appstore/addDeviceFeature",
+            url: "https://mb3admin.com/admin/service/appstore/addDeviceFeature",
             data: {
                 deviceId: ConnectionManager.deviceId(),
                 feature: 'com.mb.android.unlock'

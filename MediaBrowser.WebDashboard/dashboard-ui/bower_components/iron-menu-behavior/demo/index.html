@@ -31,17 +31,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       width: 100%;
     }
 
-    simple-menu li {
+    simple-menu a {
       display: block;
-      padding: 15px 20px;
     }
 
-    simple-menubar li {
+    simple-menubar a,
+    simple-menu a {
       padding: 15px 20px;
+      color: var(--primary-text-color);
+      text-decoration: none;
     }
 
-    simple-menu li[disabled],
-    simple-menubar li[disabled] {
+    simple-menu a[disabled],
+    simple-menubar a[disabled] {
       color: var(--google-grey-300);
     }
 
@@ -55,17 +57,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </style>
 </head>
-<body>
+<body unresolved>
 
   <div class="horizontal center-justified layout">
     <div>
       <h3>Simple menu</h3>
       <div class="horizontal-section">
         <simple-menu>
-          <li>item 0</li>
-          <li>item 1</li>
-          <li disabled>item 2</li>
-          <li>item 3</li>
+          <a href="javascript:void(0)">Item 0</a>
+          <a href="javascript:void(0)">Item 1</a>
+          <a href="javascript:void(0)" disabled>Item 2</a>
+          <a href="javascript:void(0)">Item 3</a>
         </simple-menu>
       </div>
     </div>
@@ -74,10 +76,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>Multi-select menu</h3>
       <div class="horizontal-section">
         <simple-menu multi>
-          <li>item 0</li>
-          <li>item 1</li>
-          <li>item 2</li>
-          <li>item 3</li>
+          <a href="javascript:void(0)">Item 0</a>
+          <a href="javascript:void(0)">Item 1</a>
+          <a href="javascript:void(0)">Item 2</a>
+          <a href="javascript:void(0)">Item 3</a>
         </simple-menu>
       </div>
     </div>
@@ -87,10 +89,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h3>Simple menubar</h3>
         <div class="horizontal-section">
           <simple-menubar>
-            <li>item 0</li>
-            <li>item 1</li>
-            <li disabled>item 2</li>
-            <li>item 3</li>
+            <a href="javascript:void(0)">Item 0</a>
+            <a href="javascript:void(0)">Item 1</a>
+            <a href="javascript:void(0)" disabled>Item 2</a>
+            <a href="javascript:void(0)">Item 3</a>
           </simple-menubar>
         </div>
       </div>
@@ -98,10 +100,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h3>Multi-select menubar</h3>
         <div class="horizontal-section">
           <simple-menubar multi>
-            <li>item 0</li>
-            <li>item 1</li>
-            <li>item 2</li>
-            <li>item 3</li>
+            <a href="javascript:void(0)">Item 0</a>
+            <a href="javascript:void(0)">Item 1</a>
+            <a href="javascript:void(0)">Item 2</a>
+            <a href="javascript:void(0)">Item 3</a>
           </simple-menubar>
         </div>
       </div>
