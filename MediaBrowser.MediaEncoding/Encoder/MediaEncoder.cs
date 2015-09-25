@@ -283,11 +283,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             }
                         }
 
-                        if (!process.WaitForExit(5000))
-                        {
-                            StopProcess(processWrapper, 100, true);
-                        }
-
                         return mediaInfo;
                     }
                 }
