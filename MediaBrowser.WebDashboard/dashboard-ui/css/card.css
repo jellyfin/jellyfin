@@ -323,7 +323,7 @@
         left: 0;
         right: 0;
         width: 50%;
-        height:  50%;
+        height: 50%;
         margin: auto;
         top: 22%;
     }
@@ -418,10 +418,6 @@
 }
 
 @media all and (min-width: 700px) {
-    .bannerCard {
-        width: 50%;
-    }
-
     .squareCard {
         width: 25%;
     }
@@ -434,6 +430,10 @@
 }
 
 @media all and (min-width: 800px) {
+
+    .bannerCard {
+        width: 50%;
+    }
 
     .portraitCard {
         width: 20%;

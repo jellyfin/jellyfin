@@ -48,7 +48,7 @@
     function onBackgroundFetch() {
 
         Logger.log('BackgroundFetch initiated');
-        startSync(false);
+        startSync(true);
     }
 
     function onBackgroundFetchFailed() {
@@ -59,15 +59,15 @@
 
     function restartInterval() {
 
-        //setInterval(function () {
+        setInterval(function () {
 
-        //    startSync(false);
+            //startSync(true);
 
-        //}, syncInterval);
+        }, syncInterval);
 
-        //if (lastStart > 0 && (now - lastStart) >= syncInterval) {
-        //    startSync(true);
-        //}
+        if (lastStart > 0 && (now - lastStart) >= syncInterval) {
+            //startSync(true);
+        }
     }
 
     Dashboard.ready(restartInterval);

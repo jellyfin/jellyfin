@@ -258,7 +258,14 @@ namespace MediaBrowser.Providers.Movies
             {
                 foreach (var person in movieData.casts.crew)
                 {
-                    resultItem.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                    // Normalize this
+                    var type = person.department;
+                    if (string.Equals(type, "writing", StringComparison.OrdinalIgnoreCase))
+                    {
+                        type = PersonType.Writer;
+                    }
+
+                    resultItem.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = type });
                 }
             }
 
