@@ -7,7 +7,7 @@
         var fetcher = window.BackgroundFetch;
 
         fetcher.configure(onBackgroundFetch, onBackgroundFetchFailed, {
-            stopOnTerminate: false  // <-- false is default
+            stopOnTerminate: true  // <-- false is default
         });
     }
 
@@ -27,7 +27,7 @@
         fetcher.finish();   // <-- N.B. You MUST called #finish so that native-side can signal completion of the background-thread to the os.
     }
 
-    function startSync(uploadPhotos) {
+    function startSync(reportToFetcher) {
         lastStart = new Date().getTime();
 
         require(['localsync'], function () {
@@ -37,11 +37,11 @@
                 return;
             }
 
-            var syncOptions = {
-                uploadPhotos: uploadPhotos
-            };
+            var promise = LocalSync.sync();
 
-            LocalSync.sync(syncOptions).done(onSyncFinish).fail(onSyncFail);
+            if (reportToFetcher) {
+                promise.done(onSyncFinish).fail(onSyncFail);
+            }
         });
     }
 
@@ -61,12 +61,15 @@
 
         setInterval(function () {
 
-            //startSync(true);
+            startSync();
 
         }, syncInterval);
 
         if (lastStart > 0 && (now - lastStart) >= syncInterval) {
-            //startSync(true);
+
+            setTimeout(function () {
+                startSync();
+            }, 3000);
         }
     }
 

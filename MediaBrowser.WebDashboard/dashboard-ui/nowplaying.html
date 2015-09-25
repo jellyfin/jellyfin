@@ -6,6 +6,14 @@
 <body>
     <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="jqmcollapsible,scripts/nowplayingpage,paperbuttonstyle">
 
+        <paper-tabs selected="{{selected}}" class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
+
+            <paper-tab>${TabNowPlaying}</paper-tab>
+            <paper-tab>${TabControls}</paper-tab>
+            <paper-tab>${TabPlaylist}</paper-tab>
+
+        </paper-tabs>
+
         <div data-role="content" style="overflow:visible;">
 
             <paper-fab mini icon="arrow-back" class="white nowPlayingPageBackButton" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
@@ -148,14 +156,6 @@
                     </div>
                 </neon-animatable>
             </neon-animated-pages>
-
-            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs nowPlayingPagePaperTabs" hidescrollbuttons noink>
-
-                <paper-tab>${TabNowPlaying}</paper-tab>
-                <paper-tab>${TabControls}</paper-tab>
-                <paper-tab>${TabPlaylist}</paper-tab>
-
-            </paper-tabs>
 
         </div>
 

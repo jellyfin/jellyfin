@@ -1728,6 +1728,7 @@ var AppInfo = {};
         AppInfo.enableNowPlayingBar = true;
         AppInfo.enableCustomHomeSections = true;
         AppInfo.enableHomeTabs = true;
+        AppInfo.enableNowPlayingPageBottomTabs = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1749,6 +1750,7 @@ var AppInfo = {};
                 AppInfo.enableNowPlayingBar = false;
                 AppInfo.enableCustomHomeSections = false;
                 AppInfo.enableHomeTabs = false;
+                AppInfo.enableNowPlayingPageBottomTabs = false;
 
             } else {
                 if (isMobile) {

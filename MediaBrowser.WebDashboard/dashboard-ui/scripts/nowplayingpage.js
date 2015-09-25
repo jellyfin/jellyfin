@@ -773,7 +773,13 @@
         });
 
         var tabs = page.querySelector('paper-tabs');
-        tabs.alignBottom = true;
+
+        if (AppInfo.enableNowPlayingPageBottomTabs) {
+            tabs.alignBottom = true;
+            tabs.classList.add('bottom');
+        } else {
+            tabs.classList.remove('bottom');
+        }
 
         LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
 

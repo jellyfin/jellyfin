@@ -2,11 +2,18 @@
     padding-top: 0 !important;
 }
 
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        margin: 2px 1px;
-        width: 70px;
-        height: 70px;
-    }
+.nowPlayingPagePaperTabs.bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+    margin: 2px 1px;
+    width: 70px;
+    height: 70px;
+}
 
 .nowPlayingPageImage img {
     max-height: 360px;

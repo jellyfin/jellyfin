@@ -255,10 +255,6 @@ paper-tabs {
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-    paper-tabs.bottomTabs {
-        box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
-    }
-
 paper-tab {
     text-transform: uppercase;
     font-weight: 400;
