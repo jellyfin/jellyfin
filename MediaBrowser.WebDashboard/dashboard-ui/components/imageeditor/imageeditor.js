@@ -60,7 +60,7 @@
 
             var height = 150;
 
-            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center bottom;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
+            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center bottom;background-size:contain;" class="lazy" data-src="' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '"></div>';
 
             html += '<div class="editorTileFooter">';
 
@@ -106,6 +106,7 @@
         }
 
         elem.innerHTML = html;
+        ImageLoader.lazyChildren(elem);
 
         $('.btnSearchImages', elem).on('click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype'));

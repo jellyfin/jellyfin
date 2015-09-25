@@ -393,7 +393,7 @@
     "MessagePleaseRefreshPage": "\u8bf7\u5237\u65b0\u6b64\u9875\u9762\u4ee5\u4fbf\u4ece\u7f51\u7edc\u83b7\u53d6\u66f4\u65b0\u7a0b\u5e8f\u3002",
     "ButtonHide": "\u9690\u85cf",
     "MessageSettingsSaved": "\u8bbe\u7f6e\u5df2\u4fdd\u5b58\u3002",
-    "ButtonSignOut": "\u767b\u51fa",
+    "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "\u6211\u7684\u4e2a\u4eba\u914d\u7f6e",
     "ButtonMyPreferences": "\u6211\u7684\u504f\u597d",
     "MessageBrowserDoesNotSupportWebSockets": "\u6b64\u6d4f\u89c8\u5668\u4e0d\u652f\u6301web sockets\u3002\u4e3a\u4e86\u83b7\u5f97\u66f4\u597d\u7684\u4f53\u9a8c\uff0c\u8bf7\u5c1d\u8bd5\u4f7f\u7528\u65b0\u6d4f\u89c8\u5668\uff0c\u4f8b\u5982\uff1a Chrome, Firefox, IE10+, Safari (iOS) \u6216\u8005 Opera\u3002",
@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Now Playing",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "\u4e0b\u4e00\u96c6",
+    "HeaderLatestMovies": "\u6700\u65b0\u7535\u5f71",
+    "HeaderLatestEpisodes": "\u6700\u65b0\u5267\u96c6"
 }

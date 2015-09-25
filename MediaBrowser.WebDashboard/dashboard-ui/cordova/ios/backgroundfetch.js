@@ -58,18 +58,16 @@
     var syncInterval = 1800000;
 
     function restartInterval() {
-        if (LocalSync.isSupported) {
-            setInterval(function () {
 
-                LocalSync.startSync();
+        //setInterval(function () {
 
-            }, syncInterval);
+        //    startSync(false);
 
-            if (lastStart > 0 && (now - lastStart) >= syncInterval) {
-                LocalSync.startSync();
-            }
-        }
-        //LocalSync.startSync();
+        //}, syncInterval);
+
+        //if (lastStart > 0 && (now - lastStart) >= syncInterval) {
+        //    startSync(true);
+        //}
     }
 
     Dashboard.ready(restartInterval);

@@ -19,6 +19,14 @@ body {
     -webkit-appearance: none;
 }
 
+.pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
+    padding-top: 88px !important;
+}
+
+.libraryPage:not(.noSecondaryNavPage) {
+    padding-top: 85px !important;
+}
+
 .backdropContainer {
     /* This isn't implemented right and ends up looking terrible */
     background-attachment: initial;
@@ -99,16 +107,16 @@ body {
     border-bottom: 0;
 }
 
-    .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #FF2D55 !important;
-    }
+.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+    color: #007AFF !important;
+}
 
 .channelTimeslotHeader {
-    border-right-color: #FF2D55 !important;
+    border-right-color: #007AFF !important;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #FF2D55 !important;
+    background: #007AFF !important;
 }
 
 .libraryViewNav, paper-tabs {

@@ -393,7 +393,7 @@
     "MessagePleaseRefreshPage": "Vernieuw deze pagina om nieuwe updates te ontvangen van de server.",
     "ButtonHide": "Verbergen",
     "MessageSettingsSaved": "Instellingen opgeslagen.",
-    "ButtonSignOut": "Afmelden",
+    "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "Mijn profiel",
     "ButtonMyPreferences": "Mijn Voorkeuren",
     "MessageBrowserDoesNotSupportWebSockets": "Deze browser ondersteunt geen web sockets. Voor een betere ervaring, probeer een nieuwere browser zoals Chrome, Firefox, IE10 +, Safari (iOS) of Opera.",
@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Now Playing",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "Volgend",
+    "HeaderLatestMovies": "Nieuwste Films",
+    "HeaderLatestEpisodes": "Nieuwste Afleveringen"
 }

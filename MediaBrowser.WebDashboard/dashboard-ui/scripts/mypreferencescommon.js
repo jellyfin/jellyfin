@@ -1,4 +1,15 @@
-﻿$(document).on('pageshow', "#myPreferencesMenuPage", function () {
+﻿pageIdOn('pageinit', 'myPreferencesMenuPage', function () {
+
+    var page = this;
+
+    $('.btnLogout', page).on('click', function () {
+
+        Dashboard.logout();
+    });
+
+});
+
+pageIdOn('pageshow', 'myPreferencesMenuPage', function () {
 
     var page = this;
 
@@ -16,9 +27,21 @@
         page.querySelector('.lnkSync').classList.add('hide');
     }
 
+    Dashboard.getCurrentUser().done(function (user) {
+
+        page.querySelector('.headerUser').innerHTML = user.Name;
+
+        if (AppInfo.isNativeApp && $.browser.safari && user.Policy.IsAdministrator) {
+            page.querySelector('.adminSection').classList.remove('hide');
+        } else {
+            page.querySelector('.adminSection').classList.add('hide');
+        }
+    });
+
     if (AppInfo.isNativeApp && $.browser.safari) {
-        page.querySelector('.lnkServer').classList.remove('hide');
+        page.querySelector('.userSection').classList.remove('hide');
     } else {
-        page.querySelector('.lnkServer').classList.add('hide');
+        page.querySelector('.userSection').classList.add('hide');
     }
+
 });

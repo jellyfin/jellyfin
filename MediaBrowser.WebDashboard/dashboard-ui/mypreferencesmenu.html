@@ -70,7 +70,7 @@
 
                     <a href="#" class="clearLink lnkSync hide">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar" icon="sync" style="background-color:#673AB7;" item-icon></paper-fab>
+                            <paper-fab class="listAvatar" icon="sync" style="background-color: #673AB7;" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonSyncSettings}</div>
                                 <div secondary>${ButtonSyncSettingsHelp}</div>
@@ -78,14 +78,40 @@
                         </paper-icon-item>
                     </a>
 
-                    <a href="dashboard.html" class="clearLink lnkServer hide">
-                        <paper-icon-item>
-                            <paper-fab class="listAvatar" icon="settings" style="background-color:#444;" item-icon></paper-fab>
-                            <paper-item-body two-line>
-                                <div>${ButtonManageServer}</div>
-                            </paper-item-body>
-                        </paper-icon-item>
-                    </a>
+                </div>
+
+                <div class="userSection hide">
+                    <h1 class="headerUser"></h1>
+                    <div class="paperList">
+                        <a href="selectserver.html" class="clearLink">
+                            <paper-icon-item>
+                                <paper-fab class="listAvatar" icon="wifi" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${HeaderSelectServer}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                            <paper-icon-item class="btnLogout">
+                                <paper-fab class="listAvatar" icon="lock" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${ButtonSignOut}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="adminSection hide">
+                    <h1>${HeaderAdmin}</h1>
+                    <div class="paperList">
+                        <a href="dashboard.html" class="clearLink">
+                            <paper-icon-item>
+                                <paper-fab class="listAvatar" icon="settings" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${ButtonServerDashboard}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

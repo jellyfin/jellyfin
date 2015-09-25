@@ -50,7 +50,7 @@
     "tag": "v1.0.14",
     "commit": "120a0610aca5c86194977e30f696b09716f93bbc"
   },
-  "_source": "git://github.com/polymerelements/paper-input.git",
-  "_target": "^1.0.9",
-  "_originalSource": "polymerelements/paper-input"
+  "_source": "git://github.com/PolymerElements/paper-input.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/paper-input"
 }

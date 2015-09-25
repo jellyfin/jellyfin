@@ -2964,112 +2964,6 @@
             $link.next().removeClass('btnUserItemRatingOn');
         },
 
-        getDetailImageHtml: function (item, href, preferThumb) {
-
-            var imageTags = item.ImageTags || {};
-
-            if (item.PrimaryImageTag) {
-                imageTags.Primary = item.PrimaryImageTag;
-            }
-
-            var html = '';
-
-            var url;
-
-            var imageHeight = 360;
-
-            if (preferThumb && imageTags.Thumb) {
-
-                url = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Thumb",
-                    height: imageHeight,
-                    tag: item.ImageTags.Thumb
-                });
-            }
-            else if (imageTags.Primary) {
-
-                url = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Primary",
-                    height: imageHeight,
-                    tag: item.ImageTags.Primary
-                });
-            }
-            else if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                url = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Backdrop",
-                    height: imageHeight,
-                    tag: item.BackdropImageTags[0]
-                });
-            }
-            else if (imageTags.Thumb) {
-
-                url = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Thumb",
-                    height: imageHeight,
-                    tag: item.ImageTags.Thumb
-                });
-            }
-            else if (imageTags.Disc) {
-
-                url = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Disc",
-                    height: imageHeight,
-                    tag: item.ImageTags.Disc
-                });
-            }
-            else if (item.AlbumId && item.AlbumPrimaryImageTag) {
-
-                url = ApiClient.getScaledImageUrl(item.AlbumId, {
-                    type: "Primary",
-                    height: imageHeight,
-                    tag: item.AlbumPrimaryImageTag
-                });
-
-            }
-            else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
-                url = "css/images/items/detail/audio.png";
-            }
-            else if (item.MediaType == "Game" || item.Type == "GameGenre") {
-                url = "css/images/items/detail/game.png";
-            }
-            else if (item.Type == "Person") {
-                url = "css/images/items/detail/person.png";
-            }
-            else if (item.Type == "Genre" || item.Type == "Studio") {
-                url = "css/images/items/detail/video.png";
-            }
-            else if (item.Type == "TvChannel") {
-                url = "css/images/items/detail/tv.png";
-            }
-            else {
-                url = "css/images/items/detail/video.png";
-            }
-
-            html += '<div style="position:relative;">';
-
-            if (href) {
-                html += "<a class='itemDetailGalleryLink' href='" + href + "'>";
-            }
-
-            html += "<img class='itemDetailImage' src='" + url + "' />";
-            if (href) {
-                html += "</a>";
-            }
-
-            var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
-
-            if (progressHtml) {
-                html += '<div class="detailImageProgressContainer">';
-                html += progressHtml;
-                html += "</div>";
-            }
-
-            html += "</div>";
-
-            return html;
-        },
-
         renderDetailImage: function (elem, item, editable, preferThumb) {
 
             var imageTags = item.ImageTags || {};
@@ -3180,7 +3074,7 @@
                 }
             }
 
-            html += "<img class='itemDetailImage' src='" + url + "' />";
+            html += "<img class='itemDetailImage lazy' src='css/images/empty.png' />";
 
             if (editable) {
                 html += "</a>";
@@ -3212,6 +3106,8 @@
                 elem.classList.add('portraitDetailImageContainer');
                 elem.classList.remove('squareDetailImageContainer');
             }
+
+            ImageLoader.lazyImage(elem.querySelector('img'), url);
         },
 
         refreshDetailImageUserData: function (elem, item) {

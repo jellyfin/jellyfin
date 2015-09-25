@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Now Playing",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "\u0395\u03c0\u03cc\u03bc\u03b5\u03bd\u03bf",
+    "HeaderLatestMovies": "\u03a4\u03b5\u03bb\u03b5\u03c5\u03c4\u03b1\u03af\u03b5\u03c2 \u03a4\u03b1\u03b9\u03bd\u03af\u03b5\u03c2",
+    "HeaderLatestEpisodes": "\u03a4\u03b5\u03bb\u03b5\u03c5\u03c4\u03b1\u03af\u03b1 \u03b5\u03c0\u03b5\u03b9\u03c3\u03cc\u03b4\u03b9\u03b1"
 }

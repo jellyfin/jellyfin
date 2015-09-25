@@ -393,7 +393,7 @@
     "MessagePleaseRefreshPage": "Por favor, atualize esta p\u00e1gina para receber novas atualiza\u00e7\u00f5es do servidor.",
     "ButtonHide": "Ocultar",
     "MessageSettingsSaved": "Ajustes salvos.",
-    "ButtonSignOut": "Sair",
+    "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "Meu Perfil",
     "ButtonMyPreferences": "Minhas Prefer\u00eancias",
     "MessageBrowserDoesNotSupportWebSockets": "Este navegador n\u00e3o suporta web sockets. Para uma melhor experi\u00eancia, tente um navegador mais atual como o Chrome, Firefox, IE10+, Safari (iOS) ou Opera.",
@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Reproduzindo Agora",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "Pr\u00f3ximo",
+    "HeaderLatestMovies": "Filmes Recentes",
+    "HeaderLatestEpisodes": "Epis\u00f3dios Recentes"
 }

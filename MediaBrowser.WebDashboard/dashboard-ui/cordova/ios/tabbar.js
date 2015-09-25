@@ -113,8 +113,8 @@
 
         Events.on(ConnectionManager, 'localusersignedin', showTabs);
         Events.on(ConnectionManager, 'localusersignedout', hideTabs);
-        Events.on(MediaController, 'playbackstart', onPlaybackStop);
-        Events.on(MediaController, 'playbackstop', onPlaybackStart);
+        Events.on(MediaController, 'playbackstart', onPlaybackStart);
+        Events.on(MediaController, 'playbackstop', onPlaybackStop);
     });
 
     pageClassOn('pageshow', "page", function () {

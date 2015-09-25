@@ -65,7 +65,7 @@
             html += getRemoteImageHtml(imagesResult.Images[i], imageType);
         }
 
-        $('.availableImagesList', page).html(html).trigger('create');
+        $('.availableImagesList', page).html(html).lazyChildren();
 
         $('.btnNextPage', page).on('click', function () {
             browsableImageStartIndex += browsableImagePageSize;
@@ -142,7 +142,7 @@
 
         html += '<div class="remoteImageContainer">';
 
-        var cssClass = "remoteImage";
+        var cssClass = "remoteImage lazy";
 
         if (imageType == "Backdrop" || imageType == "Art" || imageType == "Thumb" || imageType == "Logo") {
             cssClass += " remoteBackdropImage";
@@ -168,7 +168,7 @@
 
         var displayUrl = getDisplayUrl(image.ThumbnailUrl || image.Url);
 
-        html += '<a target="_blank" href="' + getDisplayUrl(image.Url) + '" class="' + cssClass + '" style="background-image:url(\'' + displayUrl + '\');">';
+        html += '<a target="_blank" href="' + getDisplayUrl(image.Url) + '" class="' + cssClass + '" data-src="' + displayUrl + '">';
         html += '</a>';
 
         html += '<div class="remoteImageDetails">';

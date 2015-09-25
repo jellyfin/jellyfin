@@ -393,7 +393,7 @@
     "MessagePleaseRefreshPage": "Genindl\u00e6s venligst denne side for at modtage nye opdateringer fra serveren.",
     "ButtonHide": "Gem",
     "MessageSettingsSaved": "Indstillinger er gemt.",
-    "ButtonSignOut": "Log af",
+    "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "Min profil",
     "ButtonMyPreferences": "Mine indstillinger",
     "MessageBrowserDoesNotSupportWebSockets": "Denne browser underst\u00f8tter ikke \"web sockets\". For en bedre oplevelse benyt da en nyere browser s\u00e5 som Chrome, Firefox, IE10+, Safari (iOS) eller Opera.",
@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Now Playing",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "N\u00e6ste",
+    "HeaderLatestMovies": "Seneste film",
+    "HeaderLatestEpisodes": "Sidste episoder"
 }

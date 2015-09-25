@@ -461,6 +461,7 @@
 
     function downloadFile(url, localPath, enableBackground) {
 
+        return downloadWithFileTransfer(url, localPath, enableBackground);
         if (!enableBackground) {
             return downloadWithFileTransfer(url, localPath);
         }
@@ -484,12 +485,16 @@
                     var downloader = new BackgroundTransfer.BackgroundDownloader();
                     // Create a new download operation.
                     var download = downloader.createDownload(url, targetFile);
+
+                    var isQueued = true;
+
                     // Start the download and persist the promise to be able to cancel the download.
                     var downloadPromise = download.startAsync().then(function () {
 
                         // on success
                         Logger.log('Downloaded local url: ' + localPath);
                         localStorage.setItem('sync-' + url, '1');
+                        isQueued = false;
 
                     }, function () {
 
@@ -501,11 +506,7 @@
 
                         // on progress
                         //Logger.log('download progress: ' + value);
-
                     });
-
-                    // true indicates that it's queued
-                    deferred.resolveWith(null, [localPath, true]);
                 });
 
             }).fail(getOnFail(deferred));;
@@ -515,9 +516,31 @@
         return deferred.promise();
     }
 
-    function downloadWithFileTransfer(url, localPath) {
+    var activeDownloads = [];
+
+    function removeDownload(key) {
+
+        for (var i = 0, length = activeDownloads.length; i < length; i++) {
+            if (key == activeDownloads[i]) {
+                activeDownloads[i] = "";
+            }
+        }
+    }
+
+    function downloadWithFileTransfer(url, localPath, enableBackground) {
 
         var deferred = DeferredBuilder.Deferred();
+
+        if (localStorage.getItem('sync-' + url) == '1') {
+            Logger.log('file was downloaded previously');
+            deferred.resolveWith(null, [localPath]);
+            return deferred.promise();
+        }
+
+        var downloadKey = url + localPath;
+        if (activeDownloads.indexOf(downloadKey) != -1) {
+            deferred.resolveWith(null, [localPath, true]);
+        }
 
         Logger.log('downloading: ' + url + ' to ' + localPath);
 
@@ -525,15 +548,53 @@
 
             createDirectory(getParentDirectoryPath(localPath)).done(function () {
 
-                var path = fileSystem.root.toURL() + "/emby/cache/" + key;
+                fileSystem.root.getFile(localPath, { create: true }, function (targetFile) {
 
-                var ft = new FileTransfer();
-                ft.download(url, path, function (entry) {
+                    var isQueued = enableBackground;
+                    var isError = false;
 
-                    deferred.resolveWith(null, [localPath]);
+                    var ft = new FileTransfer();
+                    ft.download(url, targetFile.toURL(), function (entry) {
+
+                        removeDownload(downloadKey);
+
+                        if (enableBackground) {
+                            Logger.log('Downloaded local url: ' + localPath);
+                            localStorage.setItem('sync-' + url, '1');
+                            isQueued = false;
+                        } else {
+                            deferred.resolveWith(null, [localPath]);
+                        }
+
+                    }, function () {
+
+                        removeDownload(downloadKey);
+
+                        Logger.log('Error downloading url: ' + url);
+
+                        if (enableBackground) {
+                            isError = true;
+                        } else {
+                            deferred.reject();
+                        }
+                    });
+                    activeDownloads.push(downloadKey);
+
+                    if (enableBackground) {
+                        // Give it a short period of time to see if it has already been completed before. Either way, move on and resolve it.
+                        setTimeout(function () {
+
+                            if (isError) {
+                                deferred.reject();
+                            } else {
+                                // true indicates that it's queued
+                                deferred.resolveWith(null, [localPath, isQueued]);
+                            }
+                        }, 1500);
+                    }
                 });
 
-            }).fail(getOnFail(deferred));;
+            }).fail(getOnFail(deferred));
 
         }).fail(getOnFail(deferred));
 

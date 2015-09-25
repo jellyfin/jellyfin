@@ -47,11 +47,16 @@
     }
 
     function enableScrollX() {
+
         return $.browser.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {
         return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function getPortraitShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
 
     function getLibraryButtonsHtml(items) {
@@ -175,7 +180,7 @@
             Limit: limit,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
         return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
@@ -203,6 +208,93 @@
                     showTitle: cardLayout,
                     showYear: cardLayout,
                     showDetailsMenu: true,
+                    context: 'home'
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
+        });
+    }
+
+    function loadLatestMovies(elem, user) {
+
+        var options = {
+
+            Limit: 12,
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Thumb",
+            IncludeItemTypes: "Movie"
+        };
+
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+
+            var html = '';
+
+            var scrollX = enableScrollX();
+
+            if (items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMovies') + '</h1>';
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: getPortraitShape(),
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    lazy: true,
+                    context: 'home',
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
+        });
+    }
+
+    function loadLatestEpisodes(elem, user) {
+
+        var options = {
+
+            Limit: 12,
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Thumb",
+            IncludeItemTypes: "Episode"
+        };
+
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+
+            var html = '';
+
+            var scrollX = enableScrollX();
+
+            if (items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestEpisodes') + '</h1>';
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    preferThumb: true,
+                    shape: getThumbShape(),
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    lazy: true,
                     context: 'home'
                 });
                 html += '</div>';
@@ -357,6 +449,50 @@
         });
     }
 
+    function loadNextUp(elem, userId) {
+
+        var query = {
+
+            Limit: 20,
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+            UserId: userId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+        };
+
+        ApiClient.getNextUpEpisodes(query).done(function (result) {
+
+            var html = '';
+
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderNextUp') + '</h1>';
+                if (enableScrollX()) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: getThumbShape(),
+                    overlayText: false,
+                    showTitle: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    overlayPlayButton: true,
+                    context: 'home',
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+
+            ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
+        });
+    }
+
     function handleLibraryLinkNavigations(elem) {
 
         $('a', elem).on('click', function () {
@@ -497,9 +633,12 @@
         loadLatestChannelMedia: loadLatestChannelMedia,
         loadLibraryTiles: loadLibraryTiles,
         loadResume: loadResume,
+        loadNextUp: loadNextUp,
         loadLatestChannelItems: loadLatestChannelItems,
         loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
-        loadlibraryButtons: loadlibraryButtons
+        loadlibraryButtons: loadlibraryButtons,
+        loadLatestMovies: loadLatestMovies,
+        loadLatestEpisodes: loadLatestEpisodes
     };
 
 })(jQuery, document);

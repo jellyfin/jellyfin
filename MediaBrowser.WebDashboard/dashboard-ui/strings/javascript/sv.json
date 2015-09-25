@@ -393,7 +393,7 @@
     "MessagePleaseRefreshPage": "V\u00e4nligen ladda om den h\u00e4r sidan f\u00f6r att ta emot nya uppdateringar fr\u00e5n servern.",
     "ButtonHide": "D\u00f6lj",
     "MessageSettingsSaved": "Inst\u00e4llningarna har sparats.",
-    "ButtonSignOut": "Logga ut",
+    "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "Min profil",
     "ButtonMyPreferences": "Mina inst\u00e4llningar",
     "MessageBrowserDoesNotSupportWebSockets": "Den h\u00e4r webbl\u00e4saren st\u00f6djer inte web sockets. F\u00f6r att f\u00e5 en b\u00e4ttre upplevelse, prova en nyare webbl\u00e4sare, t ex Chrome, Firefox, IE10+, Safari (iOS) eller Opera.",
@@ -890,5 +890,8 @@
     "ButtonNowPlaying": "Now Playing",
     "ButtonViewNewApp": "View new app",
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
-    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish."
+    "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
+    "HeaderNextUp": "N\u00e4stkommande",
+    "HeaderLatestMovies": "Nytillkomna filmer",
+    "HeaderLatestEpisodes": "Senaste avsnitten"
 }

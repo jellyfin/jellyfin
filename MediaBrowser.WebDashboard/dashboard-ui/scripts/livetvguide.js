@@ -308,7 +308,7 @@
                     type: "Primary"
                 });
 
-                html += '<img class="guideChannelImage" src="' + url + '" />';
+                html += '<div class="guideChannelImage lazy" data-src="' + url + '"></div>';
             }
 
             html += '</a>';
@@ -317,7 +317,9 @@
             html += '</div>';
         }
 
-        page.querySelector('.channelList').innerHTML = html;
+        var channelList = page.querySelector('.channelList');
+        channelList.innerHTML = html;
+        ImageLoader.lazyChildren(channelList);
     }
 
     function renderGuide(page, date, channels, programs) {

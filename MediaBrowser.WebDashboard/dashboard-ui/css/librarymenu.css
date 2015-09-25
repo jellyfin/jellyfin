@@ -227,18 +227,18 @@
     vertical-align: middle;
 }
 
-.viewMenuLink:hover {
-    color: #fff;
-}
-
-    .viewMenuLink:hover img {
-        opacity: .5;
+    .viewMenuLink:hover {
+        color: #fff;
     }
 
-.viewMenuLink img {
-    height: 24px;
-    vertical-align: top;
-}
+        .viewMenuLink:hover img {
+            opacity: .5;
+        }
+
+    .viewMenuLink img {
+        height: 24px;
+        vertical-align: top;
+    }
 
 .viewMenuSecondary {
     position: absolute;
@@ -284,6 +284,7 @@
     flex: none;
     flex-shrink: 0;
     flex-grow: 1;
+    touch-action: auto !important;
 }
 
 .libraryViewNav paper-tabs {
@@ -399,7 +400,7 @@
     display: none !important;
 }
 
-body:not(.dashboardDocument) .btnNotifications{
+body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
 

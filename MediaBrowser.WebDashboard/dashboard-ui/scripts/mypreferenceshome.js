@@ -172,7 +172,7 @@
 
         user.Configuration.ExcludeFoldersFromGrouping = null;
 
-        user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function(i) {
+        user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function (i) {
 
             return i.checked;
 
@@ -272,6 +272,12 @@
     }).on('pageshow', "#homeScreenPreferencesPage", function () {
 
         var page = this;
+
+        if (AppInfo.enableCustomHomeSections) {
+            page.querySelector('.homeSections').classList.remove('hide');
+        } else {
+            page.querySelector('.homeSections').classList.add('hide');
+        }
 
         Dashboard.showLoadingMsg();
 

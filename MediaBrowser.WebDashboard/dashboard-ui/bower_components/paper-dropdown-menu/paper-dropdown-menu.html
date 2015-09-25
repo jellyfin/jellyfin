@@ -43,6 +43,9 @@ Example:
 
 This example renders a dropdown menu with 4 options.
 
+Similarly to using `iron-select`, `iron-deselect` events will cause the
+current selection of the `paper-dropdown-menu` to be cleared.
+
 ### Styling
 
 The following custom properties and mixins are also available for styling:
@@ -73,6 +76,12 @@ respectively.
       position: relative;
       text-align: left;
       cursor: pointer;
+
+      /* NOTE(cdata): Both values are needed, since some phones require the
+       * value to be `transparent`.
+       */
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-tap-highlight-color: transparent;
 
       --paper-input-container-input: {
         overflow: hidden;
@@ -131,6 +140,7 @@ respectively.
       disabled="[[disabled]]"
       no-animations="[[noAnimations]]"
       on-iron-select="_onIronSelect"
+      on-iron-deselect="_onIronDeselect"
       opened="{{opened}}">
       <div class="dropdown-trigger">
         <paper-ripple></paper-ripple>
@@ -301,6 +311,15 @@ respectively.
        */
       _onIronSelect: function(event) {
         this._setSelectedItem(event.detail.item);
+      },
+
+      /**
+       * A handler that is called when `iron-deselect` is fired.
+       *
+       * @param {CustomEvent} event An `iron-deselect` event.
+       */
+      _onIronDeselect: function(event) {
+        this._setSelectedItem(null);
       },
 
       /**

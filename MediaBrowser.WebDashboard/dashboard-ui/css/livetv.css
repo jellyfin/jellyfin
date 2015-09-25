@@ -310,11 +310,14 @@
 }
 
 .guideChannelImage {
-    max-width: 60px;
-    max-height: 35px;
+    width: 60px;
+    height: 35px;
     position: absolute;
     right: 7px;
     top: 7px;
+    background-size: contain;
+    background-position: right center;
+    background-repeat: no-repeat;
 }
 
 @media (max-width: 1920px) {

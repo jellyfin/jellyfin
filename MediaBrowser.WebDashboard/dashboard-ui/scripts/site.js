@@ -1726,6 +1726,8 @@ var AppInfo = {};
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableNowPlayingBar = true;
+        AppInfo.enableCustomHomeSections = true;
+        AppInfo.enableHomeTabs = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1745,6 +1747,8 @@ var AppInfo = {};
                 AppInfo.enableSearchInTopMenu = false;
                 AppInfo.enableHomeFavorites = false;
                 AppInfo.enableNowPlayingBar = false;
+                AppInfo.enableCustomHomeSections = false;
+                AppInfo.enableHomeTabs = false;
 
             } else {
                 if (isMobile) {
@@ -2299,7 +2303,6 @@ var AppInfo = {};
         if (AppInfo.isNativeApp && $.browser.safari) {
             deps.push('cordova/ios/backgroundfetch');
             deps.push('cordova/ios/tabbar');
-            deps.push('localsync');
         }
         if (AppInfo.isNativeApp && $.browser.android) {
             deps.push('cordova/android/newapp');

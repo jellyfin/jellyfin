@@ -38,7 +38,6 @@
             Limit: limit,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };

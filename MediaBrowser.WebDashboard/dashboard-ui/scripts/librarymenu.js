@@ -71,7 +71,7 @@
 
         var header = document.querySelector('.viewMenuBar');
 
-        var headerSearchButton = document.querySelector('.headerSearchButton')
+        var headerSearchButton = document.querySelector('.headerSearchButton');
 
         if (user.localUser) {
             $('.btnCast', header).visible(true);

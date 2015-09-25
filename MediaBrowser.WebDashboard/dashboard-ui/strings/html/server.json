@@ -1542,5 +1542,7 @@
     "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:",
     "LabelHardwareVideoDecoder": "Hardware video decoder:",
     "LabelHardwareVideoDecoderHelp": "Available on supported systems only.",
-    "ButtonManageServer": "Manage Server"
+    "ButtonServerDashboard": "Server Dashboard",
+    "HeaderAdmin": "Admin",
+    "ButtonSignOut": "Sign out"
 }
