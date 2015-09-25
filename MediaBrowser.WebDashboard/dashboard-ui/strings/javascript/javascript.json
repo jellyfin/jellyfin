@@ -257,6 +257,7 @@
     "HeaderSelectWatchFolder": "Select Watch Folder",
     "HeaderSelectWatchFolderHelp": "Browse or enter the path to your watch folder. The folder must be writeable.",
     "OrganizePatternResult": "Result: {0}",
+    "AutoOrganizeError": "Error Organizing File",
     "HeaderRestart": "Restart",
     "HeaderShutdown": "Shutdown",
     "MessageConfirmRestart": "Are you sure you wish to restart Emby Server?",
