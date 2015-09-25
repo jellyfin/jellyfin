@@ -51,6 +51,10 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
+    <Reference Include="SocketHttpListener, Version=1.0.5746.20001, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SocketHttpListener.1.0.0.8\lib\net45\SocketHttpListener.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite">
@@ -88,9 +92,6 @@
     </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.1.1\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
-    <Reference Include="SocketHttpListener">
-      <HintPath>..\packages\SocketHttpListener.1.0.0.7\lib\net45\SocketHttpListener.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
