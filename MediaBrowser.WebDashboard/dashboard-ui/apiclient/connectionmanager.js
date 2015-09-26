@@ -665,6 +665,19 @@
             return deferred.promise();
         }
 
+        self.getSavedServers = function () {
+
+            var credentials = credentialProvider.credentials();
+
+            var servers = credentials.Servers.slice(0);
+
+            servers.sort(function (a, b) {
+                return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
+            });
+
+            return servers;
+        };
+
         self.getAvailableServers = function () {
 
             logger.log('Begin getAvailableServers');

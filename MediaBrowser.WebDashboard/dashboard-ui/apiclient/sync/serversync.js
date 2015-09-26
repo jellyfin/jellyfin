@@ -49,7 +49,13 @@
 
             options = options || {};
 
-            if (options.uploadPhotos === false) {
+            var uploadPhotos = options.uploadPhotos !== false;
+
+            if (options.cameraUploadServers && options.cameraUploadServers.indexOf(server.Id) == -1) {
+                uploadPhotos = false;
+            }
+
+            if (!uploadPhotos) {
                 nextAction();
                 return;
             }

@@ -24,6 +24,8 @@
                     options.enableBackgroundTransfer = true;
                 }
 
+                options.cameraUploadServers = AppSettings.cameraUploadServers();
+
                 syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).done(function () {
 
                     syncPromise = null;

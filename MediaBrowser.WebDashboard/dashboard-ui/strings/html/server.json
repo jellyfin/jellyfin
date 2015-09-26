@@ -1544,5 +1544,7 @@
     "LabelHardwareVideoDecoderHelp": "Available on supported systems only.",
     "ButtonServerDashboard": "Server Dashboard",
     "HeaderAdmin": "Admin",
-    "ButtonSignOut": "Sign out"
+    "ButtonSignOut": "Sign out",
+    "HeaderCameraUpload": "Camera Upload",
+    "SelectCameraUploadServers": "Upload camera photos to the following servers:"
 }

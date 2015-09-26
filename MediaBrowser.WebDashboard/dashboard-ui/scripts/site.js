@@ -1729,6 +1729,7 @@ var AppInfo = {};
         AppInfo.enableCustomHomeSections = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
+        AppInfo.enableNowPlayingPageBottomTabs = false;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1776,7 +1777,6 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
-        AppInfo.enableAppLayouts = true;
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
             AppInfo.hasKnownExternalPlayerSupport = true;
@@ -1946,6 +1946,7 @@ var AppInfo = {};
                 Dashboard.importCss('themes/ios.css');
             }
         }
+        Dashboard.importCss('themes/ios.css');
 
         if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
             Dashboard.importCss('thirdparty/paper-ie10.css');

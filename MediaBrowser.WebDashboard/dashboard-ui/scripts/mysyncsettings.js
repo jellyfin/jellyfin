@@ -6,6 +6,17 @@
         page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
         page.querySelector('#chkSyncLosslessAudio').checked = AppSettings.syncLosslessAudio();
 
+        var uploadServers = AppSettings.cameraUploadServers();
+
+        page.querySelector('.uploadServerList').innerHTML = ConnectionManager.getSavedServers().map(function (s) {
+
+            var checkedHtml = uploadServers.indexOf(s.Id) == -1 ? '' : ' checked';
+            var html = '<paper-checkbox' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '">' + s.Name + '</paper-checkbox>';
+
+            return html;
+
+        }).join('');
+
         Dashboard.hideLoadingMsg();
     }
 

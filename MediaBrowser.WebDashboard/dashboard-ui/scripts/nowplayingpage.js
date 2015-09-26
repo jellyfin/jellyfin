@@ -775,18 +775,35 @@
         var tabs = page.querySelector('paper-tabs');
 
         if (AppInfo.enableNowPlayingPageBottomTabs) {
-            tabs.alignBottom = true;
-            tabs.classList.add('bottom');
+            tabs.classList.remove('hide');
             //page.classList.add('noSecondaryNavPage');
         } else {
-            tabs.classList.remove('bottom');
+            tabs.classList.add('hide');
             //page.classList.remove('noSecondaryNavPage');
         }
 
+        tabs.classList.add('bottom');
+        tabs.alignBottom = true;
         LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
 
         $(tabs).on('iron-select', function () {
             page.querySelector('neon-animated-pages').selected = this.selected;
+        });
+
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+            var btn = page.querySelector('.libraryViewNav a.ui-btn-active');
+
+            if (btn) {
+                btn.classList.remove('ui-btn-active');
+            }
+
+            page.querySelector('.libraryViewNav a[data-index=\'' + this.selected + '\']').classList.add('ui-btn-active');
+        });
+
+        $(page.querySelectorAll('.libraryViewNav a')).on('click', function () {
+            var newSelected = this.getAttribute('data-index');
+            tabs.selected = newSelected;
+            page.querySelector('neon-animated-pages').selected = newSelected;
         });
 
         $(MediaController).on('playerchange', function () {

@@ -98,6 +98,21 @@
             return appStorage.getItem('displayLanguage') || 'en-US';
         },
 
+        cameraUploadServers: function (val) {
+
+            if (val != null) {
+                update('cameraUploadServers', val.join(','));
+            }
+
+            val = appStorage.getItem('cameraUploadServers');
+
+            if (val) {
+                return val.split(',');
+            }
+
+            return [];
+        },
+
         displayPreferencesKey: function () {
             if (AppInfo.isNativeApp) {
                 return 'Emby Mobile';

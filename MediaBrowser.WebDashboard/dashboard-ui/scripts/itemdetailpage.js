@@ -633,6 +633,18 @@
         });
     }
 
+    function enableScrollX() {
+        return $.browser.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function getPortraitShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'detailPagePortrait';
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'detailPageSquare';
+    }
+
     function renderSimilarItems(page, item, context) {
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Program" || item.Type == "Recording" || item.Type == "Game" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "ChannelVideoItem") {
@@ -643,7 +655,7 @@
             return;
         }
 
-        var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? "detailPageSquare" : "detailPagePortrait";
+        var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
         var screenWidth = $(window).width();
         var screenHeight = $(window).height();
 
@@ -655,6 +667,10 @@
 
         if (screenWidth >= 800 && screenHeight >= 1000) {
             options.limit *= 2;
+        }
+
+        if (enableScrollX()) {
+            options.limit = 12;
         }
 
         ApiClient.getSimilarItems(item.Id, options).done(function (result) {
@@ -669,7 +685,14 @@
 
             $('.similiarHeader', elem).html(Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name));
 
-            var html = LibraryBrowser.getPosterViewHtml({
+            var html = '';
+
+            if (enableScrollX()) {
+                html += '<div class="hiddenScrollX itemsContainer">';
+            } else {
+                html += '<div class="itemsContainer">';
+            }
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -682,6 +705,7 @@
                 coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
                 overlayPlayButton: true
             });
+            html += '</div>';
 
             $('#similarContent', page).html(html).lazyChildren().createCardMenus();
         });

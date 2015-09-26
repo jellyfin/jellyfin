@@ -4,16 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="jqmcollapsible,scripts/nowplayingpage,paperbuttonstyle">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="jqmcollapsible,scripts/nowplayingpage">
 
         <div class="libraryViewNav">
-            <paper-tabs class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
-
-                <paper-tab>${TabNowPlaying}</paper-tab>
-                <paper-tab>${TabControls}</paper-tab>
-                <paper-tab>${TabPlaylist}</paper-tab>
-
-            </paper-tabs>
+            <div>
+                <a href="#" data-index="0">${TabNowPlaying}</a>
+                <a href="#" data-index="1">${TabControls}</a>
+                <a href="#" data-index="2">${TabPlaylist}</a>
+            </div>
         </div>
 
         <div data-role="content" style="overflow:visible;">
@@ -27,7 +25,7 @@
                 </div>
             </div>
 
-            <neon-animated-pages selected="{{selected}}">
+            <neon-animated-pages>
                 <neon-animatable>
                     <div style="text-align:center;">
 
@@ -167,6 +165,13 @@
             </div>
         </div>
 
+        <paper-tabs class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
+
+            <paper-tab>${TabNowPlaying}</paper-tab>
+            <paper-tab>${TabControls}</paper-tab>
+            <paper-tab>${TabPlaylist}</paper-tab>
+
+        </paper-tabs>
     </div>
 </body>
 </html>

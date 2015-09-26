@@ -168,7 +168,6 @@
 
 .searchResultsOverlay {
     position: fixed;
-    background: rgba(34, 34, 34, 1);
     top: 50px;
     left: 0;
     right: 0;
