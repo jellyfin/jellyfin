@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 using WebMarkupMin.Core;
 using WebMarkupMin.Core.Minifiers;
 using WebMarkupMin.Core.Settings;
@@ -136,7 +137,7 @@ namespace MediaBrowser.WebDashboard.Api
             // Don't allow file system access outside of the source folder
             if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
             {
-                throw new UnauthorizedAccessException();
+                throw new SecurityException("Access denied");
             }
 
             return fullPath;

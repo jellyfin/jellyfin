@@ -611,11 +611,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
+                var recordingEndDate = timer.EndDate.AddSeconds(timer.PostPaddingSeconds);
+
+                if (recordingEndDate <= DateTime.UtcNow)
+                {
+                    _logger.Warn("Recording timer fired for timer {0}, Id: {1}, but the program has already ended.", timer.Name, timer.Id);
+                    return;
+                }
+
                 var cancellationTokenSource = new CancellationTokenSource();
 
                 if (_activeRecordings.TryAdd(timer.Id, cancellationTokenSource))
                 {
-                    await RecordStream(timer, cancellationTokenSource.Token).ConfigureAwait(false);
+                    await RecordStream(timer, recordingEndDate, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -628,22 +636,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task RecordStream(TimerInfo timer, CancellationToken cancellationToken)
+        private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, CancellationToken cancellationToken)
         {
             if (timer == null)
             {
                 throw new ArgumentNullException("timer");
             }
 
-            var mediaStreamInfo = await GetChannelStream(timer.ChannelId, null, CancellationToken.None);
-            var duration = (timer.EndDate - DateTime.UtcNow).Add(TimeSpan.FromSeconds(timer.PostPaddingSeconds));
-
-            HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
-            {
-                Url = mediaStreamInfo.Path
-            };
-
             var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
+
             var recordPath = RecordingPath;
 
             if (info.IsMovie)
@@ -708,15 +709,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _recordingProvider.Add(recording);
             }
 
-            recording.Path = recordPath;
-            recording.Status = RecordingStatus.InProgress;
-            recording.DateLastUpdated = DateTime.UtcNow;
-            _recordingProvider.Update(recording);
-
-            _logger.Info("Beginning recording.");
-
             try
             {
+                var mediaStreamInfo = await GetChannelStream(timer.ChannelId, null, CancellationToken.None);
+
+                // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
+                await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
+
+                var duration = recordingEndDate - DateTime.UtcNow;
+
+                HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
+                {
+                    Url = mediaStreamInfo.Path
+                };
+
+                recording.Path = recordPath;
+                recording.Status = RecordingStatus.InProgress;
+                recording.DateLastUpdated = DateTime.UtcNow;
+                _recordingProvider.Update(recording);
+
+                _logger.Info("Beginning recording.");
+
                 httpRequestOptions.BufferContent = false;
                 var durationToken = new CancellationTokenSource(duration);
                 var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;

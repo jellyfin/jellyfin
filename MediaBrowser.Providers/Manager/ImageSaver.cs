@@ -236,11 +236,6 @@ namespace MediaBrowser.Providers.Manager
                     file.Attributes |= FileAttributes.Hidden;
                 }
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.Error("Error saving image to {0}", ex, path);
-                throw new Exception(string.Format("Error saving image to {0}", path), ex);
-            }
             finally
             {
                 _libraryMonitor.ReportFileSystemChangeComplete(path, false);
