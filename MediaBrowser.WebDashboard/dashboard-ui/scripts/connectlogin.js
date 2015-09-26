@@ -256,7 +256,7 @@
         var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
         $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
 
-    }).on('pageshowready', "#connectLoginPage", function () {
+    }).on('pageshow', "#connectLoginPage", function () {
 
         var page = this;
         loadPage(page);

@@ -249,8 +249,12 @@
             }
 
             Events.on(player, 'playbackstop', onPlaybackStop);
-            Events.on(player, 'playbackstart', onPlaybackStart);
+            Events.on(player, 'beforeplaybackstart', onBeforePlaybackStart);
         };
+
+        function onBeforePlaybackStart(e, state) {
+            $(self).trigger('beforeplaybackstart', [state, this]);
+        }
 
         function onPlaybackStart(e, state) {
             $(self).trigger('playbackstart', [state, this]);
@@ -450,7 +454,12 @@
             return deferred.promise();
         };
 
-        function doWithPlaybackValidation(fn) {
+        function doWithPlaybackValidation(player, fn) {
+
+            if (!player.isLocalPlayer) {
+                fn();
+                return;
+            }
 
             requirejs(["scripts/registrationservices"], function () {
                 RegistrationServices.validateFeature('playback').done(fn);
@@ -479,7 +488,7 @@
 
         self.play = function (options) {
 
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };
                 }
@@ -490,13 +499,13 @@
 
         self.shuffle = function (id) {
 
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.shuffle(id);
             });
         };
 
         self.instantMix = function (id) {
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.instantMix(id);
             });
         };

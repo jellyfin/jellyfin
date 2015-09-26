@@ -879,6 +879,11 @@ namespace MediaBrowser.Providers.Manager
 
         private void StartRefreshTimer()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             lock (_refreshTimerLock)
             {
                 if (_refreshTimer == null)
@@ -1013,6 +1018,7 @@ namespace MediaBrowser.Providers.Manager
         public void Dispose()
         {
             _disposed = true;
+            StopRefreshTimer();
         }
     }
 }

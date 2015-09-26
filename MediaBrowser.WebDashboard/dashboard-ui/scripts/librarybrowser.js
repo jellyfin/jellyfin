@@ -250,7 +250,7 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pageshow', LibraryBrowser.onTabbedpagebeforeshow);
+            $(ownerpage).on('pagebeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
 
             pages.addEventListener('iron-select', function () {
                 // When transition animations are used, add a content loading delay to allow the animations to finish
@@ -406,7 +406,7 @@
 
                 afterNavigate.call($($.mobile.activePage)[0]);
             } else {
-                $(document).one('pageshow', '.page', afterNavigate);
+                $(document).one('pagebeforeshow', '.page', afterNavigate);
                 Dashboard.navigate(url);
             }
         },

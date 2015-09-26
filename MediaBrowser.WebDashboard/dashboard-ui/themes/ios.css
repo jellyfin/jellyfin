@@ -225,3 +225,11 @@ paper-tab {
 .nowPlayingPageBackButton {
     display: none !important;
 }
+
+.nowPlayingPage .libraryViewNav {
+    top: 0 !important;
+}
+
+.nowPlayingPage {
+    padding-top: 40px !important;
+}

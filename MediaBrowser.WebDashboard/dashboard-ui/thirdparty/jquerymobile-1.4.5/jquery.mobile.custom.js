@@ -3193,10 +3193,13 @@ $.widget( "mobile.page", {
 
 			if (from) {
 			    from[0].style.display = 'none';
-			    //var pages = document.querySelectorAll("div[data-role='page']");
-                //for (var i = 0, length = pages.length; i < length; i++) {
-                //    pages[i].style.display = 'none';
-                //}
+			    var pages = this.element[0].childNodes;
+			    for (var i = 0, length = pages.length; i < length; i++) {
+			        var pg = pages[i];
+			        if (pg.getAttribute && pg.getAttribute('data-role') == 'page') {
+                        pg.style.display = 'none';
+                    }
+                }
 			}
 
 			var toPage = to[0];

@@ -1003,7 +1003,7 @@
     }
 };
 
-$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 
@@ -1287,7 +1287,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('pageshowready', onPageShowReadyCheckTour);
+            $(page).off('pageshow', onPageShowCheckTour);
         });
     }
 
@@ -1344,7 +1344,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         });
     }
 
-    function onPageShowReadyCheckTour() {
+    function onPageShowCheckTour() {
         var page = this;
 
         var apiClient = ApiClient;
@@ -1362,13 +1362,13 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshowready', "#dashboardPage", onPageShowReadyCheckTour);
+    }).on('pageshow', "#dashboardPage", onPageShowCheckTour);
 
 })(jQuery, document, window);
 
 (function () {
 
-    $(document).on('pageshowready', ".type-interior", function () {
+    $(document).on('pageshow', ".type-interior", function () {
 
         var page = this;
 

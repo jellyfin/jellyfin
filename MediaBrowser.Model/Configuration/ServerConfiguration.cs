@@ -274,7 +274,6 @@ namespace MediaBrowser.Model.Configuration
 
             InsecureApps9 = new[]
             {
-                "Unknown app",
                 "Windows Phone"
             };
 

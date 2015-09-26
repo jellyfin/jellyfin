@@ -722,7 +722,7 @@ namespace MediaBrowser.Api.Library
 
             if (!item.CanDelete(user))
             {
-                throw new UnauthorizedAccessException();
+                throw new SecurityException("Unauthorized access");
             }
 
             if (item is ILiveTvRecording)

@@ -326,6 +326,8 @@
 
     function reloadData(page) {
 
+        lastDataLoad = 0;
+
         Dashboard.showLoadingMsg();
 
         var options = {};
@@ -344,9 +346,6 @@
 
                 loadData(page, response.Items);
 
-                setTimeout(function () {
-                    loadData(page, response.Items);
-                }, 2000);
                 Dashboard.hideLoadingMsg();
 
             });
@@ -396,7 +395,6 @@
     $(document).on('pageshow', ".syncActivityPage", function () {
 
         var page = this;
-        lastDataLoad = 0;
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 

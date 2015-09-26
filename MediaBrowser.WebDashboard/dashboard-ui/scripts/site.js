@@ -1747,10 +1747,14 @@ var AppInfo = {};
                 AppInfo.enableNavDrawer = false;
                 AppInfo.enableSearchInTopMenu = false;
                 AppInfo.enableHomeFavorites = false;
-                AppInfo.enableNowPlayingBar = false;
                 AppInfo.enableCustomHomeSections = false;
                 AppInfo.enableHomeTabs = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
+
+                // Disable the now playing bar for the iphone since we already have the now playing tab at the bottom
+                if (navigator.userAgent.toString().toLowerCase().indexOf('iphone') != -1) {
+                    AppInfo.enableNowPlayingBar = false;
+                }
 
             } else {
                 if (isMobile) {
@@ -2478,8 +2482,6 @@ pageClassOn('pageshow', "page", function () {
             return;
         }
     }
-
-    Events.trigger(page, 'pageshowready');
 
     Dashboard.ensureHeader(page);
 

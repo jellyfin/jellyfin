@@ -6,13 +6,15 @@
 <body>
     <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="jqmcollapsible,scripts/nowplayingpage,paperbuttonstyle">
 
-        <paper-tabs selected="{{selected}}" class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
+        <div class="libraryViewNav">
+            <paper-tabs class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
 
-            <paper-tab>${TabNowPlaying}</paper-tab>
-            <paper-tab>${TabControls}</paper-tab>
-            <paper-tab>${TabPlaylist}</paper-tab>
+                <paper-tab>${TabNowPlaying}</paper-tab>
+                <paper-tab>${TabControls}</paper-tab>
+                <paper-tab>${TabPlaylist}</paper-tab>
 
-        </paper-tabs>
+            </paper-tabs>
+        </div>
 
         <div data-role="content" style="overflow:visible;">
 

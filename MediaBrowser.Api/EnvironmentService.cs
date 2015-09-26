@@ -120,8 +120,6 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        /// <exception cref="System.ArgumentNullException">Path</exception>
-        /// <exception cref="System.ArgumentException"></exception>
         public object Get(GetDirectoryContents request)
         {
             var path = request.Path;
@@ -138,15 +136,7 @@ namespace MediaBrowser.Api
                 return ToOptimizedSerializedResultUsingCache(GetNetworkShares(path).OrderBy(i => i.Path).ToList());
             }
 
-            try
-            {
-                return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Don't throw the original UnauthorizedAccessException because it will cause a 401 response
-                throw new ApplicationException("Access to the path " + request.Path + " is denied.");
-            }
+            return ToOptimizedSerializedResultUsingCache(GetFileSystemEntries(request).OrderBy(i => i.Path).ToList());
         }
 
         public object Get(GetNetworkShares request)

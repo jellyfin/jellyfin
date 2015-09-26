@@ -1721,6 +1721,13 @@
             // Nothing to setup here
         };
 
+        self.onBeforePlaybackStart = function (mediaRenderer, item, mediaSource) {
+
+            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
+
+            Events.trigger(self, 'beforeplaybackstart', [state]);
+        };
+
         self.onPlaybackStart = function (mediaRenderer, item, mediaSource) {
 
             var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
@@ -1941,6 +1948,8 @@
 
                     // Set volume first to avoid an audible change
                     mediaRenderer.volume(initialVolume);
+
+                    self.onBeforePlaybackStart(mediaRenderer, item, mediaSource);
 
                     mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource);
                     self.streamInfo = streamInfo;

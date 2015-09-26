@@ -98,13 +98,20 @@
         TabBar.show();
     }
 
+    var isFirstHide = true;
     function hideTabs() {
 
         if (!initComplete) {
             return;
         }
 
-        TabBar.hide();
+        var hide = function () { TabBar.hide(); };
+        if (isFirstHide) {
+            isFirstHide = false;
+            setTimeout(hide, 1000);
+        } else {
+            hide();
+        }
     }
 
     Dashboard.ready(function () {
@@ -113,7 +120,7 @@
 
         Events.on(ConnectionManager, 'localusersignedin', showTabs);
         Events.on(ConnectionManager, 'localusersignedout', hideTabs);
-        Events.on(MediaController, 'playbackstart', onPlaybackStart);
+        Events.on(MediaController, 'beforeplaybackstart', onPlaybackStart);
         Events.on(MediaController, 'playbackstop', onPlaybackStop);
     });
 

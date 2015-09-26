@@ -777,8 +777,10 @@
         if (AppInfo.enableNowPlayingPageBottomTabs) {
             tabs.alignBottom = true;
             tabs.classList.add('bottom');
+            //page.classList.add('noSecondaryNavPage');
         } else {
             tabs.classList.remove('bottom');
+            //page.classList.remove('noSecondaryNavPage');
         }
 
         LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);

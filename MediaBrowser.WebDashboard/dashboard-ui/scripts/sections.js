@@ -59,6 +59,10 @@
         return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
 
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
+    }
+
     function getLibraryButtonsHtml(items) {
 
         var html = "";
@@ -612,9 +616,14 @@
                 html += '</div>';
             }
 
+            if (enableScrollX()) {
+                html += '<div class="hiddenScrollX itemsContainer">';
+            } else {
+                html += '<div class="itemsContainer">';
+            }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "autohome",
+                shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
                 coverImage: true,
@@ -622,9 +631,11 @@
                 showDetailsMenu: true,
                 centerText: true
             });
+            html += '</div>';
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 

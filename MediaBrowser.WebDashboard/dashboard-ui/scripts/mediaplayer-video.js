@@ -1078,6 +1078,8 @@
 
             mediaRenderer.init().done(function () {
 
+                self.onBeforePlaybackStart(mediaRenderer, item, mediaSource);
+
                 self.setSrcIntoRenderer(mediaRenderer, streamInfo, item, self.currentMediaSource);
                 self.streamInfo = streamInfo;
 
