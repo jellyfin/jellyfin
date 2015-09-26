@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Security
         /// Register an appstore sale
         /// </summary>
         /// <returns>true if successful</returns>
-        Task<Boolean> RegisterAppStoreSale(string store, string application, string product,
+        Task<Boolean> RegisterAppStoreSale(string store, string application, string product, string feature,
             string type, string storeId, string storeToken, string email, string amt);
 
         /// <summary>

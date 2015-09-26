@@ -186,7 +186,7 @@ namespace MediaBrowser.Common.Implementations.Security
             }
         }
 
-        public async Task<Boolean> RegisterAppStoreSale(string store, string application, string product, 
+        public async Task<Boolean> RegisterAppStoreSale(string store, string application, string product, string feature,
             string type, string storeId, string storeToken, string email, string amt)
         {
             var data = new Dictionary<string, string>()
@@ -194,6 +194,7 @@ namespace MediaBrowser.Common.Implementations.Security
                            {"store", store},
                            {"application", application},
                            {"product", product},
+                           {"feature", feature},
                            {"type", type},
                            {"storeId", storeId},
                            {"token", storeToken},
@@ -201,9 +202,16 @@ namespace MediaBrowser.Common.Implementations.Security
                            {"amt", amt}
                        };
 
+            var options = new HttpRequestOptions()
+                          {
+                              Url = AppstoreRegUrl,
+                              CancellationToken = CancellationToken.None
+                          };
+            options.RequestHeaders.Add("X-Emby-Token", /*_appHost.SystemId*/ "08606E86D043");
+                          
             try
             {
-                using (var json = await _httpClient.Post(AppstoreRegUrl, data, CancellationToken.None).ConfigureAwait(false))
+                using (var json = await _httpClient.Post(options, data).ConfigureAwait(false))
                 {
                     var reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
                     if (!String.IsNullOrEmpty(reg.key))
