@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Model.Entities;
 using System.Threading.Tasks;
 
@@ -39,6 +40,13 @@ namespace MediaBrowser.Common.Security
         /// </summary>
         /// <returns></returns>
         Task LoadAllRegistrationInfo();
+
+        /// <summary>
+        /// Register an appstore sale
+        /// </summary>
+        /// <returns>true if successful</returns>
+        Task<Boolean> RegisterAppStoreSale(string store, string application, string product,
+            string type, string storeId, string storeToken, string email, string amt);
 
         /// <summary>
         /// Gets the supporter information.
