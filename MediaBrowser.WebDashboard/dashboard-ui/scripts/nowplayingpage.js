@@ -776,15 +776,13 @@
 
         if (AppInfo.enableNowPlayingPageBottomTabs) {
             tabs.classList.remove('hide');
-            //page.classList.add('noSecondaryNavPage');
         } else {
             tabs.classList.add('hide');
-            //page.classList.remove('noSecondaryNavPage');
         }
 
         tabs.classList.add('bottom');
         tabs.alignBottom = true;
-        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
+        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelector('neon-animated-pages'));
 
         $(tabs).on('iron-select', function () {
             page.querySelector('neon-animated-pages').selected = this.selected;
@@ -802,8 +800,12 @@
 
         $(page.querySelectorAll('.libraryViewNav a')).on('click', function () {
             var newSelected = this.getAttribute('data-index');
-            tabs.selected = newSelected;
-            page.querySelector('neon-animated-pages').selected = newSelected;
+
+            if (AppInfo.enableNowPlayingPageBottomTabs) {
+                tabs.selected = newSelected;
+            } else {
+                page.querySelector('neon-animated-pages').selected = newSelected;
+            }
         });
 
         $(MediaController).on('playerchange', function () {
@@ -826,7 +828,19 @@
 
         var tab = window.location.hash;
         var selected = tab == '#playlist' ? 2 : 0;;
-        this.querySelectorAll('paper-tabs')[0].selected = selected;
+
+        this.querySelector('paper-tabs').selected = selected;
+
+        if (AppInfo.enableNowPlayingPageBottomTabs) {
+            this.querySelector('paper-tabs').selected = selected;
+        } else {
+
+            // hack alert. doing this because the neon elements don't seem to be initialized yet
+            setTimeout(function() {
+                
+                page.querySelector('neon-animated-pages').selected = selected;
+            }, 1000);
+        }
 
         updateCastIcon(page);
 
