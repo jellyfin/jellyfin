@@ -141,9 +141,11 @@ Custom property | Description | Default
 
     <paper-ripple></paper-ripple>
 
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated></paper-material>
+    <paper-material  elevation="[[_elevation]]" animated></paper-material>
 
-    <content></content>
+    <div class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
+      <content></content>
+    </div>
 
   </template>
 </dom-module>

@@ -86,7 +86,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       function runAfterOpen(overlay, cb) {
         overlay.addEventListener('iron-overlay-opened', function() {
-          cb();
+          Polymer.Base.async(cb, 1);
         });
         overlay.open();
       }

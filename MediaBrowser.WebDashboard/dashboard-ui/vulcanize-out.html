@@ -592,7 +592,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.3';
+Polymer.version = '1.1.4';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -2755,7 +2755,7 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-//ev.preventDefault();
+ev.preventDefault();
 } else {
 Gestures.prevent('track');
 }
@@ -3931,6 +3931,7 @@ var h$ = this._handlers;
 for (var i = 0, l = h$.length, h; i < l && (h = h$[i]); i++) {
 h[0].call(this, h[1], h[2]);
 }
+this._handlers = [];
 }
 });
 (function () {
@@ -4054,7 +4055,7 @@ this._boundPaths = this._boundPaths || {};
 if (from) {
 this._boundPaths[to] = from;
 } else {
-this.unbindPath(to);
+this.unlinkPaths(to);
 }
 },
 unlinkPaths: function (path) {
@@ -4063,23 +4064,13 @@ delete this._boundPaths[path];
 }
 },
 _notifyBoundPaths: function (path, value) {
-var from, to;
 for (var a in this._boundPaths) {
 var b = this._boundPaths[a];
 if (path.indexOf(a + '.') == 0) {
-from = a;
-to = b;
-break;
+this.notifyPath(this._fixPath(b, a, path), value);
+} else if (path.indexOf(b + '.') == 0) {
+this.notifyPath(this._fixPath(a, b, path), value);
 }
-if (path.indexOf(b + '.') == 0) {
-from = b;
-to = a;
-break;
-}
-}
-if (from && to) {
-var p = this._fixPath(to, from, path);
-this.notifyPath(p, value);
 }
 },
 _fixPath: function (property, root, path) {
@@ -4307,7 +4298,7 @@ MIXIN_RULE: 1000
 OPEN_BRACE: '{',
 CLOSE_BRACE: '}',
 _rx: {
-comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -9953,7 +9944,7 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     listeners: {
-      'click': '_onClick',
+      'tap': '_onClick',
       'iron-resize': '_onIronResize'
     },
 
@@ -10013,7 +10004,7 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Cancels the overlay.
      */
     cancel: function() {
-      this.opened = false,
+      this.opened = false;
       this._setCanceled(true);
     },
 
@@ -10094,7 +10085,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
         this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
         this._toggleListenersAsync = null;
-      });
+      }, 1);
     },
 
     // tasks which must occur before opening; e.g. making the element visible
@@ -10345,7 +10336,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     listeners: {
-      'click': '_onDialogClick',
+      'tap': '_onDialogClick',
       'iron-overlay-opened': '_onIronOverlayOpened',
       'iron-overlay-closed': '_onIronOverlayClosed'
     },
@@ -13921,9 +13912,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     <paper-ripple></paper-ripple>
 
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated=""></paper-material>
+    <paper-material elevation="[[_elevation]]" animated=""></paper-material>
 
-    <content></content>
+    <div class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
+      <content></content>
+    </div>
 
   </template>
 </dom-module>
