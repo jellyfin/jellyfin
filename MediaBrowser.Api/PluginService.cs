@@ -118,6 +118,30 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
+    [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale")]
+    [Authenticated]
+    public class RegisterAppstoreSale
+    {
+        [ApiMember(Name = "Store", Description = "Store Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Store { get; set; }
+        [ApiMember(Name = "Application", Description = "Application id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Application { get; set; }
+        [ApiMember(Name = "Product", Description = "Product id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Product { get; set; }
+        [ApiMember(Name = "Type", Description = "Type of product (Product or Subscription)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Type { get; set; }
+        [ApiMember(Name = "StoreId", Description = "Store User Id (if needed)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string StoreId { get; set; }
+        [ApiMember(Name = "StoreToken", Description = "Unique ID for this purchase in the store", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string StoreToken { get; set; }
+        [ApiMember(Name = "Feature", Description = "Emby Feature Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Feature { get; set; }
+        [ApiMember(Name = "Email", Description = "Email address for purchase", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Email { get; set; }
+        [ApiMember(Name = "Amount", Description = "String representation of price (can have currency sign)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Amount { get; set; }
+    }
+
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -263,6 +287,12 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public async Task Post(RegisterAppstoreSale request)
+        {
+            var success = await _securityManager.RegisterAppStoreSale(request.Store, request.Application, request.Product, request.Type, request.StoreId, request.StoreToken, request.Email, request.Amount);
+            if (!success) throw new ApplicationException("Error registering store sale");
         }
 
         /// <summary>
