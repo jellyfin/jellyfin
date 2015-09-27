@@ -312,17 +312,6 @@
     vertical-align: middle;
 }
 
-.criticRatingSummary {
-    color: #506A16 !important;
-    background-color: #F2F0C4;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#FFE37C),to(#F2F0C4));
-    background-image: -webkit-linear-gradient(top,#FFE37C,#F2F0C4);
-    background-image: -moz-linear-gradient(top,#FFE37C,#F2F0C4);
-    background-image: -ms-linear-gradient(top,#FFE37C,#F2F0C4);
-    background-image: -o-linear-gradient(top,#FFE37C,#F2F0C4);
-    background-image: linear-gradient(top,#FFE37C,#F2F0C4);
-}
-
 .criticRatingScore {
     font-weight: bold;
     font-size: 18px;
@@ -1216,18 +1205,41 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 55px;
-    background-color: rgba(0, 0, 0, .85);
+    top: 0;
+    background-color: rgba(0, 0, 0, .3);
     z-index: 999;
-    text-align: center;
-    padding: 1em;
+    border: 2px solid #52B54B;
 }
 
-    .itemSelectionPanel .ui-checkbox {
-        max-width: 130px;
-        margin-left: auto;
-        margin-right: auto;
+    .itemSelectionPanel #checkbox {
+        border-radius: 0 !important;
     }
+
+.selectionCommandsPanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: #52B54B;
+    z-index: 1000;
+}
+
+    .selectionCommandsPanel paper-icon-button {
+        color: #fff;
+        vertical-align: middle;
+    }
+
+.itemSelectionCount {
+    font-size: 28px;
+    vertical-align: middle;
+    color: #fff;
+}
+
+.selectionCommandsPanel iron-icon {
+    height: 32px;
+    width: 32px;
+}
 
 @media all and (min-height: 480px) {
 

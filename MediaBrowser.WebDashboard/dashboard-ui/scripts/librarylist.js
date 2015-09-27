@@ -519,25 +519,8 @@
         });
     }
 
-    function onListViewMenuButtonClick(e) {
+    function onListViewPlayButtonClick(e, playButton) {
 
-        var btn = parentWithClass(e.target, 'listviewMenuButton') || parentWithClass(e.target, 'cardOverlayMoreButton');
-
-        if (btn) {
-            showContextMenu(btn, {});
-
-            e.preventDefault();
-            return false;
-        }
-    }
-
-    function onListViewPlayButtonClick(e) {
-
-        var playButton = parentWithClass(e.target, 'cardOverlayPlayButton');
-
-        if (!playButton) {
-            return;
-        }
         var card = e.target;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
@@ -579,13 +562,40 @@
         return false;
     }
 
-    function onGroupedCardClick(e) {
+    function onCardClick(e) {
 
-        var card = parentWithClass(e.target, 'groupedCard');
+        var playButton = parentWithClass(e.target, 'cardOverlayPlayButton');
 
-        if (!card) {
-            return;
+        if (playButton) {
+            return onListViewPlayButtonClick(e, playButton);
         }
+
+        var listviewMenuButton = parentWithClass(e.target, 'listviewMenuButton') || parentWithClass(e.target, 'cardOverlayMoreButton');
+
+        if (listviewMenuButton) {
+            showContextMenu(listviewMenuButton, {});
+
+            e.preventDefault();
+            return false;
+        }
+
+        var card = parentWithClass(e.target, 'card');
+
+        if (card) {
+
+            var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
+            if (itemSelectionPanel) {
+                return onItemSelectionPanelClick(e, itemSelectionPanel);
+            }
+
+            if (card.classList.contains('groupedCard')) {
+                return onGroupedCardClick(e);
+            }
+        }
+    }
+
+    function onGroupedCardClick(e, card) {
+
         var itemId = card.getAttribute('data-itemid');
         var context = card.getAttribute('data-context');
 
@@ -872,7 +882,7 @@
 
             elem = elem.querySelector('a');
 
-            if ($('.itemSelectionPanel:visible', elem).length) {
+            if (elem.querySelector('.itemSelectionPanel')) {
                 return;
             }
 
@@ -945,20 +955,14 @@
             preventHover = true;
         }
 
-        this.off('click', onGroupedCardClick);
-        this.on('click', onGroupedCardClick);
-
-        this.off('click', onListViewMenuButtonClick);
-        this.on('click', onListViewMenuButtonClick);
-
-        this.off('click', onListViewPlayButtonClick);
-        this.on('click', onListViewPlayButtonClick);
+        this.off('click', onCardClick);
+        this.on('click', onCardClick);
 
         if (AppInfo.isTouchPreferred) {
-            //this.off('contextmenu', disableEvent);
-            //this.on('contextmenu', disableEvent);
-            this.off('contextmenu', onContextMenu);
-            this.on('contextmenu', onContextMenu);
+            this.off('contextmenu', disableEvent);
+            this.on('contextmenu', disableEvent);
+            //this.off('contextmenu', onContextMenu);
+            //this.on('contextmenu', onContextMenu);
         }
         else {
             this.off('contextmenu', onContextMenu);
@@ -975,7 +979,7 @@
         }
 
         for (var i = 0, length = this.length; i < length; i++) {
-            //initTapHold(this[i]);
+            initTapHold(this[i]);
         }
 
         return this;
@@ -987,7 +991,31 @@
     }
 
     function onTapHold(e) {
-        onContextMenu(e);
+
+        var card = parentWithClass(e.target, 'card');
+
+        if (card) {
+
+            showSelections(card);
+
+            e.preventDefault();
+            return false;
+        }
+    }
+
+    function onTapHoldUp(e) {
+
+        var itemSelectionPanel = parentWithClass(e.target, 'itemSelectionPanel');
+
+        if (itemSelectionPanel) {
+            if (!parentWithClass(e.target, 'chkItemSelect')) {
+                var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
+
+                if (chkItemSelect) {
+                    chkItemSelect.checked = !chkItemSelect.checked;
+                }
+            }
+        }
     }
 
     function initTapHold(element) {
@@ -1001,78 +1029,187 @@
             var hammertime = new Hammer(element);
 
             hammertime.on('press', onTapHold);
+            hammertime.on('pressup', onTapHoldUp);
         });
     }
 
-    function toggleSelections(page) {
+    function onItemSelectionPanelClick(e, itemSelectionPanel) {
 
-        Dashboard.showLoadingMsg();
+        // toggle the checkbox, if it wasn't clicked on
+        if (!parentWithClass(e.target, 'chkItemSelect')) {
+            var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
 
-        var selectionCommands = $('.selectionCommands', page);
+            if (chkItemSelect) {
+                var newValue = !chkItemSelect.checked;
+                chkItemSelect.checked = newValue;
+                updateItemSelection(chkItemSelect, newValue);
+            }
+        }
 
-        if (selectionCommands.is(':visible')) {
+        e.preventDefault();
+        return false;
+    }
 
-            selectionCommands.hide();
-            $('.itemSelectionPanel', page).hide();
+    function showSelection(item) {
 
-        } else {
+        var itemSelectionPanel = item.querySelector('.itemSelectionPanel');
 
-            selectionCommands.show();
+        if (!itemSelectionPanel) {
 
-            var panels = $('.itemSelectionPanel', page).show();
+            itemSelectionPanel = document.createElement('div');
+            itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            if (!panels.length) {
+            item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-                var index = 0;
-                $('.cardContent', page).each(function () {
-                    var chkItemSelectId = 'chkItemSelect' + index;
+            var html = '';
 
-                    $(this).append('<div class="itemSelectionPanel" onclick="return false;"><div class="ui-checkbox"><label class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off" for="' + chkItemSelectId + '">Select</label><input id="' + chkItemSelectId + '" type="checkbox" class="chkItemSelect" data-enhanced="true" /></div></div>');
-                    index++;
-                });
+            html += '<paper-checkbox class="chkItemSelect"></paper-checkbox>';
 
-                $('.itemsContainer', page).trigger('create');
+            itemSelectionPanel.innerHTML = html;
+        }
+    }
+
+    function showSelectionCommands() {
+
+        var selectionCommandsPanel = document.querySelector('.selectionCommandsPanel');
+
+        if (!selectionCommandsPanel) {
+
+            selectionCommandsPanel = document.createElement('div');
+            selectionCommandsPanel.classList.add('selectionCommandsPanel');
+
+            document.body.appendChild(selectionCommandsPanel);
+
+            var html = '';
+
+            html += '<div style="float:left;">';
+            html += '<paper-icon-button class="btnCloseSelectionPanel" icon="close"></paper-icon-button>';
+            html += '<span class="itemSelectionCount"></span>';
+            html += '</div>';
+
+            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="float:right;"></paper-icon-button>';
+
+            selectionCommandsPanel.innerHTML = html;
+
+            $('.btnCloseSelectionPanel', selectionCommandsPanel).on('click', hideSelections);
+            $('.btnSelectionPanelOptions', selectionCommandsPanel).on('click', showMenuForSelectedItems);
+        }
+    }
+
+    function showSelections(initialCard) {
+
+        var cards = document.querySelectorAll('.card');
+        for (var i = 0, length = cards.length; i < length; i++) {
+            showSelection(cards[i]);
+        }
+
+        showSelectionCommands();
+        initialCard.querySelector('.chkItemSelect').checked = true;
+        updateItemSelection(initialCard, true);
+    }
+
+    function hideSelections() {
+
+        var selectionCommandsPanel = document.querySelector('.selectionCommandsPanel');
+        if (selectionCommandsPanel) {
+
+            selectionCommandsPanel.parentNode.removeChild(selectionCommandsPanel);
+
+            selectedItems = [];
+            var elems = document.querySelectorAll('.itemSelectionPanel');
+            for (var i = 0, length = elems.length; i < length; i++) {
+                elems[i].parentNode.removeChild(elems[i]);
+            }
+        }
+    }
+
+    var selectedItems = [];
+    function updateItemSelection(chkItemSelect, selected) {
+
+        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-itemid');
+
+        if (selected) {
+
+            var current = selectedItems.filter(function (i) {
+                return i == id;
+            });
+
+            if (!current.length) {
+                selectedItems.push(id);
             }
 
-            $('.chkItemSelect:checked', page).checked(false).checkboxradio('refresh');
+        } else {
+            selectedItems = selectedItems.filter(function (i) {
+                return i != id;
+            });
         }
 
-        Dashboard.hideLoadingMsg();
-    }
-
-    function hideSelections(page) {
-
-        var selectionCommands = page.querySelector('.selectionCommands');
-        if (selectionCommands) {
-            selectionCommands.style.display = 'none';
-        }
-
-        var elems = page.getElementsByClassName('itemSelectionPanel');
-        for (var i = 0, length = elems.length; i < length; i++) {
-            elems[i].style.display = 'none';
+        if (selectedItems.length) {
+            var itemSelectionCount = document.querySelector('.itemSelectionCount');
+            if (itemSelectionCount) {
+                itemSelectionCount.innerHTML = selectedItems.length;
+            }
+        } else {
+            hideSelections();
         }
     }
 
-    function getSelectedItems(page) {
+    function showMenuForSelectedItems(e) {
+        
+        Dashboard.getCurrentUser().done(function (user) {
 
-        var selection = $('.chkItemSelect:checked', page);
+            var items = [];
 
-        return selection.parents('.card')
-            .map(function () {
+            items.push({
+                name: Globalize.translate('ButtonAddToCollection'),
+                id: 'addtocollection',
+                ironIcon: 'add'
+            });
 
-                return this.getAttribute('data-itemid');
+            items.push({
+                name: Globalize.translate('ButtonAddToPlaylist'),
+                id: 'playlist',
+                ironIcon: 'playlist-add'
+            });
 
-            }).get();
+            require(['actionsheet'], function () {
+
+                ActionSheetElement.show({
+                    items: items,
+                    positionTo: e.target,
+                    callback: function (id) {
+
+                        switch (id) {
+
+                            case 'addtocollection':
+                                BoxSetEditor.showPanel(selectedItems);
+                                break;
+                            case 'playlist':
+                                PlaylistManager.showPanel(selectedItems);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+            });
+        });
+    }
+
+    function getSelectedItems() {
+
+        return selectedItems;
     }
 
     function onSyncJobListSubmit() {
 
-        hideSelections($($.mobile.activePage)[0]);
+        hideSelections();
     }
 
     function sync(page) {
 
-        var selection = getSelectedItems(page);
+        var selection = getSelectedItems();
 
         if (selection.length < 1) {
 
@@ -1094,7 +1231,7 @@
 
     function combineVersions(page) {
 
-        var selection = getSelectedItems(page);
+        var selection = getSelectedItems();
 
         if (selection.length < 2) {
 
@@ -1131,7 +1268,7 @@
 
                     Dashboard.hideLoadingMsg();
 
-                    hideSelections(page);
+                    hideSelections();
 
                     $('.itemsContainer', page).trigger('needsrefresh');
                 });
@@ -1141,7 +1278,7 @@
 
     function addToCollection(page) {
 
-        var selection = getSelectedItems(page);
+        var selection = getSelectedItems();
 
         if (selection.length < 1) {
 
@@ -1158,7 +1295,7 @@
 
     function addToPlaylist(page) {
 
-        var selection = getSelectedItems(page);
+        var selection = getSelectedItems();
 
         if (selection.length < 1) {
 
@@ -1239,55 +1376,7 @@
 
         var page = this;
 
-        var btnAddToPlaylist = page.querySelector('.btnAddToPlaylist');
-        if (btnAddToPlaylist) {
-            Events.on(btnAddToPlaylist, 'click', function () {
-                addToPlaylist(page);
-            });
-        }
-
-        var btnMergeVersions = page.querySelector('.btnMergeVersions');
-        if (btnMergeVersions) {
-            Events.on(btnMergeVersions, 'click', function () {
-                combineVersions(page);
-            });
-        }
-
-        var btnSyncItems = page.querySelector('.btnSyncItems');
-        if (btnSyncItems) {
-            Events.on(btnSyncItems, 'click', function () {
-                sync(page);
-            });
-        }
-
-        var btnAddToCollection = page.querySelector('.btnAddToCollection');
-        if (btnAddToCollection) {
-            Events.on(btnAddToCollection, 'click', function () {
-                addToCollection(page);
-            });
-        }
-
-        $(page.getElementsByClassName('viewTabButton')).on('click', function () {
-
-            var parent = $(this).parents('.viewPanel');
-            $('.viewTabButton', parent).removeClass('ui-btn-active');
-            this.classList.add('ui-btn-active');
-
-            $('.viewTab', parent).hide();
-            $('.' + this.getAttribute('data-tab'), parent).show();
-        });
-
-        $('select.selectPageSize', $('.viewPanel', page)).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
-
-            return '<option value="' + i + '">' + i + '</option>';
-
-        }).join(''));
-
-        $(page).on('click', '.btnToggleSelections', function () {
-
-            toggleSelections(page);
-
-        }).on('click', '.itemWithAction', onItemWithActionClick);
+        $(page).on('click', '.itemWithAction', onItemWithActionClick);
 
         var itemsContainers = page.getElementsByClassName('itemsContainer');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {
@@ -1300,8 +1389,7 @@
 
         var page = this;
 
-        hideSelections(page);
-        $(page.querySelectorAll('.viewTabButton:first-child')).trigger('click');
+        hideSelections();
     });
 
     function renderUserDataChanges(card, userData) {

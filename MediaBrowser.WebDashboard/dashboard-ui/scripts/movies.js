@@ -238,14 +238,6 @@
 
             Dashboard.hideLoadingMsg();
         });
-
-        Dashboard.getCurrentUser().done(function (user) {
-            if (user.Policy.IsAdministrator) {
-                $('.btnMergeVersions', page).show();
-            } else {
-                $('.btnMergeVersions', page).hide();
-            }
-        });
     }
 
     function updateFilterControls(tabContent, viewPanel) {
