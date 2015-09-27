@@ -649,26 +649,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (info.IsMovie)
             {
-                recordPath = Path.Combine(recordPath, "Movies", _fileSystem.GetValidFilename(info.Name));
+                recordPath = Path.Combine(recordPath, "Movies", _fileSystem.GetValidFilename(info.Name).Trim());
             }
             else if (info.IsSeries)
             {
-                recordPath = Path.Combine(recordPath, "Series", _fileSystem.GetValidFilename(info.Name));
+                recordPath = Path.Combine(recordPath, "Series", _fileSystem.GetValidFilename(info.Name).Trim());
             }
             else if (info.IsKids)
             {
-                recordPath = Path.Combine(recordPath, "Kids", _fileSystem.GetValidFilename(info.Name));
+                recordPath = Path.Combine(recordPath, "Kids", _fileSystem.GetValidFilename(info.Name).Trim());
             }
             else if (info.IsSports)
             {
-                recordPath = Path.Combine(recordPath, "Sports", _fileSystem.GetValidFilename(info.Name));
+                recordPath = Path.Combine(recordPath, "Sports", _fileSystem.GetValidFilename(info.Name).Trim());
             }
             else
             {
-                recordPath = Path.Combine(recordPath, "Other", _fileSystem.GetValidFilename(info.Name));
+                recordPath = Path.Combine(recordPath, "Other", _fileSystem.GetValidFilename(info.Name).Trim());
             }
 
-            var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)) + ".ts";
+            var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)).Trim() + ".ts";
 
             recordPath = Path.Combine(recordPath, recordingFileName);
             _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
