@@ -7,6 +7,5 @@ namespace MediaBrowser.Common.Implementations.Security
         public string featId { get; set; }
         public bool registered { get; set; }
         public DateTime expDate { get; set; }
-        public string key { get; set; }
     }
 }
