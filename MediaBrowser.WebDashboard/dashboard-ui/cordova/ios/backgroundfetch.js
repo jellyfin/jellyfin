@@ -7,7 +7,7 @@
         var fetcher = window.BackgroundFetch;
 
         fetcher.configure(onBackgroundFetch, onBackgroundFetchFailed, {
-            stopOnTerminate: true  // <-- false is default
+            stopOnTerminate: false  // <-- false is default
         });
     }
 

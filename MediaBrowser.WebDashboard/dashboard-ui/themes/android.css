@@ -22,9 +22,13 @@
     background: rgba(56,56,56,.85);
 }
 
-.libraryViewNav a {
-    font-weight: 500 !important;
+.libraryViewNav {
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
+
+    .libraryViewNav a {
+        font-weight: 500 !important;
+    }
 
 paper-tab {
     font-weight: 500 !important;
@@ -33,4 +37,12 @@ paper-tab {
 
 .libraryViewNav .ui-btn-active {
     border-bottom-color: #52B54B !important;
+}
+
+.channelTimeslotHeader {
+    border-right-color: #52B54B !important;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #52B54B !important;
 }

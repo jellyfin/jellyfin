@@ -1726,7 +1726,6 @@ var AppInfo = {};
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableNowPlayingBar = true;
-        AppInfo.enableCustomHomeSections = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
 
@@ -1747,7 +1746,6 @@ var AppInfo = {};
                 AppInfo.enableNavDrawer = false;
                 AppInfo.enableSearchInTopMenu = false;
                 AppInfo.enableHomeFavorites = false;
-                AppInfo.enableCustomHomeSections = false;
                 AppInfo.enableHomeTabs = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
 

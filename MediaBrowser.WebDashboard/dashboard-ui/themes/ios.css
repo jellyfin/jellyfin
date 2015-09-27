@@ -112,11 +112,11 @@ body {
 }
 
 .channelTimeslotHeader {
-    border-right-color: #007AFF !important;
+    border-right-color: #52B54B !important;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #007AFF !important;
+    background: #52B54B !important;
 }
 
 .libraryViewNav, paper-tabs {

@@ -737,7 +737,7 @@
             var deferred = DeferredBuilder.Deferred();
 
             require(['serverdiscovery'], function () {
-                ServerDiscovery.findServers(1500).done(function (foundServers) {
+                ServerDiscovery.findServers(1000).done(function (foundServers) {
 
                     var servers = foundServers.map(function (foundServer) {
 

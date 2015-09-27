@@ -273,12 +273,6 @@
 
         var page = this;
 
-        if (AppInfo.enableCustomHomeSections) {
-            page.querySelector('.homeSections').classList.remove('hide');
-        } else {
-            page.querySelector('.homeSections').classList.add('hide');
-        }
-
         Dashboard.showLoadingMsg();
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();

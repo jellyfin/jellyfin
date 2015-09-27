@@ -146,6 +146,7 @@
     cursor: default;
     position: relative;
     top: 1px;
+    white-space: nowrap;
 }
 
 .logoLibraryMenuButtonText {

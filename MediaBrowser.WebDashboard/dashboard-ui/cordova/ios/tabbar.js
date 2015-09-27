@@ -83,7 +83,6 @@
 
         TabBar.showItems();
         initComplete = true;
-        showTabs();
 
         ignoreNextSelection = true;
         TabBar.selectItem('Library');
@@ -96,6 +95,26 @@
         }
 
         TabBar.show();
+    }
+
+    function showUserTabs() {
+
+        Dashboard.getCurrentUser().done(function (user) {
+
+            var tabs = ['Library', 'Favorites', 'Search', 'NowPlaying'];
+
+            if (user.Policy.EnableSync) {
+
+                tabs.push('Sync');
+            }
+
+            tabs.push('Settings');
+
+            TabBar.showNamedItems(tabs);
+
+            // We need to make sure the above completes first
+            setTimeout(showTabs, 500);
+        });
     }
 
     var isFirstHide = true;
@@ -118,22 +137,12 @@
 
         init();
 
-        Events.on(ConnectionManager, 'localusersignedin', showTabs);
+        showUserTabs();
+
+        Events.on(ConnectionManager, 'localusersignedin', showUserTabs);
         Events.on(ConnectionManager, 'localusersignedout', hideTabs);
         Events.on(MediaController, 'beforeplaybackstart', onPlaybackStart);
         Events.on(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
-    pageClassOn('pageshow', "page", function () {
-
-        var page = this;
-
-        if (page.classList.contains('libraryPage')) {
-            showTabs();
-        }
-        else {
-            hideTabs();
-        }
     });
 
     function onPlaybackStart(e, state, player) {

@@ -582,7 +582,13 @@
         self.enableCustomVideoControls = function () {
 
             if (AppInfo.isNativeApp && $.browser.safari) {
-                return true;
+
+                if (navigator.userAgent.toLowerCase().indexOf('iphone') != -1) {
+                    return true;
+                }
+
+                // Need to disable it in order to support picture in picture
+                return false;
             }
 
             return self.canAutoPlayVideo() && !$.browser.mobile;

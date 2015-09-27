@@ -325,6 +325,19 @@ paper-slider {
     width: 100%;
 }
 
+.paper-slider-0 #sliderKnobInner.paper-slider {
+    background-color: #52B54B;
+}
+
+.paper-slider-0 paper-ripple.paper-slider {
+    color: #52B54B;
+}
+.paper-progress-0 #primaryProgress.paper-progress {
+    background-color: #52B54B;
+}
+.paper-progress-0 #secondaryProgress.paper-progress {
+    background-color: #92B54B;
+}
 paper-menu-item {
     padding: .35em .5em;
     cursor: pointer;
