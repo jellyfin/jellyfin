@@ -474,7 +474,74 @@
 
     function downloadFile(url, localPath, enableBackground) {
 
-        return downloadWithFileTransfer(url, localPath, enableBackground);
+        if (!enableBackground) {
+            return downloadWithFileTransfer(url, localPath);
+        }
+
+        var deferred = DeferredBuilder.Deferred();
+
+        if (localStorage.getItem('sync-' + url) == '1') {
+            Logger.log('file was downloaded previously');
+            deferred.resolveWith(null, [localPath]);
+            return deferred.promise();
+        }
+
+        Logger.log('downloading: ' + url + ' to ' + localPath);
+
+        createDirectory(getParentDirectoryPath(localPath)).done(function () {
+
+            resolveFile(localPath, { create: true }, function (targetFile) {
+
+                var downloader = new BackgroundTransfer.BackgroundDownloader();
+                // Create a new download operation.
+                var download = downloader.createDownload(url, targetFile);
+
+                var isResolved = false;
+
+                // Give it a short period of time to see if it has already been completed before. Either way, move on and resolve it.
+                var timeoutHandle = setTimeout(function () {
+
+                    isResolved = true;
+                    // true indicates that it's queued
+                    deferred.resolveWith(null, [localPath, true]);
+                }, 1000);
+
+                // Start the download and persist the promise to be able to cancel the download.
+                download.startAsync().then(function () {
+
+                    clearTimeout(timeoutHandle);
+                    // on success
+                    Logger.log('Downloaded local url: ' + localPath);
+                    if (isResolved) {
+                        // If we've already moved on, set this property so that we'll see it later
+                        localStorage.setItem('sync-' + url, '1');
+                    } else {
+                        // true indicates that it's queued
+                        deferred.resolveWith(null, [localPath, false]);
+                    }
+
+                }, function () {
+
+                    clearTimeout(timeoutHandle);
+
+                    // on error
+                    Logger.log('Error downloading url: ' + url);
+
+                    if (!isResolved) {
+                        deferred.reject();
+                    }
+
+                }, function (value) {
+
+                    // on progress
+                    //Logger.log('download progress: ' + value);
+                });
+
+            });
+
+        }).fail(getOnFail(deferred));;
+
+        return deferred.promise();
     }
 
     var activeDownloads = [];
@@ -549,7 +616,7 @@
                             // true indicates that it's queued
                             deferred.resolveWith(null, [localPath, isQueued]);
                         }
-                    }, 2000);
+                    }, 3000);
                 }
 
             }, function () {

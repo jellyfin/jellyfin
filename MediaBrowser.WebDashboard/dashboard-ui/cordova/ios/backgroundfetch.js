@@ -7,7 +7,7 @@
         var fetcher = window.BackgroundFetch;
 
         fetcher.configure(onBackgroundFetch, onBackgroundFetchFailed, {
-            stopOnTerminate: false  // <-- false is default
+            stopOnTerminate: true  // <-- false is default
         });
     }
 
@@ -55,20 +55,20 @@
         Logger.log('- BackgroundFetch failed');
     }
 
-    var syncInterval = 3600000;
+    var syncInterval = 1800000;
 
     function restartInterval() {
 
         setInterval(function () {
 
-            startSync();
+            //startSync();
 
         }, syncInterval);
 
         if (lastStart > 0 && (new Date().getTime() - lastStart) >= syncInterval) {
 
             setTimeout(function () {
-                startSync();
+                //startSync();
 
             }, 5000);
         }

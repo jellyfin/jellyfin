@@ -26,6 +26,15 @@
         AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
         AppSettings.syncLosslessAudio(page.querySelector('#chkSyncLosslessAudio').checked);
 
+        AppSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
+
+            return i.checked;
+
+        }).map(function (i) {
+
+            return i.getAttribute('data-id');
+        }));
+
         Dashboard.hideLoadingMsg();
         Dashboard.alert(Globalize.translate('SettingsSaved'));
     }

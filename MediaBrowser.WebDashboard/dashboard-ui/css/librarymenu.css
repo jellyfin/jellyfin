@@ -308,10 +308,6 @@
     display: none;
 }
 
-.libraryViewNav a:not(.ui-btn-active):hover {
-    color: #2ad;
-}
-
 @media all and (max-width: 400px) {
 
     .libraryMenuButtonText {

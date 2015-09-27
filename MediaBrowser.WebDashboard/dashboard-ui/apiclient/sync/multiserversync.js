@@ -8,9 +8,9 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            connectionManager.getAvailableServers().done(function (result) {
-                syncNext(result, 0, options, deferred);
-            });
+            var servers = connectionManager.getSavedServers();
+
+            syncNext(servers, 0, options, deferred);
 
             return deferred.promise();
         };

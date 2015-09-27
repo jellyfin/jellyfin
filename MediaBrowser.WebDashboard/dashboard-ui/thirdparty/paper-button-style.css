@@ -261,11 +261,11 @@ paper-tab {
 }
 
 paper-tabs #selectionBar {
-    background-color: #38c !important;
+    background-color: #52B54B !important;
 }
 
 paper-tabs paper-ripple {
-    color: #38c !important;
+    color: #52B54B !important;
 }
 
 paper-fab {

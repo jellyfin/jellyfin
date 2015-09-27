@@ -1,13 +1,13 @@
 ﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
-    background-color: #1b1b1b;
+    background-color: #101010;
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(27, 27, 27, .6);
+        background-color: rgba(15, 15, 15, .50);
     }
 
 .background-theme-b {
-    background-color: #2b2b2b;
+    background-color: #202020;
 }
 
 .backdropContainer .pageBackground {
@@ -15,7 +15,7 @@
 }
 
 .defaultBackground .cardImage {
-    background-color: #383838;
+    background-color: #303030;
 }
 
 .ui-body-b .visualCardBox {
@@ -28,4 +28,9 @@
 
 paper-tab {
     font-weight: 500 !important;
+}
+
+
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #52B54B !important;
 }

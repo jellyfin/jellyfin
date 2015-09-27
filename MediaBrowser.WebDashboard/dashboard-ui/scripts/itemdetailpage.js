@@ -370,7 +370,7 @@
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item, context, 6);
+            renderCast(page, item, context, enableScrollX() ? null : 6);
         }
 
         if (item.PartCount && item.PartCount > 1) {
@@ -643,6 +643,10 @@
 
     function getSquareShape() {
         return enableScrollX() ? 'overflowSquare' : 'detailPageSquare';
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'detailPage169';
     }
 
     function renderSimilarItems(page, item, context) {
@@ -1271,6 +1275,13 @@
 
         var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
+        if (enableScrollX()) {
+            html += '<div class="hiddenScrollX itemsContainer">';
+            limit = null;
+        } else {
+            html += '<div class="itemsContainer">';
+        }
+
         for (var i = 0, length = chapters.length; i < length; i++) {
 
             if (limit && i >= limit) {
@@ -1282,7 +1293,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card detailPage169Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card '+getThumbShape()+'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';
@@ -1326,6 +1337,8 @@
 
             html += '</a>';
         }
+
+        html += '</div>';
 
         if (limit && chapters.length > limit) {
             html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
@@ -1582,6 +1595,11 @@
 
     function renderCast(page, item, context, limit, isStatic) {
 
+        if (enableScrollX()) {
+            renderHorizontalCast(page, item, context, isStatic);
+            return;
+        }
+
         var html = '';
 
         var casts = item.People || [];
@@ -1648,6 +1666,153 @@
         if (limit && casts.length > limit) {
             html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
+
+        var castContent = page.querySelector('#castContent');
+        castContent.innerHTML = html;
+        ImageLoader.lazyChildren(castContent);
+    }
+
+    function renderHorizontalCast(page, item, context, isStatic) {
+
+        var html = '';
+
+        if (enableScrollX()) {
+            html += '<div class="hiddenScrollX itemsContainer">';
+        } else {
+            html += '<div class="itemsContainer">';
+        }
+
+        var casts = item.People || [];
+
+        casts = casts.filter(function (c) {
+
+            return c.PrimaryImageTag;
+        });
+
+        for (var i = 0, length = casts.length; i < length; i++) {
+
+            var cast = casts[i];
+            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
+
+            html += '<div class="card ' + getPortraitShape() + 'Card">';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
+
+            var imgUrl;
+            var lazy = true;
+
+            if (cast.PrimaryImageTag) {
+
+                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
+                    width: 100,
+                    tag: cast.PrimaryImageTag,
+                    type: "primary",
+                    minScale: 2
+                });
+
+            } else {
+
+                imgUrl = "css/images/items/list/person.png";
+                lazy = false;
+            }
+
+            html += '<div class="cardPadder"></div>';
+
+            html += '<a class="cardContent" href="' + href + '">';
+            if (lazy) {
+                html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '"></div>';
+            } else {
+                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            }
+
+            //cardFooter
+            html += "</div>";
+
+            // cardContent
+            html += '</a>';
+
+            // cardScalable
+            html += '</div>';
+
+            html += '<div class="cardFooter outerCardFooter">';
+            html += '<div class="cardText">' + cast.Name + '</div>';
+            html += '<div class="cardText">';
+
+            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
+
+            if (role == "GuestStar") {
+                role = Globalize.translate('ValueGuestStar');
+            }
+
+            role = role || "";
+
+            var maxlength = 40;
+
+            if (role.length > maxlength) {
+                role = role.substring(0, maxlength - 3) + '...';
+            }
+
+            html += role;
+            html += '</div>';
+
+            // cardBox
+            html += '</div>';
+
+            html += '</div>';
+
+            //html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
+
+            //var imgUrl;
+            //var lazy = true;
+
+            //if (cast.PrimaryImageTag) {
+
+            //    imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
+            //        width: 100,
+            //        tag: cast.PrimaryImageTag,
+            //        type: "primary",
+            //        minScale: 2
+            //    });
+
+            //} else {
+
+            //    imgUrl = "css/images/items/list/person.png";
+            //    lazy = false;
+            //}
+
+            //if (lazy) {
+            //    html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
+            //} else {
+            //    html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            //}
+
+            //html += '<div class="tileContent">';
+
+            //html += '<p>' + cast.Name + '</p>';
+
+            //var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
+
+            //if (role == "GuestStar") {
+            //    role = Globalize.translate('ValueGuestStar');
+            //}
+
+            //role = role || "";
+
+            //var maxlength = 40;
+
+            //if (role.length > maxlength) {
+            //    role = role.substring(0, maxlength - 3) + '...';
+            //}
+
+            //html += '<p>' + role + '</p>';
+
+            //html += '</div>';
+
+            //html += '</a>';
+        }
+
+        html += '</div>';
 
         var castContent = page.querySelector('#castContent');
         castContent.innerHTML = html;

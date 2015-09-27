@@ -776,8 +776,10 @@
 
         if (AppInfo.enableNowPlayingPageBottomTabs) {
             tabs.classList.remove('hide');
+            page.querySelector('.libraryViewNav').classList.add('hide');
         } else {
             tabs.classList.add('hide');
+            page.querySelector('.libraryViewNav').classList.remove('hide');
         }
 
         tabs.classList.add('bottom');
