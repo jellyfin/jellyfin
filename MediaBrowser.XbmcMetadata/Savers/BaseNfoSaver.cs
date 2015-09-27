@@ -199,6 +199,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
+
             var file = new FileInfo(path);
 
             var wasHidden = false;
