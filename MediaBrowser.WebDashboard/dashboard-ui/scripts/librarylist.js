@@ -979,11 +979,39 @@
         }
 
         for (var i = 0, length = this.length; i < length; i++) {
-            initTapHold(this[i]);
+            initTapHoldMenus(this[i]);
         }
 
         return this;
     };
+
+    function initTapHoldMenus(elem) {
+
+        if (elem.classList.contains('itemsContainer')) {
+            initTapHold(elem);
+            return;
+        }
+
+        var elems = elem.querySelectorAll('.itemsContainer');
+        for (var i = 0, length = elems.length; i < length; i++) {
+            initTapHold(elems[i]);
+        }
+    }
+
+    function initTapHold(element) {
+
+        if (!LibraryBrowser.allowSwipe(element)) {
+            return;
+        }
+
+        require(['hammer'], function (Hammer) {
+
+            var hammertime = new Hammer(element);
+
+            hammertime.on('press', onTapHold);
+            hammertime.on('pressup', onTapHoldUp);
+        });
+    }
 
     function disableEvent(e) {
         e.preventDefault();
@@ -1016,21 +1044,6 @@
                 }
             }
         }
-    }
-
-    function initTapHold(element) {
-
-        if (!LibraryBrowser.allowSwipe(element)) {
-            return;
-        }
-
-        require(['hammer'], function (Hammer) {
-
-            var hammertime = new Hammer(element);
-
-            hammertime.on('press', onTapHold);
-            hammertime.on('pressup', onTapHoldUp);
-        });
     }
 
     function onItemSelectionPanelClick(e, itemSelectionPanel) {
@@ -1155,7 +1168,7 @@
     }
 
     function showMenuForSelectedItems(e) {
-        
+
         Dashboard.getCurrentUser().done(function (user) {
 
             var items = [];
@@ -1170,6 +1183,18 @@
                 name: Globalize.translate('ButtonAddToPlaylist'),
                 id: 'playlist',
                 ironIcon: 'playlist-add'
+            });
+
+            items.push({
+                name: Globalize.translate('ButtonRefresh'),
+                id: 'refresh',
+                ironIcon: 'refresh'
+            });
+
+            items.push({
+                name: Globalize.translate('ButtonSync'),
+                id: 'sync',
+                ironIcon: 'refresh'
             });
 
             require(['actionsheet'], function () {
@@ -1187,9 +1212,35 @@
                             case 'playlist':
                                 PlaylistManager.showPanel(selectedItems);
                                 break;
+                            case 'refresh':
+                                selectedItems.map(function (itemId) {
+
+                                    // TODO: Create an endpoint to do this in bulk
+                                    ApiClient.refreshItem(itemId, {
+
+                                        Recursive: true,
+                                        ImageRefreshMode: 'FullRefresh',
+                                        MetadataRefreshMode: 'FullRefresh',
+                                        ReplaceAllImages: false,
+                                        ReplaceAllMetadata: true
+                                    });
+
+                                });
+                                break;
+                            case 'sync':
+                                SyncManager.showMenu({
+                                    items: selectedItems.map(function (i) {
+                                        return {
+                                            Id: i
+                                        };
+                                    })
+                                });
+                                break;
                             default:
                                 break;
                         }
+
+                        hideSelections();
                     }
                 });
 

@@ -1234,6 +1234,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 28px;
     vertical-align: middle;
     color: #fff;
+    display: inline-block;
+    padding-top: 1px;
 }
 
 .selectionCommandsPanel iron-icon {
