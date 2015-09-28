@@ -1564,7 +1564,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 5;
+                quality -= 10;
 
             } else {
 
@@ -1774,7 +1774,6 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
-        AppInfo.enableAppLayouts = true;
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
             AppInfo.hasKnownExternalPlayerSupport = true;

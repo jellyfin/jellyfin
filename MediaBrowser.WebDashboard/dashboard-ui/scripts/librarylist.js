@@ -1208,9 +1208,11 @@
 
                             case 'addtocollection':
                                 BoxSetEditor.showPanel(selectedItems);
+                                hideSelections();
                                 break;
                             case 'playlist':
                                 PlaylistManager.showPanel(selectedItems);
+                                hideSelections();
                                 break;
                             case 'refresh':
                                 selectedItems.map(function (itemId) {
@@ -1226,6 +1228,7 @@
                                     });
 
                                 });
+                                hideSelections();
                                 break;
                             case 'sync':
                                 SyncManager.showMenu({
@@ -1235,12 +1238,11 @@
                                         };
                                     })
                                 });
+                                hideSelections();
                                 break;
                             default:
                                 break;
                         }
-
-                        hideSelections();
                     }
                 });
 
@@ -1251,33 +1253,6 @@
     function getSelectedItems() {
 
         return selectedItems;
-    }
-
-    function onSyncJobListSubmit() {
-
-        hideSelections();
-    }
-
-    function sync(page) {
-
-        var selection = getSelectedItems();
-
-        if (selection.length < 1) {
-
-            Dashboard.alert({
-                message: Globalize.translate('MessagePleaseSelectOneItem'),
-                title: Globalize.translate('HeaderError')
-            });
-
-            return;
-        }
-
-        SyncManager.showMenu({
-            items: selection
-        });
-
-        Events.off(SyncManager, 'jobsubmit', onSyncJobListSubmit);
-        Events.on(SyncManager, 'jobsubmit', onSyncJobListSubmit);
     }
 
     function combineVersions(page) {
@@ -1318,8 +1293,6 @@
                 }).done(function () {
 
                     Dashboard.hideLoadingMsg();
-
-                    hideSelections();
 
                     $('.itemsContainer', page).trigger('needsrefresh');
                 });
@@ -1436,7 +1409,7 @@
 
     });
 
-    pageClassOn('pagebeforeshow', "libraryPage", function () {
+    pageClassOn('pagebeforehide', "libraryPage", function () {
 
         var page = this;
 
