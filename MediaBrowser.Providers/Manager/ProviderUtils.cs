@@ -227,14 +227,8 @@ namespace MediaBrowser.Providers.Manager
                 target.DateCreated = source.DateCreated;
             }
 
-            var sourceHasLanguageSettings = source as IHasPreferredMetadataLanguage;
-            var targetHasLanguageSettings = target as IHasPreferredMetadataLanguage;
-
-            if (sourceHasLanguageSettings != null && targetHasLanguageSettings != null)
-            {
-                targetHasLanguageSettings.PreferredMetadataCountryCode = sourceHasLanguageSettings.PreferredMetadataCountryCode;
-                targetHasLanguageSettings.PreferredMetadataLanguage = sourceHasLanguageSettings.PreferredMetadataLanguage;
-            }
+            target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+            target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
 
             var sourceHasDisplayOrder = source as IHasDisplayOrder;
             var targetHasDisplayOrder = target as IHasDisplayOrder;

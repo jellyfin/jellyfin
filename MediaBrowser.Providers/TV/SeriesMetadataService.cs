@@ -62,11 +62,6 @@ namespace MediaBrowser.Providers.TV
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.SeasonCount == 0)
-            {
-                targetItem.SeasonCount = sourceItem.SeasonCount;
-            }
-
             if (replaceData || string.IsNullOrEmpty(targetItem.AirTime))
             {
                 targetItem.AirTime = sourceItem.AirTime;

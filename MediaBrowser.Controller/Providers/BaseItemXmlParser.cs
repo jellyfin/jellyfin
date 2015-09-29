@@ -304,11 +304,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasLanguage = item as IHasPreferredMetadataLanguage;
-                        if (hasLanguage != null)
-                        {
-                            hasLanguage.PreferredMetadataLanguage = val;
-                        }
+                        item.PreferredMetadataLanguage = val;
 
                         break;
                     }
@@ -317,11 +313,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasLanguage = item as IHasPreferredMetadataLanguage;
-                        if (hasLanguage != null)
-                        {
-                            hasLanguage.PreferredMetadataCountryCode = val;
-                        }
+                        item.PreferredMetadataCountryCode = val;
 
                         break;
                     }

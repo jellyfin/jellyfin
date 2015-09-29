@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 10;
+        private const int LatestSchemaVersion = 11;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -184,6 +184,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.AddColumn(_logger, "TypedBaseItems", "EpisodeTitle", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsRepeat", "BIT");
+
+            _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataLanguage", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataCountryCode", "Text");
             
             PrepareStatements();
 
@@ -216,7 +219,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "CommunityRating",
             "CustomRating",
             "IndexNumber",
-            "IsLocked"
+            "IsLocked",
+            "PreferredMetadataLanguage",
+            "PreferredMetadataCountryCode"
         };
 
         /// <summary>
@@ -267,7 +272,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateModified",
                 "ForcedSortName",
                 "IsOffline",
-                "LocationType"
+                "LocationType",
+                "PreferredMetadataLanguage",
+                "PreferredMetadataCountryCode"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -451,6 +458,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.IsOffline;
                     _saveItemCommand.GetParameter(index++).Value = item.LocationType.ToString();
 
+                    _saveItemCommand.GetParameter(index++).Value = item.PreferredMetadataLanguage;
+                    _saveItemCommand.GetParameter(index++).Value = item.PreferredMetadataCountryCode;
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -645,6 +655,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(18))
             {
                 item.IsLocked = reader.GetBoolean(18);
+            }
+
+            if (!reader.IsDBNull(19))
+            {
+                item.PreferredMetadataLanguage = reader.GetString(19);
+            }
+
+            if (!reader.IsDBNull(20))
+            {
+                item.PreferredMetadataCountryCode = reader.GetString(20);
             }
 
             return item;

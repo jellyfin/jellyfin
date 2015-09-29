@@ -129,7 +129,11 @@
 
         itemHtml += '<paper-icon-item>';
 
-        itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
+        if (notification.Level == "Error") {
+            itemHtml += '<paper-fab class="listAvatar" style="background:#cc3333;" icon="error" item-icon></paper-fab>';
+        } else {
+            itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
+        }
 
         itemHtml += '<paper-item-body three-line>';
 

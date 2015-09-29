@@ -483,13 +483,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
-
-            if (item.IsUnidentified != isUnidentified)
-            {
-                item.IsUnidentified = isUnidentified;
-                refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
-            }
+            //var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
             {

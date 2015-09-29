@@ -2,12 +2,10 @@
 
     function paperDialogHashHandler(dlg, hash, lockDocumentScroll) {
 
-        var isActive = true;
-
         function onHashChange(e, data) {
 
             data = data.state;
-            isActive = data.hash == '#' + hash;
+            var isActive = data.hash == '#' + hash;
 
             if (data.direction == 'back') {
                 if (dlg) {

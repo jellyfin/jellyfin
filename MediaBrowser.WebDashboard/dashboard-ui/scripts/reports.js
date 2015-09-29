@@ -133,11 +133,6 @@
                     html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
                 }
                 break;
-            case "UnidentifiedImage":
-                if (rRow.IsUnidentified) {
-                    html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
-                }
-                break;
             case "TagsPrimaryImage":
                 if (!rRow.HasImageTagsPrimary) {
                     html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="width:18px"/></a>';
@@ -174,9 +169,6 @@
             case "StatusImage":
                 if (rRow.HasLockData) {
                     html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
-                }
-                if (rRow.IsUnidentified) {
-                    html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
@@ -511,7 +503,6 @@
         $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
 
-        $('#chkIsUnidentified', page).checked(query.IsUnidentified == true).checkboxradio('refresh');
         $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
 
         //Episodes
@@ -771,14 +762,6 @@
 
             query.StartIndex = 0;
             query.IsYearMismatched = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkIsUnidentified', page).on('change', function () {
-
-            query.StartIndex = 0;
-            query.IsUnidentified = this.checked ? true : null;
 
             reloadItems(page);
         });

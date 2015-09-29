@@ -276,12 +276,6 @@ namespace MediaBrowser.Model.Dto
         public int? ProductionYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the season count.
-        /// </summary>
-        /// <value>The season count.</value>
-        public int? SeasonCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the players supported by a game.
         /// </summary>
         /// <value>The players.</value>
