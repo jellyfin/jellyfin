@@ -33,16 +33,3 @@
 paper-tab {
     font-weight: 500 !important;
 }
-
-
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: #52B54B !important;
-}
-
-.channelTimeslotHeader {
-    border-right-color: #52B54B !important;
-}
-
-.channelTimeslotHeader, .timeslotHeader {
-    background: #52B54B !important;
-}

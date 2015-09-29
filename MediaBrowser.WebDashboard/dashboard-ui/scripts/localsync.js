@@ -20,9 +20,7 @@
 
                 options = options || {};
 
-                if ($.browser.safari) {
-                    options.enableBackgroundTransfer = true;
-                }
+                LocalSync.normalizeSyncOptions(options);
 
                 options.cameraUploadServers = AppSettings.cameraUploadServers();
 
@@ -38,6 +36,10 @@
             });
 
             return deferred.promise();
+        },
+
+        normalizeSyncOptions: function (options) {
+            
         },
 
         getSyncStatus: function () {

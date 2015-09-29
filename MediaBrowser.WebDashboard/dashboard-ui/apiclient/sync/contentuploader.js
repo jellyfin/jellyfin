@@ -8,24 +8,16 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            var apiClient = connectionManager.getApiClient(server.Id);
+            LocalAssetManager.getCameraPhotos().done(function (photos) {
 
-            apiClient.getContentUploadHistory().done(function (result) {
+                if (!photos.length) {
+                    deferred.resolve();
+                    return;
+                }
 
-                uploadImagesWithHistory(server, result, apiClient, deferred);
+                var apiClient = connectionManager.getApiClient(server.Id);
 
-            }).fail(function () {
-                deferred.reject();
-            });
-
-            return deferred.promise();
-        };
-
-        function uploadImagesWithHistory(server, uploadHistory, apiClient, deferred) {
-
-            require(['localassetmanager', "cryptojs-sha1"], function () {
-
-                LocalAssetManager.getCameraPhotos().done(function (photos) {
+                apiClient.getContentUploadHistory().done(function (uploadHistory) {
 
                     photos = getFilesToUpload(photos, uploadHistory);
 
@@ -36,8 +28,13 @@
                 }).fail(function () {
                     deferred.reject();
                 });
+
+            }).fail(function () {
+                deferred.reject();
             });
-        }
+
+            return deferred.promise();
+        };
 
         function getFilesToUpload(files, uploadHistory) {
 

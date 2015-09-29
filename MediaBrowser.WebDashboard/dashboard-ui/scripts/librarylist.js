@@ -993,6 +993,7 @@
         }
 
         var elems = elem.querySelectorAll('.itemsContainer');
+
         for (var i = 0, length = elems.length; i < length; i++) {
             initTapHold(elems[i]);
         }
@@ -1402,7 +1403,7 @@
 
         $(page).on('click', '.itemWithAction', onItemWithActionClick);
 
-        var itemsContainers = page.getElementsByClassName('itemsContainer');
+        var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {
             $(itemsContainers[i]).createCardMenus();
         }

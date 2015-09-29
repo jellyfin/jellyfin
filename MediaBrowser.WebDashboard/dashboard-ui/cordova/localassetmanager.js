@@ -472,7 +472,7 @@
         return filename;
     }
 
-    function downloadFile(url, localPath, enableBackground) {
+    function downloadFile(url, localPath, enableBackground, enableNewDownloads) {
 
         if (!enableBackground) {
             return downloadWithFileTransfer(url, localPath);
@@ -482,7 +482,12 @@
 
         if (localStorage.getItem('sync-' + url) == '1') {
             Logger.log('file was downloaded previously');
-            deferred.resolveWith(null, [localPath]);
+            deferred.resolveWith(null, [localPath, false]);
+            return deferred.promise();
+        }
+
+        if (enableNewDownloads === false) {
+            deferred.resolveWith(null, [localPath, true]);
             return deferred.promise();
         }
 
@@ -504,7 +509,7 @@
                     isResolved = true;
                     // true indicates that it's queued
                     deferred.resolveWith(null, [localPath, true]);
-                }, 1000);
+                }, 700);
 
                 // Start the download and persist the promise to be able to cancel the download.
                 download.startAsync().then(function () {
@@ -512,10 +517,11 @@
                     clearTimeout(timeoutHandle);
                     // on success
                     Logger.log('Downloaded local url: ' + localPath);
-                    if (isResolved) {
-                        // If we've already moved on, set this property so that we'll see it later
-                        localStorage.setItem('sync-' + url, '1');
-                    } else {
+
+                    // If we've already moved on, set this property so that we'll see it later
+                    localStorage.setItem('sync-' + url, '1');
+
+                    if (!isResolved) {
                         // true indicates that it's queued
                         deferred.resolveWith(null, [localPath, false]);
                     }

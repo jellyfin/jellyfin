@@ -254,7 +254,7 @@
 
                 options = options || {};
 
-                LocalAssetManager.downloadFile(url, localPath, options.enableBackgroundTransfer).done(function (path, isQueued) {
+                LocalAssetManager.downloadFile(url, localPath, options.enableBackgroundTransfer, options.enableNewDownloads).done(function (path, isQueued) {
 
                     if (isQueued) {
                         deferred.resolveWith(null, [true]);

@@ -26,7 +26,7 @@
         Dashboard.showLoadingMsg();
 
         var popup = $('.popupSubtitleViewer', page).popup('open');
-        $('.subtitleContent', page).html('\nLoading...\n\n\n');
+        $('.subtitleContent', page).html('');
 
         var url = 'Providers/Subtitles/Subtitles/' + id;
 

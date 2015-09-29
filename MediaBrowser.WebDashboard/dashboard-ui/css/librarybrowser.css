@@ -18,6 +18,7 @@
 
 .background-theme-b {
     background-color: #242424;
+    background: -webkit-radial-gradient(circle, #282828, #202020);
 }
 
 .ui-body-b {
@@ -1190,7 +1191,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 
 .selectedCharacter {
-    color: #4d90fe !important;
+    color: #52B54B !important;
 }
 
 .itemOverlayHtml {

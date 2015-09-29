@@ -217,11 +217,11 @@
 }
 
 .channelTimeslotHeader {
-    border-right: 1px solid #38c;
+    border-right-color: #52B54B;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #38c;
+    background: #52B54B;
 }
 
 .timeslotHeader, .channelTimeslotHeader {

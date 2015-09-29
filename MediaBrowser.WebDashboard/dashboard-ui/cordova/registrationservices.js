@@ -168,12 +168,6 @@
             }
         }
 
-        if (showSupporterInfo) {
-            html += '<p>';
-            html += '<paper-button raised class="submit block btnSignInSupporter"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonUnlockWithSupporter') + '</span></paper-button>';
-            html += '</p>';
-        }
-
         html += '<p>';
         html += '<paper-button raised class="cancelDark block btnCancel"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
         html += '</p>';

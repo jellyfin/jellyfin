@@ -186,9 +186,7 @@
         });
     }
 
-    function loadSuggestionsTab(page, tabContent) {
-
-        var parentId = LibraryMenu.getTopParentId();
+    function initSuggestedTab(page, tabContent) {
 
         var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
@@ -196,6 +194,13 @@
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
+
+        $(containers).createCardMenus();
+    }
+
+    function loadSuggestionsTab(page, tabContent) {
+
+        var parentId = LibraryMenu.getTopParentId();
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             console.log('loadSuggestionsTab');
@@ -217,6 +222,7 @@
         switch (index) {
 
             case 0:
+                initMethod = 'initSuggestedTab';
                 renderMethod = 'renderSuggestedTab';
                 break;
             case 1:
@@ -266,6 +272,7 @@
 
     window.MusicPage = window.MusicPage || {};
     window.MusicPage.renderSuggestedTab = loadSuggestionsTab;
+    window.MusicPage.initSuggestedTab = initSuggestedTab;
 
     $(document).on('pageinit', "#musicRecommendedPage", function () {
 

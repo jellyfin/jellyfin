@@ -105,8 +105,6 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
-        var screenWidth = $(window).width();
-
         var limit = 6;
 
         var options = {
@@ -169,28 +167,17 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#tvRecommendedPage", function () {
-
-        var page = this;
-
-        if (enableScrollX()) {
-            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
-        } else {
-            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
-        }
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
-    });
-
-    function loadSuggestionsTab(page, tabContent) {
+    function initSuggestedTab(page, tabContent) {
 
         if (enableScrollX()) {
             tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
         } else {
             tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
+        $(tabContent.querySelector('#resumableItems')).createCardMenus();
+    }
+
+    function loadSuggestionsTab(page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             reload(tabContent);
@@ -208,6 +195,7 @@
         switch (index) {
 
             case 0:
+                initMethod = 'initSuggestedTab';
                 renderMethod = 'renderSuggestedTab';
                 break;
             case 1:
@@ -261,6 +249,7 @@
 
     window.TvPage = window.TvPage || {};
     window.TvPage.renderSuggestedTab = loadSuggestionsTab;
+    window.TvPage.initSuggestedTab = initSuggestedTab;
 
     pageIdOn('pageinit', "tvRecommendedPage", function () {
 
@@ -277,11 +266,27 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
+        if (enableScrollX()) {
+            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
+        } else {
+            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+        }
+        $(page.querySelector('#resumableItems')).createCardMenus();
+
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
         });
+    });
+
+    pageIdOn('pagebeforeshow', "tvRecommendedPage", function () {
+
+        var page = this;
+
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
     pageIdOn('pageshow', "tvRecommendedPage", function () {

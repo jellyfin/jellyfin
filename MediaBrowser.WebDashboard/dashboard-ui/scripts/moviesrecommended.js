@@ -67,7 +67,9 @@
                 });
             }
 
-            $('#recentlyAddedItems', page).html(html).lazyChildren();
+            var recentlyAddedItems = page.querySelector('#recentlyAddedItems');
+            recentlyAddedItems.innerHTML = html;
+            ImageLoader.lazyChildren(recentlyAddedItems);
             LibraryBrowser.setLastRefreshed(page);
         });
     }
@@ -219,22 +221,21 @@
             if (!recommendations.length) {
 
                 $('.noItemsMessage', page).show();
-                $('.recommendations', page).html('');
+                page.querySelector('.recommendations').innerHTML = '';
                 return;
             }
 
             var html = recommendations.map(getRecommendationHtml).join('');
 
             $('.noItemsMessage', page).hide();
-            $('.recommendations', page).html(html).lazyChildren();
+
+            var recs = page.querySelector('.recommendations');
+            recs.innerHTML = html;
+            ImageLoader.lazyChildren(recs);
         });
     }
 
-    function loadSuggestionsTab(page, tabContent) {
-
-        var parentId = LibraryMenu.getTopParentId();
-
-        var userId = Dashboard.getCurrentUserId();
+    function initSuggestedTab(page, tabContent) {
 
         var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
@@ -242,6 +243,15 @@
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
+
+        $(containers).createCardMenus();
+    }
+
+    function loadSuggestionsTab(page, tabContent) {
+
+        var parentId = LibraryMenu.getTopParentId();
+
+        var userId = Dashboard.getCurrentUserId();
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             console.log('loadSuggestionsTab');
@@ -265,6 +275,7 @@
         switch (index) {
 
             case 0:
+                initMethod = 'initSuggestedTab';
                 renderMethod = 'renderSuggestedTab';
                 break;
             case 1:
@@ -315,6 +326,7 @@
 
     window.MoviesPage = window.MoviesPage || {};
     window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
+    window.MoviesPage.initSuggestedTab = initSuggestedTab;
 
     pageIdOn('pageinit', "moviesPage", function () {
 
