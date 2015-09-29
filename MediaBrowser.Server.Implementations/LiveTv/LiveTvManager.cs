@@ -633,7 +633,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Name = info.Name;
             item.OfficialRating = item.OfficialRating ?? info.OfficialRating;
             item.Overview = item.Overview ?? info.Overview;
-            item.OriginalAirDate = info.OriginalAirDate;
             item.ProviderImagePath = info.ImagePath;
             item.ProviderImageUrl = info.ImageUrl;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
@@ -641,7 +640,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.HomePageUrl = info.HomePageUrl;
 
             item.ProductionYear = info.ProductionYear;
-            item.PremiereDate = item.PremiereDate ?? info.OriginalAirDate;
+            item.PremiereDate = info.OriginalAirDate;
 
             item.IndexNumber = info.EpisodeNumber;
             item.ParentIndexNumber = info.SeasonNumber;
@@ -657,7 +656,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             else
             {
                 // Increment this whenver some internal change deems it necessary
-                var etag = info.Etag + "1";
+                var etag = info.Etag + "2";
 
                 if (!string.Equals(etag, item.Etag, StringComparison.OrdinalIgnoreCase))
                 {
@@ -712,6 +711,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Overview = info.Overview;
             item.EndDate = info.EndDate;
             item.Genres = info.Genres;
+            item.PremiereDate = info.OriginalAirDate;
 
             var recording = (ILiveTvRecording)item;
 
@@ -733,7 +733,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.IsRepeat = info.IsRepeat;
             recording.IsSeries = info.IsSeries;
             recording.IsSports = info.IsSports;
-            recording.OriginalAirDate = info.OriginalAirDate;
             recording.SeriesTimerId = info.SeriesTimerId;
             recording.StartDate = info.StartDate;
             recording.Status = info.Status;
@@ -1438,8 +1437,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.IsPremiere = program.IsPremiere;
             }
 
-            dto.OriginalAirDate = program.OriginalAirDate;
-
             if (channel != null)
             {
                 dto.ChannelName = channel.Name;
@@ -1479,7 +1476,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.IsNews = info.IsNews;
             dto.IsKids = info.IsKids;
             dto.IsPremiere = info.IsPremiere;
-            dto.OriginalAirDate = info.OriginalAirDate;
 
             dto.CanDelete = user == null
                 ? recording.CanDelete()

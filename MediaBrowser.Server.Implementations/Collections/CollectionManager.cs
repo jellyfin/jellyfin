@@ -21,17 +21,19 @@ namespace MediaBrowser.Server.Implementations.Collections
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
         public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
-        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger)
+        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = logger;
+            _providerManager = providerManager;
         }
 
         public Folder GetCollectionsFolder(string userId)
@@ -88,12 +90,13 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
 
-                await collection.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), CancellationToken.None)
-                    .ConfigureAwait(false);
-
                 if (options.ItemIdList.Count > 0)
                 {
                     await AddToCollection(collection.Id, options.ItemIdList, false);
+                }
+                else
+                {
+                    _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
                 }
 
                 EventHelper.FireEventIfNotNull(CollectionCreated, this, new CollectionCreatedEventArgs
@@ -181,7 +184,8 @@ namespace MediaBrowser.Server.Implementations.Collections
             collection.UpdateRatingToContent();
 
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+
+            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
 
             if (fireEvent)
             {
@@ -263,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             collection.UpdateRatingToContent();
 
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
 
             EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
             {

@@ -459,9 +459,6 @@
     <Content Include="dashboard-ui\thirdparty\paper-button-style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-ie10.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\.gitignore" />
     <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\css\social-share-kit.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

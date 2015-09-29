@@ -42,12 +42,6 @@ namespace MediaBrowser.Controller.LiveTv
         public string ExternalId { get; set; }
 
         /// <summary>
-        /// Gets or sets the original air date.
-        /// </summary>
-        /// <value>The original air date.</value>
-        public DateTime? OriginalAirDate { get; set; }
-        
-        /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
@@ -75,12 +69,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets or sets a value indicating whether this instance is repeat.
         /// </summary>
         /// <value><c>true</c> if this instance is repeat; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsRepeat { get; set; }
 
         /// <summary>
         /// Gets or sets the episode title.
         /// </summary>
         /// <value>The episode title.</value>
+        [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
 
         /// <summary>

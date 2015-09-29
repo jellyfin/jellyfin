@@ -17,6 +17,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string ExternalId { get; set; }
         public string ProviderImagePath { get; set; }
         public string ProviderImageUrl { get; set; }
+        [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
         [IgnoreDataMember]
         public bool IsSeries { get; set; }
@@ -30,6 +31,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsNews { get; set; }
         [IgnoreDataMember]
         public bool IsKids { get; set; }
+        [IgnoreDataMember]
         public bool IsRepeat { get; set; }
         [IgnoreDataMember]
         public bool IsMovie { get; set; }
@@ -41,7 +43,6 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
         public string ProgramId { get; set; }
         public ProgramAudio? Audio { get; set; }
-        public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
         /// Gets the user data key.

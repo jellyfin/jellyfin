@@ -15,6 +15,6 @@ namespace MediaBrowser.Controller.Entities
         bool IsLive { get; set; }
         bool IsPremiere { get; set; }
         ProgramAudio? Audio { get; set; }
-        DateTime? OriginalAirDate { get; set; }
+        string EpisodeTitle { get; set; }
     }
 }
