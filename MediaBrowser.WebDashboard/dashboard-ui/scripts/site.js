@@ -1944,10 +1944,6 @@ var AppInfo = {};
             }
         }
 
-        if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
-            Dashboard.importCss('thirdparty/paper-ie10.css');
-        }
-
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();
         }
@@ -2017,8 +2013,14 @@ var AppInfo = {};
 
     function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
 
+        var urlArgs = "v=" + window.dashboardVersion;
+
+        if ($.browser.msie) {
+            urlArgs += new Date().getTime();
+        }
+
         requirejs.config({
-            urlArgs: "v=" + window.dashboardVersion,
+            urlArgs: urlArgs,
 
             paths: {
                 "velocity": "bower_components/velocity/velocity.min"

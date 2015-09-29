@@ -1111,12 +1111,6 @@ namespace MediaBrowser.Model.Dto
         public DateTime? StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the original air date.
-        /// </summary>
-        /// <value>The original air date.</value>
-        public DateTime? OriginalAirDate { get; set; }
-
-        /// <summary>
         /// Gets or sets the completion percentage.
         /// </summary>
         /// <value>The completion percentage.</value>

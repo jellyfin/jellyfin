@@ -26,10 +26,12 @@
             }
 
             dlg = null;
-            $(window).off('navigate', onHashChange);
+            if (enableHashChange()) {
+                $(window).off('navigate', onHashChange);
 
-            if (window.location.hash == '#' + hash) {
-                history.back();
+                if (window.location.hash == '#' + hash) {
+                    history.back();
+                }
             }
         }
 
@@ -42,9 +44,20 @@
             Dashboard.onPopupOpen();
         }
 
-        window.location.hash = hash;
+        if (enableHashChange()) {
 
-        $(window).on('navigate', onHashChange);
+            window.location.hash = hash;
+
+            $(window).on('navigate', onHashChange);
+        }
+    }
+
+    function enableHashChange() {
+        // It's not firing popstate in response to hashbang changes
+        if ($.browser.msie) {
+            return false;
+        }
+        return true;
     }
 
     function openWithHash(dlg, hash, lockDocumentScroll) {
@@ -52,8 +65,18 @@
         new paperDialogHashHandler(dlg, hash, lockDocumentScroll);
     }
 
+    function close(dlg) {
+
+        if (enableHashChange()) {
+            history.back();
+        } else {
+            dlg.close();
+        }
+    }
+
     globalScope.PaperDialogHelper = {
-        openWithHash: openWithHash
+        openWithHash: openWithHash,
+        close: close
     };
 
 })(this);

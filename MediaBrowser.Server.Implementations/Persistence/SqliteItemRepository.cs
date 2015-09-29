@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 9;
+        private const int LatestSchemaVersion = 10;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -181,6 +181,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsLive", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsNews", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsPremiere", "BIT");
+
+            _connection.AddColumn(_logger, "TypedBaseItems", "EpisodeTitle", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsRepeat", "BIT");
             
             PrepareStatements();
 
@@ -208,6 +211,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "IsLive",
             "IsNews",
             "IsPremiere",
+            "EpisodeTitle",
+            "IsRepeat",
             "CommunityRating",
             "CustomRating",
             "IndexNumber",
@@ -235,6 +240,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsLive",
                 "IsNews",
                 "IsPremiere",
+                "EpisodeTitle",
+                "IsRepeat",
                 "CommunityRating",
                 "CustomRating",
                 "IndexNumber",
@@ -386,9 +393,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsLive;
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsNews;
                         _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsPremiere;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.EpisodeTitle;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsRepeat;
                     }
                     else
                     {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
@@ -604,26 +615,36 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     hasProgramAttributes.IsPremiere = reader.GetBoolean(12);
                 }
-            }
 
-            if (!reader.IsDBNull(13))
-            {
-                item.CommunityRating = reader.GetFloat(13);
-            }
+                if (!reader.IsDBNull(13))
+                {
+                    hasProgramAttributes.EpisodeTitle = reader.GetString(13);
+                }
 
-            if (!reader.IsDBNull(14))
-            {
-                item.CustomRating = reader.GetString(14);
+                if (!reader.IsDBNull(14))
+                {
+                    hasProgramAttributes.IsRepeat = reader.GetBoolean(14);
+                }
             }
 
             if (!reader.IsDBNull(15))
             {
-                item.IndexNumber = reader.GetInt32(15);
+                item.CommunityRating = reader.GetFloat(15);
             }
 
             if (!reader.IsDBNull(16))
             {
-                item.IsLocked = reader.GetBoolean(16);
+                item.CustomRating = reader.GetString(16);
+            }
+
+            if (!reader.IsDBNull(17))
+            {
+                item.IndexNumber = reader.GetInt32(17);
+            }
+
+            if (!reader.IsDBNull(18))
+            {
+                item.IsLocked = reader.GetBoolean(18);
             }
 
             return item;

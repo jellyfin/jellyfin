@@ -377,14 +377,12 @@
                     fillLanguages(editorContent, languages);
                 });
 
-                $('.btnCloseDialog', dlg).on('click', closeDialog);
+                $('.btnCloseDialog', dlg).on('click', function () {
+
+                    PaperDialogHelper.close(dlg);
+                });
             });
         });
-    }
-
-    function closeDialog() {
-
-        history.back();
     }
 
     function onDialogClosed() {

@@ -1209,7 +1209,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     top: 0;
     background-color: rgba(0, 0, 0, .3);
     z-index: 999;
-    border: 2px solid #52B54B;
+    border: 1px solid #52B54B;
 }
 
     .itemSelectionPanel #checkbox {

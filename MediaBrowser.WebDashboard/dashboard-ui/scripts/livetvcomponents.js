@@ -119,7 +119,7 @@
 
         renderOriginalAirDate: function (elem, item) {
 
-            var airDate = item.OriginalAirDate;
+            var airDate = item.PremiereDate;
 
             if (airDate && item.IsRepeat) {
 
