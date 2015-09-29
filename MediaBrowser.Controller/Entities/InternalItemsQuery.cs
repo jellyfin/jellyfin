@@ -52,7 +52,6 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsHD { get; set; }
         public bool? IsInBoxSet { get; set; }
         public bool? IsLocked { get; set; }
-        public bool? IsUnidentified { get; set; }
         public bool? IsPlaceHolder { get; set; }
         public bool? IsYearMismatched { get; set; }
 

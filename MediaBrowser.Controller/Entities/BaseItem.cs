@@ -55,6 +55,9 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
+        public string PreferredMetadataCountryCode { get; set; }
+        public string PreferredMetadataLanguage { get; set; }
+        
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         /// <summary>
@@ -333,8 +336,6 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public bool IsLocked { get; set; }
-
-        public bool IsUnidentified { get; set; }
         
         /// <summary>
         /// Gets or sets the locked fields.
@@ -973,18 +974,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataLanguage()
         {
-            string lang = null;
-
-            var hasLang = this as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                lang = hasLang.PreferredMetadataLanguage;
-            }
+            string lang = PreferredMetadataLanguage;
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                lang = Parents
                     .Select(i => i.PreferredMetadataLanguage)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
@@ -1010,18 +1004,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataCountryCode()
         {
-            string lang = null;
-
-            var hasLang = this as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                lang = hasLang.PreferredMetadataCountryCode;
-            }
+            string lang = PreferredMetadataCountryCode;
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                lang = Parents
                     .Select(i => i.PreferredMetadataCountryCode)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }

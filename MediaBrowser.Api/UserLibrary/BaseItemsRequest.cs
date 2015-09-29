@@ -299,9 +299,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "IsLocked", Description = "Optional filter by items that are locked.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? IsLocked { get; set; }
 
-        [ApiMember(Name = "IsUnidentified", Description = "Optional filter by items that are unidentified by internet metadata providers.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public bool? IsUnidentified { get; set; }
-
         [ApiMember(Name = "IsPlaceHolder", Description = "Optional filter by items that are placeholders", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool? IsPlaceHolder { get; set; }
 

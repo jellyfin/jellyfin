@@ -1036,11 +1036,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsUnidentified.HasValue)
-            {
-                return false;
-            }
-
             if (!string.IsNullOrWhiteSpace(request.Person))
             {
                 return false;
@@ -1424,15 +1419,6 @@ namespace MediaBrowser.Controller.Entities
                 var hasValue = !string.IsNullOrEmpty(item.Overview);
 
                 if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (query.IsUnidentified.HasValue)
-            {
-                var val = query.IsUnidentified.Value;
-                if (item.IsUnidentified != val)
                 {
                     return false;
                 }

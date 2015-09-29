@@ -23,7 +23,6 @@ namespace MediaBrowser.Controller.Entities
         ISupportsPlaceHolders,
         IHasMediaSources,
         IHasShortOverview,
-        IHasPreferredMetadataLanguage,
         IThemeMedia,
         IArchivable
     {
@@ -47,13 +46,6 @@ namespace MediaBrowser.Controller.Entities
         public int? TotalBitrate { get; set; }
         public string ShortOverview { get; set; }
         public ExtraType? ExtraType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
-        public string PreferredMetadataLanguage { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.

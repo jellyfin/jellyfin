@@ -68,12 +68,6 @@ namespace MediaBrowser.Providers.TV
                 var physicalEpisodes = episodes.Where(i => i.LocationType != LocationType.Virtual)
                     .ToList();
 
-                series.SeasonCount = episodes
-                    .Select(i => i.ParentIndexNumber ?? 0)
-                    .Where(i => i != 0)
-                    .Distinct()
-                    .Count();
-
                 series.SpecialFeatureIds = physicalEpisodes
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
                     .Select(i => i.Id)
