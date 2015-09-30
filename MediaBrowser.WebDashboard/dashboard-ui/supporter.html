@@ -27,7 +27,13 @@
                         <p class="planSummary"></p>
                     </div>
 
-                    <form style="margin-top:1.5em;" name="_xclick" class="supporterForm" method="post">
+                    <div class="supporterContainer hide">
+                        <br />
+                        <a class="clearLink" href="http://emby.media/donate" target="_blank">
+                            <paper-button raised class="block accent"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button>
+                        </a>
+                    </div>
+                    <form style="margin-top:1.5em;display:none;" name="_xclick" class="supporterForm" method="post">
 
                         <fieldset data-role="controlgroup">
                             <legend>${HeaderDonationType}</legend>

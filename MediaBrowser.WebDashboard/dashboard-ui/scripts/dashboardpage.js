@@ -39,9 +39,7 @@
 
         $('.activityItems', page).activityLogList();
 
-        $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html', {
-            api_key: ApiClient.accessToken()
-        }));
+        $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html'));
     },
 
     onPageHide: function () {
@@ -117,7 +115,7 @@
 
         var query = {
             StartIndex: DashboardPage.newsStartIndex,
-            Limit: 7
+            Limit: 5
         };
 
         ApiClient.getProductNews(query).done(function (result) {
@@ -126,30 +124,14 @@
 
                 var itemHtml = '';
 
-                itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">';
-                itemHtml += '<paper-icon-item>';
+                itemHtml += '<div class="newsItem">';
+                itemHtml += '<a class="newsItemHeader" href="' + item.Link + '" target="_blank">' + item.Title + '</a>';
 
-                itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
-
-                itemHtml += '<paper-item-body three-line>';
-
-                itemHtml += '<div>';
-                itemHtml += item.Title;
-                itemHtml += '</div>';
-
-                itemHtml += '<div secondary>';
                 var date = parseISO8601Date(item.Date, { toLocal: true });
-                itemHtml += date.toLocaleDateString();
+                itemHtml += '<div class="newsItemDate">' + date.toLocaleDateString() + '</div>';
+
+                itemHtml += '<div class="newsItemDescription">' + item.Description + '</div>';
                 itemHtml += '</div>';
-
-                itemHtml += '<div secondary>';
-                itemHtml += item.Description;
-                itemHtml += '</div>';
-
-                itemHtml += '</paper-item-body>';
-
-                itemHtml += '</paper-icon-item>';
-                itemHtml += '</a>';
 
                 return itemHtml;
             });
@@ -769,7 +751,7 @@
 
                 html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
-                html += '<paper-icon-button title="' + Globalize.translate('ButtonStop') + '" icon="cancel" onclick="DashboardPage.stopTask(\'' + task.Id + '\');"></paper-icon-button>';
+                html += '<button type="button" data-icon="delete" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">' + Globalize.translate('ButtonStop') + '</button>';
             }
             else if (task.State == "Cancelling") {
                 html += '<span style="color:#cc0000;">' + Globalize.translate('LabelStopping') + '</span>';
@@ -817,13 +799,13 @@
             imgUrl = "css/images/supporter/supporterbadge.png";
             text = Globalize.translate('MessageThankYouForSupporting');
 
-            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/donate" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
         } else {
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
             text = Globalize.translate('MessagePleaseSupportProject');
 
-            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/donate" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
     },
 
@@ -1003,7 +985,7 @@
     }
 };
 
-$(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 
@@ -1084,42 +1066,60 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
         var html = '';
 
-        html += '<paper-icon-item>';
+        html += '<div class="newsItem" style="padding: .5em 0;">';
 
-        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : '#52B54B';
+        html += '<div class="notificationContent" style="display:block;">';
 
+        var date = parseISO8601Date(entry.Date, { toLocal: true });
+
+        var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : 'green';
+
+        html += '<div style="margin: 0;color:' + color + ';">';
         if (entry.UserId && entry.UserPrimaryImageTag) {
 
             var userImgUrl = ApiClient.getUserImageUrl(entry.UserId, {
                 type: 'Primary',
                 tag: entry.UserPrimaryImageTag,
-                height: 40
+                height: 20
             });
-
-            html += '<paper-fab class="listAvatar" style="background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
-        }
-        else {
-            html += '<paper-fab class="listAvatar" icon="dvr" style="background-color:' + color + '" item-icon></paper-fab>';
+            html += '<img src="' + userImgUrl + '" style="height:20px;vertical-align:middle;margin-right:5px;" />';
         }
 
-        html += '<paper-item-body three-line>';
-
-        html += '<div>';
-        html += entry.Name;
-        html += '</div>';
-
-        html += '<div secondary>';
-        var date = parseISO8601Date(entry.Date, { toLocal: true });
         html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
         html += '</div>';
 
-        html += '<div secondary>';
-        html += entry.ShortOverview || '';
+        html += '<div class="notificationName" style="margin:.5em 0 0;white-space:nowrap;">';
+        html += entry.Name;
         html += '</div>';
 
-        html += '</paper-item-body>';
+        entry.ShortOverview = entry.ShortOverview || '&nbsp;';
 
-        html += '</paper-icon-item>';
+        if (entry.ShortOverview) {
+
+            html += '<div class="newsItemDescription" style="margin: .5em 0 0;">';
+
+            if (entry.Overview) {
+                html += '<a href="#" class="btnShowOverview" style="text-decoration:none;font-weight:500;">';
+            }
+            html += entry.ShortOverview;
+            if (entry.Overview) {
+                html += '</a>';
+            }
+
+            html += '</div>';
+
+            if (entry.Overview) {
+                html += '<div class="newsItemLongDescription" style="display:none;">' + entry.Overview + '</div>';
+            }
+        }
+
+        //if (notification.Url) {
+        //    html += '<p style="margin: .25em 0;"><a href="' + notification.Url + '" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a></p>';
+        //}
+
+        html += '</div>';
+
+        html += '</div>';
 
         return html;
     }
@@ -1287,7 +1287,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('pageshow', onPageShowCheckTour);
+            $(page).off('pageshowready', onPageShowReadyCheckTour);
         });
     }
 
@@ -1344,7 +1344,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
         });
     }
 
-    function onPageShowCheckTour() {
+    function onPageShowReadyCheckTour() {
         var page = this;
 
         var apiClient = ApiClient;
@@ -1362,13 +1362,13 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshow', "#dashboardPage", onPageShowCheckTour);
+    }).on('pageshowready', "#dashboardPage", onPageShowReadyCheckTour);
 
 })(jQuery, document, window);
 
 (function () {
 
-    $(document).on('pageshow', ".type-interior", function () {
+    $(document).on('pageshowready', ".type-interior", function () {
 
         var page = this;
 
@@ -1378,7 +1378,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
                 $('.supporterPromotion', page).remove();
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
-                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
+                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
                 }
             }
 

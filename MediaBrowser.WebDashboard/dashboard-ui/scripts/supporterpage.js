@@ -83,6 +83,12 @@
                 $('.currentPlanInfo', page).hide();
             }
 
+            if (info.IsActiveSupporter) {
+                $('.supporterContainer', page).addClass('hide');
+            } else {
+                $('.supporterContainer', page).removeClass('hide');
+            }
+
             if (info.IsActiveSupporter && info.PlanType == 'Lifetime') {
 
                 $('.planSummary', page)
@@ -182,7 +188,7 @@
 
         $('.supporterForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#supporterPage", function () {
+    }).on('pageshowready', "#supporterPage", function () {
 
         var page = this;
 
