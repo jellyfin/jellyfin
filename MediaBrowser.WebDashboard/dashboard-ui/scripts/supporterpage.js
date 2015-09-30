@@ -83,6 +83,12 @@
                 $('.currentPlanInfo', page).hide();
             }
 
+            if (info.IsActiveSupporter) {
+                $('.supporterContainer', page).addClass('hide');
+            } else {
+                $('.supporterContainer', page).removeClass('hide');
+            }
+
             if (info.IsActiveSupporter && info.PlanType == 'Lifetime') {
 
                 $('.planSummary', page)

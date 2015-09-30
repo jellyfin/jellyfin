@@ -158,9 +158,14 @@ namespace MediaBrowser.Common.Implementations.Security
                 return new SupporterInfo();
             }
 
-            var url = MbAdmin.HttpsUrl + "/service/supporter/retrieve?key=" + key;
+            var data = new Dictionary<string, string>
+                {
+                    { "key", key }, 
+                };
 
-            using (var stream = await _httpClient.Get(url, CancellationToken.None).ConfigureAwait(false))
+            var url = MbAdmin.HttpsUrl + "/service/supporter/retrieve";
+
+            using (var stream = await _httpClient.Post(url, data, CancellationToken.None).ConfigureAwait(false))
             {
                 var response = _jsonSerializer.DeserializeFromStream<SuppporterInfoResponse>(stream);
 

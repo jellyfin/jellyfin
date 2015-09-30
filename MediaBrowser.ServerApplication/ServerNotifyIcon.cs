@@ -168,6 +168,19 @@ namespace MediaBrowser.ServerApplication
             }
 
             notifyIcon1.DoubleClick += notifyIcon1_DoubleClick;
+            Application.ApplicationExit += Application_ApplicationExit;
+        }
+
+        void Application_ApplicationExit(object sender, EventArgs e)
+        {
+            try
+            {
+                notifyIcon1.Visible = false;
+            }
+            catch
+            {
+
+            }
         }
 
         void notifyIcon1_DoubleClick(object sender, EventArgs e)
