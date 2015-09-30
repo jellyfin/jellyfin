@@ -188,7 +188,7 @@
 
         $('.supporterForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#supporterPage", function () {
+    }).on('pageshow', "#supporterPage", function () {
 
         var page = this;
 
