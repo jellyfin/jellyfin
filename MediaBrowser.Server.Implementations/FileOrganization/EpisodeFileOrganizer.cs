@@ -182,7 +182,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _logger.Info("Sorting file {0} to new path {1}", sourcePath, newPath);
             result.TargetPath = newPath;
 
-			var fileExists = _fileSystem.FileExists(result.TargetPath);
+            var fileExists = _fileSystem.FileExists(result.TargetPath);
             var otherDuplicatePaths = GetOtherDuplicatePaths(result.TargetPath, series, seasonNumber, episodeNumber, endingEpiosdeNumber);
 
             if (!overwriteExisting)
@@ -272,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     var destination = Path.Combine(directory, filename);
 
-					_fileSystem.MoveFile(file, destination);
+                    _fileSystem.MoveFile(file, destination);
                 }
             }
         }
@@ -332,19 +332,19 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             _libraryMonitor.ReportFileSystemChangeBeginning(result.TargetPath);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
 
-			var targetAlreadyExists = _fileSystem.FileExists(result.TargetPath);
+            var targetAlreadyExists = _fileSystem.FileExists(result.TargetPath);
 
             try
             {
                 if (targetAlreadyExists || options.CopyOriginalFile)
                 {
-					_fileSystem.CopyFile(result.OriginalPath, result.TargetPath, true);
+                    _fileSystem.CopyFile(result.OriginalPath, result.TargetPath, true);
                 }
                 else
                 {
-					_fileSystem.MoveFile(result.OriginalPath, result.TargetPath);
+                    _fileSystem.MoveFile(result.OriginalPath, result.TargetPath);
                 }
 
                 result.Status = FileSortingStatus.Success;
@@ -438,6 +438,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options);
 
             newPath = Path.Combine(newPath, episodeFileName);
+
+            // Try to account for windows limitations by removing the episode title
+            if (newPath.Length > 255)
+            {
+                var extension = Path.GetExtension(episodeFileName);
+                var fileName = Path.GetFileNameWithoutExtension(episodeFileName);
+                fileName = fileName.Replace(episode.Name, string.Empty, StringComparison.OrdinalIgnoreCase);
+                episodeFileName = Path.ChangeExtension(fileName, extension);
+
+                newPath = Path.Combine(newPath, episodeFileName);
+            }
 
             return newPath;
         }
