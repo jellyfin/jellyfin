@@ -190,8 +190,8 @@ namespace MediaBrowser.Providers.MediaInfo
             var mediaStreams = mediaInfo.MediaStreams;
 
             video.TotalBitrate = mediaInfo.Bitrate;
-            video.FormatName = (mediaInfo.Container ?? string.Empty)
-                .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+            //video.FormatName = (mediaInfo.Container ?? string.Empty)
+            //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
             // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
             var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
@@ -707,7 +707,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
             // Once we reach a file that is at least the minimum, return all subsequent ones
-            var allVobs = new DirectoryInfo(root).EnumerateFiles("*", SearchOption.AllDirectories)
+            var allVobs = _fileSystem.GetFiles(root)
                 .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FullName)
                 .ToList();
