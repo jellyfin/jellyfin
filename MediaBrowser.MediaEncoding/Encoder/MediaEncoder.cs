@@ -238,53 +238,55 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
 
-                    if (result != null)
+                    if (result.streams == null && result.format == null)
                     {
-                        if (result.streams != null)
+                        throw new ApplicationException("ffprobe failed - streams and format are both null.");
+                    }
+
+                    if (result.streams != null)
+                    {
+                        // Normalize aspect ratio if invalid
+                        foreach (var stream in result.streams)
                         {
-                            // Normalize aspect ratio if invalid
-                            foreach (var stream in result.streams)
+                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    stream.display_aspect_ratio = string.Empty;
-                                }
-                                if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    stream.sample_aspect_ratio = string.Empty;
-                                }
+                                stream.display_aspect_ratio = string.Empty;
+                            }
+                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.sample_aspect_ratio = string.Empty;
                             }
                         }
+                    }
 
-                        var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
-                        if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    {
+                        if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
                         {
-                            if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
+                            foreach (var stream in mediaInfo.MediaStreams)
                             {
-                                foreach (var stream in mediaInfo.MediaStreams)
+                                if (EnableKeyframeExtraction(mediaInfo, stream))
                                 {
-                                    if (EnableKeyframeExtraction(mediaInfo, stream))
+                                    try
                                     {
-                                        try
-                                        {
-                                            stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
-                                        }
-                                        catch (OperationCanceledException)
-                                        {
+                                        stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
 
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.ErrorException("Error getting key frame interval", ex);
-                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.ErrorException("Error getting key frame interval", ex);
                                     }
                                 }
                             }
                         }
-
-                        return mediaInfo;
                     }
+
+                    return mediaInfo;
                 }
                 catch
                 {
