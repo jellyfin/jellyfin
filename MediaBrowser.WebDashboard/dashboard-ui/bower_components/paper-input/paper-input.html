@@ -35,6 +35,14 @@ for `suffix`).
       <paper-icon-button suffix icon="clear"></paper-icon-button>
     </paper-input>
 
+A `paper-input` can use the native `type=search` features. However, since
+we can't control the native styling of the input, it's recommended to use
+a placeholder text, or `always-float-label`, as to not overlap the native search icon.
+
+    <paper-input label="search!" type="search"
+        placeholder="search for cats" autosave="test" results="5">
+    </paper-input>
+
 See `Polymer.PaperInputBehavior` for more API docs.
 
 ### Styling
@@ -106,7 +114,9 @@ style this element.
         size$="[[size]]"
         autocapitalize$="[[autocapitalize]]"
         autocorrect$="[[autocorrect]]"
-        on-change="_onChange">
+        on-change="_onChange"
+        autosave$="[[autosave]]",
+        results$="[[results]]">
 
       <content select="[suffix]"></content>
 

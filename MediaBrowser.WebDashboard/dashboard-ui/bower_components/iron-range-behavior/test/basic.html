@@ -45,11 +45,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('set value', function(done) {
         range.value = 50;
-        asyncPlatformFlush(function() {
+        flush(function() {
           assert.equal(range.value, 50);
           // test clamp value
           range.value = 60.1;
-          asyncPlatformFlush(function() {
+          flush(function() {
             assert.equal(range.value, 60);
             done();
           });
@@ -59,7 +59,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('set max', function(done) {
         range.max = 10;
         range.value = 11;
-        asyncPlatformFlush(function() {
+        flush(function() {
           assert.equal(range.value, range.max);
           done();
         });
@@ -68,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('test ratio', function(done) {
         range.max = 10;
         range.value = 5;
-        asyncPlatformFlush(function() {
+        flush(function() {
           assert.equal(range.ratio, 50);
           done();
         });
@@ -78,10 +78,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         range.min = 10
         range.max = 50;
         range.value = 30;
-        asyncPlatformFlush(function() {
+        flush(function() {
           assert.equal(range.ratio, 50);
           range.value = 0;
-          asyncPlatformFlush(function() {
+          flush(function() {
             assert.equal(range.value, range.min);
             done();
           });
@@ -92,14 +92,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         range.min = 0;
         range.max = 10;
         range.value = 5.1;
-        asyncPlatformFlush(function() {
+        flush(function() {
           assert.equal(range.value, 5);
           range.step = 0.1;
           range.value = 5.1;
-          asyncPlatformFlush(function() {
+          flush(function() {
             assert.equal(range.value, 5.1);
             done();
           });
+        });
+      });
+
+      test('odd values', function() {
+        range.min = 1;
+        range.max = 7;
+        range.step = 2;
+        range.value = 3;
+
+        flush(function() {
+          assert.equal(range.value, 3);
+
+          range.value += range.step;
+          assert.equal(range.value, 5);
+
+          range.value += range.step;
+          assert.equal(range.value, 7);
         });
       });
 

@@ -62,42 +62,6 @@ Custom property | Description | Default
         outline:none;
       }
 
-      :host .toggle-bar {
-        background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
-        @apply(--paper-toggle-button-unchecked-bar);
-      }
-
-      :host .toggle-button {
-        background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
-        @apply(--paper-toggle-button-unchecked-button);
-      }
-
-      :host([checked]) .toggle-bar {
-        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
-        @apply(--paper-toggle-button-checked-bar);
-      }
-
-      :host([checked]) .toggle-button {
-        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
-        @apply(--paper-toggle-button-checked-button);
-      }
-
-      :host .toggle-ink {
-        color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
-      }
-
-      :host([checked]) .toggle-ink {
-        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
-      }
-
-      /* ID selectors should not be overriden by users. */
-
-      #toggleContainer {
-        position: relative;
-        width: 36px;
-        height: 14px;
-      }
-
       .toggle-bar {
         position: absolute;
         height: 100%;
@@ -106,15 +70,8 @@ Custom property | Description | Default
         pointer-events: none;
         opacity: 0.4;
         transition: background-color linear .08s;
-      }
-
-      :host([checked]) .toggle-bar {
-        opacity: 0.5;
-      }
-
-      :host([disabled]) .toggle-bar {
-        background-color: #000;
-        opacity: 0.12;
+        background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
+        @apply(--paper-toggle-button-unchecked-bar);
       }
 
       .toggle-button {
@@ -127,6 +84,8 @@ Custom property | Description | Default
         transition: -webkit-transform linear .08s, background-color linear .08s;
         transition: transform linear .08s, background-color linear .08s;
         will-change: transform;
+        background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
+        @apply(--paper-toggle-button-unchecked-button);
       }
 
       .toggle-button.dragging {
@@ -134,9 +93,25 @@ Custom property | Description | Default
         transition: none;
       }
 
+      :host([checked]):not([disabled]) .toggle-bar {
+        opacity: 0.5;
+        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-bar);
+      }
+
+      :host([disabled]) .toggle-bar {
+        background-color: #000;
+        opacity: 0.12;
+      }
+
       :host([checked]) .toggle-button {
         -webkit-transform: translate(16px, 0);
         transform: translate(16px, 0);
+      }
+
+      :host([checked]):not([disabled]) .toggle-button {
+        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-button);
       }
 
       :host([disabled]) .toggle-button {
@@ -152,10 +127,21 @@ Custom property | Description | Default
         height: 48px;
         opacity: 0.5;
         pointer-events: none;
+        color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
+      }
+
+      :host([checked]) .toggle-ink {
+        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
+      }
+
+      .toggle-container {
+        position: relative;
+        width: 36px;
+        height: 14px;
       }
     </style>
 
-    <div id="toggleContainer">
+    <div class="toggle-container">
       <div id="toggleBar" class="toggle-bar"></div>
       <div id="toggleButton" class="toggle-button">
         <paper-ripple id="ink" class="toggle-ink circle" recenters></paper-ripple>

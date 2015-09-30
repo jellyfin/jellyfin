@@ -1,4 +1,4 @@
 iron-iconset-svg
 =========
 
-See the [component page](http://polymer-project.org/docs/elements/iron-elements.html#iron-iconset-svg) for more information.
+See the [component page](https://elements.polymer-project.org/elements/iron-iconset-svg) for more information.

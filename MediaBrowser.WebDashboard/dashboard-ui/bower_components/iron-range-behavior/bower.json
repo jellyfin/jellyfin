@@ -1,6 +1,6 @@
 {
   "name": "iron-range-behavior",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Provides a behavior for something with a minimum and maximum value",
   "authors": "The Polymer Authors",

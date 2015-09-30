@@ -25,6 +25,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-styles/paper-styles.html">
   <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="../../neon-animation/neon-animations.html">
+  <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+  <link rel="import" href="../../paper-menu/paper-menu.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
 
   <link rel="stylesheet" href="../../paper-styles/demo.css">
 
@@ -50,11 +53,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       position: fixed;
       top: 16px;
       right: 16px;
-    }
-
-    paper-dialog.size-position {
       width: 300px;
       height: 300px;
+      overflow: auto;
     }
   </style>
 
@@ -68,6 +69,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-button data-dialog="scrolling">scrolling dialog</paper-button>
     <paper-button data-dialog="actions">dialog with actions</paper-button>
     <paper-button data-dialog="modal">modal dialog</paper-button>
+    <paper-button data-dialog="dropdown">dialog with dropdown</paper-button>
+    <paper-button data-dialog="nested">dialog with nested dialog</paper-button>
 
     <paper-dialog id="dialog">
       <h2>Dialog Title</h2>
@@ -109,6 +112,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
     </paper-dialog>
 
+    <paper-dialog id="dropdown">
+    <h2>Dialog Title</h2>
+    <paper-dropdown-menu label="Value">
+      <paper-menu class="dropdown-content">
+        <paper-item>1</paper-item>
+        <paper-item>2</paper-item>
+        <paper-item>3</paper-item>
+        <paper-item>4</paper-item>
+        <paper-item>5</paper-item>
+        <paper-item>6</paper-item>
+        <paper-item>7</paper-item>
+        <paper-item>8</paper-item>
+        <paper-item>9</paper-item>
+        <paper-item>10</paper-item>
+      </paper-menu>
+    </paper-dropdown-menu>
+  </paper-dialog>
+
+  <paper-dialog id="nested">
+    <h2>Dialog Title</h2>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <div class="buttons">
+      <paper-button data-dialog="innerDialog">Open nested dialog</paper-button>
+    </div>
+  </paper-dialog>
+
+  <paper-dialog id="innerDialog">
+    <h2>Dialog Title</h2>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  </paper-dialog>
+
   </section>
 
   <section onclick="clickHandler(event)">
@@ -116,11 +150,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-button data-dialog="colors">colors</paper-button>
     <paper-button data-dialog="position">size &amp; position</paper-button>
 
-    <paper-dialog id="colors" heading="Custom Colors" class="colored">
+    <paper-dialog id="colors" class="colored">
+      <h2>Custom Colors</h2>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </paper-dialog>
 
-    <paper-dialog id="position" heading="Custom Size &amp; Position" class="size-position">
+    <paper-dialog id="position" class="size-position">
+      <h2>Custom Size &amp; Position</h2>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </paper-dialog>
   </section>

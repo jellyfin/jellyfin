@@ -6645,7 +6645,7 @@ this.fire('dom-change');
      * `keys` property is pressed.
      *
      * @demo demo/index.html
-     * @polymerBehavior IronA11yKeysBehavior
+     * @polymerBehavior
      */
     Polymer.IronA11yKeysBehavior = {
       properties: {
@@ -10710,7 +10710,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * the selected item or undefined if there is no selection.
      */
     get: function() {
-      return this.multi ? this.selection : this.selection[0];
+      return this.multi ? this.selection.slice() : this.selection[0];
     },
 
     /**
@@ -10886,9 +10886,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       /**
-       * The set of excluded elements where the key is the `localName` 
+       * The set of excluded elements where the key is the `localName`
        * of the element that will be ignored from the item list.
        *
+       * @type {object}
        * @default {template: 1}
        */
       excludedLocalNames: {
@@ -10913,6 +10914,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     attached: function() {
       this._observer = this._observeItems(this);
       this._contentObserver = this._observeContent(this);
+      if (!this.selectedItem && this.selected) {
+        this._updateSelected(this.attrForSelected,this.selected)
+      }
     },
 
     detached: function() {
@@ -11283,9 +11287,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       var i = this.selectedValues.indexOf(value);
       var unselected = i < 0;
       if (unselected) {
-        this.selectedValues.push(value);
+        this.push('selectedValues',value);
       } else {
-        this.selectedValues.splice(i, 1);
+        this.splice('selectedValues',i,1);
       }
       this._selection.setItemSelected(this._valueToItem(value), unselected);
     }
@@ -11833,6 +11837,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      */
     _nameChanged: function() {
       new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
+      this.async(function() {
+        this.fire('iron-iconset-added', this, {node: window});
+      });
     },
 
     /**
@@ -12160,7 +12167,9 @@ styles. All other styles should exist as single lines."
     *
     * as a work around we can divide by the reciprocal of `step`
     */
-    return this.step ? (Math.round(value / this.step) / (1 / this.step)) : value;
+    // polymer/issues/2493
+    value = parseFloat(value);
+    return this.step ? (Math.round((value + this.min) / this.step) / (1 / this.step)) - this.min : value;
   },
 
   _validateValue: function() {
@@ -12860,6 +12869,20 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       autocorrect: {
         type: String,
         value: 'off'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+       */
+      autosave: {
+        type: String
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `results` property, , used with type=search.
+       */
+      results: {
+        type: Number
       },
 
       _ariaDescribedBy: {
@@ -14719,11 +14742,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           observer: '_srcChanged'
         },
-        
+
+        /**
+         * @type {!Polymer.IronMeta}
+         */
         _meta: {
           value: Polymer.Base.create('iron-meta', {type: 'iconset'})
         }
-        
+
       },
 
       _DEFAULT_ICONSET: 'icons',
@@ -14747,12 +14773,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _updateIcon: function() {
         if (this._usesIconset()) {
           if (this._iconsetName) {
-            this._iconset = this._meta.byKey(this._iconsetName);
+            this._iconset = /** @type {?Polymer.Iconset} */ (
+              this._meta.byKey(this._iconsetName));
             if (this._iconset) {
               this._iconset.applyIcon(this, this._iconName, this.theme);
+              this.unlisten(window, 'iron-iconset-added', '_updateIcon');
             } else {
-              this._warn(this._logf('_updateIcon', 'could not find iconset `'
-                + this._iconsetName + '`, did you import the iconset?'));
+              this.listen(window, 'iron-iconset-added', '_updateIcon');
             }
           }
         } else {
@@ -15011,11 +15038,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 :host {
   display: block;
   margin: 24px 40px;
+  -webkit-overflow-scrolling: touch;
 
   background: var(--paper-dialog-background-color, --primary-background-color);
   color: var(--paper-dialog-color, --primary-text-color);
 
-  @apply(--layout-scroll);
   @apply(--paper-font-body1);
   @apply(--shadow-elevation-16dp);
   @apply(--paper-dialog);
@@ -17070,8 +17097,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       .input-content.label-is-floating ::content label,
       .input-content.label-is-floating ::content .paper-input-label {
-        -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-        transform: translate3d(0, -75%, 0) scale(0.75);
+        -webkit-transform: translateY(-75%) scale(0.75);
+        transform: translateY(-75%) scale(0.75);
         -webkit-transform-origin: left top;
         transform-origin: left top;
         -webkit-transition: -webkit-transform 0.25s;
@@ -17109,6 +17136,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
         background: transparent;
         border: none;
         color: var(--paper-input-container-input-color, --primary-text-color);
+        -webkit-appearance: none;
 
         @apply(--paper-font-subhead);
         @apply(--paper-input-container-input);
@@ -17206,7 +17234,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       /**
        * True if the input is invalid. This property is set automatically when the input value
-       * changes if auto-validating, or when the `iron-input-valid` event is heard from a child.
+       * changes if auto-validating, or when the `iron-input-validate` event is heard from a child.
        */
       invalid: {
         observer: '_invalidChanged',
@@ -17409,9 +17437,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
           }
           // The label might have a horizontal offset if a prefix element exists
           // which needs to be undone when displayed as a floating label.
-          if (this.$.prefix && label && label.offsetParent &&
-              Polymer.dom(this.$.prefix).getDistributedNodes().length > 0) {
-           label.style.left = -label.offsetParent.offsetLeft + 'px';
+          if (Polymer.dom(this.$.prefix).getDistributedNodes().length > 0 &&
+              label && label.offsetParent) {
+            label.style.left = -label.offsetParent.offsetLeft + 'px';
           }
         } else {
           // When the label is not floating, it should overlap the input element.
@@ -17455,12 +17483,12 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       :host {
         display: inline-block;
         visibility: hidden;
-        float: left;
 
         color: var(--paper-input-container-invalid-color, --google-red-500);
 
         @apply(--paper-font-caption);
         @apply(--paper-input-error);
+        position: absolute;
       }
 
       :host([invalid]) {
@@ -17469,7 +17497,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     </style>
 
     <content></content>
-
+    
   </template>
 </dom-module>
 
@@ -17578,7 +17606,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" autosave$="[[autosave]]" ,="" results$="[[results]]">
 
       <content select="[suffix]"></content>
 

@@ -22,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <link rel="import" href="../iron-icon.html">
   <link rel="import" href="../../iron-iconset/iron-iconset.html">
+  <link rel="import" href="../../promise-polyfill/promise-polyfill.html">
   <link rel="import" href="../../test-fixture/test-fixture.html">
 
 </head>
@@ -45,6 +46,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <iron-icon icon=""></iron-icon>
       <iron-icon></iron-icon>
       <iron-icon src=""></iron-icon>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="UsingAsyncIconset">
+    <template>
+      <iron-icon icon="async:location"></iron-icon>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="AsyncIconset">
+    <template>
+      <iron-iconset name="async" icons="location blank" src="location.png" size="24" width="48"></iron-iconset>
     </template>
   </test-fixture>
 
@@ -113,6 +126,23 @@ suite('<iron-icon>', function() {
       fixture('WithoutAnIconSource');
     });
   })
+
+  suite('when loading async', function() {
+    test('will get icon after iconset is added', function() {
+      var icon = fixture('UsingAsyncIconset');
+      expect(hasIcon(icon)).to.be.false;
+      return new Promise(function(resolve, reject) {
+        window.addEventListener('iron-iconset-added', function() {
+          if (hasIcon(icon)) {
+            resolve();
+          } else {
+            reject(new Error('icon didn\'t load after iconset loaded'));
+          }
+        });
+        fixture('AsyncIconset');
+      });
+    });
+  });
 });
   </script>
 
