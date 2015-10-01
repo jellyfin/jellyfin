@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -673,14 +674,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             recordPath = Path.Combine(recordPath, recordingFileName);
             _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
 
-            var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.ProgramId, info.Id, StringComparison.OrdinalIgnoreCase));
+            var recordingId = info.Id.GetMD5().ToString("N");
+            var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.Id, recordingId, StringComparison.OrdinalIgnoreCase));
 
             if (recording == null)
             {
                 recording = new RecordingInfo
                 {
                     ChannelId = info.ChannelId,
-                    Id = Guid.NewGuid().ToString("N"),
+                    Id = recordingId,
                     StartDate = info.StartDate,
                     EndDate = info.EndDate,
                     Genres = info.Genres,

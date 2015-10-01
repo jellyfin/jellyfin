@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             var list = result.ToList();
             Logger.Debug("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
-            if (!string.IsNullOrWhiteSpace(key))
+            if (!string.IsNullOrWhiteSpace(key) && list.Count > 0)
             {
                 cache = cache ?? new ChannelCache();
                 cache.Date = DateTime.UtcNow;

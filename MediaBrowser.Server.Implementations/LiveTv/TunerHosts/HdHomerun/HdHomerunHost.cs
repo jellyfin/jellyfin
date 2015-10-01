@@ -86,7 +86,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Url = string.Format("{0}/", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken,
                 CacheLength = TimeSpan.FromDays(1),
-                CacheMode = CacheMode.Unconditional
+                CacheMode = CacheMode.Unconditional,
+                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
             }))
             {
                 using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
@@ -101,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            return null;
+            return model;
         }
 
         public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
@@ -111,7 +112,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
                 Url = string.Format("{0}/tuners.html", GetApiUrl(info, false)),
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
             }))
             {
                 var tuners = new List<LiveTvTunerInfo>();
