@@ -1,6 +1,6 @@
 {
   "name": "paper-progress",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "A material design progress bar",
   "authors": "The Polymer Authors",
@@ -19,7 +19,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
     "iron-range-behavior": "PolymerElements/iron-range-behavior#^1.0.0",
-    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

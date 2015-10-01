@@ -817,13 +817,13 @@
             imgUrl = "css/images/supporter/supporterbadge.png";
             text = Globalize.translate('MessageThankYouForSupporting');
 
-            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/donate" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/premiere" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
         } else {
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
             text = Globalize.translate('MessagePleaseSupportProject');
 
-            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/donate" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
+            $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/premiere" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
     },
 
@@ -1064,9 +1064,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             }, 1000);
         }
 
-        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
-
-        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
+        if (AppInfo.isTouchPreferred) {
             /* browser with either Touch Events of Pointer Events
                running on touch-capable device */
             return this;
@@ -1378,7 +1376,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
                 $('.supporterPromotion', page).remove();
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
-                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
+                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
                 }
             }
 

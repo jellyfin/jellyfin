@@ -201,7 +201,7 @@
 
         $('.radioDonationType', page).trigger('change');
 
-        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/donate" target="_blank">', '</a>')).trigger('create');
+        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/premiere" target="_blank">', '</a>')).trigger('create');
 
         loadUserInfo(page);
     });

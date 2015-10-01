@@ -147,6 +147,23 @@
     position: relative;
     top: 1px;
     white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media all and (min-width: 500px) {
+
+    .libraryMenuButtonText {
+        max-width: 200px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .libraryMenuButtonText {
+        max-width: 300px;
+    }
 }
 
 .logoLibraryMenuButtonText {

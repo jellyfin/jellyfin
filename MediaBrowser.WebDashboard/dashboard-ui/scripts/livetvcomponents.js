@@ -373,9 +373,7 @@
             }, 1000);
         }
 
-        // https://hacks.mozilla.org/2013/04/detecting-touch-its-the-why-not-the-how/
-
-        if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)) {
+        if (AppInfo.isTouchPreferred) {
             /* browser with either Touch Events of Pointer Events
                running on touch-capable device */
             return this;

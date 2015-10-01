@@ -200,7 +200,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 _logger.Info("Mapping Stations to Channel");
                 foreach (ScheduleDirect.Map map in root.map)
                 {
-                    var channel = (map.channel ?? (map.atscMajor + "." + map.atscMinor)).TrimStart('0');
+                    var channel = map.logicalChannelNumber;
+
+                    if (string.IsNullOrWhiteSpace(channel))
+                    {
+                        channel = map.channel;
+                    }
+                    if (string.IsNullOrWhiteSpace(channel))
+                    {
+                        channel = (map.atscMajor + "." + map.atscMinor);
+                    }
+                    channel = channel.TrimStart('0');
+
                     _logger.Debug("Found channel: " + channel + " in Schedules Direct");
                     var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
 
@@ -741,6 +752,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 public string stationID { get; set; }
                 public string channel { get; set; }
+                public string logicalChannelNumber { get; set; }
                 public int uhfVhf { get; set; }
                 public int atscMajor { get; set; }
                 public int atscMinor { get; set; }

@@ -39,6 +39,7 @@ Custom property | Description | Default
 `--paper-toggle-button-unchecked-button` | Mixin applied to the slider button when the input is not checked | `{}`
 `--paper-toggle-button-checked-bar` | Mixin applied to the slider when the input is checked | `{}`
 `--paper-toggle-button-checked-button` | Mixin applied to the slider button when the input is checked | `{}`
+`--paper-toggle-button-label-color` | Label color | `--primary-text-color`
 
 @group Paper Elements
 @element paper-toggle-button
@@ -93,7 +94,7 @@ Custom property | Description | Default
         transition: none;
       }
 
-      :host([checked]):not([disabled]) .toggle-bar {
+      :host([checked]:not([disabled])) .toggle-bar {
         opacity: 0.5;
         background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
         @apply(--paper-toggle-button-checked-bar);
@@ -109,7 +110,7 @@ Custom property | Description | Default
         transform: translate(16px, 0);
       }
 
-      :host([checked]):not([disabled]) .toggle-button {
+      :host([checked]:not([disabled])) .toggle-button {
         background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
         @apply(--paper-toggle-button-checked-button);
       }
@@ -135,9 +136,21 @@ Custom property | Description | Default
       }
 
       .toggle-container {
+        display: inline-block;
         position: relative;
         width: 36px;
         height: 14px;
+      }
+
+      .toggle-label {
+        position: relative;
+        top: -2px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        white-space: normal;
+        pointer-events: none;
+        color: var(--paper-toggle-button-label-color, --primary-text-color);
       }
     </style>
 
@@ -147,6 +160,8 @@ Custom property | Description | Default
         <paper-ripple id="ink" class="toggle-ink circle" recenters></paper-ripple>
       </div>
     </div>
+
+    <div class="toggle-label"><content></content></div>
 
   </template>
 

@@ -117,6 +117,7 @@ respectively.
     }
 
     paper-menu-button {
+      display: block;
       @apply(--paper-dropdown-menu-button);
     }
 
@@ -199,6 +200,8 @@ respectively.
          * The last selected item. An item is selected if the dropdown menu has
          * a child with class `dropdown-content`, and that child triggers an
          * `iron-select` event with the selected `item` in the `detail`.
+         *
+         * @type {?Object}
          */
         selectedItem: {
           type: Object,
@@ -364,4 +367,3 @@ respectively.
     });
   })();
 </script>
-

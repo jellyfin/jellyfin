@@ -2331,7 +2331,10 @@ var AppInfo = {};
 
             var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
 
-            init(deferred, capablities, name, appVersion, deviceId, device.model);
+            // Remove special characters
+            var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+
+            init(deferred, capablities, name, appVersion, deviceId, cleanDeviceName);
         });
     }
 

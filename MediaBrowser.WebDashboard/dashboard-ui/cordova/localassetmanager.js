@@ -246,6 +246,54 @@
         return deferred.promise();
     }
 
+    function getUserIdsWithAccess(itemId, serverId) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        getOfflineItemsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                tx.executeSql("SELECT UserIdsWithAccess from Items where ItemId=? AND ServerId=?", [itemId, serverId], function (tx, res) {
+
+                    var itemIds = [];
+
+                    if (res.rows.length) {
+                        itemIds = res.rows.item(0).UserIdsWithAccess;
+                        itemIds = itemIds ? itemIds.split(',') : [];
+                    }
+
+                    deferred.resolveWith(null, [itemIds]);
+
+                }, function (e) {
+                    deferred.reject();
+                });
+            });
+        });
+
+        return deferred.promise();
+    }
+
+    function saveUserIdsWithAccess(itemId, serverId, userIds) {
+
+        Logger.log('saveUserIdsWithAccess');
+
+        var deferred = DeferredBuilder.Deferred();
+
+        getOfflineItemsDb(function (db) {
+
+            db.transaction(function (tx) {
+
+                var values = [userIds.join(','), itemId, serverId];
+
+                tx.executeSql("Update Items set UserIdsWithAccess=? where ItemId=? and ServerId=?", values);
+                deferred.resolve();
+            });
+        });
+
+        return deferred.promise();
+    }
+
     function getLocalItem(itemId, serverId) {
 
         var deferred = DeferredBuilder.Deferred();
@@ -509,7 +557,7 @@
                     isResolved = true;
                     // true indicates that it's queued
                     deferred.resolveWith(null, [localPath, true]);
-                }, 700);
+                }, 500);
 
                 // Start the download and persist the promise to be able to cancel the download.
                 download.startAsync().then(function () {
@@ -622,7 +670,7 @@
                             // true indicates that it's queued
                             deferred.resolveWith(null, [localPath, isQueued]);
                         }
-                    }, 3000);
+                    }, 500);
                 }
 
             }, function () {
@@ -871,7 +919,9 @@
         hasImage: hasImage,
         downloadImage: downloadImage,
         fileExists: fileExists,
-        translateFilePath: translateFilePath
+        translateFilePath: translateFilePath,
+        getUserIdsWithAccess: getUserIdsWithAccess,
+        saveUserIdsWithAccess: saveUserIdsWithAccess
     };
 
 })();

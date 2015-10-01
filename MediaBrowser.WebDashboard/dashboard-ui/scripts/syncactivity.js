@@ -404,7 +404,7 @@
                 $('.supporterPromotionContainer', page).show();
 
                 if (AppInfo.enableSupporterMembership) {
-                    $('.supporterPromotion a', page).attr('href', 'http://emby.media/donate');
+                    $('.supporterPromotion a', page).attr('href', 'http://emby.media/premiere');
                     $('.supporterPromotion .btnLearnMore', page).show();
                     $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));
                 } else {

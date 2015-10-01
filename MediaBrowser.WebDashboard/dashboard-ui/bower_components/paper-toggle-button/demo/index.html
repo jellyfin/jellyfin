@@ -21,12 +21,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="../paper-toggle-button.html">
 
     <style is="custom-style">
-      .line {
+      paper-toggle-button {
         margin-bottom: 40px;
+        display: block;
       }
 
-      .line span {
-        margin-left: 24px;
+      paper-toggle-button:last-child {
+        margin-bottom: 0;
       }
 
       paper-toggle-button.blue {
@@ -71,33 +72,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
         <h4>Enabled</h4>
         <div class="horizontal-section">
-          <div class="line"><paper-toggle-button></paper-toggle-button><span>Oxygen</span></div>
-          <div class="line"><paper-toggle-button></paper-toggle-button><span>Carbon</span></div>
-          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Hydrogen</span></div>
-          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Nitrogen</span></div>
-          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Calcium</span></div>
+          <paper-toggle-button>Oxygen</paper-toggle-button>
+          <paper-toggle-button>Carbon</paper-toggle-button>
+          <paper-toggle-button checked>Hydrogen</paper-toggle-button>
+          <paper-toggle-button checked>Nitrogen</paper-toggle-button>
+          <paper-toggle-button checked>Calcium</paper-toggle-button>
         </div>
       </div>
 
       <div>
         <h4>Disabled</h4>
         <div class="horizontal-section">
-          <div class="line"><paper-toggle-button disabled></paper-toggle-button><span>Oxygen</span></div>
-          <div class="line"><paper-toggle-button disabled></paper-toggle-button><span>Carbon</span></div>
-          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Hydrogen</span></div>
-          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Nitrogen</span></div>
-          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Calcium</span></div>
+          <paper-toggle-button disabled>Oxygen</paper-toggle-button>
+          <paper-toggle-button disabled>Carbon</paper-toggle-button>
+          <paper-toggle-button checked disabled>Hydrogen</paper-toggle-button>
+          <paper-toggle-button checked disabled>Nitrogen</paper-toggle-button>
+          <paper-toggle-button checked disabled>Calcium</paper-toggle-button>
         </div>
       </div>
 
       <div>
         <h4>Color</h4>
         <div class="horizontal-section">
-          <div class="line"><paper-toggle-button class="blue"></paper-toggle-button><span>Oxygen</span></div>
-          <div class="line"><paper-toggle-button class="red"></paper-toggle-button><span>Carbon</span></div>
-          <div class="line"><paper-toggle-button checked class="orange"></paper-toggle-button><span>Hydrogen</span></div>
-          <div class="line"><paper-toggle-button checked class="green"></paper-toggle-button><span>Nitrogen</span></div>
-          <div class="line"><paper-toggle-button checked class="blue"></paper-toggle-button><span>Calcium</span></div>
+          <paper-toggle-button class="blue">Oxygen</paper-toggle-button>
+          <paper-toggle-button class="red">Carbon</paper-toggle-button>
+          <paper-toggle-button checked class="orange">Hydrogen</paper-toggle-button>
+          <paper-toggle-button checked class="green">Nitrogen</paper-toggle-button>
+          <paper-toggle-button checked class="blue">Calcium</paper-toggle-button>
         </div>
       </div>
     </div>

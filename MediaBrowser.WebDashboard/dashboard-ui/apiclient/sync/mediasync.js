@@ -498,18 +498,17 @@
 
             require(['localassetmanager'], function () {
 
-                LocalAssetManager.getLocalItem(itemId, serverId).done(function (localItem) {
+                LocalAssetManager.getUserIdsWithAccess(itemId, serverId).done(function (savedUserIdsWithAccess) {
 
                     var userIdsWithAccess = syncDataResult.ItemUserAccess[itemId];
 
-                    if (userIdsWithAccess.join(',') == localItem.UserIdsWithAccess.join(',')) {
+                    if (userIdsWithAccess.join(',') == savedUserIdsWithAccess.join(',')) {
                         // Hasn't changed, nothing to do
                         deferred.resolve();
                     }
                     else {
 
-                        localItem.UserIdsWithAccess = userIdsWithAccess;
-                        LocalAssetManager.addOrUpdateLocalItem(localItem).done(function () {
+                        LocalAssetManager.saveUserIdsWithAccess(itemId, serverId, userIdsWithAccess).done(function () {
                             deferred.resolve();
                         }).fail(getOnFail(deferred));
                     }

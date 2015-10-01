@@ -4,7 +4,7 @@
 }
 
 .nowPlayingText {
-    display: inline-block;.
+    display: inline-block;
     font-weight: normal;
     position: relative;
     top: -7px;
@@ -24,7 +24,7 @@
 }
 
 .mediaButton.active {
-    color: #2ad;
+    color: #52B54B;
 }
 
 @media (min-width: 500px) {

@@ -79,6 +79,11 @@
 
         function syncOfflineUsers(server, options, deferred) {
 
+            if (options.syncOfflineUsers === false) {
+                syncMedia(server, options, deferred);
+                return;
+            }
+
             require(['offlineusersync'], function () {
 
                 var apiClient = connectionManager.getApiClient(server.Id);

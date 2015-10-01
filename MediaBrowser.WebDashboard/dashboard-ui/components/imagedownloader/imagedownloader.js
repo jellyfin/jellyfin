@@ -307,15 +307,13 @@
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
-            $('.btnCloseDialog', dlg).on('click', closeDialog);
+            $('.btnCloseDialog', dlg).on('click', function () {
+
+                PaperDialogHelper.close(dlg);
+            });
 
             reloadBrowsableImages(editorContent);
         });
-    }
-
-    function closeDialog() {
-
-        history.back();
     }
 
     function onDialogClosed() {

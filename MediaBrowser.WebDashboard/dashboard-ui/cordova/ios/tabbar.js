@@ -97,24 +97,30 @@
         TabBar.show();
     }
 
-    function showUserTabs() {
+    function showUserTabs(user) {
 
-        Dashboard.getCurrentUser().done(function (user) {
+        var tabs = ['Library', 'Favorites', 'Search', 'NowPlaying'];
 
-            var tabs = ['Library', 'Favorites', 'Search', 'NowPlaying'];
+        if (user.Policy.EnableSync) {
 
-            if (user.Policy.EnableSync) {
+            tabs.push('Sync');
+        }
 
-                tabs.push('Sync');
-            }
+        tabs.push('Settings');
 
-            tabs.push('Settings');
+        TabBar.showNamedItems(tabs);
 
-            TabBar.showNamedItems(tabs);
+        // We need to make sure the above completes first
+        setTimeout(showTabs, 500);
+    }
 
-            // We need to make sure the above completes first
-            setTimeout(showTabs, 500);
-        });
+    function showCurrentUserTabs() {
+
+        if (!Dashboard.getCurrentUserId()) {
+            return;
+        }
+
+        Dashboard.getCurrentUser().done(showUserTabs);
     }
 
     var isFirstHide = true;
@@ -137,12 +143,15 @@
 
         init();
 
-        showUserTabs();
+        Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
+            showUserTabs(user);
+        });
 
-        Events.on(ConnectionManager, 'localusersignedin', showUserTabs);
         Events.on(ConnectionManager, 'localusersignedout', hideTabs);
         Events.on(MediaController, 'beforeplaybackstart', onPlaybackStart);
         Events.on(MediaController, 'playbackstop', onPlaybackStop);
+
+        showCurrentUserTabs();
     });
 
     function onPlaybackStart(e, state, player) {

@@ -1469,8 +1469,6 @@
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
 
-        page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
-
         $('.btnMore', page).on('click', function () {
             showMoreMenu(page, this);
         });
