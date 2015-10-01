@@ -727,6 +727,8 @@ namespace MediaBrowser.Providers.Manager
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
+            const int maxResults = 10;
+
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
@@ -755,6 +757,8 @@ namespace MediaBrowser.Providers.Manager
                 searchInfo.SearchInfo.MetadataCountryCode = ConfigurationManager.Configuration.MetadataCountryCode;
             }
 
+            var resultList = new List<RemoteSearchResult>();
+
             foreach (var provider in providers)
             {
                 try
@@ -765,7 +769,12 @@ namespace MediaBrowser.Providers.Manager
 
                     if (list.Count > 0)
                     {
-                        return list.Take(10);
+                        resultList.AddRange(list.Take(maxResults - resultList.Count));
+                    }
+
+                    if (resultList.Count >= maxResults)
+                    {
+                        return resultList;
                     }
                 }
                 catch (Exception ex)
@@ -774,8 +783,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // Nothing found
-            return new List<RemoteSearchResult>();
+            return resultList;
         }
 
         private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(IRemoteSearchProvider<TLookupType> provider, TLookupType searchInfo,
