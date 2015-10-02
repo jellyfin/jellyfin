@@ -182,40 +182,6 @@
             }
         },
 
-        addRecurringFields: function (page, period) {
-
-            var form = page.querySelector('.supporterForm');
-
-            // Add recurring fields to form
-            $("<input type='hidden' name='a3' class='pprecurring' />")
-                .attr('value', $('#donateAmt', page).val())
-                .appendTo(form);
-
-            $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            //change command for subscriptions
-            $('#ppCmd', page).val('_xclick-subscriptions');
-
-            Events.trigger(form, 'create');
-
-        },
-
-        initSupporterForm: function (page) {
-
-            $('.supporterForm', page).attr('action', 'https://www.paypal.com/cgi-bin/webscr');
-            $('.recurringSubscriptionCancellationHelp', page).html(Globalize.translate('LabelRecurringDonationCanBeCancelledHelp'));
-        },
-
         validateFeature: function (name) {
 
             var deferred = DeferredBuilder.Deferred();
