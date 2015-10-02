@@ -416,7 +416,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                excludeFiles.Add("supporter.html");
                 excludeFiles.Add("supporterkey.html");
             }
 

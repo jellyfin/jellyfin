@@ -132,7 +132,7 @@
     "HeaderUser": "Utente",
     "HeaderName": "Nome",
     "HeaderDate": "Data",
-    "HeaderPremiereDate": "Premiere Date",
+    "HeaderPremiereDate": "Data della prima",
     "HeaderDateAdded": "Aggiunto il",
     "HeaderReleaseDate": "Data Rilascio",
     "HeaderRuntime": "Durata",
@@ -162,7 +162,7 @@
     "HeaderCountries": "Paesi",
     "HeaderStatus": "Stato",
     "HeaderTracks": "Traccia",
-    "HeaderMusicArtist": "Music artist",
+    "HeaderMusicArtist": "Musica artisti",
     "HeaderLocked": "Bloccato",
     "HeaderStudios": "Studios",
     "HeaderActor": "Attori",
@@ -172,6 +172,6 @@
     "HeaderProducer": "Produttori",
     "HeaderWriter": "Sceneggiatori",
     "HeaderParentalRatings": "Valutazioni genitori",
-    "HeaderCommunityRatings": "Community ratings",
-    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
+    "HeaderCommunityRatings": "Valutazione Comunity",
+    "StartupEmbyServerIsLoading": "Emby server si sta avviando. Riprova tra un po"
 }
