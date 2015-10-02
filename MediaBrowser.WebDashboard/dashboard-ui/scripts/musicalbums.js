@@ -61,7 +61,8 @@
                 addLayoutButton: true,
                 currentLayout: view,
                 updatePageSizeSetting: false,
-                viewIcon: 'filter-list'
+                viewIcon: 'filter-list',
+                layouts: 'List,Poster,PosterCard,Timeline'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -128,6 +129,12 @@
             });
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+
+                if (layout == 'Timeline') {
+                    getQuery().SortBy = 'PremiereDate,SortName';
+                    getQuery().SortOrder = 'Descending';
+                }
+
                 getPageData().view = layout;
                 LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
                 reloadItems(page, viewPanel);

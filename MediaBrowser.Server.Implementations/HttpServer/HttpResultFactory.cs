@@ -476,7 +476,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 return new StreamWriter(stream, contentType, _logger)
                 {
-                    OnComplete = options.OnComplete
+                    OnComplete = options.OnComplete,
+                    OnError = options.OnError
                 };
             }
 

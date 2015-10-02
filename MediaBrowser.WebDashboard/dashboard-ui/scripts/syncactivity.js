@@ -392,7 +392,20 @@
 
     }
 
-    $(document).on('pageshow', ".syncActivityPage", function () {
+    $(document).on('pageinit', ".syncActivityPage", function () {
+
+        var page = this;
+
+        $('.btnSyncSupporter', page).on('click', function () {
+
+            requirejs(["scripts/registrationservices"], function () {
+                RegistrationServices.validateFeature('sync').done(function () {
+                });
+            });
+        });
+        $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));
+
+    }).on('pageshow', ".syncActivityPage", function () {
 
         var page = this;
 
@@ -402,16 +415,6 @@
                 $('.supporterPromotionContainer', page).hide();
             } else {
                 $('.supporterPromotionContainer', page).show();
-
-                if (AppInfo.enableSupporterMembership) {
-                    $('.supporterPromotion a', page).attr('href', 'http://emby.media/premiere');
-                    $('.supporterPromotion .btnLearnMore', page).show();
-                    $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));
-                } else {
-                    $('.supporterPromotion a', page).attr('href', '#');
-                    $('.supporterPromotion .btnLearnMore', page).hide();
-                    $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembershipAppVersion'));
-                }
             }
         });
 

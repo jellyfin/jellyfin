@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Net
         public IDictionary<string, string> ResponseHeaders { get; set; }
 
         public Action OnComplete { get; set; }
+        public Action OnError { get; set; }
 
         public StaticResultOptions()
         {
