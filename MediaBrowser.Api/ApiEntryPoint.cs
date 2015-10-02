@@ -577,7 +577,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    Logger.Info("Deleting HLS file {0}", file);
+                    Logger.Debug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
                 }
                 catch (DirectoryNotFoundException)
