@@ -1197,9 +1197,16 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public override async Task MarkUnplayed(User user)
         {
+            var itemsResult = await GetItems(new InternalItemsQuery
+            {
+                User = user,
+                Recursive = true,
+                IsFolder = false
+
+            }).ConfigureAwait(false);
+
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual)
-                .Select(c => c.MarkUnplayed(user));
+            var tasks = itemsResult.Items.Select(c => c.MarkUnplayed(user));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
