@@ -363,7 +363,10 @@
             url += name;
 
             if (params) {
-                url += "?" + HttpClient.param(params);
+                params = HttpClient.param(params);
+                if (params) {
+                    url += "?" + params;
+                }
             }
 
             return url;
