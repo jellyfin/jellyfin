@@ -178,9 +178,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                 job.Progress = null;
             }
 
-            if (jobItems.All(i => i.Status == SyncJobItemStatus.Queued))
+            if (jobItems.Any(i => i.Status == SyncJobItemStatus.Transferring))
             {
-                job.Status = SyncJobStatus.Queued;
+                job.Status = SyncJobStatus.Transferring;
+            }
+            else if (jobItems.Any(i => i.Status == SyncJobItemStatus.Converting))
+            {
+                job.Status = SyncJobStatus.Converting;
             }
             else if (jobItems.All(i => i.Status == SyncJobItemStatus.Failed))
             {
@@ -193,14 +197,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             else if (jobItems.All(i => i.Status == SyncJobItemStatus.ReadyToTransfer))
             {
                 job.Status = SyncJobStatus.ReadyToTransfer;
-            }
-            else if (jobItems.All(i => i.Status == SyncJobItemStatus.Transferring))
-            {
-                job.Status = SyncJobStatus.Transferring;
-            }
-            else if (jobItems.Any(i => i.Status == SyncJobItemStatus.Converting))
-            {
-                job.Status = SyncJobStatus.Converting;
             }
             else if (jobItems.All(i => i.Status == SyncJobItemStatus.Cancelled || i.Status == SyncJobItemStatus.Failed || i.Status == SyncJobItemStatus.Synced || i.Status == SyncJobItemStatus.RemovedFromDevice))
             {
