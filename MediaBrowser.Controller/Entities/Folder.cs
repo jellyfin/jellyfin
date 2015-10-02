@@ -1176,9 +1176,16 @@ namespace MediaBrowser.Controller.Entities
             DateTime? datePlayed,
             bool resetPosition)
         {
+            var itemsResult = await GetItems(new InternalItemsQuery
+            {
+                User = user,
+                Recursive = true,
+                IsFolder = false
+
+            }).ConfigureAwait(false);
+
             // Sweep through recursively and update status
-            var tasks = GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual)
-                .Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
+            var tasks = itemsResult.Items.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
