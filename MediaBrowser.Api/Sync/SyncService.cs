@@ -244,7 +244,15 @@ namespace MediaBrowser.Api.Sync
             var task = _syncManager.ReportSyncJobItemTransferBeginning(request.Id);
             Task.WaitAll(task);
 
-            return ToStaticFileResult(jobItem.OutputPath);
+            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                Path = jobItem.OutputPath,
+                OnError = () =>
+                {
+                    var failedTask = _syncManager.ReportSyncJobItemTransferFailed(request.Id);
+                    Task.WaitAll(failedTask);
+                }
+            });
         }
 
         public object Get(GetSyncDialogOptions request)
