@@ -880,7 +880,7 @@
             var tests = [];
 
             if (server.LastConnectionMode != null) {
-                tests.push(server.LastConnectionMode);
+                //tests.push(server.LastConnectionMode);
             }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }

@@ -4,11 +4,11 @@
 
     function onDeviceReady() {
 
-        var fetcher = window.BackgroundFetch;
+        //var fetcher = window.BackgroundFetch;
 
-        fetcher.configure(onBackgroundFetch, onBackgroundFetchFailed, {
-            stopOnTerminate: false  // <-- false is default
-        });
+        //fetcher.configure(onBackgroundFetch, onBackgroundFetchFailed, {
+        //    stopOnTerminate: false  // <-- false is default
+        //});
     }
 
     function onSyncFinish() {
@@ -86,7 +86,7 @@
         });
     });
 
-    pageClassOn('pageshow', "page", function () {
+    pageClassOn('pageshow', "libraryPage", function () {
 
         if (!Dashboard.getCurrentUserId()) {
             return;

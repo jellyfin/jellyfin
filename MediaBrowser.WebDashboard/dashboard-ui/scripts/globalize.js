@@ -26,8 +26,9 @@
         } else {
 
             var url = getUrl(name, culture);
+            var requestUrl = url + "?v=" + window.dashboardVersion;
 
-            $.getJSON(url).done(function (dictionary) {
+            $.getJSON(requestUrl).done(function (dictionary) {
 
                 dictionaries[url] = dictionary;
                 deferred.resolve();

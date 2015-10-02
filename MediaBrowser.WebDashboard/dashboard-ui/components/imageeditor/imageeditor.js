@@ -230,19 +230,7 @@
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
 
-                var dlg = document.createElement('paper-dialog');
-
-                dlg.setAttribute('with-backdrop', 'with-backdrop');
-                dlg.setAttribute('role', 'alertdialog');
-                // without this safari will scroll the background instead of the dialog contents
-                dlg.setAttribute('modal', 'modal');
-                // seeing max call stack size exceeded in the debugger with this
-                dlg.setAttribute('noAutoFocus', 'noAutoFocus');
-                dlg.entryAnimation = 'scale-up-animation';
-                dlg.exitAnimation = 'fade-out-animation';
-                dlg.classList.add('fullscreen-editor-paper-dialog');
-                dlg.classList.add('ui-body-b');
-                dlg.classList.add('smoothScrollY');
+                var dlg = PaperDialogHelper.createDialog();
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';

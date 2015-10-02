@@ -1,9 +1,15 @@
 ﻿(function () {
 
-    var unlockAlias = "premium features";
-    var unlockAppProductId = 'appunlock';
-
     var updatedProducts = [];
+
+    function getStoreFeatureId(feature) {
+
+        if (feature == 'embypremieremonthly') {
+            return 'emby.subscription.monthly';
+        }
+
+        return 'appunlock';
+    }
 
     function updateProductInfo(product) {
 
@@ -16,17 +22,9 @@
         Events.trigger(IapManager, 'productupdated', [product]);
     }
 
-    function normalizeId(id) {
+    function getProduct(feature) {
 
-        // This is what i named it in itunes
-        id = id.replace('premiumunlock', 'appunlock');
-
-        return id;
-    }
-
-    function getProduct(id) {
-
-        id = normalizeId(id);
+        var id = getStoreFeatureId(feature);
 
         var products = updatedProducts.filter(function (r) {
             return r.id == id;
@@ -35,19 +33,19 @@
         return products.length ? products[0] : null;
     }
 
-    function isPurchaseAvailable(id) {
-        var product = getProduct(id);
+    function isPurchaseAvailable(feature) {
+
+        var product = getProduct(feature);
 
         return product != null && product.valid /*&& product.canPurchase*/;
     }
 
-    function beginPurchase(id) {
-        id = normalizeId(id);
+    function beginPurchase(feature, email) {
+        var id = getStoreFeatureId(feature);
         store.order(id);
     }
 
     function restorePurchase(id) {
-        id = normalizeId(id);
         store.refresh();
     }
 
@@ -74,6 +72,36 @@
         //callback(false, "Impossible to proceed with validation");  
     }
 
+    function initProduct(id, alias, type) {
+
+        store.register({
+            id: id,
+            alias: alias,
+            type: type
+        });
+
+        // When purchase of the full version is approved,
+        // show some logs and finish the transaction.
+        store.when(id).approved(function (order) {
+            order.finish();
+        });
+
+        store.when(id).verified(function (p) {
+            p.finish();
+        });
+
+        // The play button can only be accessed when the user
+        // owns the full version.
+        store.when(id).updated(function (product) {
+
+            if (product.loaded && product.valid && product.state == store.APPROVED) {
+                Logger.log('finishing previously created transaction');
+                product.finish();
+            }
+            updateProductInfo(product);
+        });
+    }
+
     function initializeStore() {
 
         // Let's set a pretty high verbosity level, so that we see a lot of stuff
@@ -82,35 +110,8 @@
 
         store.validator = validateProduct;
 
-        // iOS
-        store.register({
-            id: unlockAppProductId,
-            alias: unlockAlias,
-            type: store.NON_CONSUMABLE
-        });
-
-        // When purchase of the full version is approved,
-        // show some logs and finish the transaction.
-        store.when(unlockAppProductId).approved(function (order) {
-            log('You just unlocked the FULL VERSION!');
-            order.finish();
-        });
-
-        store.when(unlockAppProductId).verified(function (p) {
-            log("verified");
-            p.finish();
-        });
-
-        // The play button can only be accessed when the user
-        // owns the full version.
-        store.when(unlockAppProductId).updated(function (product) {
-
-            if (product.loaded && product.valid && product.state == store.APPROVED) {
-                Logger.log('finishing previously created transaction');
-                product.finish();
-            }
-            updateProductInfo(product);
-        });
+        initProduct(getStoreFeatureId(""), "premium features", store.NON_CONSUMABLE);
+        initProduct(getStoreFeatureId("embypremieremonthly"), "emby premiere monthly", store.PAID_SUBSCRIPTION);
 
         // When every goes as expected, it's time to celebrate!
         // The "ready" event should be welcomed with music and fireworks,
@@ -125,11 +126,36 @@
         store.refresh();
     }
 
+    function getSubscriptionOptions() {
+        var deferred = DeferredBuilder.Deferred();
+
+        var options = [];
+
+        options.push({
+            feature: 'embypremieremonthly',
+            buttonText: 'EmbyPremiereMonthlyWithPrice'
+        });
+
+        options = options.filter(function (o) {
+            return getProduct(o.feature) != null;
+
+        }).map(function (o) {
+
+            o.buttonText = Globalize.translate(o.buttonText, o.price);
+            return o;
+        });
+
+        deferred.resolveWith(null, [options]);
+        return deferred.promise();
+    }
+
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         getProductInfo: getProduct,
         beginPurchase: beginPurchase,
-        restorePurchase: restorePurchase
+        restorePurchase: restorePurchase,
+        getStoreFeatureId: getStoreFeatureId,
+        getSubscriptionOptions: getSubscriptionOptions
     };
 
     initializeStore();

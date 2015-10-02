@@ -548,13 +548,7 @@
 
         closeMainDrawer();
 
-        requirejs(["scripts/registrationservices"], function () {
-
-            RegistrationServices.validateFeature('manageserver').done(function () {
-                Dashboard.navigate('dashboard.html');
-
-            });
-        });
+        Dashboard.navigate('dashboard.html');
     }
 
     function getTopParentId() {

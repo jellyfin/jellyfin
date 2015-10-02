@@ -66,15 +66,41 @@
     function close(dlg) {
 
         if (enableHashChange()) {
-            history.back();
+
+            if (dlg.opened) {
+                history.back();
+            }
+
         } else {
             dlg.close();
         }
     }
 
+    function createDialog() {
+        var dlg = document.createElement('paper-dialog');
+
+        dlg.setAttribute('with-backdrop', 'with-backdrop');
+        dlg.setAttribute('role', 'alertdialog');
+
+        // without this safari will scroll the background instead of the dialog contents
+        // but not needed here since this is already on top of an existing dialog
+        dlg.setAttribute('modal', 'modal');
+
+        // seeing max call stack size exceeded in the debugger with this
+        dlg.setAttribute('noAutoFocus', 'noAutoFocus');
+        dlg.entryAnimation = 'scale-up-animation';
+        dlg.exitAnimation = 'fade-out-animation';
+        dlg.classList.add('fullscreen-editor-paper-dialog');
+        dlg.classList.add('ui-body-b');
+        dlg.classList.add('smoothScrollY');
+
+        return dlg;
+    }
+
     globalScope.PaperDialogHelper = {
         openWithHash: openWithHash,
-        close: close
+        close: close,
+        createDialog: createDialog
     };
 
 })(this);

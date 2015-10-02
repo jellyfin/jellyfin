@@ -788,11 +788,10 @@
     "TabScenes": "Scenes",
     "HeaderUnlockApp": "Unlock App",
     "MessageUnlockAppWithPurchase": "Unlock the full features of the app with a small one-time purchase.",
-    "MessageUnlockAppWithPurchaseOrSupporter": "Unlock the full features of the app with a small one-time purchase, or by signing in with an active Emby Supporter Membership.",
-    "MessageUnlockAppWithSupporter": "Unlock the full features of the app by signing in with an active Emby Supporter Membership.",
-    "MessageToValidateSupporter": "If you have an active Emby Supporter Membership, simply sign into the app using your Wifi connection within your home network.",
+    "MessageUnlockAppWithPurchaseOrSupporter": "Unlock the full features of the app with a small one-time purchase, or with an active Emby Premiere subscription.",
+    "MessageUnlockAppWithSupporter": "Unlock the full features of the app by signing in with an active Emby Premiere subscription.",
+    "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, simply sign into the app using your Wifi connection within your home network.",
     "MessagePaymentServicesUnavailable": "Payment services are currently unavailable. Please try again later.",
-    "ButtonUnlockWithSupporter": "Sign in with Emby Supporter Membership",
     "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
     "ButtonUnlockPrice": "Unlock {0}",
@@ -902,6 +901,9 @@
     "HeaderEmbyForAndroidHasMoved": "Emby for Android has moved!",
     "MessageEmbyForAndroidHasMoved": "Emby for Android has moved to a new home in the app store. Please consider checking out the new app. You may continue to use this app for as long as you wish.",
     "HeaderNextUp": "Next Up",
-    "HeaderLatestMovies":  "Latest Movies",
-    "HeaderLatestEpisodes":  "Latest Episodes"
+    "HeaderLatestMovies": "Latest Movies",
+    "HeaderLatestEpisodes": "Latest Episodes",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderEmailAddress": "E-Mail Address",
+    "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address."
 }

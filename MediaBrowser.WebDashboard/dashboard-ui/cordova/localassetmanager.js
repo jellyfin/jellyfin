@@ -523,7 +523,7 @@
     function downloadFile(url, localPath, enableBackground, enableNewDownloads) {
 
         if (!enableBackground) {
-            return downloadWithFileTransfer(url, localPath);
+            return downloadWithFileTransfer(url, localPath, enableBackground);
         }
 
         var deferred = DeferredBuilder.Deferred();

@@ -233,3 +233,6 @@ paper-tab {
 .nowPlayingPage {
     padding-top: 50px !important;
 }
+.localSyncStatus .labelSyncStatus {
+    display: none !important;
+}

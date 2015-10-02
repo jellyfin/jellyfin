@@ -6,8 +6,6 @@
 
             if (LocalSync.isSupported()) {
 
-                page.querySelector('.localSyncStatus').classList.remove('hide');
-
                 var status = LocalSync.getSyncStatus();
 
                 page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
@@ -20,9 +18,6 @@
                     page.querySelector('.btnSyncNow').classList.remove('hide');
                 }
 
-            } else {
-                page.querySelector('.localSyncStatus').classList.add('hide');
-                page.querySelector('.syncSpinner').active = false;
             }
         });
     }
@@ -47,7 +42,19 @@
             syncNow(page);
         });
 
-    }).on('pageshow', "#mySyncActivityPage", function () {
+        require(['localsync'], function () {
+
+            if (LocalSync.isSupported()) {
+
+                page.querySelector('.localSyncStatus').classList.remove('hide');
+
+            } else {
+                page.querySelector('.localSyncStatus').classList.add('hide');
+                page.querySelector('.syncSpinner').active = false;
+            }
+        });
+
+    }).on('pagebeforeshow', "#mySyncActivityPage", function () {
 
         var page = this;
 

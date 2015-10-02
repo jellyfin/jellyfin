@@ -181,6 +181,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('cancel an overlay by clicking outside', function(done) {
           runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              done();
+            });
+            Polymer.Base.fire.call(document, 'click');
+          });
+        });
+
+        test('close an overlay by clicking outside', function(done) {
+          runAfterOpen(overlay, function() {
             overlay.addEventListener('iron-overlay-closed', function(event) {
               assert.isTrue(event.detail.canceled, 'overlay is canceled');
               done();
@@ -189,7 +198,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+        test('cancel event can be prevented', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              event.preventDefault();
+            });
+            var closedListener = function(event) {
+              throw new Error('iron-overlay-closed should not fire');
+            };
+            overlay.addEventListener('iron-overlay-closed', closedListener);
+            Polymer.Base.fire.call(document, 'click');
+            setTimeout(function() {
+              overlay.removeEventListener('iron-overlay-closed', closedListener);
+              done();
+            }, 10);
+          });
+        });
+
         test('cancel an overlay with esc key', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              done();
+            });
+            fireEvent('keydown', {
+              keyCode: 27
+            }, document);
+          });
+        });
+
+        test('close an overlay with esc key', function(done) {
           runAfterOpen(overlay, function() {
             overlay.addEventListener('iron-overlay-closed', function(event) {
               assert.isTrue(event.detail.canceled, 'overlay is canceled');

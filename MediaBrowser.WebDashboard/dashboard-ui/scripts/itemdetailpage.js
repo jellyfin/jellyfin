@@ -45,6 +45,7 @@
         getPromise().done(function (item) {
 
             reloadFromItem(page, item);
+            window.scrollTo(0, 0);
         });
     }
 

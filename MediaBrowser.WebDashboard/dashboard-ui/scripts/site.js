@@ -100,6 +100,12 @@ var Dashboard = {
                 return;
             }
 
+            // Don't bounce if the failure is in a sync service
+            if (url.indexOf('/sync') != -1) {
+                Dashboard.hideLoadingMsg();
+                return;
+            }
+
             // Bounce to the login screen, but not if a password entry fails, obviously
             if (url.indexOf('/password') == -1 &&
                 url.indexOf('/authenticate') == -1 &&
@@ -237,6 +243,8 @@ var Dashboard = {
     },
 
     importCss: function (url) {
+
+        url += "?v=" + window.dashboardVersion;
 
         if (!Dashboard.importedCss) {
             Dashboard.importedCss = [];
@@ -2019,12 +2027,20 @@ var AppInfo = {};
             urlArgs += new Date().getTime();
         }
 
+        var paths = {
+            velocity: "bower_components/velocity/velocity.min"
+        };
+
+        if (Dashboard.isRunningInCordova()) {
+            paths.prompt = "cordova/prompt";
+        } else {
+            paths.prompt = "components/prompt";
+        }
+
         requirejs.config({
             urlArgs: urlArgs,
 
-            paths: {
-                "velocity": "bower_components/velocity/velocity.min"
-            }
+            paths: paths
         });
 
         // Required since jQuery is loaded before requireJs
