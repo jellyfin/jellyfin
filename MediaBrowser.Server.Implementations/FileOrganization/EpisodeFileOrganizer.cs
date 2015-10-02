@@ -435,20 +435,28 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var newPath = GetSeasonFolderPath(series, seasonNumber, options);
 
-            var episodeFileName = GetEpisodeFileName(newPath.Length, sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options);
+            // MAX_PATH - trailing <NULL> charachter - drive component: 260 - 1 - 3 = 256
+            // Usually newPath would include the drive component, but use 256 to be sure
+            var maxFilenameLength = 256 - newPath.Length;
+
+            if (!newPath.EndsWith(@"\"))
+            {
+                // Remove 1 for missing backslash combining path and filename
+                maxFilenameLength--;
+            }
+
+            // Remove additional 4 chars to prevent PathTooLongException for downloaded subtitles (eg. filename.ext.eng.srt)
+            maxFilenameLength -= 4;
+
+            var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options, maxFilenameLength);
+
+            if (string.IsNullOrEmpty(episodeFileName))
+            {
+                // cause failure
+                return string.Empty;
+            }
 
             newPath = Path.Combine(newPath, episodeFileName);
-
-            // Try to account for windows limitations by removing the episode title
-            if (newPath.Length > 255)
-            {
-                var extension = Path.GetExtension(episodeFileName);
-                var fileName = Path.GetFileNameWithoutExtension(episodeFileName);
-                fileName = fileName.Replace(episode.Name, string.Empty, StringComparison.OrdinalIgnoreCase);
-                episodeFileName = Path.ChangeExtension(fileName, extension);
-
-                newPath = Path.Combine(newPath, episodeFileName);
-            }
 
             return newPath;
         }
@@ -492,7 +500,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return Path.Combine(path, _fileSystem.GetValidFilename(seasonFolderName));
         }
 
-        private string GetEpisodeFileName(int destPathLength, string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, string episodeTitle, TvFileOrganizationOptions options)
+        private string GetEpisodeFileName(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, string episodeTitle, TvFileOrganizationOptions options, int? maxLength)
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
             episodeTitle = _fileSystem.GetValidFilename(episodeTitle).Trim();
@@ -523,25 +531,33 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 .Replace("%0e", episodeNumber.ToString("00", _usCulture))
                 .Replace("%00e", episodeNumber.ToString("000", _usCulture));
 
-            // Add +1 because it is unsure if destpathlength includes a trailing backslash
-            int currentTotalLength = destPathLength + 1 + result.Length;
-            
-            // MAX_PATH - trailing <NULL> charachter - drive component: 260 - 1 - 3 = 256
-            // Usually maxRemainingTitleLength would include the drive component, but use 256 to be sure
-            // Substract 3 for the temp token length (%#1, %#2 or %#3)
-            int maxRemainingTitleLength = 256 - currentTotalLength + 3;
-            string shortenedEpisodeTitle = string.Empty;
-
-            if (maxRemainingTitleLength > 5)
+            if (maxLength.HasValue && result.Contains("%#"))
             {
-                // A title with fewer than 5 letters wouldn't be of much value
-                shortenedEpisodeTitle = episodeTitle.Substring(0, Math.Min(maxRemainingTitleLength, episodeTitle.Length));
+                // Substract 3 for the temp token length (%#1, %#2 or %#3)  
+                int maxRemainingTitleLength = maxLength.Value - result.Length + 3;
+                string shortenedEpisodeTitle = string.Empty;
+
+                if (maxRemainingTitleLength > 5)
+                {
+                    // A title with fewer than 5 letters wouldn't be of much value
+                    shortenedEpisodeTitle = episodeTitle.Substring(0, Math.Min(maxRemainingTitleLength, episodeTitle.Length));
+                }
+
+                result = result.Replace("%#1", shortenedEpisodeTitle)
+                    .Replace("%#2", shortenedEpisodeTitle.Replace(" ", "."))
+                    .Replace("%#3", shortenedEpisodeTitle.Replace(" ", "_"));
             }
 
-            return result.Replace("%#1", shortenedEpisodeTitle)
-                .Replace("%#2", shortenedEpisodeTitle.Replace(" ", "."))
-                .Replace("%#3", shortenedEpisodeTitle.Replace(" ", "_"));
+            if (maxLength.HasValue && result.Length > maxLength.Value)
+            {
+                // There may be cases where reducing the title length may still not be sufficient to
+                // stay below maxLength
+                var msg = string.Format("Unable to generate an episode file name shorter than {0} characters to constrain to the max path limit", maxLength);
+                _logger.Warn(msg);
+                return string.Empty;
+            }
 
+            return result;
         }
 
         private bool IsSameEpisode(string sourcePath, string newPath)
