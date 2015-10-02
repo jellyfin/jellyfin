@@ -18,7 +18,8 @@
 
 .background-theme-b {
     background-color: #242424;
-    background: -webkit-radial-gradient(circle, #282828, #202020);
+    background: radial-gradient(circle, #282828, #141414) !important;
+    background-attachment: fixed;
 }
 
 .ui-body-b {

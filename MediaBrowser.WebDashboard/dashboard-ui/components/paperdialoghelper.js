@@ -92,6 +92,7 @@
         dlg.exitAnimation = 'fade-out-animation';
         dlg.classList.add('fullscreen-editor-paper-dialog');
         dlg.classList.add('ui-body-b');
+        dlg.classList.add('background-theme-b');
         dlg.classList.add('smoothScrollY');
 
         return dlg;

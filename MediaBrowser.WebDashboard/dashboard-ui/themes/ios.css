@@ -33,7 +33,8 @@ body {
 }
 
 .background-theme-b {
-    background-color: #161616;
+    background: radial-gradient(circle, #303030, #101010) !important;
+    background-attachment: fixed;
 }
 
 .backdropContainer .pageBackground {
