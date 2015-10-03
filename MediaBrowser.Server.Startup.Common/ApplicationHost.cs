@@ -260,6 +260,11 @@ namespace MediaBrowser.Server.Startup.Common
             get { return NativeApp.SupportsRunningAsService; }
         }
 
+        public bool SupportsLibraryMonitor
+        {
+            get { return NativeApp.SupportsLibraryMonitor; }
+        }
+
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -1072,7 +1077,7 @@ namespace MediaBrowser.Server.Startup.Common
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = LocalApiUrl,
-                SupportsSync = true
+                SupportsLibraryMonitor = SupportsLibraryMonitor
             };
         }
 

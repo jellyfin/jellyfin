@@ -109,6 +109,11 @@ namespace MediaBrowser.Server.Mono.Native
             }
         }
 
+        public bool SupportsLibraryMonitor
+        {
+            get { return false; }
+        }
+
         public void ConfigureAutoRun(bool autorun)
         {
         }

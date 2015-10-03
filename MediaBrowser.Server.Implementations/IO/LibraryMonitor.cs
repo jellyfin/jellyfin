@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -113,6 +114,7 @@ namespace MediaBrowser.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
+        private IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
@@ -153,6 +155,11 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             get
             {
+                if (!_appHost.SupportsLibraryMonitor)
+                {
+                    return false;
+                }
+
                 switch (ConfigurationManager.Configuration.EnableLibraryMonitor)
                 {
                     case AutoOnOff.Auto:

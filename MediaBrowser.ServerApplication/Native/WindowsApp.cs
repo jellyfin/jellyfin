@@ -47,6 +47,11 @@ namespace MediaBrowser.ServerApplication.Native
             }
         }
 
+        public bool SupportsLibraryMonitor
+        {
+            get { return true; }
+        }
+
         public bool SupportsRunningAsService
         {
             get
