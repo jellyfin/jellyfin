@@ -56,6 +56,15 @@
         var page = this;
 
         $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        ApiClient.getSystemInfo().done(function (systemInfo) {
+
+            if (systemInfo.SupportsLibraryMonitor) {
+                page.querySelector('.fldLibraryMonitor').classList.remove('hide');
+            } else {
+                page.querySelector('.fldLibraryMonitor').classList.add('hide');
+            }
+        });
     });
 
 })(jQuery, document, window);

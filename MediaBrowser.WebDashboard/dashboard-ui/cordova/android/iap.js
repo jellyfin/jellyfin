@@ -5,7 +5,7 @@
     function getStoreFeatureId(feature) {
 
         if (feature == 'embypremieremonthly') {
-            return "emby.supporter.monthly";
+            return "emby.supporter.weekly";
         }
 
         return "com.mb.android.unlock";

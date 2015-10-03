@@ -16,10 +16,9 @@
     margin-left: .5em;
 }
 
-.background-theme-b {
+.background-theme-b, paper-dialog.background-theme-b {
     background-color: #242424;
-    background: radial-gradient(circle, #282828, #141414) !important;
-    background-attachment: fixed;
+    background: radial-gradient(circle, #282828, #141414) fixed;
 }
 
 .ui-body-b {
