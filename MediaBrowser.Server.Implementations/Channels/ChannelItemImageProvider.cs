@@ -33,12 +33,12 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(channelItem.OriginalImageUrl))
+            if (!string.IsNullOrEmpty(channelItem.ExternalImagePath))
             {
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = channelItem.OriginalImageUrl
+                    Url = channelItem.ExternalImagePath
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (channelItem != null)
             {
-                return !channelItem.HasImage(ImageType.Primary) && !string.IsNullOrWhiteSpace(channelItem.OriginalImageUrl);
+                return !channelItem.HasImage(ImageType.Primary) && !string.IsNullOrWhiteSpace(channelItem.ExternalImagePath);
             }
             return false;
         }

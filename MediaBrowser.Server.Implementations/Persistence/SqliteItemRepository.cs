@@ -18,6 +18,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -72,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 11;
+        private const int LatestSchemaVersion = 13;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -187,7 +188,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataLanguage", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataCountryCode", "Text");
-            
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsHD", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalEtag", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalImagePath", "Text");
+
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
@@ -221,7 +225,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "IndexNumber",
             "IsLocked",
             "PreferredMetadataLanguage",
-            "PreferredMetadataCountryCode"
+            "PreferredMetadataCountryCode",
+            "IsHD",
+            "ExternalEtag",
+            "ExternalImagePath"
         };
 
         /// <summary>
@@ -274,7 +281,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsOffline",
                 "LocationType",
                 "PreferredMetadataLanguage",
-                "PreferredMetadataCountryCode"
+                "PreferredMetadataCountryCode",
+                "IsHD",
+                "ExternalEtag",
+                "ExternalImagePath"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -460,7 +470,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.PreferredMetadataLanguage;
                     _saveItemCommand.GetParameter(index++).Value = item.PreferredMetadataCountryCode;
-                    
+                    _saveItemCommand.GetParameter(index++).Value = item.IsHD;
+                    _saveItemCommand.GetParameter(index++).Value = item.ExternalEtag;
+                    _saveItemCommand.GetParameter(index++).Value = item.ExternalImagePath;
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -665,6 +678,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(20))
             {
                 item.PreferredMetadataCountryCode = reader.GetString(20);
+            }
+
+            if (!reader.IsDBNull(21))
+            {
+                item.IsHD = reader.GetBoolean(21);
+            }
+
+            if (!reader.IsDBNull(22))
+            {
+                item.ExternalEtag = reader.GetString(22);
+            }
+
+            if (!reader.IsDBNull(23))
+            {
+                item.ExternalImagePath = reader.GetString(23);
             }
 
             return item;
@@ -1394,7 +1422,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(UserRootFolder),
             typeof(UserView),
             typeof(Video),
-            typeof(Year)
+            typeof(Year),
+            typeof(Channel)
         };
 
         private static Dictionary<string, string[]> GetTypeMapDictionary()
