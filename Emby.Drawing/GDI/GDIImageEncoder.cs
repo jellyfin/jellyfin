@@ -8,6 +8,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using CommonIO;
 using ImageFormat = MediaBrowser.Model.Drawing.ImageFormat;
 
 namespace Emby.Drawing.GDI

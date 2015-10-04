@@ -34,6 +34,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Model.Extensions;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;

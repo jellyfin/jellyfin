@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using CommonIO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Providers;
 

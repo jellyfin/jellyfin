@@ -8,6 +8,7 @@ using MediaBrowser.XbmcMetadata.Parsers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using CommonIO;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {

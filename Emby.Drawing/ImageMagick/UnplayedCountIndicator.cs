@@ -3,6 +3,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Drawing;
 using System.Globalization;
+using CommonIO;
 
 namespace Emby.Drawing.ImageMagick
 {

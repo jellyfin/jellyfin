@@ -8,6 +8,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {

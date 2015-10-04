@@ -7,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using CommonIO;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Controller.Net;
 using WebMarkupMin.Core;
 using WebMarkupMin.Core.Minifiers;

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks

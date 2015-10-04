@@ -8,6 +8,7 @@ using System.IO;
 using System.Text;
 using MediaBrowser.Common.IO;
 using System.Collections.Generic;
+using CommonIO;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {

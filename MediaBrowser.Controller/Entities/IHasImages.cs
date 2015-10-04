@@ -3,6 +3,7 @@ using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities

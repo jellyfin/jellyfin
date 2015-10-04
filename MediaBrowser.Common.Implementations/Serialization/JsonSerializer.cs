@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {
