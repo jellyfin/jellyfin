@@ -322,7 +322,7 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private static List<FileInfo> GetLastTranscodingFiles(string playlist, string segmentExtension, IFileSystem fileSystem, int count)
+        private static List<FileSystemMetadata> GetLastTranscodingFiles(string playlist, string segmentExtension, IFileSystem fileSystem, int count)
         {
             var folder = Path.GetDirectoryName(playlist);
 
@@ -336,7 +336,7 @@ namespace MediaBrowser.Api.Playback.Dash
             }
             catch (DirectoryNotFoundException)
             {
-                return new List<FileInfo>();
+                return new List<FileSystemMetadata>();
             }
         }
 

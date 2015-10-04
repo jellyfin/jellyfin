@@ -54,7 +54,7 @@ namespace MediaBrowser.LocalMetadata
             FileSystem = fileSystem;
         }
 
-        protected abstract FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService);
+        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {

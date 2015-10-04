@@ -387,7 +387,7 @@ namespace MediaBrowser.Providers.Music
                 // Process images
                 var artistXmlPath = GetArtistXmlPath(_config.CommonApplicationPaths, id);
 
-                var fileInfo = new FileInfo(artistXmlPath);
+                var fileInfo = _fileSystem.GetFileInfo(artistXmlPath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

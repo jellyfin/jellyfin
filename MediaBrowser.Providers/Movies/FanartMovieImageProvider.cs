@@ -234,7 +234,7 @@ namespace MediaBrowser.Providers.Movies
                 // Process images
                 var path = GetFanartJsonPath(id);
 
-                var fileInfo = new FileInfo(path);
+                var fileInfo = _fileSystem.GetFileInfo(path);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

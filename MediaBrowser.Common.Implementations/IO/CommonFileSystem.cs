@@ -27,7 +27,7 @@ namespace MediaBrowser.Common.Implementations.IO
             SetInvalidFileNameChars(usePresetInvalidFileNameChars);
         }
 
-        private void SetInvalidFileNameChars(bool usePresetInvalidFileNameChars)
+        protected void SetInvalidFileNameChars(bool usePresetInvalidFileNameChars)
         {
             // GetInvalidFileNameChars is less restrictive in Linux/Mac than Windows, this mimic Windows behavior for mono under Linux/Mac.
 
@@ -115,7 +115,7 @@ namespace MediaBrowser.Common.Implementations.IO
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        public FileSystemInfo GetFileSystemInfo(string path)
+        public FileSystemMetadata GetFileSystemInfo(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -129,10 +129,10 @@ namespace MediaBrowser.Common.Implementations.IO
 
                 if (fileInfo.Exists)
                 {
-                    return fileInfo;
+                    return GetFileSystemMetadata(fileInfo);
                 }
 
-                return new DirectoryInfo(path);
+                return GetFileSystemMetadata(new DirectoryInfo(path));
             }
             else
             {
@@ -140,11 +140,61 @@ namespace MediaBrowser.Common.Implementations.IO
 
                 if (fileInfo.Exists)
                 {
-                    return fileInfo;
+                    return GetFileSystemMetadata(fileInfo);
                 }
 
-                return new FileInfo(path);
+                return GetFileSystemMetadata(new FileInfo(path));
             }
+        }
+
+        public FileSystemMetadata GetFileInfo(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var fileInfo = new FileInfo(path);
+
+            return GetFileSystemMetadata(fileInfo);
+        }
+
+        public FileSystemMetadata GetDirectoryInfo(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var fileInfo = new DirectoryInfo(path);
+
+            return GetFileSystemMetadata(fileInfo);
+        }
+
+        private FileSystemMetadata GetFileSystemMetadata(FileSystemInfo info)
+        {
+            var result = new FileSystemMetadata();
+
+            result.Attributes = info.Attributes;
+            result.Exists = info.Exists;
+            result.FullName = info.FullName;
+            result.Extension = info.Extension;
+            result.Name = info.Name;
+
+            if (result.Exists)
+            {
+                var fileInfo = info as FileInfo;
+                if (fileInfo != null)
+                {
+                    result.Length = fileInfo.Length;
+                    result.DirectoryName = fileInfo.DirectoryName;
+                }
+
+                result.CreationTimeUtc = GetCreationTimeUtc(info);
+                result.LastWriteTimeUtc = GetLastWriteTimeUtc(info);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -194,6 +244,26 @@ namespace MediaBrowser.Common.Implementations.IO
             }
         }
 
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>DateTime.</returns>
+        public DateTime GetCreationTimeUtc(string path)
+        {
+            return GetCreationTimeUtc(GetFileSystemInfo(path));
+        }
+
+        public DateTime GetCreationTimeUtc(FileSystemMetadata info)
+        {
+            return info.CreationTimeUtc;
+        }
+
+        public DateTime GetLastWriteTimeUtc(FileSystemMetadata info)
+        {
+            return info.LastWriteTimeUtc;
+        }
+        
         /// <summary>
         /// Gets the creation time UTC.
         /// </summary>
@@ -346,41 +416,9 @@ namespace MediaBrowser.Common.Implementations.IO
             return path.TrimEnd(Path.DirectorySeparatorChar);
         }
 
-        public string SubstitutePath(string path, string from, string to)
+        public string GetFileNameWithoutExtension(FileSystemMetadata info)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-            if (string.IsNullOrWhiteSpace(from))
-            {
-                throw new ArgumentNullException("from");
-            }
-            if (string.IsNullOrWhiteSpace(to))
-            {
-                throw new ArgumentNullException("to");
-            }
-
-            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
-
-            if (!string.Equals(newPath, path))
-            {
-                if (to.IndexOf('/') != -1)
-                {
-                    newPath = newPath.Replace('\\', '/');
-                }
-                else
-                {
-                    newPath = newPath.Replace('/', '\\');
-                }
-            }
-
-            return newPath;
-        }
-
-        public string GetFileNameWithoutExtension(FileSystemInfo info)
-        {
-            if (info is DirectoryInfo)
+            if (info.IsDirectory)
             {
                 return info.Name;
             }
@@ -426,28 +464,28 @@ namespace MediaBrowser.Common.Implementations.IO
 		{
 			Directory.CreateDirectory(path);
 		}
-			
-		public IEnumerable<DirectoryInfo> GetDirectories(string path, bool recursive = false) 
+
+        public IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false) 
 		{
 			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			return new DirectoryInfo (path).EnumerateDirectories("*", searchOption);
+            return new DirectoryInfo(path).EnumerateDirectories("*", searchOption).Select(GetFileSystemMetadata);
 		}
 
-		public IEnumerable<FileInfo> GetFiles(string path, bool recursive = false) 
+        public IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false) 
 		{
 			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			return new DirectoryInfo (path).EnumerateFiles("*", searchOption);
+			return new DirectoryInfo (path).EnumerateFiles("*", searchOption).Select(GetFileSystemMetadata);
 		}
 
-		public IEnumerable<FileSystemInfo> GetFileSystemEntries(string path, bool recursive = false) 
+        public IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false) 
 		{
 			var directoryInfo = new DirectoryInfo (path);
 			var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			return directoryInfo.EnumerateDirectories("*", searchOption)
-							.Concat<FileSystemInfo>(directoryInfo.EnumerateFiles("*", searchOption));
+            return directoryInfo.EnumerateDirectories("*", searchOption).Select(GetFileSystemMetadata)
+							.Concat(directoryInfo.EnumerateFiles("*", searchOption).Select(GetFileSystemMetadata));
 		}
 
         public Stream OpenRead(string path)

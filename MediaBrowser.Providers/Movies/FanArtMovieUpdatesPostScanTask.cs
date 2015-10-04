@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Movies
             
             var timestampFile = Path.Combine(path, "time.txt");
 
-            var timestampFileInfo = new FileInfo(timestampFile);
+            var timestampFileInfo = _fileSystem.GetFileInfo(timestampFile);
 
             // Don't check for updates every single time
             if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 3)

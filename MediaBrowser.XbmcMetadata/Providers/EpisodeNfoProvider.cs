@@ -32,7 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             result.Images = images;
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var path = Path.ChangeExtension(info.Path, ".nfo");
 

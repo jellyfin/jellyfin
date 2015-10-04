@@ -354,7 +354,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private void DeleteFile(FileInfo file, int retryCount)
+        private void DeleteFile(FileSystemMetadata file, int retryCount)
         {
             if (retryCount >= 5)
             {
@@ -378,7 +378,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private static FileInfo GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
+        private static FileSystemMetadata GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
             var folder = Path.GetDirectoryName(playlist);
 

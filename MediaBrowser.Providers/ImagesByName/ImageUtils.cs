@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.ImagesByName
         /// <returns>Task.</returns>
         public static async Task EnsureList(string url, string file, IHttpClient httpClient, IFileSystem fileSystem, SemaphoreSlim semaphore, CancellationToken cancellationToken)
         {
-            var fileInfo = new FileInfo(file);
+            var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {

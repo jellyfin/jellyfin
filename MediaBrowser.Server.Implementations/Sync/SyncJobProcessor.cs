@@ -864,7 +864,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task<MediaSourceInfo> GetEncodedMediaSource(string path, User user, bool isVideo)
         {
-            var item = _libraryManager.ResolvePath(new FileInfo(path));
+            var item = _libraryManager.ResolvePath(_fileSystem.GetFileSystemInfo(path));
 
             await item.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
 

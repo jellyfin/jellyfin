@@ -99,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         }
 
         public static bool IsSeriesFolder(string path,
-            IEnumerable<FileSystemInfo> fileSystemChildren,
+            IEnumerable<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService,
             IFileSystem fileSystem,
             ILogger logger,

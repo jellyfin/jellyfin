@@ -34,6 +34,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Extensions;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
@@ -549,13 +550,13 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem ResolvePath(FileSystemInfo fileInfo,
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo,
             Folder parent = null)
         {
             return ResolvePath(fileInfo, new DirectoryService(_logger, _fileSystem), parent);
         }
 
-        private BaseItem ResolvePath(FileSystemInfo fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
+        private BaseItem ResolvePath(FileSystemMetadata fileInfo, IDirectoryService directoryService, Folder parent = null, string collectionType = null)
         {
             if (fileInfo == null)
             {
@@ -599,7 +600,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     var paths = NormalizeRootPathList(fileSystemDictionary.Keys);
 
-                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
+                    fileSystemDictionary = paths.Select(_fileSystem.GetDirectoryInfo).ToDictionary(i => i.FullName);
                 }
 
                 args.FileSystemDictionary = fileSystemDictionary;
@@ -642,7 +643,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemInfo> files, IDirectoryService directoryService, Folder parent, string collectionType)
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, string collectionType)
         {
             var fileList = files.ToList();
 
@@ -670,7 +671,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ResolveFileList(fileList, directoryService, parent, collectionType);
         }
 
-        private IEnumerable<BaseItem> ResolveFileList(IEnumerable<FileSystemInfo> fileList, IDirectoryService directoryService, Folder parent, string collectionType)
+        private IEnumerable<BaseItem> ResolveFileList(IEnumerable<FileSystemMetadata> fileList, IDirectoryService directoryService, Folder parent, string collectionType)
         {
             return fileList.Select(f =>
             {
@@ -697,7 +698,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
 			_fileSystem.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(new DirectoryInfo(rootFolderPath));
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath));
 
             // Add in the plug-in folders
             foreach (var child in PluginFolderCreators)
@@ -752,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                         if (tmpItem == null)
                         {
-                            tmpItem = (UserRootFolder)ResolvePath(new DirectoryInfo(userRootPath));
+                            tmpItem = (UserRootFolder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath));
                         }
 
                         _userRootFolder = tmpItem;
@@ -1185,7 +1186,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetCollectionType(string path)
         {
-            return new DirectoryInfo(path).EnumerateFiles("*.collection", SearchOption.TopDirectoryOnly)
+            return _fileSystem.GetFiles(path, false)
+                .Where(i => string.Equals(i.Extension, ".collection", StringComparison.OrdinalIgnoreCase))
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();
         }
@@ -2050,11 +2052,11 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
-        public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
@@ -2070,7 +2072,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (currentVideo != null)
             {
-                files.AddRange(currentVideo.Extras.Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
+                files.AddRange(currentVideo.Extras.Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => _fileSystem.GetFileInfo(i.Path)));
             }
 
             return ResolvePaths(files, directoryService, null, null)
@@ -2093,11 +2095,11 @@ namespace MediaBrowser.Server.Implementations.Library
             }).OrderBy(i => i.Path).ToList();
         }
 
-        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
@@ -2113,7 +2115,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (currentVideo != null)
             {
-                files.AddRange(currentVideo.Extras.Where(i => !string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => new FileInfo(i.Path)));
+                files.AddRange(currentVideo.Extras.Where(i => !string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase)).Select(i => _fileSystem.GetFileInfo(i.Path)));
             }
 
             return ResolvePaths(files, directoryService, null, null)
@@ -2134,6 +2136,38 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     // Sort them so that the list can be easily compared for changes
                 }).OrderBy(i => i.Path).ToList();
+        }
+
+        public string SubstitutePath(string path, string from, string to)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+            if (string.IsNullOrWhiteSpace(from))
+            {
+                throw new ArgumentNullException("from");
+            }
+            if (string.IsNullOrWhiteSpace(to))
+            {
+                throw new ArgumentNullException("to");
+            }
+
+            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
+
+            if (!string.Equals(newPath, path))
+            {
+                if (to.IndexOf('/') != -1)
+                {
+                    newPath = newPath.Replace('\\', '/');
+                }
+                else
+                {
+                    newPath = newPath.Replace('/', '\\');
+                }
+            }
+
+            return newPath;
         }
 
         private void SetExtraTypeFromFilename(Video item)

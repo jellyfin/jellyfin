@@ -356,7 +356,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesFilePath = GetFanartJsonPath(tvdbId);
 
-                var fileInfo = new FileInfo(imagesFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

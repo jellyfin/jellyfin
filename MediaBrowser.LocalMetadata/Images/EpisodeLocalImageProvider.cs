@@ -60,7 +60,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return new List<LocalImageInfo>();
         }
 
-        private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, IEnumerable<FileSystemInfo> parentPathFiles)
+        private List<LocalImageInfo> GetFilesFromParentFolder(string filenameWithoutExtension, IEnumerable<FileSystemMetadata> parentPathFiles)
         {
             var thumbName = filenameWithoutExtension + "-thumb";
 
@@ -91,7 +91,7 @@ namespace MediaBrowser.LocalMetadata.Images
               })
               .Select(i => new LocalImageInfo
               {
-                  FileInfo = (FileInfo)i,
+                  FileInfo = i,
                   Type = ImageType.Primary
               })
               .ToList();

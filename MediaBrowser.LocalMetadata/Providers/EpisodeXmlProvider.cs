@@ -25,12 +25,12 @@ namespace MediaBrowser.LocalMetadata.Providers
             var images = new List<LocalImageInfo>();
             var chapters = new List<ChapterInfo>();
 
-            new EpisodeXmlParser(_logger).Fetch(result, images, path, cancellationToken);
+            new EpisodeXmlParser(_logger, FileSystem).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var metadataPath = Path.GetDirectoryName(info.Path);
             metadataPath = Path.Combine(metadataPath, "metadata");

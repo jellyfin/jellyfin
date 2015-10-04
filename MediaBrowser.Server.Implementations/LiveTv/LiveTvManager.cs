@@ -744,7 +744,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (!string.IsNullOrEmpty(info.Path))
             {
                 item.Path = info.Path;
-                var fileInfo = new FileInfo(info.Path);
+                var fileInfo = _fileSystem.GetFileInfo(info.Path);
 
                 recording.DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo);
                 recording.DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo);

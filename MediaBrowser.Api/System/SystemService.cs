@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetServerLogs request)
         {
-            List<FileInfo> files;
+            List<FileSystemMetadata> files;
 
             try
             {
@@ -128,7 +128,7 @@ namespace MediaBrowser.Api.System
             }
             catch (DirectoryNotFoundException)
             {
-                files = new List<FileInfo>();
+                files = new List<FileSystemMetadata>();
             }
 
             var result = files.Select(i => new LogFile

@@ -676,7 +676,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
@@ -684,8 +684,8 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             // Support plex/xbmc convention
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
+            files.AddRange(fileSystemChildren
+                .Where(i => !i.IsDirectory && string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths(files, directoryService, null)
@@ -712,7 +712,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
@@ -761,7 +761,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var files = locationType != LocationType.Remote && locationType != LocationType.Virtual ?
                         GetFileSystemChildren(options.DirectoryService).ToList() :
-                        new List<FileSystemInfo>();
+                        new List<FileSystemMetadata>();
 
                     var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
 
@@ -808,7 +808,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="fileSystemChildren"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var themeSongsChanged = false;
 
@@ -839,14 +839,14 @@ namespace MediaBrowser.Controller.Entities
             return themeSongsChanged || themeVideosChanged || localTrailersChanged;
         }
 
-        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
+        protected virtual IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
             var path = ContainingFolderPath;
 
             return directoryService.GetFileSystemEntries(path);
         }
 
-        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService).ToList();
 
@@ -863,7 +863,7 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged;
         }
 
-        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService).ToList();
 
@@ -894,7 +894,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
@@ -1395,7 +1395,7 @@ namespace MediaBrowser.Controller.Entities
             return GetImageInfo(type, imageIndex) != null;
         }
 
-        public void SetImagePath(ImageType type, int index, FileSystemInfo file)
+        public void SetImagePath(ImageType type, int index, FileSystemMetadata file)
         {
             if (type == ImageType.Chapter)
             {
@@ -1545,11 +1545,6 @@ namespace MediaBrowser.Controller.Entities
             return ImageInfos.Where(i => i.Type == imageType);
         }
 
-        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
-        {
-            return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
-        }
-
         /// <summary>
         /// Adds the images.
         /// </summary>
@@ -1557,7 +1552,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
-        public bool AddImages(ImageType imageType, List<FileSystemInfo> images)
+        public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -1567,7 +1562,7 @@ namespace MediaBrowser.Controller.Entities
             var existingImages = GetImages(imageType)
                 .ToList();
 
-            var newImageList = new List<FileSystemInfo>();
+            var newImageList = new List<FileSystemMetadata>();
             var imageAdded = false;
 
             foreach (var newImage in images)
@@ -1607,7 +1602,7 @@ namespace MediaBrowser.Controller.Entities
             return newImageList.Count > 0;
         }
 
-        private ItemImageInfo GetImageInfo(FileSystemInfo file, ImageType type)
+        private ItemImageInfo GetImageInfo(FileSystemMetadata file, ImageType type)
         {
             return new ItemImageInfo
             {
@@ -1730,7 +1725,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
                 {
-                    path = FileSystem.SubstitutePath(path, map.From, map.To);
+                    path = LibraryManager.SubstitutePath(path, map.From, map.To);
                 }
             }
 
@@ -1771,7 +1766,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (video == null)
             {
-                video = LibraryManager.ResolvePath(new FileInfo(path)) as Video;
+                video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
 
                 newOptions.ForceSave = true;
             }

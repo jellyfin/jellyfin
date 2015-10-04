@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             }
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return MovieNfoSaver.GetMovieSavePaths(info, FileSystem)
                 .Select(directoryService.GetFile)

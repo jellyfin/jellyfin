@@ -3,6 +3,7 @@ using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -67,7 +68,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
         /// <param name="file">The file.</param>
-        void SetImagePath(ImageType type, int index, FileSystemInfo file);
+        void SetImagePath(ImageType type, int index, FileSystemMetadata file);
 
         /// <summary>
         /// Determines whether the specified type has image.
@@ -134,7 +135,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool AddImages(ImageType imageType, List<FileSystemInfo> images);
+        bool AddImages(ImageType imageType, List<FileSystemMetadata> images);
 
         /// <summary>
         /// Determines whether [is save local metadata enabled].
@@ -215,7 +216,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="file">The file.</param>
-        public static void SetImagePath(this IHasImages item, ImageType imageType, FileSystemInfo file)
+        public static void SetImagePath(this IHasImages item, ImageType imageType, FileSystemMetadata file)
         {
             item.SetImagePath(imageType, 0, file);
         }
@@ -228,7 +229,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="file">The file.</param>
         public static void SetImagePath(this IHasImages item, ImageType imageType, string file)
         {
-            item.SetImagePath(imageType, new FileInfo(file));
+            item.SetImagePath(imageType, BaseItem.FileSystem.GetFileInfo(file));
         }
     }
 }
