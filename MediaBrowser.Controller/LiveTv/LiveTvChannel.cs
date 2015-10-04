@@ -58,6 +58,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The name of the service.</value>
         public string ServiceName { get; set; }
 
+        [IgnoreDataMember]
         public override LocationType LocationType
         {
             get

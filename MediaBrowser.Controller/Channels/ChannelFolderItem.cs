@@ -14,8 +14,6 @@ namespace MediaBrowser.Controller.Channels
     {
         public ChannelFolderType ChannelFolderType { get; set; }
 
-        public string OriginalImageUrl { get; set; }
-
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             // Don't block. 
