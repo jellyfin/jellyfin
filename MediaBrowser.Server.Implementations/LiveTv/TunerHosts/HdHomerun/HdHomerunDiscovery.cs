@@ -9,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Common.Net;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -19,13 +20,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly ILogger _logger;
         private readonly ILiveTvManager _liveTvManager;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly IHttpClient _httpClient;
 
-        public HdHomerunDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager)
+        public HdHomerunDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient)
         {
             _deviceDiscovery = deviceDiscovery;
             _config = config;
             _logger = logger;
             _liveTvManager = liveTvManager;
+            _httpClient = httpClient;
         }
 
         public void Run()
@@ -75,6 +78,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Strip off the port
                 url = new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped).TrimEnd('/');
 
+                // Test it by pulling down the lineup
+                using (await _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = string.Format("{0}/lineup.json", url),
+                    CancellationToken = CancellationToken.None
+                }))
+                {
+                }
+                
                 await _liveTvManager.SaveTunerHost(new TunerHostInfo
                 {
                     Type = HdHomerunHost.DeviceType,
