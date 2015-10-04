@@ -774,11 +774,11 @@ namespace Emby.Drawing
 
             try
             {
-                _logger.Debug("Creating image collage and saving to {0}", options.OutputPath);
+                _logger.Info("Creating image collage and saving to {0}", options.OutputPath);
 
                 _imageEncoder.CreateImageCollage(options);
 
-                _logger.Debug("Completed creation of image collage and saved to {0}", options.OutputPath);
+                _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
             }
             finally
             {

@@ -502,7 +502,7 @@ namespace MediaBrowser.Server.Startup.Common
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, PlaylistManager, CollectionManager, ServerConfigurationManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
             var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager);
@@ -944,7 +944,7 @@ namespace MediaBrowser.Server.Startup.Common
                 Logger.ErrorException("Error sending server restart notification", ex);
             }
 
-            Logger.Debug("Calling NativeApp.Restart");
+            Logger.Info("Calling NativeApp.Restart");
 
             NativeApp.Restart(_startupOptions);
         }

@@ -62,8 +62,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Version", out version);
             }
 
-            var token = httpReq.Headers["X-MediaBrowser-Token"];
+            var token = httpReq.Headers["X-Emby-Token"];
 
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                token = httpReq.Headers["X-MediaBrowser-Token"];
+            }
             if (string.IsNullOrWhiteSpace(token))
             {
                 token = httpReq.QueryString["api_key"];

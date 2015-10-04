@@ -220,7 +220,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new SecurityException("Access token is invalid or expired.");
+                throw new SecurityException("Access token is required.");
             }
 
             var info = GetTokenInfo(request);

@@ -149,7 +149,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (!string.IsNullOrEmpty(streamInfo.sample_rate))
                 {
-                    stream.SampleRate = int.Parse(streamInfo.sample_rate, _usCulture);
+                    int value;
+                    if (int.TryParse(streamInfo.sample_rate, NumberStyles.Any, _usCulture, out value))
+                    {
+                        stream.SampleRate = value;
+                    }
                 }
 
                 stream.ChannelLayout = ParseChannelLayout(streamInfo.channel_layout);
@@ -190,12 +194,21 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrEmpty(streamInfo.bit_rate))
             {
-                bitrate = int.Parse(streamInfo.bit_rate, _usCulture);
+                int value;
+                if (int.TryParse(streamInfo.bit_rate, NumberStyles.Any, _usCulture, out value))
+                {
+                    bitrate = value;
+                }
             }
-            else if (formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate) && stream.Type == MediaStreamType.Video)
+
+            if (bitrate == 0 && formatInfo != null && !string.IsNullOrEmpty(formatInfo.bit_rate) && stream.Type == MediaStreamType.Video)
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
-                bitrate = int.Parse(formatInfo.bit_rate, _usCulture);
+                int value;
+                if (int.TryParse(formatInfo.bit_rate, NumberStyles.Any, _usCulture, out value))
+                {
+                    bitrate = value;
+                }
             }
 
             if (bitrate > 0)
@@ -518,23 +531,23 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if(mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
+            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mb);
-            
+
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if(mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
+            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
             audio.SetProviderId(MetadataProviders.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if(mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
+            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, mb);
-            
+
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if(mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
+            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
             audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if(mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
+            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
             audio.SetProviderId(MetadataProviders.MusicBrainzTrack, mb);
         }
 

@@ -626,7 +626,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.Debug(Name + ": Cancelling");
+                        Logger.Info(Name + ": Cancelling");
                         token.Cancel();
                     }
                     catch (Exception ex)
@@ -639,16 +639,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        Logger.Debug(Name + ": Waiting on Task");
+                        Logger.Info(Name + ": Waiting on Task");
                         var exited = Task.WaitAll(new[] { task }, 2000);
 
                         if (exited)
                         {
-                            Logger.Debug(Name + ": Task exited");
+                            Logger.Info(Name + ": Task exited");
                         }
                         else
                         {
-                            Logger.Debug(Name + ": Timed out waiting for task to stop");
+                            Logger.Info(Name + ": Timed out waiting for task to stop");
                         }
                     }
                     catch (Exception ex)

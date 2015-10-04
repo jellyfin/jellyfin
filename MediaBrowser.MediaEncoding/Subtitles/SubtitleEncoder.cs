@@ -411,7 +411,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             };
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
 			_fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
