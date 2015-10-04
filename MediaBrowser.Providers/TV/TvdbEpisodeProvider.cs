@@ -173,9 +173,9 @@ namespace MediaBrowser.Providers.TV
         /// <param name="endingEpisodeNumber">The ending episode number.</param>
         /// <param name="seriesDataPath">The series data path.</param>
         /// <returns>List{FileInfo}.</returns>
-        internal List<FileInfo> GetEpisodeXmlFiles(int? seasonNumber, int? episodeNumber, int? endingEpisodeNumber, string seriesDataPath)
+        internal List<FileSystemMetadata> GetEpisodeXmlFiles(int? seasonNumber, int? episodeNumber, int? endingEpisodeNumber, string seriesDataPath)
         {
-            var files = new List<FileInfo>();
+            var files = new List<FileSystemMetadata>();
 
             if (episodeNumber == null)
             {
@@ -189,7 +189,7 @@ namespace MediaBrowser.Providers.TV
 
             var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
 
-            var fileInfo = new FileInfo(file);
+            var fileInfo = _fileSystem.GetFileInfo(file);
             var usingAbsoluteData = false;
 
             if (fileInfo.Exists)
@@ -199,7 +199,7 @@ namespace MediaBrowser.Providers.TV
             else
             {
                 file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
-                fileInfo = new FileInfo(file);
+                fileInfo = _fileSystem.GetFileInfo(file);
                 if (fileInfo.Exists)
                 {
                     files.Add(fileInfo);
@@ -221,7 +221,7 @@ namespace MediaBrowser.Providers.TV
                     file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
                 }
 
-                fileInfo = new FileInfo(file);
+                fileInfo = _fileSystem.GetFileInfo(file);
                 if (fileInfo.Exists)
                 {
                     files.Add(fileInfo);

@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        public static Dictionary<string, FileSystemInfo> GetFilteredFileSystemEntries(IDirectoryService directoryService, 
+        public static Dictionary<string, FileSystemMetadata> GetFilteredFileSystemEntries(IDirectoryService directoryService, 
             string path, 
             IFileSystem fileSystem, 
             ILogger logger, 
@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.IO
 
             var entries = directoryService.GetFileSystemEntries(path);
 
-            var dict = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var entry in entries)
             {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.IO
                     }
 
                     // Don't check if it exists here because that could return false for network shares.
-                    var data = new DirectoryInfo(newPath);
+                    var data = fileSystem.GetDirectoryInfo(newPath);
 
                     // add to our physical locations
                     args.AddAdditionalLocation(newPath);

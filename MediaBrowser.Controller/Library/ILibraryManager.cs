@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -25,19 +26,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemInfo fileInfo, 
+        BaseItem ResolvePath(FileSystemMetadata fileInfo, 
             Folder parent = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="files">The files.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="parent">The parent.</param>
         /// <param name="collectionType">Type of the collection.</param>
         /// <returns>List{``0}.</returns>
-        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemInfo> files, 
+        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, 
             IDirectoryService directoryService,
             Folder parent, string 
             collectionType = null);
@@ -434,7 +434,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
-        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService);
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <returns>IEnumerable&lt;Video&gt;.</returns>
-        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren,
+        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService);
 
         /// <summary>
@@ -509,5 +509,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
+
+        /// <summary>
+        /// Substitutes the path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="from">From.</param>
+        /// <param name="to">To.</param>
+        /// <returns>System.String.</returns>
+        string SubstitutePath(string path, string from, string to);
     }
 }

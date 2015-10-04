@@ -381,7 +381,7 @@ namespace MediaBrowser.Providers.Movies
                 // Process images
                 var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
 
-                var fileInfo = new FileInfo(dataFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

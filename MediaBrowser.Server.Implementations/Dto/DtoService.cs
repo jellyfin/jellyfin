@@ -1577,7 +1577,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 foreach (var map in _config.Configuration.PathSubstitutions)
                 {
-                    path = _fileSystem.SubstitutePath(path, map.From, map.To);
+                    path = _libraryManager.SubstitutePath(path, map.From, map.To);
                 }
             }
 

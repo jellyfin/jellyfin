@@ -36,8 +36,22 @@ namespace MediaBrowser.Common.IO
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        FileSystemInfo GetFileSystemInfo(string path);
+        FileSystemMetadata GetFileSystemInfo(string path);
 
+        /// <summary>
+        /// Gets the file information.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>FileSystemMetadata.</returns>
+        FileSystemMetadata GetFileInfo(string path);
+
+        /// <summary>
+        /// Gets the directory information.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>FileSystemMetadata.</returns>
+        FileSystemMetadata GetDirectoryInfo(string path);
+        
         /// <summary>
         /// Gets the valid filename.
         /// </summary>
@@ -48,17 +62,24 @@ namespace MediaBrowser.Common.IO
         /// <summary>
         /// Gets the creation time UTC.
         /// </summary>
-        /// <param name="info">The info.</param>
+        /// <param name="info">The information.</param>
         /// <returns>DateTime.</returns>
-        DateTime GetCreationTimeUtc(FileSystemInfo info);
+        DateTime GetCreationTimeUtc(FileSystemMetadata info);
+        
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>DateTime.</returns>
+        DateTime GetCreationTimeUtc(string path);
 
         /// <summary>
         /// Gets the last write time UTC.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>DateTime.</returns>
-        DateTime GetLastWriteTimeUtc(FileSystemInfo info);
-
+        DateTime GetLastWriteTimeUtc(FileSystemMetadata info);
+        
         /// <summary>
         /// Gets the last write time UTC.
         /// </summary>
@@ -77,6 +98,11 @@ namespace MediaBrowser.Common.IO
         /// <returns>FileStream.</returns>
         Stream GetFileStream(string path, FileMode mode, FileAccess access, FileShare share, bool isAsync = false);
 
+        /// <summary>
+        /// Opens the read.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Stream.</returns>
 		Stream OpenRead(String path);
 
         /// <summary>
@@ -109,20 +135,11 @@ namespace MediaBrowser.Common.IO
         string NormalizePath(string path);
 
         /// <summary>
-        /// Substitutes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="from">From.</param>
-        /// <param name="to">To.</param>
-        /// <returns>System.String.</returns>
-        string SubstitutePath(string path, string from, string to);
-
-        /// <summary>
         /// Gets the file name without extension.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>System.String.</returns>
-        string GetFileNameWithoutExtension(FileSystemInfo info);
+        string GetFileNameWithoutExtension(FileSystemMetadata info);
 
         /// <summary>
         /// Gets the file name without extension.
@@ -150,37 +167,125 @@ namespace MediaBrowser.Common.IO
         /// <param name="path">The path.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         void DeleteDirectory(string path, bool recursive);
-        
-        IEnumerable<DirectoryInfo> GetDirectories(string path, bool recursive = false);
 
-		IEnumerable<FileInfo> GetFiles(string path, bool recursive = false);
+        /// <summary>
+        /// Gets the directories.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;DirectoryInfo&gt;.</returns>
+        IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false);
 
-		IEnumerable<FileSystemInfo> GetFileSystemEntries(string path, bool recursive = false);
+        /// <summary>
+        /// Gets the files.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;FileInfo&gt;.</returns>
+        IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
+        /// <summary>
+        /// Gets the file system entries.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;FileSystemMetadata&gt;.</returns>
+        IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false);
+
+        /// <summary>
+        /// Creates the directory.
+        /// </summary>
+        /// <param name="path">The path.</param>
 		void CreateDirectory(string path);
 
+        /// <summary>
+        /// Copies the file.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
+        /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
 		void CopyFile(string source, string target, bool overwrite);
 
+        /// <summary>
+        /// Moves the file.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
 		void MoveFile(string source, string target);
 
+        /// <summary>
+        /// Moves the directory.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
 		void MoveDirectory(string source, string target);
 
+        /// <summary>
+        /// Directories the exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
 		bool DirectoryExists(string path);
 
+        /// <summary>
+        /// Files the exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
 		bool FileExists(string path);
 
+        /// <summary>
+        /// Reads all text.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
 		string ReadAllText(string path);
 
+        /// <summary>
+        /// Writes all text.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="text">The text.</param>
         void WriteAllText(string path, string text);
-        
+
+        /// <summary>
+        /// Writes all text.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="encoding">The encoding.</param>
         void WriteAllText(string path, string text, Encoding encoding);
 
+        /// <summary>
+        /// Reads all text.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="encoding">The encoding.</param>
+        /// <returns>System.String.</returns>
         string ReadAllText(string path, Encoding encoding);
 
+        /// <summary>
+        /// Gets the directory paths.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false);
 
+        /// <summary>
+        /// Gets the file paths.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFilePaths(string path, bool recursive = false);
 
+        /// <summary>
+        /// Gets the file system entry paths.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
     }
 }

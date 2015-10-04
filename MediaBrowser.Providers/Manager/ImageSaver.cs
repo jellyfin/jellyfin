@@ -291,7 +291,7 @@ namespace MediaBrowser.Providers.Manager
         /// imageIndex</exception>
         private void SetImagePath(IHasImages item, ImageType type, int? imageIndex, string path)
         {
-            item.SetImagePath(type, imageIndex ?? 0, new FileInfo(path));
+            item.SetImagePath(type, imageIndex ?? 0, _fileSystem.GetFileInfo(path));
         }
 
         /// <summary>

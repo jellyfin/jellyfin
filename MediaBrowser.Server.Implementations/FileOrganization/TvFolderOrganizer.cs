@@ -35,12 +35,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _providerManager = providerManager;
         }
 
-        private bool FilterValidVideoFile(FileInfo fileInfo)
+        private bool EnableOrganization(FileSystemMetadata fileInfo, TvFileOrganizationOptions options)
         {
+            var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
+
             try
             {
-                var fullName = fileInfo.FullName;
-                return _libraryManager.IsVideoFile(fileInfo.FullName);
+                return _libraryManager.IsVideoFile(fileInfo.FullName) && fileInfo.Length >= minFileBytes;
             }
             catch (Exception ex)
             {
@@ -50,15 +51,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return false;
         }
 
-        public async Task Organize(AutoOrganizeOptions options, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Organize(TvFileOrganizationOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
-
             var watchLocations = options.WatchLocations.ToList();
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
-                .Where(i => FilterValidVideoFile(i) && i.Length >= minFileBytes)
+                .Where(i => EnableOrganization(i, options))
                 .ToList();
 
             var processedFolders = new HashSet<string>();
@@ -128,7 +127,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>IEnumerable{FileInfo}.</returns>
-        private IEnumerable<FileInfo> GetFilesToOrganize(string path)
+        private IEnumerable<FileSystemMetadata> GetFilesToOrganize(string path)
         {
             try
             {
@@ -139,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 _logger.ErrorException("Error getting files from {0}", ex, path);
 
-                return new List<FileInfo>();
+                return new List<FileSystemMetadata>();
             }
         }
 

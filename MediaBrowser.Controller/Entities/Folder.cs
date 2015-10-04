@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -1070,7 +1071,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var changesFound = false;
 
@@ -1091,7 +1092,7 @@ namespace MediaBrowser.Controller.Entities
         /// Refreshes the linked children.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private bool RefreshLinkedChildren(IEnumerable<FileSystemInfo> fileSystemChildren)
+        private bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
             var currentManualLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Manual).ToList();
             var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();

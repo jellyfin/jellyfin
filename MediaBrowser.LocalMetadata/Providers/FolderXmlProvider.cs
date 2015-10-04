@@ -25,9 +25,9 @@ namespace MediaBrowser.LocalMetadata.Providers
             new BaseItemXmlParser<Folder>(_logger).Fetch(result, path, cancellationToken);
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return new FileInfo(Path.Combine(info.Path, "folder.xml"));
+            return directoryService.GetFile(Path.Combine(info.Path, "folder.xml"));
         }
     }
 }

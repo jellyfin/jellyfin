@@ -26,7 +26,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             new SeasonNfoParser(_logger, _config).Fetch(result, path, cancellationToken);
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return directoryService.GetFile(Path.Combine(info.Path, "season.nfo"));
         }

@@ -352,7 +352,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
 
-                var fileInfo = new FileInfo(imagesXmlPath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
                 return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > (status.DateLastMetadataRefresh ?? DateTime.MinValue);
             }

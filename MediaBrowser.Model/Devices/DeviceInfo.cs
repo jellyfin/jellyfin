@@ -27,7 +27,10 @@ namespace MediaBrowser.Model.Devices
         /// <value>The name.</value>
         public string Name
         {
-            get { return string.IsNullOrEmpty(CustomName) ? ReportedName : CustomName; }
+            get
+            {
+                return string.IsNullOrEmpty(CustomName) ? ReportedName : CustomName;
+            }
         }
 
         /// <summary>

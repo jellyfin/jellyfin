@@ -388,18 +388,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
-            var fileInfo = new DirectoryInfo(path);
-
             var isNew = false;
 
-            if (!fileInfo.Exists)
+            if (!_fileSystem.DirectoryExists(path))
             {
                 _logger.Debug("Creating directory {0}", path);
 
                 _fileSystem.CreateDirectory(path);
-                fileInfo = new DirectoryInfo(path);
 
-                if (!fileInfo.Exists)
+                if (!_fileSystem.DirectoryExists(path))
                 {
                     throw new IOException("Path not created: " + path);
                 }
@@ -415,8 +412,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     Name = channelInfo.Name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
+                    DateCreated = _fileSystem.GetCreationTimeUtc(path),
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(path),
                     Path = path,
                     ChannelId = channelInfo.Name.GetMD5().ToString("N")
                 };

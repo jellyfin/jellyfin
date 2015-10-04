@@ -23,12 +23,12 @@ namespace MediaBrowser.LocalMetadata.Providers
             new GameXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             var specificFile = Path.ChangeExtension(info.Path, ".xml");
-            var file = new FileInfo(specificFile);
+            var file = FileSystem.GetFileInfo(specificFile);
 
-            return info.IsInMixedFolder || file.Exists ? file : new FileInfo(Path.Combine(Path.GetDirectoryName(info.Path), "game.xml"));
+            return info.IsInMixedFolder || file.Exists ? file : FileSystem.GetFileInfo(Path.Combine(Path.GetDirectoryName(info.Path), "game.xml"));
         }
     }
 }
