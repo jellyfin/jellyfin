@@ -718,6 +718,19 @@
                 commands.push('share');
             }
 
+            if (item.Type == "Movie" ||
+                item.Type == "Trailer" ||
+                item.Type == "Series" ||
+                item.Type == "Game" ||
+                item.Type == "BoxSet" ||
+                item.Type == "Person" ||
+                item.Type == "Book" ||
+                item.Type == "MusicAlbum" ||
+                item.Type == "MusicArtist") {
+
+                commands.push('identify');
+            }
+
             return commands;
         },
 
@@ -842,6 +855,14 @@
                 });
             }
 
+            if (commands.indexOf('identify') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonIdentify'),
+                    id: 'identify',
+                    ironIcon: 'info'
+                });
+            }
+
             if (commands.indexOf('refresh') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonRefresh'),
@@ -899,6 +920,9 @@
                             case 'editimages':
                                 LibraryBrowser.editImages(itemId);
                                 break;
+                            case 'identify':
+                                LibraryBrowser.identifyItem(itemId);
+                                break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
 
@@ -915,6 +939,14 @@
                     }
                 });
 
+            });
+        },
+
+        identifyItem: function (itemId) {
+
+            require(['components/itemidentifier/itemidentifier'], function () {
+
+                ItemIdentifier.show(itemId);
             });
         },
 
