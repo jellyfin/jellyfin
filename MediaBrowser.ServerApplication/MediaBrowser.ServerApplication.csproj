@@ -60,8 +60,9 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO">
-      <HintPath>..\packages\CommonIO.1.0.0.3\lib\net45\CommonIO.dll</HintPath>
+    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonIO.1.0.0.4\lib\net45\CommonIO.dll</HintPath>
     </Reference>
     <Reference Include="ImageMagickSharp">
       <HintPath>..\packages\ImageMagickSharp.1.0.0.16\lib\net45\ImageMagickSharp.dll</HintPath>
