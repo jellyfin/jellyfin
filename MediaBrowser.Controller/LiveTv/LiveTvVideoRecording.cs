@@ -14,9 +14,6 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvVideoRecording : Video, ILiveTvRecording
     {
-        public string ExternalId { get; set; }
-        public string ProviderImagePath { get; set; }
-        public string ProviderImageUrl { get; set; }
         [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
         [IgnoreDataMember]
@@ -35,13 +32,10 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsRepeat { get; set; }
         [IgnoreDataMember]
         public bool IsMovie { get; set; }
-        public bool? IsHD { get; set; }
         [IgnoreDataMember]
         public bool IsLive { get; set; }
         [IgnoreDataMember]
         public bool IsPremiere { get; set; }
-        public ChannelType ChannelType { get; set; }
-        public string ProgramId { get; set; }
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
@@ -61,11 +55,6 @@ namespace MediaBrowser.Controller.LiveTv
             }
             
             var name = GetClientTypeName();
-
-            if (!string.IsNullOrEmpty(ProgramId))
-            {
-                return name + "-" + ProgramId;
-            }
 
             return name + "-" + Name + (EpisodeTitle ?? string.Empty);
         }
@@ -118,6 +107,7 @@ namespace MediaBrowser.Controller.LiveTv
             return false;
         }
 
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get

@@ -330,8 +330,6 @@ namespace MediaBrowser.Controller.Entities
             get { return Video3DFormat.HasValue; }
         }
 
-        public bool IsHD { get; set; }
-
         /// <summary>
         /// Gets the type of the media.
         /// </summary>

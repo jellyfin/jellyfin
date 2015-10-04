@@ -1042,6 +1042,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.IsFolder = item.IsFolder;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
+            dto.IsHD = item.IsHD;
 
             dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
@@ -1308,7 +1309,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
-                dto.IsHD = video.IsHD;
 
                 if (video.AdditionalParts.Count != 0)
                 {

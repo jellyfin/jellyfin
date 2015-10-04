@@ -3,18 +3,15 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
 using System;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Channels
 {
     public class ChannelFolderItem : Folder, IChannelItem
     {
-        public string ExternalId { get; set; }
-
-        public string DataVersion { get; set; }
-
-        public ChannelItemType ChannelItemType { get; set; }
         public ChannelFolderType ChannelFolderType { get; set; }
 
         public string OriginalImageUrl { get; set; }
@@ -25,6 +22,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get

@@ -36,33 +36,36 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.ProviderImagePath))
+            if (!string.IsNullOrEmpty(liveTvItem.ExternalImagePath))
             {
-                imageResponse.Path = liveTvItem.ProviderImagePath;
-                imageResponse.HasImage = true;
-            }
-            else if (!string.IsNullOrEmpty(liveTvItem.ProviderImageUrl))
-            {
-                var options = new HttpRequestOptions
+                if (liveTvItem.ExternalImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    CancellationToken = cancellationToken,
-                    Url = liveTvItem.ProviderImageUrl
-                };
+                    var options = new HttpRequestOptions
+                    {
+                        CancellationToken = cancellationToken,
+                        Url = liveTvItem.ExternalImagePath
+                    };
 
-                var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
+                    var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
 
-                if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageResponse.HasImage = true;
-                    imageResponse.Stream = response.Content;
-                    imageResponse.SetFormatFromMimeType(response.ContentType);
+                    if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        imageResponse.HasImage = true;
+                        imageResponse.Stream = response.Content;
+                        imageResponse.SetFormatFromMimeType(response.ContentType);
+                    }
+                    else
+                    {
+                        _logger.Error("Provider did not return an image content type.");
+                    }
                 }
                 else
                 {
-                    _logger.Error("Provider did not return an image content type.");
+                    imageResponse.Path = liveTvItem.ExternalImagePath;
+                    imageResponse.HasImage = true;
                 }
             }
-            else if (liveTvItem.HasProviderImage ?? true)
+            else
             {
                 var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
@@ -115,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (liveTvItem != null)
             {
-                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.HasProviderImage ?? true);
+                return !liveTvItem.HasImage(ImageType.Primary);
             }
             return false;
         }

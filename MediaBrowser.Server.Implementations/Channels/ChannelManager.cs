@@ -1180,7 +1180,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 _logger.ErrorException("Error retrieving channel item from database", ex);
             }
 
-            if (item == null || !string.Equals(item.DataVersion, channnelDataVersion, StringComparison.Ordinal))
+            if (item == null || !string.Equals(item.ExternalEtag, channnelDataVersion, StringComparison.Ordinal))
             {
                 item = new T();
                 isNew = true;
@@ -1190,7 +1190,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 isNew = false;
             }
 
-            item.DataVersion = channnelDataVersion;
+            item.ExternalEtag = channnelDataVersion;
             item.Id = id;
             return item;
         }
@@ -1229,17 +1229,19 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
 
-                item.DateCreated = info.DateCreated.HasValue ?
-                    info.DateCreated.Value :
-                    DateTime.UtcNow;
+                item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
             }
 
             var channelItem = (IChannelItem)item;
 
-            channelItem.OriginalImageUrl = info.ImageUrl;
-            channelItem.ExternalId = info.Id;
+            channelItem.ExternalImagePath = info.ImageUrl;
             channelItem.ChannelId = internalChannelId.ToString("N");
-            channelItem.ChannelItemType = info.Type;
+
+            if (!string.Equals(channelItem.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                isNew = true;
+            }
+            channelItem.ExternalId = info.Id;
 
             if (isNew)
             {

@@ -926,10 +926,10 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                var item = libraryManager.GetItemById(refreshItem.Item1);
-                if (item != null)
+                try
                 {
-                    try
+                    var item = libraryManager.GetItemById(refreshItem.Item1);
+                    if (item != null)
                     {
                         // Try to throttle this a little bit.
                         await Task.Delay(100).ConfigureAwait(false);
@@ -941,10 +941,10 @@ namespace MediaBrowser.Providers.Manager
 
                         await task.ConfigureAwait(false);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error refreshing item", ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing item", ex);
                 }
             }
 

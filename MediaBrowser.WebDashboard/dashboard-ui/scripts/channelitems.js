@@ -55,6 +55,7 @@
 
             var maxPageSize = features.MaxPageSize;
 
+            var query = getQuery();
             if (maxPageSize) {
                 query.Limit = Math.min(maxPageSize, query.Limit || maxPageSize);
             }

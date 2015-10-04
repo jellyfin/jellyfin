@@ -1397,7 +1397,7 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.IsHD.Value;
                 var video = item as Video;
 
-                if (video == null || val != video.IsHD)
+                if (video == null || !video.IsHD.HasValue || val != video.IsHD)
                 {
                     return false;
                 }

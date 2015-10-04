@@ -125,6 +125,12 @@ namespace MediaBrowser.Controller.Entities
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hd.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
         /// Return the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
@@ -166,6 +172,33 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Id of the program.
+        /// </summary>
+        [IgnoreDataMember]
+        public string ExternalId
+        {
+            get { return this.GetProviderId("ProviderExternalId"); }
+            set
+            {
+                this.SetProviderId("ProviderExternalId", value);
+            }
+        }
+
+        /// <summary>
+        /// Supply the image path if it can be accessed directly from the file system
+        /// </summary>
+        /// <value>The image path.</value>
+        [IgnoreDataMember]
+        public string ExternalImagePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        [IgnoreDataMember]
+        public string ExternalEtag { get; set; }
+        
         [IgnoreDataMember]
         public virtual bool IsHidden
         {

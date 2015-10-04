@@ -572,9 +572,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             //    replaceImages.Add(ImageType.Primary);
             //}
 
-            item.ProviderImageUrl = channelInfo.ImageUrl;
-            item.HasProviderImage = channelInfo.HasImage;
-            item.ProviderImagePath = channelInfo.ImagePath;
+            item.ExternalImagePath = string.IsNullOrWhiteSpace(channelInfo.ImageUrl) ? channelInfo.ImagePath : channelInfo.ImageUrl;
 
             if (string.IsNullOrEmpty(item.Name))
             {
@@ -607,7 +605,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     Id = id,
                     DateCreated = DateTime.UtcNow,
                     DateModified = DateTime.UtcNow,
-                    Etag = info.Etag
+                    ExternalEtag = info.Etag
                 };
             }
 
@@ -621,7 +619,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
             item.Genres = info.Genres;
-            item.HasProviderImage = info.HasImage;
             item.IsHD = info.IsHD;
             item.IsKids = info.IsKids;
             item.IsLive = info.IsLive;
@@ -634,8 +631,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Name = info.Name;
             item.OfficialRating = item.OfficialRating ?? info.OfficialRating;
             item.Overview = item.Overview ?? info.Overview;
-            item.ProviderImagePath = info.ImagePath;
-            item.ProviderImageUrl = info.ImageUrl;
+            item.ExternalImagePath = string.IsNullOrWhiteSpace(info.ImagePath) ? info.ImageUrl : info.ImagePath;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
             item.HomePageUrl = info.HomePageUrl;
@@ -657,11 +653,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             else
             {
                 // Increment this whenver some internal change deems it necessary
-                var etag = info.Etag + "2";
+                var etag = info.Etag + "4";
 
-                if (!string.Equals(etag, item.Etag, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(etag, item.ExternalEtag, StringComparison.OrdinalIgnoreCase))
                 {
-                    item.Etag = etag;
+                    item.ExternalEtag = etag;
                     await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -718,13 +714,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             recording.ExternalId = info.Id;
 
-            recording.ProgramId = _tvDtoService.GetInternalProgramId(serviceName, info.ProgramId).ToString("N");
             recording.Audio = info.Audio;
-            recording.ChannelType = info.ChannelType;
             recording.EndDate = info.EndDate;
             recording.EpisodeTitle = info.EpisodeTitle;
-            recording.ProviderImagePath = info.ImagePath;
-            recording.ProviderImageUrl = info.ImageUrl;
+            recording.ExternalImagePath = string.IsNullOrWhiteSpace(info.ImagePath) ? info.ImageUrl : info.ImagePath;
             recording.IsHD = info.IsHD;
             recording.IsKids = info.IsKids;
             recording.IsLive = info.IsLive;
@@ -1467,7 +1460,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.RecordingStatus = info.Status;
             dto.IsRepeat = info.IsRepeat;
             dto.EpisodeTitle = info.EpisodeTitle;
-            dto.ChannelType = info.ChannelType;
             dto.Audio = info.Audio;
             dto.IsHD = info.IsHD;
             dto.IsMovie = info.IsMovie;
@@ -1503,8 +1495,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 pct *= 100;
                 dto.CompletionPercentage = pct;
             }
-
-            dto.ProgramId = info.ProgramId;
 
             if (channel != null)
             {
@@ -1792,7 +1782,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     EndDate = program.EndDate ?? DateTime.MinValue,
                     EpisodeTitle = program.EpisodeTitle,
                     Genres = program.Genres,
-                    HasImage = program.HasProviderImage,
                     Id = program.ExternalId,
                     IsHD = program.IsHD,
                     IsKids = program.IsKids,
@@ -1806,8 +1795,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     OriginalAirDate = program.PremiereDate,
                     Overview = program.Overview,
                     StartDate = program.StartDate,
-                    ImagePath = program.ProviderImagePath,
-                    ImageUrl = program.ProviderImageUrl,
+                    ImagePath = program.ExternalImagePath,
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };

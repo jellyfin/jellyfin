@@ -7,6 +7,7 @@ using MediaBrowser.Model.Users;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -31,17 +32,6 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         /// <summary>
-        /// Gets or sets the etag.
-        /// </summary>
-        /// <value>The etag.</value>
-        public string Etag { get; set; }
-        
-        /// <summary>
-        /// Id of the program.
-        /// </summary>
-        public string ExternalId { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
@@ -52,12 +42,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         [IgnoreDataMember]
         public DateTime StartDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is hd.
-        /// </summary>
-        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
-        public bool? IsHD { get; set; }
 
         /// <summary>
         /// Gets or sets the audio.
@@ -84,24 +68,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The name of the service.</value>
         public string ServiceName { get; set; }
-
-        /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
-        /// </summary>
-        /// <value>The image path.</value>
-        public string ProviderImagePath { get; set; }
-
-        /// <summary>
-        /// Supply the image url if it can be downloaded
-        /// </summary>
-        /// <value>The image URL.</value>
-        public string ProviderImageUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has image.
-        /// </summary>
-        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
-        public bool? HasProviderImage { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.

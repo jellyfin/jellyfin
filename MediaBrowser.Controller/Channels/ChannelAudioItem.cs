@@ -7,23 +7,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
     public class ChannelAudioItem : Audio, IChannelMediaItem
     {
-        public string ExternalId { get; set; }
-
-        public string DataVersion { get; set; }
-
-        public ChannelItemType ChannelItemType { get; set; }
-
-        public bool IsInfiniteStream { get; set; }
-
         public ChannelMediaContentType ContentType { get; set; }
-
-        public string OriginalImageUrl { get; set; }
 
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
@@ -37,6 +28,7 @@ namespace MediaBrowser.Controller.Channels
             return ExternalId;
         }
 
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get
@@ -55,6 +47,7 @@ namespace MediaBrowser.Controller.Channels
             ChannelMediaSources = new List<ChannelMediaInfo>();
         }
 
+        [IgnoreDataMember]
         public override LocationType LocationType
         {
             get
