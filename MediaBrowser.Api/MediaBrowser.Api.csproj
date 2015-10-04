@@ -12,7 +12,6 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <RestorePackages>true</RestorePackages>
     <ReleaseVersion>
     </ReleaseVersion>
   </PropertyGroup>

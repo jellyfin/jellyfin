@@ -13,7 +13,6 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FodyPath>..\packages\Fody.1.19.1.0</FodyPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <RestorePackages>true</RestorePackages>
     <ReleaseVersion>
     </ReleaseVersion>
   </PropertyGroup>
