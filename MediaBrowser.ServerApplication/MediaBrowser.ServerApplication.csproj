@@ -60,11 +60,18 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonIO">
+      <HintPath>..\packages\CommonIO.1.0.0.3\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
     <Reference Include="ImageMagickSharp">
       <HintPath>..\packages\ImageMagickSharp.1.0.0.16\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.IsoMounter">
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
+    </Reference>
+    <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
     <Reference Include="pfmclrapi">
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\pfmclrapi.dll</HintPath>
@@ -99,7 +106,6 @@
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Native\NativeFileSystem.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

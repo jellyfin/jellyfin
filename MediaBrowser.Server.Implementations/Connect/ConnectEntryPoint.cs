@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Connect

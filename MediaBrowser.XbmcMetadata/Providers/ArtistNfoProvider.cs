@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Parsers;
 using System.IO;
 using System.Threading;
+using CommonIO;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {

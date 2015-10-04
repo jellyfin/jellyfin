@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities

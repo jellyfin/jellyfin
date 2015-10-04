@@ -8,6 +8,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
+using CommonIO;
 
 namespace MediaBrowser.Api.Playback.Hls
 {

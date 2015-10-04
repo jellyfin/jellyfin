@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {

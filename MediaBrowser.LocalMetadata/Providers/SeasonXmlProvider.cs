@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
+using CommonIO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;

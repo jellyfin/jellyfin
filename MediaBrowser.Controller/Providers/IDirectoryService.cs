@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Providers

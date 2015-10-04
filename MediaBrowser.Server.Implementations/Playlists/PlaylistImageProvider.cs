@@ -12,6 +12,7 @@ using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {

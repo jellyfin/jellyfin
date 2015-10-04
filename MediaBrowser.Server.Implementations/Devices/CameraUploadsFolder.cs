@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Devices

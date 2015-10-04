@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using CommonIO;
 using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV

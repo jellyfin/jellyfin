@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.News
 {

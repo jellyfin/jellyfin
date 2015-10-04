@@ -5,6 +5,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Controller.IO
 {

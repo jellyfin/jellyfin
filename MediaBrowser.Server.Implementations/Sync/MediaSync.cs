@@ -18,6 +18,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using Interfaces.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync

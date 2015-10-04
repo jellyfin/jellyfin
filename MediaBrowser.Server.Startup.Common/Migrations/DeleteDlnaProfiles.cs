@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
 {
