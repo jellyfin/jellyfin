@@ -152,6 +152,7 @@
         }
 
         html += '<div class="' + cssClass + '">';
+        html += '<div class="cardBox">';
         html += '<div class="cardScalable">';
         html += '<div class="cardPadder"></div>';
 
@@ -181,7 +182,7 @@
             html += '</div>';
         }
         html += '</div>';
-
+        html += '</div>';
         html += '</div>';
         return html;
     }

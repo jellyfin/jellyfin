@@ -15,8 +15,6 @@ namespace MediaBrowser.Controller.Channels
 {
     public class ChannelVideoItem : Video, IChannelMediaItem, IHasLookupInfo<ChannelItemLookupInfo>
     {
-        public ChannelItemType ChannelItemType { get; set; }
-
         public ChannelMediaContentType ContentType { get; set; }
 
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
