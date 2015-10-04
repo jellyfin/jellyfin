@@ -227,22 +227,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var enableRichView = !user.Configuration.PlainFolderViews.Contains(parentId.ToString("N"), StringComparer.OrdinalIgnoreCase);
 
-                if (!enableRichView || currentViews.OfType<UserView>().Any(i => string.Equals(i.ViewType, viewType, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return await GetUserView(parentId, name, viewType, enableRichView, sortName, user, cancellationToken).ConfigureAwait(false);
-                }
-
-                if (!enableUserViews)
-                {
-                    var view = await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
-
-                    if (view.ParentId != parentId)
-                    {
-                        view.ParentId = parentId;
-                        await view.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-                    }
-                    return view;
-                }
+                return await GetUserView(parentId, name, viewType, enableRichView, string.Empty, cancellationToken).ConfigureAwait(false);
             }
 
             return await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);

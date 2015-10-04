@@ -404,10 +404,6 @@
     }
 }
 
-.popupIdentify form, .identificationSearchResults {
-    overflow-y: auto;
-}
-
 .collectionItemSearchResults {
     max-height: 65%;
     overflow-y: auto;
@@ -416,20 +412,12 @@
 
 @media all and (min-height: 500px) {
 
-    .popupIdentify form, .identificationSearchResults {
-        height: 350px;
-    }
-
     .subtitleViewerContent {
         height: 400px;
     }
 }
 
 @media all and (min-height: 600px) {
-
-    .popupIdentify form, .identificationSearchResults {
-        height: 450px;
-    }
 
     .collectionItemSearchResults {
         max-height: 70%;
@@ -442,10 +430,6 @@
 
 @media all and (min-height: 700px) {
 
-    .popupIdentify form, .identificationSearchResults {
-        height: 550px;
-    }
-
     .collectionItemSearchResults {
         max-height: 75%;
     }
@@ -457,18 +441,7 @@
 
 @media all and (min-height: 800px) {
 
-    .popupIdentify form, .identificationSearchResults {
-        height: 600px;
-    }
-
     .collectionItemSearchResults {
         max-height: 80%;
-    }
-}
-
-@media all and (min-height: 900px) {
-
-    .popupIdentify form, .identificationSearchResults {
-        height: 700px;
     }
 }
