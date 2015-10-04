@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _providerManager = providerManager;
         }
 
-        private bool IsValidVideoFile(FileInfo fileInfo)
+        private bool FilterValidVideoFile(FileInfo fileInfo)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
-                .Where(i => IsValidVideoFile(i) && i.Length >= minFileBytes)
+                .Where(i => FilterValidVideoFile(i) && i.Length >= minFileBytes)
                 .ToList();
 
             var processedFolders = new HashSet<string>();
