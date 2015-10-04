@@ -35,7 +35,22 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _providerManager = providerManager;
         }
 
-        public async Task Organize(TvFileOrganizationOptions options, CancellationToken cancellationToken, IProgress<double> progress)
+        private bool FilterValidVideoFile(FileInfo fileInfo)
+        {
+            try
+            {
+                var fullName = fileInfo.FullName;
+                return _libraryManager.IsVideoFile(fileInfo.FullName);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error organizing file {0}", ex, fileInfo.Name);
+            }
+
+            return false;
+        }
+
+        public async Task Organize(AutoOrganizeOptions options, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
@@ -43,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
-                .Where(i => _libraryManager.IsVideoFile(i.FullName) && i.Length >= minFileBytes)
+                .Where(i => FilterValidVideoFile(i) && i.Length >= minFileBytes)
                 .ToList();
 
             var processedFolders = new HashSet<string>();
