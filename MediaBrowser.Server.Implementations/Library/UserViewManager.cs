@@ -27,19 +27,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly IChannelManager _channelManager;
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IPlaylistManager _playlists;
-        private readonly ICollectionManager _collectionManager;
         private readonly IServerConfigurationManager _config;
 
-        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IPlaylistManager playlists, ICollectionManager collectionManager, IServerConfigurationManager config)
+        public UserViewManager(ILibraryManager libraryManager, ILocalizationManager localizationManager, IUserManager userManager, IChannelManager channelManager, ILiveTvManager liveTvManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _userManager = userManager;
             _channelManager = channelManager;
             _liveTvManager = liveTvManager;
-            _playlists = playlists;
-            _collectionManager = collectionManager;
             _config = config;
         }
 
