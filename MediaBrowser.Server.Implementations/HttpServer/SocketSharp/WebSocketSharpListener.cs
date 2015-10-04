@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
             var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
 
-            logger.LogMultiline(type + " " + request.Url, LogSeverity.Debug, log);
+            logger.LogMultiline(type + " " + request.Url, LogSeverity.Info, log);
         }
 
         private void HandleError(Exception ex, HttpListenerContext context)

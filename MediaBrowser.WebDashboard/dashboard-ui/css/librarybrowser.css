@@ -1034,8 +1034,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border-radius: 50%;
     color: #fff;
     background: rgb(82, 181, 75);
-    background: rgba(82, 181, 75, .8);
+    background: rgba(82, 181, 75, .9);
     line-height: 19px;
+    font-weight: 500;
 }
 
     .playedIndicator .fa {

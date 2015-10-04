@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Can't extract if we didn't find a video stream in the file
             if (!video.DefaultVideoStreamIndex.HasValue)
             {
-                _logger.Debug("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
+                _logger.Info("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 

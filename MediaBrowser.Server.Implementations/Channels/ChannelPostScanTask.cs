@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task CleanChannel(Guid id, CancellationToken cancellationToken)
         {
-            _logger.Debug("Cleaning channel {0} from database", id);
+            _logger.Info("Cleaning channel {0} from database", id);
 
             // Delete all channel items
             var allIds = _libraryManager.GetItemIds(new InternalItemsQuery

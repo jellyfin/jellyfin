@@ -1324,7 +1324,7 @@ namespace MediaBrowser.Server.Implementations.Session
             if (existing.Items.Length > 0)
             {
                 var token = existing.Items[0].AccessToken;
-                _logger.Debug("Reissuing access token: " + token);
+                _logger.Info("Reissuing access token: " + token);
                 return token;
             }
 
@@ -1340,7 +1340,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 AccessToken = Guid.NewGuid().ToString("N")
             };
 
-            _logger.Debug("Creating new access token for user {0}", userId);
+            _logger.Info("Creating new access token for user {0}", userId);
             await _authRepo.Create(newToken, CancellationToken.None).ConfigureAwait(false);
 
             return newToken.AccessToken;
@@ -1352,6 +1352,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentNullException("accessToken");
             }
+
+            _logger.Info("Logging out access token {0}", accessToken);
 
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
