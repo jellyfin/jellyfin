@@ -770,12 +770,12 @@ namespace MediaBrowser.Model.Dlna
                         {
                             return profile;
                         }
-                    }
 
-                    // For sync we can handle the longer extraction times
-                    if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
-                    {
-                        return profile;
+                        // For sync we can handle the longer extraction times
+                        if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
+                        {
+                            return profile;
+                        }
                     }
                 }
             }

@@ -105,6 +105,18 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
+        private int GetMaxAllowedBitrateForExternalSubtitleStream()
+        {
+            // This is abitrary but at some point it becomes too slow to extract subtitles on the fly
+            // We need to learn more about when this is the case vs. when it isn't
+            if (Environment.ProcessorCount >= 8)
+            {
+                return 10000000;
+            }
+
+            return 2000000;
+        }
+
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
         {
             var list = streams.ToList();
@@ -117,9 +129,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var videoStream = list.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                // This is abitrary but at some point it becomes too slow to extract subtitles on the fly
-                // We need to learn more about when this is the case vs. when it isn't
-                const int maxAllowedBitrateForExternalSubtitleStream = 10000000;
+                int maxAllowedBitrateForExternalSubtitleStream = GetMaxAllowedBitrateForExternalSubtitleStream();
 
                 var videoBitrate = videoStream == null ? maxAllowedBitrateForExternalSubtitleStream : videoStream.BitRate ?? maxAllowedBitrateForExternalSubtitleStream;
 

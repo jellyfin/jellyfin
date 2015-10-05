@@ -968,7 +968,7 @@
             if (requiresNativeControls || AppInfo.isNativeApp) {
                 $('#video-fullscreenButton', videoControls).hide();
             } else {
-                $('#video-fullscreenButton', videoControls).hide();
+                $('#video-fullscreenButton', videoControls).show();
             }
 
             if (AppInfo.hasPhysicalVolumeButtons) {
