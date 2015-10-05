@@ -389,6 +389,20 @@ namespace MediaBrowser.Providers.TV
                             }
                         }
 
+                        var airDateNode = node.SelectSingleNode("./FirstAired");
+                        if (airDateNode != null)
+                        {
+                            var val = airDateNode.InnerText;
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                DateTime date;
+                                if (DateTime.TryParse(val, out date))
+                                {
+                                    searchResult.ProductionYear = date.Year;
+                                }
+                            }
+                        }
+
                         foreach (var title in titles)
                         {
                             if (string.Equals(title, comparableName, StringComparison.OrdinalIgnoreCase))
