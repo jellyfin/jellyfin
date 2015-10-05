@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Mono
             var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, true);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            var nativeApp = new NativeApp();
+            var nativeApp = new NativeApp(options);
 
             _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", nativeApp);
 
