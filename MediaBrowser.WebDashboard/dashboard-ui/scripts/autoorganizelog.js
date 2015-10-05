@@ -44,7 +44,7 @@
 
                     reloadItems(page);
 
-                });
+                }).fail(onApiFailure);
             }
 
         });
@@ -60,11 +60,9 @@
             sortBy: 'SortName'
 
         }).done(function (result) {
-
             Dashboard.hideLoadingMsg();
-
             showEpisodeCorrectionPopup(page, item, result.Items);
-        });
+        }).fail(onApiFailure);
 
     }
 
@@ -129,8 +127,7 @@
 
                     reloadItems(page);
 
-                });
-
+                }).fail(onApiFailure);
             }
 
         });
@@ -160,7 +157,7 @@
 
             reloadItems(page);
 
-        });
+        }).fail(onApiFailure);
     }
 
     function reloadItems(page) {
@@ -173,7 +170,7 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-        });
+        }).fail(onApiFailure);
 
     }
 
@@ -333,6 +330,16 @@
         }
     }
 
+    function onApiFailure(e) {
+
+        Dashboard.hideLoadingMsg();
+
+        Dashboard.alert({
+            title: Globalize.translate('AutoOrganizeError'),
+            message: e.status + ' - ' + e.statusText + '<br>' + e.getResponseHeader("X-Application-Error-Code")
+        });
+    }
+
     function onEpisodeCorrectionFormSubmit() {
         submitEpisodeForm(this);
         return false;
@@ -346,7 +353,7 @@
 
             ApiClient.clearOrganizationLog().done(function () {
                 reloadItems(page);
-            });
+            }).fail(onApiFailure);
 
         });
 
