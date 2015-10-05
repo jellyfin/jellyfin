@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             get
             {
-                return Path.Combine(_appPaths.CachePath, "subtitles");
+                return Path.Combine(_appPaths.DataPath, "subtitles");
             }
         }
 

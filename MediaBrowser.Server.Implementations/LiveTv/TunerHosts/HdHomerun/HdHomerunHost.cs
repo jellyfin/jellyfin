@@ -375,6 +375,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override bool IsValidChannelId(string channelId)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
         }
 

@@ -110,7 +110,10 @@ namespace MediaBrowser.Providers.Omdb
                 if (isSearch)
                 {
                     var searchResultList = _jsonSerializer.DeserializeFromStream<SearchResultList>(stream);
-                    resultList.AddRange(searchResultList.Search);
+                    if (searchResultList != null && searchResultList.Search != null)
+                    {
+                        resultList.AddRange(searchResultList.Search);
+                    }
                 }
                 else
                 {

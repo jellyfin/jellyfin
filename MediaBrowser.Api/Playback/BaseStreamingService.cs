@@ -1186,15 +1186,8 @@ namespace MediaBrowser.Api.Playback
 
             if (bitrate.HasValue)
             {
-                var hasFixedResolution = state.VideoRequest.HasFixedResolution;
-
                 if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (hasFixedResolution)
-                    {
-                        return string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
                     // With vpx when crf is used, b:v becomes a max rate
                     // https://trac.ffmpeg.org/wiki/vpxEncodingGuide. But higher bitrate source files -b:v causes judder so limite the bitrate but dont allow it to "saturate" the bitrate. So dont contrain it down just up.
                     return string.Format(" -maxrate:v {0} -bufsize:v ({0}*2) -b:v {0}", bitrate.Value.ToString(UsCulture));
@@ -1205,36 +1198,15 @@ namespace MediaBrowser.Api.Playback
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
-                // h264_qsv
-                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                // h264
+                if (isHls)
                 {
-                    if (hasFixedResolution)
-                    {
-                        if (isHls)
-                        {
-                            return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                        }
-
-                        return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
-                    return string.Format(" -b:v {0} -maxrate ({0}*1.2) -bufsize ({0}*2)", bitrate.Value.ToString(UsCulture));
+                    return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                        bitrate.Value.ToString(UsCulture),
+                        (bitrate.Value * 2).ToString(UsCulture));
                 }
 
-                // H264
-                if (hasFixedResolution)
-                {
-                    if (isHls)
-                    {
-                        return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
-                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                }
-
-                return string.Format(" -maxrate {0} -bufsize {1}",
-                    bitrate.Value.ToString(UsCulture),
-                    (bitrate.Value * 2).ToString(UsCulture));
+                return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
             }
 
             return string.Empty;
