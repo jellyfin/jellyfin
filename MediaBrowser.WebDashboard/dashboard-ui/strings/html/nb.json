@@ -1165,7 +1165,6 @@
     "OptionLocalRefreshOnly": "Kun lokal oppfrsikining",
     "HeaderRefreshMetadata": "Oppfrisk Metadata",
     "HeaderPersonInfo": "Person Info",
-    "HeaderIdentifyItem": "Identifiser Element",
     "HeaderIdentifyItemHelp": "Oppgi ett eller flere s\u00f8ke kriterier. Fjern kriterie for \u00e5 \u00f8ke s\u00f8ke resultater.",
     "HeaderConfirmDeletion": "Bekreft Kansellering",
     "LabelFollowingFileWillBeDeleted": "F\u00f8lgende fil vil bli slettet:",

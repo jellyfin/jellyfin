@@ -1165,7 +1165,6 @@
     "OptionLocalRefreshOnly": "\u4ec5\u7528\u672c\u5730\u6570\u636e\u5237\u65b0",
     "HeaderRefreshMetadata": "\u5237\u65b0\u5a92\u4f53\u8d44\u6599",
     "HeaderPersonInfo": "\u4efb\u52a1\u4fe1\u606f",
-    "HeaderIdentifyItem": "\u8bc6\u522b\u9879",
     "HeaderIdentifyItemHelp": "\u8f93\u5165\u4e00\u4e2a\u6216\u591a\u4e2a\u641c\u7d22\u6761\u4ef6\u3002\u5220\u9664\u6761\u4ef6\u53ef\u5f97\u5230\u66f4\u591a\u641c\u7d22\u7ed3\u679c\u3002",
     "HeaderConfirmDeletion": "\u786e\u8ba4\u5220\u9664",
     "LabelFollowingFileWillBeDeleted": "\u4ee5\u4e0b\u6587\u4ef6\u5c06\u88ab\u5220\u9664\uff1a",

@@ -1165,7 +1165,6 @@
     "OptionLocalRefreshOnly": "Opdater kun lokalt",
     "HeaderRefreshMetadata": "Opdater metadata",
     "HeaderPersonInfo": "Personinformation",
-    "HeaderIdentifyItem": "Identificer genstand",
     "HeaderIdentifyItemHelp": "Indtast et eller flere s\u00f8gekriterier.Fjern kriterier for at f\u00e5 flere s\u00f8geresultater.",
     "HeaderConfirmDeletion": "Bekr\u00e6ft sletning",
     "LabelFollowingFileWillBeDeleted": "F\u00f8lgende filer bliver slettet:",

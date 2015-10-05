@@ -43,6 +43,8 @@
     "TitleSync": "Sync",
     "OptionAutomatic": "T\u1ef1 \u0111\u1ed9ng",
     "HeaderSelectDate": "Select Date",
+    "ButtonIdentify": "Identify",
+    "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",

@@ -43,6 +43,8 @@
     "TitleSync": "Sinc",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Selecionar Data",
+    "ButtonIdentify": "Identificar",
+    "HeaderIdentifyItem": "Identificar Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Doa\u00e7\u00f5es recorrentes podem ser canceladas a qualquer momento dentro da conta do PayPal.",
     "HeaderMyMedia": "Minha M\u00eddia",
     "ButtonRemoveFromCollection": "Remover da Cole\u00e7\u00e3o",

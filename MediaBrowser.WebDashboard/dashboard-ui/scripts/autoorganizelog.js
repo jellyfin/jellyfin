@@ -336,7 +336,7 @@
 
         Dashboard.alert({
             title: Globalize.translate('AutoOrganizeError'),
-            message: e.status + ' - ' + e.statusText + '<br>' + e.getResponseHeader("X-Application-Error-Code")
+            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
         });
     }
 

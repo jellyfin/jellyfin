@@ -43,6 +43,8 @@
     "TitleSync": "Synk",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Velg dato",
+    "ButtonIdentify": "Identifiser",
+    "HeaderIdentifyItem": "Identifiser Element",
     "LabelRecurringDonationCanBeCancelledHelp": "Gjentakende donasjoner kan avbrytes n\u00e5r som helst fra din PayPal-konto.",
     "HeaderMyMedia": "Mine media",
     "ButtonRemoveFromCollection": "Remove from Collection",

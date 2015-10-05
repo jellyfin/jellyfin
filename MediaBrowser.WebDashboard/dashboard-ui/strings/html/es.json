@@ -1165,7 +1165,6 @@
     "OptionLocalRefreshOnly": "Local refresh only",
     "HeaderRefreshMetadata": "Refresh Metadata",
     "HeaderPersonInfo": "Person Info",
-    "HeaderIdentifyItem": "Identify Item",
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "HeaderConfirmDeletion": "Confirmar borrado",
     "LabelFollowingFileWillBeDeleted": "The following file will be deleted:",

@@ -1165,7 +1165,6 @@
     "OptionLocalRefreshOnly": "Endast lokal uppdatering",
     "HeaderRefreshMetadata": "Uppdatera metadata",
     "HeaderPersonInfo": "Personinformation",
-    "HeaderIdentifyItem": "Identifiera objekt",
     "HeaderIdentifyItemHelp": "Ange ett eller flera s\u00f6kkriterier. Ta bort kriterier f\u00f6r att f\u00e5 fler tr\u00e4ffar.",
     "HeaderConfirmDeletion": "Bekr\u00e4fta radering",
     "LabelFollowingFileWillBeDeleted": "Denna fil kommer att raderas:",
