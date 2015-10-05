@@ -299,11 +299,6 @@
                 renderMethod = 'renderGenresTab';
                 break;
             case 5:
-                depends.push('scripts/moviepeople');
-                renderMethod = 'renderPeopleTab';
-                initMethod = 'initPeopleTab';
-                break;
-            case 6:
                 depends.push('scripts/moviestudios');
                 renderMethod = 'renderStudiosTab';
                 break;

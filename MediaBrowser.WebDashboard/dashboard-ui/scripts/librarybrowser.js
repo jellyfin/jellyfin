@@ -2383,7 +2383,7 @@
 
             if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
                 if (item.UserData.UnplayedItemCount) {
-                    return '<div class="playedIndicator textIndicator">' + item.UserData.UnplayedItemCount + '</div>';
+                    return '<div class="playedIndicator">' + item.UserData.UnplayedItemCount + '</div>';
                 }
 
                 if (item.Type != 'TvChannel') {
@@ -2399,7 +2399,7 @@
         getGroupCountIndicator: function (item) {
 
             if (item.ChildCount) {
-                return '<div class="playedIndicator textIndicator">' + item.ChildCount + '</div>';
+                return '<div class="playedIndicator">' + item.ChildCount + '</div>';
             }
 
             return '';

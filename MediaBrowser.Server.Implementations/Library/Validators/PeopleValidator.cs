@@ -124,14 +124,18 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     var item = _libraryManager.GetPerson(person.Key);
 
                     validIds.Add(item.Id);
-                    
+
                     var options = new MetadataRefreshOptions(_fileSystem)
                     {
-                         MetadataRefreshMode = person.Value ? MetadataRefreshMode.Default : MetadataRefreshMode.ValidationOnly,
-                         ImageRefreshMode = person.Value ? ImageRefreshMode.Default : ImageRefreshMode.ValidationOnly
+                        MetadataRefreshMode = person.Value ? MetadataRefreshMode.Default : MetadataRefreshMode.ValidationOnly,
+                        ImageRefreshMode = person.Value ? ImageRefreshMode.Default : ImageRefreshMode.ValidationOnly
                     };
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {

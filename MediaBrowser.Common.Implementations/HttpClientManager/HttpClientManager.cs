@@ -818,7 +818,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 if ((int) statusCode == 429)
                 {
-                    client.LastTimeout = DateTime.UtcNow;
+                    throw new HttpException(response.StatusDescription)
+                    {
+                        IsTimedOut = true
+                    };
                 }
 
                 if (statusCode == HttpStatusCode.RequestEntityTooLarge)

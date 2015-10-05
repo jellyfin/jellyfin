@@ -98,7 +98,6 @@ namespace MediaBrowser.Providers.Manager
             var updateType = ItemUpdateType.None;
             var refreshResult = GetLastResult(item);
             refreshResult.LastErrorMessage = string.Empty;
-            refreshResult.LastStatus = ProviderRefreshStatus.Success;
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
@@ -118,7 +117,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 localImagesFailed = true;
                 Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name ?? "Unknown name");
-                refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
+                refreshResult.AddStatus(ex.Message);
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -148,7 +147,7 @@ namespace MediaBrowser.Providers.Manager
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    refreshResult.AddStatus(result.Status, result.ErrorMessage);
+                    refreshResult.AddStatus(result.ErrorMessage);
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
@@ -170,7 +169,7 @@ namespace MediaBrowser.Providers.Manager
                     var result = await itemImageProvider.RefreshImages(itemOfType, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    refreshResult.AddStatus(result.Status, result.ErrorMessage);
+                    refreshResult.AddStatus(result.ErrorMessage);
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
@@ -375,8 +374,6 @@ namespace MediaBrowser.Providers.Manager
                 Item = CreateNew()
             };
             temp.Item.Path = item.Path;
-            var successfulProviderCount = 0;
-            var failedProviderCount = 0;
 
             var userDataList = new List<UserItemData>();
 
@@ -387,10 +384,8 @@ namespace MediaBrowser.Providers.Manager
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
-                refreshResult.Status = remoteResult.Status;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
-                successfulProviderCount += remoteResult.Successes;
-                failedProviderCount += remoteResult.Failures;
+                refreshResult.Failures += remoteResult.Failures;
             }
 
             var hasLocalMetadata = false;
@@ -426,7 +421,6 @@ namespace MediaBrowser.Providers.Manager
                         {
                             hasLocalMetadata = true;
                         }
-                        successfulProviderCount++;
                         break;
                     }
 
@@ -438,12 +432,11 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    failedProviderCount++;
+                    refreshResult.Failures++;
 
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
 
                     // If a local provider fails, consider that a failure
-                    refreshResult.Status = ProviderRefreshStatus.Failure;
                     refreshResult.ErrorMessage = ex.Message;
 
                     if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
@@ -461,12 +454,8 @@ namespace MediaBrowser.Providers.Manager
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
-                if (remoteResult.Status != ProviderRefreshStatus.Success)
-                {
-                    refreshResult.Status = remoteResult.Status;
-                    refreshResult.ErrorMessage = remoteResult.ErrorMessage;
-                }
-                successfulProviderCount += remoteResult.Successes;
+                refreshResult.ErrorMessage = remoteResult.ErrorMessage;
+                refreshResult.Failures += remoteResult.Failures;
             }
 
             if (providers.Any(i => !(i is ICustomMetadataProvider)))
@@ -534,7 +523,6 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                refreshResult.Status = ProviderRefreshStatus.Failure;
                 refreshResult.ErrorMessage = ex.Message;
                 Logger.ErrorException("Error in {0}", ex, provider.Name);
             }
@@ -570,8 +558,6 @@ namespace MediaBrowser.Providers.Manager
                         MergeData(result, temp, new List<MetadataFields>(), false, false);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
-
-                        refreshResult.Successes++;
                     }
                     else
                     {
@@ -586,7 +572,6 @@ namespace MediaBrowser.Providers.Manager
                 catch (Exception ex)
                 {
                     refreshResult.Failures++;
-                    refreshResult.Status = ProviderRefreshStatus.CompletedWithErrors;
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
@@ -667,10 +652,8 @@ namespace MediaBrowser.Providers.Manager
     public class RefreshResult
     {
         public ItemUpdateType UpdateType { get; set; }
-        public ProviderRefreshStatus Status { get; set; }
         public string ErrorMessage { get; set; }
         public List<Guid> Providers { get; set; }
-        public int Successes { get; set; }
         public int Failures { get; set; }
     }
 }

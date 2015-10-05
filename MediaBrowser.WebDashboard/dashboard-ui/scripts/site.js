@@ -1777,7 +1777,6 @@ var AppInfo = {};
 
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
-            AppInfo.enablePeopleTabs = true;
             AppInfo.enableTvEpisodesTab = true;
             AppInfo.enableMovieTrailersTab = true;
         }
@@ -1913,10 +1912,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableStudioTabs) {
             elem.classList.add('studioTabDisabled');
-        }
-
-        if (!AppInfo.enablePeopleTabs) {
-            elem.classList.add('peopleTabDisabled');
         }
 
         if (!AppInfo.enableTvEpisodesTab) {

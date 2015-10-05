@@ -222,11 +222,6 @@
                 renderMethod = 'renderGenresTab';
                 break;
             case 6:
-                depends.push('scripts/tvpeople');
-                renderMethod = 'renderPeopleTab';
-                initMethod = 'initPeopleTab';
-                break;
-            case 7:
                 depends.push('scripts/tvstudios');
                 renderMethod = 'renderStudiosTab';
                 break;
@@ -281,15 +276,6 @@
     });
 
     pageIdOn('pagebeforeshow', "tvRecommendedPage", function () {
-
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
-    });
-
-    pageIdOn('pageshow', "tvRecommendedPage", function () {
 
         var page = this;
 

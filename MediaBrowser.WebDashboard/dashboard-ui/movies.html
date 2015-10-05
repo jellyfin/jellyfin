@@ -13,7 +13,6 @@
                 <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
                 <paper-tab>${TabCollections}</paper-tab>
                 <paper-tab>${TabGenres}</paper-tab>
-                <paper-tab class="moviePeopleTab">${TabPeople}</paper-tab>
                 <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
@@ -22,8 +21,7 @@
                 <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
                 <a href="movies.html?tab=3">${TabCollections}</a>
                 <a href="movies.html?tab=4">${TabGenres}</a>
-                <a href="movies.html?tab=5" class="moviePeopleTab">${TabPeople}</a>
-                <a href="movies.html?tab=6" class="movieStudiosTab">${TabStudios}</a>
+                <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
             </div>
         </div>
 
@@ -109,17 +107,6 @@
                 </neon-animatable>
                 <neon-animatable>
                     <div class="pageTabContent" data-index="5">
-                        <div class="alphabetPicker">
-                        </div>
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer"></div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="6">
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
@@ -235,57 +222,6 @@
                         </div>
                     </div>
 
-                </form>
-            </div>
-        </div>
-        <div data-role="panel" class="viewPanel peopleViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
-            <div class="ui-panel-inner">
-                <form>
-
-                    <div>
-                        <h1>
-                            ${HeaderFilters}
-                        </h1>
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkIsFavoritePerson" data-filter="IsFavorite" data-role="none">
-                            <label for="chkIsFavoritePerson">${OptionFavorite}</label>
-                        </div>
-
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkLikesPerson" data-filter="Likes" data-role="none">
-                            <label for="chkLikesPerson">${OptionLikes}</label>
-                        </div>
-
-                        <div class="checkboxContainer">
-                            <input class="chkStandardFilter" type="checkbox" id="chkDislikesPerson" data-filter="Dislikes" data-role="none">
-                            <label for="chkDislikesPerson">${OptionDislikes}</label>
-                        </div>
-                    </div>
-                    <div>
-                        <h1>
-                            ${HeaderPersonTypes}
-                        </h1>
-
-                        <div class="checkboxContainer">
-                            <input class="chkPersonTypeFilter" type="checkbox" id="chkActorPerson" data-filter="Actor" data-role="none">
-                            <label for="chkActorPerson">${OptionActors}</label>
-                        </div>
-
-                        <div class="checkboxContainer">
-                            <input class="chkPersonTypeFilter" type="checkbox" id="chkDirectorPerson" data-filter="Director" data-role="none">
-                            <label for="chkDirectorPerson">${OptionDirectors}</label>
-                        </div>
-
-                        <div class="checkboxContainer">
-                            <input class="chkPersonTypeFilter" type="checkbox" id="chkProducerPerson" data-filter="Producer" data-role="none">
-                            <label for="chkProducerPerson">${OptionProducers}</label>
-                        </div>
-
-                        <div class="checkboxContainer">
-                            <input class="chkPersonTypeFilter" type="checkbox" id="chkWriterPerson" data-filter="Writer" data-role="none">
-                            <label for="chkWriterPerson">${OptionWriters}</label>
-                        </div>
-                    </div>
                 </form>
             </div>
         </div>

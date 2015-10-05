@@ -164,7 +164,6 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
         }
@@ -303,7 +302,6 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
         }
