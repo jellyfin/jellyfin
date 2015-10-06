@@ -203,10 +203,12 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
             {
                 // Validate
-				if (!_fileSystem.DirectoryExists(newPath))
+                if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
+
+                EnsureWriteAccess(newPath);
             }
         }
 
@@ -223,11 +225,21 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
             {
                 // Validate
-				if (!_fileSystem.DirectoryExists(newPath))
+                if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
+
+                EnsureWriteAccess(newPath);
             }
+        }
+
+        private void EnsureWriteAccess(string path)
+        {
+            var file = Path.Combine(path, Guid.NewGuid().ToString());
+
+            _fileSystem.WriteAllText(file, string.Empty);
+            _fileSystem.DeleteFile(file);
         }
 
         public void DisableMetadataService(string service)
