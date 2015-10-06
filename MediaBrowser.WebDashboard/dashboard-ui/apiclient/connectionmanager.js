@@ -919,7 +919,7 @@
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
                 enableRetry = true;
-                timeout = 7000;
+                timeout = 10000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {
