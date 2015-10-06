@@ -133,7 +133,8 @@ namespace MediaBrowser.Providers.Omdb
                     item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
 
                     int parsedYear;
-                    if (int.TryParse(result.Year, NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
+                    if (result.Year.Length > 0 
+                        && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
                     {
                         item.ProductionYear = parsedYear;
                     }

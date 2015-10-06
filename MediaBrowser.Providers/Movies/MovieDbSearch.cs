@@ -125,6 +125,18 @@ namespace MediaBrowser.Providers.Movies
 
         private async Task<List<RemoteSearchResult>> GetSearchResults(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
         {
+            switch (type)
+            {
+                case "tv":
+                    return await GetSearchResultsTv(name, year, language, baseImageUrl, cancellationToken);
+                default:
+                    return await GetSearchResultsGeneric(name, type, year, language, baseImageUrl, cancellationToken);
+            }
+        }
+
+        private async Task<List<RemoteSearchResult>> GetSearchResultsGeneric(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
+        {
+
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, type);
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
@@ -153,13 +165,65 @@ namespace MediaBrowser.Providers.Movies
                             Name = i.title ?? i.name ?? i.original_title,
                             ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
                         };
-                        
+
                         if (!string.IsNullOrWhiteSpace(i.release_date))
                         {
                             DateTime r;
 
                             // These dates are always in this exact format
                             if (DateTime.TryParseExact(i.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                            {
+                                remoteResult.PremiereDate = r.ToUniversalTime();
+                                remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
+                            }
+                        }
+
+                        remoteResult.SetProviderId(MetadataProviders.Tmdb, i.id.ToString(EnUs));
+
+                        return remoteResult;
+
+                    })
+                    .ToList();
+            }
+        }
+
+        private async Task<List<RemoteSearchResult>> GetSearchResultsTv(string name, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
+        {
+            var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, "tv");
+
+            using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
+            {
+                Url = url3,
+                CancellationToken = cancellationToken,
+                AcceptHeader = AcceptHeader
+
+            }).ConfigureAwait(false))
+            {
+                var searchResults = _json.DeserializeFromStream<TmdbTvSearchResults>(json);
+
+                var results = searchResults.results ?? new List<TvResult>();
+
+                var index = 0;
+                var resultTuples = results.Select(result => new Tuple<TvResult, int>(result, index++)).ToList();
+
+                return resultTuples.OrderBy(i => GetSearchResultOrder(i.Item1, year))
+                    .ThenBy(i => i.Item2)
+                    .Select(i => i.Item1)
+                    .Select(i =>
+                    {
+                        var remoteResult = new RemoteSearchResult
+                        {
+                            SearchProviderName = MovieDbProvider.Current.Name,
+                            Name = i.name ?? i.original_name,
+                            ImageUrl = string.IsNullOrWhiteSpace(i.poster_path) ? null : baseImageUrl + i.poster_path
+                        };
+
+                        if (!string.IsNullOrWhiteSpace(i.first_air_date))
+                        {
+                            DateTime r;
+
+                            // These dates are always in this exact format
+                            if (DateTime.TryParseExact(i.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
                             {
                                 remoteResult.PremiereDate = r.ToUniversalTime();
                                 remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
@@ -183,6 +247,23 @@ namespace MediaBrowser.Providers.Movies
 
                 // These dates are always in this exact format
                 if (DateTime.TryParseExact(result.release_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
+                {
+                    // Allow one year tolernace, preserve order from Tmdb
+                    return Math.Abs(r.Year - year.Value);
+                }
+            }
+
+            return int.MaxValue;
+        }
+
+        private int GetSearchResultOrder(TvResult result, int? year)
+        {
+            if (year.HasValue)
+            {
+                DateTime r;
+
+                // These dates are always in this exact format
+                if (DateTime.TryParseExact(result.first_air_date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out r))
                 {
                     // Allow one year tolernace, preserve order from Tmdb
                     return Math.Abs(r.Year - year.Value);
@@ -288,14 +369,41 @@ namespace MediaBrowser.Providers.Movies
         public class TvResult
         {
             public string backdrop_path { get; set; }
+            public string first_air_date { get; set; }
             public int id { get; set; }
             public string original_name { get; set; }
-            public string first_air_date { get; set; }
             public string poster_path { get; set; }
             public double popularity { get; set; }
             public string name { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
+        }
+
+        /// <summary>
+        /// Class TmdbTvSearchResults
+        /// </summary>
+        private class TmdbTvSearchResults
+        {
+            /// <summary>
+            /// Gets or sets the page.
+            /// </summary>
+            /// <value>The page.</value>
+            public int page { get; set; }
+            /// <summary>
+            /// Gets or sets the results.
+            /// </summary>
+            /// <value>The results.</value>
+            public List<TvResult> results { get; set; }
+            /// <summary>
+            /// Gets or sets the total_pages.
+            /// </summary>
+            /// <value>The total_pages.</value>
+            public int total_pages { get; set; }
+            /// <summary>
+            /// Gets or sets the total_results.
+            /// </summary>
+            /// <value>The total_results.</value>
+            public int total_results { get; set; }
         }
 
         public class ExternalIdLookupResult
