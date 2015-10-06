@@ -554,8 +554,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 isNew = true;
             }
 
-            item.ChannelType = channelInfo.ChannelType;
+            if (!string.Equals(channelInfo.Id, item.ExternalId))
+            {
+                isNew = true;
+            }
             item.ExternalId = channelInfo.Id;
+
+            item.ChannelType = channelInfo.ChannelType;
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
 
