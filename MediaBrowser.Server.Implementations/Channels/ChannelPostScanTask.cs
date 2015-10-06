@@ -87,6 +87,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 const int currentRefreshLevel = 1;
                 var maxRefreshLevel = features.AutoRefreshLevels ?? 0;
+                maxRefreshLevel = Math.Max(maxRefreshLevel, 2);
 
                 if (maxRefreshLevel > 0)
                 {

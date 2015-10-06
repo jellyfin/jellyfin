@@ -355,8 +355,8 @@
             if (!url) {
                 throw new Error("serverAddress is yet not set");
             }
-
-            if (url.toLowerCase().indexOf('/emby') == -1) {
+            var lowered = url.toLowerCase();
+            if (lowered.indexOf('/emby') == -1 && lowered.indexOf('/mediabrowser') == -1) {
                 url += '/emby';
             }
 

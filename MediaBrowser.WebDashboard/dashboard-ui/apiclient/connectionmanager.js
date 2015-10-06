@@ -410,7 +410,7 @@
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-Emby-Token": server.ExchangeToken
+                    "X-MediaBrowser-Token": server.ExchangeToken
                 }
 
             }).done(function (auth) {
@@ -437,7 +437,7 @@
                 url: getEmbyServerUrl(url, "System/Info"),
                 dataType: "json",
                 headers: {
-                    "X-Emby-Token": server.AccessToken
+                    "X-MediaBrowser-Token": server.AccessToken
                 }
 
             }).done(function (systemInfo) {
@@ -452,7 +452,7 @@
                         url: getEmbyServerUrl(url, "users/" + server.UserId),
                         dataType: "json",
                         headers: {
-                            "X-Emby-Token": server.AccessToken
+                            "X-MediaBrowser-Token": server.AccessToken
                         }
 
                     }).done(function (user) {

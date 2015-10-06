@@ -54,6 +54,8 @@
         // product attributes:
         // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
 
+        alert(JSON.stringify(product.transaction));
+
         callback(true, {
 
         });
@@ -82,8 +84,13 @@
 
         // When purchase of the full version is approved,
         // show some logs and finish the transaction.
-        store.when(id).approved(function (order) {
-            order.finish();
+        store.when(id).approved(function (product) {
+
+            if (product.type == store.PAID_SUBSCRIPTION) {
+                product.verify();
+            } else {
+                product.finish();
+            }
         });
 
         store.when(id).verified(function (p) {
