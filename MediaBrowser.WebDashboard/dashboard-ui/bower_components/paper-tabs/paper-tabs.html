@@ -20,6 +20,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="paper-tab.html">
 
 <!--
+Material design: [Tabs](https://www.google.com/design/spec/components/tabs.html)
+
 `paper-tabs` makes it easy to explore and switch between different views or functional aspects of
 an app, or to browse categorized data sets.
 
@@ -125,6 +127,7 @@ Custom property | Description | Default
 
     .not-visible {
       opacity: 0;
+      cursor: default;
     }
 
     paper-icon-button {
@@ -172,7 +175,7 @@ Custom property | Description | Default
 
   <template>
 
-    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown" tabindex="-1"></paper-icon-button>
 
     <div id="tabsContainer" class="flex" on-track="_scroll" on-down="_down">
 
@@ -187,7 +190,7 @@ Custom property | Description | Default
 
     </div>
 
-    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown" tabindex="-1"></paper-icon-button>
 
   </template>
 

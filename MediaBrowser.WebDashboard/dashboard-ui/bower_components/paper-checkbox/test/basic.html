@@ -96,16 +96,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         c1.checked = true;
         assert.isTrue(c1.validate());
       });
-
-      test('checkbox label can be updated', function() {
-        Polymer.dom(c1).textContent = 'Batman';
-        c1.updateAriaLabel();
-        assert.isTrue(c1.getAttribute('aria-label') == 'Batman');
-
-        Polymer.dom(c1).textContent = 'Robin';
-        c1.updateAriaLabel();
-        assert.isTrue(c1.getAttribute('aria-label') == 'Robin');
-      });
     });
 
     suite('a11y', function() {
@@ -124,10 +114,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('checkbox with no label has no aria label', function() {
         assert.isTrue(!c1.getAttribute('aria-label'));
-      });
-
-      test('checkbox with a label sets an aria label', function() {
-        assert.isTrue(c2.getAttribute('aria-label') == "Batman");
       });
 
       test('checkbox respects the user set aria-label', function() {

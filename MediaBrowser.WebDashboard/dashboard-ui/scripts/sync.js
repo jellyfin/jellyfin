@@ -362,6 +362,10 @@
 
     function isAvailable(item, user) {
 
+        if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
+            return false;
+        }
+
         return item.SupportsSync;
     }
 

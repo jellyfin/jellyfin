@@ -57,22 +57,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test2 = fixture('test2');
       });
 
-      test('default `excludedLocalNames`', function() {
-        assert.isTrue('template' in test1.excludedLocalNames);
-        assert.isTrue('template' in test2.excludedLocalNames);
+      test('default `_excludedLocalNames`', function() {
+        assert.isTrue('template' in test1._excludedLocalNames);
+        assert.isTrue('template' in test2._excludedLocalNames);
       });
 
-      test('custom `excludedLocalNames`', function() {
-        test1.excludedLocalNames.foo = 1;
+      test('custom `_excludedLocalNames`', function() {
+        test1._excludedLocalNames.foo = 1;
 
-        assert.isTrue('foo' in test1.excludedLocalNames);
-        assert.isFalse('foo' in test2.excludedLocalNames);
+        assert.isTrue('foo' in test1._excludedLocalNames);
+        assert.isFalse('foo' in test2._excludedLocalNames);
       });
 
 
       test('items', function() {
-        test1.excludedLocalNames.span = 1;
-        test2.excludedLocalNames.div = 1;
+        test1._excludedLocalNames.span = 1;
+        test2._excludedLocalNames.div = 1;
 
           var NOT_FOUND = -1;
           var items1 = test1.items.map(function(el) { return el.localName; });

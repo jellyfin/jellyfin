@@ -166,7 +166,7 @@
             var accessToken = currentServerInfo.AccessToken;
 
             if (accessToken) {
-                headers['X-MediaBrowser-Token'] = accessToken;
+                headers['X-Emby-Token'] = accessToken;
             }
         };
 
@@ -356,6 +356,10 @@
                 throw new Error("serverAddress is yet not set");
             }
 
+            if (url.toLowerCase().indexOf('/emby') == -1) {
+                url += '/emby';
+            }
+
             if (name.charAt(0) != '/') {
                 url += '/';
             }
@@ -407,7 +411,7 @@
                 throw new Error("Cannot open web socket without access token.");
             }
 
-            var url = serverAddress.replace('http', 'ws');
+            var url = self.getUrl("socket").replace("/socket", "").replace('http', 'ws');
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;
 

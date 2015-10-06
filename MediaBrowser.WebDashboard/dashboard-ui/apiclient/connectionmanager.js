@@ -79,9 +79,13 @@
             }
         }
 
+        function getEmbyServerUrl(baseUrl, handler) {
+            return baseUrl + "/emby/" + handler;
+        }
+
         function tryConnect(url, timeout) {
 
-            url += "/system/info/public";
+            url = getEmbyServerUrl(url, "system/info/public");
 
             logger.log('tryConnect url: ' + url);
 
@@ -399,14 +403,14 @@
 
             var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
-            url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
+            url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
             return HttpClient.send({
                 type: "GET",
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-MediaBrowser-Token": server.ExchangeToken
+                    "X-Emby-Token": server.ExchangeToken
                 }
 
             }).done(function (auth) {
@@ -430,10 +434,10 @@
             HttpClient.send({
 
                 type: "GET",
-                url: url + "/system/info",
+                url: getEmbyServerUrl(url, "System/Info"),
                 dataType: "json",
                 headers: {
-                    "X-MediaBrowser-Token": server.AccessToken
+                    "X-Emby-Token": server.AccessToken
                 }
 
             }).done(function (systemInfo) {
@@ -445,10 +449,10 @@
                     HttpClient.send({
 
                         type: "GET",
-                        url: url + "/users/" + server.UserId,
+                        url: getEmbyServerUrl(url, "users/" + server.UserId),
                         dataType: "json",
                         headers: {
-                            "X-MediaBrowser-Token": server.AccessToken
+                            "X-Emby-Token": server.AccessToken
                         }
 
                     }).done(function (user) {

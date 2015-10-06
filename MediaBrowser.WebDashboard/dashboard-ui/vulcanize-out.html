@@ -10898,7 +10898,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        * @type {object}
        * @default {template: 1}
        */
-      excludedLocalNames: {
+      _excludedLocalNames: {
         type: Object,
         value: function() {
           return {
@@ -11010,7 +11010,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
+      return !this._excludedLocalNames[node.localName];
     },
 
     _valueToItem: function(value) {
@@ -11886,13 +11886,15 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      */
     _prepareSvgClone: function(sourceSvg, size) {
       if (sourceSvg) {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', ['0', '0', size, size].join(' '));
+        var content = sourceSvg.cloneNode(true),
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+            viewBox = content.getAttribute('viewBox') || '0 0 ' + size + ' ' + size;
+        svg.setAttribute('viewBox', viewBox);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         // TODO(dfreedm): `pointer-events: none` works around https://crbug.com/370136
         // TODO(sjmiles): inline style may not be ideal, but avoids requiring a shadow-root
         svg.style.cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
-        svg.appendChild(sourceSvg.cloneNode(true)).removeAttribute('id');
+        svg.appendChild(content).removeAttribute('id');
         return svg;
       }
       return null;
@@ -16167,6 +16169,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     .not-visible {
       opacity: 0;
+      cursor: default;
     }
 
     paper-icon-button {
@@ -16214,7 +16217,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
   <template>
 
-    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown" tabindex="-1"></paper-icon-button>
 
     <div id="tabsContainer" class="flex" on-track="_scroll" on-down="_down">
 
@@ -16228,7 +16231,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     </div>
 
-    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown" tabindex="-1"></paper-icon-button>
 
   </template>
 
@@ -18749,23 +18752,6 @@ paper-ripple {
 
       attached: function() {
         this._isReady = true;
-
-        // Don't stomp over a user-set aria-label.
-        if (!this.getAttribute('aria-label')) {
-          this.updateAriaLabel();
-        }
-      },
-
-      /**
-       * Update the checkbox aria-label. This is a temporary workaround not
-       * being able to observe changes in <content>
-       * (see: https://github.com/Polymer/polymer/issues/1773)
-       *
-       * Call this if you manually change the contents of the checkbox
-       * and want the aria-label to match the new contents.
-       */
-      updateAriaLabel: function() {
-        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
       },
 
       // button-behavior hook

@@ -101,7 +101,7 @@
 
         var tabs = ['Library', 'Favorites', 'Search', 'NowPlaying'];
 
-        if (user.Policy.EnableSync) {
+        if (user.Policy.EnableSync && Dashboard.capabilities().SupportsSync) {
 
             tabs.push('Sync');
         }

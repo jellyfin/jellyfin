@@ -111,7 +111,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @type {object}
        * @default {template: 1}
        */
-      excludedLocalNames: {
+      _excludedLocalNames: {
         type: Object,
         value: function() {
           return {
@@ -223,7 +223,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
+      return !this._excludedLocalNames[node.localName];
     },
 
     _valueToItem: function(value) {

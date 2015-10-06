@@ -42,6 +42,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <defs>
             <circle id="circle" cx="20" cy="20" r="10"></circle>
             <rect id="square" x="0" y="0" width="20" height="20"></rect>
+            <symbol id="rect" viewBox="0 0 50 25">
+              <rect x="0" y="0" width="50" height="25"></rect>
+            </symbol>
           </defs>
         </svg>
       </iron-iconset-svg>
@@ -97,7 +100,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('can be queried for all available icons', function () {
-          expect(iconset.getIconNames()).to.deep.eql(['my-icons:circle', 'my-icons:square']);
+          expect(iconset.getIconNames()).to.deep.eql(['my-icons:circle', 'my-icons:square', 'my-icons:rect']);
         });
 
         test('supports any icon defined in the svg', function () {
@@ -108,6 +111,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             expect(div.firstElementChild).to.not.be.equal(lastSvgIcon);
             lastSvgIcon = div.firstElementChild;
           });
+        });
+
+        test('prefers a viewBox attribute over the iconset size', function () {
+          iconset.applyIcon(div, 'rect');
+          expect(div.firstElementChild.getAttribute('viewBox')).to.be.equal('0 0 50 25');
+        });
+
+        test('uses the iconset size when viewBox is not defined on the element', function () {
+          iconset.applyIcon(div, 'circle');
+          expect(div.firstElementChild.getAttribute('viewBox')).to.be.equal('0 0 20 20');
         });
 
       });

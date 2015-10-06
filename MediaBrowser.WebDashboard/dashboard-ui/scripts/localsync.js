@@ -5,7 +5,7 @@
     window.LocalSync = {
 
         isSupported: function () {
-            return AppInfo.isNativeApp;
+            return AppInfo.isNativeApp && Dashboard.capabilities().SupportsSync;
         },
 
         sync: function (options) {

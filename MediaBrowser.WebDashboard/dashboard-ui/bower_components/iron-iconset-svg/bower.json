@@ -1,7 +1,7 @@
 {
   "name": "iron-iconset-svg",
   "description": "Manages a set of svg icons",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "keywords": [
     "web-components",
     "polymer",

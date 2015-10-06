@@ -1549,7 +1549,7 @@ var Dashboard = {
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
 
-        if (Dashboard.isRunningInCordova()) {
+        if (Dashboard.isRunningInCordova() && !$.browser.safari) {
             caps.SupportsOfflineAccess = true;
             caps.SupportsSync = true;
             caps.SupportsContentUploading = true;
@@ -2317,7 +2317,11 @@ var AppInfo = {};
         var deps = [];
 
         if (AppInfo.isNativeApp && $.browser.safari) {
-            deps.push('cordova/ios/backgroundfetch');
+
+            if (Dashboard.capabilities().SupportsSync) {
+                deps.push('cordova/ios/backgroundfetch');
+            }
+
             deps.push('cordova/ios/tabbar');
         }
         if (AppInfo.isNativeApp && $.browser.android) {

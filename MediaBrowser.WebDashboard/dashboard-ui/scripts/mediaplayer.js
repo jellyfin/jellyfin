@@ -950,9 +950,15 @@
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
+                            // Reports of stuttering with h264 stream copy in IE
+                            mediaUrl += '&EnableAutoStreamCopy=false';
+
                             mediaUrl += seekParam;
                             contentType = 'application/x-mpegURL';
                         } else {
+
+                            // Reports of stuttering with h264 stream copy in IE
+                            mediaUrl += '&EnableAutoStreamCopy=false';
 
                             startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;
@@ -1893,7 +1899,6 @@
 
             self.createStreamInfo('Audio', item, mediaSource, startPositionTicks).done(function (streamInfo) {
 
-                var audioUrl = streamInfo.url;
                 self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
                 var initialVolume = self.getSavedVolume();
