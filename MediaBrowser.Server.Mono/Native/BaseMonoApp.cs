@@ -119,11 +119,6 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-                if (StartupOptions.ContainsOption("-allowrealtimemonitor"))
-                {
-                    return true;    
-                }
-
                 return false;
             }
         }
