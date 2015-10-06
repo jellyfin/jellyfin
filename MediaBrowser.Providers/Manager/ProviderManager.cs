@@ -700,7 +700,7 @@ namespace MediaBrowser.Providers.Manager
 
                             // Manual edit occurred
                             // Even if save local is off, save locally anyway if the metadata file already exists
-							if (fileSaver == null || !isEnabledFor || !_fileSystem.FileExists(fileSaver.GetSavePath(item)))
+                            if (fileSaver == null || !isEnabledFor || !_fileSystem.FileExists(fileSaver.GetSavePath(item)))
                             {
                                 return false;
                             }
@@ -759,6 +759,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var resultList = new List<RemoteSearchResult>();
+            var foundProviderIds = new Dictionary<Tuple<string, string>, RemoteSearchResult>();
+            var foundTitleYearStrings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var provider in providers)
             {
@@ -766,16 +768,50 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
 
-                    var list = results.ToList();
-
-                    if (list.Count > 0)
+                    foreach (var result in results)
                     {
-                        resultList.AddRange(list.Take(maxResults - resultList.Count));
-                    }
+                        var bFound = false;
 
-                    if (resultList.Count >= maxResults)
-                    {
-                        return resultList;
+                        // This check prevents duplicate search results by comparing provider ids
+                        foreach (var providerId in result.ProviderIds)
+                        {
+                            var idTuple = new Tuple<string, string>(providerId.Key.ToLower(), providerId.Value.ToLower());
+
+                            if (!foundProviderIds.ContainsKey(idTuple))
+                            {
+                                foundProviderIds.Add(idTuple, result);
+                            }
+                            else
+                            {
+                                bFound = true;
+                                var existingResult = foundProviderIds[idTuple];
+                                if (string.IsNullOrEmpty(existingResult.ImageUrl) && !string.IsNullOrEmpty(result.ImageUrl))
+                                {
+                                    existingResult.ImageUrl = result.ImageUrl;
+                                }
+                            }
+                        }
+
+                        // This is a workaround duplicate check for movies, where intersecting provider ids are not always available
+                        if (typeof(TItemType) == typeof(Movie) || typeof(TItemType) == typeof(Series))
+                        {
+                            var titleYearString = string.Format("{0} ({1})", result.Name, result.ProductionYear);
+
+                            if (foundTitleYearStrings.Contains(titleYearString))
+                            {
+                                bFound = true;
+                            }
+                            else
+                            {
+                                foundTitleYearStrings.Add(titleYearString);
+                            }
+
+                        }
+
+                        if (!bFound && resultList.Count < maxResults)
+                        {
+                            resultList.Add(result);
+                        }
                     }
                 }
                 catch (Exception ex)
