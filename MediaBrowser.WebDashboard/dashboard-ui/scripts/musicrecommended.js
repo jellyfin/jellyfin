@@ -87,7 +87,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play',
+                defaultAction: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -132,7 +132,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play',
+                defaultAction: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true

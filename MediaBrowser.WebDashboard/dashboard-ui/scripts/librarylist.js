@@ -174,7 +174,11 @@
         var card = parentWithClass(e.target, 'card');
 
         if (card) {
-            showContextMenu(card, {});
+            var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
+
+            if (!itemSelectionPanel) {
+                showContextMenu(card, {});
+            }
 
             e.preventDefault();
             return false;
@@ -1363,6 +1367,10 @@
             itemsContainer = $(elem).parents('.itemsContainer');
 
             playAllFromHere(index, itemsContainer, 'play');
+        }
+        else if (action == 'instantmix') {
+
+            MediaController.instantMix(itemId);
         }
 
         return false;

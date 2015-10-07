@@ -33,7 +33,7 @@ body {
 }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background: radial-gradient(circle, #303030, #101010);
+    background: radial-gradient(circle, #282828, #101010);
 }
 
 .backdropContainer .pageBackground {

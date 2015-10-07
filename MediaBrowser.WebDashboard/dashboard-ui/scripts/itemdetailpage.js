@@ -1015,7 +1015,7 @@
             renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items, user);
         }
 
-        $('.collectionItems', page).createCardMenus();
+        $('.collectionItems .itemsContainer', page).createCardMenus();
     }
 
     function renderCollectionItemType(page, parentItem, type, items, user, context) {
@@ -1029,7 +1029,7 @@
 
         html += '</h1>';
 
-        html += '<div class="detailSectionContent">';
+        html += '<div class="detailSectionContent itemsContainer">';
 
         var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
 
@@ -1114,7 +1114,9 @@
 
         var reviews = result.Items;
 
-        html += '<div class="paperList">';
+        if (reviews.length) {
+            html += '<div class="paperList">';
+        }
 
         for (var i = 0, length = reviews.length; i < length; i++) {
 
@@ -1171,7 +1173,9 @@
 
             html += '</paper-icon-item>';
         }
-        html += '</div>';
+        if (reviews.length) {
+            html += '</div>';
+        }
 
         if (limit && result.TotalRecordCount > limit) {
             html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMore') + '</paper-button></p>';

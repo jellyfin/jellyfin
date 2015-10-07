@@ -1517,27 +1517,18 @@
 
         self.instantMix = function (id) {
 
-            var userId = Dashboard.getCurrentUserId();
+            var itemLimit = 100;
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getInstantMixFromItem(id, {
+                UserId: Dashboard.getCurrentUserId(),
+                Fields: getItemFields,
+                Limit: itemLimit
 
-                var promise;
-                var itemLimit = 100;
+            }).done(function (result) {
 
-                promise = ApiClient.getInstantMixFromItem(id, {
-                    UserId: Dashboard.getCurrentUserId(),
-                    Fields: getItemFields,
-                    Limit: itemLimit
-                });
-
-                promise.done(function (result) {
-
-                    self.play({ items: result.Items });
-
-                });
+                self.play({ items: result.Items });
 
             });
-
         };
 
         self.stop = function (destroyRenderer) {

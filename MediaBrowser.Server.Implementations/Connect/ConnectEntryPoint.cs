@@ -49,14 +49,23 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async void TimerCallback(object state)
         {
+            var index = 0;
+
             foreach (var ipLookupUrl in _ipLookups)
             {
                 try
                 {
+                    // Sometimes whatismyipaddress might fail, but it won't do us any good having users raise alarms over it.
+                    var logErrors = index > 0;
+
+#if DEBUG
+                    logErrors = true;
+#endif
                     using (var stream = await _httpClient.Get(new HttpRequestOptions
                     {
                         Url = ipLookupUrl,
-                        UserAgent = "Emby Server/" + _appHost.ApplicationVersion
+                        UserAgent = "Emby Server/" + _appHost.ApplicationVersion,
+                        LogErrors = logErrors
 
                     }).ConfigureAwait(false))
                     {
@@ -80,6 +89,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     _logger.ErrorException("Error getting connection info", ex);
                 }
+
+                index++;
             }
         }
 
@@ -94,8 +105,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
-				_fileSystem.WriteAllText(path, address, Encoding.UTF8);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.WriteAllText(path, address, Encoding.UTF8);
             }
             catch (Exception ex)
             {
@@ -109,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-				var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
+                var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
                 if (IsValid(endpoint))
                 {

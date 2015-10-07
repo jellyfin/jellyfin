@@ -166,7 +166,7 @@
             var accessToken = currentServerInfo.AccessToken;
 
             if (accessToken) {
-                headers['X-Emby-Token'] = accessToken;
+                headers['X-MediaBrowser-Token'] = accessToken;
             }
         };
 

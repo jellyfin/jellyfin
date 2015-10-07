@@ -183,6 +183,13 @@
             PaperDialogHelper.close(dlg);
         });
 
+        $(dlg).on('iron-overlay-closed', function () {
+
+            if (window.TabBar) {
+                TabBar.show();
+            }
+        });
+
         dlg.classList.add('inAppPurchaseOverlay');
     }
 
@@ -221,6 +228,10 @@
     function showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, serverRegistrationInfo, dialogOptions, deferred) {
 
         require(['components/paperdialoghelper'], function () {
+
+            if (window.TabBar) {
+                TabBar.hide();
+            }
 
             showInAppPurchaseElement(subscriptionOptions, unlockableProductInfo, dialogOptions, deferred);
 
