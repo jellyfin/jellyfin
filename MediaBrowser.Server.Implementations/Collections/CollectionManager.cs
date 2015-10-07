@@ -172,30 +172,31 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 itemList.Add(item);
 
-                if (currentLinkedChildren.Any(i => i.Id == itemId))
+                if (currentLinkedChildren.All(i => i.Id != itemId))
                 {
-                    throw new ArgumentException("Item already exists in collection");
+                    list.Add(LinkedChild.Create(item));
                 }
-
-                list.Add(LinkedChild.Create(item));
             }
 
-            collection.LinkedChildren.AddRange(list);
-
-            collection.UpdateRatingToContent();
-
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-
-            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
-
-            if (fireEvent)
+            if (list.Count > 0)
             {
-                EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
-                {
-                    Collection = collection,
-                    ItemsChanged = itemList
+                collection.LinkedChildren.AddRange(list);
 
-                }, _logger);
+                collection.UpdateRatingToContent();
+
+                await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
+
+                if (fireEvent)
+                {
+                    EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
+                    {
+                        Collection = collection,
+                        ItemsChanged = itemList
+
+                    }, _logger);
+                }
             }
         }
 

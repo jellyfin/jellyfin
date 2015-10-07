@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {
@@ -54,6 +55,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         /// <value>The application paths.</value>
         public IApplicationPaths CommonApplicationPaths { get; private set; }
+        public readonly IFileSystem FileSystem;
 
         /// <summary>
         /// The _configuration loaded
@@ -96,10 +98,11 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer)
+        protected BaseConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
         {
             CommonApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
+            FileSystem = fileSystem;
             Logger = logManager.GetLogger(GetType().Name);
 
             UpdateCachePath();
@@ -199,7 +202,17 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
+
+                EnsureWriteAccess(newPath);
             }
+        }
+
+        protected void EnsureWriteAccess(string path)
+        {
+            var file = Path.Combine(path, Guid.NewGuid().ToString());
+
+            FileSystem.WriteAllText(file, string.Empty);
+            FileSystem.DeleteFile(file);
         }
 
         private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();

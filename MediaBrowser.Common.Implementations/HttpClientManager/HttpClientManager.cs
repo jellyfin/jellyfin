@@ -465,7 +465,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (OperationCanceledException ex)
             {
-                var exception = GetCancellationException(options.Url, options.CancellationToken, ex);
+                var exception = GetCancellationException(options, options.CancellationToken, ex);
 
                 var httpException = exception as HttpException;
 
@@ -497,7 +497,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>HttpException.</returns>
         private HttpException GetException(WebException ex, HttpRequestOptions options)
         {
-            _logger.ErrorException("Error getting response from " + options.Url, ex);
+            if (options.LogErrors)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+            }
 
             var exception = new HttpException(ex.Message, ex);
 
@@ -710,10 +713,13 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (operationCanceledException != null)
             {
-                return GetCancellationException(options.Url, options.CancellationToken, operationCanceledException);
+                return GetCancellationException(options, options.CancellationToken, operationCanceledException);
             }
 
-            _logger.ErrorException("Error getting response from " + options.Url, ex);
+            if (options.LogErrors)
+            {
+                _logger.ErrorException("Error getting response from " + options.Url, ex);
+            }
 
             return ex;
         }
@@ -785,18 +791,21 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <summary>
         /// Throws the cancellation exception.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="exception">The exception.</param>
         /// <returns>Exception.</returns>
-        private Exception GetCancellationException(string url, CancellationToken cancellationToken, OperationCanceledException exception)
+        private Exception GetCancellationException(HttpRequestOptions options, CancellationToken cancellationToken, OperationCanceledException exception)
         {
             // If the HttpClient's timeout is reached, it will cancel the Task internally
             if (!cancellationToken.IsCancellationRequested)
             {
-                var msg = string.Format("Connection to {0} timed out", url);
+                var msg = string.Format("Connection to {0} timed out", options.Url);
 
-                _logger.Error(msg);
+                if (options.LogErrors)
+                {
+                    _logger.Error(msg);
+                }
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
                 return new HttpException(msg, exception)
