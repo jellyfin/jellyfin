@@ -1221,7 +1221,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     left: 0;
     right: 0;
     height: 50px;
-    background: #43A047;
+    background: #388E3C;
     z-index: 1000;
 }
 

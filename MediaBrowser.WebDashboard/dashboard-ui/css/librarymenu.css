@@ -106,7 +106,7 @@
 }
 
     .headerButton img {
-        height: 19px;
+        height: 26px !important;
         vertical-align: middle;
     }
 
