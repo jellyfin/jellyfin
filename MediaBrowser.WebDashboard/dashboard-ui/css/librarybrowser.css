@@ -1223,6 +1223,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     height: 50px;
     background: #388E3C;
     z-index: 1000;
+    padding: 0 .5em 0 .25em;
 }
 
     .selectionCommandsPanel paper-icon-button {
