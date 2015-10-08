@@ -17949,7 +17949,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       </template>
 
       <div id="sliderKnob" class="center-justified center horizontal layout" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
-          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
+          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
       </div>
     </div>
     <template is="dom-if" if="[[editable]]">
@@ -18137,6 +18137,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     _positionKnob: function(ratio) {
       this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+      this._setPinValue(this.immediateValue);
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
@@ -18185,6 +18186,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       // update knob's position
       var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+      this._setPinValue(immediateValue);
     },
 
     _trackEnd: function() {
@@ -18198,6 +18200,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       s.transform = s.webkitTransform = '';
 
       this.fire('change');
+    },
+    _setPinValue: function (value) {
+        this.pinValue = value;
     },
 
     _knobdown: function(event) {
