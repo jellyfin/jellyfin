@@ -908,5 +908,7 @@
     "EmbyPremiereMonthly": "Emby Premiere Monthly",
     "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
     "HeaderEmailAddress": "E-Mail Address",
-    "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address."
+    "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
+    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
+    "TermsOfUse": "Terms of use"
 }

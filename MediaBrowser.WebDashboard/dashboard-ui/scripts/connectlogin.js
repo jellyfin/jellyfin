@@ -244,6 +244,15 @@
             Dashboard.navigate('connectlogin.html?mode=connect');
         });
 
+        var terms = page.querySelector('.terms');
+        terms.innerHTML = Globalize.translate('LoginDisclaimer') + "<div style='margin-top:5px;'><a href='http://emby.media/terms' target='_blank'>" + Globalize.translate('TermsOfUse') + "</a></div>";
+
+        if (AppInfo.isNativeApp) {
+            terms.classList.add('hide');
+        } else {
+            terms.classList.remove('hide');
+        }
+
     }).on('pagebeforeshow', "#connectLoginPage", function () {
 
         var page = this;
