@@ -244,39 +244,60 @@
 
     function showOverlay(elem, item) {
 
-        require(['jqmpopup'], function () {
-            hideOverlay();
+        require(['components/paperdialoghelper'], function () {
 
-            var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
+            var dlg = document.createElement('paper-dialog');
 
-            html += '<div class="ui-bar-b" style="text-align:center;">';
-            html += '<h3 style="margin: .5em 0;padding:.5em 1em;font-weight:normal;">' + item.Name + '</h3>';
-            html += '</div>';
+            dlg.setAttribute('with-backdrop', 'with-backdrop');
+            dlg.setAttribute('role', 'alertdialog');
 
-            html += '<div style="padding: 0 1em;">';
+            // seeing max call stack size exceeded in the debugger with this
+            dlg.setAttribute('noAutoFocus', 'noAutoFocus');
+            dlg.entryAnimation = 'scale-up-animation';
+            dlg.exitAnimation = 'fade-out-animation';
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+            dlg.classList.add('tvProgramOverlay');
+
+            var html = '';
+            html += '<h2 class="dialogHeader">';
+            html += item.Name;
+            html += '</h2>';
+
+            html += '<div>';
             html += getOverlayHtml(item);
             html += '</div>';
 
-            html += '</div>';
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
 
-            $(document.body).append(html);
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function () {
 
-            var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
+                $(dlg).off('mouseenter', onOverlayMouseOver);
+                $(dlg).off('mouseleave', onOverlayMouseOut);
 
-                positionTo: elem
+                this.parentNode.removeChild(this);
 
-            }).trigger('create').popup("open").on("popupafterclose", function () {
+                if (currentPosterItem) {
 
-                $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+                    currentPosterItem = null;
+                }
             });
 
-            $('.btnPlay', popup).on('click', onPlayClick);
-            $('.btnRecord', popup).on('click', onRecordClick);
+            $('.btnPlay', dlg).on('click', onPlayClick);
+            $('.btnRecord', dlg).on('click', onRecordClick);
 
-            LibraryBrowser.renderGenres($('.itemGenres', popup), item, 3);
-            $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');
+            LibraryBrowser.renderGenres($('.itemGenres', dlg), item, 3);
+            $('.miscTvProgramInfo', dlg).html(LibraryBrowser.getMiscInfoHtml(item));
 
-            popup.parents().prev('.ui-popup-screen').remove();
+            PaperDialogHelper.positionTo(dlg, elem);
+
+            dlg.open();
+
+            $(dlg).on('mouseenter', onOverlayMouseOver);
+            $(dlg).on('mouseleave', onOverlayMouseOut);
+
             currentPosterItem = elem;
         });
     }
@@ -298,16 +319,10 @@
 
     function hideOverlay() {
 
-        var flyout = document.querySelectorAll('.itemFlyout');
+        var flyout = document.querySelector('.tvProgramOverlay');
 
-        if (flyout.length) {
-            $(flyout).popup('close').popup('destroy').remove();
-        }
-
-        if (currentPosterItem) {
-
-            $(currentPosterItem).off('click');
-            currentPosterItem = null;
+        if (flyout) {
+            flyout.close();
         }
     }
 
@@ -319,16 +334,6 @@
         }
 
         hideOverlayTimeout = setTimeout(hideOverlay, 200);
-    }
-
-    function onHoverOut() {
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        startHideOverlayTimer();
     }
 
     $.fn.createGuideHoverMenu = function (childSelector) {
@@ -380,7 +385,6 @@
         }
 
         return this.on('mouseenter', childSelector, onHoverIn)
-            .on('mouseleave', childSelector, onHoverOut)
             .on('click', childSelector, onProgramClicked);
     };
 

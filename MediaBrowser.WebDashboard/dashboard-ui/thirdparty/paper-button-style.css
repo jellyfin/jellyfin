@@ -266,6 +266,7 @@ paper-tabs paper-ripple {
 
 paper-fab {
     vertical-align: middle;
+    display: inline-flex !important;
 }
 
     paper-fab.mini {
