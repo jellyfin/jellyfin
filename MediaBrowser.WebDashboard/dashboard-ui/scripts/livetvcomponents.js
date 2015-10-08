@@ -349,6 +349,13 @@
             });
         }
 
+        function onHoverOut() {
+            if (showOverlayTimeout) {
+                clearTimeout(showOverlayTimeout);
+                showOverlayTimeout = null;
+            }
+        }
+
         function onHoverIn() {
 
             if (showOverlayTimeout) {
@@ -385,6 +392,7 @@
         }
 
         return this.on('mouseenter', childSelector, onHoverIn)
+            .on('mouseleave', childSelector, onHoverOut)
             .on('click', childSelector, onProgramClicked);
     };
 

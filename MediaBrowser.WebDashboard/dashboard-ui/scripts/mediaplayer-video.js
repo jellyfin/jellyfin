@@ -626,6 +626,35 @@
             }
         };
 
+        self.toggleGuide = function () {
+
+            var button = document.querySelector('.mediaButton.guideButton');
+            var nowPlayingInfo = document.querySelector('.videoControls .guide');
+
+            if (button.classList.contains('active')) {
+                button.classList.remove('active');
+                document.querySelector('.videoControls').classList.add('hiddenOnIdle');
+
+                fadeOutDown(nowPlayingInfo);
+
+            } else {
+                button.classList.add('active');
+                document.querySelector('.videoControls').classList.remove('hiddenOnIdle');
+                nowPlayingInfo.classList.remove('hide');
+                fadeInUp(nowPlayingInfo);
+
+                if (!self.guideInstance) {
+                    require(['tvguide'], function (tvguide) {
+
+                        self.guideInstance = new tvguide({
+                            element: nowPlayingInfo,
+                            enablePaging: false
+                        });
+                    });
+                }
+            }
+        };
+
         function fadeInUp(elem) {
             var keyframes = [
               { transform: 'translate3d(0, 100%, 0)', offset: 0 },
@@ -682,6 +711,9 @@
             html += '<div class="nowPlayingTabs"></div>';
             html += '</div>'; // nowPlayingInfo
 
+            html += '<div class="guide hide">';
+            html += '</div>'; // guide
+
             html += '<div class="videoControlButtons">';
             html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
 
@@ -701,6 +733,7 @@
 
             html += '<paper-icon-button icon="fullscreen" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"></paper-icon-button>';
             html += '<paper-icon-button icon="info" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"></paper-icon-button>';
+            //html += '<paper-icon-button icon="dvr" class="mediaButton guideButton" onclick="MediaPlayer.toggleGuide();"></paper-icon-button>';
             html += '</div>';
 
             html += '</div>'; // videoControls

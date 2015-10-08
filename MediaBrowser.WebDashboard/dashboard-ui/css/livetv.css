@@ -2,6 +2,10 @@
     background: #161616;
 }
 
+.tvGuide {
+    text-align: left;
+}
+
 .tvGuideHeader {
     white-space: nowrap;
     position: fixed;

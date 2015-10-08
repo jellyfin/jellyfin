@@ -75,6 +75,20 @@
     padding: 1.5em 1em 2em 1em;
 }
 
+.guide {
+    height: 400px;
+    overflow: auto;
+    background-color: #000 !important;
+}
+
+    .guide .tvGuideHeader {
+        position: static !important;
+    }
+
+    .guide .programContainer {
+        margin-top: 0 !important;
+    }
+
 #videoPlayer .nowPlayingImage img {
     height: auto !important;
     max-width: 180px;

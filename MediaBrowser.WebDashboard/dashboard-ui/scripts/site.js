@@ -2023,7 +2023,8 @@ var AppInfo = {};
         }
 
         var paths = {
-            velocity: "bower_components/velocity/velocity.min"
+            velocity: "bower_components/velocity/velocity.min",
+            tvguide: 'components/tvguide/tvguide'
         };
 
         if (Dashboard.isRunningInCordova()) {
