@@ -30,7 +30,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var list = new List<string>();
 
-            if (item.VideoType == VideoType.Dvd)
+            if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {
                 var path = item.ContainingFolderPath;
 
