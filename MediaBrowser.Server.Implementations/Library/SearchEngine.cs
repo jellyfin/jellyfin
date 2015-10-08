@@ -155,18 +155,20 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddIfMissing(excludeItemTypes, typeof(MusicArtist).Name);
             }
 
+            AddIfMissing(excludeItemTypes, typeof(CollectionFolder).Name);
+            
             var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
             {
                 NameContains = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 MaxParentalRating = user == null ? null : user.Policy.MaxParentalRating,
-                Limit = query.Limit.HasValue ? query.Limit * 3 : null
+                Limit = (query.Limit.HasValue ? (int?)(query.Limit.Value * 3) : null),
 
             }).Items;
 
             // Add search hints based on item name
-            hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && IsVisible(i, user) && !(i is CollectionFolder)).Select(item =>
+            hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && IsVisible(i, user)).Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 

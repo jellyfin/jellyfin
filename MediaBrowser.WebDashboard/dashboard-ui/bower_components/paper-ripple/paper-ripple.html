@@ -11,19 +11,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 
 <!--
+Material design: [Surface reaction](https://www.google.com/design/spec/animation/responsive-interaction.html#responsive-interaction-surface-reaction)
+
 `paper-ripple` provides a visual effect that other paper elements can
 use to simulate a rippling effect emanating from the point of contact.  The
 effect can be visualized as a concentric circle with motion.
 
 Example:
 
-    <paper-ripple></paper-ripple>
+    <div style="position:relative">
+      <paper-ripple></paper-ripple>
+    </div>
+
+Note, it's important that the parent container of the ripple be relative position, otherwise
+the ripple will emanate outside of the desired container. 
 
 `paper-ripple` listens to "mousedown" and "mouseup" events so it would display ripple
 effect when touches on it.  You can also defeat the default behavior and
 manually route the down and up actions to the ripple element.  Note that it is
-important if you call downAction() you will have to make sure to call
-upAction() so that `paper-ripple` would end the animation loop.
+important if you call `downAction()` you will have to make sure to call
+`upAction()` so that `paper-ripple` would end the animation loop.
 
 Example:
 
@@ -526,6 +533,17 @@ Apply `circle` class to make the rippling effect within a circle.
           observer: '_holdDownChanged'
         },
 
+        /**
+         * If true, the ripple will not generate a ripple effect 
+         * via pointer interaction.
+         * Calling ripple's imperative api like `simulatedRipple` will 
+         * still generate the ripple effect.
+         */
+        noink: {
+          type: Boolean,
+          value: false
+        },
+
         _animating: {
           type: Boolean
         },
@@ -537,6 +555,10 @@ Apply `circle` class to make the rippling effect within a circle.
           }
         }
       },
+
+      observers: [
+        '_noinkChanged(noink, isAttached)'
+      ],
 
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
@@ -558,12 +580,13 @@ Apply `circle` class to make the rippling effect within a circle.
       },
 
       attached: function() {
-        this.listen(this.target, 'up', 'upAction');
-        this.listen(this.target, 'down', 'downAction');
+        this.listen(this.target, 'up', 'uiUpAction');
+        this.listen(this.target, 'down', 'uiDownAction');
+      },
 
-        if (!this.target.hasAttribute('noink')) {
-          this.keyEventTarget = this.target;
-        }
+      detached: function() {
+        this.unlisten(this.target, 'up', 'uiUpAction');
+        this.unlisten(this.target, 'down', 'uiDownAction');
       },
 
       get shouldKeepAnimating () {
@@ -585,7 +608,22 @@ Apply `circle` class to make the rippling effect within a circle.
         }, 1);
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiDownAction: function(event) {
+        if (!this.noink) {
+          this.downAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -600,7 +638,22 @@ Apply `circle` class to make the rippling effect within a circle.
         }
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiUpAction: function(event) {
+        if (!this.noink) {
+          this.upAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       upAction: function(event) {
         if (this.holdDown) {
           return;
@@ -673,23 +726,34 @@ Apply `circle` class to make the rippling effect within a circle.
       },
 
       _onEnterKeydown: function() {
-        this.downAction();
-        this.async(this.upAction, 1);
+        this.uiDownAction();
+        this.async(this.uiUpAction, 1);
       },
 
       _onSpaceKeydown: function() {
-        this.downAction();
+        this.uiDownAction();
       },
 
       _onSpaceKeyup: function() {
-        this.upAction();
+        this.uiUpAction();
       },
 
-      _holdDownChanged: function(holdDown) {
-        if (holdDown) {
+      // note: holdDown does not respect noink since it can be a focus based
+      // effect.
+      _holdDownChanged: function(newVal, oldVal) {
+        if (oldVal === undefined) {
+          return;
+        }
+        if (newVal) {
           this.downAction();
         } else {
           this.upAction();
+        }
+      },
+
+      _noinkChanged: function(noink, attached) {
+        if (attached) {
+          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });

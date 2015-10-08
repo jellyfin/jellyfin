@@ -1110,8 +1110,30 @@
             selectionCommandsPanel.innerHTML = html;
 
             $('.btnCloseSelectionPanel', selectionCommandsPanel).on('click', hideSelections);
-            $('.btnSelectionPanelOptions', selectionCommandsPanel).on('click', showMenuForSelectedItems);
+
+            var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
+
+            $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
+
+            shake(btnSelectionPanelOptions, 1);
         }
+    }
+
+    function shake(elem, iterations) {
+        var keyframes = [
+          { transform: 'translate3d(0, 0, 0)', offset: 0 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.1 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.2 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.3 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.4 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.5 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.6 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.7 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.8 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
+          { transform: 'translate3d(0, 0, 0)', offset: 1 }];
+        var timing = { duration: 900, iterations: iterations };
+        return elem.animate(keyframes, timing);
     }
 
     function showSelections(initialCard) {

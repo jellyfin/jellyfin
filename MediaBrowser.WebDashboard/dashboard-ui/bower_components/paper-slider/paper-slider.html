@@ -9,7 +9,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
@@ -19,6 +20,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
 <!--
+Material design: [Sliders](https://www.google.com/design/spec/components/sliders.html)
+
 `paper-slider` allows user to select a value from a range of values by
 moving the slider thumb.  The interactive nature of the slider makes it a
 great choice for settings that reflect intensity levels, such as volume,
@@ -61,10 +64,248 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-slider">
+  <template strip-whitespace>
+    <style>
+      :host {
+        display: inline-block;
+        width: 200px;
+        cursor: default;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
+        --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+      }
 
-  <link rel="import" type="css" href="paper-slider.css">
+      /* focus shows the ripple */
+      :host(:focus) {
+        outline: none;
+      }
 
-  <template>
+      #sliderContainer {
+        position: relative;
+        width: calc(100% - 32px);
+        height: 32px;
+      }
+
+      #sliderContainer:focus {
+        outline: 0;
+      }
+
+      #sliderContainer.editable {
+        float: left;
+        width: calc(100% - 72px);
+        margin: 12px 0;
+      }
+
+      .bar-container {
+        position: absolute;
+        top: 0;
+        left: 16px;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .ring > .bar-container {
+        left: 20px;
+        width: calc(100% - 4px);
+        transition: left 0.18s ease, width 0.18s ease;
+      }
+
+      .ring.expand:not(.pin) > .bar-container {
+        left: 30px;
+        width: calc(100% - 14px);
+      }
+
+      .ring.expand.dragging > .bar-container {
+        transition: none;
+      }
+
+      #sliderBar {
+        position: absolute;
+        top: 15px;
+        left: 0;
+        width: 100%;
+        padding: 8px 0;
+        margin: -8px 0;
+        background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-height: var(--paper-slider-height, 2px);
+      }
+
+      .ring #sliderBar {
+        left: -4px;
+        width: calc(100% + 4px);
+      }
+
+      .ring.expand:not(.pin) #sliderBar {
+        left: -14px;
+        width: calc(100% + 14px);
+      }
+
+      .slider-markers {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        height: 2px;
+        width: calc(100% + 2px);
+        box-sizing: border-box;
+        pointer-events: none;
+      }
+
+      .slider-markers::after,
+      .slider-marker::after {
+        content: "";
+        display: block;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: black;
+      }
+
+      #sliderKnob {
+        @apply(--layout-center-justified);
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
+
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+      }
+
+      .transiting > #sliderKnob {
+        transition: left 0.08s ease;
+      }
+
+      #sliderKnob:focus {
+        outline: none;
+      }
+
+      #sliderKnob.dragging {
+        transition: none;
+      }
+
+      .snaps > #sliderKnob.dragging {
+        transition: -webkit-transform 0.08s ease;
+        transition: transform 0.08s ease;
+      }
+
+      #sliderKnobInner {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--paper-slider-knob-color, --google-blue-700);
+
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+
+        transition-property: height, width, background-color, border;
+        transition-duration: 0.1s;
+        transition-timing-function: ease;
+      }
+
+      .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+        width: 100%;
+        height: 100%;
+
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
+
+      .ring > #sliderKnob > #sliderKnobInner {
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+      }
+
+      #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-color, --google-blue-700);
+      }
+
+      .pin > #sliderKnob > #sliderKnobInner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 26px;
+        height: 26px;
+        margin-left: 3px;
+        border-radius: 50% 50% 50% 0;
+
+        -webkit-transform: rotate(-45deg) scale(0) translate(0);
+        transform: rotate(-45deg) scale(0) translate(0);
+      }
+
+      #sliderKnobInner::before,
+      #sliderKnobInner::after {
+        transition: -webkit-transform .2s ease, background-color .18s ease;
+        transition: transform .2s ease, background-color .18s ease;
+      }
+
+      .pin.ring > #sliderKnob > #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+      }
+
+      .pin.expand > #sliderKnob > #sliderKnobInner::before {
+        -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
+        transform: rotate(-45deg) scale(1) translate(17px, -17px);
+      }
+
+      .pin > #sliderKnob > #sliderKnobInner::after {
+        content: attr(value);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 26px;
+        text-align: center;
+        color: var(--paper-slider-font-color, #fff);
+        font-size: 10px;
+
+        -webkit-transform: scale(0) translate(0);
+        transform: scale(0) translate(0);
+      }
+
+      .pin.expand > #sliderKnob > #sliderKnobInner::after {
+        -webkit-transform: scale(1) translate(0, -17px);
+        transform: scale(1) translate(0, -17px);
+      }
+
+      /* paper-input */
+      .slider-input {
+        width: 50px;
+        float: right;
+        overflow: hidden;
+        --paper-input-container-input: {
+          text-align: center;
+        };
+      }
+
+      /* disabled state */
+      #sliderContainer.disabled {
+        pointer-events: none;
+      }
+
+      .disabled > #sliderKnob > #sliderKnobInner {
+        width: 8px;
+        height: 8px;
+        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+      }
+
+      .disabled.ring > #sliderKnob > #sliderKnobInner {
+        background-color: transparent;
+      }
+
+      paper-ripple {
+        color: var(--paper-slider-knob-color, --google-blue-700);
+      }
+
+    </style>
     <div id="sliderContainer"
       class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
@@ -98,28 +339,25 @@ Custom property | Description | Default
         on-up="_resetKnob"
         on-track="_onTrack"
         on-transitionend="_knobTransitionEnd">
-          <paper-ripple
-            center
-            id="ink"
-            class="circle"
-            hidden$="[[!receivedFocusFromKeyboard]]">
-          </paper-ripple>
-          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
+          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
-
     <template is="dom-if" if="[[editable]]">
       <paper-input
         id="input"
+        type="number"
+        step="[[step]]"
+        min="[[min]]"
+        max="[[max]]"
         class="slider-input"
         disabled$="[[disabled]]"
-        on-change="_inputChange"
-        value="[[_fixForInput(immediateValue)]]"
-        >
+        value="[[immediateValue]]"
+        on-change="_changeValue"
+        on-keydown="_inputKeyDown"
+        no-label-float>
       </paper-input>
     </template>
   </template>
-
 </dom-module>
 
 <script>
@@ -228,8 +466,6 @@ Custom property | Description | Default
 
     observers: [
       '_updateKnob(value, min, max, snaps, step)',
-      '_minChanged(min)',
-      '_maxChanged(max)',
       '_valueChanged(value)',
       '_immediateValueChanged(immediateValue)'
     ],
@@ -246,7 +482,6 @@ Custom property | Description | Default
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
       }, 1);
@@ -268,20 +503,15 @@ Custom property | Description | Default
       this.value = this._clampValue(this.value - this.step);
     },
 
-    _updateKnob: function(value) {
+    _updateKnob: function(value, min, max, snaps, step) {
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
+      this.setAttribute('aria-valuenow', value);
+
       this._positionKnob(this._calcRatio(value));
     },
 
-    _minChanged: function() {
-      this.setAttribute('aria-valuemin', this.min);
-    },
-
-    _maxChanged: function() {
-      this.setAttribute('aria-valuemax', this.max);
-    },
-
     _valueChanged: function() {
-      this.setAttribute('aria-valuenow', this.value);
       this.fire('value-change');
     },
 
@@ -297,11 +527,6 @@ Custom property | Description | Default
       this.secondaryProgress = this._clampValue(this.secondaryProgress);
     },
 
-    _fixForInput: function(immediateValue) {
-      // paper-input/issues/114
-      return this.immediateValue.toString();
-    },
-
     _expandKnob: function() {
       this._setExpand(true);
     },
@@ -313,15 +538,9 @@ Custom property | Description | Default
 
     _positionKnob: function(ratio) {
       this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
-      this._setPinValue(this.immediateValue);
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _inputChange: function() {
-      this.value = this.$$('#input').value;
-      this.fire('change');
     },
 
     _calcKnobPosition: function(ratio) {
@@ -350,7 +569,6 @@ Custom property | Description | Default
       this._minx = - this._startx;
       this._maxx = this._w - this._startx;
       this.$.sliderKnob.classList.add('dragging');
-
       this._setDragging(true);
     },
 
@@ -368,11 +586,8 @@ Custom property | Description | Default
       // update knob's position
       var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
-      this._setPinValue(immediateValue);
     },
-    _setPinValue: function (value) {
-        this.pinValue = value;
-    },
+
     _trackEnd: function() {
       var s = this.$.sliderKnob.style;
 
@@ -460,22 +675,60 @@ Custom property | Description | Default
     },
 
     _incrementKey: function(event) {
-      if (event.detail.key === 'end') {
-        this.value = this.max;
-      } else {
-        this.increment();
+      if (!this.disabled) {
+        if (event.detail.key === 'end') {
+          this.value = this.max;
+        } else {
+          this.increment();
+        }
+        this.fire('change');
       }
-      this.fire('change');
     },
 
     _decrementKey: function(event) {
-      if (event.detail.key === 'home') {
-        this.value = this.min;
-      } else {
-        this.decrement();
+      if (!this.disabled) {
+        if (event.detail.key === 'home') {
+          this.value = this.min;
+        } else {
+          this.decrement();
+        }
+        this.fire('change');
       }
+    },
+
+    _changeValue: function(event) {
+      this.value = event.target.value;
       this.fire('change');
+    },
+
+    _inputKeyDown: function(event) {
+      event.stopPropagation();
+    },
+
+    // create the element ripple inside the `sliderKnob`
+    _createRipple: function() {
+      this._rippleContainer = this.$.sliderKnob;
+      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+    },
+
+    // Hide the ripple when user is not interacting with keyboard.
+    // This behavior is different from other ripple-y controls, but is
+    // according to spec: https://www.google.com/design/spec/components/sliders.html
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
+      }
+      if (this.hasRipple()) {
+        // note, ripple must be un-hidden prior to setting `holdDown`
+        if (receivedFocusFromKeyboard) {
+          this._ripple.removeAttribute('hidden');
+        } else {
+          this._ripple.setAttribute('hidden', '');
+        }
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
     }
+
   });
 
   /**

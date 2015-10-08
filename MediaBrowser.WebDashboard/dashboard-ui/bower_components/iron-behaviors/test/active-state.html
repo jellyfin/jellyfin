@@ -41,18 +41,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         activeTarget = fixture('TrivialActiveState');
       });
 
-      suite('non-primary pointer input source', function() {
-        test('does not cause state to change', function() {
-          var rightClickMouseEvent = new CustomEvent('mousedown');
-          rightClickMouseEvent.buttons = 2;
-          activeTarget.dispatchEvent(rightClickMouseEvent);
-          expect(activeTarget.pressed).to.be.equal(false);
-        });
-      });
-
       suite('active state with toggles attribute', function() {
         setup(function() {
           activeTarget = fixture('ToggleActiveState');
+        });
+
+        suite('when down', function() {
+          test('is pressed', function() {
+            MockInteractions.down(activeTarget);
+            expect(activeTarget.hasAttribute('pressed')).to.be.eql(true);
+          });
         });
 
         suite('when clicked', function() {

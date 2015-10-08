@@ -7033,33 +7033,7 @@ this.fire('dom-change');
       }
     },
 
-    _eventSourceIsPrimaryInput: function(event) {
-      event = event.detail.sourceEvent || event;
-
-      // Always true for non-mouse events....
-      if (!this._mouseEventRe.test(event.type)) {
-        return true;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
-      if ('buttons' in event) {
-        return event.buttons === 1;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/which
-      if (typeof event.which === 'number') {
-        return event.which < 2;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-      return event.button < 1;
-    },
-
     _downHandler: function(event) {
-      if (!this._eventSourceIsPrimaryInput(event)) {
-        return;
-      }
-
       this._setPointerDown(true);
       this._setPressed(true);
       this._setReceivedFocusFromKeyboard(false);
@@ -7141,24 +7115,141 @@ this.fire('dom-change');
 </script>
 <script>
 
-  /** @polymerBehavior */
+  /** 
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple 
+   * when the element has focus via pointer or keyboard.
+   *
+   * NOTE: This behavior is intended to be used in conjunction with and after
+   * `Polymer.IronButtonState` and `Polymer.IronControlState`.
+   *
+   * @polymerBehavior Polymer.PaperRippleBehavior 
+   */
+  Polymer.PaperRippleBehavior = {
+
+    properties: {
+      /**
+       * If true, the element will not produce a ripple effect when interacted
+       * with via the pointer.
+       */
+      noink: {
+        type: Boolean,
+        observer: '_noinkChanged'
+      }
+    },
+
+    /**
+     * Ensures a `<paper-ripple>` element is available when the element is 
+     * focused.
+     */
+    _buttonStateChanged: function() {
+      if (this.focused) {
+        this.ensureRipple();
+      }
+    },
+
+    /** 
+     * In addition to the functionality provided in `IronButtonState`, ensures
+     * a ripple effect is created when the element is in a `pressed` state.
+     */
+    _downHandler: function(event) {
+      Polymer.IronButtonStateImpl._downHandler.call(this, event);
+      if (this.pressed) {
+        this.ensureRipple(event);
+      }
+    },
+
+    /**
+     * Ensures this element contains a ripple effect. For startup efficiency 
+     * the ripple effect is dynamically on demand when needed.
+     * @param {event} triggeringEvent (optional) event that triggered the 
+     * ripple.
+     */
+    ensureRipple: function(triggeringEvent) {
+      if (!this.hasRipple()) {
+        this._ripple = this._createRipple();
+        this._ripple.noink = this.noink;
+        var rippleContainer = this._rippleContainer || this.root;
+        if (rippleContainer) {
+          Polymer.dom(rippleContainer).appendChild(this._ripple);
+        }
+        var domContainer = rippleContainer === this.shadyRoot ? this : 
+          rippleContainer;
+        if (triggeringEvent && domContainer.contains(triggeringEvent.target)) {
+          this._ripple.uiDownAction(triggeringEvent);
+        }
+      }
+    },
+
+    /**
+     * Returns the `<paper-ripple>` element used by this element to create
+     * ripple effects. The element's ripple is created on demand, when
+     * necessary, and calling this method will force the 
+     * ripple to be created.
+     */
+    getRipple: function() {
+      this.ensureRipple();
+      return this._ripple;
+    },
+
+    /**
+     * Returns true if this element currently contains a ripple effect.
+     * @return {boolean}
+     */
+    hasRipple: function() {
+      return Boolean(this._ripple);
+    },
+
+    /**
+     * Create the element's ripple effect via creating a `<paper-ripple>`.
+     * Override this method to customize the ripple element.
+     * @return {element} Returns a `<paper-ripple>` element.
+     */
+    _createRipple: function() {
+      return document.createElement('paper-ripple');
+    },
+
+    _noinkChanged: function(noink) {
+      if (this.hasRipple()) {
+        this._ripple.noink = noink;
+      }
+    }
+
+  };
+
+</script>
+<script>
+
+  /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
 
-      _elevation: {
-        type: Number
+      /**
+       * The z-depth of this element, from 0-5. Setting to 0 will remove the
+       * shadow, and each increasing number greater than 0 will be "deeper"
+       * than the last.
+       *
+       * @attribute elevation
+       * @type number
+       * @default 1
+       */
+      elevation: {
+        type: Number,
+        reflectToAttribute: true,
+        readOnly: true
       }
 
     },
 
     observers: [
-      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)'
+      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)',
+      '_computeKeyboardClass(receivedFocusFromKeyboard)'
     ],
 
     hostAttributes: {
       role: 'button',
-      tabindex: '0'
+      tabindex: '0',
+      animated: true
     },
 
     _calculateElevation: function() {
@@ -7170,14 +7261,42 @@ this.fire('dom-change');
       } else if (this.receivedFocusFromKeyboard) {
         e = 3;
       }
-      this._elevation = e;
+      this._setElevation(e);
+    },
+
+    _computeKeyboardClass: function(receivedFocusFromKeyboard) {
+      this.classList.toggle('keyboard-focus', receivedFocusFromKeyboard);
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes down, 
+     * create a ripple down effect.
+     */
+    _spaceKeyDownHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiDownAction();
+      }
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes up, 
+     * create a ripple up effect.
+     */
+    _spaceKeyUpHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyUpHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiUpAction();
+      }
     }
+
   };
 
   /** @polymerBehavior */
   Polymer.PaperButtonBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperButtonBehaviorImpl
   ];
 
@@ -11130,7 +11249,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
-   * @polymerBehavior Polymer.PaperInkyFocusBehavior
+   * @polymerBehavior Polymer.PaperInkyFocusBehaviorImpl
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
 
@@ -11139,11 +11258,20 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     ],
 
     _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (!this.$.ink) {
-        return;
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
       }
+      if (this.hasRipple()) {
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
+    },
 
-      this.$.ink.holdDown = receivedFocusFromKeyboard;
+    _createRipple: function() {
+      var ripple = Polymer.PaperRippleBehavior._createRipple();
+      ripple.id = 'ink';
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+      return ripple;
     }
 
   };
@@ -11152,6 +11280,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   Polymer.PaperInkyFocusBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
 
@@ -13021,6 +13150,53 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   ];
 
 </script>
+<script>
+
+  /**
+   * Use `Polymer.PaperCheckedElementBehavior` to implement a custom element
+   * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
+   * and is compatible with having a ripple effect.
+   * @polymerBehavior Polymer.PaperCheckedElementBehavior
+   */
+  Polymer.PaperCheckedElementBehaviorImpl = {
+
+    /**
+     * Synchronizes the element's checked state with its ripple effect.
+     */
+    _checkedChanged: function() {
+      Polymer.IronCheckedElementBehaviorImpl._checkedChanged.call(this);
+      if (this.hasRipple()) {
+        if (this.checked) {
+          this._ripple.setAttribute('checked', '');
+        } else {
+          this._ripple.removeAttribute('checked');
+        }
+      }
+    },
+
+    /**
+     * Synchronizes the element's `active` and `checked` state.
+     */
+    _buttonStateChanged: function() {
+      Polymer.PaperRippleBehavior._buttonStateChanged.call(this);
+      if (this.disabled) {
+        return;
+      }
+      if (this.isAttached) {
+        this.checked = this.active;
+      }
+    }
+
+  };
+
+  /** @polymerBehavior Polymer.PaperCheckedElementBehavior */
+  Polymer.PaperCheckedElementBehavior = [
+    Polymer.PaperInkyFocusBehavior,
+    Polymer.IronCheckedElementBehavior,
+    Polymer.PaperCheckedElementBehaviorImpl
+  ];
+
+</script>
 
 
 
@@ -13556,6 +13732,17 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           observer: '_holdDownChanged'
         },
 
+        /**
+         * If true, the ripple will not generate a ripple effect 
+         * via pointer interaction.
+         * Calling ripple's imperative api like `simulatedRipple` will 
+         * still generate the ripple effect.
+         */
+        noink: {
+          type: Boolean,
+          value: false
+        },
+
         _animating: {
           type: Boolean
         },
@@ -13567,6 +13754,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           }
         }
       },
+
+      observers: [
+        '_noinkChanged(noink, isAttached)'
+      ],
 
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
@@ -13588,12 +13779,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       attached: function() {
-        this.listen(this.target, 'up', 'upAction');
-        this.listen(this.target, 'down', 'downAction');
+        this.listen(this.target, 'up', 'uiUpAction');
+        this.listen(this.target, 'down', 'uiDownAction');
+      },
 
-        if (!this.target.hasAttribute('noink')) {
-          this.keyEventTarget = this.target;
-        }
+      detached: function() {
+        this.unlisten(this.target, 'up', 'uiUpAction');
+        this.unlisten(this.target, 'down', 'uiDownAction');
       },
 
       get shouldKeepAnimating () {
@@ -13615,7 +13807,22 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }, 1);
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiDownAction: function(event) {
+        if (!this.noink) {
+          this.downAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple down effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -13630,7 +13837,22 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      /** @param {Event=} event */
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * respecting the `noink` property.
+       * @param {Event=} event 
+       */
+      uiUpAction: function(event) {
+        if (!this.noink) {
+          this.upAction(event);
+        }
+      },
+
+      /** 
+       * Provokes a ripple up effect via a UI event, 
+       * *not* respecting the `noink` property.
+       * @param {Event=} event 
+       */
       upAction: function(event) {
         if (this.holdDown) {
           return;
@@ -13703,32 +13925,43 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       _onEnterKeydown: function() {
-        this.downAction();
-        this.async(this.upAction, 1);
+        this.uiDownAction();
+        this.async(this.uiUpAction, 1);
       },
 
       _onSpaceKeydown: function() {
-        this.downAction();
+        this.uiDownAction();
       },
 
       _onSpaceKeyup: function() {
-        this.upAction();
+        this.uiUpAction();
       },
 
-      _holdDownChanged: function(holdDown) {
-        if (holdDown) {
+      // note: holdDown does not respect noink since it can be a focus based
+      // effect.
+      _holdDownChanged: function(newVal, oldVal) {
+        if (oldVal === undefined) {
+          return;
+        }
+        if (newVal) {
           this.downAction();
         } else {
           this.upAction();
+        }
+      },
+
+      _noinkChanged: function(noink, attached) {
+        if (attached) {
+          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });
   })();
 </script>
 <dom-module id="paper-button" assetpath="bower_components/paper-button/">
-  <template>
+  <template strip-whitespace="">
 
-    <style>
+    <style include="paper-material">
       :host {
         display: inline-block;
         position: relative;
@@ -13752,12 +13985,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         @apply(--paper-button);
       }
 
-      :host([raised]) .keyboard-focus {
+      :host([raised].keyboard-focus) {
         font-weight: bold;
         @apply(--paper-button-raised-keyboard-focus);
       }
 
-      :host(:not([raised])) .keyboard-focus {
+      :host(:not([raised]).keyboard-focus) {
         font-weight: bold;
         @apply(--paper-button-flat-keyboard-focus);
       }
@@ -13771,32 +14004,15 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         @apply(--paper-button-disabled);
       }
 
-      :host([noink]) paper-ripple {
-        display: none;
-      }
-
       paper-ripple {
         color: var(--paper-button-ink-color);
       }
 
-      paper-material {
-        border-radius: inherit;
-        @apply(--layout-fit);
-      }
-
-      .content > ::content * {
+      :host > ::content * {
         text-transform: inherit;
       }
     </style>
-
-    <paper-ripple></paper-ripple>
-
-    <paper-material elevation="[[_elevation]]" animated=""></paper-material>
-
-    <div class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
-      <content></content>
-    </div>
-
+    <content></content>
   </template>
 </dom-module>
 
@@ -13822,18 +14038,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this._elevation = 0;
+        this.elevation = 0;
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content ';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
   });
 </script>
@@ -14654,63 +14862,59 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </dom-module>
 <dom-module id="paper-fab" assetpath="bower_components/paper-fab/">
-  <style>
+  <template strip-whitespace="">
+    <style include="paper-material">
 
-    :host {
-      display: inline-block;
-      position: relative;
-      outline: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      user-select: none;
-      cursor: pointer;
+      :host {
+        display: inline-block;
+        position: relative;
+        outline: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        user-select: none;
+        cursor: pointer;
 
-      box-sizing: border-box;
-      min-width: 0;
-      width: 56px;
-      height: 56px;
-      background: var(--paper-fab-background, --accent-color);
-      color: var(--text-primary-color);
-      border-radius: 50%;
-      padding: 16px;
+        box-sizing: border-box;
+        min-width: 0;
+        width: 56px;
+        height: 56px;
+        background: var(--paper-fab-background, --accent-color);
+        color: var(--text-primary-color);
+        border-radius: 50%;
+        padding: 16px;
 
-      z-index: 0;
+        z-index: 0;
 
-      @apply(--paper-fab);
-    }
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+        @apply(--paper-fab);
+      }
 
-    :host([mini]) {
-      width: 40px;
-      height: 40px;
-      padding: 8px;
+      :host([mini]) {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
 
-      @apply(--paper-fab-mini);
-    }
+        @apply(--paper-fab-mini);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-fab-disabled-text, --paper-grey-500);
-      background: var(--paper-fab-disabled-background, --paper-grey-300);
-      @apply(--paper-fab-disabled);
-    }
+      :host([disabled]) {
+        color: var(--paper-fab-disabled-text, --paper-grey-500);
+        background: var(--paper-fab-disabled-background, --paper-grey-300);
+        @apply(--paper-fab-disabled);
+      }
 
-    paper-material {
-      border-radius: inherit;
-      @apply(--layout-fit);
-      @apply(--layout-vertical);
-      @apply(--layout-center-center);
-    }
+      iron-icon {
+        @apply(--paper-fab-iron-icon);
+      }
 
-    .keyboard-focus {
-      background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
-    }
-  </style>
-  <template>
-    <paper-ripple></paper-ripple>
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated="">
-      <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
-    </paper-material>
+      :host(.keyboard-focus) {
+        background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
+      }
+    </style>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
   </template>
 </dom-module>
 <script>
@@ -14761,14 +14965,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value: false,
         reflectToAttribute: true
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
 
   });
@@ -15301,91 +15497,96 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 })();
 </script>
 <dom-module id="paper-icon-button" assetpath="bower_components/paper-icon-button/">
-  <style>
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        width: 24px;
+        @apply(--paper-icon-button);
+      }
 
-      @apply(--paper-icon-button);
-    }
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
 
-    :host #ink {
-      color: var(--paper-icon-button-ink-color, --primary-text-color);
-      opacity: 0.6;
-    }
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+        @apply(--paper-icon-button-disabled);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-      pointer-events: none;
-      cursor: auto;
-      @apply(--paper-icon-button-disabled);
-    }
-  </style>
-  <template>
-    <paper-ripple id="ink" class="circle" center=""></paper-ripple>
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
+
+  <script>
+    Polymer({
+      is: 'paper-icon-button',
+
+      hostAttributes: {
+        role: 'button',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.PaperInkyFocusBehavior
+      ],
+
+      properties: {
+        /**
+         * The URL of an image for the icon. If the src property is specified,
+         * the icon property should not be.
+         */
+        src: {
+          type: String
+        },
+
+        /**
+         * Specifies the icon name or index in the set of icons available in
+         * the icon's icon set. If the icon property is specified,
+         * the src property should not be.
+         */
+        icon: {
+          type: String
+        },
+
+        /**
+         * Specifies the alternate text for the button, for accessibility.
+         */
+        alt: {
+          type: String,
+          observer: "_altChanged"
+        }
+      },
+
+      _altChanged: function(newValue, oldValue) {
+        var label = this.getAttribute('aria-label');
+
+        // Don't stomp over a user-set aria-label.
+        if (!label || oldValue == label) {
+          this.setAttribute('aria-label', newValue);
+        }
+      }
+    });
+  </script>
 </dom-module>
-<script>
-  Polymer({
-    is: 'paper-icon-button',
-
-    hostAttributes: {
-      role: 'button',
-      tabindex: '0'
-    },
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    properties: {
-      /**
-       * The URL of an image for the icon. If the src property is specified,
-       * the icon property should not be.
-       */
-      src: {
-        type: String
-      },
-
-      /**
-       * Specifies the icon name or index in the set of icons available in
-       * the icon's icon set. If the icon property is specified,
-       * the src property should not be.
-       */
-      icon: {
-        type: String
-      },
-
-      /**
-       * Specifies the alternate text for the button, for accessibility.
-       */
-      alt: {
-        type: String,
-        observer: "_altChanged"
-      }
-    },
-
-    _altChanged: function(newValue, oldValue) {
-      var label = this.getAttribute('aria-label');
-
-      // Don't stomp over a user-set aria-label.
-      if (!label || oldValue == label) {
-        this.setAttribute('aria-label', newValue);
-      }
-    }
-  });
-</script>
 <dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
   <style>
 /**
@@ -17490,259 +17691,248 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
   });
 </script>
 <dom-module id="paper-slider" assetpath="bower_components/paper-slider/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        width: 200px;
+        cursor: default;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
+        --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+      }
 
-  <style>
-/**
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
+      /* focus shows the ripple */
+      :host(:focus) {
+        outline: none;
+      }
 
-:host {
-  display: inline-block;
-  width: 200px;
-  cursor: default;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
-  --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
-  --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-  --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
-}
+      #sliderContainer {
+        position: relative;
+        width: calc(100% - 32px);
+        height: 32px;
+      }
 
-/* focus shows the ripple */
-:host(:focus) {
-  outline: none;
-}
+      #sliderContainer:focus {
+        outline: 0;
+      }
 
-#sliderContainer {
-  position: relative;
-  width: calc(100% - 32px);
-  height: 32px;
-}
+      #sliderContainer.editable {
+        float: left;
+        width: calc(100% - 72px);
+        margin: 12px 0;
+      }
 
-#sliderContainer.editable {
-  float: left;
-  width: calc(100% - 72px);
-  margin: 12px 0;
-}
+      .bar-container {
+        position: absolute;
+        top: 0;
+        left: 16px;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
 
-.bar-container {
-  position: absolute;
-  top: 0;
-  left: 16px;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
+      .ring > .bar-container {
+        left: 20px;
+        width: calc(100% - 4px);
+        transition: left 0.18s ease, width 0.18s ease;
+      }
 
-.ring > .bar-container {
-  left: 20px;
-  width: calc(100% - 4px);
-  transition: left 0.18s ease, width 0.18s ease;
-}
+      .ring.expand:not(.pin) > .bar-container {
+        left: 30px;
+        width: calc(100% - 14px);
+      }
 
-.ring.expand:not(.pin) > .bar-container {
-  left: 30px;
-  width: calc(100% - 14px);
-}
+      .ring.expand.dragging > .bar-container {
+        transition: none;
+      }
 
-.ring.expand.dragging > .bar-container {
-  transition: none;
-}
+      #sliderBar {
+        position: absolute;
+        top: 15px;
+        left: 0;
+        width: 100%;
+        padding: 8px 0;
+        margin: -8px 0;
+        background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-height: var(--paper-slider-height, 2px);
+      }
 
-#sliderBar {
-  position: absolute;
-  top: 15px;
-  left: 0;
-  width: 100%;
-  padding: 8px 0;
-  margin: -8px 0;
-  background-color: var(--paper-slider-bar-color, transparent);
-  --paper-progress-height: var(--paper-slider-height, 2px);
-}
+      .ring #sliderBar {
+        left: -4px;
+        width: calc(100% + 4px);
+      }
 
-.ring #sliderBar {
-  left: -4px;
-  width: calc(100% + 4px);
-}
+      .ring.expand:not(.pin) #sliderBar {
+        left: -14px;
+        width: calc(100% + 14px);
+      }
 
-.ring.expand:not(.pin) #sliderBar {
-  left: -14px;
-  width: calc(100% + 14px);
-}
+      .slider-markers {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        height: 2px;
+        width: calc(100% + 2px);
+        box-sizing: border-box;
+        pointer-events: none;
+      }
 
-.slider-markers {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  height: 2px;
-  width: calc(100% + 2px);
-  box-sizing: border-box;
-  pointer-events: none;
-}
+      .slider-markers::after,
+      .slider-marker::after {
+        content: "";
+        display: block;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: black;
+      }
 
-.slider-markers::after,
-.slider-marker::after {
-  content: "";
-  display: block;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background-color: black;
-}
+      #sliderKnob {
+        @apply(--layout-center-justified);
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
 
-#sliderKnob {
-  @apply(--layout-center-justified);
-  @apply(--layout-center);
-  @apply(--layout-horizontal);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+      }
 
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 32px;
-  height: 32px;
-}
+      .transiting > #sliderKnob {
+        transition: left 0.08s ease;
+      }
 
-.transiting > #sliderKnob {
-  transition: left 0.08s ease;
-}
+      #sliderKnob:focus {
+        outline: none;
+      }
 
-#sliderKnob:focus {
-  outline: none;
-}
+      #sliderKnob.dragging {
+        transition: none;
+      }
 
-#sliderKnob.dragging {
-  transition: none;
-}
+      .snaps > #sliderKnob.dragging {
+        transition: -webkit-transform 0.08s ease;
+        transition: transform 0.08s ease;
+      }
 
-.snaps > #sliderKnob.dragging {
-  transition: -webkit-transform 0.08s ease;
-  transition: transform 0.08s ease;
-}
+      #sliderKnobInner {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--paper-slider-knob-color, --google-blue-700);
 
-#sliderKnobInner {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: var(--paper-slider-knob-color, --google-blue-700);
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
 
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
+        transition-property: height, width, background-color, border;
+        transition-duration: 0.1s;
+        transition-timing-function: ease;
+      }
 
-  transition-property: height, width, background-color, border;
-  transition-duration: 0.1s;
-  transition-timing-function: ease;
-}
+      .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+        width: 100%;
+        height: 100%;
 
-.expand:not(.pin) > #sliderKnob > #sliderKnobInner {
-  width: 100%;
-  height: 100%;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
 
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
+      .ring > #sliderKnob > #sliderKnobInner {
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+      }
 
-.ring > #sliderKnob > #sliderKnobInner {
-  background-color: var(--paper-slider-knob-start-color, transparent);
-  border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
-}
+      #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-color, --google-blue-700);
+      }
 
-#sliderKnobInner::before {
-  background-color: var(--paper-slider-pin-color, --google-blue-700);
-}
+      .pin > #sliderKnob > #sliderKnobInner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 26px;
+        height: 26px;
+        margin-left: 3px;
+        border-radius: 50% 50% 50% 0;
 
-.pin > #sliderKnob > #sliderKnobInner::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 26px;
-  height: 26px;
-  margin-left: 3px;
-  border-radius: 50% 50% 50% 0;
+        -webkit-transform: rotate(-45deg) scale(0) translate(0);
+        transform: rotate(-45deg) scale(0) translate(0);
+      }
 
-  -webkit-transform: rotate(-45deg) scale(0) translate(0);
-  transform: rotate(-45deg) scale(0) translate(0);
-}
+      #sliderKnobInner::before,
+      #sliderKnobInner::after {
+        transition: -webkit-transform .2s ease, background-color .18s ease;
+        transition: transform .2s ease, background-color .18s ease;
+      }
 
-#sliderKnobInner::before,
-#sliderKnobInner::after {
-  transition: -webkit-transform .2s ease, background-color .18s ease;
-  transition: transform .2s ease, background-color .18s ease;
-}
+      .pin.ring > #sliderKnob > #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+      }
 
-.pin.ring > #sliderKnob > #sliderKnobInner::before {
-  background-color: var(--paper-slider-pin-start-color, #c8c8c8);
-}
+      .pin.expand > #sliderKnob > #sliderKnobInner::before {
+        -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
+        transform: rotate(-45deg) scale(1) translate(17px, -17px);
+      }
 
-.pin.expand > #sliderKnob > #sliderKnobInner::before {
-  -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
-  transform: rotate(-45deg) scale(1) translate(17px, -17px);
-}
+      .pin > #sliderKnob > #sliderKnobInner::after {
+        content: attr(value);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 26px;
+        text-align: center;
+        color: var(--paper-slider-font-color, #fff);
+        font-size: 10px;
 
-.pin > #sliderKnob > #sliderKnobInner::after {
-  content: attr(value);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 26px;
-  text-align: center;
-  color: var(--paper-slider-font-color, #fff);
-  font-size: 10px;
+        -webkit-transform: scale(0) translate(0);
+        transform: scale(0) translate(0);
+      }
 
-  -webkit-transform: scale(0) translate(0);
-  transform: scale(0) translate(0);
-}
+      .pin.expand > #sliderKnob > #sliderKnobInner::after {
+        -webkit-transform: scale(1) translate(0, -17px);
+        transform: scale(1) translate(0, -17px);
+      }
 
-.pin.expand > #sliderKnob > #sliderKnobInner::after {
-  -webkit-transform: scale(1) translate(0, -17px);
-  transform: scale(1) translate(0, -17px);
-}
+      /* paper-input */
+      .slider-input {
+        width: 50px;
+        float: right;
+        overflow: hidden;
+        --paper-input-container-input: {
+          text-align: center;
+        };
+      }
 
-/* editable: paper-input */
-.slider-input {
-  width: 40px;
-  float: right;
-  overflow: hidden;
-}
+      /* disabled state */
+      #sliderContainer.disabled {
+        pointer-events: none;
+      }
 
-.slider-input {
-  --paper-input-container-input: {
-    text-align: center;
-  };
-}
+      .disabled > #sliderKnob > #sliderKnobInner {
+        width: 8px;
+        height: 8px;
+        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+      }
 
-/* disabled state */
-#sliderContainer.disabled {
-  pointer-events: none;
-}
+      .disabled.ring > #sliderKnob > #sliderKnobInner {
+        background-color: transparent;
+      }
 
-.disabled > #sliderKnob > #sliderKnobInner {
-  width: 8px;
-  height: 8px;
-  background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
-}
+      paper-ripple {
+        color: var(--paper-slider-knob-color, --google-blue-700);
+      }
 
-.disabled.ring > #sliderKnob > #sliderKnobInner {
-  background-color: transparent;
-}
-
-paper-ripple {
-  color: var(--paper-slider-knob-color, --google-blue-700);
-}
-
-</style>
-
-  <template>
+    </style>
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
@@ -17759,18 +17949,14 @@ paper-ripple {
       </template>
 
       <div id="sliderKnob" class="center-justified center horizontal layout" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
-          <paper-ripple center="" id="ink" class="circle" hidden$="[[!receivedFocusFromKeyboard]]">
-          </paper-ripple>
-          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
+          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
-
     <template is="dom-if" if="[[editable]]">
-      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange" value="[[_fixForInput(immediateValue)]]">
+      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
       </paper-input>
     </template>
   </template>
-
 </dom-module>
 
 <script>
@@ -17879,8 +18065,6 @@ paper-ripple {
 
     observers: [
       '_updateKnob(value, min, max, snaps, step)',
-      '_minChanged(min)',
-      '_maxChanged(max)',
       '_valueChanged(value)',
       '_immediateValueChanged(immediateValue)'
     ],
@@ -17897,7 +18081,6 @@ paper-ripple {
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
       }, 1);
@@ -17919,20 +18102,15 @@ paper-ripple {
       this.value = this._clampValue(this.value - this.step);
     },
 
-    _updateKnob: function(value) {
+    _updateKnob: function(value, min, max, snaps, step) {
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
+      this.setAttribute('aria-valuenow', value);
+
       this._positionKnob(this._calcRatio(value));
     },
 
-    _minChanged: function() {
-      this.setAttribute('aria-valuemin', this.min);
-    },
-
-    _maxChanged: function() {
-      this.setAttribute('aria-valuemax', this.max);
-    },
-
     _valueChanged: function() {
-      this.setAttribute('aria-valuenow', this.value);
       this.fire('value-change');
     },
 
@@ -17948,11 +18126,6 @@ paper-ripple {
       this.secondaryProgress = this._clampValue(this.secondaryProgress);
     },
 
-    _fixForInput: function(immediateValue) {
-      // paper-input/issues/114
-      return this.immediateValue.toString();
-    },
-
     _expandKnob: function() {
       this._setExpand(true);
     },
@@ -17964,15 +18137,9 @@ paper-ripple {
 
     _positionKnob: function(ratio) {
       this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
-      this._setPinValue(this.immediateValue);
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _inputChange: function() {
-      this.value = this.$$('#input').value;
-      this.fire('change');
     },
 
     _calcKnobPosition: function(ratio) {
@@ -18001,7 +18168,6 @@ paper-ripple {
       this._minx = - this._startx;
       this._maxx = this._w - this._startx;
       this.$.sliderKnob.classList.add('dragging');
-
       this._setDragging(true);
     },
 
@@ -18019,11 +18185,8 @@ paper-ripple {
       // update knob's position
       var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
-      this._setPinValue(immediateValue);
     },
-    _setPinValue: function (value) {
-        this.pinValue = value;
-    },
+
     _trackEnd: function() {
       var s = this.$.sliderKnob.style;
 
@@ -18111,22 +18274,60 @@ paper-ripple {
     },
 
     _incrementKey: function(event) {
-      if (event.detail.key === 'end') {
-        this.value = this.max;
-      } else {
-        this.increment();
+      if (!this.disabled) {
+        if (event.detail.key === 'end') {
+          this.value = this.max;
+        } else {
+          this.increment();
+        }
+        this.fire('change');
       }
-      this.fire('change');
     },
 
     _decrementKey: function(event) {
-      if (event.detail.key === 'home') {
-        this.value = this.min;
-      } else {
-        this.decrement();
+      if (!this.disabled) {
+        if (event.detail.key === 'home') {
+          this.value = this.min;
+        } else {
+          this.decrement();
+        }
+        this.fire('change');
       }
+    },
+
+    _changeValue: function(event) {
+      this.value = event.target.value;
       this.fire('change');
+    },
+
+    _inputKeyDown: function(event) {
+      event.stopPropagation();
+    },
+
+    // create the element ripple inside the `sliderKnob`
+    _createRipple: function() {
+      this._rippleContainer = this.$.sliderKnob;
+      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+    },
+
+    // Hide the ripple when user is not interacting with keyboard.
+    // This behavior is different from other ripple-y controls, but is
+    // according to spec: https://www.google.com/design/spec/components/sliders.html
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
+      }
+      if (this.hasRipple()) {
+        // note, ripple must be un-hidden prior to setting `holdDown`
+        if (receivedFocusFromKeyboard) {
+          this._ripple.removeAttribute('hidden');
+        } else {
+          this._ripple.setAttribute('hidden', '');
+        }
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
     }
+
   });
 
   /**
@@ -18257,6 +18458,7 @@ paper-ripple {
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      @apply(--iron-autogrow-textarea);
     }
 
     ::content textarea:invalid {
@@ -18270,7 +18472,7 @@ paper-ripple {
 
     
     <div class="textarea-container fit">
-      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
+      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" disabled$="[[disabled]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
     </div>
   </template>
 </dom-module>
@@ -18465,7 +18667,14 @@ paper-ripple {
         return;
       }
 
-      textarea.value = this.bindValue;
+      // If the bindValue changed manually, then we need to also update
+      // the underlying textarea's value. Otherwise this change was probably
+      // generated from the _onInput handler, and the two values are already
+      // the same.
+      if (textarea.value !== this.bindValue) {
+        textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+      }
+
       this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -18590,7 +18799,7 @@ paper-ripple {
   });
 </script>
 <dom-module id="paper-checkbox" assetpath="bower_components/paper-checkbox/">
-  <template>
+  <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -18742,7 +18951,6 @@ paper-ripple {
     </style>
 
     <div id="checkboxContainer">
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
       <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
@@ -18756,8 +18964,7 @@ paper-ripple {
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -18784,20 +18991,6 @@ paper-ripple {
         }
       },
 
-      attached: function() {
-        this._isReady = true;
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
-      },
-
       _computeCheckboxClass: function(checked, invalid) {
         var className = '';
         if (checked) {
@@ -18811,7 +19004,14 @@ paper-ripple {
 
       _computeCheckmarkClass: function(checked) {
         return checked ? '' : 'hidden';
+      },
+
+      // create ripple inside the checkboxContainer
+      _createRipple: function() {
+        this._rippleContainer = this.$.checkboxContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
+
     });
   </script>
 </dom-module>
@@ -18912,7 +19112,7 @@ paper-ripple {
   </script>
 </dom-module>
 <dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
-  <template>
+  <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -19023,7 +19223,6 @@ paper-ripple {
     <div id="radioContainer">
       <div id="offRadio"></div>
       <div id="onRadio"></div>
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
     </div>
 
     <div id="radioLabel"><content></content></div>
@@ -19035,8 +19234,7 @@ paper-ripple {
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -19058,45 +19256,22 @@ paper-ripple {
          * @event iron-change
          */
 
-         ariaActiveAttribute: {
-           value: 'aria-checked'
-         }
-      },
-
-      attached: function() {
-        this._isReady = true;
-
-        // Don't stomp over a user-set aria-label.
-        if (!this.getAttribute('aria-label')) {
-          this.updateAriaLabel();
+        ariaActiveAttribute: {
+          type: String,
+          value: 'aria-checked'
         }
       },
 
-      /**
-       * Update the checkbox aria-label. This is a temporary workaround not
-       * being able to observe changes in <content>
-       * (see: https://github.com/Polymer/polymer/issues/1773)
-       *
-       * Call this if you manually change the contents of the checkbox
-       * and want the aria-label to match the new contents.
-       */
-      updateAriaLabel: function() {
-        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
-      },
-
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
+      // create the element ripple inside the `radioContainer`
+      _createRipple: function() {
+        this._rippleContainer = this.$.radioContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
     })
   </script>
 
 </dom-module>
-<dom-module name="paper-radio-group">
+<dom-module id="paper-radio-group" assetpath="bower_components/paper-radio-group/">
   <style>
     :host {
       display: inline-block;
@@ -19129,6 +19304,12 @@ paper-ripple {
 
     properties: {
       /**
+       * Fired when the radio group selection changes.
+       *
+       * @event paper-radio-group-changed
+       */
+
+      /**
        * Overriden from Polymer.IronSelectableBehavior
        */
       attrForSelected: {
@@ -19150,6 +19331,14 @@ paper-ripple {
       selectable: {
         type: String,
         value: 'paper-radio-button'
+      },
+
+      /**
+       * If true, radio-buttons can be deselected
+       */
+      allowEmptySelection: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -19165,10 +19354,16 @@ paper-ripple {
       if (this.selected) {
         var oldItem = this._valueToItem(this.selected);
 
-        // Do not allow unchecking the selected item.
         if (this.selected == value) {
-          oldItem.checked = true;
-          return;
+          // If deselecting is allowed we'll have to apply an empty selection.
+          // Otherwise, we should force the selection to stay and make this
+          // action a no-op.
+          if (this.allowEmptySelection) {
+            value = '';
+          } else {
+            oldItem.checked = true;
+            return;
+          }
         }
 
         if (oldItem)

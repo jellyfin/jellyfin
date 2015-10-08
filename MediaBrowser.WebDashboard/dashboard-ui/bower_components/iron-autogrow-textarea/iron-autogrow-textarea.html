@@ -26,6 +26,12 @@ Example:
 Because the `textarea`'s `value` property is not observable, you should use
 this element's `bind-value` instead for imperative updates.
 
+### Styling
+The following custom properties and mixins are available for styling:
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`
+
 @group Iron Elements
 @hero hero.svg
 @demo demo/index.html
@@ -62,6 +68,7 @@ this element's `bind-value` instead for imperative updates.
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      @apply(--iron-autogrow-textarea);
     }
 
     ::content textarea:invalid {
@@ -82,6 +89,7 @@ this element's `bind-value` instead for imperative updates.
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
         required$="[[required]]"
+        disabled$="[[disabled]]"
         rows$="[[rows]]"
         maxlength$="[[maxlength]]"></textarea>
     </div>
@@ -278,7 +286,14 @@ this element's `bind-value` instead for imperative updates.
         return;
       }
 
-      textarea.value = this.bindValue;
+      // If the bindValue changed manually, then we need to also update
+      // the underlying textarea's value. Otherwise this change was probably
+      // generated from the _onInput handler, and the two values are already
+      // the same.
+      if (textarea.value !== this.bindValue) {
+        textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+      }
+
       this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});

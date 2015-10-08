@@ -14,10 +14,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 
 <!--
-`paper-radio-group` allows user to select only one radio button from a set.
+Material design: [Radio button](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-radio-button)
+
+`paper-radio-group` allows user to select at most one radio button from a set.
 Checking one radio button that belongs to a radio group unchecks any
 previously checked radio button within the same group. Use
 `selected` to get or set the selected radio button.
+
+The <paper-radio-buttons> inside the group must have the `name` attribute
+set.
 
 Example:
 
@@ -27,7 +32,15 @@ Example:
       <paper-radio-button name="large">Large</paper-radio-button>
     </paper-radio-group>
 
-See <a href="paper-radio-button.html">paper-radio-button</a> for more
+Radio-button-groups can be made optional, and allow zero buttons to be selected:
+
+    <paper-radio-group selected="small" allow-empty-selection>
+      <paper-radio-button name="small">Small</paper-radio-button>
+      <paper-radio-button name="medium">Medium</paper-radio-button>
+      <paper-radio-button name="large">Large</paper-radio-button>
+    </paper-radio-group>
+
+See <a href="paper-radio-button">paper-radio-button</a> for more
 information about `paper-radio-button`.
 
 @group Paper Elements
@@ -36,7 +49,7 @@ information about `paper-radio-button`.
 @demo demo/index.html
 -->
 
-<dom-module name="paper-radio-group">
+<dom-module id="paper-radio-group">
   <style>
     :host {
       display: inline-block;
@@ -69,6 +82,12 @@ information about `paper-radio-button`.
 
     properties: {
       /**
+       * Fired when the radio group selection changes.
+       *
+       * @event paper-radio-group-changed
+       */
+
+      /**
        * Overriden from Polymer.IronSelectableBehavior
        */
       attrForSelected: {
@@ -90,6 +109,14 @@ information about `paper-radio-button`.
       selectable: {
         type: String,
         value: 'paper-radio-button'
+      },
+
+      /**
+       * If true, radio-buttons can be deselected
+       */
+      allowEmptySelection: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -105,10 +132,16 @@ information about `paper-radio-button`.
       if (this.selected) {
         var oldItem = this._valueToItem(this.selected);
 
-        // Do not allow unchecking the selected item.
         if (this.selected == value) {
-          oldItem.checked = true;
-          return;
+          // If deselecting is allowed we'll have to apply an empty selection.
+          // Otherwise, we should force the selection to stay and make this
+          // action a no-op.
+          if (this.allowEmptySelection) {
+            value = '';
+          } else {
+            oldItem.checked = true;
+            return;
+          }
         }
 
         if (oldItem)

@@ -1,6 +1,6 @@
 {
   "name": "paper-behaviors",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
@@ -25,6 +25,7 @@
   "homepage": "https://github.com/PolymerElements/paper-behaviors",
   "dependencies": {
     "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
+    "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#^1.0.0",
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
@@ -36,11 +37,11 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.4",
+  "_release": "1.0.5",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.4",
-    "commit": "a7ac7fbdb79b4d82416ec9b41613575386d0d226"
+    "tag": "v1.0.5",
+    "commit": "57b4ddedf6fa54171d0c9d078f340399724bfe4e"
   },
   "_source": "git://github.com/PolymerElements/paper-behaviors.git",
   "_target": "^1.0.0",

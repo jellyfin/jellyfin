@@ -39,6 +39,8 @@
     "TextEnjoyBonusFeatures": "Enjoy Bonus Features",
     "TitleLiveTV": "Live TV",
     "ButtonCancelSyncJob": "Cancel sync",
+    "HeaderAddTag": "Add Tag",
+    "LabelTag": "Tag:",
     "ButtonSelectView": "Select view",
     "TitleSync": "Sync",
     "OptionAutomatic": "Auto",

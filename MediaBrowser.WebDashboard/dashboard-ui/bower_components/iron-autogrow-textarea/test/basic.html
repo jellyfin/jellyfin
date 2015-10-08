@@ -88,6 +88,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.isTrue(finalHeight < initialHeight);
         });
 
+        test('an undefined bindValue is the empty string', function() {
+          var autogrow = fixture('basic');
+          var initialHeight = autogrow.offsetHeight;
+
+          autogrow.bindValue = 'batman\nand\nrobin';
+          var finalHeight = autogrow.offsetHeight;
+          assert.isTrue(finalHeight > initialHeight);
+
+          autogrow.bindValue = undefined;
+          assert.equal(autogrow.offsetHeight, initialHeight);
+          assert.equal(autogrow.textarea.value, '');
+        });
+
         test('textarea selection works', function() {
           var autogrow = fixture('basic');
           var textarea = autogrow.textarea;

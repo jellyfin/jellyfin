@@ -18,6 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
   <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-ripple.html">
@@ -56,18 +57,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="NoinkTarget">
+    <template>
+      <div id="RippleContainer">
+        <paper-ripple noink></paper-ripple>
+      </div>
+    </template>
+  </test-fixture>
+
   <script>
-    function FakeMouseEvent (target, relativeX, relativeX) {
-      var rect = target.getBoundingClientRect();
-
-      return {
-        detail: {
-          x: rect.left + relativeX,
-          y: rect.top + relativeX
-        }
-      };
-    }
-
     suite('<paper-ripple>', function () {
       var mouseEvent;
       var rippleContainer;
@@ -77,13 +75,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         setup(function () {
           rippleContainer = fixture('TrivialRipple');
           ripple = rippleContainer.firstElementChild;
-
-          mouseEvent = new FakeMouseEvent(ripple, 10, 10);
         });
 
         test('creates a ripple', function () {
           expect(ripple.ripples.length).to.be.eql(0);
-          ripple.downAction(mouseEvent);
+          MockInteractions.down(ripple);
           expect(ripple.ripples.length).to.be.eql(1);
         });
 
@@ -91,18 +87,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           expect(ripple.ripples.length).to.be.eql(0);
 
           for (var i = 0; i < 3; ++i) {
-            ripple.downAction(mouseEvent);
+            MockInteractions.down(ripple);
             expect(ripple.ripples.length).to.be.eql(i + 1);
           }
         });
       });
 
+      suite('when holdDown is togggled', function() {
+        setup(function () {
+          rippleContainer = fixture('TrivialRipple');
+          ripple = rippleContainer.firstElementChild;
+        });
+
+        test('generates a ripple', function() {
+          ripple.holdDown = true;
+          expect(ripple.ripples.length).to.be.eql(1);
+        });
+
+        test('generates a ripple when noink', function() {
+          ripple.noink = true;
+          ripple.holdDown = true;
+          expect(ripple.ripples.length).to.be.eql(1);
+
+        });
+
+      });
+
+      suite('when target is noink', function () {
+        setup(function () {
+          rippleContainer = fixture('NoinkTarget');
+          ripple = rippleContainer.firstElementChild;
+        });
+
+        test('tapping does not create a ripple', function () {
+          expect(ripple.keyEventTarget).to.be.equal(ripple);
+          expect(ripple.ripples.length).to.be.eql(0);
+          MockInteractions.down(ripple);
+          expect(ripple.ripples.length).to.be.eql(0);
+        });
+
+        test('ripples can be manually created', function () {
+          expect(ripple.ripples.length).to.be.eql(0);
+          ripple.simulatedRipple()
+          expect(ripple.ripples.length).to.be.eql(1);
+        });
+      });
+
+      
+
       suite('with the `center` attribute set to true', function () {
         setup(function () {
           rippleContainer = fixture('CenteringRipple');
           ripple = rippleContainer.firstElementChild;
-
-          mouseEvent = new FakeMouseEvent(ripple, 10, 10);
         });
 
         test('ripples will center', function (done) {
@@ -112,11 +148,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           div.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
           div.style.transform = 'translate3d(0px, 0px, 0)';
 
-          ripple.downAction(mouseEvent);
+          MockInteractions.down(ripple);
 
           waveContainerElement = ripple.ripples[0].waveContainer;
 
-          ripple.upAction(mouseEvent);
+          MockInteractions.up(ripple);
 
           window.requestAnimationFrame(function () {
             var currentTransform = waveContainerElement.style.transform;
@@ -137,15 +173,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         setup(function () {
           rippleContainer = fixture('RecenteringRipple');
           ripple = rippleContainer.firstElementChild;
-          mouseEvent = new FakeMouseEvent(ripple, 10, 10);
         });
         test('ripples will gravitate towards the center', function (done) {
           var waveContainerElement;
           var waveTranslateString;
-          ripple.downAction(mouseEvent);
+          MockInteractions.down(ripple, {x: 10, y: 10});
           waveContainerElement = ripple.ripples[0].waveContainer;
           waveTranslateString = waveContainerElement.style.transform;
-          ripple.upAction(mouseEvent);
+          MockInteractions.up(ripple);
           window.requestAnimationFrame(function () {
             try {
               expect(waveTranslateString).to.be.ok;

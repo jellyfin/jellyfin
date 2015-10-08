@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-slider a11y test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../paper-slider.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+</head>
+<body>
+
+  <test-fixture id="trivialSlider">
+    <template>
+      <paper-slider min="0" max="100" value="50"></paper-slider>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('a11y', function() {
+      var slider;
+
+      setup(function() {
+        slider = fixture('trivialSlider');
+      });
+
+      test('has aria role "slider"', function() {
+        assert.equal(slider.getAttribute('role'), 'slider');
+        assert.equal(slider.getAttribute('aria-valuemin'), slider.min);
+        assert.equal(slider.getAttribute('aria-valuemax'), slider.max);
+        assert.equal(slider.getAttribute('aria-valuenow'), slider.value);
+      });
+
+      test('interacting without keyboard causes no ripple', function() {
+        MockInteractions.down(slider.$.sliderKnob);
+        assert.isTrue(slider.hasRipple());
+        var ripple = slider.getRipple();
+        assert.equal(ripple.offsetHeight, 0);
+        assert.equal(ripple.offsetWidth, 0);
+      });
+
+      test('interacting with keyboard causes ripple', function() {
+        MockInteractions.focus(slider);
+        MockInteractions.pressSpace(slider.$.sliderKnob);
+        assert.isTrue(slider.hasRipple());
+        var ripple = slider.getRipple();
+        assert.isAbove(ripple.offsetHeight, 0);
+        assert.isAbove(ripple.offsetWidth, 0);
+      });
+
+      a11ySuite('trivialSlider');
+
+    });
+
+  </script>
+
+</body>
+</html>

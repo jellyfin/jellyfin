@@ -1208,7 +1208,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     top: 0;
     background-color: rgba(0, 0, 0, .3);
     z-index: 999;
-    border: 1px solid #52B54B;
+    border: 1px solid #43A047;
 }
 
     .itemSelectionPanel #checkbox {
@@ -1221,7 +1221,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     left: 0;
     right: 0;
     height: 50px;
-    background: #52B54B;
+    background: #43A047;
     z-index: 1000;
 }
 

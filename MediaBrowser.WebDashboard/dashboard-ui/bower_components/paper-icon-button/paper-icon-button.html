@@ -17,7 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 
 <!--
-Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
+Material design: [Icon toggles](https://www.google.com/design/spec/components/buttons.html#buttons-toggle-buttons)
 
 `paper-icon-button` is a button with an image placed at the center. When the user touches
 the button, a ripple effect emanates from the center of the button.
@@ -37,7 +37,7 @@ Example:
     <paper-icon-button icon="favorite"></paper-icon-button>
     <paper-icon-button src="star.png"></paper-icon-button>
 
-###Styling
+### Styling
 
 Style the button with CSS as you would a normal DOM element. If you are using the icons
 provided by `iron-icons`, they will inherit the foreground color of the button.
@@ -46,21 +46,14 @@ provided by `iron-icons`, they will inherit the foreground color of the button.
     <paper-icon-button icon="favorite" style="color: red;"></paper-icon-button>
 
 By default, the ripple is the same color as the foreground at 25% opacity. You may
-customize the color using this selector:
-
-    /* make #my-button use a blue ripple instead of foreground color */
-    #my-button::shadow #ripple {
-      color: blue;
-    }
-
-The opacity of the ripple is not customizable via CSS.
+customize the color using the `--paper-icon-button-ink-color` custom property.
 
 The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--paper-icon-button-disabled-text` | The color of the disabled button | `--primary-text-color`
-`--paper-icon-button-ink-color` | Selected/focus ripple color | `--default-primary-color`
+`--paper-icon-button-disabled-text` | The color of the disabled button | `--disabled-text-color`
+`--paper-icon-button-ink-color` | Selected/focus ripple color | `--primary-text-color`
 `--paper-icon-button` | Mixin for a button | `{}`
 `--paper-icon-button-disabled` | Mixin for a disabled button | `{}`
 
@@ -70,88 +63,93 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-icon-button">
-  <style>
+  <template strip-whitespace>
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        width: 24px;
+        @apply(--paper-icon-button);
+      }
 
-      @apply(--paper-icon-button);
-    }
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
 
-    :host #ink {
-      color: var(--paper-icon-button-ink-color, --primary-text-color);
-      opacity: 0.6;
-    }
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+        @apply(--paper-icon-button-disabled);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-      pointer-events: none;
-      cursor: auto;
-      @apply(--paper-icon-button-disabled);
-    }
-  </style>
-  <template>
-    <paper-ripple id="ink" class="circle" center></paper-ripple>
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
+
+  <script>
+    Polymer({
+      is: 'paper-icon-button',
+
+      hostAttributes: {
+        role: 'button',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.PaperInkyFocusBehavior
+      ],
+
+      properties: {
+        /**
+         * The URL of an image for the icon. If the src property is specified,
+         * the icon property should not be.
+         */
+        src: {
+          type: String
+        },
+
+        /**
+         * Specifies the icon name or index in the set of icons available in
+         * the icon's icon set. If the icon property is specified,
+         * the src property should not be.
+         */
+        icon: {
+          type: String
+        },
+
+        /**
+         * Specifies the alternate text for the button, for accessibility.
+         */
+        alt: {
+          type: String,
+          observer: "_altChanged"
+        }
+      },
+
+      _altChanged: function(newValue, oldValue) {
+        var label = this.getAttribute('aria-label');
+
+        // Don't stomp over a user-set aria-label.
+        if (!label || oldValue == label) {
+          this.setAttribute('aria-label', newValue);
+        }
+      }
+    });
+  </script>
 </dom-module>
-<script>
-  Polymer({
-    is: 'paper-icon-button',
-
-    hostAttributes: {
-      role: 'button',
-      tabindex: '0'
-    },
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    properties: {
-      /**
-       * The URL of an image for the icon. If the src property is specified,
-       * the icon property should not be.
-       */
-      src: {
-        type: String
-      },
-
-      /**
-       * Specifies the icon name or index in the set of icons available in
-       * the icon's icon set. If the icon property is specified,
-       * the src property should not be.
-       */
-      icon: {
-        type: String
-      },
-
-      /**
-       * Specifies the alternate text for the button, for accessibility.
-       */
-      alt: {
-        type: String,
-        observer: "_altChanged"
-      }
-    },
-
-    _altChanged: function(newValue, oldValue) {
-      var label = this.getAttribute('aria-label');
-
-      // Don't stomp over a user-set aria-label.
-      if (!label || oldValue == label) {
-        this.setAttribute('aria-label', newValue);
-      }
-    }
-  });
-</script>

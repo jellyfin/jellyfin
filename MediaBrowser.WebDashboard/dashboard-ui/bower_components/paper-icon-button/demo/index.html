@@ -27,7 +27,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       paper-icon-button {
         margin-left: 30px;
         display: block;
-        width: 24px;
         text-align: center;
       }
 
@@ -70,17 +69,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       paper-icon-button.huge {
         margin-left: 0px;
         width: 100px;
+        height: 100px;
         --paper-icon-button-ink-color: var(--paper-indigo-500);
-      }
-
-      paper-icon-button.huge::shadow #icon {
-        width: 100px;
-        height: 100px;
-      }
-
-      paper-icon-button.huge #icon {
-        width: 100px;
-        height: 100px;
       }
     </style>
 
@@ -134,6 +124,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-icon-button icon="favorite" alt="heart" class="huge"></paper-icon-button>
           <br><br><br>
           <paper-icon-button icon="polymer" alt="polymer" class="huge"></paper-icon-button>
+        </div>
+      </div>
+
+      <div>
+        <h4>Noink</h4>
+        <div class="horizontal-section">
+          <paper-icon-button noink icon="favorite" alt="heart"></paper-icon-button>
+          <br><br><br>
+          <paper-icon-button noink icon="polymer" alt="polymer"></paper-icon-button>
         </div>
       </div>
     </div>

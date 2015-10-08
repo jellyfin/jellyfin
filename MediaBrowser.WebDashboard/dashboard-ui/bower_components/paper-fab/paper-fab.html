@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
 
 <!--
-Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Button</a>
+Material design: [Floating Action Button](https://www.google.com/design/spec/components/buttons-floating-action-button.html)
 
 `paper-fab` is a floating action button. It contains an image placed in the center and
 comes in two sizes: regular size and a smaller size by applying the attribute `mini`. When
@@ -49,6 +49,7 @@ Custom property | Description | Default
 `--paper-fab` | Mixin applied to the button | `{}`
 `--paper-fab-mini` | Mixin applied to a mini button | `{}`
 `--paper-fab-disabled` | Mixin applied to a disabled button | `{}`
+`--paper-fab-iron-icon` | Mixin applied to the iron-icon within the button | `{}`
 
 @group Paper Elements
 @demo demo/index.html
@@ -56,63 +57,59 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-fab">
-  <style>
+  <template strip-whitespace>
+    <style include="paper-material">
 
-    :host {
-      display: inline-block;
-      position: relative;
-      outline: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      user-select: none;
-      cursor: pointer;
+      :host {
+        display: inline-block;
+        position: relative;
+        outline: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        user-select: none;
+        cursor: pointer;
 
-      box-sizing: border-box;
-      min-width: 0;
-      width: 56px;
-      height: 56px;
-      background: var(--paper-fab-background, --accent-color);
-      color: var(--text-primary-color);
-      border-radius: 50%;
-      padding: 16px;
+        box-sizing: border-box;
+        min-width: 0;
+        width: 56px;
+        height: 56px;
+        background: var(--paper-fab-background, --accent-color);
+        color: var(--text-primary-color);
+        border-radius: 50%;
+        padding: 16px;
 
-      z-index: 0;
+        z-index: 0;
 
-      @apply(--paper-fab);
-    }
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+        @apply(--paper-fab);
+      }
 
-    :host([mini]) {
-      width: 40px;
-      height: 40px;
-      padding: 8px;
+      :host([mini]) {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
 
-      @apply(--paper-fab-mini);
-    }
+        @apply(--paper-fab-mini);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-fab-disabled-text, --paper-grey-500);
-      background: var(--paper-fab-disabled-background, --paper-grey-300);
-      @apply(--paper-fab-disabled);
-    }
+      :host([disabled]) {
+        color: var(--paper-fab-disabled-text, --paper-grey-500);
+        background: var(--paper-fab-disabled-background, --paper-grey-300);
+        @apply(--paper-fab-disabled);
+      }
 
-    paper-material {
-      border-radius: inherit;
-      @apply(--layout-fit);
-      @apply(--layout-vertical);
-      @apply(--layout-center-center);
-    }
+      iron-icon {
+        @apply(--paper-fab-iron-icon);
+      }
 
-    .keyboard-focus {
-      background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
-    }
-  </style>
-  <template>
-    <paper-ripple></paper-ripple>
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated>
-      <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
-    </paper-material>
+      :host(.keyboard-focus) {
+        background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
+      }
+    </style>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
   </template>
 </dom-module>
 <script>
@@ -163,14 +160,6 @@ Custom property | Description | Default
         value: false,
         reflectToAttribute: true
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
 
   });

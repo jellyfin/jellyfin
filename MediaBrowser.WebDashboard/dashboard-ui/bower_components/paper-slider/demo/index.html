@@ -17,7 +17,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="../../webcomponentsjs/webcomponents.js"></script>
-  <link rel="stylesheet" href="../../paper-styles/paper-styles.html">
   <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="../paper-slider.html">
 
@@ -51,9 +50,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       --paper-slider-pin-color: var(--paper-orange-500);
     }
 
-    #ratingsLabel {
+    .caption {
       padding-left: 12px;
       color: #a0a0a0;
+    }
+
+    #grade {
+      --paper-slider-secondary-color: var(--paper-red-a200);
     }
 
   </style>
@@ -70,9 +73,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>Hydrogen</div>
       <paper-slider value="0"></paper-slider><br><br>
       <div>Nitrogen</div>
-      <paper-slider value="78"></paper-slider><br><br>
+      <paper-slider value="78" secondary-progress="85"></paper-slider><br><br>
       <div>Sprinkles</div>
-      <paper-slider disabled value="33"></paper-slider>
+      <paper-slider disabled value="33" secondary-progress="66"></paper-slider>
     </div>
 
     <h4>Editable</h4>
@@ -99,8 +102,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="vertical-section">
       <div>Brightness</div><br>
       <paper-slider pin value="20" class="orange"></paper-slider>
-      <div>Ratings: <span id="ratingsLabel"></span></div><br>
+      <div>Ratings: <span id="ratingsLabel" class="caption"></span></div><br>
       <paper-slider id="ratings" pin snaps max="10" step="1" value="5" class="orange"></paper-slider>
+      <div>Grade: <span id="gradeLabel" class="caption"></span></div><br>
+      <paper-slider id="grade" pin value="20" secondary-progress="70" class="blue"></paper-slider>
     </div>
   </div>
 
@@ -111,6 +116,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       document.querySelector('#ratingsLabel').textContent = ratings.value;
     });
 
+    var grade = document.querySelector('#grade');
+    grade.addEventListener('value-change', function() {
+      var label = (grade.value < grade.secondaryProgress) ? "Fail" : "Pass" ;
+      document.querySelector('#gradeLabel').textContent = grade.value + " (" + label + ")";
+    });
+
+    var test = document.querySelector("#test");
     test.addEventListener('value-changed', function(e) {
       console.log(e);
     });

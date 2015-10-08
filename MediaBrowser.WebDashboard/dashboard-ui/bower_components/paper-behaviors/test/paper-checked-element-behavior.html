@@ -1,0 +1,94 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+<head>
+  <title>paper-checked-element-behavior</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-checked-element-behavior.html">
+</head>
+<body>
+
+  <dom-module id="test-checked">
+    <template>
+    </template>
+    <script>
+    HTMLImports.whenReady(function() {
+      Polymer({
+        is: 'test-checked',
+        behaviors: [
+          Polymer.PaperCheckedElementBehavior
+        ]
+      });
+    });
+    </script>
+  </dom-module>
+
+  <test-fixture id="basic">
+    <template>
+      <test-checked></test-checked>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('PaperCheckedElementBehavior', function() {
+      var checked;
+
+      setup(function() {
+        checked = fixture('basic');
+      });
+
+      test('element checked when tapped to check', function() {
+        MockInteractions.tap(checked);
+        assert.isTrue(checked.checked);
+      });
+
+      test('element checked when active', function() {
+        checked.active = true;
+        assert.isTrue(checked.checked);
+      });
+
+      test('element not checked when disabled and made active', function() {
+        checked.disabled = true;
+        checked.active = true;
+        assert.isFalse(checked.checked);
+      });
+
+      test('element not checked when disabled and tapped', function() {
+        checked.disabled = true;
+        MockInteractions.tap(checked);
+        assert.isFalse(checked.checked);
+      });
+
+      test('element ripple has checked attribute when element tapped to check', function() {
+        MockInteractions.tap(checked);
+        assert.isTrue(checked.hasRipple());
+        assert.isTrue(checked.getRipple().hasAttribute('checked'));
+      });
+
+      test('element ripple does not have checked attribute when element tapped to uncheck', function() {
+        MockInteractions.tap(checked);
+        MockInteractions.tap(checked);
+        assert.isFalse(checked.getRipple().hasAttribute('checked'));
+      });
+
+    });
+  </script>
+
+</body>
+</html>

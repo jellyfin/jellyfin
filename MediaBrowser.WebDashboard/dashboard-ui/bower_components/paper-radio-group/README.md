@@ -16,5 +16,5 @@ Example:
 </paper-radio-group>
 ```
 
-See <a href="paper-radio-button.html">paper-radio-button</a> for more
+See <a href="https://github.com/PolymerElements/paper-radio-button">paper-radio-button</a> for more
 information about `paper-radio-button`.

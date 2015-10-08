@@ -12,10 +12,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../iron-checked-element-behavior/iron-checked-element-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
 
 <!--
+Material design: [Switch](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-switch)
+
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
 by tapping or by dragging the switch.
 
@@ -48,7 +49,7 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-toggle-button">
-  <template>
+  <template strip-whitespace>
 
     <style>
       :host {
@@ -156,9 +157,7 @@ Custom property | Description | Default
 
     <div class="toggle-container">
       <div id="toggleBar" class="toggle-bar"></div>
-      <div id="toggleButton" class="toggle-button">
-        <paper-ripple id="ink" class="toggle-ink circle" recenters></paper-ripple>
-      </div>
+      <div id="toggleButton" class="toggle-button"></div>
     </div>
 
     <div class="toggle-label"><content></content></div>
@@ -170,8 +169,7 @@ Custom property | Description | Default
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -195,20 +193,6 @@ Custom property | Description | Default
 
       listeners: {
         track: '_ontrack'
-      },
-
-      ready: function() {
-        this._isReady = true;
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
       },
 
       _ontrack: function(event) {
@@ -243,6 +227,16 @@ Custom property | Description | Default
       _trackEnd: function(track) {
         this.$.toggleButton.classList.remove('dragging');
         this.transform('', this.$.toggleButton);
+      },
+
+      // customize the element's ripple
+      _createRipple: function() {
+        this._rippleContainer = this.$.toggleButton;
+        var ripple = Polymer.PaperRippleBehavior._createRipple();
+        ripple.id = 'ink';
+        ripple.setAttribute('recenters', '');
+        ripple.classList.add('circle', 'toggle-ink');
+        return ripple;
       }
 
     });
