@@ -16,12 +16,12 @@
     text-align: center;
 }
 
-    .mediaButton iron-icon {
-        height: 40px;
-        width: 40px;
-    }
+.mediaButton {
+    height: 40px;
+    width: 40px;
+}
 
-    .mediaButton.remoteControlButton iron-icon, .mediaButton.muteButton iron-icon, .mediaButton.unmuteButton iron-icon {
+    .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
         height: 26px;
     }
 
@@ -62,7 +62,7 @@
     max-width: 130px;
 }
 
-.toggleRepeatButton iron-icon {
+.toggleRepeatButton {
     height: 32px;
 }
 
@@ -144,8 +144,8 @@
 }
 
 .nowPlayingBarPositionSlider #sliderKnobInner {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .nowPlayingBarRight {

@@ -18,7 +18,7 @@
     max-width: 130px;
 }
 
-.mediaButton.infoButton iron-icon {
+.mediaButton.infoButton {
     width: 34px;
     height: 34px;
 }

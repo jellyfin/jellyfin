@@ -75,30 +75,26 @@
     bottom: 0;
     right: 0;
     color: #333;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(210,210,210,.9);
+    border-radius: 500px;
+    padding: 6px;
+    margin: 0 .5em .5em 0;
 }
-
-    .cardOverlayPlayButton iron-icon {
-        width: 20px;
-        height: 20px;
-        background-color: rgba(210,210,210,.9);
-        border-radius: 500px;
-        padding: 6px;
-    }
 
 .cardOverlayMoreButton {
     position: absolute;
     bottom: 0;
     right: 0;
     color: #333;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(210,210,210,.9);
+    border-radius: 500px;
+    padding: 6px;
+    margin: 0 .5em .5em 0;
 }
-
-    .cardOverlayMoreButton iron-icon {
-        width: 20px;
-        height: 20px;
-        background-color: rgba(210,210,210,.9);
-        border-radius: 500px;
-        padding: 6px;
-    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);

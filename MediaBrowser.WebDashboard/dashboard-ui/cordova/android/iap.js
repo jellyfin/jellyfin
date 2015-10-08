@@ -68,7 +68,7 @@
 
         options.push({
             feature: 'embypremieremonthly',
-            buttonText: 'EmbyPremiereMonthlyWithPrice'
+            buttonText: 'EmbyPremiereMonthly'
         });
 
         options = options.filter(function (o) {

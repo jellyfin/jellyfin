@@ -369,6 +369,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: #444;
     width: 40px;
     height: 40px;
+    padding: 8px;
 }
 
 .itemBackdrop {
@@ -1223,7 +1224,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     height: 50px;
     background: #388E3C;
     z-index: 1000;
-    padding: 0 .5em 0 .25em;
+    padding: 0 .75em 0 .25em;
 }
 
     .selectionCommandsPanel paper-icon-button {
@@ -1239,7 +1240,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 1px;
 }
 
-.selectionCommandsPanel iron-icon {
+.selectionCommandsPanel paper-icon-button {
     height: 32px;
     width: 32px;
 }
@@ -1735,10 +1736,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     z-index: 1002;
 }
 
-    .btnStopSlideshow iron-icon {
-        width: 40px;
-        height: 40px;
-    }
+.btnStopSlideshow {
+    width: 40px;
+    height: 40px;
+}
 
 @media all and (max-width:1200px) {
 

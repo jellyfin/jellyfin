@@ -11,8 +11,10 @@
 
 .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
     margin: 2px 1px;
-    width: 70px;
-    height: 70px;
+}
+
+.nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
+    display: inline-block !important;
 }
 
 .nowPlayingPageImage img {
@@ -218,7 +220,7 @@
     }
 }
 
-.nowPlayingPageUserDataButtons iron-icon {
+.nowPlayingPageUserDataButtons paper-icon-button {
     width: 40px;
     height: 40px;
 }

@@ -118,18 +118,14 @@ paper-button span {
     vertical-align: middle;
 }
 
-paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
+paper-button:not(.iconRight) > iron-icon {
     margin-right: .5em;
 }
 
-paper-button.iconRight iron-icon, paper-button.iconRight .fa {
+paper-button.iconRight iron-icon {
     position: absolute;
     right: 5px;
     top: 5px;
-}
-
-paper-button .fa {
-    vertical-align: middle;
 }
 
 .clearButton {
@@ -332,12 +328,15 @@ paper-slider {
 .paper-slider-0 paper-ripple.paper-slider {
     color: #52B54B;
 }
+
 .paper-progress-0 #primaryProgress.paper-progress {
     background-color: #52B54B;
 }
+
 .paper-progress-0 #secondaryProgress.paper-progress {
     background-color: #92B54B;
 }
+
 paper-menu-item {
     padding: .35em .5em;
     cursor: pointer;

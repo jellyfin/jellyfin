@@ -65,7 +65,7 @@
     padding-top: .5em;
 }
 
-    .videoAdvancedControls iron-icon {
+    .videoAdvancedControls paper-icon-button {
         width: 30px;
         height: 30px;
     }
