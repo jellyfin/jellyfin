@@ -36,6 +36,11 @@
         CanDownload,
 
         /// <summary>
+        /// The channel information
+        /// </summary>
+        ChannelInfo,
+
+        /// <summary>
         /// The chapters
         /// </summary>
         Chapters,
