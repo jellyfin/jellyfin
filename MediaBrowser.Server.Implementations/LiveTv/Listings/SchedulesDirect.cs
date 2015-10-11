@@ -82,7 +82,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 // The data can be large so give it some extra time
-                TimeoutMs = 60000
+                TimeoutMs = 60000,
+                LogErrorResponseBody = true
             };
 
             httpOptions.RequestHeaders["token"] = token;
@@ -123,7 +124,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     Url = ApiUrl + "/programs",
                     UserAgent = UserAgent,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    LogErrorResponseBody = true
                 };
 
                 httpOptions.RequestHeaders["token"] = token;
@@ -213,7 +215,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Url = ApiUrl + "/lineups/" + info.ListingsId,
                 UserAgent = UserAgent,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
             };
 
             httpOptions.RequestHeaders["token"] = token;
@@ -451,7 +454,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Url = ApiUrl + "/metadata/programs",
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                RequestContent = imageIdString
+                RequestContent = imageIdString,
+                LogErrorResponseBody = true
             };
             List<ScheduleDirect.ShowImages> images;
             using (var innerResponse2 = await _httpClient.Post(httpOptions))
@@ -478,7 +482,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Url = ApiUrl + "/headends?country=" + country + "&postalcode=" + location,
                 UserAgent = UserAgent,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
             };
 
             options.RequestHeaders["token"] = token;
@@ -595,7 +600,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Url = ApiUrl + "/token",
                 UserAgent = UserAgent,
                 RequestContent = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}",
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
             };
             //_logger.Info("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
@@ -633,7 +639,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Url = ApiUrl + "/lineups/" + info.ListingsId,
                 UserAgent = UserAgent,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
             };
 
             httpOptions.RequestHeaders["token"] = token;
@@ -673,7 +680,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Url = ApiUrl + "/lineups",
                 UserAgent = UserAgent,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
             };
 
             options.RequestHeaders["token"] = token;

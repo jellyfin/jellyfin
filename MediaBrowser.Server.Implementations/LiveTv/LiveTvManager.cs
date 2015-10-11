@@ -734,15 +734,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.IsSports = info.IsSports;
             recording.SeriesTimerId = info.SeriesTimerId;
             recording.StartDate = info.StartDate;
+
+            var statusChanged = info.Status != recording.Status;
+
             recording.Status = info.Status;
 
             recording.ServiceName = serviceName;
 
-            var originalPath = item.Path;
+            var pathChanged = false;
 
             if (!string.IsNullOrEmpty(info.Path))
             {
-                item.Path = info.Path;
+                pathChanged = !string.Equals(item.Path, info.Path);
                 var fileInfo = _fileSystem.GetFileInfo(info.Path);
 
                 recording.DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo);
@@ -750,16 +753,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             else if (!string.IsNullOrEmpty(info.Url))
             {
+                pathChanged = !string.Equals(item.Path, info.Url);
                 item.Path = info.Url;
             }
-
-            var pathChanged = !string.Equals(originalPath, item.Path);
 
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved || info.Status != recording.Status)
+            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved || statusChanged)
             {
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
@@ -1388,24 +1390,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, User user = null)
+        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, bool addChannelInfo, User user = null)
         {
             var program = (LiveTvProgram)item;
             var service = GetService(program);
 
-            var channel = GetInternalChannel(program.ChannelId);
-
             dto.Id = _tvDtoService.GetInternalProgramId(service.Name, program.ExternalId).ToString("N");
 
             dto.StartDate = program.StartDate;
-            dto.IsRepeat = program.IsRepeat;
             dto.EpisodeTitle = program.EpisodeTitle;
-            dto.ChannelType = program.ChannelType;
             dto.Audio = program.Audio;
 
             if (program.IsHD.HasValue && program.IsHD.Value)
             {
                 dto.IsHD = program.IsHD;
+            }
+            if (program.IsRepeat)
+            {
+                dto.IsRepeat = program.IsRepeat;
             }
             if (program.IsMovie)
             {
@@ -1436,13 +1438,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.IsPremiere = program.IsPremiere;
             }
 
-            if (channel != null)
+            if (addChannelInfo)
             {
-                dto.ChannelName = channel.Name;
+                var channel = GetInternalChannel(program.ChannelId);
 
-                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                if (channel != null)
                 {
-                    dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                    dto.ChannelName = channel.Name;
+
+                    if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                    {
+                        dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                    }
                 }
             }
         }
