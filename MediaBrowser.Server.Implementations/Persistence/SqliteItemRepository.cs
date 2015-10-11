@@ -1396,8 +1396,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(LiveTvVideoRecording),
             typeof(LiveTvAudioRecording),
             typeof(Series),
-            typeof(LiveTvAudioRecording),
-            typeof(LiveTvVideoRecording),
             typeof(Audio),
             typeof(MusicAlbum),
             typeof(MusicArtist),
