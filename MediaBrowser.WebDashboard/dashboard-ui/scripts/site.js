@@ -95,7 +95,7 @@ var Dashboard = {
             var url = data.url.toLowerCase();
 
             // Don't bounce to login on failures to contact our external servers
-            if (url.indexOf('emby.media') != -1) {
+            if (url.indexOf('emby.media') != -1 || url.indexOf('mb3admin.com') != -1) {
                 Dashboard.hideLoadingMsg();
                 return;
             }

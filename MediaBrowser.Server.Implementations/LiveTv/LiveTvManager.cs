@@ -759,7 +759,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved)
+            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved || info.Status != recording.Status)
             {
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
@@ -1292,7 +1292,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var idList = await Task.WhenAll(recordingTasks).ConfigureAwait(false);
 
-                CleanDatabaseInternal(idList.ToList(), new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                await CleanDatabaseInternal(idList.ToList(), new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
                 _lastRecordingRefreshTime = DateTime.UtcNow;
             }
@@ -1601,7 +1601,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var service = GetService(recording.ServiceName);
 
-            await service.DeleteRecordingAsync(recording.ExternalId, CancellationToken.None).ConfigureAwait(false);
+            try
+            {
+                await service.DeleteRecordingAsync(recording.ExternalId, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (ResourceNotFoundException)
+            {
+                
+            }
+
+            await _libraryManager.DeleteItem((BaseItem)recording).ConfigureAwait(false);
+
             _lastRecordingRefreshTime = DateTime.MinValue;
         }
 

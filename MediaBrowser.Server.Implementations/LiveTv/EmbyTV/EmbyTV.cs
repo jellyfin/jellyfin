@@ -280,6 +280,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
                 _recordingProvider.Delete(remove);
             }
+            else
+            {
+                throw new ResourceNotFoundException("Recording not found: " + recordingId);
+            }
         }
 
         public Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
@@ -360,9 +364,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult((IEnumerable<RecordingInfo>)_recordingProvider.GetAll());
+            var recordings = _recordingProvider.GetAll().ToList();
+            var updated = false;
+
+            foreach (var recording in recordings)
+            {
+                if (recording.Status == RecordingStatus.InProgress)
+                {
+                    if (string.IsNullOrWhiteSpace(recording.TimerId) || !_activeRecordings.ContainsKey(recording.TimerId))
+                    {
+                        recording.Status = RecordingStatus.Cancelled;
+                        recording.DateLastUpdated = DateTime.UtcNow;
+                        _recordingProvider.Update(recording);
+                        updated = true;
+                    }
+                }
+            }
+
+            if (updated)
+            {
+                recordings = _recordingProvider.GetAll().ToList();
+            }
+
+            return recordings;
         }
 
         public Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken)
@@ -417,7 +443,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var provider in GetListingProviders())
             {
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 
                 var list = programs.ToList();

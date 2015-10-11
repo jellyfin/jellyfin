@@ -13,8 +13,6 @@
 
     function validateFeature(feature, deferred) {
 
-        var id = IapManager.getStoreFeatureId(feature);
-
         if (validatedFeatures.indexOf(feature) != -1) {
             deferred.resolve();
             return;
@@ -23,7 +21,7 @@
         var info = IapManager.getProductInfo(feature) || {};
 
         if (info.owned) {
-            notifyServer(id);
+            notifyServer(info.id);
             validatedFeatures.push(feature);
             deferred.resolve();
             return;
@@ -31,7 +29,7 @@
 
         var unlockableProductInfo = IapManager.isPurchaseAvailable(feature) ? {
             enableAppUnlock: IapManager.isPurchaseAvailable(feature),
-            id: id,
+            id: info.id,
             price: info.price,
             feature: feature
 
@@ -211,7 +209,7 @@
         $('.btnRestorePurchase', elem).on('click', function () {
 
             isCancelled = false;
-            IapManager.restorePurchase(info.feature);
+            IapManager.restorePurchase();
         });
 
         $(elem).on('iron-overlay-closed', function () {

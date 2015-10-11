@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return dates;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             List<ProgramInfo> programsInfo = new List<ProgramInfo>();
 
@@ -89,12 +89,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
 
-            ScheduleDirect.Station station = null;
+            ScheduleDirect.Station station = GetStation(channelNumber, channelName);
 
-            if (!_channelPair.TryGetValue(channelNumber, out station))
+            if (station == null)
             {
                 return programsInfo;
             }
+
             string stationID = station.stationID;
 
             _logger.Info("Channel Station ID is: " + stationID);
@@ -167,6 +168,30 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return programsInfo;
         }
 
+        private ScheduleDirect.Station GetStation(string channelNumber, string channelName)
+        {
+            ScheduleDirect.Station station;
+
+            if (_channelPair.TryGetValue(channelNumber, out station))
+            {
+                return station;
+            }
+
+            if (string.IsNullOrWhiteSpace(channelName))
+            {
+                return null;
+            }
+
+            channelName = NormalizeName(channelName);
+
+            return _channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private string NormalizeName(string value)
+        {
+            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
+        }
+
         public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels,
             CancellationToken cancellationToken)
         {
@@ -200,45 +225,42 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 _logger.Info("Mapping Stations to Channel");
                 foreach (ScheduleDirect.Map map in root.map)
                 {
-                    var channel = map.logicalChannelNumber;
+                    var channelNumber = map.logicalChannelNumber;
 
-                    if (string.IsNullOrWhiteSpace(channel))
+                    if (string.IsNullOrWhiteSpace(channelNumber))
                     {
-                        channel = map.channel;
+                        channelNumber = map.channel;
                     }
-                    if (string.IsNullOrWhiteSpace(channel))
+                    if (string.IsNullOrWhiteSpace(channelNumber))
                     {
-                        channel = (map.atscMajor + "." + map.atscMinor);
+                        channelNumber = (map.atscMajor + "." + map.atscMinor);
                     }
-                    channel = channel.TrimStart('0');
+                    channelNumber = channelNumber.TrimStart('0');
 
-                    _logger.Debug("Found channel: " + channel + " in Schedules Direct");
+                    _logger.Debug("Found channel: " + channelNumber + " in Schedules Direct");
                     var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
 
-                    if (!_channelPair.ContainsKey(channel) && channel != "0.0" && schChannel != null)
-                    {
-                        _channelPair.TryAdd(channel, schChannel);
-                    }
+                    _channelPair.TryAdd(channelNumber, schChannel);
                 }
-                _logger.Info("Added " + _channelPair.Count() + " channels to the dictionary");
+                _logger.Info("Added " + _channelPair.Count + " channels to the dictionary");
 
                 foreach (ChannelInfo channel in channels)
                 {
-                    //  Helper.logger.Info("Modifyin channel " + channel.Number);
-                    if (_channelPair.ContainsKey(channel.Number))
+                    var station = GetStation(channel.Number, channel.Number);
+
+                    if (station != null)
                     {
-                        if (_channelPair[channel.Number].logo != null)
+                        if (station.logo != null)
                         {
-                            channel.ImageUrl = _channelPair[channel.Number].logo.URL;
+                            channel.ImageUrl = station.logo.URL;
                             channel.HasImage = true;
                         }
-                        string channelName = _channelPair[channel.Number].name;
+                        string channelName = station.name;
                         channel.Name = channelName;
                     }
                     else
                     {
-                        _logger.Info("Schedules Direct doesnt have data for channel: " + channel.Number + " " +
-                                     channel.Name);
+                        _logger.Info("Schedules Direct doesnt have data for channel: " + channel.Number + " " + channel.Name);
                     }
                 }
             }

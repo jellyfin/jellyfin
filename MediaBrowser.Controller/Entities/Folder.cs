@@ -314,7 +314,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<BaseItem> Children
         {
-            get { return ActualChildren; }
+            get { return ActualChildren.ToList(); }
         }
 
         /// <summary>

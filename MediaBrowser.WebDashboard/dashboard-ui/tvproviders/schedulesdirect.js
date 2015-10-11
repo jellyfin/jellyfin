@@ -19,9 +19,15 @@
                 listingsId = info.ListingsId;
                 $('#selectListing', page).val(info.ListingsId || '');
                 page.querySelector('.txtUser').value = info.Username || '';
-                page.querySelector('.txtPass').value = info.Username || '';
+                page.querySelector('.txtPass').value = '';
 
                 page.querySelector('.txtZipCode').value = info.ZipCode || '';
+
+                if (info.Username && info.Password) {
+                    page.querySelector('.listingsSection').classList.remove('hide');
+                } else {
+                    page.querySelector('.listingsSection').classList.add('hide');
+                }
 
                 setCountry(info);
             });

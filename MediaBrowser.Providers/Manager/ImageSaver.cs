@@ -145,8 +145,12 @@ namespace MediaBrowser.Providers.Manager
                 foreach (var path in paths)
                 {
                     source.Position = 0;
-
-                    await SaveImageToLocation(source, path, retryPaths[currentPathIndex], cancellationToken).ConfigureAwait(false);
+                    string retryPath = null;
+                    if (paths.Length == retryPaths.Length)
+                    {
+                        retryPath = retryPaths[currentPathIndex];
+                    }
+                    await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
 
                     currentPathIndex++;
                 }
@@ -190,7 +194,8 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (UnauthorizedAccessException)
             {
-                var retry = !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
+                var retry = !string.IsNullOrWhiteSpace(retryPath) && 
+                    !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
 
                 if (retry)
                 {

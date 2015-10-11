@@ -363,17 +363,23 @@
 
             if (items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
+                var screenWidth = $(window).width();
 
                 html += '<div>';
-                html += '<h1 class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 html += '</div>';
 
-                html += '<div class="homeTopViews">';
+                var scrollX = enableScrollX() && $.browser.safari && screenWidth > 800;
+
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer homeTopViews">';
+                } else {
+                    html += '<div class="itemsContainer homeTopViews">';
+                }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
-                    shape: shape,
+                    shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
                     centerText: true,
                     lazy: true,

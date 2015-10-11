@@ -5,7 +5,7 @@
     function getStoreFeatureId(feature) {
 
         if (feature == 'embypremieremonthly') {
-            return "emby.supporter.weekly";
+            return "emby.supporter.monthly";
         }
 
         return "com.mb.android.unlock";
@@ -39,14 +39,26 @@
         return products.length ? products[0] : null;
     }
 
+    var storeReady = false;
+    function onStoreReady() {
+        storeReady = true;
+        refreshPurchases();
+    }
+
     function isPurchaseAvailable(feature) {
 
-        return NativeIapManager.isStoreAvailable();
+        return storeReady;
     }
 
     function beginPurchase(feature, email) {
-        var id = getStoreFeatureId(feature);
-        return MainActivity.beginPurchase(id, email);
+
+        if (feature == 'embypremieremonthly') {
+            return MainActivity.purchasePremiereMonthly(email);
+        }
+        if (feature == 'embypremiereweekly') {
+            return MainActivity.purchasePremiereWeekly(email);
+        }
+        return MainActivity.purchaseUnlock(email);
     }
 
     function onPurchaseComplete(result) {
@@ -90,10 +102,10 @@
         updateProduct: updateProductInfo,
         beginPurchase: beginPurchase,
         onPurchaseComplete: onPurchaseComplete,
-        getStoreFeatureId: getStoreFeatureId,
-        getSubscriptionOptions: getSubscriptionOptions
+        getSubscriptionOptions: getSubscriptionOptions,
+        onStoreReady: onStoreReady
     };
 
-    refreshPurchases();
+    NativeIapManager.initStore();
 
 })();
