@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Startup.Common;
@@ -23,7 +22,10 @@ namespace MediaBrowser.ServerApplication.Native
         {
             var list = new List<Assembly>();
 
-            list.Add(typeof(PismoIsoManager).Assembly);
+            if (!System.Environment.Is64BitProcess)
+            {
+                list.Add(typeof(PismoIsoManager).Assembly);
+            }
 
             list.Add(GetType().Assembly);
             
