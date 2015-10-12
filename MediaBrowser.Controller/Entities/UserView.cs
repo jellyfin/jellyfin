@@ -84,7 +84,8 @@ namespace MediaBrowser.Controller.Entities
                 CollectionType.HomeVideos,
                 CollectionType.Photos,
                 CollectionType.Playlists,
-                CollectionType.BoxSets
+                CollectionType.BoxSets,
+                CollectionType.MusicVideos
             };
 
             var collectionFolder = folder as ICollectionFolder;

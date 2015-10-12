@@ -1606,3 +1606,33 @@ progress {
         min-width: 400px;
     }
 }
+
+.scheduledTaskPaperIconItem {
+    outline: none !important;
+}
+
+    .scheduledTaskPaperIconItem[data-status='Idle'] paper-fab {
+        background-color: #999;
+    }
+
+    .scheduledTaskPaperIconItem[data-status="Cancelling"] paper-fab {
+        background-color: #cc3333;
+    }
+
+    .scheduledTaskPaperIconItem[data-status="Running"] paper-fab {
+        background-color: #52B54B;
+    }
+
+    .scheduledTaskPaperIconItem #progressContainer {
+        height: 8px !important;
+        border-radius: 5px;
+    }
+
+    .scheduledTaskPaperIconItem #primaryProgress {
+        border-bottom-left-radius: 5px;
+        border-top-left-radius: 5px;
+    }
+
+    .scheduledTaskPaperIconItem paper-progress {
+        display: inline-block;
+    }

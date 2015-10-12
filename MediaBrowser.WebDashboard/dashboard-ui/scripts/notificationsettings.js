@@ -52,7 +52,9 @@
 
             }).join('');
 
-            html += '</div>';
+            if (list.length) {
+                html += '</div>';
+            }
 
             $('.notificationList', page).html(html).trigger('create');
 

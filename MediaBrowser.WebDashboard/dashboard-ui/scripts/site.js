@@ -2033,6 +2033,8 @@ var AppInfo = {};
             paths.prompt = "components/prompt";
         }
 
+        paths.masonry = "bower_components/masonry/dist/masonry.pkgd.min";
+
         requirejs.config({
             urlArgs: urlArgs,
 
@@ -2195,7 +2197,7 @@ var AppInfo = {};
             define("fileupload", ["apiclient/fileupload"]);
         }
 
-        var deps = [];
+        var deps =[];
 
         if (!deviceId) {
             deps.push('cryptojs-sha1');

@@ -3523,7 +3523,7 @@
                     tag: item.BackdropImageTags[0]
                 });
 
-                ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
+                ImageLoader.lazyImage($('#itemBackdrop', page).addClass('noFade').removeClass('noBackdrop')[0], imgUrl);
                 hasbackdrop = true;
             }
             else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -3535,7 +3535,7 @@
                     maxWidth: screenWidth
                 });
 
-                ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
+                ImageLoader.lazyImage($('#itemBackdrop', page).addClass('noFade').removeClass('noBackdrop')[0], imgUrl);
                 hasbackdrop = true;
             }
             else {

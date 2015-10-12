@@ -1,0 +1,35 @@
+{
+  "name": "doc-ready",
+  "version": "1.0.4",
+  "description": "Let's get this party started... on document ready",
+  "main": "doc-ready.js",
+  "dependencies": {
+    "eventie": "^1"
+  },
+  "homepage": "https://github.com/desandro/doc-ready",
+  "authors": [
+    "David DeSandro"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "DOM",
+    "document",
+    "ready"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "examples",
+    "package.json",
+    "component.json",
+    "index.html"
+  ]
+}

@@ -60,6 +60,8 @@
             channelsPromise = channelsPromise || ApiClient.getLiveTvChannels(channelQuery);
 
             var date = currentDate;
+            // Add one second to avoid getting programs that are just ending
+            date = new Date(date.getTime() + 1000);
 
             var nextDay = new Date(date.getTime() + msPerDay - 1);
             Logger.log(nextDay);
@@ -73,7 +75,8 @@
                         return c.Id;
                     }).join(','),
                     ImageTypeLimit: 1,
-                    EnableImageTypes: "Primary"
+                    EnableImageTypes: "Primary",
+                    SortBy: "StartDate"
 
                 }).done(function (programsResult) {
 

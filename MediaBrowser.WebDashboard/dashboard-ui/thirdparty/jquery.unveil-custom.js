@@ -26,8 +26,8 @@
     */
     var $w = $(window);
 
-    var thresholdX = Math.max(screen.availWidth * 1.5);
-    var thresholdY = Math.max(screen.availHeight * 1.5);
+    var thresholdX = Math.max(screen.availWidth * .5);
+    var thresholdY = Math.max(screen.availHeight * .5);
 
     function visibleInViewport(elem, partial, hidden, direction) {
 
@@ -200,6 +200,21 @@
         } else {
             elem.setAttribute("src", url);
         }
+
+        if ($.browser.chrome && !$.browser.mobile) {
+            if (!elem.classList.contains('noFade')) {
+                fadeIn(elem, 1);
+            }
+        }
+    }
+
+    function fadeIn(elem, iterations) {
+
+        var keyframes = [
+          { opacity: '0', offset: 0 },
+          { opacity: '1', offset: 1 }];
+        var timing = { duration: 200, iterations: iterations };
+        return elem.animate(keyframes, timing);
     }
 
     function simpleImageStore() {

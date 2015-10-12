@@ -14,6 +14,7 @@
         var elem = document.documentElement;
 
         elem.classList.add('backdropContainer');
+        elem.classList.add('noFade');
 
         if (!pageBackgroundCreated) {
             pageBackgroundCreated = true;
