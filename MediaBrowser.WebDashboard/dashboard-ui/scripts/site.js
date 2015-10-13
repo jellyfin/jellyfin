@@ -1935,6 +1935,21 @@ var AppInfo = {};
         }
     }
 
+    function loadTheme() {
+
+        var name = getParameterByName('theme');
+        if (name) {
+            require(['themes/' + name + '/theme']);
+            return;
+        }
+
+        var date = new Date();
+        if (date.getMonth() == 9 && date.getDate() == 31) {
+            require(['themes/halloween/theme']);
+            return;
+        }
+    }
+
     function onDocumentReady() {
 
         // Do these now to prevent a flash of content
@@ -1946,6 +1961,8 @@ var AppInfo = {};
                 Dashboard.importCss('themes/ios.css');
             }
         }
+
+        loadTheme();
 
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();

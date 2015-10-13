@@ -8,6 +8,7 @@
     -o-transition: all 500ms ease;
     -ms-transition: all 500ms ease;
     transition: all 500ms ease;
+    color: inherit!important;
 }
 
     .tileItem .starRating {
@@ -43,7 +44,6 @@
 .tileContent {
     display: inline-block;
     padding-left: 10px;
-    color: #fff;
     text-align: left;
     vertical-align: top;
     overflow: hidden;
