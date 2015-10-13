@@ -154,6 +154,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return connection;
         }
 
+        public static void Attach(IDbConnection db, string path, string alias)
+        {
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.CommandText = string.Format("attach '{0}' as {1};", path, alias);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         /// <summary>
         /// Serializes to bytes.
         /// </summary>

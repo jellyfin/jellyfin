@@ -351,11 +351,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new MigrateUserFolders(ApplicationPaths, FileSystemManager),
-                new RenameXbmcOptions(ServerConfigurationManager),
-                new RenameXmlOptions(ServerConfigurationManager),
-                new DeprecatePlugins(ApplicationPaths, FileSystemManager),
-                new DeleteDlnaProfiles(ApplicationPaths, FileSystemManager)
+                new RenameXmlOptions(ServerConfigurationManager)
             };
 
             foreach (var task in migrations)
