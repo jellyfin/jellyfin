@@ -221,7 +221,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/imageeditor/imageeditor.template.html'

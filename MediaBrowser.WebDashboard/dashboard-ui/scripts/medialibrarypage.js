@@ -170,11 +170,17 @@
 
     selectDirectory: function (callback) {
 
-        var picker = new DirectoryBrowser($.mobile.activePage);
+        require(['directorybrowser'], function (directoryBrowser) {
 
-        picker.show({ callback: callback });
+            var picker = new directoryBrowser();
 
-        MediaLibraryPage.directoryPicker = picker;
+            picker.show({
+
+                callback: callback
+            });
+
+            MediaLibraryPage.directoryPicker = picker;
+        });
     },
 
     getTextValue: function (header, label, initialValue, showCollectionType, callback) {

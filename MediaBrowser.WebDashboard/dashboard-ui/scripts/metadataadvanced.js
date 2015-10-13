@@ -73,22 +73,25 @@
 
         $('#btnSelectMetadataPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
+                
+                picker.show({
 
-                callback: function (path) {
+                    callback: function (path) {
+                        if (path) {
+                            $('#txtMetadataPath', page).val(path);
+                        }
+                        picker.close();
+                    },
 
-                    if (path) {
-                        $('#txtMetadataPath', page).val(path);
-                    }
-                    picker.close();
-                },
+                    header: Globalize.translate('HeaderSelectMetadataPath'),
 
-                header: Globalize.translate('HeaderSelectMetadataPath'),
-
-                instruction: Globalize.translate('HeaderSelectMetadataPathHelp')
+                    instruction: Globalize.translate('HeaderSelectMetadataPathHelp')
+                });
             });
+
         });
 
         $('.advancedMetadataConfigurationForm').on('submit', onSubmit).on('submit', onSubmit);

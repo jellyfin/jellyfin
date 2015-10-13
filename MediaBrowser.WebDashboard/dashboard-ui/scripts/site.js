@@ -1944,7 +1944,10 @@ var AppInfo = {};
         }
 
         var date = new Date();
-        if (date.getMonth() == 9 && date.getDate() == 31) {
+        var month = date.getMonth();
+        var day = date.getDate();
+
+        if (month == 9 && day >= 30) {
             require(['themes/halloween/theme']);
             return;
         }
@@ -2041,7 +2044,8 @@ var AppInfo = {};
 
         var paths = {
             velocity: "bower_components/velocity/velocity.min",
-            tvguide: 'components/tvguide/tvguide'
+            tvguide: 'components/tvguide/tvguide',
+            directorybrowser: 'components/directorybrowser/directorybrowser'
         };
 
         if (Dashboard.isRunningInCordova()) {
@@ -2214,7 +2218,7 @@ var AppInfo = {};
             define("fileupload", ["apiclient/fileupload"]);
         }
 
-        var deps =[];
+        var deps = [];
 
         if (!deviceId) {
             deps.push('cryptojs-sha1');

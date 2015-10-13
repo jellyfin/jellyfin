@@ -102,17 +102,20 @@
 
         $('#btnSelectDashboardSourcePath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtDashboardSourcePath', page).val(path);
+                    callback: function (path) {
+
+                        if (path) {
+                            $('#txtDashboardSourcePath', page).val(path);
+                        }
+                        picker.close();
                     }
-                    picker.close();
-                }
+                });
             });
         });
 

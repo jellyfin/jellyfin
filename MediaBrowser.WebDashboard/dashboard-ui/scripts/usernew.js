@@ -106,6 +106,11 @@
             ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
+
+        }).fail(function() {
+
+            Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
+            Dashboard.hideLoadingMsg();
         });
     }
 

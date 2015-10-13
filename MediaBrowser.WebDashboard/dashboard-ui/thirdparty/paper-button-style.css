@@ -511,7 +511,7 @@ paper-dialog paper-radio-group paper-radio-button {
     display: block;
 }
 
-.fullscreen-editor-paper-dialog {
+.fullscreen-paper-dialog, .medium-paper-dialog {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -519,14 +519,23 @@ paper-dialog paper-radio-group paper-radio-button {
     right: 0 !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    background-color: #222 !important;
     max-height: none !important;
     max-width: none !important;
 }
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
-    .fullscreen-editor-paper-dialog {
+    .medium-paper-dialog {
+        top: 10% !important;
+        bottom: 10% !important;
+        left: 10% !important;
+        right: 10% !important;
+    }
+}
+
+@media all and (min-width: 1280px) and (min-height: 720px) {
+
+    .fullscreen-paper-dialog {
         top: 5% !important;
         bottom: 5% !important;
         left: 5% !important;
@@ -534,12 +543,11 @@ paper-dialog paper-radio-group paper-radio-button {
     }
 }
 
-.fullscreen-editor-paper-dialog .dialogHeader {
+paper-dialog.popupEditor .dialogHeader {
     font-weight: inherit !important;
-    line-height: 1 !important;
-    line-height: initial !important;
+    line-height: 36px;
     padding: 0 1em;
-    margin-top: 1em;
+    margin-top: .7em;
 }
 
 .paperToggleContainer {

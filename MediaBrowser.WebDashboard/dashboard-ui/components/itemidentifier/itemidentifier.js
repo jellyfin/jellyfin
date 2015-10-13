@@ -281,7 +281,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/itemidentifier/itemidentifier.template.html'

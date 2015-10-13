@@ -326,7 +326,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/subtitleeditor/subtitleeditor.template.html'

@@ -259,7 +259,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/imagedownloader/imagedownloader.template.html'

@@ -894,7 +894,7 @@ paper-input + .fieldDescription {
     box-shadow: -3px 0 10px 0 #555;*/
 }
 
-.background-theme-a {
+.background-theme-a, paper-dialog.background-theme-a {
     background-color: #f7f7f7;
 }
 
@@ -1061,6 +1061,14 @@ paper-input + .fieldDescription {
     background: #fff3a5;
     padding: 1em;
     border-radius: 5px;
+    margin-top: 2em;
+}
+
+.directoryPicker paper-item {
+    min-height: 36px;
+    border-bottom: 1px solid #eee;
+    outline: none;
+    cursor: pointer;
 }
 
 .premiumBanner img {

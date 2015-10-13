@@ -39,7 +39,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/metadataeditor/metadataeditor.template.html'
@@ -58,8 +58,6 @@
                 dlg.setAttribute('noAutoFocus', 'noAutoFocus');
                 dlg.entryAnimation = 'scale-up-animation';
                 dlg.exitAnimation = 'fade-out-animation';
-                dlg.classList.add('fullscreen-editor-paper-dialog');
-                dlg.classList.add('ui-body-b');
                 dlg.classList.add('smoothScrollY');
 
                 var html = '';

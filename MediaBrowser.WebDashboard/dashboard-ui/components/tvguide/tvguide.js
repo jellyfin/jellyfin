@@ -471,7 +471,7 @@
             });
         }
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/tvguide/tvguide.template.html'

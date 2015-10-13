@@ -2,10 +2,13 @@
     color: #FF9100;
 }
 
-.viewMenuBar, .barsMenuButton {
+.viewMenuBar {
     color: #FF9100 !important;
 }
 
+.barsMenuButton {
+    color: #FF9100 !important;
+}
 
 .libraryViewNav .ui-btn-active {
     border-bottom-color: #FF9100 !important;

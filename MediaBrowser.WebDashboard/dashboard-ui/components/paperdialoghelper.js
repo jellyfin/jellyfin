@@ -76,7 +76,10 @@
         }
     }
 
-    function createDialog() {
+    function createDialog(options) {
+
+        options = options || {};
+
         var dlg = document.createElement('paper-dialog');
 
         dlg.setAttribute('with-backdrop', 'with-backdrop');
@@ -90,9 +93,19 @@
         dlg.setAttribute('noAutoFocus', 'noAutoFocus');
         dlg.entryAnimation = 'scale-up-animation';
         dlg.exitAnimation = 'fade-out-animation';
-        dlg.classList.add('fullscreen-editor-paper-dialog');
-        dlg.classList.add('ui-body-b');
-        dlg.classList.add('background-theme-b');
+
+        dlg.classList.add('popupEditor');
+
+        if (options.size == 'medium') {
+            dlg.classList.add('medium-paper-dialog');
+        } else {
+            dlg.classList.add('fullscreen-paper-dialog');
+        }
+
+        var theme = options.theme || 'b';
+
+        dlg.classList.add('ui-body-' + theme);
+        dlg.classList.add('background-theme-' + theme);
         dlg.classList.add('smoothScrollY');
 
         return dlg;

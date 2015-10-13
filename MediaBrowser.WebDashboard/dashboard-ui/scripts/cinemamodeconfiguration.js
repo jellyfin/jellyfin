@@ -57,19 +57,22 @@
 
         $('#btnSelectCustomIntrosPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtCustomIntrosPath', page).val(path);
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectCustomIntrosPath')
+                        if (path) {
+                            $('#txtCustomIntrosPath', page).val(path);
+                        }
+                        picker.close();
+                    },
+
+                    header: Globalize.translate('HeaderSelectCustomIntrosPath')
+                });
             });
         });
 

@@ -13244,6 +13244,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 
 
+
+
 </head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <style>
     :host {
@@ -19071,6 +19073,38 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       }
     </style>
   </template>
+</dom-module>
+<dom-module id="paper-item" assetpath="bower_components/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
+    <content></content>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'paper-item',
+
+      hostAttributes: {
+        role: 'listitem',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ]
+    });
+  </script>
 </dom-module>
 <dom-module id="paper-icon-item" assetpath="bower_components/paper-item/">
   <template>

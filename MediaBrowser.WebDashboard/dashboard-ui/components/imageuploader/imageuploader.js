@@ -123,7 +123,7 @@
 
     function showEditor(itemId) {
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
             url: 'components/imageuploader/imageuploader.template.html'
