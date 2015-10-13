@@ -63,7 +63,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly string _criticReviewsPath;
 
-        private SqliteChapterRepository _chapterRepository;
         private SqliteMediaStreamsRepository _mediaStreamsRepository;
 
         private IDbCommand _deleteChildrenCommand;
@@ -72,6 +71,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
+
+        private IDbCommand _deleteChaptersCommand;
+        private IDbCommand _saveChapterCommand;
 
         private const int LatestSchemaVersion = 13;
 
@@ -104,14 +106,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _logger = logManager.GetLogger(GetType().Name);
 
-            var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
-            var chapterConnection = SqliteExtensions.ConnectToDb(chapterDbFile, _logger).Result;
-            _chapterRepository = new SqliteChapterRepository(chapterConnection, logManager);
-
             var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
             var mediaStreamsConnection = SqliteExtensions.ConnectToDb(mediaStreamsDbFile, _logger).Result;
             _mediaStreamsRepository = new SqliteMediaStreamsRepository(mediaStreamsConnection, logManager);
         }
+
+        private const string ChaptersTableName = "Chapters2";
 
         /// <summary>
         /// Opens the connection to the database
@@ -132,6 +132,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+
+                                "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
+                                "create index if not exists idx_"+ChaptersTableName+" on "+ChaptersTableName+"(ItemId, ChapterIndex)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
@@ -195,7 +198,35 @@ namespace MediaBrowser.Server.Implementations.Persistence
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
-            _chapterRepository.Initialize();
+
+            var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
+
+            if (File.Exists(chapterDbFile))
+            {
+                MigrateChapters(chapterDbFile);
+            }
+        }
+
+        private void MigrateChapters(string file)
+        {
+            var backupFile = file + ".bak";
+            File.Copy(file, backupFile, true);
+            SqliteExtensions.Attach(_connection, backupFile, "ChaptersOld");
+
+            string[] queries = {
+                                "INSERT INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT * FROM ChaptersOld.Chapters;"
+                               };
+
+            try
+            {
+                _connection.RunQueries(queries, _logger);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            File.Delete(file);
         }
 
         /// <summary>
@@ -326,6 +357,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@PersonType");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@SortOrder");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@ListOrder");
+
+            _deleteChaptersCommand = _connection.CreateCommand();
+            _deleteChaptersCommand.CommandText = "delete from " + ChaptersTableName + " where ItemId=@ItemId";
+            _deleteChaptersCommand.Parameters.Add(_deleteChaptersCommand, "@ItemId");
+
+            _saveChapterCommand = _connection.CreateCommand();
+            _saveChapterCommand.CommandText = "replace into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) values (@ItemId, @ChapterIndex, @StartPositionTicks, @Name, @ImagePath)";
+
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ItemId");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ChapterIndex");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@StartPositionTicks");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@Name");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImagePath");
         }
 
         /// <summary>
@@ -748,7 +792,25 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public IEnumerable<ChapterInfo> GetChapters(Guid id)
         {
             CheckDisposed();
-            return _chapterRepository.GetChapters(id);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc";
+
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        yield return GetChapter(reader);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -761,7 +823,52 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public ChapterInfo GetChapter(Guid id, int index)
         {
             CheckDisposed();
-            return _chapterRepository.GetChapter(id, index);
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
+
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
+                cmd.Parameters.Add(cmd, "@ChapterIndex", DbType.Int32).Value = index;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        return GetChapter(reader);
+                    }
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the chapter.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>ChapterInfo.</returns>
+        private ChapterInfo GetChapter(IDataReader reader)
+        {
+            var chapter = new ChapterInfo
+            {
+                StartPositionTicks = reader.GetInt64(0)
+            };
+
+            if (!reader.IsDBNull(1))
+            {
+                chapter.Name = reader.GetString(1);
+            }
+
+            if (!reader.IsDBNull(2))
+            {
+                chapter.ImagePath = reader.GetString(2);
+            }
+
+            return chapter;
         }
 
         /// <summary>
@@ -778,10 +885,87 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// or
         /// cancellationToken
         /// </exception>
-        public Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
+        public async Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            return _chapterRepository.SaveChapters(id, chapters, cancellationToken);
+
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            if (chapters == null)
+            {
+                throw new ArgumentNullException("chapters");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                // First delete chapters
+                _deleteChaptersCommand.GetParameter(0).Value = id;
+
+                _deleteChaptersCommand.Transaction = transaction;
+
+                _deleteChaptersCommand.ExecuteNonQuery();
+
+                var index = 0;
+
+                foreach (var chapter in chapters)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    _saveChapterCommand.GetParameter(0).Value = id;
+                    _saveChapterCommand.GetParameter(1).Value = index;
+                    _saveChapterCommand.GetParameter(2).Value = chapter.StartPositionTicks;
+                    _saveChapterCommand.GetParameter(3).Value = chapter.Name;
+                    _saveChapterCommand.GetParameter(4).Value = chapter.ImagePath;
+
+                    _saveChapterCommand.Transaction = transaction;
+
+                    _saveChapterCommand.ExecuteNonQuery();
+
+                    index++;
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save chapters:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
         }
 
         /// <summary>
@@ -829,12 +1013,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                             _connection.Dispose();
                             _connection = null;
-                        }
-
-                        if (_chapterRepository != null)
-                        {
-                            _chapterRepository.Dispose();
-                            _chapterRepository = null;
                         }
 
                         if (_mediaStreamsRepository != null)
