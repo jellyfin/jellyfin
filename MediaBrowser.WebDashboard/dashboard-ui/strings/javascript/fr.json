@@ -275,7 +275,6 @@
     "LabelPlayMethodTranscoding": "Transcodage",
     "LabelPlayMethodDirectStream": "Direct Stream",
     "LabelPlayMethodDirectPlay": "Direct Play",
-    "LabelEpisodeNumber": "Num\u00e9ro d'\u00e9pisode :",
     "LabelAudioCodec": "Audio : {0}",
     "LabelVideoCodec": "Vid\u00e9o : {0}",
     "LabelLocalAccessUrl": "Acc\u00e8s local : {0}",
@@ -298,6 +297,7 @@
     "ButtonNetwork": "R\u00e9seau",
     "MessageDirectoryPickerInstruction": "Les chemins r\u00e9seaux peuvent \u00eatre saisis manuellement dans le cas o\u00f9 l'utilisation du bouton \"R\u00e9seau\" ne parvient pas \u00e0 localiser les ressources. Par exemple, {0} ou {1}.",
     "MessageDirectoryPickerBSDInstruction": "Sur BSD, vous devrez peut-\u00eatre configurer le stockage de votre FreeNAS Jail pour autoriser Emby \u00e0 y acc\u00e9der.",
+    "MessageDirectoryPickerLinuxInstruction": "For Linux, you may need to configure the Emby system user to allow access to your storage locations.",
     "HeaderMenu": "Menu",
     "ButtonOpen": "Ouvrir",
     "ButtonOpenInNewTab": "Ouvrir dans un nouvel onglet",
@@ -322,7 +322,6 @@
     "HeaderArtist": "Artiste",
     "LabelAddedOnDate": "Ajout\u00e9 {0}",
     "ButtonStart": "Commencer",
-    "LabelSeasonNumber": "Num\u00e9ro de saison :",
     "HeaderChannels": "Cha\u00eenes",
     "HeaderMediaFolders": "R\u00e9pertoires de m\u00e9dias",
     "HeaderBlockItemsWithNoRating": "Bloquer le contenu ne comportant aucune information de classement:",
@@ -494,8 +493,10 @@
     "LabelTitleDisplayOrder": "Ordre d'affichage des titres:",
     "OptionSortName": "Clef de tri",
     "OptionReleaseDate": "Date de diffusion",
+    "LabelSeasonNumber": "Num\u00e9ro de saison :",
     "LabelDiscNumber": "Num\u00e9ro de disque",
     "LabelParentNumber": "Num\u00e9ro parent",
+    "LabelEpisodeNumber": "Num\u00e9ro d'\u00e9pisode :",
     "LabelTrackNumber": "Num\u00e9ro de piste:",
     "LabelNumber": "Num\u00e9ro:",
     "LabelReleaseDate": "Date de sortie",
@@ -898,5 +899,7 @@
     "EmbyPremiereMonthly": "Emby Premi\u00e8re mensuel",
     "EmbyPremiereMonthlyWithPrice": "Emby Premiere {0} mensuel",
     "HeaderEmailAddress": "Adresse email",
-    "TextPleaseEnterYourEmailAddressForSubscription": "Merci d'entrer votre adresse email."
+    "TextPleaseEnterYourEmailAddressForSubscription": "Merci d'entrer votre adresse email.",
+    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
+    "TermsOfUse": "Terms of use"
 }

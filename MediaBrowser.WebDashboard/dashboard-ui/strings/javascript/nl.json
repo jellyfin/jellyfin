@@ -275,7 +275,6 @@
     "LabelPlayMethodTranscoding": "Transcoderen",
     "LabelPlayMethodDirectStream": "Direct Streamen",
     "LabelPlayMethodDirectPlay": "Direct Afspelen",
-    "LabelEpisodeNumber": "Afleveringsnummer:",
     "LabelAudioCodec": "Geluid: {0}",
     "LabelVideoCodec": "Video: {0}",
     "LabelLocalAccessUrl": "Lokale toegang: {0}",
@@ -298,6 +297,7 @@
     "ButtonNetwork": "Netwerk",
     "MessageDirectoryPickerInstruction": "Netwerk paden kunnen handmatig worden ingevoerd in het geval de Netwerk knop faalt om uw apparatuur te lokaliseren . Bijvoorbeeld: {0} of {1}.",
     "MessageDirectoryPickerBSDInstruction": "Voor BSD kan het noodzakelijk zijn opslag op uw FreeNAS Jail te configureren voordat Emby het kan benaderen.",
+    "MessageDirectoryPickerLinuxInstruction": "For Linux, you may need to configure the Emby system user to allow access to your storage locations.",
     "HeaderMenu": "Menu",
     "ButtonOpen": "Openen",
     "ButtonOpenInNewTab": "Openen in nieuw tabblad",
@@ -322,7 +322,6 @@
     "HeaderArtist": "Artiest",
     "LabelAddedOnDate": "Toegevoegd {0}",
     "ButtonStart": "Start",
-    "LabelSeasonNumber": "Seizoennummer:",
     "HeaderChannels": "Kanalen",
     "HeaderMediaFolders": "Media Mappen",
     "HeaderBlockItemsWithNoRating": "Blokkeer inhoud zonder classificatiegegevens:",
@@ -494,8 +493,10 @@
     "LabelTitleDisplayOrder": "Titel weergave volgorde:",
     "OptionSortName": "Sorteerbaar",
     "OptionReleaseDate": "Uitgave datum",
+    "LabelSeasonNumber": "Seizoennummer:",
     "LabelDiscNumber": "Disc nummer",
     "LabelParentNumber": "Bovenliggend nummer",
+    "LabelEpisodeNumber": "Afleveringsnummer:",
     "LabelTrackNumber": "Tracknummer:",
     "LabelNumber": "Nummer:",
     "LabelReleaseDate": "Uitgave datum:",
@@ -898,5 +899,7 @@
     "EmbyPremiereMonthly": "Emby Premiere Monthly",
     "EmbyPremiereMonthlyWithPrice": "Emby Premiere Maandelijks {0}",
     "HeaderEmailAddress": "E-mailadres",
-    "TextPleaseEnterYourEmailAddressForSubscription": "Vul alstublieft uw e-mail adres in. "
+    "TextPleaseEnterYourEmailAddressForSubscription": "Vul alstublieft uw e-mail adres in. ",
+    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
+    "TermsOfUse": "Terms of use"
 }
