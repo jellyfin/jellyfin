@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
@@ -22,10 +23,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
     public class M3UTunerHost : BaseTunerHost, ITunerHost
     {
         private readonly IFileSystem _fileSystem;
-        private IHttpClient _httpClient;
+        private readonly IHttpClient _httpClient;
 
-        public M3UTunerHost(IConfigurationManager config, ILogger logger, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(config, logger, jsonSerializer)
+        public M3UTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient) : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
             _httpClient = httpClient;

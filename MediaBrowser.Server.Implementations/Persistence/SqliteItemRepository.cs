@@ -63,8 +63,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly string _criticReviewsPath;
 
-        private SqliteMediaStreamsRepository _mediaStreamsRepository;
-
         private IDbCommand _deleteChildrenCommand;
         private IDbCommand _saveChildrenCommand;
         private IDbCommand _deleteItemCommand;
@@ -74,6 +72,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _deleteChaptersCommand;
         private IDbCommand _saveChapterCommand;
+
+        private IDbCommand _deleteStreamsCommand;
+        private IDbCommand _saveStreamCommand;
 
         private const int LatestSchemaVersion = 13;
 
@@ -105,10 +106,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _criticReviewsPath = Path.Combine(_appPaths.DataPath, "critic-reviews");
 
             _logger = logManager.GetLogger(GetType().Name);
-
-            var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
-            var mediaStreamsConnection = SqliteExtensions.ConnectToDb(mediaStreamsDbFile, _logger).Result;
-            _mediaStreamsRepository = new SqliteMediaStreamsRepository(mediaStreamsConnection, logManager);
         }
 
         private const string ChaptersTableName = "Chapters2";
@@ -123,6 +120,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
+            var createMediaStreamsTableCommand
+               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, KeyFrames TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+
             string[] queries = {
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB)",
@@ -135,6 +135,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
                                 "create index if not exists idx_"+ChaptersTableName+" on "+ChaptersTableName+"(ItemId, ChapterIndex)",
+
+                                createMediaStreamsTableCommand,
+                                "create index if not exists idx_mediastreams on mediastreams(ItemId, StreamIndex)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
@@ -197,14 +200,43 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             PrepareStatements();
 
-            _mediaStreamsRepository.Initialize();
+            new MediaStreamColumns(_connection, _logger).AddColumns();
 
             var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
-
             if (File.Exists(chapterDbFile))
             {
                 MigrateChapters(chapterDbFile);
             }
+
+            var mediaStreamsDbFile = Path.Combine(_appPaths.DataPath, "mediainfo.db");
+            if (File.Exists(mediaStreamsDbFile))
+            {
+                MigrateMediaStreams(mediaStreamsDbFile);
+            }
+        }
+
+        private void MigrateMediaStreams(string file)
+        {
+            var backupFile = file + ".bak";
+            File.Copy(file, backupFile, true);
+            SqliteExtensions.Attach(_connection, backupFile, "MediaInfoOld");
+
+            var columns = string.Join(",", _mediaStreamSaveColumns);
+
+            string[] queries = {
+                                "INSERT INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
+                               };
+
+            try
+            {
+                _connection.RunQueries(queries, _logger);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            File.Delete(file);
         }
 
         private void MigrateChapters(string file)
@@ -214,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             SqliteExtensions.Attach(_connection, backupFile, "ChaptersOld");
 
             string[] queries = {
-                                "INSERT INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT * FROM ChaptersOld.Chapters;"
+                                "INSERT INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
                                };
 
             try
@@ -260,6 +292,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "IsHD",
             "ExternalEtag",
             "ExternalImagePath"
+        };
+
+        private readonly string[] _mediaStreamSaveColumns =
+        {
+            "ItemId",
+            "StreamIndex",
+            "StreamType",
+            "Codec",
+            "Language",
+            "ChannelLayout",
+            "Profile",
+            "AspectRatio",
+            "Path",
+            "IsInterlaced",
+            "BitRate",
+            "Channels",
+            "SampleRate",
+            "IsDefault",
+            "IsForced",
+            "IsExternal",
+            "Height",
+            "Width",
+            "AverageFrameRate",
+            "RealFrameRate",
+            "Level",
+            "PixelFormat",
+            "BitDepth",
+            "IsAnamorphic",
+            "RefFrames",
+            "IsCabac",
+            "KeyFrames"
         };
 
         /// <summary>
@@ -345,6 +408,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ParentId");
             _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ItemId");
 
+            // People
             _deletePeopleCommand = _connection.CreateCommand();
             _deletePeopleCommand.CommandText = "delete from People where ItemId=@Id";
             _deletePeopleCommand.Parameters.Add(_deletePeopleCommand, "@Id");
@@ -358,6 +422,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@SortOrder");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@ListOrder");
 
+            // Chapters
             _deleteChaptersCommand = _connection.CreateCommand();
             _deleteChaptersCommand.CommandText = "delete from " + ChaptersTableName + " where ItemId=@ItemId";
             _deleteChaptersCommand.Parameters.Add(_deleteChaptersCommand, "@ItemId");
@@ -370,6 +435,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@StartPositionTicks");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@Name");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImagePath");
+
+            // MediaStreams
+            _deleteStreamsCommand = _connection.CreateCommand();
+            _deleteStreamsCommand.CommandText = "delete from mediastreams where ItemId=@ItemId";
+            _deleteStreamsCommand.Parameters.Add(_deleteStreamsCommand, "@ItemId");
+
+            _saveStreamCommand = _connection.CreateCommand();
+
+            _saveStreamCommand.CommandText = string.Format("replace into mediastreams ({0}) values ({1})",
+                string.Join(",", _mediaStreamSaveColumns),
+                string.Join(",", _mediaStreamSaveColumns.Select(i => "@" + i).ToArray()));
+
+            foreach (var col in _mediaStreamSaveColumns)
+            {
+                _saveStreamCommand.Parameters.Add(_saveStreamCommand, "@" + col);
+            }
         }
 
         /// <summary>
@@ -1014,12 +1095,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                             _connection.Dispose();
                             _connection = null;
                         }
-
-                        if (_mediaStreamsRepository != null)
-                        {
-                            _mediaStreamsRepository.Dispose();
-                            _mediaStreamsRepository = null;
-                        }
                     }
                 }
                 catch (Exception ex)
@@ -1659,11 +1734,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deletePeopleCommand.Transaction = transaction;
                 _deletePeopleCommand.ExecuteNonQuery();
 
+                // Delete chapters
+                _deleteChaptersCommand.GetParameter(0).Value = id;
+                _deleteChaptersCommand.Transaction = transaction;
+                _deleteChaptersCommand.ExecuteNonQuery();
+
+                // Delete media streams
+                _deleteStreamsCommand.GetParameter(0).Value = id;
+                _deleteStreamsCommand.Transaction = transaction;
+                _deleteStreamsCommand.ExecuteNonQuery();
+
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
                 _deleteItemCommand.ExecuteNonQuery();
-
+                
                 transaction.Commit();
             }
             catch (OperationCanceledException)
@@ -1768,18 +1853,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 _writeLock.Release();
             }
-        }
-
-        public IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query)
-        {
-            CheckDisposed();
-            return _mediaStreamsRepository.GetMediaStreams(query);
-        }
-
-        public Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
-        {
-            CheckDisposed();
-            return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)
@@ -2010,5 +2083,289 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             return item;
         }
+
+        public IEnumerable<MediaStream> GetMediaStreams(MediaStreamQuery query)
+        {
+            CheckDisposed();
+
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                var cmdText = "select " + string.Join(",", _mediaStreamSaveColumns) + " from mediastreams where";
+
+                cmdText += " ItemId=@ItemId";
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = query.ItemId;
+
+                if (query.Type.HasValue)
+                {
+                    cmdText += " AND StreamType=@StreamType";
+                    cmd.Parameters.Add(cmd, "@StreamType", DbType.String).Value = query.Type.Value.ToString();
+                }
+
+                if (query.Index.HasValue)
+                {
+                    cmdText += " AND StreamIndex=@StreamIndex";
+                    cmd.Parameters.Add(cmd, "@StreamIndex", DbType.Int32).Value = query.Index.Value;
+                }
+
+                cmdText += " order by StreamIndex ASC";
+
+                cmd.CommandText = cmdText;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        yield return GetMediaStream(reader);
+                    }
+                }
+            }
+        }
+
+        public async Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            if (streams == null)
+            {
+                throw new ArgumentNullException("streams");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                // First delete chapters
+                _deleteStreamsCommand.GetParameter(0).Value = id;
+
+                _deleteStreamsCommand.Transaction = transaction;
+
+                _deleteStreamsCommand.ExecuteNonQuery();
+
+                foreach (var stream in streams)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var index = 0;
+
+                    _saveStreamCommand.GetParameter(index++).Value = id;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Index;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Type.ToString();
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Codec;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Language;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.ChannelLayout;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Profile;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.AspectRatio;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Path;
+
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsInterlaced;
+
+                    _saveStreamCommand.GetParameter(index++).Value = stream.BitRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Channels;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.SampleRate;
+
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsDefault;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsForced;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsExternal;
+
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Width;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Height;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.AverageFrameRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.RealFrameRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Level;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.PixelFormat;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.BitDepth;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsAnamorphic;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
+
+                    if (stream.KeyFrames == null || stream.KeyFrames.Count == 0)
+                    {
+                        _saveStreamCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveStreamCommand.GetParameter(index++).Value = string.Join(",", stream.KeyFrames.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray());
+                    }
+
+                    _saveStreamCommand.Transaction = transaction;
+                    _saveStreamCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save media streams:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Gets the chapter.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>ChapterInfo.</returns>
+        private MediaStream GetMediaStream(IDataReader reader)
+        {
+            var item = new MediaStream
+            {
+                Index = reader.GetInt32(1)
+            };
+
+            item.Type = (MediaStreamType)Enum.Parse(typeof(MediaStreamType), reader.GetString(2), true);
+
+            if (!reader.IsDBNull(3))
+            {
+                item.Codec = reader.GetString(3);
+            }
+
+            if (!reader.IsDBNull(4))
+            {
+                item.Language = reader.GetString(4);
+            }
+
+            if (!reader.IsDBNull(5))
+            {
+                item.ChannelLayout = reader.GetString(5);
+            }
+
+            if (!reader.IsDBNull(6))
+            {
+                item.Profile = reader.GetString(6);
+            }
+
+            if (!reader.IsDBNull(7))
+            {
+                item.AspectRatio = reader.GetString(7);
+            }
+
+            if (!reader.IsDBNull(8))
+            {
+                item.Path = reader.GetString(8);
+            }
+
+            item.IsInterlaced = reader.GetBoolean(9);
+
+            if (!reader.IsDBNull(10))
+            {
+                item.BitRate = reader.GetInt32(10);
+            }
+
+            if (!reader.IsDBNull(11))
+            {
+                item.Channels = reader.GetInt32(11);
+            }
+
+            if (!reader.IsDBNull(12))
+            {
+                item.SampleRate = reader.GetInt32(12);
+            }
+
+            item.IsDefault = reader.GetBoolean(13);
+            item.IsForced = reader.GetBoolean(14);
+            item.IsExternal = reader.GetBoolean(15);
+
+            if (!reader.IsDBNull(16))
+            {
+                item.Width = reader.GetInt32(16);
+            }
+
+            if (!reader.IsDBNull(17))
+            {
+                item.Height = reader.GetInt32(17);
+            }
+
+            if (!reader.IsDBNull(18))
+            {
+                item.AverageFrameRate = reader.GetFloat(18);
+            }
+
+            if (!reader.IsDBNull(19))
+            {
+                item.RealFrameRate = reader.GetFloat(19);
+            }
+
+            if (!reader.IsDBNull(20))
+            {
+                item.Level = reader.GetFloat(20);
+            }
+
+            if (!reader.IsDBNull(21))
+            {
+                item.PixelFormat = reader.GetString(21);
+            }
+
+            if (!reader.IsDBNull(22))
+            {
+                item.BitDepth = reader.GetInt32(22);
+            }
+
+            if (!reader.IsDBNull(23))
+            {
+                item.IsAnamorphic = reader.GetBoolean(23);
+            }
+
+            if (!reader.IsDBNull(24))
+            {
+                item.RefFrames = reader.GetInt32(24);
+            }
+
+            if (!reader.IsDBNull(25))
+            {
+                item.IsCabac = reader.GetBoolean(25);
+            }
+
+            if (!reader.IsDBNull(26))
+            {
+                var frames = reader.GetString(26);
+                if (!string.IsNullOrWhiteSpace(frames))
+                {
+                    item.KeyFrames = frames.Split(',').Select(i => int.Parse(i, CultureInfo.InvariantCulture)).ToList();
+                }
+            }
+
+            return item;
+        }
+
     }
 }
