@@ -1068,6 +1068,10 @@
         return false;
     }
 
+    function onSelectionChange(e) {
+        updateItemSelection(this, this.checked);
+    }
+
     function showSelection(item) {
 
         var itemSelectionPanel = item.querySelector('.itemSelectionPanel');
@@ -1079,11 +1083,12 @@
 
             item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-            var html = '';
+            var chkItemSelect = document.createElement('paper-checkbox');
+            chkItemSelect.classList.add('chkItemSelect');
 
-            html += '<paper-checkbox class="chkItemSelect"></paper-checkbox>';
+            $(chkItemSelect).on('change', onSelectionChange);
 
-            itemSelectionPanel.innerHTML = html;
+            itemSelectionPanel.appendChild(chkItemSelect);
         }
     }
 

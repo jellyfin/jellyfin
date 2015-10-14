@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             ImageProcessor = imageProcessor;
         }
 
-        public virtual bool Supports(IHasImages item)
+        protected virtual bool Supports(IHasImages item)
         {
             return true;
         }

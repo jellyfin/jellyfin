@@ -197,6 +197,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsHD", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalEtag", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalImagePath", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "DateLastRefreshed", "DATETIME");
 
             PrepareStatements();
 
@@ -291,7 +292,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "PreferredMetadataCountryCode",
             "IsHD",
             "ExternalEtag",
-            "ExternalImagePath"
+            "ExternalImagePath",
+            "DateLastRefreshed"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -378,7 +380,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "PreferredMetadataCountryCode",
                 "IsHD",
                 "ExternalEtag",
-                "ExternalImagePath"
+                "ExternalImagePath",
+                "DateLastRefreshed"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -599,6 +602,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.ExternalEtag;
                     _saveItemCommand.GetParameter(index++).Value = item.ExternalImagePath;
 
+                    if (item.DateLastRefreshed == default(DateTime))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.DateLastRefreshed;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -818,6 +830,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(23))
             {
                 item.ExternalImagePath = reader.GetString(23);
+            }
+
+            if (!reader.IsDBNull(24))
+            {
+                item.DateLastRefreshed = reader.GetDateTime(24).ToUniversalTime();
             }
 
             return item;

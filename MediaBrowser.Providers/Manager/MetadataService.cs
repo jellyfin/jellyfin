@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -82,7 +83,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>ProviderResult.</returns>
         protected MetadataStatus GetLastResult(IHasMetadata item)
         {
-            if (item.DateLastSaved == default(DateTime))
+            if (GetLastRefreshDate(item) == default(DateTime))
             {
                 return new MetadataStatus { ItemId = item.Id };
             }
@@ -181,16 +182,23 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var beforeSaveResult = await BeforeSave(itemOfType, item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh, updateType).ConfigureAwait(false);
+            var isFirstRefresh = GetLastRefreshDate(item) == default(DateTime);
+
+            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
 
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
+            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata)
             {
                 // If any of these properties are set then make sure the updateType is not None, just to force everything to save
                 if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
                 {
                     updateType = updateType | ItemUpdateType.MetadataDownload;
+                }
+
+                if (refreshOptions.MetadataRefreshMode >= MetadataRefreshMode.Default && refreshOptions.ImageRefreshMode >= ImageRefreshMode.Default)
+                {
+                    item.DateLastRefreshed = DateTime.UtcNow;
                 }
 
                 // Save to database
@@ -205,6 +213,26 @@ namespace MediaBrowser.Providers.Manager
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             return updateType;
+        }
+
+        private DateTime GetLastRefreshDate(IHasMetadata item)
+        {
+            if (item.DateLastRefreshed != default(DateTime))
+            {
+                return item.DateLastRefreshed;
+            }
+
+            if (ServerConfigurationManager.Configuration.EnableDateLastRefresh)
+            {
+                return item.DateLastRefreshed;
+            }
+
+            if (item is BoxSet)
+            {
+                return item.DateLastRefreshed;
+            }
+
+            return item.DateLastSaved;
         }
 
         protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
@@ -222,7 +250,7 @@ namespace MediaBrowser.Providers.Manager
             item.AfterMetadataRefresh();
             return _cachedTask;
         }
-        
+
         private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.

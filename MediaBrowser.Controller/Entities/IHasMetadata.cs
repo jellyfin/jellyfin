@@ -31,6 +31,12 @@ namespace MediaBrowser.Controller.Entities
         DateTime DateLastSaved { get; set; }
 
         /// <summary>
+        /// Gets or sets the date last refreshed.
+        /// </summary>
+        /// <value>The date last refreshed.</value>
+        DateTime DateLastRefreshed { get; set; }
+        
+        /// <summary>
         /// Updates to repository.
         /// </summary>
         /// <param name="updateReason">The update reason.</param>

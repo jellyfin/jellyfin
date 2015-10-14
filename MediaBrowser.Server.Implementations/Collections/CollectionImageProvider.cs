@@ -22,6 +22,17 @@ namespace MediaBrowser.Server.Implementations.Collections
         {
         }
 
+        protected override bool Supports(IHasImages item)
+        {
+            // Right now this is the only way to prevent this image from getting created ahead of internet image providers
+            if (!item.IsLocked)
+            {
+                return false;
+            }
+
+            return base.Supports(item);
+        }
+
         protected override Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
         {
             var playlist = (BoxSet)item;

@@ -706,7 +706,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 isNew = true;
             }
-
+            
             item.ChannelId = _tvDtoService.GetInternalChannelId(serviceName, info.ChannelId).ToString("N");
             item.CommunityRating = info.CommunityRating;
             item.OfficialRating = info.OfficialRating;
