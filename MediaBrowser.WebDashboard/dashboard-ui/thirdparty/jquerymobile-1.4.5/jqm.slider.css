@@ -83,7 +83,7 @@ div.ui-slider:after {
 	clear: both;
 }
 input.ui-slider-input {
-	display: block;
+	display: none;
 	float: left;
 	font-size: 14px;
 	font-weight: bold;
@@ -115,7 +115,7 @@ input.ui-slider-input {
 	border-width: 1px;
 	border-style: solid;
 	height: 15px;
-	margin: 0 15px 0 68px;
+	margin: 0 15px 0 0;
 	top: 6px;
 }
 .ui-slider-track.ui-mini {

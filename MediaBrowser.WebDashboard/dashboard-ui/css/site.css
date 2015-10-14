@@ -430,7 +430,7 @@ fieldset {
     border: none;
 }
 
-input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']) {
+input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;

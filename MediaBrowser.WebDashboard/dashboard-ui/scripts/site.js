@@ -2049,7 +2049,8 @@ var AppInfo = {};
             velocity: "bower_components/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
             directorybrowser: 'components/directorybrowser/directorybrowser',
-            collectioneditor: 'components/collectioneditor/collectioneditor'
+            collectioneditor: 'components/collectioneditor/collectioneditor',
+            playlisteditor: 'components/playlisteditor/playlisteditor'
         };
 
         if (Dashboard.isRunningInCordova()) {

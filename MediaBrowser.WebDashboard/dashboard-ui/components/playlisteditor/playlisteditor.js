@@ -1,30 +1,43 @@
 ﻿define([], function () {
 
-    function onSubmit() {
+    var lastPlaylistId = '';
+
+    function redirectToPlaylist(id) {
+
+        var context = getParameterByName('context');
+
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+
+            Dashboard.navigate(LibraryBrowser.getHref(item, context));
+
+        });
+    }
+
+    function onAddToPlaylistFormSubmit() {
+
         Dashboard.showLoadingMsg();
 
         var panel = $(this).parents('paper-dialog')[0];
 
-        var collectionId = $('#selectCollectionToAddTo', panel).val();
+        var playlistId = $('#selectPlaylistToAddTo', panel).val();
 
-        if (collectionId) {
-            addToCollection(panel, collectionId);
+        if (playlistId) {
+            lastPlaylistId = playlistId;
+            addToPlaylist(panel, playlistId);
         } else {
-            createCollection(panel);
+            createPlaylist(panel);
         }
 
         return false;
     }
 
-    function createCollection(dlg) {
+    function createPlaylist(dlg) {
 
-        var url = ApiClient.getUrl("Collections", {
+        var url = ApiClient.getUrl("Playlists", {
 
-            Name: $('#txtNewCollectionName', dlg).val(),
-            IsLocked: !$('#chkEnableInternetMetadata', dlg).checked(),
-            Ids: $('.fldSelectedItemIds', dlg).val() || ''
-
-            //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
+            Name: $('#txtNewPlaylistName', dlg).val(),
+            Ids: $('.fldSelectedItemIds', dlg).val() || '',
+            userId: Dashboard.getCurrentUserId()
 
         });
 
@@ -40,27 +53,16 @@
             var id = result.Id;
 
             PaperDialogHelper.close(dlg);
-            redirectToCollection(id);
-
+            redirectToPlaylist(id);
         });
     }
 
-    function redirectToCollection(id) {
+    function addToPlaylist(dlg, id) {
 
-        var context = getParameterByName('context');
+        var url = ApiClient.getUrl("Playlists/" + id + "/Items", {
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-            Dashboard.navigate(LibraryBrowser.getHref(item, context));
-
-        });
-    }
-
-    function addToCollection(dlg, id) {
-
-        var url = ApiClient.getUrl("Collections/" + id + "/Items", {
-
-            Ids: $('.fldSelectedItemIds', dlg).val() || ''
+            Ids: $('.fldSelectedItemIds', dlg).val() || '',
+            userId: Dashboard.getCurrentUserId()
         });
 
         ApiClient.ajax({
@@ -72,8 +74,8 @@
             Dashboard.hideLoadingMsg();
 
             PaperDialogHelper.close(dlg);
+            Dashboard.alert(Globalize.translate('MessageAddedToPlaylistSuccess'));
 
-            Dashboard.alert(Globalize.translate('MessageItemsAdded'));
         });
     }
 
@@ -83,26 +85,32 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function populateCollections(panel) {
+    function populatePlaylists(panel) {
+
+        var select = $('#selectPlaylistToAddTo', panel);
+
+        if (!select.length) {
+
+            $('#txtNewPlaylistName', panel).val('').focus();
+            return;
+        }
 
         Dashboard.showLoadingMsg();
 
-        var select = $('#selectCollectionToAddTo', panel);
-
-        $('.newCollectionInfo', panel).hide();
+        $('.newPlaylistInfo', panel).hide();
 
         var options = {
 
             Recursive: true,
-            IncludeItemTypes: "BoxSet",
-            SortBy: "SortName"
+            IncludeItemTypes: "Playlist",
+            SortBy: 'SortName'
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
             var html = '';
 
-            html += '<option value="">' + Globalize.translate('OptionNewCollection') + '</option>';
+            html += '<option value="">' + Globalize.translate('OptionNewPlaylist') + '</option>';
 
             html += result.Items.map(function (i) {
 
@@ -119,31 +127,25 @@
 
         var html = '';
 
-        html += '<form class="newCollectionForm" style="max-width:100%;">';
+        html += '<form style="max-width:100%;">';
 
         html += '<br />';
 
-        html += '<div class="fldSelectCollection">';
+        html += '<div class="fldSelectPlaylist">';
         html += '<br />';
-        html += '<label for="selectCollectionToAddTo">' + Globalize.translate('LabelSelectCollection') + '</label>';
-        html += '<select id="selectCollectionToAddTo" data-mini="true"></select>';
+        html += '<label for="selectPlaylistToAddTo">' + Globalize.translate('LabelSelectPlaylist') + '</label>';
+        html += '<select id="selectPlaylistToAddTo" data-mini="true"></select>';
         html += '</div>';
 
-        html += '<div class="newCollectionInfo">';
+        html += '<div class="newPlaylistInfo">';
 
         html += '<div>';
-        html += '<paper-input type="text" id="txtNewCollectionName" required="required" label="' + Globalize.translate('LabelName') + '"></paper-input>';
-        html += '<div class="fieldDescription">' + Globalize.translate('NewCollectionNameExample') + '</div>';
+        html += '<paper-input type="text" id="txtNewPlaylistName" required="required" label="' + Globalize.translate('LabelName') + '"></paper-input>';
         html += '</div>';
 
         html += '<br />';
-        html += '<br />';
 
-        html += '<div>';
-        html += '<paper-checkbox id="chkEnableInternetMetadata">' + Globalize.translate('OptionSearchForInternetMetadata') + '</paper-checkbox>';
-        html += '</div>';
-
-        // newCollectionInfo
+        // newPlaylistInfo
         html += '</div>';
 
         html += '<br />';
@@ -160,31 +162,34 @@
 
     function initEditor(content, items) {
 
-        $('#selectCollectionToAddTo', content).on('change', function () {
+        $('#selectPlaylistToAddTo', content).on('change', function () {
 
             if (this.value) {
-                $('.newCollectionInfo', content).hide();
-                $('#txtNewCollectionName', content).removeAttr('required');
+                $('.newPlaylistInfo', content).hide();
+                $('input', content).removeAttr('required');
             } else {
-                $('.newCollectionInfo', content).show();
-                $('#txtNewCollectionName', content).attr('required', 'required');
+                $('.newPlaylistInfo', content).show();
+                $('input', content).attr('required', 'required');
             }
-        });
 
-        $('.newCollectionForm', content).off('submit', onSubmit).on('submit', onSubmit);
+        }).trigger('change');
+
+        populatePlaylists(content);
+
+        $('form', content).on('submit', onAddToPlaylistFormSubmit);
 
         $('.fldSelectedItemIds', content).val(items.join(','));
 
         if (items.length) {
-            $('.fldSelectCollection', content).show();
-            populateCollections(content);
+            $('.fldSelectPlaylist', content).show();
+            populatePlaylists(content);
         } else {
-            $('.fldSelectCollection', content).hide();
-            $('#selectCollectionToAddTo', content).html('').val('').trigger('change');
+            $('.fldSelectPlaylist', content).hide();
+            $('#selectPlaylistToAddTo', content).html('').val('').trigger('change');
         }
     }
 
-    function collectioneditor() {
+    function playlisteditor() {
 
         var self = this;
 
@@ -202,7 +207,7 @@
                 html += '<h2 class="dialogHeader">';
                 html += '<paper-fab icon="arrow-back" class="mini btnCloseDialog"></paper-fab>';
 
-                var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
+                var title = Globalize.translate('HeaderAddToPlaylist');
 
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
                 html += '</h2>';
@@ -219,7 +224,7 @@
 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'collectioneditor');
+                PaperDialogHelper.openWithHash(dlg, 'playlisteditor');
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
@@ -229,5 +234,5 @@
         };
     }
 
-    return collectioneditor;
+    return playlisteditor;
 });

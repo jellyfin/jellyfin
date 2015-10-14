@@ -160,7 +160,7 @@
 
             this.handle.bind("click", false);
 
-            this._handleFormReset();
+            //this._handleFormReset();
 
             this.refresh(undefined, undefined, true);
         },
