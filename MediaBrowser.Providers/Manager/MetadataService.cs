@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.Providers.Manager
@@ -227,7 +228,7 @@ namespace MediaBrowser.Providers.Manager
                 return item.DateLastRefreshed;
             }
 
-            if (item is BoxSet)
+            if (item is BoxSet || (item is IItemByName && !(item is MusicArtist)))
             {
                 return item.DateLastRefreshed;
             }
