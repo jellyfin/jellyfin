@@ -2050,7 +2050,8 @@ var AppInfo = {};
             tvguide: 'components/tvguide/tvguide',
             directorybrowser: 'components/directorybrowser/directorybrowser',
             collectioneditor: 'components/collectioneditor/collectioneditor',
-            playlisteditor: 'components/playlisteditor/playlisteditor'
+            playlisteditor: 'components/playlisteditor/playlisteditor',
+            howler: 'bower_components/howler.js/howler.min'
         };
 
         if (Dashboard.isRunningInCordova()) {
