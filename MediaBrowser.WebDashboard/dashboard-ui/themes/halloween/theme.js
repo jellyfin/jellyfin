@@ -6,7 +6,7 @@
     function onPageShow() {
         var page = this;
 
-        if (!$.browser.mobile) {
+        if (!$.browser.mobile && !page.classList.contains('itemDetailPage')) {
             Backdrops.setBackdropUrl(page, 'themes/halloween/bg.jpg');
         }
     }

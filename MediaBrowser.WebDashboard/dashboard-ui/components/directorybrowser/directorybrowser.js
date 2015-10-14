@@ -128,6 +128,14 @@
             html += '<br/>';
             html += '<a href="http://doc.freenas.org/9.3/freenas_jails.html#add-storage" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a>';
         }
+        else if (systemInfo.OperatingSystem.toLowerCase() == 'linux') {
+
+            html += '<br/>';
+            html += '<br/>';
+            html += Globalize.translate('MessageDirectoryPickerLinuxInstruction');
+            html += '<br/>';
+            html += '<a href="http://doc.freenas.org/9.3/freenas_jails.html#add-storage" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a>';
+        }
 
         html += '</p>';
 

@@ -240,6 +240,7 @@
     <Compile Include="Notifications\IConfigurableNotificationService.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
@@ -255,7 +256,6 @@
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
-    <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />

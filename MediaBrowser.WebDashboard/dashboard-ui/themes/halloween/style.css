@@ -20,9 +20,9 @@ paper-button[raised].more {
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #FF9100;
+    background: #FF9100 !important;
 }
 
 .channelTimeslotHeader {
-    border-right-color: #FF9100;
+    border-right-color: #FF9100 !important;
 }

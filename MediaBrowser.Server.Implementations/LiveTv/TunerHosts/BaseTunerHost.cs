@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
@@ -18,15 +20,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         protected readonly IConfigurationManager Config;
         protected readonly ILogger Logger;
         protected IJsonSerializer JsonSerializer;
+        protected readonly IMediaEncoder MediaEncoder;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        public BaseTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer)
+        protected BaseTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder)
         {
             Config = config;
             Logger = logger;
             JsonSerializer = jsonSerializer;
+            MediaEncoder = mediaEncoder;
         }
 
         protected abstract Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
@@ -169,11 +173,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     try
                     {
                         var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
-
-                        if (stream != null)
-                        {
-                            return stream;
-                        }
+                        
+                        await AddMediaInfo(stream, false, cancellationToken).ConfigureAwait(false);
+                        return stream;
                     }
                     catch (Exception ex)
                     {
@@ -183,6 +185,84 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             }
 
             throw new LiveTvConflictException();
+        }
+
+        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        {
+            var originalRuntime = mediaSource.RunTimeTicks;
+
+            var info = await MediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                InputPath = mediaSource.Path,
+                Protocol = mediaSource.Protocol,
+                MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                ExtractChapters = false
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            mediaSource.Bitrate = info.Bitrate;
+            mediaSource.Container = info.Container;
+            mediaSource.Formats = info.Formats;
+            mediaSource.MediaStreams = info.MediaStreams;
+            mediaSource.RunTimeTicks = info.RunTimeTicks;
+            mediaSource.Size = info.Size;
+            mediaSource.Timestamp = info.Timestamp;
+            mediaSource.Video3DFormat = info.Video3DFormat;
+            mediaSource.VideoType = info.VideoType;
+
+            mediaSource.DefaultSubtitleStreamIndex = null;
+
+            // Null this out so that it will be treated like a live stream
+            if (!originalRuntime.HasValue)
+            {
+                mediaSource.RunTimeTicks = null;
+            }
+
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
+
+            if (audioStream == null || audioStream.Index == -1)
+            {
+                mediaSource.DefaultAudioStreamIndex = null;
+            }
+            else
+            {
+                mediaSource.DefaultAudioStreamIndex = audioStream.Index;
+            }
+
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
+            if (videoStream != null)
+            {
+                if (!videoStream.BitRate.HasValue)
+                {
+                    var width = videoStream.Width ?? 1920;
+
+                    if (width >= 1900)
+                    {
+                        videoStream.BitRate = 8000000;
+                    }
+
+                    else if (width >= 1260)
+                    {
+                        videoStream.BitRate = 3000000;
+                    }
+
+                    else if (width >= 700)
+                    {
+                        videoStream.BitRate = 1000000;
+                    }
+                }
+            }
+
+            // Try to estimate this
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
+
+                if (total > 0)
+                {
+                    mediaSource.Bitrate = total;
+                }
+            }
         }
 
         protected abstract bool IsValidChannelId(string channelId);

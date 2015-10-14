@@ -533,6 +533,12 @@ a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
     box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
 }
 
+    a[data-role='button'][data-iconpos='notext'], button[data-iconpos='notext']:not([data-role='none']):not(.clearButton) {
+        padding: 4px;
+        border-radius: 50px;
+        outline: 0;
+    }
+
     a[data-role='button']:not([data-inline='true']), button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
         display: block;
         margin: .5em 0 !important;

@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -21,8 +23,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private readonly IHttpClient _httpClient;
 
-        public HdHomerunHost(IConfigurationManager config, ILogger logger, IHttpClient httpClient, IJsonSerializer jsonSerializer)
-            : base(config, logger, jsonSerializer)
+        public HdHomerunHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient) : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _httpClient = httpClient;
         }
@@ -389,7 +390,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                throw new ArgumentException("Channel not found");
             }
             channelId = channelId.Substring(ChannelIdPrefix.Length);
 
