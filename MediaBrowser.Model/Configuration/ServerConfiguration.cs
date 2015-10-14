@@ -224,6 +224,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableVideoFrameByFrameAnalysis { get; set; }
 
+        public bool EnableDateLastRefresh { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

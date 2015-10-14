@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             try
             {
-				_fileSystem.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 var collection = new BoxSet
                 {
@@ -93,7 +93,12 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToCollection(collection.Id, options.ItemIdList, false);
+                    await AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
+                    {
+                        // The initial adding of items is going to create a local metadata file
+                        // This will cause internet metadata to be skipped as a result
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                    });
                 }
                 else
                 {
@@ -145,10 +150,10 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            return AddToCollection(collectionId, ids, true);
+            return AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
         }
 
-        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent)
+        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -186,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
+                _providerManager.QueueRefresh(collection.Id, refreshOptions);
 
                 if (fireEvent)
                 {

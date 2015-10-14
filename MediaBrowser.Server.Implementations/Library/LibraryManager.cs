@@ -1699,7 +1699,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!refresh)
             {
-                refresh = (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
+                refresh = (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
             }
 
             if (refresh)
@@ -1796,7 +1796,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
 
             if (refresh)
             {
@@ -1866,7 +1866,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
 
             if (refresh)
             {
