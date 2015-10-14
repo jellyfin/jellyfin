@@ -414,7 +414,10 @@
                         switch (id) {
 
                             case 'addtocollection':
-                                BoxSetEditor.showPanel([itemId]);
+                                require(['collectioneditor'], function (collectioneditor) {
+
+                                    new collectioneditor().show([itemId]);
+                                });
                                 break;
                             case 'playlist':
                                 PlaylistManager.showPanel([itemId]);
@@ -1236,18 +1239,23 @@
                     positionTo: e.target,
                     callback: function (id) {
 
+                        var items = selectedItems.slice(0);
+
                         switch (id) {
 
                             case 'addtocollection':
-                                BoxSetEditor.showPanel(selectedItems);
+                                require(['collectioneditor'], function (collectioneditor) {
+
+                                    new collectioneditor().show(items);
+                                });
                                 hideSelections();
                                 break;
                             case 'playlist':
-                                PlaylistManager.showPanel(selectedItems);
+                                PlaylistManager.showPanel(items);
                                 hideSelections();
                                 break;
                             case 'refresh':
-                                selectedItems.map(function (itemId) {
+                                items.map(function (itemId) {
 
                                     // TODO: Create an endpoint to do this in bulk
                                     ApiClient.refreshItem(itemId, {
@@ -1264,7 +1272,7 @@
                                 break;
                             case 'sync':
                                 SyncManager.showMenu({
-                                    items: selectedItems.map(function (i) {
+                                    items: items.map(function (i) {
                                         return {
                                             Id: i
                                         };
@@ -1330,40 +1338,6 @@
                 });
             }
         });
-    }
-
-    function addToCollection(page) {
-
-        var selection = getSelectedItems();
-
-        if (selection.length < 1) {
-
-            Dashboard.alert({
-                message: Globalize.translate('MessagePleaseSelectOneItem'),
-                title: Globalize.translate('HeaderError')
-            });
-
-            return;
-        }
-
-        BoxSetEditor.showPanel(selection);
-    }
-
-    function addToPlaylist(page) {
-
-        var selection = getSelectedItems();
-
-        if (selection.length < 1) {
-
-            Dashboard.alert({
-                message: Globalize.translate('MessagePleaseSelectOneItem'),
-                title: Globalize.translate('HeaderError')
-            });
-
-            return;
-        }
-
-        PlaylistManager.showPanel(selection);
     }
 
     function onItemWithActionClick(e) {

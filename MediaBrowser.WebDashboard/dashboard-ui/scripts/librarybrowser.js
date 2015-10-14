@@ -679,7 +679,7 @@
 
             var commands = [];
 
-            if (BoxSetEditor.supportsAddingToCollection(item)) {
+            if (LibraryBrowser.supportsAddingToCollection(item)) {
                 commands.push('addtocollection');
             }
 
@@ -894,7 +894,10 @@
                                 });
                                 break;
                             case 'addtocollection':
-                                BoxSetEditor.showPanel([itemId]);
+                                require(['collectioneditor'], function (collectioneditor) {
+
+                                    new collectioneditor().show([itemId]);
+                                });
                                 break;
                             case 'playlist':
                                 PlaylistManager.showPanel([itemId]);
@@ -1446,6 +1449,13 @@
             return html;
         },
 
+        supportsAddingToCollection: function (item) {
+
+            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program'];
+
+            return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
+        },
+
         getItemCommands: function (item, options) {
 
             var itemCommands = [];
@@ -1478,7 +1488,7 @@
             }
 
             if (options.showAddToCollection !== false) {
-                if (BoxSetEditor.supportsAddingToCollection(item)) {
+                if (LibraryBrowser.supportsAddingToCollection(item)) {
                     itemCommands.push('addtocollection');
                 }
             }

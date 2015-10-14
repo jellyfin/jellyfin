@@ -511,7 +511,7 @@ paper-dialog paper-radio-group paper-radio-button {
     display: block;
 }
 
-.fullscreen-paper-dialog, .medium-paper-dialog {
+.fullscreen-paper-dialog, .medium-paper-dialog, .small-paper-dialog {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -530,6 +530,13 @@ paper-dialog paper-radio-group paper-radio-button {
         bottom: 10% !important;
         left: 10% !important;
         right: 10% !important;
+    }
+
+    .small-paper-dialog {
+        top: 10% !important;
+        bottom: 10% !important;
+        left: 20% !important;
+        right: 20% !important;
     }
 }
 

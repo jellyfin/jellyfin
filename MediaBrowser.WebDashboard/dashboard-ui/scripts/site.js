@@ -2048,7 +2048,8 @@ var AppInfo = {};
         var paths = {
             velocity: "bower_components/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
-            directorybrowser: 'components/directorybrowser/directorybrowser'
+            directorybrowser: 'components/directorybrowser/directorybrowser',
+            collectioneditor: 'components/collectioneditor/collectioneditor'
         };
 
         if (Dashboard.isRunningInCordova()) {

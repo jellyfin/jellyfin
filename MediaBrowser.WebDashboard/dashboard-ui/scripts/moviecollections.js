@@ -191,14 +191,14 @@
 
     function initPage(tabContent) {
 
-        $('select.selectView').on('change', function () {
+        // The button is created dynamically
+        $('.btnNewCollection', tabContent).on('click', function () {
 
-            var newView = this.value;
-            getPageData().view = newView;
+            require(['collectioneditor'], function (collectioneditor) {
 
-            reloadItems(tabContent);
+                new collectioneditor().show();
 
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
+            });
         });
     }
 

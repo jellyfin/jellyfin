@@ -96,6 +96,7 @@
     "SyncJobItemStatusReadyToTransfer": "Ready to Transfer",
     "LabelCollection": "Collection",
     "HeaderAddToCollection": "Add to Collection",
+    "HeaderNewCollection": "New Collection",
     "NewCollectionNameExample": "Example: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Search the internet for artwork and metadata",
     "LabelSelectCollection": "Select collection:",

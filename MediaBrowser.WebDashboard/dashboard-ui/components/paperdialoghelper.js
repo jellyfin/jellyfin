@@ -96,7 +96,10 @@
 
         dlg.classList.add('popupEditor');
 
-        if (options.size == 'medium') {
+        if (options.size == 'small') {
+            dlg.classList.add('small-paper-dialog');
+        }
+        else if (options.size == 'medium') {
             dlg.classList.add('medium-paper-dialog');
         } else {
             dlg.classList.add('fullscreen-paper-dialog');
@@ -112,7 +115,7 @@
     }
 
     function positionTo(dlg, elem) {
-        
+
         var windowHeight = $(window).height();
 
         // If the window height is under a certain amount, don't bother trying to position
