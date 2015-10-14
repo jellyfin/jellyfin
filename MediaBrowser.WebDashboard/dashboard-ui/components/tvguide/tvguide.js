@@ -479,7 +479,7 @@
         }).done(function (template) {
 
             var tabContent = options.element;
-            tabContent.innerHTML = template;
+            tabContent.innerHTML = Globalize.translateDocument(template);
 
             Events.on(tabContent.querySelector('.programGrid'), 'scroll', function () {
 
