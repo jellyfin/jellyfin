@@ -609,7 +609,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
                                 "alphapicker.js",
-                                "collectioneditor.js",
                                 "notifications.js",
                                 "remotecontrol.js",
                                 "search.js",

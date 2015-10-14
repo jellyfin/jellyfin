@@ -167,10 +167,10 @@
     <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\directorybrowser\directorybrowser.js">
+    <Content Include="dashboard-ui\components\collectioneditor\collectioneditor.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\directorybrowser\directorybrowser.template.html">
+    <Content Include="dashboard-ui\components\directorybrowser\directorybrowser.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\itemidentifier\itemidentifier.js">
@@ -310,9 +310,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\actionsheet.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\scripts\collectioneditor.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\globalize.js">
