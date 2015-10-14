@@ -13321,7 +13321,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 <dom-module id="paper-ripple" assetpath="bower_components/paper-ripple/">
 
   
-  
+
   <template>
     <style>
       :host {
@@ -13333,24 +13333,30 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         left: 0;
         right: 0;
         bottom: 0;
+
+        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
+         * creating a node (with a position:absolute) in the middle of an event
+         * handler "interrupts" that event handler (which happens when the
+         * ripple is created on demand) */
+        pointer-events: none;
       }
-  
+
       :host([animating]) {
         /* This resolves a rendering issue in Chrome (as of 40) where the
            ripple is not properly clipped by its parent (which may have
            rounded corners). See: http://jsbin.com/temexa/4
-  
+
            Note: We only apply this style conditionally. Otherwise, the browser
            will create a new compositing layer for every ripple element on the
            page, and that would be bad. */
         -webkit-transform: translate(0, 0);
         transform: translate3d(0, 0, 0);
       }
-  
+
       :host([noink]) {
         pointer-events: none;
       }
-  
+
       #background,
       #waves,
       .wave-container,
@@ -13362,32 +13368,32 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         width: 100%;
         height: 100%;
       }
-  
+
       #background,
       .wave {
         opacity: 0;
       }
-  
+
       #waves,
       .wave {
         overflow: hidden;
       }
-  
+
       .wave-container,
       .wave {
         border-radius: 50%;
       }
-  
+
       :host(.circle) #background,
       :host(.circle) #waves {
         border-radius: 50%;
       }
-  
+
       :host(.circle) .wave-container {
         overflow: hidden;
       }
     </style>
-    
+
     <div id="background"></div>
     <div id="waves"></div>
   </template>
@@ -13772,9 +13778,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         },
 
         /**
-         * If true, the ripple will not generate a ripple effect 
+         * If true, the ripple will not generate a ripple effect
          * via pointer interaction.
-         * Calling ripple's imperative api like `simulatedRipple` will 
+         * Calling ripple's imperative api like `simulatedRipple` will
          * still generate the ripple effect.
          */
         noink: {
@@ -13846,10 +13852,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }, 1);
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiDownAction: function(event) {
         if (!this.noink) {
@@ -13857,10 +13863,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
@@ -13876,10 +13882,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiUpAction: function(event) {
         if (!this.noink) {
@@ -13887,10 +13893,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       upAction: function(event) {
         if (this.holdDown) {

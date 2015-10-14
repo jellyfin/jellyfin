@@ -24,7 +24,7 @@ Example:
     </div>
 
 Note, it's important that the parent container of the ripple be relative position, otherwise
-the ripple will emanate outside of the desired container. 
+the ripple will emanate outside of the desired container.
 
 `paper-ripple` listens to "mousedown" and "mouseup" events so it would display ripple
 effect when touches on it.  You can also defeat the default behavior and
@@ -83,7 +83,7 @@ Apply `circle` class to make the rippling effect within a circle.
   @param {Object} detail
   @param {Object} detail.node The animated node
   -->
-  
+
   <template>
     <style>
       :host {
@@ -95,24 +95,30 @@ Apply `circle` class to make the rippling effect within a circle.
         left: 0;
         right: 0;
         bottom: 0;
+
+        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
+         * creating a node (with a position:absolute) in the middle of an event
+         * handler "interrupts" that event handler (which happens when the
+         * ripple is created on demand) */
+        pointer-events: none;
       }
-  
+
       :host([animating]) {
         /* This resolves a rendering issue in Chrome (as of 40) where the
            ripple is not properly clipped by its parent (which may have
            rounded corners). See: http://jsbin.com/temexa/4
-  
+
            Note: We only apply this style conditionally. Otherwise, the browser
            will create a new compositing layer for every ripple element on the
            page, and that would be bad. */
         -webkit-transform: translate(0, 0);
         transform: translate3d(0, 0, 0);
       }
-  
+
       :host([noink]) {
         pointer-events: none;
       }
-  
+
       #background,
       #waves,
       .wave-container,
@@ -124,32 +130,32 @@ Apply `circle` class to make the rippling effect within a circle.
         width: 100%;
         height: 100%;
       }
-  
+
       #background,
       .wave {
         opacity: 0;
       }
-  
+
       #waves,
       .wave {
         overflow: hidden;
       }
-  
+
       .wave-container,
       .wave {
         border-radius: 50%;
       }
-  
+
       :host(.circle) #background,
       :host(.circle) #waves {
         border-radius: 50%;
       }
-  
+
       :host(.circle) .wave-container {
         overflow: hidden;
       }
     </style>
-    
+
     <div id="background"></div>
     <div id="waves"></div>
   </template>
@@ -534,9 +540,9 @@ Apply `circle` class to make the rippling effect within a circle.
         },
 
         /**
-         * If true, the ripple will not generate a ripple effect 
+         * If true, the ripple will not generate a ripple effect
          * via pointer interaction.
-         * Calling ripple's imperative api like `simulatedRipple` will 
+         * Calling ripple's imperative api like `simulatedRipple` will
          * still generate the ripple effect.
          */
         noink: {
@@ -608,10 +614,10 @@ Apply `circle` class to make the rippling effect within a circle.
         }, 1);
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiDownAction: function(event) {
         if (!this.noink) {
@@ -619,10 +625,10 @@ Apply `circle` class to make the rippling effect within a circle.
         }
       },
 
-      /** 
-       * Provokes a ripple down effect via a UI event, 
+      /**
+       * Provokes a ripple down effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
@@ -638,10 +644,10 @@ Apply `circle` class to make the rippling effect within a circle.
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       uiUpAction: function(event) {
         if (!this.noink) {
@@ -649,10 +655,10 @@ Apply `circle` class to make the rippling effect within a circle.
         }
       },
 
-      /** 
-       * Provokes a ripple up effect via a UI event, 
+      /**
+       * Provokes a ripple up effect via a UI event,
        * *not* respecting the `noink` property.
-       * @param {Event=} event 
+       * @param {Event=} event
        */
       upAction: function(event) {
         if (this.holdDown) {
