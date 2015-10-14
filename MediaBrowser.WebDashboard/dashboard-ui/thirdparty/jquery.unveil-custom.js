@@ -26,8 +26,8 @@
     */
     var $w = $(window);
 
-    var thresholdX = Math.max(screen.availWidth * .5);
-    var thresholdY = Math.max(screen.availHeight * .5);
+    var thresholdX = Math.max(screen.availWidth);
+    var thresholdY = Math.max(screen.availHeight);
 
     function visibleInViewport(elem, partial, hidden, direction) {
 

@@ -14,6 +14,10 @@
 
     function updateProductInfo(product) {
 
+        if (product.id == 'appunlock') {
+            product.owned = false;
+        }
+
         updatedProducts = updatedProducts.filter(function (r) {
             return r.id != product.id;
         });
