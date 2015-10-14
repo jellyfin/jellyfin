@@ -1955,17 +1955,20 @@ var AppInfo = {};
 
     function onDocumentReady() {
 
+        if ($.browser.msie) {
+            Dashboard.importCss('css/ie.css');
+        }
+
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp) {
             if ($.browser.android) {
                 Dashboard.importCss('themes/android.css');
-            }
-            else if ($.browser.safari) {
+            } else if ($.browser.safari) {
                 Dashboard.importCss('themes/ios.css');
             }
+        } else {
+            loadTheme();
         }
-
-        loadTheme();
 
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();
