@@ -45,5 +45,13 @@ namespace MediaBrowser.Controller.Playlists
         /// <returns>Folder.</returns>
         Folder GetPlaylistsFolder(string userId);
 
+        /// <summary>
+        /// Moves the item.
+        /// </summary>
+        /// <param name="playlistId">The playlist identifier.</param>
+        /// <param name="entryId">The entry identifier.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <returns>Task.</returns>
+        Task MoveItem(string playlistId, string entryId, int newIndex);
     }
 }

@@ -230,6 +230,27 @@ namespace MediaBrowser.Server.Implementations.Playlists
             });
         }
 
+        public async Task MoveItem(string playlistId, string entryId, int newIndex)
+        {
+            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
+
+            if (playlist == null)
+            {
+                throw new ArgumentException("No Playlist exists with the supplied Id");
+            }
+
+            var children = playlist.GetManageableItems().ToList();
+
+            var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.Id, StringComparison.OrdinalIgnoreCase));
+
+            var item = playlist.LinkedChildren[oldIndex];
+
+            playlist.LinkedChildren.Remove(item);
+            playlist.LinkedChildren.Insert(newIndex, item);
+
+            await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+        }
+
         public Folder GetPlaylistsFolder(string userId)
         {
             return _libraryManager.RootFolder.Children.OfType<PlaylistsFolder>()
