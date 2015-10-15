@@ -936,7 +936,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                             {
                                 var length = response.ContentLength;
 
-                                if (length != new FileInfo(user.GetImageInfo(ImageType.Primary, 0).Path).Length)
+                                if (length != _fileSystem.GetFileInfo(user.GetImageInfo(ImageType.Primary, 0).Path).Length)
                                 {
                                     changed = true;
                                 }

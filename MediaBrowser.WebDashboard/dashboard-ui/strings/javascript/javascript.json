@@ -748,7 +748,7 @@
     "MessageForgotPasswordFileCreated": "The following file has been created on your server and contains instructions on how to proceed:",
     "MessageForgotPasswordFileExpiration": "The reset pin will expire at {0}.",
     "MessageInvalidForgotPasswordPin": "An invalid or expired pin was entered. Please try again.",
-    "MessagePasswordResetForUsers": "Passwords have been removed for the following users:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users. To login, sign in with a blank password.",
     "HeaderInviteGuest": "Invite Guest",
     "ButtonLinkMyEmbyAccount": "Link my account now",
     "MessageConnectAccountRequiredToInviteGuest": "In order to invite guests you need to first link your Emby account to this server.",
@@ -912,5 +912,7 @@
     "HeaderEmailAddress": "E-Mail Address",
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
     "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "HeaderTryMultiSelect": "Try Multi-Select",
+    "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!"
 }

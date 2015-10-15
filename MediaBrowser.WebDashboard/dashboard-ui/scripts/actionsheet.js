@@ -108,7 +108,10 @@
                     $(this).remove();
                 });
 
-                $('.actionSheetMenuItem', dlg).on('click', function () {
+                // Seeing an issue in some non-chrome browsers where this is requiring a double click
+                var eventName = $.browser.chrome ? 'click' : 'mousedown';
+
+                $('.actionSheetMenuItem', dlg).on(eventName, function () {
 
                     var selectedId = this.getAttribute('data-id');
 

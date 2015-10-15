@@ -1019,6 +1019,27 @@
             hammertime.on('press', onTapHold);
             hammertime.on('pressup', onTapHoldUp);
         });
+        showTapHoldHelp();
+    }
+
+    function showTapHoldHelp() {
+
+        // Don't do this on the home page
+        if (!$.mobile.activePage || $($.mobile.activePage)[0].classList.contains('homePage')) {
+            return;
+        }
+
+        var expectedValue = "5";
+        if (appStorage.getItem("tapholdhelp") == expectedValue) {
+            return;
+        }
+
+        appStorage.setItem("tapholdhelp", expectedValue);
+
+        Dashboard.alert({
+            message: Globalize.translate('TryMultiSelectMessage'),
+            title: Globalize.translate('HeaderTryMultiSelect')
+        });
     }
 
     function disableEvent(e) {
