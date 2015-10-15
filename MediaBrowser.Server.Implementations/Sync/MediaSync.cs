@@ -325,12 +325,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 var files = localItem.AdditionalFiles.ToList();
 
-                // TODO: Remove this. Have to check it for now since this is a new property
-                if (!string.IsNullOrWhiteSpace(localItem.FileId))
-                {
-                    files.Insert(0, localItem.FileId);
-                }
-
                 foreach (var file in files)
                 {
                     _logger.Debug("Removing {0} from {1}.", file, target.Name);

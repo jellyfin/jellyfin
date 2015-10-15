@@ -786,6 +786,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         _logger.Info("Setting status to Queued for {0} because it is no longer on the device.", jobItem.ItemId);
                         jobItem.Status = SyncJobItemStatus.Queued;
+                        jobItem.Progress = 0;
                     }
                     requiresSaving = true;
                 }
@@ -891,6 +892,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         _logger.Info("Setting status to Queued for {0} because it is no longer on the device.", jobItem.Id);
                         jobItem.Status = SyncJobItemStatus.Queued;
+                        jobItem.Progress = 0;
                     }
                     requiresSaving = true;
                 }
