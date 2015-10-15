@@ -111,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
             try
             {
-				_fileSystem.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 var playlist = new Playlist
                 {
@@ -151,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         private string GetTargetPath(string path)
         {
-			while (_fileSystem.DirectoryExists(path))
+            while (_fileSystem.DirectoryExists(path))
             {
                 path += "1";
             }
@@ -242,6 +242,16 @@ namespace MediaBrowser.Server.Implementations.Playlists
             var children = playlist.GetManageableItems().ToList();
 
             var oldIndex = children.FindIndex(i => string.Equals(entryId, i.Item1.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (oldIndex == newIndex)
+            {
+                return;
+            }
+
+            if (newIndex > oldIndex)
+            {
+                newIndex--;
+            }
 
             var item = playlist.LinkedChildren[oldIndex];
 
