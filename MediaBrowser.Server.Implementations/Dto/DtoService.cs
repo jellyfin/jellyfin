@@ -1748,8 +1748,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 return;
             }
 
-            var path = imageInfo.Path;
-
             ImageSize size;
 
             try

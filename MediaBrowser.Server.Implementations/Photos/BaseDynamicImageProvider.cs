@@ -248,6 +248,11 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             if (image != null)
             {
+                if (!image.IsLocalFile)
+                {
+                    return false;
+                }
+
                 if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
                 {
                     return false;
@@ -269,6 +274,11 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             if (image != null)
             {
+                if (!image.IsLocalFile)
+                {
+                    return false;
+                }
+
                 if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
                 {
                     return false;

@@ -1536,5 +1536,6 @@
     "ButtonSignOut": "Sign out",
     "HeaderCameraUpload": "Camera Upload",
     "SelectCameraUploadServers": "Upload camera photos to the following servers:",
-    "ButtonClear": "Clear"
+    "ButtonClear": "Clear",
+    "ButtonEditImages": "Edit Images"
 }

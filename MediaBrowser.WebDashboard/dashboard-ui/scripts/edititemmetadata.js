@@ -1149,7 +1149,12 @@
 
         $('.btnSimpleRefresh', this).on('click', function () {
 
-            performSimpleRefresh(page);
+            performAdvancedRefresh(page);
+        });
+
+        $('.btnEditImages', page).on('click', function () {
+
+            LibraryBrowser.editImages(currentItem.Id);
         });
 
         $('#btnIdentify', page).on('click', function () {

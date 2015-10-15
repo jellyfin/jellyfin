@@ -356,7 +356,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private async Task CacheResponse(HttpResponseInfo response, string responseCachePath)
         {
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(responseCachePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
             using (var responseStream = response.Content)
             {
@@ -465,20 +465,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
             catch (OperationCanceledException ex)
             {
-                var exception = GetCancellationException(options, options.CancellationToken, ex);
-
-                var httpException = exception as HttpException;
-
-                if (httpException != null && httpException.IsTimedOut)
-                {
-                    client.LastTimeout = DateTime.UtcNow;
-                }
-
-                throw exception;
+                throw GetCancellationException(options, client, options.CancellationToken, ex);
             }
             catch (Exception ex)
             {
-                throw GetException(ex, options);
+                throw GetException(ex, options, client);
             }
             finally
             {
@@ -487,30 +478,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     options.ResourcePool.Release();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the exception.
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>HttpException.</returns>
-        private HttpException GetException(WebException ex, HttpRequestOptions options)
-        {
-            if (options.LogErrors)
-            {
-                _logger.ErrorException("Error getting response from " + options.Url, ex);
-            }
-
-            var exception = new HttpException(ex.Message, ex);
-
-            var response = ex.Response as HttpWebResponse;
-            if (response != null)
-            {
-                exception.StatusCode = response.StatusCode;
-            }
-
-            return exception;
         }
 
         private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength, IDisposable disposable)
@@ -603,7 +570,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         {
             ValidateParams(options);
 
-			_fileSystem.CreateDirectory(_appPaths.TempDirectory);
+            _fileSystem.CreateDirectory(_appPaths.TempDirectory);
 
             var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".tmp");
 
@@ -628,6 +595,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 _logger.Info("HttpClientManager.GetTempFileResponse url: {0}", options.Url);
             }
 
+            var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
+
             try
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
@@ -636,7 +605,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
                     EnsureSuccessStatusCode(client, httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
@@ -673,7 +641,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             catch (Exception ex)
             {
                 DeleteTempFile(tempFile);
-                throw GetException(ex, options);
+                throw GetException(ex, options, client);
             }
             finally
             {
@@ -698,14 +666,37 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        private Exception GetException(Exception ex, HttpRequestOptions options)
+        private Exception GetException(Exception ex, HttpRequestOptions options, HttpClientInfo client)
         {
+            if (ex is HttpException)
+            {
+                return ex;
+            }
+
             var webException = ex as WebException
                 ?? ex.InnerException as WebException;
 
             if (webException != null)
             {
-                return GetException(webException, options);
+                if (options.LogErrors)
+                {
+                    _logger.ErrorException("Error getting response from " + options.Url, ex);
+                }
+
+                var exception = new HttpException(ex.Message, ex);
+
+                var response = webException.Response as HttpWebResponse;
+                if (response != null)
+                {
+                    exception.StatusCode = response.StatusCode;
+
+                    if ((int)response.StatusCode == 429)
+                    {
+                        client.LastTimeout = DateTime.UtcNow;
+                    }
+                }
+
+                return exception;
             }
 
             var operationCanceledException = ex as OperationCanceledException
@@ -713,7 +704,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (operationCanceledException != null)
             {
-                return GetCancellationException(options, options.CancellationToken, operationCanceledException);
+                return GetCancellationException(options, client, options.CancellationToken, operationCanceledException);
             }
 
             if (options.LogErrors)
@@ -792,10 +783,11 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// Throws the cancellation exception.
         /// </summary>
         /// <param name="options">The options.</param>
+        /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="exception">The exception.</param>
         /// <returns>Exception.</returns>
-        private Exception GetCancellationException(HttpRequestOptions options, CancellationToken cancellationToken, OperationCanceledException exception)
+        private Exception GetCancellationException(HttpRequestOptions options, HttpClientInfo client, CancellationToken cancellationToken, OperationCanceledException exception)
         {
             // If the HttpClient's timeout is reached, it will cancel the Task internally
             if (!cancellationToken.IsCancellationRequested)
@@ -806,6 +798,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     _logger.Error(msg);
                 }
+
+                client.LastTimeout = DateTime.UtcNow;
 
                 // Throw an HttpException so that the caller doesn't think it was cancelled by user code
                 return new HttpException(msg, exception)
@@ -825,15 +819,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (!isSuccessful)
             {
-                if ((int) statusCode == 429)
-                {
-                    throw new HttpException(response.StatusDescription)
-                    {
-                        IsTimedOut = true
-                    };
-                }
-
-                if (statusCode == HttpStatusCode.RequestEntityTooLarge)
                 if (options.LogErrorResponseBody)
                 {
                     try

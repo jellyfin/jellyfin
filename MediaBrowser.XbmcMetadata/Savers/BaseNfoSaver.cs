@@ -893,7 +893,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             foreach (var backdrop in item.GetImages(ImageType.Backdrop))
             {
-                writer.WriteElementString("fanart", GetPathToSave(backdrop.Path, libraryManager, config));
+                if (backdrop.IsLocalFile)
+                {
+                    writer.WriteElementString("fanart", GetPathToSave(backdrop.Path, libraryManager, config));
+                }
             }
 
             writer.WriteEndElement();
