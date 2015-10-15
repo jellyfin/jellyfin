@@ -96,6 +96,7 @@
     "SyncJobItemStatusReadyToTransfer": "Fertig zum Transfer",
     "LabelCollection": "Sammlung",
     "HeaderAddToCollection": "Zur Sammlung hinzuf\u00fcgen",
+    "HeaderNewCollection": "Neue Collection",
     "NewCollectionNameExample": "Beispiel: Star Wars Collection",
     "OptionSearchForInternetMetadata": "Suche im Internet nach Bildmaterial und Metadaten",
     "LabelSelectCollection": "W\u00e4hle Zusammenstellung:",
@@ -297,7 +298,7 @@
     "ButtonNetwork": "Netzwerk",
     "MessageDirectoryPickerInstruction": "Falls der Netzwerk Button deine Endger\u00e4te nicht automatisch findet, kannst du deren Netzwerkpfade auch manuell eintragen. Zum Beispiel {0} oder {1}.",
     "MessageDirectoryPickerBSDInstruction": "F\u00fcr BSD m\u00fcssen Sie ggf. Speicherplatz auf Ihrem FreeNAS Jail f\u00fcr Empby freigeben.",
-    "MessageDirectoryPickerLinuxInstruction": "For Linux, you may need to configure the Emby system user to allow access to your storage locations.",
+    "MessageDirectoryPickerLinuxInstruction": "Auf Linuxsystemen m\u00fcssne Sie dem Emby-System User mindestens lesende Rechte auf Ihrem Medienlaufwerk erteilen.",
     "HeaderMenu": "Men\u00fc",
     "ButtonOpen": "\u00d6ffnen",
     "ButtonOpenInNewTab": "\u00d6ffne in neuem Tab",
@@ -516,7 +517,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "Die folgenden Medienverzeichnisse werden aus deiner Bibliothek entfernt:",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "Bist du dir sicher dieses Medienverzeichnis entfernen zu wollen?",
     "ButtonRename": "Umbenennen",
-    "ButtonChangeType": "\u00c4ndere Typ",
+    "ButtonChangeContentType": "Change content type",
     "HeaderMediaLocations": "Medienquellen",
     "LabelContentTypeValue": "Inhalte Typ: {0}",
     "LabelPathSubstitutionHelp": "Optional: Die Pfadersetzung kann Serverpfade zu Netzwerkfreigaben umleiten, die von Endger\u00e4ten f\u00fcr die direkte Wiedergabe genutzt werden k\u00f6nnen.",
@@ -900,6 +901,10 @@
     "EmbyPremiereMonthlyWithPrice": "Emby Premium Monatlich {0}",
     "HeaderEmailAddress": "E-Mail Adresse",
     "TextPleaseEnterYourEmailAddressForSubscription": "Bitte geben Sie Ihre E-Mail Adresse",
-    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
-    "TermsOfUse": "Terms of use"
+    "LoginDisclaimer": "Emby wurde designed, um Ihnen bei der Verwaltung ihrer pers\u00f6nlichen Medien, wie z.B. Heimvideos oder Fotos, zu helfen. Bitte beachten Sie dazu unsere Nutzungsbedingungen. Mit dem Herunterladen von Emby Software stimmen Sie diesen Bedingungen zu.",
+    "TermsOfUse": "Nutzungsbedingungen",
+    "HeaderTryMultiSelect": "Versuche Mehrfachauswahl",
+    "TryMultiSelectMessage": "F\u00fcr eine Mehrfachauswahl klicken und halten Sie ein Poster. W\u00e4hlen Sie die Eintr\u00e4ge die Sie bearbeiten m\u00f6chten. Versuchen SIe es!",
+    "NumLocationsValue": "{0} folders",
+    "ButtonAddMediaLibrary": "Add Media Library"
 }

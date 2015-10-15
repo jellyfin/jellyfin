@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "Sair",
     "HeaderCameraUpload": "Upload da C\u00e2mera",
-    "SelectCameraUploadServers": "Fazer upload das fotos da c\u00e2mera para os seguintes servidores:"
+    "SelectCameraUploadServers": "Fazer upload das fotos da c\u00e2mera para os seguintes servidores:",
+    "ButtonClear": "Clear",
+    "ButtonEditImages": "Edit Images"
 }

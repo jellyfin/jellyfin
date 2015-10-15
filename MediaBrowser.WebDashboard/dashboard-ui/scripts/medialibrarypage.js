@@ -76,29 +76,6 @@
 
     function addVirtualFolder(page) {
 
-        //$('#textEntryForm', popup).on('submit', function () {
-
-        //    if (callback) {
-
-        //        if (showCollectionType) {
-
-        //            var collectionType = $('#selectCollectionType', popup).val();
-
-        //            // The server expects an empty value for mixed
-        //            if (collectionType == 'mixed') {
-        //                collectionType = '';
-        //            }
-
-        //            callback($('#txtValue', popup).val(), collectionType);
-        //        } else {
-        //            callback($('#txtValue', popup).val());
-        //        }
-
-        //    }
-
-        //    return false;
-        //});
-
         require(['medialibraryeditor'], function (medialibraryeditor) {
 
             new medialibraryeditor().show({
@@ -166,7 +143,7 @@
         var menuItems = [];
 
         menuItems.push({
-            name: Globalize.translate('ButtonChangeType'),
+            name: Globalize.translate('ButtonChangeContentType'),
             id: 'changetype',
             ironIcon: 'folder'
         });
@@ -349,7 +326,7 @@
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
 
             if (virtualFolder.showNameWithIcon) {
-                html += '<div style="margin-top:1em;position:absolute;width:100%;font-weight:bold;">';
+                html += '<div style="margin-top:1em;position:width:100%;font-weight:bold;">';
                 html += virtualFolder.Name;
                 html += "</div>";
             }

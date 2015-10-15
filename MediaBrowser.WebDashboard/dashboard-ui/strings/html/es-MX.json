@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "Cerrar Sesi\u00f3n",
     "HeaderCameraUpload": "Subir desde la C\u00e1mara",
-    "SelectCameraUploadServers": "Subir fotograf\u00edas desde la c\u00e1mara hacia el siguiente servidor:"
+    "SelectCameraUploadServers": "Subir fotograf\u00edas desde la c\u00e1mara hacia el siguiente servidor:",
+    "ButtonClear": "Clear",
+    "ButtonEditImages": "Edit Images"
 }

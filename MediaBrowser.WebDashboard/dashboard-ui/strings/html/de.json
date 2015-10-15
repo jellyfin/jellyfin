@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "Abmelden",
     "HeaderCameraUpload": "Kamera Upload",
-    "SelectCameraUploadServers": "Lade Kamerabilder zu folgenden Servern hoch:"
+    "SelectCameraUploadServers": "Lade Kamerabilder zu folgenden Servern hoch:",
+    "ButtonClear": "L\u00f6schen",
+    "ButtonEditImages": "Bild bearbeiten"
 }

@@ -96,6 +96,7 @@
     "SyncJobItemStatusReadyToTransfer": "Klar til overf\u00f8ring",
     "LabelCollection": "Samling",
     "HeaderAddToCollection": "Legg til i Samling",
+    "HeaderNewCollection": "Ny Samling",
     "NewCollectionNameExample": "Eksempel: Star Wars-samling",
     "OptionSearchForInternetMetadata": "S\u00f8k p\u00e5 internet for artwork og metadata",
     "LabelSelectCollection": "Velg samling:",
@@ -297,7 +298,7 @@
     "ButtonNetwork": "Nettverk",
     "MessageDirectoryPickerInstruction": "Nettverksti kan skrives inn manuelt i tilfelle Nettverk-knappen ikke klarer \u00e5 lokalisere enhetene dine. For eksempel {0} eller {1}.",
     "MessageDirectoryPickerBSDInstruction": "For BSD, you may need to configure storage within your FreeNAS Jail in order to allow Emby to access it.",
-    "MessageDirectoryPickerLinuxInstruction": "For Linux, you may need to configure the Emby system user to allow access to your storage locations.",
+    "MessageDirectoryPickerLinuxInstruction": "For Linux, you must grant the Emby system user at least read access to your storage locations.",
     "HeaderMenu": "Meny",
     "ButtonOpen": "\u00c5pne",
     "ButtonOpenInNewTab": "\u00c5pne i ny fane",
@@ -516,7 +517,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "F\u00f8lgende mapper med media vil bli fjernet fra ditt bibliotek:",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "Er du sikker p\u00e5 at dul vil slette denne media-mappen?",
     "ButtonRename": "Gi nytt navn",
-    "ButtonChangeType": "Endre type",
+    "ButtonChangeContentType": "Change content type",
     "HeaderMediaLocations": "Media Steder",
     "LabelContentTypeValue": "Innholdstype {0}",
     "LabelPathSubstitutionHelp": "Valgfritt: Sti erstatter kan koble server stier til nettverkressurser som klienter har tilgang til for direkte avspilling.",
@@ -901,5 +902,9 @@
     "HeaderEmailAddress": "E-Mail Address",
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
     "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "HeaderTryMultiSelect": "Try Multi-Select",
+    "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
+    "NumLocationsValue": "{0} folders",
+    "ButtonAddMediaLibrary": "Add Media Library"
 }

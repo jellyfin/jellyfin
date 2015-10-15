@@ -525,7 +525,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "The following media locations will be removed from your library:",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "Are you sure you wish to remove this media folder?",
     "ButtonRename": "Rename",
-    "ButtonChangeType": "Change type",
+    "ButtonChangeContentType": "Change content type",
     "ButtonRemove": "Remove",
     "HeaderMediaLocations": "Media Locations",
     "LabelContentTypeValue": "Content type: {0}",

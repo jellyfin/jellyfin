@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "\u767b\u51fa",
     "HeaderCameraUpload": "\u76f8\u7247\u4e0a\u8f09",
-    "SelectCameraUploadServers": "Upload camera photos to the following servers:"
+    "SelectCameraUploadServers": "Upload camera photos to the following servers:",
+    "ButtonClear": "Clear",
+    "ButtonEditImages": "Edit Images"
 }

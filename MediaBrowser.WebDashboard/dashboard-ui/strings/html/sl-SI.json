@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "Sign out",
     "HeaderCameraUpload": "Camera Upload",
-    "SelectCameraUploadServers": "Upload camera photos to the following servers:"
+    "SelectCameraUploadServers": "Upload camera photos to the following servers:",
+    "ButtonClear": "Clear",
+    "ButtonEditImages": "Edit Images"
 }

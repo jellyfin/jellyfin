@@ -4,7 +4,7 @@
     "LabelGithub": "Github",
     "LabelSwagger": "Swagger",
     "LabelStandard": "Standard",
-    "LabelApiDocumentation": "Documentation API",
+    "LabelApiDocumentation": "Documentation de l'API",
     "LabelDeveloperResources": "Ressources pour d\u00e9veloppeurs",
     "LabelBrowseLibrary": "Parcourir la biblioth\u00e8que",
     "LabelConfigureServer": "Configurer Emby",
@@ -1519,5 +1519,7 @@
     "HeaderAdmin": "Admin",
     "ButtonSignOut": "D\u00e9connexion",
     "HeaderCameraUpload": "Upload du contenu de l'appareil photo",
-    "SelectCameraUploadServers": "Uploader les photos de l'appareil vers les serveurs suivants :"
+    "SelectCameraUploadServers": "Uploader les photos de l'appareil vers les serveurs suivants :",
+    "ButtonClear": "Effacer",
+    "ButtonEditImages": "Modifier les images"
 }

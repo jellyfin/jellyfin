@@ -96,6 +96,7 @@
     "SyncJobItemStatusReadyToTransfer": "Klar til overf\u00f8rsel",
     "LabelCollection": "Samling",
     "HeaderAddToCollection": "Tilf\u00f8j til samling",
+    "HeaderNewCollection": "Ny samling",
     "NewCollectionNameExample": "Eksempel: Star Wars samling",
     "OptionSearchForInternetMetadata": "S\u00f8g p\u00e5 internettet efter billeder og metadata",
     "LabelSelectCollection": "V\u00e6lg samling:",
@@ -297,7 +298,7 @@
     "ButtonNetwork": "Netv\u00e6rk",
     "MessageDirectoryPickerInstruction": "Netv\u00e6rksstier kan indtastes manuelt i tilf\u00e6lde af at netv\u00e6rksknappen ikke kan lokalisere dine enheder. Foreksempel, {0} eller {1}.",
     "MessageDirectoryPickerBSDInstruction": "For BSD, you may need to configure storage within your FreeNAS Jail in order to allow Emby to access it.",
-    "MessageDirectoryPickerLinuxInstruction": "For Linux, you may need to configure the Emby system user to allow access to your storage locations.",
+    "MessageDirectoryPickerLinuxInstruction": "For Linux, you must grant the Emby system user at least read access to your storage locations.",
     "HeaderMenu": "Menu",
     "ButtonOpen": "\u00c5ben",
     "ButtonOpenInNewTab": "\u00c5ben i ny fane",
@@ -516,7 +517,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "F\u00f8lgende medielokationer vil blive fjerne fra dit bibliotek:",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "Er du sikker p\u00e5 du \u00f8nsker at fjerne denne mediemappe?",
     "ButtonRename": "Omd\u00f8b",
-    "ButtonChangeType": "\u00c6ndre type",
+    "ButtonChangeContentType": "Change content type",
     "HeaderMediaLocations": "Medielokationer",
     "LabelContentTypeValue": "Indholdstype: {0}",
     "LabelPathSubstitutionHelp": "Valgfri: Stisubstitution kan sammenk\u00e6de serverstier til netv\u00e6rksstier som klienter derved kan tilg\u00e5 for direkte afspilning.",
@@ -901,5 +902,9 @@
     "HeaderEmailAddress": "E-Mail Address",
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
     "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
-    "TermsOfUse": "Terms of use"
+    "TermsOfUse": "Terms of use",
+    "HeaderTryMultiSelect": "Try Multi-Select",
+    "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
+    "NumLocationsValue": "{0} folders",
+    "ButtonAddMediaLibrary": "Add Media Library"
 }
