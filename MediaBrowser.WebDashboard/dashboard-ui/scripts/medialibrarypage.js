@@ -248,7 +248,7 @@
         var html = '';
 
         virtualFolders.push({
-            Name: 'Add Media Library',
+            Name: Globalize.translate('ButtonAddMediaLibrary'),
             icon: 'add-circle',
             Locations: [],
             showType: false,
@@ -361,6 +361,13 @@
 
         html += '<div class="' + contentClass + '">';
         var imgUrl = '';
+
+        if (virtualFolder.PrimaryImageItemId) {
+            imgUrl = ApiClient.getScaledImageUrl(virtualFolder.PrimaryImageItemId, {
+                type: 'Primary'
+            });
+        }
+
         if (imgUrl) {
             html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
         } else {
@@ -374,7 +381,7 @@
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
 
             if (virtualFolder.showNameWithIcon) {
-                html += '<div style="margin-top:1em;position:absolute;width:100%;">';
+                html += '<div style="margin-top:1em;position:absolute;width:100%;font-weight:bold;">';
                 html += virtualFolder.Name;
                 html += "</div>";
             }

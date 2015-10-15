@@ -1171,18 +1171,34 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>IEnumerable{VirtualFolderInfo}.</returns>
         private IEnumerable<VirtualFolderInfo> GetView(string path)
         {
+            var topLibraryFolders = GetUserRootFolder().Children.ToList();
+
             return _fileSystem.GetDirectoryPaths(path)
-                .Select(dir => new VirtualFolderInfo
-                {
-                    Name = Path.GetFileName(dir),
+                .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders));
+        }
 
-                    Locations = Directory.EnumerateFiles(dir, "*.mblink", SearchOption.TopDirectoryOnly)
-                                .Select(_fileSystem.ResolveShortcut)
-                                .OrderBy(i => i)
-                                .ToList(),
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> collectionFolders)
+        {
+            var info = new VirtualFolderInfo
+            {
+                Name = Path.GetFileName(dir),
 
-                    CollectionType = GetCollectionType(dir)
-                });
+                Locations = Directory.EnumerateFiles(dir, "*.mblink", SearchOption.TopDirectoryOnly)
+                    .Select(_fileSystem.ResolveShortcut)
+                    .OrderBy(i => i)
+                    .ToList(),
+
+                CollectionType = GetCollectionType(dir)
+            };
+
+            var libraryFolder = collectionFolders.FirstOrDefault(i => string.Equals(i.Path, dir, StringComparison.OrdinalIgnoreCase));
+
+            if (libraryFolder != null && libraryFolder.HasImage(ImageType.Primary))
+            {
+                info.PrimaryImageItemId = libraryFolder.Id.ToString("N");
+            }
+
+            return info;
         }
 
         private string GetCollectionType(string path)
