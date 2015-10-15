@@ -1,0 +1,21 @@
+﻿<form style="max-width:100%;">
+    <br />
+    <div id="fldCollectionType">
+        <label for="selectCollectionType">${LabelContentType}</label>
+        <select id="selectCollectionType" data-mini="true" required="required"></select>
+        <div class="collectionTypeFieldDescription fieldDescription">
+        </div>
+    </div>
+    <p>
+        <paper-input type="text" id="txtValue" required="required" label="${LabelName}"></paper-input>
+    </p>
+    <br />
+    <div>
+        <button type="submit" class="clearButton" data-role="none">
+            <paper-button raised class="submit block">
+                <iron-icon icon="check"></iron-icon>
+                <span>${ButtonOk}</span>
+            </paper-button>
+        </button>
+    </div>
+</form>

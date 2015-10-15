@@ -74,63 +74,44 @@
         reloadLibrary(page);
     }
 
-    function getTextValue(header, label, initialValue, showCollectionType, callback) {
-
-        var page = $.mobile.activePage;
-
-        var popup = $('#popupEnterText', page);
-
-        $('h3', popup).html(header);
-        $('#lblValue', popup).html(label);
-        $('#txtValue', popup).val(initialValue);
-
-        if (showCollectionType) {
-            $('#fldCollectionType', popup).show();
-            $('#selectCollectionType', popup).attr('required', 'required');
-        } else {
-            $('#fldCollectionType', popup).hide();
-            $('#selectCollectionType', popup).removeAttr('required');
-        }
-
-        $('#selectCollectionType', popup).html(getCollectionTypeOptionsHtml()).val('');
-
-        popup.on("popupafterclose", function () {
-            $(this).off("popupafterclose").off("click");
-            $('#textEntryForm', this).off("submit");
-        }).popup("open");
-
-        $('#textEntryForm', popup).on('submit', function () {
-
-            if (callback) {
-
-                if (showCollectionType) {
-
-                    var collectionType = $('#selectCollectionType', popup).val();
-
-                    // The server expects an empty value for mixed
-                    if (collectionType == 'mixed') {
-                        collectionType = '';
-                    }
-
-                    callback($('#txtValue', popup).val(), collectionType);
-                } else {
-                    callback($('#txtValue', popup).val());
-                }
-
-            }
-
-            return false;
-        });
-    }
-
     function addVirtualFolder(page) {
 
-        getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('LabelName'), "", true, function (name, type) {
+        //$('#textEntryForm', popup).on('submit', function () {
 
-            var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+        //    if (callback) {
 
-            ApiClient.addVirtualFolder(name, type, refreshAfterChange).done(processOperationResult);
+        //        if (showCollectionType) {
 
+        //            var collectionType = $('#selectCollectionType', popup).val();
+
+        //            // The server expects an empty value for mixed
+        //            if (collectionType == 'mixed') {
+        //                collectionType = '';
+        //            }
+
+        //            callback($('#txtValue', popup).val(), collectionType);
+        //        } else {
+        //            callback($('#txtValue', popup).val());
+        //        }
+
+        //    }
+
+        //    return false;
+        //});
+
+        require(['medialibraryeditor'], function (medialibraryeditor) {
+
+            new medialibraryeditor().show({
+
+                collectionTypeOptions: getCollectionTypeOptions(),
+                refresh: shouldRefreshLibraryAfterChanges()
+
+            }).done(function (hasChanges) {
+
+                if (hasChanges) {
+                    reloadLibrary(page);
+                }
+            });
         });
     }
 
@@ -280,19 +261,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function getCollectionTypeOptionsHtml() {
-
-        return getCollectionTypeOptions().filter(function (i) {
-
-            return i.isSelectable !== false;
-
-        }).map(function (i) {
-
-            return '<option value="' + i.value + '">' + i.name + '</option>';
-
-        }).join("");
-    }
-
     function getCollectionTypeOptions() {
 
         return [
@@ -347,7 +315,7 @@
 
         var html = '';
 
-        html += '<div class="card backdropCard" style="max-width:300px;" data-index="' + index + '">';
+        html += '<div class="card backdropCard" data-index="' + index + '">';
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';

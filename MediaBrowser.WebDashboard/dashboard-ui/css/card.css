@@ -308,6 +308,10 @@
     background-position: center center;
 }
 
+.ui-body-b .iconCardImage {
+    color: #fff;
+}
+
 .iconCardImage {
     display: flex;
     align-items: center;
