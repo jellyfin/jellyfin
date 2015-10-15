@@ -111,7 +111,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard bottomPaddedCard";
 
         if (user.Policy.IsDisabled) {
             cssClass += ' grayscale';
@@ -255,7 +255,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard bottomPaddedCard";
 
         html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
 

@@ -1,155 +1,5 @@
 ﻿var MediaLibraryPage = {
 
-    onPageInit: function () {
-
-        var page = this;
-        $('#selectCollectionType', page).on('change', function () {
-
-            var index = this.selectedIndex;
-            if (index != -1) {
-
-                var name = this.options[index].innerHTML
-                    .replace('*', '')
-                    .replace('&amp;', '&');
-
-                var value = this.value;
-
-                $('#txtValue', page).val(name);
-
-                var folderOption = MediaLibraryPage.getCollectionTypeOptions().filter(function (i) {
-
-                    return i.value == value;
-
-                })[0];
-
-                $('.collectionTypeFieldDescription', page).html(folderOption.message || '');
-            }
-        });
-    },
-
-    onPageShow: function () {
-
-        var page = this;
-        MediaLibraryPage.lastVirtualFolderName = "";
-
-        MediaLibraryPage.reloadLibrary(page);
-    },
-
-    reloadLibrary: function (page) {
-
-        Dashboard.showLoadingMsg();
-
-        ApiClient.getVirtualFolders().done(function (result) {
-            MediaLibraryPage.reloadVirtualFolders(page, result);
-        });
-
-        $('#divMediaLibrary', page).show();
-    },
-
-    shouldRefreshLibraryAfterChanges: function () {
-
-        return $($.mobile.activePage).is('#mediaLibraryPage');
-    },
-
-    reloadVirtualFolders: function (page, virtualFolders) {
-
-        if (virtualFolders) {
-            MediaLibraryPage.virtualFolders = virtualFolders;
-        } else {
-            virtualFolders = MediaLibraryPage.virtualFolders;
-        }
-
-        var html = '';
-
-        var addPathMappingInfo = $(page).is('#mediaLibraryPage');
-
-        for (var i = 0, length = virtualFolders.length; i < length; i++) {
-
-            var virtualFolder = virtualFolders[i];
-
-            var isCollapsed = MediaLibraryPage.lastVirtualFolderName != virtualFolder.Name;
-
-
-            html += MediaLibraryPage.getVirtualFolderHtml(virtualFolder, isCollapsed, i, addPathMappingInfo);
-        }
-
-        $('#divVirtualFolders', page).html(html).trigger('create');
-
-        Dashboard.hideLoadingMsg();
-    },
-
-    changeCollectionType: function () {
-
-        Dashboard.alert({
-            message: Globalize.translate('HeaderChangeFolderTypeHelp'),
-            title: Globalize.translate('HeaderChangeFolderType')
-        });
-    },
-
-    getVirtualFolderHtml: function (virtualFolder, isCollapsed, index, addPathMappingInfo) {
-
-        isCollapsed = isCollapsed ? "true" : "false";
-        var html = '<div class="collapsibleVirtualFolder" data-mini="true" data-role="collapsible" data-collapsed="' + isCollapsed + '">';
-
-        html += '<h3>' + virtualFolder.Name + '</h3>';
-
-        var typeName = MediaLibraryPage.getCollectionTypeOptions().filter(function (t) {
-
-            return t.value == virtualFolder.CollectionType;
-
-        })[0];
-
-        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeUnset');
-
-        html += '<p style="padding-left:.5em;">';
-
-        html += Globalize.translate('LabelContentTypeValue').replace('{0}', '<b>' + typeName + '</b>');
-        html += '</p><ul class="mediaFolderLocations" data-inset="true" data-role="listview" data-split-icon="minus">';
-
-        html += '<li data-role="list-divider" class="mediaLocationsHeader">' + Globalize.translate('HeaderMediaLocations');
-        html += '<paper-fab class="mini subdued" icon="add" title="' + Globalize.translate('ButtonAdd') + '" onclick="MediaLibraryPage.addMediaLocation(' + index + ');" style="margin-left:1em;"></paper-fab>';
-        html += '</li>';
-
-        for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {
-
-            var location = virtualFolder.Locations[i];
-            html += '<li>';
-            html += '<a style="font-size:14px;" class="lnkMediaLocation" href="#">' + location + '</a>';
-            html += '<a href="#" data-index="' + i + '" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteMediaLocation(this);"></a>';
-            html += '</li>';
-        }
-        html += '</ul>';
-
-        if (addPathMappingInfo) {
-            html += '<div class="fieldDescription" style="margin:.5em 0 1.5em;">' + Globalize.translate('LabelPathSubstitutionHelp') + '</div>';
-        }
-
-        html += '<p>';
-        html += '<button type="button" data-inline="true" data-icon="minus" data-folderindex="' + index + '" onclick="MediaLibraryPage.deleteVirtualFolder(this);" data-mini="true">' + Globalize.translate('ButtonRemove') + '</button>';
-        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.renameVirtualFolder(this);" data-mini="true">' + Globalize.translate('ButtonRename') + '</button>';
-        html += '<button type="button" data-inline="true" data-icon="edit" data-folderindex="' + index + '" onclick="MediaLibraryPage.changeCollectionType(this);" data-mini="true">' + Globalize.translate('ButtonChangeType') + '</button>';
-        html += '</p>';
-
-        html += '</div>';
-
-        return html;
-    },
-
-    addVirtualFolder: function () {
-
-        $('.collectionTypeFieldDescription').show();
-
-        MediaLibraryPage.getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('LabelName'), "", true, function (name, type) {
-
-            MediaLibraryPage.lastVirtualFolderName = name;
-
-            var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
-
-            ApiClient.addVirtualFolder(name, type, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-
-        });
-    },
-
     addMediaLocation: function (virtualFolderIndex) {
 
         MediaLibraryPage.selectDirectory(function (path) {
@@ -160,7 +10,7 @@
 
                 MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
 
-                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
+                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
 
                 ApiClient.addMediaPath(virtualFolder.Name, path, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
             }
@@ -183,7 +33,48 @@
         });
     },
 
-    getTextValue: function (header, label, initialValue, showCollectionType, callback) {
+    deleteMediaLocation: function (button) {
+
+        var folderIndex = button.getAttribute('data-folderindex');
+        var index = parseInt(button.getAttribute('data-index'));
+
+        var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
+
+        MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
+
+        var location = virtualFolder.Locations[index];
+
+        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+
+                ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
+            }
+        });
+    }
+
+};
+
+(function () {
+
+    function changeCollectionType(page, virtualFolder) {
+
+        Dashboard.alert({
+            message: Globalize.translate('HeaderChangeFolderTypeHelp'),
+            title: Globalize.translate('HeaderChangeFolderType')
+        });
+    }
+
+    function processOperationResult(result) {
+
+        var page = $($.mobile.activePage)[0];
+
+        reloadLibrary(page);
+    }
+
+    function getTextValue(header, label, initialValue, showCollectionType, callback) {
 
         var page = $.mobile.activePage;
 
@@ -201,7 +92,7 @@
             $('#selectCollectionType', popup).removeAttr('required');
         }
 
-        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('');
+        $('#selectCollectionType', popup).html(getCollectionTypeOptionsHtml()).val('');
 
         popup.on("popupafterclose", function () {
             $(this).off("popupafterclose").off("click");
@@ -230,11 +121,168 @@
 
             return false;
         });
-    },
+    }
 
-    getCollectionTypeOptionsHtml: function () {
+    function addVirtualFolder(page) {
 
-        return MediaLibraryPage.getCollectionTypeOptions().filter(function (i) {
+        getTextValue(Globalize.translate('HeaderAddMediaFolder'), Globalize.translate('LabelName'), "", true, function (name, type) {
+
+            var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+
+            ApiClient.addVirtualFolder(name, type, refreshAfterChange).done(processOperationResult);
+
+        });
+    }
+
+    function deleteVirtualFolder(page, virtualFolder) {
+
+        var msg = Globalize.translate('MessageAreYouSureYouWishToRemoveMediaFolder');
+
+        if (virtualFolder.Locations.length) {
+            msg += "<br/><br/>" + Globalize.translate("MessageTheFollowingLocationWillBeRemovedFromLibrary") + "<br/><br/>";
+            msg += virtualFolder.Locations.join("<br/>");
+        }
+
+        Dashboard.confirm(msg, Globalize.translate('HeaderRemoveMediaFolder'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+
+                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(processOperationResult);
+            }
+
+        });
+    }
+
+    function renameVirtualFolder(page, virtualFolder) {
+
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                text: Globalize.translate('LabelNewName'),
+                title: Globalize.translate('HeaderRenameMediaFolder'),
+                callback: function (newName) {
+
+                    if (newName && newName != virtualFolder.Name) {
+
+                        var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+
+                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(processOperationResult);
+                    }
+                }
+            });
+
+        });
+    }
+
+    function showCardMenu(page, elem, virtualFolders) {
+
+        var card = $(elem).parents('.card')[0];
+        var index = parseInt(card.getAttribute('data-index'));
+        var virtualFolder = virtualFolders[index];
+
+        var menuItems = [];
+
+        menuItems.push({
+            name: Globalize.translate('ButtonChangeType'),
+            id: 'changetype',
+            ironIcon: 'folder'
+        });
+
+        menuItems.push({
+            name: Globalize.translate('ButtonRemove'),
+            id: 'delete',
+            ironIcon: 'remove'
+        });
+
+        menuItems.push({
+            name: Globalize.translate('ButtonRename'),
+            id: 'rename',
+            ironIcon: 'mode-edit'
+        });
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (resultId) {
+
+                    switch (resultId) {
+
+                        case 'changetype':
+                            changeCollectionType(page, virtualFolder);
+                            break;
+                        case 'rename':
+                            renameVirtualFolder(page, virtualFolder);
+                            break;
+                        case 'delete':
+                            deleteVirtualFolder(page, virtualFolder);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
+        });
+    }
+
+    function reloadLibrary(page) {
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getVirtualFolders().done(function (result) {
+            reloadVirtualFolders(page, result);
+        });
+    }
+
+    function shouldRefreshLibraryAfterChanges() {
+
+        return $($.mobile.activePage).is('#mediaLibraryPage');
+    }
+
+    function reloadVirtualFolders(page, virtualFolders) {
+
+        var html = '';
+
+        virtualFolders.push({
+            Name: 'Add Media Library',
+            icon: 'add-circle',
+            Locations: [],
+            showType: false,
+            showLocations: false,
+            showMenu: false,
+            showNameWithIcon: true,
+            color: 'green',
+            contentClass: 'addLibrary'
+        });
+
+        for (var i = 0, length = virtualFolders.length; i < length; i++) {
+
+            var virtualFolder = virtualFolders[i];
+
+            html += getVirtualFolderHtml(virtualFolder, i);
+        }
+
+        var divVirtualFolders = page.querySelector('#divVirtualFolders');
+        divVirtualFolders.innerHTML = html;
+
+        $('.btnCardMenu', divVirtualFolders).on('click', function () {
+            showCardMenu(page, this, virtualFolders);
+        });
+
+        $('.addLibrary', divVirtualFolders).on('click', function () {
+            addVirtualFolder(page);
+        });
+
+        Dashboard.hideLoadingMsg();
+    }
+
+    function getCollectionTypeOptionsHtml() {
+
+        return getCollectionTypeOptions().filter(function (i) {
 
             return i.isSelectable !== false;
 
@@ -243,9 +291,9 @@
             return '<option value="' + i.value + '">' + i.name + '</option>';
 
         }).join("");
-    },
+    }
 
-    getCollectionTypeOptions: function () {
+    function getCollectionTypeOptions() {
 
         return [
 
@@ -261,99 +309,185 @@
             { name: Globalize.translate('FolderTypeUnset'), value: "mixed", message: Globalize.translate('MessageUnsetContentHelp') }
         ];
 
-    },
-
-    renameVirtualFolder: function (button) {
-
-        var folderIndex = button.getAttribute('data-folderindex');
-        var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
-
-        MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-
-        $('.collectionTypeFieldDescription').hide();
-
-        MediaLibraryPage.getTextValue(Globalize.translate('HeaderRenameMediaFolder'), Globalize.translate('LabelNewName'), virtualFolder.Name, false, function (newName) {
-
-            if (virtualFolder.Name != newName) {
-
-                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
-
-                ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-            }
-        });
-    },
-
-    deleteVirtualFolder: function (button) {
-
-        var folderIndex = button.getAttribute('data-folderindex');
-        var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
-
-        var parent = $(button).parents('.collapsibleVirtualFolder');
-
-        var locations = $('.lnkMediaLocation', parent).map(function () {
-            return this.innerHTML;
-        }).get();
-
-        var msg = Globalize.translate('MessageAreYouSureYouWishToRemoveMediaFolder');
-
-        if (locations.length) {
-            msg += "<br/><br/>" + Globalize.translate("MessageTheFollowingLocationWillBeRemovedFromLibrary") + "<br/><br/>";
-            msg += locations.join("<br/>");
-        }
-
-        MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-
-        Dashboard.confirm(msg, Globalize.translate('HeaderRemoveMediaFolder'), function (confirmResult) {
-
-            if (confirmResult) {
-
-                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
-
-                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-            }
-
-        });
-    },
-
-    deleteMediaLocation: function (button) {
-
-        var folderIndex = button.getAttribute('data-folderindex');
-        var index = parseInt(button.getAttribute('data-index'));
-
-        var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
-
-        MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-
-        var location = virtualFolder.Locations[index];
-
-        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
-
-            if (confirmResult) {
-
-                var refreshAfterChange = MediaLibraryPage.shouldRefreshLibraryAfterChanges();
-
-                ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-            }
-        });
-    },
-
-    processOperationResult: function (result) {
-        Dashboard.hideLoadingMsg();
-
-        var page = $.mobile.activePage;
-
-        $('#popupEnterText', page).popup("close");
-
-        if (MediaLibraryPage.directoryPicker) {
-            MediaLibraryPage.directoryPicker.close();
-            MediaLibraryPage.directoryPicker = null;
-        }
-
-        MediaLibraryPage.reloadLibrary(page);
     }
-};
 
-$(document).on('pageinit', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshow', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+    function getIcon(type) {
+
+        switch (type) {
+            case "movies":
+                return "local-movies";
+            case "music":
+                return "library-music";
+            case "photos":
+                return "photo";
+            case "livetv":
+                return "live-tv";
+            case "tvshows":
+                return "live-tv";
+            case "games":
+                return "folder";
+            case "trailers":
+                return "local-movies";
+            case "homevideos":
+                return "video-library";
+            case "musicvideos":
+                return "video-library";
+            case "books":
+                return "folder";
+            case "channels":
+                return "folder";
+            case "playlists":
+                return "folder";
+            default:
+                return "folder";
+        }
+    }
+
+    function getVirtualFolderHtml(virtualFolder, index) {
+
+        var html = '';
+
+        html += '<div class="card backdropCard" style="max-width:300px;" data-index="' + index + '">';
+
+        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="cardScalable">';
+
+        html += '<div class="cardPadder"></div>';
+
+        var contentClass = "cardContent";
+        if (virtualFolder.contentClass) {
+            contentClass += " " + virtualFolder.contentClass;
+        }
+
+        html += '<div class="' + contentClass + '">';
+        var imgUrl = '';
+        if (imgUrl) {
+            html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+        } else {
+            html += '<div class="cardImage iconCardImage">';
+
+            if (virtualFolder.color) {
+                html += '<div style="color:' + virtualFolder.color + ';cursor:pointer;">';
+            } else {
+                html += '<div>';
+            }
+            html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
+
+            if (virtualFolder.showNameWithIcon) {
+                html += '<div style="margin-top:1em;position:absolute;width:100%;">';
+                html += virtualFolder.Name;
+                html += "</div>";
+            }
+            html += "</div>";
+
+            html += '</div>';
+        }
+
+        // cardContent
+        html += "</div>";
+
+        // cardScalable
+        html += "</div>";
+
+        html += '<div class="cardFooter">';
+
+        if (virtualFolder.showMenu !== false) {
+            html += '<div class="cardText" style="text-align:right; float:right;padding-top:5px;">';
+            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnCardMenu"></paper-icon-button>';
+            html += "</div>";
+        }
+
+        html += "<div class='cardText'>";
+        if (virtualFolder.showNameWithIcon) {
+            html += '&nbsp;';
+        } else {
+            html += virtualFolder.Name;
+        }
+        html += "</div>";
+
+        var typeName = getCollectionTypeOptions().filter(function (t) {
+
+            return t.value == virtualFolder.CollectionType;
+
+        })[0];
+
+        typeName = typeName ? typeName.name : Globalize.translate('FolderTypeUnset');
+
+        html += "<div class='cardText'>";
+        if (virtualFolder.showType === false) {
+            html += '&nbsp;';
+        } else {
+            html += typeName;
+        }
+        html += "</div>";
+
+        if (virtualFolder.showLocations === false) {
+            html += "<div class='cardText'>";
+            html += '&nbsp;';
+            html += "</div>";
+        } else if (!virtualFolder.Locations.length) {
+            html += "<div class='cardText' style='color:#cc3333;'>";
+            html += Globalize.translate('NumLocationsValue', virtualFolder.Locations.length);
+            html += "</div>";
+        }
+        else if (virtualFolder.Locations.length == 1) {
+            html += "<div class='cardText'>";
+            html += virtualFolder.Locations[0];
+            html += "</div>";
+        }
+        else {
+            html += "<div class='cardText'>";
+            html += Globalize.translate('NumLocationsValue', virtualFolder.Locations.length);
+            html += "</div>";
+        }
+
+        // cardFooter
+        html += "</div>";
+
+        // cardBox
+        html += "</div>";
+
+        // card
+        html += "</div>";
+
+        return html;
+    }
+
+    pageClassOn('pageinit', "mediaLibraryPage", function () {
+
+        var page = this;
+        $('#selectCollectionType', page).on('change', function () {
+
+            var index = this.selectedIndex;
+            if (index != -1) {
+
+                var name = this.options[index].innerHTML
+                    .replace('*', '')
+                    .replace('&amp;', '&');
+
+                var value = this.value;
+
+                $('#txtValue', page).val(name);
+
+                var folderOption = getCollectionTypeOptions().filter(function (i) {
+
+                    return i.value == value;
+
+                })[0];
+
+                $('.collectionTypeFieldDescription', page).html(folderOption.message || '');
+            }
+        });
+    });
+
+    pageClassOn('pageshow', "mediaLibraryPage", function () {
+
+        var page = this;
+        reloadLibrary(page);
+
+    });
+
+})();
 
 var WizardLibraryPage = {
 
@@ -377,7 +511,7 @@ var WizardLibraryPage = {
 
 (function ($, document, window) {
 
-    $(document).on('pageshow', "#mediaLibraryPage", function () {
+    pageIdOn('pageshow', "mediaLibraryPage", function () {
 
         var page = this;
 
@@ -389,7 +523,9 @@ var WizardLibraryPage = {
             taskKey: 'RefreshLibrary'
         });
 
-    }).on('pagebeforehide', "#mediaLibraryPage", function () {
+    });
+
+    pageIdOn('pagebeforehide', "mediaLibraryPage", function () {
 
         var page = this;
 

@@ -13,24 +13,17 @@
                     <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
                     <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
                 </div>
-                <div class="readOnlyContent">
-                    <div id="divMediaLibrary">
-                        <p>
-                            <button type="button" data-mini="true" data-icon="plus" data-iconpos="right" onclick="MediaLibraryPage.addVirtualFolder();">${ButtonAddMediaFolder}</button>
-                        </p>
-                        <div id="divVirtualFolders"></div>
-                    </div>
+                <div id="divVirtualFolders"></div>
 
-                    <br />
-                    <div class="readOnlyContent">
-                        <paper-button raised class="btnRefresh block submit"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></paper-button>
-                        <div style="margin:5px;">
-                            <progress max="100" min="0" style="width: 100%;" class="refreshProgress"></progress>
-                            <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshResult"></span></div>
-                        </div>
+                <br />
+                <div>
+                    <paper-button raised class="btnRefresh block submit"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></paper-button>
+                    <div style="margin:5px;">
+                        <progress max="100" min="0" style="width: 100%;" class="refreshProgress"></progress>
+                        <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshResult"></span></div>
                     </div>
-
                 </div>
+
             </div>
         </div>
         <div data-role="popup" id="popupEnterText" class="popup">

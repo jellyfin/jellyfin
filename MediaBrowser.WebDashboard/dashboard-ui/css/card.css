@@ -309,19 +309,15 @@
 }
 
 .iconCardImage {
+    display: flex;
+    align-items: center;
     text-align: center;
-    position: relative;
+    justify-content: center;
 }
 
     .iconCardImage iron-icon {
-        color: rgb(255, 255, 255);
-        position: absolute;
-        left: 0;
-        right: 0;
-        width: 50%;
-        height: 50%;
-        margin: auto;
-        top: 22%;
+        width: 30%;
+        height: 30%;
     }
 
 .bannerCard {

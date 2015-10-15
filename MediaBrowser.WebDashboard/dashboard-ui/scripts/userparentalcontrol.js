@@ -343,7 +343,7 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                text: Globalize.translate('LabelTag:'),
+                text: Globalize.translate('LabelTag'),
                 title: Globalize.translate('HeaderAddTag'),
                 callback: function(value) {
                     
