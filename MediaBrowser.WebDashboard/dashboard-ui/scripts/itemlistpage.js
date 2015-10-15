@@ -39,7 +39,7 @@
     }
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

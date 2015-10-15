@@ -18,7 +18,7 @@
 
     function getSavedQueryKey() {
 
-        return 'games' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

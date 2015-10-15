@@ -29,7 +29,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'movies';
+        return LibraryBrowser.getSavedQueryKey('movies');
     }
 
     function reloadFeatures(page) {

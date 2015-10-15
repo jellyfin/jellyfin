@@ -29,7 +29,7 @@
 
     function getSavedQueryKey(tab) {
 
-        return getWindowUrl() + "&tab=" + tab;
+        return LibraryBrowser.getSavedQueryKey('tab=' + tab);
     }
 
     function reloadItems(page, tabIndex) {

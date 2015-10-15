@@ -15,7 +15,7 @@
 
     function getSavedQueryKey() {
 
-        return 'gamesystems' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

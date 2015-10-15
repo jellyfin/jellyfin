@@ -33,7 +33,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'artists';
+        return LibraryBrowser.getSavedQueryKey('artists');
     }
 
     function reloadItems(page, viewPanel) {

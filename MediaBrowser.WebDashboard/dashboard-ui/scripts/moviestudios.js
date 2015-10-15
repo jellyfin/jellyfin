@@ -29,7 +29,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'studios'
+        return LibraryBrowser.getSavedQueryKey('studios');
     }
 
     function reloadItems(page) {

@@ -13,7 +13,7 @@
 
     function getSavedQueryKey() {
 
-        return 'gamestudios' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

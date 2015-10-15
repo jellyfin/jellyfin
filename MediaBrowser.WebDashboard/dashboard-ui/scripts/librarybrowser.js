@@ -25,6 +25,11 @@
 
         },
 
+        getSavedQueryKey: function (modifier) {
+
+            return getWindowUrl().split('#')[0] + (modifier || '');
+        },
+
         loadSavedQueryValues: function (key, query) {
 
             var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
@@ -2793,8 +2798,7 @@
 
             require(['components/paperdialoghelper'], function () {
 
-                //PaperDialogHelper.openWithHash(dlg, 'sortmenu');
-                dlg.open();
+                PaperDialogHelper.openWithHash(dlg, 'sortmenu');
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
                     options.query.SortBy = this.selected.replace('_', ',');

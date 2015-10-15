@@ -33,7 +33,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'collections';
+        return LibraryBrowser.getSavedQueryKey('collections');
     }
 
     function reloadItems(page) {

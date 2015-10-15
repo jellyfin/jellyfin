@@ -829,6 +829,16 @@
             query.StartIndex = 0;
             reloadItems(page);
         });
+
+        $(page.getElementsByClassName('viewTabButton')).on('click', function () {
+
+            var parent = $(this).parents('.viewPanel');
+            $('.viewTabButton', parent).removeClass('ui-btn-active');
+            this.classList.add('ui-btn-active');
+
+            $('.viewTab', parent).addClass('hide');
+            $('.' + this.getAttribute('data-tab'), parent).removeClass('hide');
+        });
     })
 	.on('pageshow', "#libraryReportManagerPage", function () {
 

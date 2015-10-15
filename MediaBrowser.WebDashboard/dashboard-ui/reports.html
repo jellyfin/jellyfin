@@ -43,10 +43,10 @@
             <div class="listBottomPaging">
             </div>
 
-            <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+            <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
                 <form>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                        <a href="#" id="tabView" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                        <a href="#" id="tabView" data-role="button" class="viewTabButton ui-btn-active" data-tab="tabView">${TabView}</a>
                         <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                     </div>
 
@@ -89,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div class="tabFilter viewTab" id="tabFilterBox">
+                    <div class="tabFilter viewTab hide" id="tabFilterBox">
                         <fieldset data-role="controlgroup">
                             <legend>
                                 ${HeaderFilters}

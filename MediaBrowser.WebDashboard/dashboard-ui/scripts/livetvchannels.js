@@ -27,7 +27,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'channels';
+        return LibraryBrowser.getSavedQueryKey('channels');
     }
 
     function getChannelsHtml(channels) {

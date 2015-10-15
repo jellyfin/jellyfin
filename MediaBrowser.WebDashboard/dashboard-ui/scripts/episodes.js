@@ -37,7 +37,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'episodes';
+        return LibraryBrowser.getSavedQueryKey('episodes');
     }
 
     function reloadItems(page, viewPanel) {

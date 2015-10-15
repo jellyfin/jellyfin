@@ -1024,12 +1024,17 @@
 
     function showTapHoldHelp() {
 
-        // Don't do this on the home page
-        if (!$.mobile.activePage || $($.mobile.activePage)[0].classList.contains('homePage')) {
+        if (!$.mobile.activePage) {
             return;
         }
 
-        var expectedValue = "5";
+        var page = $($.mobile.activePage)[0];
+        // Don't do this on the home page
+        if (page.classList.contains('homePage') || page.classList.contains('itemDetailPage')) {
+            return;
+        }
+
+        var expectedValue = "6";
         if (appStorage.getItem("tapholdhelp") == expectedValue) {
             return;
         }

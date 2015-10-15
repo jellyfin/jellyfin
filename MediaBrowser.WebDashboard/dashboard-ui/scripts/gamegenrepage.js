@@ -12,7 +12,7 @@
 
     function getSavedQueryKey() {
 
-        return 'gamegenres' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

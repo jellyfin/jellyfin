@@ -15,7 +15,7 @@
     };
 
     function getSavedQueryKey() {
-        return 'livetvitems2' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {

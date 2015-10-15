@@ -117,7 +117,7 @@
                 return '<option value="' + i.Id + '">' + i.Name + '</option>';
             });
 
-            select.html(html).val('').trigger('change');
+            select.html(html).val(lastPlaylistId || '').trigger('change');
 
             Dashboard.hideLoadingMsg();
         });

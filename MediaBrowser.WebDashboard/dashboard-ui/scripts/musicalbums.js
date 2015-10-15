@@ -34,7 +34,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl() + 'albums';
+        return LibraryBrowser.getSavedQueryKey('albums');
     }
 
     function reloadItems(page, viewPanel) {
