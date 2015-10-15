@@ -84,12 +84,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var localItem in localItems)
             {
-                // TODO: Remove this after a while
-                if (string.IsNullOrWhiteSpace(localItem.FileId))
-                {
-                    jobItemIds.Add(localItem.SyncJobItemId);
-                }
-                else if (remoteIds.Contains(localItem.FileId, StringComparer.OrdinalIgnoreCase))
+                if (remoteIds.Contains(localItem.FileId, StringComparer.OrdinalIgnoreCase))
                 {
                     jobItemIds.Add(localItem.SyncJobItemId);
                 }
