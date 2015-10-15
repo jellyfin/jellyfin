@@ -1706,6 +1706,17 @@ var Dashboard = {
 
     exit: function () {
         Dashboard.logout();
+    },
+
+    loadDragula: function (callback) {
+
+        require(['dragula'], function (dragula) {
+
+            Dashboard.importCss('bower_components/dragula.js/dist/dragula.min.css');
+
+            callback(dragula);
+        });
+
     }
 };
 
@@ -2051,7 +2062,8 @@ var AppInfo = {};
             directorybrowser: 'components/directorybrowser/directorybrowser',
             collectioneditor: 'components/collectioneditor/collectioneditor',
             playlisteditor: 'components/playlisteditor/playlisteditor',
-            howler: 'bower_components/howler.js/howler.min'
+            howler: 'bower_components/howler.js/howler.min',
+            dragula: 'bower_components/dragula.js/dist/dragula.min'
         };
 
         if (Dashboard.isRunningInCordova()) {

@@ -76,6 +76,23 @@
             var elem = page.querySelector('#childrenContent .itemsContainer');
             elem.innerHTML = html;
 
+            var listItems = [];
+            var elems = elem.querySelectorAll('PAPER-ICON-ITEM');
+            for (var i = 0, length = elems.length; i < length; i++) {
+                listItems.push(elems[i]);
+            }
+
+            Dashboard.loadDragula(function (dragula) {
+
+                dragula([elem.querySelector('.paperList')], {
+                    direction: 'vertical',
+                    revertOnSpill: true
+                }).on('drop', function (el, target, source, sibling) {
+                    onDrop(el, target, source, sibling, page, item);
+                });
+
+            });
+
             ImageLoader.lazyChildren(elem);
 
             $(elem).off('needsrefresh').on('needsrefresh', function () {
@@ -85,9 +102,7 @@
             }).off('removefromplaylist').on('removefromplaylist', function (e, playlistItemId) {
 
                 removeFromPlaylist(page, item, [playlistItemId]);
-
             });
-
 
             $('.btnNextPage', elem).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -100,6 +115,42 @@
             });
 
             Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function onDrop(el, target, source, sibling, page, item) {
+
+        var parent = $(el).parents('.paperList')[0];
+        var newIndex;
+
+        if (sibling) {
+
+            newIndex = parseInt(sibling.getAttribute('data-index'));
+
+        } else {
+
+            // dropped at the end
+            newIndex = parent.querySelectorAll('paper-icon-item').length;
+        }
+
+        var itemId = el.getAttribute('data-playlistitemid');
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+
+            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items/' + itemId + '/Move/' + newIndex),
+
+            type: 'POST'
+
+        }).done(function () {
+
+            Dashboard.hideLoadingMsg();
+
+        }).fail(function () {
+
+            Dashboard.hideLoadingMsg();
+            reloadItems(page, item);
         });
     }
 
