@@ -50,16 +50,7 @@ namespace MediaBrowser.Common.Security
         /// <summary>
         /// Register and app store sale with our back-end
         /// </summary>
-        /// <param name="store"></param>
-        /// <param name="application"></param>
-        /// <param name="product"></param>
-        /// <param name="feature"></param>
-        /// <param name="type"></param>
-        /// <param name="storeId"></param>
-        /// <param name="storeToken"></param>
-        /// <param name="email"></param>
-        /// <param name="amt"></param>
-        Task RegisterAppStoreSale(string store, string application, string product, string feature,
-        string type, string storeId, string storeToken, string email, string amt);
+        /// <param name="parameters">Json parameters to pass to admin server</param>
+        Task RegisterAppStoreSale(string parameters);
     }
 }
