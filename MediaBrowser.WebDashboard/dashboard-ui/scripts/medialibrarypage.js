@@ -305,9 +305,7 @@
             html += '<div class="cardImage editLibrary" style="cursor:pointer;background-image:url(\'' + imgUrl + '\');"></div>';
         } else if (!virtualFolder.showNameWithIcon) {
             html += '<div class="cardImage editLibrary iconCardImage" style="cursor:pointer;">';
-            html += '<div>';
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
-            html += "</div>";
 
             html += '</div>';
         }
