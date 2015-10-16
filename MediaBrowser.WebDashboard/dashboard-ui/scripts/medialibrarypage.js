@@ -206,6 +206,10 @@
             var index = parseInt(card.getAttribute('data-index'));
             var virtualFolder = virtualFolders[index];
 
+            if (!virtualFolder.ItemId) {
+                return;
+            }
+
             require(['components/imageeditor/imageeditor'], function () {
 
                 ImageEditor.show(virtualFolder.ItemId, {

@@ -563,7 +563,7 @@ namespace MediaBrowser.Server.Startup.Common
                 int.TryParse(_startupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
             }
 
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses, () => LibraryManager);
         }
 
         private IImageEncoder GetImageEncoder()

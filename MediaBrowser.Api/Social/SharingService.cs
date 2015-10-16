@@ -124,7 +124,7 @@ namespace MediaBrowser.Api.Social
             Task.WaitAll(task);
         }
 
-        public object Get(GetShareImage request)
+        public async Task<object> Get(GetShareImage request)
         {
             var share = _sharingManager.GetShareInfo(request.Id);
 
@@ -143,7 +143,21 @@ namespace MediaBrowser.Api.Social
 
             if (image != null)
             {
-                return ToStaticFileResult(image.Path);
+                if (image.IsLocalFile)
+                {
+                    return ToStaticFileResult(image.Path);
+                }
+
+                try
+                {
+                    // Don't fail the request over this
+                    var updatedImage = await _libraryManager.ConvertImageToLocal(item, image, 0).ConfigureAwait(false);
+                    return ToStaticFileResult(updatedImage.Path);
+                }
+                catch
+                {
+                    
+                }
             }
 
             // Grab a dlna icon if nothing else is available

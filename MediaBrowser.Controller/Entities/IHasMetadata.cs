@@ -37,14 +37,6 @@ namespace MediaBrowser.Controller.Entities
         DateTime DateLastRefreshed { get; set; }
         
         /// <summary>
-        /// Updates to repository.
-        /// </summary>
-        /// <param name="updateReason">The update reason.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
-
-        /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
@@ -35,24 +36,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (!string.IsNullOrEmpty(channelItem.ExternalImagePath))
             {
-                var options = new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Url = channelItem.ExternalImagePath
-                };
-
-                var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
-
-                if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageResponse.HasImage = true;
-                    imageResponse.Stream = response.Content;
-                    imageResponse.SetFormatFromMimeType(response.ContentType);
-                }
-                else
-                {
-                    _logger.Error("Provider did not return an image content type.");
-                }
+                imageResponse.Path = channelItem.ExternalImagePath;
+                imageResponse.Protocol = MediaProtocol.Http;
+                imageResponse.HasImage = true;
             }
 
             return imageResponse;

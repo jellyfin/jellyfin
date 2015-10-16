@@ -1446,7 +1446,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     dto.ChannelName = channel.Name;
 
-                    if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                    if (channel.HasImage(ImageType.Primary))
                     {
                         dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
                     }
@@ -1512,7 +1512,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.ChannelName = channel.Name;
 
-                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
+                if (channel.HasImage(ImageType.Primary))
                 {
                     dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
                 }

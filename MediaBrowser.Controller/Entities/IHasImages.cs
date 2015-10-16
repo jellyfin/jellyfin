@@ -2,9 +2,11 @@
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -191,6 +193,21 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="image">The image.</param>
         void RemoveImage(ItemImageInfo image);
+
+        /// <summary>
+        /// Updates to repository.
+        /// </summary>
+        /// <param name="updateReason">The update reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the image.
+        /// </summary>
+        /// <param name="image">The image.</param>
+        /// <param name="index">The index.</param>
+        void SetImage(ItemImageInfo image, int index);
     }
 
     public static class HasImagesExtensions
