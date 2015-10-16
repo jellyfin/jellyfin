@@ -800,7 +800,6 @@ namespace Emby.Drawing
 
                     return false;
                 }
-
             });
         }
 
