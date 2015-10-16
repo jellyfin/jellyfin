@@ -333,18 +333,18 @@ namespace MediaBrowser.Server.Startup.Common
             });
 
             LogManager.RemoveConsoleOutput();
+
+            PerformPostInitMigrations();
         }
 
-        public override async Task Init(IProgress<double> progress)
+        public override Task Init(IProgress<double> progress)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
             PerformPreInitMigrations();
 
-            await base.Init(progress).ConfigureAwait(false);
-
-            PerformPostInitMigrations();
+            return base.Init(progress);
         }
 
         private void PerformPreInitMigrations()
@@ -362,7 +362,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPostInitMigrations()
         {
-            var migrations = new List<IVersionMigration>();
+            var migrations = new List<IVersionMigration>
+            {
+                new Release5767(ServerConfigurationManager, TaskManager)
+            };
 
             foreach (var task in migrations)
             {
@@ -563,7 +566,7 @@ namespace MediaBrowser.Server.Startup.Common
                 int.TryParse(_startupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
             }
 
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses, () => LibraryManager);
         }
 
         private IImageEncoder GetImageEncoder()

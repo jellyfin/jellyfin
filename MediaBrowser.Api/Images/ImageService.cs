@@ -319,10 +319,13 @@ namespace MediaBrowser.Api.Images
 
                 try
                 {
-                    var size = _imageProcessor.GetImageSize(info);
+                    if (info.IsLocalFile)
+                    {
+                        var size = _imageProcessor.GetImageSize(info);
 
-                    width = Convert.ToInt32(size.Width);
-                    height = Convert.ToInt32(size.Height);
+                        width = Convert.ToInt32(size.Width);
+                        height = Convert.ToInt32(size.Height);
+                    }
                 }
                 catch
                 {

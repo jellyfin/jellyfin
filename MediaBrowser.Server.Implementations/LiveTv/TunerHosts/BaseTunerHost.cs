@@ -141,7 +141,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         protected abstract Task<MediaSourceInfo> GetChannelStream(TunerHostInfo tuner, string channelId, string streamId, CancellationToken cancellationToken);
 
-        public async Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, SemaphoreSlim>> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
             if (IsValidChannelId(channelId))
             {
@@ -173,9 +173,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     try
                     {
                         var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
-                        
-                        await AddMediaInfo(stream, false, cancellationToken).ConfigureAwait(false);
-                        return stream;
+                        var resourcePool = GetLock(host.Url);
+
+                        await AddMediaInfo(stream, false, resourcePool, cancellationToken).ConfigureAwait(false);
+                        return new Tuple<MediaSourceInfo, SemaphoreSlim>(stream, resourcePool);
                     }
                     catch (Exception ex)
                     {
@@ -187,7 +188,40 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             throw new LiveTvConflictException();
         }
 
-        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        /// <summary>
+        /// The _semaphoreLocks
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// Gets the lock.
+        /// </summary>
+        /// <param name="url">The filename.</param>
+        /// <returns>System.Object.</returns>
+        private SemaphoreSlim GetLock(string url)
+        {
+            return _semaphoreLocks.GetOrAdd(url, key => new SemaphoreSlim(1, 1));
+        }
+
+        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        {
+            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await AddMediaInfoInternal(mediaSource, isAudio, cancellationToken).ConfigureAwait(false);
+
+                // Leave the resource locked. it will be released upstream
+            }
+            catch (Exception)
+            {
+                // Release the resource if there's some kind of failure.
+                resourcePool.Release();
+
+                throw;
+            }
+        }
+
+        private async Task AddMediaInfoInternal(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
             var originalRuntime = mediaSource.RunTimeTicks;
 

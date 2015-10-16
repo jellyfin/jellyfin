@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -40,24 +41,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (liveTvItem.ExternalImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    var options = new HttpRequestOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        Url = liveTvItem.ExternalImagePath
-                    };
-
-                    var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
-
-                    if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                    {
-                        imageResponse.HasImage = true;
-                        imageResponse.Stream = response.Content;
-                        imageResponse.SetFormatFromMimeType(response.ContentType);
-                    }
-                    else
-                    {
-                        _logger.Error("Provider did not return an image content type.");
-                    }
+                    imageResponse.Path = liveTvItem.ExternalImagePath;
+                    imageResponse.Protocol = MediaProtocol.Http;
+                    imageResponse.HasImage = true;
                 }
                 else
                 {

@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
 
             source = memoryStream;
 
-            var currentPath = GetCurrentImagePath(item, type, index);
+            var currentImage = GetCurrentImage(item, type, index);
 
             using (source)
             {
@@ -160,8 +160,10 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, paths[0]);
 
             // Delete the current path
-            if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
+            if (currentImage != null && currentImage.IsLocalFile && !paths.Contains(currentImage.Path, StringComparer.OrdinalIgnoreCase))
             {
+                var currentPath = currentImage.Path;
+
                 _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
                 try
@@ -301,9 +303,9 @@ namespace MediaBrowser.Providers.Manager
         /// or
         /// imageIndex
         /// </exception>
-        private string GetCurrentImagePath(IHasImages item, ImageType type, int imageIndex)
+        private ItemImageInfo GetCurrentImage(IHasImages item, ImageType type, int imageIndex)
         {
-            return item.GetImagePath(type, imageIndex);
+            return item.GetImageInfo(type, imageIndex);
         }
 
         /// <summary>

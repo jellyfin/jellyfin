@@ -1743,7 +1743,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (imageInfo == null)
+            if (imageInfo == null || !imageInfo.IsLocalFile)
             {
                 return;
             }
