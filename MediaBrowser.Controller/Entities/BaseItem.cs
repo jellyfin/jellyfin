@@ -597,7 +597,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
-        [IgnoreDataMember]
+        //[IgnoreDataMember]
         public string CustomRating { get; set; }
 
         /// <summary>
@@ -628,7 +628,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
-        [IgnoreDataMember]
+        //[IgnoreDataMember]
         public float? CommunityRating { get; set; }
 
         /// <summary>
@@ -654,7 +654,7 @@ namespace MediaBrowser.Controller.Entities
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
-        [IgnoreDataMember]
+        //[IgnoreDataMember]
         public int? IndexNumber { get; set; }
 
         /// <summary>
