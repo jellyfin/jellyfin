@@ -204,9 +204,17 @@ namespace MediaBrowser.Api.Library
 
             if (_fileSystem.DirectoryExists(virtualFolderPath))
             {
-                throw new ArgumentException("There is already a media collection with the name " + name + ".");
+                throw new ArgumentException("There is already a media library with the name " + name + ".");
             }
 
+            if (!string.IsNullOrWhiteSpace(request.Path))
+            {
+                if (!_fileSystem.DirectoryExists(request.Path))
+                {
+                    throw new DirectoryNotFoundException("The specified folder does not exist.");
+                }
+            }
+            
             _libraryMonitor.Stop();
 
             try
