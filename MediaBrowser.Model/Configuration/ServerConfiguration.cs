@@ -226,11 +226,15 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableDateLastRefresh { get; set; }
 
+        public string[] Migrations { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
+            Migrations = new string[] {};
+
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             PublicHttpsPort = 8920;

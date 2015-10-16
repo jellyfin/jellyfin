@@ -491,6 +491,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
+                    var result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+                    result.Item2.Release();
+
+                    return result.Item1;
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorException("Error getting channel stream", e);
+                }
+            }
+
+            throw new ApplicationException("Tuner not found.");
+        }
+
+        private async Task<Tuple<MediaSourceInfo, SemaphoreSlim>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        {
+            _logger.Info("Streaming Channel " + channelId);
+
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            {
+                try
+                {
                     return await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception e)
@@ -653,40 +676,56 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var mediaStreamInfo = await GetChannelStream(timer.ChannelId, null, CancellationToken.None);
+                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None);
+                var mediaStreamInfo = result.Item1;
+                var isResourceOpen = true;
 
-                // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
-                await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
-
-                var duration = recordingEndDate - DateTime.UtcNow;
-
-                HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
+                // Unfortunately due to the semaphore we have to have a nested try/finally
+                try
                 {
-                    Url = mediaStreamInfo.Path
-                };
+                    // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
+                    await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
 
-                recording.Path = recordPath;
-                recording.Status = RecordingStatus.InProgress;
-                recording.DateLastUpdated = DateTime.UtcNow;
-                _recordingProvider.Update(recording);
+                    var duration = recordingEndDate - DateTime.UtcNow;
 
-                _logger.Info("Beginning recording.");
-
-                httpRequestOptions.BufferContent = false;
-                var durationToken = new CancellationTokenSource(duration);
-                var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                httpRequestOptions.CancellationToken = linkedToken;
-                _logger.Info("Writing file to path: " + recordPath);
-                using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
-                {
-                    using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                    HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
                     {
-                        await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
+                        Url = mediaStreamInfo.Path
+                    };
+
+                    recording.Path = recordPath;
+                    recording.Status = RecordingStatus.InProgress;
+                    recording.DateLastUpdated = DateTime.UtcNow;
+                    _recordingProvider.Update(recording);
+
+                    _logger.Info("Beginning recording.");
+
+                    httpRequestOptions.BufferContent = false;
+                    var durationToken = new CancellationTokenSource(duration);
+                    var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    httpRequestOptions.CancellationToken = linkedToken;
+                    _logger.Info("Writing file to path: " + recordPath);
+                    using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
+                    {
+                        using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        {
+                            result.Item2.Release();
+                            isResourceOpen = false;
+
+                            await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
+                        }
+                    }
+
+                    recording.Status = RecordingStatus.Completed;
+                    _logger.Info("Recording completed");
+                }
+                finally
+                {
+                    if (isResourceOpen)
+                    {
+                        result.Item2.Release();
                     }
                 }
-
-                recording.Status = RecordingStatus.Completed;
-                _logger.Info("Recording completed");
             }
             catch (OperationCanceledException)
             {
