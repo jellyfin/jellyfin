@@ -54,8 +54,6 @@ namespace MediaBrowser.Api.Library
         /// <param name="virtualFolderName">Name of the virtual folder.</param>
         /// <param name="path">The path.</param>
         /// <param name="appPaths">The app paths.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException">The path does not exist.</exception>
-        /// <exception cref="System.ArgumentException">The path is not valid.</exception>
         public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, IServerApplicationPaths appPaths)
         {
 			if (!fileSystem.DirectoryExists(path))

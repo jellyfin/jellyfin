@@ -6,9 +6,14 @@
         <div class="collectionTypeFieldDescription fieldDescription">
         </div>
     </div>
-    <p>
+    <div>
         <paper-input type="text" id="txtValue" required="required" label="${LabelName}"></paper-input>
-    </p>
+    </div>
+    <div>
+        <paper-input type="text" id="txtPath" required="required" label="${LabelFolder}" style="display: inline-block;width:84%;"></paper-input>
+        <paper-icon-button id="btnSelectPath" icon="search"></paper-icon-button>
+        <div class="fieldDescription">${LabelAdditionalFoldersCanBeAddedHelp}</div>
+    </div>
     <br />
     <div>
         <button type="submit" class="clearButton" data-role="none">

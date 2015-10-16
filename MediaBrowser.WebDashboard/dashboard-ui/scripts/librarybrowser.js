@@ -1964,7 +1964,7 @@
                 cssClass += ' groupedCard';
             }
 
-            if (showTitle && !options.overlayText) {
+            if ((showTitle || options.showItemCounts) && !options.overlayText) {
                 cssClass += ' bottomPaddedCard';
             }
 

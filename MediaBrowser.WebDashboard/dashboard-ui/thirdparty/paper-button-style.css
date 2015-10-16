@@ -557,6 +557,10 @@ paper-dialog.popupEditor .dialogHeader {
     margin-top: .7em;
 }
 
+paper-dialog.popupEditor {
+    padding-bottom: 100px;
+}
+
 .paperToggleContainer {
     padding: .5em 0;
 }

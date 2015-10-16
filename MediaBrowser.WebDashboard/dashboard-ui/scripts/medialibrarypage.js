@@ -76,9 +76,9 @@
 
     function addVirtualFolder(page) {
 
-        require(['medialibraryeditor'], function (medialibraryeditor) {
+        require(['medialibrarycreator'], function (medialibrarycreator) {
 
-            new medialibraryeditor().show({
+            new medialibrarycreator().show({
 
                 collectionTypeOptions: getCollectionTypeOptions(),
                 refresh: shouldRefreshLibraryAfterChanges()
@@ -212,9 +212,7 @@
             showType: false,
             showLocations: false,
             showMenu: false,
-            showNameWithIcon: true,
-            color: 'green',
-            contentClass: 'addLibrary'
+            showNameWithIcon: true
         });
 
         for (var i = 0, length = virtualFolders.length; i < length; i++) {
@@ -299,12 +297,7 @@
 
         html += '<div class="cardPadder"></div>';
 
-        var contentClass = "cardContent";
-        if (virtualFolder.contentClass) {
-            contentClass += " " + virtualFolder.contentClass;
-        }
-
-        html += '<div class="' + contentClass + '">';
+        html += '<div class="cardContent">';
         var imgUrl = '';
 
         if (virtualFolder.PrimaryImageItemId) {
@@ -315,21 +308,10 @@
 
         if (imgUrl) {
             html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-        } else {
+        } else if (!virtualFolder.showNameWithIcon) {
             html += '<div class="cardImage iconCardImage">';
-
-            if (virtualFolder.color) {
-                html += '<div style="color:' + virtualFolder.color + ';cursor:pointer;">';
-            } else {
-                html += '<div>';
-            }
+            html += '<div>';
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
-
-            if (virtualFolder.showNameWithIcon) {
-                html += '<div style="margin-top:1em;position:width:100%;font-weight:bold;">';
-                html += virtualFolder.Name;
-                html += "</div>";
-            }
             html += "</div>";
 
             html += '</div>';
@@ -340,6 +322,22 @@
 
         // cardScalable
         html += "</div>";
+
+        if (!imgUrl && virtualFolder.showNameWithIcon) {
+            html += '<div class="cardImage iconCardImage addLibrary" style="position:absolute;top:0;left:0;right:0;bottom:0;font-size:140%;cursor:pointer;">';
+
+            html += '<div>';
+            html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '" style="width:45%;height:45%;color:#888;"></iron-icon>';
+
+            if (virtualFolder.showNameWithIcon) {
+                html += '<div style="margin:1.5em 0;position:width:100%;font-weight:500;color:#444;">';
+                html += virtualFolder.Name;
+                html += "</div>";
+            }
+            html += "</div>";
+
+            html += '</div>';
+        }
 
         html += '<div class="cardFooter">';
 
@@ -471,7 +469,6 @@ var WizardLibraryPage = {
         $('.btnRefresh', page).taskButton({
             mode: 'on',
             progressElem: page.querySelector('.refreshProgress'),
-            lastResultElem: $('.lastRefreshResult', page),
             taskKey: 'RefreshLibrary'
         });
 

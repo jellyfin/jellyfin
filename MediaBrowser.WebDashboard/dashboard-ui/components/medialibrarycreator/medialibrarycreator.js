@@ -9,7 +9,11 @@
         var form = this;
         var dlg = $(form).parents('paper-dialog')[0];
 
-        ApiClient.addVirtualFolder($('#txtValue', form).val(), $('#selectCollectionType', form).val(), currentOptions.refresh).done(function () {
+        var name = $('#txtValue', form).val();
+        var type = $('#selectCollectionType', form).val();
+        var path = $('#txtPath', form).val();
+
+        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, path).done(function () {
 
             hasChanges = true;
             PaperDialogHelper.close(dlg);
@@ -37,7 +41,49 @@
 
     function initEditor(page, collectionTypeOptions) {
 
-        $('#selectCollectionType', page).html(getCollectionTypeOptionsHtml(collectionTypeOptions)).val('');
+        $('#selectCollectionType', page).html(getCollectionTypeOptionsHtml(collectionTypeOptions)).val('').on('change', function () {
+
+            var dlg = $(this).parents('paper-dialog')[0];
+
+            var index = this.selectedIndex;
+            if (index != -1) {
+
+                var name = this.options[index].innerHTML
+                    .replace('*', '')
+                    .replace('&amp;', '&');
+
+                var value = this.value;
+
+                $('#txtValue', dlg).val(name);
+
+                var folderOption = collectionTypeOptions.filter(function (i) {
+
+                    return i.value == value;
+
+                })[0];
+
+                $('.collectionTypeFieldDescription', dlg).html(folderOption.message || '');
+            }
+        });
+
+        $('#btnSelectPath').on('click', function () {
+
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    callback: function (path) {
+                        if (path) {
+                            $('#txtPath', page).val(path);
+                        }
+                        picker.close();
+                    }
+
+                });
+            });
+        });
 
         $('form', page).off('submit', onSubmit).on('submit', onSubmit);
     }
@@ -66,7 +112,7 @@
                 HttpClient.send({
 
                     type: 'GET',
-                    url: 'components/medialibraryeditor/medialibraryeditor.template.html'
+                    url: 'components/medialibrarycreator/medialibrarycreator.template.html'
 
                 }).done(function (template) {
 
@@ -96,7 +142,7 @@
 
                     $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                    PaperDialogHelper.openWithHash(dlg, 'medialibraryeditor');
+                    PaperDialogHelper.openWithHash(dlg, 'medialibrarycreator');
 
                     $('.btnCloseDialog', dlg).on('click', function () {
 

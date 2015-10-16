@@ -1800,7 +1800,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, initialPath) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1821,7 +1821,10 @@
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: {
+                    Path: initialPath
+                }
             });
         };
 
