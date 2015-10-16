@@ -375,6 +375,11 @@ namespace Emby.Drawing
             return GetImageSize(info.Path, info.DateModified, false);
         }
 
+        public ImageSize GetImageSize(string path)
+        {
+            return GetImageSize(path, _fileSystem.GetLastWriteTimeUtc(path), false);
+        }
+
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
