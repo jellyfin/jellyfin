@@ -74,11 +74,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
                     else if (plainFolderIds.Contains(folder.Id))
                     {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
+                        list.Add(await GetUserView(folder, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
                     }
                     else if (!string.IsNullOrWhiteSpace(folderViewType))
                     {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, cancellationToken).ConfigureAwait(false));
+                        list.Add(await GetUserView(folder, folderViewType, true, string.Empty, cancellationToken).ConfigureAwait(false));
                     }
                     else
                     {
@@ -209,23 +209,18 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<UserView> GetUserView(List<ICollectionFolder> parents, List<Folder> currentViews, string viewType, string sortName, User user, CancellationToken cancellationToken)
         {
-            var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
             var enableUserViews = _config.Configuration.EnableUserViews;
 
             if (parents.Count == 1 && parents.All(i => string.Equals((enableUserViews ? i.GetViewType(user) : i.CollectionType), viewType, StringComparison.OrdinalIgnoreCase)))
             {
-                if (!string.IsNullOrWhiteSpace(parents[0].Name))
-                {
-                    name = parents[0].Name;
-                }
-
                 var parentId = parents[0].Id;
 
                 var enableRichView = !user.Configuration.PlainFolderViews.Contains(parentId.ToString("N"), StringComparer.OrdinalIgnoreCase);
 
-                return await GetUserView(parentId, name, viewType, enableRichView, string.Empty, cancellationToken).ConfigureAwait(false);
+                return await GetUserView((Folder)parents[0], viewType, enableRichView, string.Empty, cancellationToken).ConfigureAwait(false);
             }
 
+            var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
             return await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
         }
 
@@ -235,10 +230,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return _libraryManager.GetNamedView(user, name, parentId.ToString("N"), viewType, sortName, null, cancellationToken);
         }
 
-        public Task<UserView> GetUserView(Guid parentId, string name, string viewType, bool enableRichView, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserView(Folder parent, string viewType, bool enableRichView, string sortName, CancellationToken cancellationToken)
         {
             viewType = enableRichView ? viewType : null;
-            return _libraryManager.GetNamedView(name, parentId.ToString("N"), viewType, sortName, null, cancellationToken);
+
+            return _libraryManager.GetShadowView(parent, viewType, sortName, null, cancellationToken);
         }
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request)

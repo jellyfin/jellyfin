@@ -300,7 +300,7 @@ namespace MediaBrowser.Providers.Music
             if (!isSearch)
             {
                 options.CacheMode = CacheMode.Unconditional;
-                options.CacheLength = TimeSpan.FromDays(7);
+                options.CacheLength = TimeSpan.FromDays(3);
             }
 
             using (var xml = await _httpClient.Get(options).ConfigureAwait(false))

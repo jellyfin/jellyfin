@@ -108,6 +108,12 @@
         });
 
         menuItems.push({
+            name: Globalize.translate('ButtonEdit'),
+            id: 'edit',
+            ironIcon: 'mode-edit'
+        });
+
+        menuItems.push({
             name: Globalize.translate('ButtonRemove'),
             id: 'delete',
             ironIcon: 'remove'
@@ -130,6 +136,9 @@
 
                         case 'changetype':
                             changeCollectionType(page, virtualFolder);
+                            break;
+                        case 'edit':
+                            editVirtualFolder(page, virtualFolder);
                             break;
                         case 'rename':
                             renameVirtualFolder(page, virtualFolder);

@@ -283,8 +283,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var url = options.Url;
             var urlHash = url.ToLower().GetMD5().ToString("N");
-            var semaphore = GetLock(url);
-
+            
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
             response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
@@ -292,6 +291,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 return response;
             }
+
+            var semaphore = GetLock(url);
 
             await semaphore.WaitAsync(options.CancellationToken).ConfigureAwait(false);
 

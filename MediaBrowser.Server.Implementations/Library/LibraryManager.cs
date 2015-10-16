@@ -1792,7 +1792,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (!string.IsNullOrWhiteSpace(parentId))
                 {
-                    item.ParentId = new Guid(parentId);
+                    item.DisplayParentId = new Guid(parentId);
                 }
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
@@ -1826,6 +1826,75 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
+        public async Task<UserView> GetShadowView(BaseItem parent,
+        string viewType,
+        string sortName,
+        string uniqueId,
+        CancellationToken cancellationToken)
+        {
+            if (parent == null)
+            {
+                throw new ArgumentNullException("parent");
+            }
+
+            var name = parent.Name;
+            var parentId = parent.Id;
+
+            var idValues = "37_namedview_" + name + parentId + (viewType ?? string.Empty);
+            if (!string.IsNullOrWhiteSpace(uniqueId))
+            {
+                idValues += uniqueId;
+            }
+
+            var id = GetNewItemId(idValues, typeof(UserView));
+
+            var path = parent.Path;
+
+            var item = GetItemById(id) as UserView;
+
+            var isNew = false;
+
+            if (item == null)
+            {
+                _fileSystem.CreateDirectory(path);
+
+                item = new UserView
+                {
+                    Path = path,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    ViewType = viewType,
+                    ForcedSortName = sortName
+                };
+
+                item.DisplayParentId = parentId;
+
+                await CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                isNew = true;
+            }
+
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+
+            if (refresh)
+            {
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                {
+                    // Need to force save to increment DateLastSaved
+                    ForceSave = true
+                });
+            }
+
+            return item;
+        }
+        
         public async Task<UserView> GetNamedView(string name,
             string parentId,
             string viewType,
@@ -1868,7 +1937,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (!string.IsNullOrWhiteSpace(parentId))
                 {
-                    item.ParentId = new Guid(parentId);
+                    item.DisplayParentId = new Guid(parentId);
                 }
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
