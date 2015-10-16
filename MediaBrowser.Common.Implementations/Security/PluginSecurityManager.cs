@@ -216,7 +216,7 @@ namespace MediaBrowser.Common.Implementations.Security
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters);
+                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
                 //TODO - really need to write this to a file so we can re-try it automatically
                 throw new ApplicationException("Error registering store sale");
             }
