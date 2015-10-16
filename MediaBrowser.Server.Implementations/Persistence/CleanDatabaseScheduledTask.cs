@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Progress;
+﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -17,7 +16,7 @@ using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    class CleanDatabaseScheduledTask : IScheduledTask
+    public class CleanDatabaseScheduledTask : IScheduledTask
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;

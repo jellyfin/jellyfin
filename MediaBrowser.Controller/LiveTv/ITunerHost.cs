@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System.Collections.Generic;
 using System.Threading;
@@ -37,7 +38,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="streamId">The stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
+        Task<Tuple<MediaSourceInfo,SemaphoreSlim>> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
         /// <summary>
         /// Gets the channel stream media sources.
         /// </summary>
