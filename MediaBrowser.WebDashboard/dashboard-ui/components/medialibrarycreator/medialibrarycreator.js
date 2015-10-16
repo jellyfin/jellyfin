@@ -43,6 +43,10 @@
 
         $('#selectCollectionType', page).html(getCollectionTypeOptionsHtml(collectionTypeOptions)).val('').on('change', function () {
 
+            if (this.value == 'mixed') {
+                return;
+            }
+
             var dlg = $(this).parents('paper-dialog')[0];
 
             var index = this.selectedIndex;

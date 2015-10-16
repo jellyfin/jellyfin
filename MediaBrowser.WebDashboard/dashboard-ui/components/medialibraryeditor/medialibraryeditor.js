@@ -59,7 +59,7 @@
         html += path;
         html += '</paper-item-body>';
 
-        html += '<paper-icon-button icon="remove" class="btnRemovePath" data-index="' + index + '"></paper-icon-button>';
+        html += '<paper-icon-button icon="remove-circle" class="btnRemovePath" data-index="' + index + '"></paper-icon-button>';
 
         html += '</paper-icon-item>';
 
