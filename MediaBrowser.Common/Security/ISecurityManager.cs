@@ -59,8 +59,7 @@ namespace MediaBrowser.Common.Security
         /// <param name="storeToken"></param>
         /// <param name="email"></param>
         /// <param name="amt"></param>
-        /// <returns>true if successful</returns>
-        Task<Boolean> RegisterAppStoreSale(string store, string application, string product, string feature,
+        Task RegisterAppStoreSale(string store, string application, string product, string feature,
         string type, string storeId, string storeToken, string email, string amt);
     }
 }

@@ -199,8 +199,7 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <param name="storeToken"></param>
         /// <param name="email"></param>
         /// <param name="amt"></param>
-        /// <returns>true if successful</returns>
-        public async Task<Boolean> RegisterAppStoreSale(string store, string application, string product, string feature,
+        public async Task RegisterAppStoreSale(string store, string application, string product, string feature,
             string type, string storeId, string storeToken, string email, string amt)
         {
             var data = new Dictionary<string, string>()
@@ -232,8 +231,6 @@ namespace MediaBrowser.Common.Implementations.Security
                     {
                         SupporterKey = reg.key;
                     }
-
-                    return true;
                 }
 
             }
@@ -241,7 +238,7 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 _logger.ErrorException("Error registering appstore purchase {0}", e, _jsonSerializer.SerializeToString(data));
                 //TODO - really need to write this to a file so we can re-try it automatically
-                return false;
+                throw new ApplicationException("Error registering store sale");
             }
 
         }

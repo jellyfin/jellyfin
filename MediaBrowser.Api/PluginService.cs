@@ -296,8 +296,7 @@ namespace MediaBrowser.Api
         /// <returns></returns>
         public async Task Post(RegisterAppstoreSale request)
         {
-            var success = await _securityManager.RegisterAppStoreSale(request.Store, request.Application, request.Product, request.Feature, request.Type, request.StoreId, request.StoreToken, request.Email, request.Amount);
-            if (!success) throw new ApplicationException("Error registering store sale");
+            await _securityManager.RegisterAppStoreSale(request.Store, request.Application, request.Product, request.Feature, request.Type, request.StoreId, request.StoreToken, request.Email, request.Amount);
         }
 
         /// <summary>
