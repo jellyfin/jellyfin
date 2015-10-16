@@ -386,6 +386,21 @@ namespace MediaBrowser.Controller.Library
             CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the shadow view.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <param name="sortName">Name of the sort.</param>
+        /// <param name="uniqueId">The unique identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;UserView&gt;.</returns>
+        Task<UserView> GetShadowView(BaseItem parent,
+          string viewType,
+          string sortName,
+          string uniqueId,
+          CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Determines whether [is video file] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>

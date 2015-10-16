@@ -216,10 +216,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
                 try
                 {
                     StartProcess(processWrapper);
@@ -536,10 +536,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
                 bool ranToCompletion;
 
                 var memoryStream = new MemoryStream();
