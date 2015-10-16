@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using Emby.Drawing.Common;
+using MediaBrowser.Controller.Library;
 
 namespace Emby.Drawing
 {
@@ -53,18 +54,20 @@ namespace Emby.Drawing
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
         private readonly SemaphoreSlim _imageProcessingSemaphore;
+        private readonly Func<ILibraryManager> _libraryManager;
 
         public ImageProcessor(ILogger logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             IImageEncoder imageEncoder,
-            int maxConcurrentImageProcesses)
+            int maxConcurrentImageProcesses, Func<ILibraryManager> libraryManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _imageEncoder = imageEncoder;
+            _libraryManager = libraryManager;
             _appPaths = appPaths;
 
             ImageEnhancers = new List<IImageEnhancer>();
@@ -158,7 +161,14 @@ namespace Emby.Drawing
                 throw new ArgumentNullException("options");
             }
 
-            var originalImagePath = options.Image.Path;
+            var originalImage = options.Image;
+
+            if (!originalImage.IsLocalFile)
+            {
+                originalImage = await _libraryManager().ConvertImageToLocal(options.Item, originalImage, options.ImageIndex).ConfigureAwait(false);
+            }
+
+            var originalImagePath = originalImage.Path;
 
             if (options.HasDefaultOptions(originalImagePath) && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
@@ -166,7 +176,7 @@ namespace Emby.Drawing
                 return originalImagePath;
             }
 
-            var dateModified = options.Image.DateModified;
+            var dateModified = originalImage.DateModified;
 
             if (options.CropWhiteSpace)
             {
@@ -181,7 +191,7 @@ namespace Emby.Drawing
                 var tuple = await GetEnhancedImage(new ItemImageInfo
                 {
                     DateModified = dateModified,
-                    Type = options.Image.Type,
+                    Type = originalImage.Type,
                     Path = originalImagePath
 
                 }, options.Item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
@@ -358,16 +368,6 @@ namespace Emby.Drawing
             filename += "v=" + Version;
 
             return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLower());
-        }
-
-        /// <summary>
-        /// Gets the size of the image.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>ImageSize.</returns>
-        public ImageSize GetImageSize(string path)
-        {
-            return GetImageSize(path, _fileSystem.GetLastWriteTimeUtc(path), false);
         }
 
         public ImageSize GetImageSize(ItemImageInfo info)

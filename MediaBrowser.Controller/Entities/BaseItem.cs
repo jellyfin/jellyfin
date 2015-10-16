@@ -1432,6 +1432,23 @@ namespace MediaBrowser.Controller.Entities
             return GetImageInfo(type, imageIndex) != null;
         }
 
+        public void SetImage(ItemImageInfo image, int index)
+        {
+            if (image.Type == ImageType.Chapter)
+            {
+                throw new ArgumentException("Cannot set chapter images using SetImagePath");
+            }
+
+            var existingImage = GetImageInfo(image.Type, index);
+
+            if (existingImage != null)
+            {
+                ImageInfos.Remove(existingImage);
+            }
+
+            ImageInfos.Add(image);
+        }
+
         public void SetImagePath(ImageType type, int index, FileSystemMetadata file)
         {
             if (type == ImageType.Chapter)
@@ -1473,18 +1490,21 @@ namespace MediaBrowser.Controller.Entities
             // Remove it from the item
             RemoveImage(info);
 
-            // Delete the source file
-            var currentFile = new FileInfo(info.Path);
-
-            // Deletion will fail if the file is hidden so remove the attribute first
-            if (currentFile.Exists)
+            if (info.IsLocalFile)
             {
-                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    currentFile.Attributes &= ~FileAttributes.Hidden;
-                }
+                // Delete the source file
+                var currentFile = new FileInfo(info.Path);
 
-                FileSystem.DeleteFile(currentFile.FullName);
+                // Deletion will fail if the file is hidden so remove the attribute first
+                if (currentFile.Exists)
+                {
+                    if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    {
+                        currentFile.Attributes &= ~FileAttributes.Hidden;
+                    }
+
+                    FileSystem.DeleteFile(currentFile.FullName);
+                }
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
@@ -1505,11 +1525,16 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool ValidateImages(IDirectoryService directoryService)
         {
-            var allDirectories = ImageInfos.Select(i => System.IO.Path.GetDirectoryName(i.Path)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            var allFiles = allDirectories.SelectMany(directoryService.GetFiles).Select(i => i.FullName).ToList();
+            var allFiles = ImageInfos
+                .Where(i => i.IsLocalFile)
+                .Select(i => System.IO.Path.GetDirectoryName(i.Path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .SelectMany(directoryService.GetFiles)
+                .Select(i => i.FullName)
+                .ToList();
 
             var deletedImages = ImageInfos
-                .Where(image => !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
+                .Where(image => image.IsLocalFile && !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             if (deletedImages.Count > 0)
@@ -1619,7 +1644,10 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                    if (existing.IsLocalFile)
+                    {
+                        existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                    }
                 }
             }
 
@@ -1628,7 +1656,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-					.Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
+					.Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
                     .ToList();
 
                 ImageInfos = ImageInfos.Except(deleted).ToList();
@@ -1676,6 +1704,12 @@ namespace MediaBrowser.Controller.Entities
             if (info1 == null || info2 == null)
             {
                 // Nothing to do
+                return Task.FromResult(true);
+            }
+
+            if (!info1.IsLocalFile || !info2.IsLocalFile)
+            {
+                // TODO: Not supported  yet
                 return Task.FromResult(true);
             }
 

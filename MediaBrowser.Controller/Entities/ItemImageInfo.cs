@@ -29,6 +29,13 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (Path != null)
+                {
+                    if (Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
         }

@@ -17,6 +17,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -138,11 +139,24 @@ namespace MediaBrowser.Providers.Manager
                         {
                             if (!string.IsNullOrEmpty(response.Path))
                             {
-                                var mimeType = MimeTypes.GetMimeType(response.Path);
+                                if (response.Protocol == MediaProtocol.Http)
+                                {
+                                    _logger.Debug("Setting image url into item {0}", item.Id);
+                                    item.SetImage(new ItemImageInfo
+                                    {
+                                        Path = response.Path,
+                                        Type = imageType
 
-                                var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+                                    }, 0);
+                                }
+                                else
+                                {
+                                    var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                await _providerManager.SaveImage(item, stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
+                                    var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+
+                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
+                                }
                             }
                             else
                             {
@@ -391,7 +405,7 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     var existing = item.GetImageInfo(type, 0);
-					if (existing != null && !_fileSystem.FileExists(existing.Path))
+                    if (existing != null && !_fileSystem.FileExists(existing.Path))
                     {
                         item.RemoveImage(existing);
                         changed = true;

@@ -884,11 +884,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             writer.WriteStartElement("art");
 
-            var poster = item.PrimaryImagePath;
+            var image = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (!string.IsNullOrEmpty(poster))
+            if (image != null && image.IsLocalFile)
             {
-                writer.WriteElementString("poster", GetPathToSave(item.PrimaryImagePath, libraryManager, config));
+                writer.WriteElementString("poster", GetPathToSave(image.Path, libraryManager, config));
             }
 
             foreach (var backdrop in item.GetImages(ImageType.Backdrop))
@@ -985,10 +985,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 try
                 {
                     var personEntity = libraryManager.GetPerson(person.Name);
+                    var image = personEntity.GetImageInfo(ImageType.Primary, 0);
 
-                    if (!string.IsNullOrEmpty(personEntity.PrimaryImagePath))
+                    if (image != null && image.IsLocalFile)
                     {
-                        writer.WriteElementString("thumb", GetPathToSave(personEntity.PrimaryImagePath, libraryManager, config));
+                        writer.WriteElementString("thumb", GetPathToSave(image.Path, libraryManager, config));
                     }
                 }
                 catch (Exception)

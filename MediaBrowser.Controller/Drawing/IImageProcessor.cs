@@ -28,13 +28,6 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>ImageSize.</returns>
-        ImageSize GetImageSize(string path);
-
-        /// <summary>
-        /// Gets the size of the image.
-        /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>ImageSize.</returns>
         ImageSize GetImageSize(ItemImageInfo info);
