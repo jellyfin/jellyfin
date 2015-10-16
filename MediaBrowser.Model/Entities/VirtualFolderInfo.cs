@@ -34,6 +34,12 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
+        /// Gets or sets the item identifier.
+        /// </summary>
+        /// <value>The item identifier.</value>
+        public string ItemId { get; set; }
+
+        /// <summary>
         /// Gets or sets the primary image item identifier.
         /// </summary>
         /// <value>The primary image item identifier.</value>

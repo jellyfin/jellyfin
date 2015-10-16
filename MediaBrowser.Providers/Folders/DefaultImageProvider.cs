@@ -142,10 +142,17 @@ namespace MediaBrowser.Providers.Folders
 
             if (view != null)
             {
-                return true;
+                return !string.IsNullOrWhiteSpace(GetImageUrl(view.ViewType));
             }
 
-            return item is ICollectionFolder;
+            var folder = item as ICollectionFolder;
+
+            if (folder != null)
+            {
+                return !string.IsNullOrWhiteSpace(GetImageUrl(folder.CollectionType));
+            }
+
+            return false;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
