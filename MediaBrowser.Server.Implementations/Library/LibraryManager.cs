@@ -1198,6 +1198,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 info.PrimaryImageItemId = libraryFolder.Id.ToString("N");
             }
 
+            if (libraryFolder != null)
+            {
+                info.ItemId = libraryFolder.Id.ToString("N");
+            }
+
             return info;
         }
 

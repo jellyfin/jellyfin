@@ -1,6 +1,8 @@
 ﻿(function ($, document, window, FileReader, escape) {
 
     var currentItem;
+    var currentDeferred;
+    var hasChanges = false;
 
     function getBaseRemoteOptions() {
 
@@ -32,9 +34,9 @@
         ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
 
             if (providers.length) {
-                $('.lnkBrowseAllImages', page).removeClass('hide');
+                $('.btnBrowseAllImages', page).removeClass('hide');
             } else {
-                $('.lnkBrowseAllImages', page).addClass('hide');
+                $('.btnBrowseAllImages', page).addClass('hide');
             }
 
             ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
@@ -122,6 +124,7 @@
                 if (result) {
                     ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
 
+                        hasChanges = true;
                         reload(page);
 
                     });
@@ -136,6 +139,7 @@
             var newIndex = parseInt(this.getAttribute('data-newindex'));
             ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
 
+                hasChanges = true;
                 reload(page);
 
             });
@@ -188,24 +192,30 @@
     function showImageDownloader(page, imageType) {
         require(['components/imagedownloader/imagedownloader'], function () {
 
-            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).done(function (hasChanges) {
+            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).done(function (hasChanged) {
 
-                if (hasChanges) {
+                if (hasChanged) {
+                    hasChanges = true;
                     reload(page);
                 }
             });
         });
     }
 
-    function initEditor(page) {
+    function initEditor(page, options) {
 
         $('.btnOpenUploadMenu', page).on('click', function () {
 
             require(['components/imageuploader/imageuploader'], function () {
 
-                ImageUploader.show(currentItem.Id).done(function (hasChanges) {
+                ImageUploader.show(currentItem.Id, {
+                    
+                    theme: options.theme
 
-                    if (hasChanges) {
+                }).done(function (hasChanged) {
+
+                    if (hasChanged) {
+                        hasChanges = true;
                         reload(page);
                     }
                 });
@@ -217,7 +227,9 @@
         });
     }
 
-    function showEditor(itemId) {
+    function showEditor(itemId, options) {
+
+        options = options || {};
 
         Dashboard.showLoadingMsg();
 
@@ -230,7 +242,9 @@
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
 
-                var dlg = PaperDialogHelper.createDialog();
+                var dlg = PaperDialogHelper.createDialog({
+                    theme: options.theme
+                });
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -245,7 +259,7 @@
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
-                initEditor(dlg);
+                initEditor(dlg, options);
 
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
@@ -267,16 +281,23 @@
 
         $(this).remove();
         Dashboard.hideLoadingMsg();
+        currentDeferred.resolveWith(null, [hasChanges]);
     }
 
     window.ImageEditor = {
-        show: function (itemId) {
+        show: function (itemId, options) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            currentDeferred = deferred;
+            hasChanges = false;
 
             require(['components/paperdialoghelper'], function () {
 
                 Dashboard.importCss('css/metadataeditor.css');
-                showEditor(itemId);
+                showEditor(itemId, options);
             });
+            return deferred.promise();
         }
     };
 

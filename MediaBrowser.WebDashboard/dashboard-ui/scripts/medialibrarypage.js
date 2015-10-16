@@ -104,13 +104,13 @@
         menuItems.push({
             name: Globalize.translate('ButtonChangeContentType'),
             id: 'changetype',
-            ironIcon: 'folder'
+            ironIcon: 'videocam'
         });
 
         menuItems.push({
-            name: Globalize.translate('ButtonEdit'),
+            name: Globalize.translate('ButtonManageFolders'),
             id: 'edit',
-            ironIcon: 'mode-edit'
+            ironIcon: 'folder-open'
         });
 
         menuItems.push({
@@ -205,7 +205,17 @@
             var card = $(this).parents('.card')[0];
             var index = parseInt(card.getAttribute('data-index'));
             var virtualFolder = virtualFolders[index];
-            editVirtualFolder(page, virtualFolder);
+
+            require(['components/imageeditor/imageeditor'], function () {
+
+                ImageEditor.show(virtualFolder.ItemId, {
+                    theme: 'a'
+                }).done(function (hasChanged) {
+                    if (hasChanged) {
+                        reloadLibrary(page);
+                    }
+                });
+            });
         });
 
         Dashboard.hideLoadingMsg();

@@ -121,7 +121,9 @@
         });
     }
 
-    function showEditor(itemId) {
+    function showEditor(itemId, options) {
+
+        options = options || {};
 
         HttpClient.send({
 
@@ -132,7 +134,9 @@
 
             currentItemId = itemId;
 
-            var dlg = PaperDialogHelper.createDialog();
+            var dlg = PaperDialogHelper.createDialog({
+                theme: options.theme
+            });
 
             var html = '';
             html += '<h2 class="dialogHeader">';
@@ -170,7 +174,7 @@
     }
 
     window.ImageUploader = {
-        show: function (itemId) {
+        show: function (itemId, options) {
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -179,7 +183,7 @@
 
             require(['components/paperdialoghelper'], function () {
 
-                showEditor(itemId);
+                showEditor(itemId, options);
             });
             return deferred.promise();
         }

@@ -1521,5 +1521,9 @@
     "HeaderCameraUpload": "Upload du contenu de l'appareil photo",
     "SelectCameraUploadServers": "Uploader les photos de l'appareil vers les serveurs suivants :",
     "ButtonClear": "Effacer",
-    "ButtonEditImages": "Modifier les images"
+    "ButtonEditImages": "Modifier les images",
+    "LabelFolder": "Folder:",
+    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
+    "HeadersFolders": "Folders",
+    "LabelDisplayName": "Display name:"
 }

@@ -906,5 +906,6 @@
     "HeaderTryMultiSelect": "Try Multi-Select",
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
-    "ButtonAddMediaLibrary": "Add Media Library"
+    "ButtonAddMediaLibrary": "Add Media Library",
+    "ButtonManageFolders": "Manage folders"
 }

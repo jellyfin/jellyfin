@@ -252,6 +252,13 @@
 
 .editorTileFooter {
     padding: .5em;
+}
+
+.ui-body-a .editorTileFooter {
+    background-color: #fff;
+}
+
+.ui-body-b .editorTileFooter {
     background-color: #282828;
 }
 

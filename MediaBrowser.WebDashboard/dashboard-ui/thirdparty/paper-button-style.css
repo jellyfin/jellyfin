@@ -279,14 +279,23 @@ paper-fab {
             height: 22px;
         }
 
-    paper-fab.subdued {
-        background: #404040;
-        color: #fff;
+.ui-body-a paper-fab.subdued {
+    background: #fff;
+    color: #000;
+}
+
+    .ui-body-a paper-fab.subdued paper-material.keyboard-focus {
+        background: #686868 !important;
     }
 
-        paper-fab.subdued paper-material.keyboard-focus {
-            background: #686868 !important;
-        }
+.ui-body-b paper-fab.subdued {
+    background: #404040;
+    color: #fff;
+}
+
+    .ui-body-b paper-fab.subdued paper-material.keyboard-focus {
+        background: #686868 !important;
+    }
 
 .ui-body-b paper-fab[disabled].subdued {
     background: #222;

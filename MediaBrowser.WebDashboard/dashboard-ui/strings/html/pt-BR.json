@@ -1521,5 +1521,9 @@
     "HeaderCameraUpload": "Upload da C\u00e2mera",
     "SelectCameraUploadServers": "Fazer upload das fotos da c\u00e2mera para os seguintes servidores:",
     "ButtonClear": "Clear",
-    "ButtonEditImages": "Edit Images"
+    "ButtonEditImages": "Edit Images",
+    "LabelFolder": "Folder:",
+    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
+    "HeadersFolders": "Folders",
+    "LabelDisplayName": "Display name:"
 }

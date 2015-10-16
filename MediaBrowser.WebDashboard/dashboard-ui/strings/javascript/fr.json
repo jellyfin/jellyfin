@@ -517,7 +517,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "L'emplacement m\u00e9dia suivant va \u00eatre supprim\u00e9 de votre biblioth\u00e8que :",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "\u00cates-vous s\u00fbr de vouloir supprimer ce r\u00e9pertoire de m\u00e9dia?",
     "ButtonRename": "Renommer",
-    "ButtonChangeContentType": "Change content type",
+    "ButtonChangeContentType": "Changer le type de contenu",
     "HeaderMediaLocations": "Emplacement des m\u00e9dias",
     "LabelContentTypeValue": "Type de contenu : {0}",
     "LabelPathSubstitutionHelp": "Optionnel : la substitution de chemin peut rediriger les chemins serveurs vers des partages r\u00e9seau pour une lecture directe par les clients.",
@@ -905,6 +905,7 @@
     "TermsOfUse": "Conditions d'utilisation",
     "HeaderTryMultiSelect": "Essayer la s\u00e9lection multiple",
     "TryMultiSelectMessage": "Pour modifier plusieurs \u00e9l\u00e9ments m\u00e9dias, il suffit de cliquer et maintenir le clique sur n'importe quel poster et de s\u00e9lectionner les \u00e9lements que vous voulez g\u00e9rer. Essayer le !",
-    "NumLocationsValue": "{0} folders",
-    "ButtonAddMediaLibrary": "Add Media Library"
+    "NumLocationsValue": "{0} dossiers",
+    "ButtonAddMediaLibrary": "Ajouter une biblioth\u00e8que de m\u00e9dia",
+    "ButtonManageFolders": "Manage folders"
 }

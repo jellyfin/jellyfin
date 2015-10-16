@@ -1149,7 +1149,9 @@
 
             $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
 
-            shake(btnSelectionPanelOptions, 1);
+            if (!$.browser.mobile) {
+                shake(btnSelectionPanelOptions, 1);
+            }
         }
     }
 

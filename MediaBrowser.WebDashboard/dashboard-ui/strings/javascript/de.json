@@ -906,5 +906,6 @@
     "HeaderTryMultiSelect": "Versuche Mehrfachauswahl",
     "TryMultiSelectMessage": "F\u00fcr eine Mehrfachauswahl klicken und halten Sie ein Poster. W\u00e4hlen Sie die Eintr\u00e4ge die Sie bearbeiten m\u00f6chten. Versuchen SIe es!",
     "NumLocationsValue": "{0} folders",
-    "ButtonAddMediaLibrary": "Add Media Library"
+    "ButtonAddMediaLibrary": "Add Media Library",
+    "ButtonManageFolders": "Manage folders"
 }
