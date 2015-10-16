@@ -47,6 +47,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string Path { get; set; }
     }
 
     [Route("/Library/VirtualFolders", "DELETE")]
@@ -215,6 +221,11 @@ namespace MediaBrowser.Api.Library
                     {
 
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Path))
+                {
+                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
                 }
             }
             finally

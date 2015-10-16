@@ -200,10 +200,10 @@
     <Content Include="dashboard-ui\components\imageuploader\imageuploader.template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\medialibraryeditor\medialibraryeditor.js">
+    <Content Include="dashboard-ui\components\medialibrarycreator\medialibrarycreator.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html">
+    <Content Include="dashboard-ui\components\medialibrarycreator\medialibrarycreator.template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\metadataeditor\metadataeditor.js">
