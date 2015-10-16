@@ -132,13 +132,6 @@ namespace MediaBrowser.ServerApplication
 
             LocalizeText();
 
-            if (_appHost.IsFirstRun)
-            {
-                Action action = () => notifyIcon1.ShowBalloonTip(5000, "Emby", "Welcome to Emby Server!", ToolTipIcon.Info);
-
-                contextMenuStrip1.Invoke(action);
-            }
-
             notifyIcon1.DoubleClick += notifyIcon1_DoubleClick;
             Application.ApplicationExit += Application_ApplicationExit;
         }

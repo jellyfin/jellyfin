@@ -1,63 +1,4 @@
-﻿var MediaLibraryPage = {
-
-    addMediaLocation: function (virtualFolderIndex) {
-
-        MediaLibraryPage.selectDirectory(function (path) {
-
-            if (path) {
-
-                var virtualFolder = MediaLibraryPage.virtualFolders[virtualFolderIndex];
-
-                MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-
-                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
-
-                ApiClient.addMediaPath(virtualFolder.Name, path, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-            }
-
-        });
-    },
-
-    selectDirectory: function (callback) {
-
-        require(['directorybrowser'], function (directoryBrowser) {
-
-            var picker = new directoryBrowser();
-
-            picker.show({
-
-                callback: callback
-            });
-
-            MediaLibraryPage.directoryPicker = picker;
-        });
-    },
-
-    deleteMediaLocation: function (button) {
-
-        var folderIndex = button.getAttribute('data-folderindex');
-        var index = parseInt(button.getAttribute('data-index'));
-
-        var virtualFolder = MediaLibraryPage.virtualFolders[folderIndex];
-
-        MediaLibraryPage.lastVirtualFolderName = virtualFolder.Name;
-
-        var location = virtualFolder.Locations[index];
-
-        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
-
-            if (confirmResult) {
-
-                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
-
-                ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).done(MediaLibraryPage.processOperationResult);
-            }
-        });
-    }
-
-};
-
-(function () {
+﻿(function () {
 
     function changeCollectionType(page, virtualFolder) {
 
@@ -82,6 +23,24 @@
 
                 collectionTypeOptions: getCollectionTypeOptions(),
                 refresh: shouldRefreshLibraryAfterChanges()
+
+            }).done(function (hasChanges) {
+
+                if (hasChanges) {
+                    reloadLibrary(page);
+                }
+            });
+        });
+    }
+
+    function editVirtualFolder(page, virtualFolder) {
+
+        require(['medialibraryeditor'], function (medialibraryeditor) {
+
+            new medialibraryeditor().show({
+
+                refresh: shouldRefreshLibraryAfterChanges(),
+                library: virtualFolder
 
             }).done(function (hasChanges) {
 
@@ -233,6 +192,13 @@
             addVirtualFolder(page);
         });
 
+        $('.editLibrary', divVirtualFolders).on('click', function () {
+            var card = $(this).parents('.card')[0];
+            var index = parseInt(card.getAttribute('data-index'));
+            var virtualFolder = virtualFolders[index];
+            editVirtualFolder(page, virtualFolder);
+        });
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -290,7 +256,13 @@
 
         var html = '';
 
-        html += '<div class="card backdropCard" data-index="' + index + '">';
+        var style = "";
+
+        if ($($.mobile.activePage)[0].classList.contains('wizardPage')) {
+            style += "min-width:33.3%;";
+        }
+
+        html += '<div class="card backdropCard" style="' + style + '" data-index="' + index + '">';
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
@@ -307,9 +279,9 @@
         }
 
         if (imgUrl) {
-            html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            html += '<div class="cardImage editLibrary" style="cursor:pointer;background-image:url(\'' + imgUrl + '\');"></div>';
         } else if (!virtualFolder.showNameWithIcon) {
-            html += '<div class="cardImage iconCardImage">';
+            html += '<div class="cardImage editLibrary iconCardImage" style="cursor:pointer;">';
             html += '<div>';
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '"></iron-icon>';
             html += "</div>";

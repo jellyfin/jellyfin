@@ -2063,6 +2063,7 @@ var AppInfo = {};
             collectioneditor: 'components/collectioneditor/collectioneditor',
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
+            medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
             howler: 'bower_components/howler.js/howler.min',
             dragula: 'bower_components/dragula.js/dist/dragula.min'
         };

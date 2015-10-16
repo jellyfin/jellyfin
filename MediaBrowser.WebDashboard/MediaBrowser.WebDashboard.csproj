@@ -206,6 +206,12 @@
     <Content Include="dashboard-ui\components\medialibrarycreator\medialibrarycreator.template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\components\medialibraryeditor\medialibraryeditor.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\components\metadataeditor\metadataeditor.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
