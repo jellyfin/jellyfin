@@ -4,7 +4,7 @@
     <title>${TitleLiveTV}</title>
 </head>
 <body>
-    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus">
+    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,scripts/taskbutton">
 
         <div data-role="content">
             <div class="content-primary">
@@ -41,12 +41,18 @@
                             <p>${AddGuideProviderHelp}</p>
                             <div class="providerList">
                             </div>
+                            <div>
 
+                                <paper-button raised class="btnRefresh block"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefreshGuideData}</span></paper-button>
+                                <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
+                            </div>
                         </div>
                         <br />
-                        <h1>${HeaderTvTuners}</h1>
+                        <div class="tunerSection hide">
+                            <h1>${HeaderTvTuners}</h1>
 
-                        <div class="tunerList">
+                            <div class="tunerList">
+                            </div>
                         </div>
                     </div>
 

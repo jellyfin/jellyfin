@@ -375,7 +375,7 @@
                 items.push({
                     name: Globalize.translate('ButtonSync'),
                     id: 'sync',
-                    ironIcon: 'refresh'
+                    ironIcon: 'sync'
                 });
             }
 
@@ -1257,7 +1257,7 @@
             items.push({
                 name: Globalize.translate('ButtonSync'),
                 id: 'sync',
-                ironIcon: 'refresh'
+                ironIcon: 'sync'
             });
 
             require(['actionsheet'], function () {
