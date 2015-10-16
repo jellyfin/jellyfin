@@ -706,7 +706,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 isNew = true;
             }
-            
+
             item.ChannelId = _tvDtoService.GetInternalChannelId(serviceName, info.ChannelId).ToString("N");
             item.CommunityRating = info.CommunityRating;
             item.OfficialRating = info.OfficialRating;
@@ -750,6 +750,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 recording.DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo);
                 recording.DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo);
+                item.Path = info.Path;
             }
             else if (!string.IsNullOrEmpty(info.Url))
             {
@@ -757,16 +758,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Path = info.Url;
             }
 
+            var metadataRefreshMode = MetadataRefreshMode.Default;
+
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
             else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved || statusChanged)
             {
+                metadataRefreshMode = MetadataRefreshMode.FullRefresh;
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+            {
+                MetadataRefreshMode = metadataRefreshMode
+            });
 
             return item.Id;
         }
@@ -1614,7 +1621,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             catch (ResourceNotFoundException)
             {
-                
+
             }
 
             await _libraryManager.DeleteItem((BaseItem)recording).ConfigureAwait(false);
