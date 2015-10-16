@@ -190,43 +190,23 @@ namespace MediaBrowser.Common.Implementations.Security
         /// Register an app store sale with our back-end.  It will validate the transaction with the store
         /// and then register the proper feature and then fill in the supporter key on success.
         /// </summary>
-        /// <param name="store"></param>
-        /// <param name="application"></param>
-        /// <param name="product"></param>
-        /// <param name="feature"></param>
-        /// <param name="type"></param>
-        /// <param name="storeId"></param>
-        /// <param name="storeToken"></param>
-        /// <param name="email"></param>
-        /// <param name="amt"></param>
-        public async Task RegisterAppStoreSale(string store, string application, string product, string feature,
-            string type, string storeId, string storeToken, string email, string amt)
+        /// <param name="parameters">Json parameters to send to admin server</param>
+        public async Task RegisterAppStoreSale(string parameters)
         {
-            var data = new Dictionary<string, string>()
-                       {
-                           {"store", store},
-                           {"application", application},
-                           {"product", product},
-                           {"feature", feature},
-                           {"type", type},
-                           {"storeId", storeId},
-                           {"token", storeToken},
-                           {"email", email},
-                           {"amt", amt}
-                       };
-
             var options = new HttpRequestOptions()
             {
                 Url = AppstoreRegUrl,
                 CancellationToken = CancellationToken.None
             };
             options.RequestHeaders.Add("X-Emby-Token", /*_appHost.SystemId*/ "08606E86D043");
+            options.RequestContent = parameters;
+            options.RequestContentType = "application/json";
 
             try
             {
-                using (var json = await _httpClient.Post(options, data).ConfigureAwait(false))
+                using (var response = await _httpClient.Post(options).ConfigureAwait(false))
                 {
-                    var reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
+                    var reg = _jsonSerializer.DeserializeFromStream<RegRecord>(response.Content);
                     if (!String.IsNullOrEmpty(reg.key))
                     {
                         SupporterKey = reg.key;
@@ -236,7 +216,7 @@ namespace MediaBrowser.Common.Implementations.Security
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Error registering appstore purchase {0}", e, _jsonSerializer.SerializeToString(data));
+                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters);
                 //TODO - really need to write this to a file so we can re-try it automatically
                 throw new ApplicationException("Error registering store sale");
             }
