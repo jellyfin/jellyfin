@@ -14,7 +14,7 @@
             }
 
             if (lastSound == 0) {
-                playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/monsterparade.mp3', .1);
+                playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/monsterparadefade.mp3', .1);
             } else if ((new Date().getTime() - lastSound) > 30000) {
                 playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/howl.wav');
             }

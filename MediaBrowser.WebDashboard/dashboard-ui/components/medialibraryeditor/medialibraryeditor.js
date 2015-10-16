@@ -12,12 +12,13 @@
 
         ApiClient.addMediaPath(virtualFolder.Name, path, refreshAfterChange).done(function () {
 
+            hasChanges = true;
             refreshLibraryFromServer(page);
 
         }).fail(function () {
 
             Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
-        })
+        });
     }
 
     function onRemoveClick() {
@@ -37,6 +38,7 @@
 
                 ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).done(function () {
 
+                    hasChanges = true;
                     refreshLibraryFromServer($(button).parents('.editorContent')[0]);
 
                 }).fail(function () {
