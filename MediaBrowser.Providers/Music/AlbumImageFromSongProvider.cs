@@ -22,13 +22,15 @@ namespace MediaBrowser.Providers.Music
 
             var image = album.GetRecursiveChildren()
                 .OfType<Audio>()
-                .Select(i => i.GetImagePath(type))
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                .Select(i => i.GetImageInfo(type, 0))
+                .FirstOrDefault(i => i != null && i.IsLocalFile);
+
+            var imagePath = image == null ? null : image.Path;
 
             return Task.FromResult(new DynamicImageResponse
             {
-                Path = image,
-                HasImage = !string.IsNullOrEmpty(image)
+                Path = imagePath,
+                HasImage = !string.IsNullOrEmpty(imagePath)
             });
         }
 

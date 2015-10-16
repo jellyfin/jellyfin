@@ -534,5 +534,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="to">To.</param>
         /// <returns>System.String.</returns>
         string SubstitutePath(string path, string from, string to);
+
+        /// <summary>
+        /// Converts the image to local.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="image">The image.</param>
+        /// <param name="imageIndex">Index of the image.</param>
+        /// <returns>Task.</returns>
+        Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex);
     }
 }

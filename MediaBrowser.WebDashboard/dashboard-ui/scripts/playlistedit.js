@@ -171,9 +171,31 @@
 
     }
 
+    function showDragAndDropHelp() {
+
+        if ($.browser.mobile) {
+            // Not implemented for mobile yet
+            return;
+        }
+
+        var expectedValue = "7";
+        if (appStorage.getItem("playlistitemdragdrophelp") == expectedValue) {
+            return;
+        }
+
+        appStorage.setItem("playlistitemdragdrophelp", expectedValue);
+
+        Dashboard.alert({
+            message: Globalize.translate('TryDragAndDropMessage'),
+            title: Globalize.translate('HeaderTryDragAndDrop')
+        });
+    }
+
     window.PlaylistViewer = {
         render: function (page, item) {
+
             reloadItems(page, item);
+            showDragAndDropHelp();
         }
     };
 

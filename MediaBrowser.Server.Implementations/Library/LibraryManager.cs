@@ -2354,5 +2354,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return ItemRepository.UpdatePeople(item.Id, people);
         }
+
+        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1,1);
+        public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
+        {
+            _logger.Debug("ConvertImageToLocal item {0}", item.Id);
+
+            await _providerManagerFactory().SaveImage(item, image.Path, _dynamicImageResourcePool, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
+
+            await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+
+            return item.GetImageInfo(image.Type, imageIndex);
+        }
     }
 }

@@ -125,7 +125,22 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
         {
             return items
-                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
+                .Select(i =>
+                {
+                    var image = i.GetImageInfo(ImageType.Primary, 0);
+
+                    if (image != null && image.IsLocalFile)
+                    {
+                        return image.Path;
+                    }
+                    image = i.GetImageInfo(ImageType.Thumb, 0);
+
+                    if (image != null && image.IsLocalFile)
+                    {
+                        return image.Path;
+                    }
+                    return null;
+                })
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 

@@ -81,6 +81,12 @@
             html += '</div>';
         }
 
+        if (tuners.length) {
+            page.querySelector('.tunerSection').classList.remove('hide');
+        } else {
+            page.querySelector('.tunerSection').classList.add('hide');
+        }
+
         var elem = $('.tunerList', page).html(html);
 
         $('.btnResetTuner', elem).on('click', function () {
@@ -492,6 +498,22 @@
         var page = this;
 
         reload(page);
+
+        // on here
+        $('.btnRefresh', page).taskButton({
+            mode: 'on',
+            progressElem: page.querySelector('.refreshGuideProgress'),
+            taskKey: 'RefreshGuide'
+        });
+
+    }).on('pagehide', "#liveTvStatusPage", function () {
+
+        var page = this;
+
+        // off here
+        $('.btnRefreshGuide', page).taskButton({
+            mode: 'off'
+        });
 
     });
 

@@ -27,7 +27,9 @@
 
         var html = '';
 
-        html += '<div class="paperList">';
+        if (devices.length) {
+            html += '<div class="paperList">';
+        }
 
         html += devices.map(function (d) {
 
@@ -65,7 +67,9 @@
 
         }).join('');
 
-        html += '</div>';
+        if (devices.length) {
+            html += '</div>';
+        }
 
         var elem = $('.devicesList', page).html(html).trigger('create');
 
