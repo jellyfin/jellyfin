@@ -1032,8 +1032,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 5px;
     text-align: center;
     vertical-align: middle;
-    width: 26px;
-    height: 26px;
     border-radius: 50%;
     color: #fff;
     background: rgb(82, 181, 75);
@@ -1041,12 +1039,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 21px;
     line-height: initial;
     font-weight: 500;
+    padding: 5px;
 }
-
-    .playedIndicator .fa {
-        margin-top: 5px;
-        display: inline-block;
-    }
 
 .mediaSourceIndicator {
     display: block;
