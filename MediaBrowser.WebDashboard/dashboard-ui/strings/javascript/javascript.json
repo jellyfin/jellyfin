@@ -919,5 +919,7 @@
     "ButtonAddMediaLibrary": "Add Media Library",
     "ButtonManageFolders": "Manage folders",
     "HeaderTryDragAndDrop": "Try Drag and Drop",
-    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!"
+    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
+    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
+    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
 }

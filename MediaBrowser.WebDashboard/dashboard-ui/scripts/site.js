@@ -1967,15 +1967,15 @@ var AppInfo = {};
     function onDocumentReady() {
 
         if ($.browser.msie) {
-            Dashboard.importCss('css/ie.css');
+            require(['devices/ie/ie']);
         }
 
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp) {
             if ($.browser.android) {
-                Dashboard.importCss('themes/android.css');
+                Dashboard.importCss('devices/android.css');
             } else if ($.browser.safari) {
-                Dashboard.importCss('themes/ios.css');
+                Dashboard.importCss('devices/ios/ios.css');
             }
         } else {
             loadTheme();

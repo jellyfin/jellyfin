@@ -55,7 +55,10 @@
 
         html += '<paper-icon-item role="menuitem" class="lnkPath">';
 
-        html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
+        if (!$.browser.msie) {
+            // Not sure why, but this is causing the entire browser to hang
+            html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
+        }
 
         html += '<paper-item-body>';
         html += path;
