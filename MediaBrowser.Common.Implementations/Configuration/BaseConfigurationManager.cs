@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using CommonIO;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// Occurs when [configuration updating].
         /// </summary>
         public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdating;
-        
+
         /// <summary>
         /// Occurs when [named configuration updated].
         /// </summary>
@@ -89,8 +90,8 @@ namespace MediaBrowser.Common.Implementations.Configuration
             }
         }
 
-        private ConfigurationStore[] _configurationStores = {};
-        private IConfigurationFactory[] _configurationFactories = {};
+        private ConfigurationStore[] _configurationStores = { };
+        private IConfigurationFactory[] _configurationFactories = { };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
@@ -228,9 +229,15 @@ namespace MediaBrowser.Common.Implementations.Configuration
             {
                 var file = GetConfigurationFile(key);
 
-                var configurationType = _configurationStores
-                    .First(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase))
-                    .ConfigurationType;
+                var configurationInfo = _configurationStores
+                    .FirstOrDefault(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
+
+                if (configurationInfo == null)
+                {
+                    throw new ResourceNotFoundException("Configuration with key " + key + " not found.");
+                }
+
+                var configurationType = configurationInfo.ConfigurationType;
 
                 lock (_configurationSyncLock)
                 {
@@ -285,7 +292,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 NewConfiguration = configuration
 
             }, Logger);
-            
+
             _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
 
             var path = GetConfigurationFile(key);

@@ -8,7 +8,6 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -477,7 +476,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             progress.Report(15);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
             RegisterSingleInstance(ChannelManager);
 
             MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager);
@@ -524,8 +523,7 @@ namespace MediaBrowser.Server.Startup.Common
             await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
             progress.Report(90);
 
-            EncodingManager = new EncodingManager(FileSystemManager, Logger,
-                MediaEncoder, ChapterManager);
+            EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);

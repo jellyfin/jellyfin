@@ -465,6 +465,13 @@ namespace MediaBrowser.Providers.Manager
 
                 var url = image.Url;
 
+                if (EnableImageStub(item, type))
+                {
+                    SaveImageStub(item, type, url);
+                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    return true;
+                }
+
                 try
                 {
                     var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
@@ -488,6 +495,28 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
+        private bool EnableImageStub(IHasImages item, ImageType type)
+        {
+            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            {
+                return true;
+            }
+
+            return true;
+        }
+
+        private void SaveImageStub(IHasImages item, ImageType imageType, string url)
+        {
+            var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
+
+            item.SetImage(new ItemImageInfo
+            {
+                Path = url,
+                Type = imageType
+
+            }, newIndex);
+        }
+
         private async Task DownloadBackdrops(IHasImages item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
@@ -503,6 +532,13 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 var url = image.Url;
+
+                if (EnableImageStub(item, imageType))
+                {
+                    SaveImageStub(item, imageType, url);
+                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    return;
+                }
 
                 try
                 {

@@ -416,6 +416,8 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
+            RegisterModules();
+            
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>();
         }
@@ -481,7 +483,6 @@ namespace MediaBrowser.Common.Implementations
 			IsoManager = new IsoManager();
 			RegisterSingleInstance(IsoManager);
 
-			RegisterModules();
 			return Task.FromResult (true);
         }
 
@@ -524,6 +525,14 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (ReflectionTypeLoadException ex)
             {
+                if (ex.LoaderExceptions != null)
+                {
+                    foreach (var loaderException in ex.LoaderExceptions)
+                    {
+                        Logger.Error("LoaderException: " + loaderException.Message);
+                    }
+                }
+                
                 // If it fails we can still get a list of the Types it was able to resolve
                 return ex.Types.Where(t => t != null);
             }

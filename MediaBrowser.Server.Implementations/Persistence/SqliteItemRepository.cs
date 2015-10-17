@@ -225,19 +225,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var columns = string.Join(",", _mediaStreamSaveColumns);
 
             string[] queries = {
-                                "INSERT INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
+                                "REPLACE INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
                                };
 
             try
             {
                 _connection.RunQueries(queries, _logger);
+                File.Delete(file);
             }
             catch (Exception ex)
             {
-                throw ex;
+                _logger.ErrorException("Error migrating media info database", ex);
             }
-
-            File.Delete(file);
         }
 
         private void MigrateChapters(string file)
@@ -247,19 +246,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
             SqliteExtensions.Attach(_connection, backupFile, "ChaptersOld");
 
             string[] queries = {
-                                "INSERT INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
+                                "REPLACE INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
                                };
 
             try
             {
                 _connection.RunQueries(queries, _logger);
+                File.Delete(file);
             }
             catch (Exception ex)
             {
-                throw ex;
+                _logger.ErrorException("Error migrating chapter database", ex);
             }
-
-            File.Delete(file);
         }
 
         /// <summary>

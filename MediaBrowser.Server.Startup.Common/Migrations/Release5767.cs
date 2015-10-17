@@ -20,9 +20,9 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             _taskManager = taskManager;
         }
 
-        public void Run()
+        public async void Run()
         {
-            var name = "5767";
+            var name = "5767.1";
 
             if (_config.Configuration.Migrations.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
@@ -38,6 +38,9 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
             });
 
+            // Wait a few minutes before marking this as done. Make sure the server doesn't get restarted.
+            await Task.Delay(300000).ConfigureAwait(false);
+            
             var list = _config.Configuration.Migrations.ToList();
             list.Add(name);
             _config.Configuration.Migrations = list.ToArray();

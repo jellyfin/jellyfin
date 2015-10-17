@@ -42,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
+        private readonly IProviderManager _providerManager;
 
         private readonly ILocalizationManager _localization;
         private readonly ConcurrentDictionary<Guid, bool> _refreshedItems = new ConcurrentDictionary<Guid, bool>();
@@ -51,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         private Timer _refreshTimer;
         private Timer _clearDownloadCountsTimer;
 
-        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization, IHttpClient httpClient)
+        public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization, IHttpClient httpClient, IProviderManager providerManager)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -63,6 +64,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             _jsonSerializer = jsonSerializer;
             _localization = localization;
             _httpClient = httpClient;
+            _providerManager = providerManager;
 
             _refreshTimer = new Timer(s => _refreshedItems.Clear(), null, TimeSpan.FromHours(3), TimeSpan.FromHours(3));
             _clearDownloadCountsTimer = new Timer(s => _downloadCounts.Clear(), null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
@@ -649,7 +651,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             var internalItems = await Task.WhenAll(itemTasks).ConfigureAwait(false);
 
             internalItems = ApplyFilters(internalItems, query.Filters, user).ToArray();
-            await RefreshIfNeeded(internalItems, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            RefreshIfNeeded(internalItems);
 
             if (query.StartIndex.HasValue)
             {
@@ -814,7 +816,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var internalResult = await GetAllMediaInternal(query, cancellationToken).ConfigureAwait(false);
 
-            await RefreshIfNeeded(internalResult.Items, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+            RefreshIfNeeded(internalResult.Items);
 
             var dtoOptions = new DtoOptions();
 
@@ -954,7 +956,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 }
             }
 
-            return await GetReturnItems(internalItems, providerTotalRecordCount, user, query, progress, cancellationToken).ConfigureAwait(false);
+            return await GetReturnItems(internalItems, providerTotalRecordCount, user, query).ConfigureAwait(false);
         }
 
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(ChannelItemQuery query, CancellationToken cancellationToken)
@@ -1123,9 +1125,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         private async Task<QueryResult<BaseItem>> GetReturnItems(IEnumerable<BaseItem> items,
             int? totalCountFromProvider,
             User user,
-            ChannelItemQuery query,
-            IProgress<double> progress,
-            CancellationToken cancellationToken)
+            ChannelItemQuery query)
         {
             items = ApplyFilters(items, query.Filters, user);
 
@@ -1148,7 +1148,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             var returnItemArray = all.ToArray();
-            await RefreshIfNeeded(returnItemArray, progress, cancellationToken).ConfigureAwait(false);
+            RefreshIfNeeded(returnItemArray);
 
             return new QueryResult<BaseItem>
             {
@@ -1272,32 +1272,22 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
-        private async Task RefreshIfNeeded(BaseItem[] programs, IProgress<double> progress, CancellationToken cancellationToken)
+        private void RefreshIfNeeded(BaseItem[] programs)
         {
-            var numComplete = 0;
-            var numItems = programs.Length;
-
             foreach (var program in programs)
             {
-                await RefreshIfNeeded(program, cancellationToken).ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numItems;
-                progress.Report(percent * 100);
+                RefreshIfNeeded(program);
             }
         }
 
-        private readonly Task _cachedTask = Task.FromResult(true);
-        private Task RefreshIfNeeded(BaseItem program, CancellationToken cancellationToken)
+        private void RefreshIfNeeded(BaseItem program)
         {
             if (!_refreshedItems.ContainsKey(program.Id))
             {
                 _refreshedItems.TryAdd(program.Id, true);
-                return program.RefreshMetadata(cancellationToken);
+                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
             }
 
-            return _cachedTask;
         }
 
         internal IChannel GetChannelProvider(Channel channel)
