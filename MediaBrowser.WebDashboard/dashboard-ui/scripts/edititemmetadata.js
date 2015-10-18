@@ -23,7 +23,7 @@
 
             currentItem = item;
 
-            if (item.Type == "UserRootFolder") {
+            if (!LibraryBrowser.supportsEditing(item.Type)) {
                 $('.editPageInnerContent', page)[0].style.visibility = 'hidden';
                 Dashboard.hideLoadingMsg();
                 return;

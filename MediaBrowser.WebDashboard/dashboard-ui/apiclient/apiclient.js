@@ -2577,9 +2577,19 @@
 
             options.imageType = "thumb";
 
-            var itemId = item.ImageTags && item.ImageTags.Thumb ? item.Id : item.ParentThumbItemId;
+            if (item.ImageTags && item.ImageTags.Thumb) {
 
-            return itemId ? self.getImageUrl(itemId, options) : null;
+                options.tag = item.ImageTags.Thumb;
+                return self.getImageUrl(item.Id, options);
+            }
+            else if (item.ParentThumbItemId) {
+
+                options.tag = item.ImageTags.ParentThumbImageTag;
+                return self.getImageUrl(item.ParentThumbItemId, options);
+
+            } else {
+                return null;
+            }
         };
 
         /**

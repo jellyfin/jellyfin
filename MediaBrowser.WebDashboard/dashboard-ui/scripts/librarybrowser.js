@@ -680,6 +680,15 @@
             });
         },
 
+        supportsEditing: function (itemType) {
+
+            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
+                return false;
+            }
+
+            return true;
+        },
+
         getMoreCommands: function (item, user) {
 
             var commands = [];
@@ -701,7 +710,9 @@
 
             if (user.Policy.IsAdministrator) {
 
-                commands.push('edit');
+                if (LibraryBrowser.supportsEditing(item.Type)) {
+                    commands.push('edit');
+                }
 
                 if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
                     commands.push('editsubtitles');
@@ -1469,7 +1480,9 @@
             //    itemCommands.push('playmenu');
             //}
 
-            itemCommands.push('edit');
+            if (LibraryBrowser.supportsEditing(item.Type)) {
+                itemCommands.push('edit');
+            }
 
             if (item.LocalTrailerCount) {
                 itemCommands.push('trailer');
