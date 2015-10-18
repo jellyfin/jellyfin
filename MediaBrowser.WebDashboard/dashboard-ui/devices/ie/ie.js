@@ -6,14 +6,12 @@
 
         var page = this;
 
-        if (navigator.userAgent.toLowerCase().indexOf('Windows NT 10.') != -1) {
+        if (navigator.userAgent.toLowerCase().indexOf('windows nt 10.') != -1) {
 
-            var expectedValue = new Date().toDateString();
+            var expectedValue = new Date().toDateString() + "1";
             if (appStorage.getItem("ieswitchtoedge") == expectedValue) {
                 return;
             }
-
-            appStorage.setItem("ieswitchtoedge", expectedValue);
 
             var msg = Globalize.translate('MessageTryMicrosoftEdge');
 
@@ -24,6 +22,8 @@
                 message: msg,
                 title: Globalize.translate('HeaderTryMicrosoftEdge')
             });
+
+            appStorage.setItem("ieswitchtoedge", expectedValue);
         }
     }
 

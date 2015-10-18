@@ -55,6 +55,9 @@
         if ($.browser.msie) {
             return false;
         }
+        if ($.browser.edge) {
+            return false;
+        }
         return true;
     }
 

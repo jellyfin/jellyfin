@@ -4,7 +4,7 @@
         crossDomain: true
     });
 
-    if ($.browser.msie) {
+    if ($.browser.msie || $.browser.edge) {
 
         // This is unfortunately required due to IE's over-aggressive caching. 
         // https://github.com/MediaBrowser/MediaBrowser/issues/179
@@ -504,7 +504,7 @@ var Dashboard = {
         } else {
 
             // IE renders it incorrectly
-            if (!$.browser.msie) {
+            if (!$.browser.msie && !$.browser.edge) {
                 elem = document.createElement("paper-spinner");
                 elem.classList.add('docspinner');
 
@@ -2054,7 +2054,7 @@ var AppInfo = {};
 
         var urlArgs = "v=" + window.dashboardVersion;
 
-        if ($.browser.msie) {
+        if ($.browser.msie || $.browser.edge) {
             urlArgs += new Date().getTime();
         }
 

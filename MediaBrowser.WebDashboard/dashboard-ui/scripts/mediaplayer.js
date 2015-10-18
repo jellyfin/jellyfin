@@ -147,7 +147,7 @@
                 });
             }
 
-            if ($.browser.chrome) {
+            if ($.browser.chrome || $.browser.edge) {
                 profile.DirectPlayProfiles.push({
                     Container: 'mkv,mov',
                     Type: 'Video',
@@ -466,11 +466,11 @@
 
             profile.ResponseProfiles = [];
 
-            //profile.ResponseProfiles.push({
-            //    Type: 'Video',
-            //    Container: 'mkv',
-            //    MimeType: 'video/webm'
-            //});
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'mkv',
+                MimeType: 'video/mp4'
+            });
 
             profile.ResponseProfiles.push({
                 Type: 'Video',
