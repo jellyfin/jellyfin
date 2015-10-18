@@ -312,19 +312,22 @@ namespace MediaBrowser.Api.Images
         {
             try
             {
-                var fileInfo = new FileInfo(info.Path);
-
                 int? width = null;
                 int? height = null;
+                long length = 0;
 
                 try
                 {
                     if (info.IsLocalFile)
                     {
+                        var fileInfo = new FileInfo(info.Path);
+                        length = fileInfo.Length;
+
                         var size = _imageProcessor.GetImageSize(info);
 
                         width = Convert.ToInt32(size.Width);
                         height = Convert.ToInt32(size.Height);
+
                     }
                 }
                 catch
@@ -337,7 +340,7 @@ namespace MediaBrowser.Api.Images
                     ImageIndex = imageIndex,
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
-                    Size = fileInfo.Length,
+                    Size = length,
                     Width = width,
                     Height = height
                 };
