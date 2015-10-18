@@ -1622,6 +1622,8 @@ var Dashboard = {
                 name = "Opera";
             } else if ($.browser.mozilla) {
                 name = "Firefox";
+            } else if ($.browser.edge) {
+                name = "Edge";
             }
 
             if ($.browser.version) {

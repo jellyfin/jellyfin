@@ -125,7 +125,10 @@
             var isVlc = AppInfo.isNativeApp && $.browser.android;
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
-            var canPlayWebm = self.canPlayWebm();
+            var supportedFormats = getSupportedFormats();
+
+            var canPlayWebm = supportedFormats.indexOf('webm') != -1;
+            var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
 
             var profile = {};
 
@@ -135,28 +138,21 @@
 
             profile.DirectPlayProfiles = [];
 
-            if (canPlayH264()) {
+            if (supportedFormats.indexOf('h264') != -1) {
                 profile.DirectPlayProfiles.push({
                     Container: 'mp4,m4v',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3'
+                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
             if ($.browser.chrome) {
                 profile.DirectPlayProfiles.push({
-                    Container: 'mkv',
+                    Container: 'mkv,mov',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3'
-                });
-
-                profile.DirectPlayProfiles.push({
-                    Container: 'mov',
-                    Type: 'Video',
-                    VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3'
+                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
@@ -207,7 +203,7 @@
                 profile.TranscodingProfiles.push({
                     Container: 'ts',
                     Type: 'Video',
-                    AudioCodec: 'aac',
+                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
                     VideoCodec: 'h264',
                     Context: 'Streaming',
                     Protocol: 'hls'
@@ -1827,7 +1823,6 @@
         function canPlayH264() {
 
             var userAgent = navigator.userAgent.toLowerCase();
-
             if (userAgent.indexOf('firefox') != -1) {
                 if (userAgent.indexOf('windows') != -1) {
                     return true;
@@ -1838,14 +1833,35 @@
             return true;
         }
 
-        self._canPlayWebm = null;
-        self.canPlayWebm = function () {
+        var supportedFormats;
+        function getSupportedFormats() {
 
-            if (self._canPlayWebm == null) {
-                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+            if (supportedFormats) {
+                return supportedFormats;
             }
-            return self._canPlayWebm;
-        };
+
+            var list = [];
+            var elem = document.createElement('video');
+
+            if (elem.canPlayType('video/webm').replace(/no/, '')) {
+                list.push('webm');
+            }
+            if (elem.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '')) {
+                list.push('ac3');
+            }
+
+            var canPlayH264 = true;
+            var userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.indexOf('firefox') != -1 && userAgent.indexOf('windows') == -1) {
+                canPlayH264 = false;
+            }
+
+            if (canPlayH264) {
+                list.push('h264');
+            }
+            supportedFormats = list;
+            return list;
+        }
 
         self.canAutoPlayAudio = function () {
 

@@ -33,9 +33,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 await Task.Delay(3000).ConfigureAwait(false);
 
-                _taskManager.QueueScheduledTask<RefreshChannelsScheduledTask>();
                 _taskManager.QueueScheduledTask<CleanDatabaseScheduledTask>();
-                _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
             });
 
             // Wait a few minutes before marking this as done. Make sure the server doesn't get restarted.

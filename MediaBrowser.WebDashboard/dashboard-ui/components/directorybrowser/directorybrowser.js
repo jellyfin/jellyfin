@@ -64,12 +64,7 @@
 
             if (path) {
 
-                html += '<paper-item role="menuitem" class="lnkPath lnkDirectory" data-path="' + parentPath + '">';
-                html += '<paper-item-body>';
-                html += '...';
-                html += '</paper-item-body>';
-                html += '<iron-icon icon="arrow-forward"></iron-icon>';
-                html += '</paper-item>';
+                html += getItem("lnkPath lnkDirectory", parentPath, "Network", '...');
             }
 
             for (var i = 0, length = folders.length; i < length; i++) {
@@ -78,21 +73,11 @@
 
                 var cssClass = folder.Type == "File" ? "lnkPath lnkFile" : "lnkPath lnkDirectory";
 
-                html += '<paper-item role="menuitem" class="' + cssClass + '" data-type="' + folder.Type + '" data-path="' + folder.Path + '">';
-                html += '<paper-item-body>';
-                html += folder.Name;
-                html += '</paper-item-body>';
-                html += '<iron-icon icon="arrow-forward"></iron-icon>';
-                html += '</paper-item>';
+                html += getItem(cssClass, folder.Type, folder.Path, folder.Name);
             }
 
             if (!path) {
-                html += '<paper-item role="menuitem" class="lnkPath lnkDirectory" data-path="Network">';
-                html += '<paper-item-body>';
-                html += Globalize.translate('ButtonNetwork');
-                html += '</paper-item-body>';
-                html += '<iron-icon icon="arrow-forward"></iron-icon>';
-                html += '</paper-item>';
+                html += getItem("lnkPath lnkDirectory", "", "Network", Globalize.translate('ButtonNetwork'));
             }
 
             $('.results', page).html(html);
@@ -106,6 +91,19 @@
 
             Dashboard.hideLoadingMsg();
         });
+    }
+
+    function getItem(cssClass, type, path, name) {
+
+        var html = '';
+        html += '<paper-item role="menuitem" class="' + cssClass + '" data-type="' + type + '" data-path="' + path + '">';
+        html += '<paper-item-body>';
+        html += name;
+        html += '</paper-item-body>';
+        html += '<iron-icon icon="arrow-forward"></iron-icon>';
+        html += '</paper-item>';
+
+        return html;
     }
 
     function getEditorHtml(options, systemInfo) {

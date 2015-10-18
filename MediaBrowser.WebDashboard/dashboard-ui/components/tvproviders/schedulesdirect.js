@@ -166,7 +166,7 @@
                 }).fail(function () {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
-                        message: Globalize.translate('ErrorSavingTvProvider')
+                        message: Globalize.translate('ErrorAddingListingsToSchedulesDirect')
                     });
                 });
 

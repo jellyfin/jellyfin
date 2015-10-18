@@ -1723,6 +1723,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 refresh = (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
             }
 
+            if (!refresh && item.DisplayParentId != Guid.Empty)
+            {
+                var displayParent = GetItemById(item.DisplayParentId);
+                refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
+            }
+
             if (refresh)
             {
                 await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
@@ -1819,6 +1825,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
 
+            if (!refresh && item.DisplayParentId != Guid.Empty)
+            {
+                var displayParent = GetItemById(item.DisplayParentId);
+                refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
+            }
+
             if (refresh)
             {
                 _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
@@ -1887,6 +1899,12 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+
+            if (!refresh && item.DisplayParentId != Guid.Empty)
+            {
+                var displayParent = GetItemById(item.DisplayParentId);
+                refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
+            }
 
             if (refresh)
             {
@@ -1957,6 +1975,12 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+
+            if (!refresh && item.DisplayParentId != Guid.Empty)
+            {
+                var displayParent = GetItemById(item.DisplayParentId);
+                refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
+            }
 
             if (refresh)
             {
