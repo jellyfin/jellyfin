@@ -62,7 +62,7 @@ namespace MediaBrowser.Common.ScheduledTasks
                 }
                 else
                 {
-                    triggerDate = DateTime.UtcNow.AddSeconds(10);
+                    triggerDate = DateTime.UtcNow.AddMinutes(1);
                 }
             }
 
