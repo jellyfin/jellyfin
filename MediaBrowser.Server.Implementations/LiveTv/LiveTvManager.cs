@@ -1215,6 +1215,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (itemId == Guid.Empty)
+                {
+                    // Somehow some invalid data got into the db. It probably predates the boundary checking
+                    continue;
+                }
+
                 if (!currentIdList.Contains(itemId))
                 {
                     var item = _libraryManager.GetItemById(itemId);

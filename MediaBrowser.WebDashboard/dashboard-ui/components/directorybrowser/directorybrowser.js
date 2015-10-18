@@ -64,7 +64,7 @@
 
             if (path) {
 
-                html += getItem("lnkPath lnkDirectory", parentPath, "Network", '...');
+                html += getItem("lnkPath lnkDirectory", "", parentPath, '...');
             }
 
             for (var i = 0, length = folders.length; i < length; i++) {

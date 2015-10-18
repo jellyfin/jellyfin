@@ -13,6 +13,10 @@
         var type = $('#selectCollectionType', form).val();
         var path = $('#txtPath', form).val();
 
+        if (type == 'mixed') {
+            type = null;
+        }
+
         ApiClient.addVirtualFolder(name, type, currentOptions.refresh, path).done(function () {
 
             hasChanges = true;
