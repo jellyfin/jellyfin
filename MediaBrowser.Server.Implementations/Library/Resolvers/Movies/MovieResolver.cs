@@ -74,12 +74,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<MusicVideo>(parent, files, directoryService, collectionType, false);
+                return ResolveVideos<MusicVideo>(parent, files, directoryService, false);
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
+                return ResolveVideos<Video>(parent, files, directoryService, false);
             }
 
             if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 // Owned items should just use the plain video type
                 if (parent == null)
                 {
-                    return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
+                    return ResolveVideos<Video>(parent, files, directoryService, false);
                 }
 
                 if (parent is Series || parent.Parents.OfType<Series>().Any())
@@ -100,18 +100,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                return ResolveVideos<Movie>(parent, files, directoryService, collectionType, false);
+                return ResolveVideos<Movie>(parent, files, directoryService, false);
             }
 
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Movie>(parent, files, directoryService, collectionType, true);
+                return ResolveVideos<Movie>(parent, files, directoryService, true);
             }
 
             return null;
         }
 
-        private MultiItemResolverResult ResolveVideos<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool suppportMultiEditions)
+        private MultiItemResolverResult ResolveVideos<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, bool suppportMultiEditions)
             where T : Video, new()
         {
             var files = new List<FileSystemMetadata>();
@@ -396,7 +396,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                                     !string.Equals(collectionType, CollectionType.Photos) &&
                                     !string.Equals(collectionType, CollectionType.MusicVideos);
 
-            var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, collectionType, supportsMultiVersion);
+            var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion);
 
             if (result.Items.Count == 1)
             {
@@ -506,7 +506,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             var validCollectionTypes = new[]
             {
-                string.Empty,
                 CollectionType.Movies,
                 CollectionType.HomeVideos,
                 CollectionType.MusicVideos,
@@ -514,7 +513,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Photos
             };
 
-            return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(collectionType))
+            {
+                return false;
+            }
+
+            return !validCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

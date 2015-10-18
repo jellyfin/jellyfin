@@ -118,8 +118,18 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (query.SupportsLatestItems.HasValue)
             {
                 var val = query.SupportsLatestItems.Value;
-                channels = channels.Where(i => (GetChannelProvider(i) is ISupportsLatestMedia) == val)
-                    .ToList();
+                channels = channels.Where(i =>
+                {
+                    try
+                    {
+                        return (GetChannelProvider(i) is ISupportsLatestMedia) == val;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
+                }).ToList();
             }
             if (query.IsFavorite.HasValue)
             {
@@ -1292,7 +1302,14 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         internal IChannel GetChannelProvider(Channel channel)
         {
-            return GetAllChannels().First(i => string.Equals(i.Name.GetMD5().ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+            var result = GetAllChannels().FirstOrDefault(i => string.Equals(i.Name.GetMD5().ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (result == null)
+            {
+                throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
+            }
+
+            return result;
         }
 
         private IEnumerable<BaseItem> ApplyFilters(IEnumerable<BaseItem> items, IEnumerable<ItemFilter> filters, User user)
