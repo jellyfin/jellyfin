@@ -525,7 +525,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.IsTargetCabac,
                     streamInfo.TargetRefFrames,
                     streamInfo.TargetVideoStreamCount,
-                    streamInfo.TargetAudioStreamCount);
+                    streamInfo.TargetAudioStreamCount,
+                    streamInfo.TargetVideoCodecTag);
 
                 return list.FirstOrDefault();
             }

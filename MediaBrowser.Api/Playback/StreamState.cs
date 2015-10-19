@@ -457,6 +457,17 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !Request.Static
+                    ? null
+                    : stream == null ? null : stream.CodecTag;
+            }
+        }
+
         public bool? IsTargetAnamorphic
         {
             get

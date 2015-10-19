@@ -19,6 +19,12 @@ namespace MediaBrowser.Model.Entities
         public string Codec { get; set; }
 
         /// <summary>
+        /// Gets or sets the codec tag.
+        /// </summary>
+        /// <value>The codec tag.</value>
+        public string CodecTag { get; set; }
+        
+        /// <summary>
         /// Gets or sets the language.
         /// </summary>
         /// <value>The language.</value>

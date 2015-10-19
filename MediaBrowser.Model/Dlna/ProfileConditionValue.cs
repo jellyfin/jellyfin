@@ -20,6 +20,7 @@
         IsCabac = 15,
         NumAudioStreams = 16,
         NumVideoStreams = 17,
-        IsSecondaryAudio
+        IsSecondaryAudio = 18,
+        VideoCodecTag = 19
     }
 }
