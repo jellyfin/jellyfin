@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string PreferredMetadataCountryCode { get; set; }
         public string PreferredMetadataLanguage { get; set; }
-        
+
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The etag.</value>
         [IgnoreDataMember]
         public string ExternalEtag { get; set; }
-        
+
         [IgnoreDataMember]
         public virtual bool IsHidden
         {
@@ -373,7 +373,7 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public bool IsLocked { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the locked fields.
         /// </summary>
@@ -520,7 +520,7 @@ namespace MediaBrowser.Controller.Entities
             }
             set
             {
-                
+
             }
         }
 
@@ -674,7 +674,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(CustomRating))
+                if (!string.IsNullOrWhiteSpace(CustomRating))
                 {
                     return CustomRating;
                 }
@@ -717,7 +717,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
-				.SelectMany(i => directoryService.GetFiles(i.FullName))
+                .SelectMany(i => directoryService.GetFiles(i.FullName))
                 .ToList();
 
             // Support plex/xbmc convention
@@ -753,7 +753,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-				.SelectMany(i => directoryService.GetFiles(i.FullName));
+                .SelectMany(i => directoryService.GetFiles(i.FullName));
 
             return LibraryManager.ResolvePaths(files, directoryService, null)
                 .OfType<Video>()
@@ -1112,7 +1112,14 @@ namespace MediaBrowser.Controller.Entities
             // Could not determine the integer value
             if (!value.HasValue)
             {
-                return !GetBlockUnratedValue(user.Policy);
+                var isAllowed = !GetBlockUnratedValue(user.Policy);
+
+                if (!isAllowed)
+                {
+                    Logger.Debug("{0} has an unrecognized parental rating of {1}.", Name, rating);
+                }
+
+                return isAllowed;
             }
 
             return value.Value <= maxAllowedRating.Value;
@@ -1416,7 +1423,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-			ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem));
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem));
             return Task.FromResult(true);
         }
 
@@ -1656,7 +1663,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-					.Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
+                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
                     .ToList();
 
                 ImageInfos = ImageInfos.Except(deleted).ToList();

@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>IEnumerable{FileInfo}.</returns>
-        private IEnumerable<FileSystemMetadata> GetFilesToOrganize(string path)
+        private List<FileSystemMetadata> GetFilesToOrganize(string path)
         {
             try
             {

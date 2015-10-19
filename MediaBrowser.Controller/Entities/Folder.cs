@@ -207,7 +207,7 @@ namespace MediaBrowser.Controller.Entities
                     return base.OfficialRatingForComparison;
                 }
 
-                return !string.IsNullOrEmpty(base.OfficialRatingForComparison) ? base.OfficialRatingForComparison : "None";
+                return !string.IsNullOrWhiteSpace(base.OfficialRatingForComparison) ? base.OfficialRatingForComparison : "None";
             }
         }
 

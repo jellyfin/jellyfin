@@ -15,7 +15,7 @@
 
         var currentDate;
 
-        var defaultChannels = 50;
+        var defaultChannels = 100;
         var channelLimit = 1000;
 
         var channelQuery = {
@@ -75,7 +75,7 @@
                         return c.Id;
                     }).join(','),
                     ImageTypeLimit: 1,
-                    EnableImageTypes: "Primary",
+                    EnableImages: false,
                     SortBy: "StartDate"
 
                 }).done(function (programsResult) {
