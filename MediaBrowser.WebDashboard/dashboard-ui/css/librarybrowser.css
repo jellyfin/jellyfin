@@ -17,8 +17,8 @@
 }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background-color: #242424;
-    background: radial-gradient(circle, #282828, #141414);
+    background-color: #202020;
+    /*background: radial-gradient(circle, #282828, #141414);*/
 }
 
 .ui-body-b {
