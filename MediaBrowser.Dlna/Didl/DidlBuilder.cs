@@ -163,7 +163,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
-                streamInfo.TargetAudioStreamCount);
+                streamInfo.TargetAudioStreamCount,
+                streamInfo.TargetVideoCodecTag);
 
             foreach (var contentFeature in contentFeatureList)
             {
@@ -301,7 +302,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
-                streamInfo.TargetAudioStreamCount);
+                streamInfo.TargetAudioStreamCount,
+                streamInfo.TargetVideoCodecTag);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 

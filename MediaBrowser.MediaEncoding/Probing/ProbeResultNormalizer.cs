@@ -130,6 +130,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             var stream = new MediaStream
             {
                 Codec = streamInfo.codec_name,
+                CodecTag = streamInfo.codec_tag_string,
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index,

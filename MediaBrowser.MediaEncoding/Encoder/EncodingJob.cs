@@ -368,6 +368,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !Options.Static
+                    ? null
+                    : stream == null ? null : stream.CodecTag;
+            }
+        }
+
         public bool? IsTargetAnamorphic
         {
             get

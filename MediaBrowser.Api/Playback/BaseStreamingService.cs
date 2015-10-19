@@ -1993,7 +1993,8 @@ namespace MediaBrowser.Api.Playback
                 state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
-                state.TargetAudioStreamCount);
+                state.TargetAudioStreamCount,
+                state.TargetVideoCodecTag);
 
             if (mediaProfile != null)
             {
@@ -2090,7 +2091,8 @@ namespace MediaBrowser.Api.Playback
                     state.IsTargetCabac,
                     state.TargetRefFrames,
                     state.TargetVideoStreamCount,
-                    state.TargetAudioStreamCount
+                    state.TargetAudioStreamCount,
+                    state.TargetVideoCodecTag
 
                     ).FirstOrDefault() ?? string.Empty;
             }

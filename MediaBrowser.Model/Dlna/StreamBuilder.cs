@@ -571,6 +571,7 @@ namespace MediaBrowser.Model.Dlna
             float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
             bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
             bool? isCabac = videoStream == null ? null : videoStream.IsCabac;
+            string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
 
             int? audioBitrate = audioStream == null ? null : audioStream.BitRate;
             int? audioChannels = audioStream == null ? null : audioStream.Channels;
@@ -586,7 +587,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -619,7 +620,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
@@ -966,8 +967,6 @@ namespace MediaBrowser.Model.Dlna
                             }
                             break;
                         }
-                    default:
-                        throw new ArgumentException("Unrecognized ProfileConditionValue");
                 }
             }
         }

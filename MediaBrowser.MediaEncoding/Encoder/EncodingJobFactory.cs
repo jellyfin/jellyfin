@@ -750,7 +750,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
-                state.TargetAudioStreamCount);
+                state.TargetAudioStreamCount,
+                state.TargetVideoCodecTag);
 
             if (mediaProfile != null)
             {
