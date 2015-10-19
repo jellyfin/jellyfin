@@ -738,7 +738,7 @@
     "MessageForgotPasswordFileCreated": "Il seguente file \u00e8 stato creato sul server e contiene le istruzioni su come procedere:",
     "MessageForgotPasswordFileExpiration": "Il pin scadr\u00e0 {0}.",
     "MessageInvalidForgotPasswordPin": "Un pin Invalido o scaduto \u00e8 stato inserito. Riprova.",
-    "MessagePasswordResetForUsers": "Le password per i seguenti utenti sono state rimosse:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users. To login, sign in with a blank password.",
     "HeaderInviteGuest": "Invita Ospite",
     "ButtonLinkMyEmbyAccount": "Collega il mio account ora",
     "MessageConnectAccountRequiredToInviteGuest": "Per invitare gli amici \u00e8 necessario innanzitutto collegare l'account Emby a questo server.",
@@ -907,5 +907,9 @@
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Add Media Library",
-    "ButtonManageFolders": "Manage folders"
+    "ButtonManageFolders": "Manage folders",
+    "HeaderTryDragAndDrop": "Try Drag and Drop",
+    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
+    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
+    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
 }

@@ -907,5 +907,9 @@
     "TryMultiSelectMessage": "Pour modifier plusieurs \u00e9l\u00e9ments m\u00e9dias, il suffit de cliquer et maintenir le clique sur n'importe quel poster et de s\u00e9lectionner les \u00e9lements que vous voulez g\u00e9rer. Essayer le !",
     "NumLocationsValue": "{0} dossiers",
     "ButtonAddMediaLibrary": "Ajouter une biblioth\u00e8que de m\u00e9dia",
-    "ButtonManageFolders": "Manage folders"
+    "ButtonManageFolders": "G\u00e9rer les dossiers",
+    "HeaderTryDragAndDrop": "Essayer le glisser-d\u00e9poser",
+    "TryDragAndDropMessage": "Pour r\u00e9organiser les \u00e9l\u00e9ments de la playlist, faite juste un glisser \/ d\u00e9poser. Essayez le !",
+    "HeaderTryMicrosoftEdge": "Essayer Microsoft Edge",
+    "MessageTryMicrosoftEdge": "Pour une meilleure exp\u00e9rience sur Windows 10, essayer le nouvel explorateur Microsoft Edge."
 }

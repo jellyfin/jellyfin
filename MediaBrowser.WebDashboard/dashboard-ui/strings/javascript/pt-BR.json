@@ -738,7 +738,7 @@
     "MessageForgotPasswordFileCreated": "O seguinte arquivo foi criado no seu servidor e cont\u00e9m instru\u00e7\u00f5es de como proceder:",
     "MessageForgotPasswordFileExpiration": "O c\u00f3digo para redefini\u00e7\u00e3o expirar\u00e1 \u00e0s {0}.",
     "MessageInvalidForgotPasswordPin": "Foi digitado um c\u00f3digo inv\u00e1lido ou expirado. Por favor, tente novamente.",
-    "MessagePasswordResetForUsers": "Foram removidas as senhas dos seguintes usu\u00e1rios:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users. To login, sign in with a blank password.",
     "HeaderInviteGuest": "Convidar Usu\u00e1rio",
     "ButtonLinkMyEmbyAccount": "Associar minha conta agora",
     "MessageConnectAccountRequiredToInviteGuest": "Para convidar pessoas voc\u00ea precisa primeiro associar sua conta do Emby a este servidor.",
@@ -907,5 +907,9 @@
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Add Media Library",
-    "ButtonManageFolders": "Manage folders"
+    "ButtonManageFolders": "Manage folders",
+    "HeaderTryDragAndDrop": "Try Drag and Drop",
+    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
+    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
+    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
 }

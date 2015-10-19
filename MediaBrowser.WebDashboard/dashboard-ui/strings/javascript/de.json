@@ -517,7 +517,7 @@
     "MessageTheFollowingLocationWillBeRemovedFromLibrary": "Die folgenden Medienverzeichnisse werden aus deiner Bibliothek entfernt:",
     "MessageAreYouSureYouWishToRemoveMediaFolder": "Bist du dir sicher dieses Medienverzeichnis entfernen zu wollen?",
     "ButtonRename": "Umbenennen",
-    "ButtonChangeContentType": "Change content type",
+    "ButtonChangeContentType": "\u00c4ndere Inhalte-Typ",
     "HeaderMediaLocations": "Medienquellen",
     "LabelContentTypeValue": "Inhalte Typ: {0}",
     "LabelPathSubstitutionHelp": "Optional: Die Pfadersetzung kann Serverpfade zu Netzwerkfreigaben umleiten, die von Endger\u00e4ten f\u00fcr die direkte Wiedergabe genutzt werden k\u00f6nnen.",
@@ -738,7 +738,7 @@
     "MessageForgotPasswordFileCreated": "Die folgende Datei wurde auf deinem Server erstellt und enth\u00e4lt eine Anleitung, wie fortgefahren werden muss:",
     "MessageForgotPasswordFileExpiration": "Der Zur\u00fccksetzungs-PIN wird am {0} auslaufen.",
     "MessageInvalidForgotPasswordPin": "Ein ung\u00fcltiger oder abgelaufener PIN wurde eingegeben. Bitte versuche es noch einmal.",
-    "MessagePasswordResetForUsers": "Passw\u00f6rter der folgenden Benutzer wurden entfernt:",
+    "MessagePasswordResetForUsers": "Passw\u00f6rter wurden f\u00fcr die folgenden Benutzer entfernt. Zur Anmeldung verwenden Sie kein Passwort.",
     "HeaderInviteGuest": "Lade G\u00e4ste ein",
     "ButtonLinkMyEmbyAccount": "Verbinde mein Konto jetzt",
     "MessageConnectAccountRequiredToInviteGuest": "Um G\u00e4ste einladen zu k\u00f6nnen, m\u00fcssen Sie erst Ihr Emby Konto mit diesem Server verbinden.",
@@ -905,7 +905,11 @@
     "TermsOfUse": "Nutzungsbedingungen",
     "HeaderTryMultiSelect": "Versuche Mehrfachauswahl",
     "TryMultiSelectMessage": "F\u00fcr eine Mehrfachauswahl klicken und halten Sie ein Poster. W\u00e4hlen Sie die Eintr\u00e4ge die Sie bearbeiten m\u00f6chten. Versuchen SIe es!",
-    "NumLocationsValue": "{0} folders",
-    "ButtonAddMediaLibrary": "Add Media Library",
-    "ButtonManageFolders": "Manage folders"
+    "NumLocationsValue": "{0} Verzeichnisse",
+    "ButtonAddMediaLibrary": "F\u00fcge Medienbibliothek hinzu",
+    "ButtonManageFolders": "Bearbeite Verzeichnisse",
+    "HeaderTryDragAndDrop": "Versuchen Sie Drag and Drop.",
+    "TryDragAndDropMessage": "Um Titel in der Playlist neu zu arrangieren, verwenden Sie einfach Drag an Drop. Versuchen Sie es!",
+    "HeaderTryMicrosoftEdge": "Versuche Microsoft Edge",
+    "MessageTryMicrosoftEdge": "F\u00fcr ein besseres Erlebnis mit Windows 10, probieren Sie den neuen Microsoft Edge Browser."
 }

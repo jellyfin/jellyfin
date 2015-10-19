@@ -1520,10 +1520,10 @@
     "ButtonSignOut": "Cerrar Sesi\u00f3n",
     "HeaderCameraUpload": "Subir desde la C\u00e1mara",
     "SelectCameraUploadServers": "Subir fotograf\u00edas desde la c\u00e1mara hacia el siguiente servidor:",
-    "ButtonClear": "Clear",
-    "ButtonEditImages": "Edit Images",
-    "LabelFolder": "Folder:",
-    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
-    "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "ButtonClear": "Limpiar",
+    "ButtonEditImages": "Editar Im\u00e1genes",
+    "LabelFolder": "Carpeta:",
+    "LabelAdditionalFoldersCanBeAddedHelp": "Se pueden agregar carpetas adicionales a esta biblioteca despu\u00e9s de configurarla.",
+    "HeadersFolders": "Carpetas",
+    "LabelDisplayName": "Nombre a Desplegar:"
 }

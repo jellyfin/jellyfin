@@ -907,5 +907,9 @@
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Add Media Library",
-    "ButtonManageFolders": "Manage folders"
+    "ButtonManageFolders": "Manage folders",
+    "HeaderTryDragAndDrop": "Try Drag and Drop",
+    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
+    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
+    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
 }

@@ -738,7 +738,7 @@
     "MessageForgotPasswordFileCreated": "Den f\u00f8lgende fil er blevet oprettet p\u00e5 din server og indeholder instruktioner vedr\u00f8rende hvordan du skal forts\u00e6tte:",
     "MessageForgotPasswordFileExpiration": "Nulstillings pinkoden udl\u00f8ber {0}.",
     "MessageInvalidForgotPasswordPin": "En ugyldig eller udl\u00f8bet pinkode blev indtastet. Pr\u00f8v igen.",
-    "MessagePasswordResetForUsers": "Adgangskoder er blevet fjernet fra f\u00f8lgende brugere:",
+    "MessagePasswordResetForUsers": "Passwords have been removed for the following users. To login, sign in with a blank password.",
     "HeaderInviteGuest": "Inviter g\u00e6st",
     "ButtonLinkMyEmbyAccount": "Link min konto nu",
     "MessageConnectAccountRequiredToInviteGuest": "For at invitere g\u00e6ster skal du f\u00f8rst k\u00e6de din Emby konto til denne server.",
@@ -907,5 +907,9 @@
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Add Media Library",
-    "ButtonManageFolders": "Manage folders"
+    "ButtonManageFolders": "Manage folders",
+    "HeaderTryDragAndDrop": "Try Drag and Drop",
+    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
+    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
+    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
 }

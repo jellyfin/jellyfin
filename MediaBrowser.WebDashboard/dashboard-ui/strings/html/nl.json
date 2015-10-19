@@ -1520,10 +1520,10 @@
     "ButtonSignOut": "Afmelden",
     "HeaderCameraUpload": "Camera Upload",
     "SelectCameraUploadServers": "Upload camera foto's naar de volgende servers:",
-    "ButtonClear": "Clear",
-    "ButtonEditImages": "Edit Images",
-    "LabelFolder": "Folder:",
-    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
-    "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "ButtonClear": "Wis",
+    "ButtonEditImages": "Bewerk afbeeldingen",
+    "LabelFolder": "Map:",
+    "LabelAdditionalFoldersCanBeAddedHelp": "Extra mappen kunnen ook later toegevoegd worden.",
+    "HeadersFolders": "Mappen",
+    "LabelDisplayName": "Weergave naam:"
 }
