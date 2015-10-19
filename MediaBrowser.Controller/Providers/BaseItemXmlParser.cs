@@ -61,7 +61,16 @@ namespace MediaBrowser.Controller.Providers
             };
 
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
-            Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
+
+            try
+            {
+                Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
+            }
+            catch
+            {
+                Logger.Error("Error parsing xml file {0}", metadataFile);
+                throw;
+            }
         }
 
         /// <summary>
