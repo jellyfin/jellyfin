@@ -83,8 +83,16 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (config.EnableIntrosFromMoviesInLibrary)
             {
-                var itemsWithTrailers = user.RootFolder
-                    .GetRecursiveChildren(user, i =>
+                var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(Movie).Name },
+
+                    User = user
+
+                }).Items;
+
+                var itemsWithTrailers = inputItems
+                    .Where(i =>
                     {
                         var hasTrailers = i as IHasTrailers;
 

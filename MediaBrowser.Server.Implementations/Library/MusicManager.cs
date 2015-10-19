@@ -78,10 +78,19 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<Audio> GetInstantMixFromGenres(IEnumerable<string> genres, User user)
         {
-            var inputItems = user.RootFolder
-                .GetRecursiveChildren(user, i => i is Audio);
+            var genreList = genres.ToList();
 
-            var genresDictionary = genres.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
+            var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Audio).Name },
+
+                Genres = genreList.ToArray(),
+
+                User = user
+
+            }).Items;
+
+            var genresDictionary = genreList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             return inputItems
                 .Cast<Audio>()
@@ -131,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return GetInstantMixFromFolder(folder, user);
             }
-            
+
             return new Audio[] { };
         }
     }

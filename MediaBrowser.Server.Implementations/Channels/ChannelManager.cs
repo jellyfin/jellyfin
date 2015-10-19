@@ -140,8 +140,23 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (user != null)
             {
-                channels = channels.Where(i => GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N")) && i.IsVisible(user))
-                    .ToList();
+                channels = channels.Where(i =>
+                {
+                    if (!i.IsVisible(user))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        return GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N"));
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+
+                }).ToList();
             }
 
             var all = channels;

@@ -128,7 +128,8 @@
         ApiClient.downloadRemoteImage(options).done(function () {
 
             hasChanges = true;
-            history.back();
+            var dlg = $(page).parents('paper-dialog')[0];
+            PaperDialogHelper.close(dlg);
         });
     }
 
