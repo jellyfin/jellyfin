@@ -1019,7 +1019,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var folder = (Folder)child;
 
-                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None, options, true).ConfigureAwait(false);
                 }
             }
         }
