@@ -108,7 +108,7 @@
             });
 
             // Seeing an issue in some non-chrome browsers where this is requiring a double click
-            var eventName = $.browser.chrome ? 'click' : 'mousedown';
+            var eventName = $.browser.chrome || $.browser.safari ? 'click' : 'mousedown';
 
             $('.actionSheetMenuItem', dlg).on(eventName, function () {
 
