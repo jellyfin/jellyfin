@@ -405,10 +405,13 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     var existing = item.GetImageInfo(type, 0);
-                    if (existing != null && !_fileSystem.FileExists(existing.Path))
+                    if (existing != null)
                     {
-                        item.RemoveImage(existing);
-                        changed = true;
+                        if (existing.IsLocalFile && !_fileSystem.FileExists(existing.Path))
+                        {
+                            item.RemoveImage(existing);
+                            changed = true;
+                        }
                     }
                 }
             }
@@ -502,7 +505,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            return true;
+            return false;
         }
 
         private void SaveImageStub(IHasImages item, ImageType imageType, string url)

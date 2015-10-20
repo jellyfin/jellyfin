@@ -1019,22 +1019,23 @@
             hammertime.on('press', onTapHold);
             hammertime.on('pressup', onTapHoldUp);
         });
-        showTapHoldHelp();
+        showTapHoldHelp(element);
     }
 
-    function showTapHoldHelp() {
+    function showTapHoldHelp(element) {
 
-        if (!$.mobile.activePage) {
+        var page = $(element).parents('.page')[0];
+
+        if (!page) {
             return;
         }
 
-        var page = $($.mobile.activePage)[0];
         // Don't do this on the home page
         if (page.classList.contains('homePage') || page.classList.contains('itemDetailPage')) {
             return;
         }
 
-        var expectedValue = "6";
+        var expectedValue = "7";
         if (appStorage.getItem("tapholdhelp") == expectedValue) {
             return;
         }
