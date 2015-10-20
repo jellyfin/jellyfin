@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.IO;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Entities;
@@ -217,7 +218,9 @@ namespace MediaBrowser.Common.Implementations.Security
             catch (Exception e)
             {
                 _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
-                //TODO - really need to write this to a file so we can re-try it automatically
+                //Save all transaction information to a file
+                File.WriteAllText(Path.Combine(_appPaths.ProgramDataPath, "apptrans-error.txt"), parameters);
+                //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
                 throw new ApplicationException("Error registering store sale");
             }
 
