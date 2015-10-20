@@ -715,7 +715,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Audio.Audio}.</returns>
         private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => directoryService.GetFiles(i.FullName))
                 .ToList();
@@ -751,7 +751,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{Video}.</returns>
         private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => directoryService.GetFiles(i.FullName));
 
