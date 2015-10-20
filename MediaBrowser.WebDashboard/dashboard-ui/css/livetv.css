@@ -98,7 +98,7 @@
 .programAccent {
     position: absolute;
     bottom: 0;
-    left: 6px;
+    left: 0;
     right: 0;
     height: 2px;
 }
@@ -267,13 +267,9 @@
     position: absolute;
     top: 0;
     bottom: 6px;
-}
-
-.programCellInner {
     border-left: 6px solid #161616;
     background-color: #212121;
     display: block;
-    height: 100%;
     color: #fff !important;
     text-decoration: none;
     font-weight: 400 !important;

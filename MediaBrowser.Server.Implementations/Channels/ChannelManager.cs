@@ -433,6 +433,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             var item = _libraryManager.GetItemById(id) as Channel;
+            var channelId = channelInfo.Name.GetMD5().ToString("N");
 
             if (item == null)
             {
@@ -443,13 +444,12 @@ namespace MediaBrowser.Server.Implementations.Channels
                     DateCreated = _fileSystem.GetCreationTimeUtc(path),
                     DateModified = _fileSystem.GetLastWriteTimeUtc(path),
                     Path = path,
-                    ChannelId = channelInfo.Name.GetMD5().ToString("N")
+                    ChannelId = channelId
                 };
 
                 isNew = true;
             }
 
-            var channelId = channelInfo.Name.GetMD5().ToString("N");
             if (!string.Equals(item.ChannelId, channelId, StringComparison.OrdinalIgnoreCase))
             {
                 isNew = true;
@@ -459,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             item.Overview = channelInfo.Description;
             item.HomePageUrl = channelInfo.HomePageUrl;
 
-            if (string.IsNullOrEmpty(item.Name))
+            if (string.IsNullOrWhiteSpace(item.Name))
             {
                 item.Name = channelInfo.Name;
             }
@@ -497,9 +497,14 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
         {
-            return GetAllChannels()
-                .Select(GetChannelEntity)
-                .OrderBy(i => i.SortName)
+            var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Channel).Name },
+                SortBy = new[] { ItemSortBy.SortName }
+
+            }).Items;
+
+            return inputItems
                 .Select(i => GetChannelFeatures(i.Id.ToString("N")));
         }
 
