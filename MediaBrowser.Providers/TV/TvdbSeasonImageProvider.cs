@@ -66,24 +66,30 @@ namespace MediaBrowser.Providers.TV
             var season = (Season)item;
             var series = season.Series;
 
-            var identity = TvdbSeasonIdentityProvider.ParseIdentity(season.GetProviderId(TvdbSeasonIdentityProvider.FullIdKey));
-            if (identity == null && series != null && season.IndexNumber.HasValue)
+            if (series != null && season.IndexNumber.HasValue && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                identity = new TvdbSeasonIdentity(series.GetProviderId(MetadataProviders.Tvdb), season.IndexNumber.Value);
-            }
+                var seriesProviderIds = series.ProviderIds;
+                var seasonNumber = season.IndexNumber.Value;
 
-            if (identity != null && series != null)
-            {
-                var id = identity.Value;
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(id.SeriesId, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+                var identity = TvdbSeasonIdentityProvider.ParseIdentity(season.GetProviderId(TvdbSeasonIdentityProvider.FullIdKey));
+                if (identity == null)
+                {
+                    identity = new TvdbSeasonIdentity(series.GetProviderId(MetadataProviders.Tvdb), seasonNumber);
+                }
 
-                // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, id.SeriesId);
+                if (identity != null)
+                {
+                    var id = identity.Value;
+                    seasonNumber = AdjustForSeriesOffset(series, id.Index);
+
+                    seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    seriesProviderIds[MetadataProviders.Tvdb.ToString()] = id.SeriesId;
+                }
+
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 
-                var seasonNumber = AdjustForSeriesOffset(series, id.Index);
-                
                 try
                 {
                     return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
