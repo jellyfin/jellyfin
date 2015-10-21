@@ -47,6 +47,8 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
+            var seriesProviderIds = searchInfo.SeriesProviderIds;
+
             var list = new List<RemoteSearchResult>();
 
             var identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
@@ -59,14 +61,17 @@ namespace MediaBrowser.Providers.TV
 
             if (identity != null)
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(identity.Value.SeriesId, searchInfo.MetadataLanguage,
-                        cancellationToken).ConfigureAwait(false);
+                seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                seriesProviderIds[MetadataProviders.Tvdb.ToString()] = identity.Value.SeriesId;
+            }
 
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.Value.SeriesId);
+            if (TvdbSeriesProvider.IsValidSeries(seriesProviderIds))
+            {
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    var metadataResult = FetchEpisodeData(searchInfo, identity.Value, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    var metadataResult = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
 
                     if (metadataResult.HasMetadata)
                     {
@@ -247,11 +252,11 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, Identity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, Identity? identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
-            var episodeNumber = identity.EpisodeNumber;
+            var episodeNumber = identity.HasValue ? (identity.Value.EpisodeNumber) : id.IndexNumber.Value;
             var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
-            var seasonNumber = identity.SeasonIndex + seasonOffset;
+            var seasonNumber = identity.HasValue ? (identity.Value.SeasonIndex + seasonOffset) : id.ParentIndexNumber;
             
             string file;
             var usingAbsoluteData = false;
@@ -294,7 +299,7 @@ namespace MediaBrowser.Providers.TV
                 usingAbsoluteData = true;
             }
 
-            var end = identity.EpisodeNumberEnd ?? episodeNumber;
+            var end = identity.HasValue ? (identity.Value.EpisodeNumberEnd ?? episodeNumber) : (id.IndexNumberEnd ?? episodeNumber);
             episodeNumber++;
 
             while (episodeNumber <= end)

@@ -62,23 +62,17 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
-            var series = (Series)item;
-            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!string.IsNullOrEmpty(seriesId))
+            if (TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
             {
                 var language = item.GetPreferredMetadataLanguage();
 
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, language, cancellationToken).ConfigureAwait(false);
-
-                // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(item.ProviderIds, language, cancellationToken).ConfigureAwait(false);
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 
                 try
                 {
-                    var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
+                    var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(item.ProviderIds);
                     if (seriesOffset != null && seriesOffset.Value != 0)
                         return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, cancellationToken);
                     

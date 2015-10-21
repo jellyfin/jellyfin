@@ -607,7 +607,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException("timer");
             }
 
+            if (string.IsNullOrWhiteSpace(timer.ProgramId))
+            {
+                throw new InvalidOperationException("timer.ProgramId is null. Cannot record.");
+            }
+
             var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
+
+            if (info == null)
+            {
+                throw new InvalidOperationException(string.Format("Program with Id {0} not found", timer.ProgramId));
+            }
 
             var recordPath = RecordingPath;
 
