@@ -140,7 +140,7 @@
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" class="mini btnCloseDialog"></paper-fab>';
+            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderUploadImage') + '</div>';
             html += '</h2>';
 

@@ -334,6 +334,9 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
 
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "hammerjs", "hammer.min.js"), Path.Combine(path, "bower_components", "hammerjs", "hammer.min.js"));
+
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "dragula.js", "dist", "dragula.min.js"), Path.Combine(path, "bower_components", "dragula.js", "dist", "dragula.min.js"));
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "dragula.js", "dist", "dragula.min.css"), Path.Combine(path, "bower_components", "dragula.js", "dist", "dragula.min.css"));
             }
             
             MinifyCssDirectory(Path.Combine(path, "css"));
