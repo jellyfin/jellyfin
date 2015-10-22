@@ -82,16 +82,23 @@
                 listItems.push(elems[i]);
             }
 
-            Dashboard.loadDragula(function (dragula) {
+            var listParent = elem.querySelector('.paperList');
 
-                dragula([elem.querySelector('.paperList')], {
-                    direction: 'vertical',
-                    revertOnSpill: true
-                }).on('drop', function (el, target, source, sibling) {
-                    onDrop(el, target, source, sibling, page, item);
+            if (!AppInfo.isTouchPreferred) {
+                require(['sortable'], function (Sortable) {
+
+                    var sortable = new Sortable(listParent, {
+
+                        draggable: ".listItem",
+
+                        // dragging ended
+                        onEnd: function (/**Event*/evt) {
+
+                            onDrop(evt, page, item);
+                        }
+                    });
                 });
-
-            });
+            }
 
             ImageLoader.lazyChildren(elem);
 
@@ -118,20 +125,11 @@
         });
     }
 
-    function onDrop(el, target, source, sibling, page, item) {
+    function onDrop(evt, page, item) {
 
-        var parent = $(el).parents('.paperList')[0];
-        var newIndex;
+        var el = evt.item;
 
-        if (sibling) {
-
-            newIndex = parseInt(sibling.getAttribute('data-index'));
-
-        } else {
-
-            // dropped at the end
-            newIndex = parent.querySelectorAll('paper-icon-item').length;
-        }
+        var newIndex = evt.newIndex;
 
         var itemId = el.getAttribute('data-playlistitemid');
 
@@ -173,7 +171,7 @@
 
     function showDragAndDropHelp() {
 
-        if ($.browser.mobile) {
+        if (AppInfo.isTouchPreferred) {
             // Not implemented for mobile yet
             return;
         }

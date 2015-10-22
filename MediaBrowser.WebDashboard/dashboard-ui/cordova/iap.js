@@ -69,25 +69,24 @@
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
-        HttpClient.send({
+        ApiClient.ajax({
+
             type: "POST",
-            url: "https://mb3admin.com/test/admin/service/appstore/register",
+            url: ApiClient.getUrl("Appstore/Register"),
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             data: {
-                store: "Apple",
-                application: "com.emby.mobile",
-                product: productId,
-                type: "Subscription",
-                feature: "MBSClubMonthly",
-                email: enteredEmail,
-                token: receipt,
-                amt: price,
-                storeId: transactionId
-            },
-            headers: {
-                "X-Emby-Token": "08606E86D043"
+                Parameters: JSON.stringify({
+                    store: "Apple",
+                    application: "com.emby.mobile",
+                    product: productId,
+                    type: "Subscription",
+                    feature: "MBSClubMonthly",
+                    email: enteredEmail,
+                    storeToken: receipt,
+                    amt: price,
+                    storeId: transactionId
+                })
             }
-
         }).done(function () {
 
             callback(true, product);

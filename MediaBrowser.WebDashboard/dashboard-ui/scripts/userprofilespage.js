@@ -285,7 +285,7 @@
         html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
         html += "</div>";
 
-        html += '<div class="cardText" style="margin-right: 30px; padding: 11px 0 10px;">';
+        html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
         html += user.UserName;
         html += "</div>";
 

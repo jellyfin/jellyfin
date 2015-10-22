@@ -1,0 +1,24 @@
+{
+	"strict": true,
+	"newcap": false,
+	"node": true,
+	"expr": true,
+	"supernew": true,
+	"laxbreak": true,
+	"white": true,
+	"globals": {
+		"define": true,
+		"test": true,
+		"expect": true,
+		"module": true,
+		"asyncTest": true,
+		"start": true,
+		"ok": true,
+		"equal": true,
+		"notEqual": true,
+		"deepEqual": true,
+		"window": true,
+		"document": true,
+		"performance": true
+	}
+}

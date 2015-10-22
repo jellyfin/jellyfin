@@ -2067,7 +2067,7 @@ var AppInfo = {};
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
             howler: 'bower_components/howler.js/howler.min',
-            dragula: 'bower_components/dragula.js/dist/dragula.min'
+            sortable: 'bower_components/Sortable/Sortable.min'
         };
 
         if (Dashboard.isRunningInCordova()) {
