@@ -849,10 +849,6 @@
             return;
         }
 
-        function onBodyMouseMove() {
-            idleHandler();
-        }
-
         function onFullScreenChange() {
             if (self.isFullScreen()) {
                 enterFullScreen();
@@ -863,6 +859,18 @@
             }
         }
 
+        var lastMousePosition = {};
+        function onMouseMove(evt) {
+
+            if (evt.clientX == lastMousePosition.x && evt.clientY == lastMousePosition.y) {
+                return;
+            }
+            lastMousePosition.x = evt.clientX;
+            lastMousePosition.y = evt.clientY;
+
+            idleHandler();
+        }
+
         function bindEventsForPlayback(mediaRenderer) {
 
             var hideElementsOnIdle = true;
@@ -871,7 +879,7 @@
 
                 var itemVideo = document.querySelector('.itemVideo');
                 if (itemVideo) {
-                    Events.on(itemVideo, 'mousemove', idleHandler);
+                    //Events.on(itemVideo, 'mousemove', onMouseMove);
                     Events.on(itemVideo, 'keydown', idleHandler);
                     Events.on(itemVideo, 'scroll', idleHandler);
                     Events.on(itemVideo, 'mousedown', idleHandler);
@@ -887,7 +895,7 @@
             $(window).one("popstate", onPopState);
 
             if (hideElementsOnIdle) {
-                $(document.body).on("mousemove", onBodyMouseMove);
+                $(document.body).on("mousemove", onMouseMove);
             }
         }
 
@@ -901,11 +909,11 @@
             // Stop playback on browser back button nav
             $(window).off("popstate", onPopState);
 
-            $(document.body).off("mousemove", onBodyMouseMove);
+            $(document.body).off("mousemove", onMouseMove);
 
             var itemVideo = document.querySelector('.itemVideo');
             if (itemVideo) {
-                Events.off(itemVideo, 'mousemove', idleHandler);
+                //Events.off(itemVideo, 'mousemove', onMouseMove);
                 Events.off(itemVideo, 'keydown', idleHandler);
                 Events.off(itemVideo, 'scroll', idleHandler);
                 Events.off(itemVideo, 'mousedown', idleHandler);

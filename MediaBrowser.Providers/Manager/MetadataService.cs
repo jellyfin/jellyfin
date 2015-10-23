@@ -144,7 +144,8 @@ namespace MediaBrowser.Providers.Manager
                 if (providers.Count > 0)
                 {
                     var id = itemOfType.GetLookupInfo();
-                    await ItemIdentifier<TIdType>.FindIdentities(id, ProviderManager, cancellationToken);
+
+                    await FindIdentities(id, cancellationToken).ConfigureAwait(false);
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
@@ -214,6 +215,18 @@ namespace MediaBrowser.Providers.Manager
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             return updateType;
+        }
+
+        private async Task FindIdentities(TIdType id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await ItemIdentifier<TIdType>.FindIdentities(id, ProviderManager, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error in FindIdentities", ex);
+            }
         }
 
         private DateTime GetLastRefreshDate(IHasMetadata item)

@@ -69,11 +69,12 @@
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
+        var url = ApiClient.getUrl("Appstore/Register");
+
         ApiClient.ajax({
 
             type: "POST",
             url: ApiClient.getUrl("Appstore/Register"),
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             data: {
                 Parameters: JSON.stringify({
                     store: "Apple",
@@ -89,10 +90,13 @@
             }
         }).done(function () {
 
+            alert('validate ok');
             callback(true, product);
 
-        }).fail(function () {
+        }).fail(function (e) {
 
+            alert('validate fail: ' + e.status + ' ' + url);
+            alert(JSON.stringify(e));
             callback(false, product);
         });
     }
@@ -117,9 +121,11 @@
             }
         });
 
-        store.when(id).verified(function (p) {
-            p.finish();
-        });
+        if (requiresVerification) {
+            store.when(id).verified(function (p) {
+                p.finish();
+            });
+        }
 
         // The play button can only be accessed when the user
         // owns the full version.
@@ -128,7 +134,7 @@
             if (product.loaded && product.valid && product.state == store.APPROVED) {
                 Logger.log('finishing previously created transaction');
                 if (requiresVerification) {
-                    product.verify();
+                    //product.verify();
                 } else {
                     product.finish();
                 }
