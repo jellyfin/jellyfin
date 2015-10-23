@@ -211,8 +211,9 @@ namespace MediaBrowser.Common.Implementations.Security
 
                     if (reg == null)
                     {
-                        _logger.Warn("Result from appstore registration was null. Defaulting to empty.");
-                        reg = new RegRecord();
+                        var msg = "Result from appstore registration was null.";
+                        _logger.Error(msg);
+                        throw new ApplicationException(msg);
                     }
                     if (!String.IsNullOrEmpty(reg.key))
                     {
@@ -221,15 +222,33 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
 
             }
+            catch (ApplicationException)
+            {
+                SaveAppStoreInfo(parameters);
+                throw;
+            }
             catch (Exception e)
             {
                 _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
-                //Save all transaction information to a file
-                File.WriteAllText(Path.Combine(_appPaths.ProgramDataPath, "apptrans-error.txt"), parameters);
+                SaveAppStoreInfo(parameters);
                 //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
                 throw new ApplicationException("Error registering store sale");
             }
 
+        }
+
+        private void SaveAppStoreInfo(string info)
+        {
+            // Save all transaction information to a file
+
+            try
+            {
+                File.WriteAllText(Path.Combine(_appPaths.ProgramDataPath, "apptrans-error.txt"), info);
+            }
+            catch (IOException)
+            {
+                
+            }
         }
 
         private async Task<MBRegistrationRecord> GetRegistrationStatusInternal(string feature,
