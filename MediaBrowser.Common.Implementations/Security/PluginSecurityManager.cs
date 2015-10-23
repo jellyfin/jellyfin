@@ -208,6 +208,12 @@ namespace MediaBrowser.Common.Implementations.Security
                 using (var response = await _httpClient.Post(options).ConfigureAwait(false))
                 {
                     var reg = _jsonSerializer.DeserializeFromStream<RegRecord>(response.Content);
+
+                    if (reg == null)
+                    {
+                        _logger.Warn("Result from appstore registration was null. Defaulting to empty.");
+                        reg = new RegRecord();
+                    }
                     if (!String.IsNullOrEmpty(reg.key))
                     {
                         SupporterKey = reg.key;
