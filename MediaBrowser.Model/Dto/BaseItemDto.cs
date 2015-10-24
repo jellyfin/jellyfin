@@ -67,6 +67,8 @@ namespace MediaBrowser.Model.Dto
         public bool? CanDelete { get; set; }
         public bool? CanDownload { get; set; }
 
+        public bool? HasSubtitles { get; set; }
+        
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
 

@@ -94,6 +94,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             if (station == null)
             {
+                _logger.Info("No Schedules Direct Station found for channel {0} with name {1}", channelNumber, channelName);
                 return programsInfo;
             }
 
@@ -249,7 +250,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
                 foreach (ChannelInfo channel in channels)
                 {
-                    var station = GetStation(channel.Number, channel.Number);
+                    var station = GetStation(channel.Number, channel.Name);
 
                     if (station != null)
                     {

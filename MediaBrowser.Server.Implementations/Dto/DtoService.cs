@@ -1310,6 +1310,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
 
+                if (video.HasSubtitles)
+                {
+                    dto.HasSubtitles = video.HasSubtitles;
+                }
+
                 if (video.AdditionalParts.Count != 0)
                 {
                     dto.PartCount = video.AdditionalParts.Count + 1;
