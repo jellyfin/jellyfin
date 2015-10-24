@@ -214,11 +214,12 @@
 
         $(elem).on('iron-overlay-closed', function () {
 
-            if (isCancelled) {
-                clearCurrentDisplayingInfo();
+            clearCurrentDisplayingInfo();
 
+            if (isCancelled) {
                 deferred.reject();
             }
+
             $(this).remove();
         });
     }
@@ -268,7 +269,6 @@
 
                 isCancelled = false;
 
-                clearCurrentDisplayingInfo();
                 cancelInAppPurchase();
                 deferred.resolve();
             }

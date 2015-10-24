@@ -882,7 +882,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private string GetChannelEpgCachePath(string channelId)
         {
-            return Path.Combine(DataPath, "epg", channelId + ".json");
+            return Path.Combine(_config.CommonApplicationPaths.CachePath, "embytvepg", channelId + ".json");
         }
 
         private readonly object _epgLock = new object();

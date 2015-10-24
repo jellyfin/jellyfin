@@ -64,29 +64,44 @@
         // product attributes:
         // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
 
+        if (!product.transaction) {
+            Logger.log('Transaction info missing. Failing validateProduct');
+            callback(false, product);
+            return;
+        }
+
+        if (!product.transaction.id) {
+            Logger.log('Transaction id missing. Failing validateProduct');
+            callback(false, product);
+            return;
+        }
+
         var productId = product.id;
         var transactionId = product.transaction.id;
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
-        var url = ApiClient.getUrl("Appstore/Register");
+        var postData = {
+            store: "Apple",
+            application: "com.emby.mobile",
+            product: productId,
+            type: "Subscription",
+            feature: "MBSClubMonthly",
+            storeToken: receipt,
+            amt: price,
+            storeId: transactionId
+        };
+
+        if (enteredEmail) {
+            postData.email = enteredEmail;
+        }
 
         ApiClient.ajax({
 
             type: "POST",
             url: ApiClient.getUrl("Appstore/Register"),
             data: {
-                Parameters: JSON.stringify({
-                    store: "Apple",
-                    application: "com.emby.mobile",
-                    product: productId,
-                    type: "Subscription",
-                    feature: "MBSClubMonthly",
-                    email: enteredEmail,
-                    storeToken: receipt,
-                    amt: price,
-                    storeId: transactionId
-                })
+                Parameters: JSON.stringify(postData)
             }
         }).done(function () {
 
@@ -95,8 +110,7 @@
 
         }).fail(function (e) {
 
-            alert('validate fail: ' + e.status + ' ' + url);
-            alert(JSON.stringify(e));
+            alert('validate fail');
             callback(false, product);
         });
     }
@@ -123,6 +137,8 @@
 
         if (requiresVerification) {
             store.when(id).verified(function (p) {
+                alert('verified');
+                updateProductInfo(p);
                 p.finish();
             });
         }
@@ -134,7 +150,7 @@
             if (product.loaded && product.valid && product.state == store.APPROVED) {
                 Logger.log('finishing previously created transaction');
                 if (requiresVerification) {
-                    //product.verify();
+                    product.verify();
                 } else {
                     product.finish();
                 }
