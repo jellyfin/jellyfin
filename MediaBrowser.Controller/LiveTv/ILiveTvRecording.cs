@@ -30,8 +30,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool CanDelete(User user);
 
-        string ExternalImagePath { get; set; }
-
         string SeriesTimerId { get; set; }
         RecordingStatus Status { get; set; }
         DateTime? EndDate { get; set; }

@@ -1,29 +1,22 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
     public class ProgramImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
 
-        public ProgramImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger)
+        public ProgramImageProvider(ILiveTvManager liveTvManager)
         {
             _liveTvManager = liveTvManager;
-            _httpClient = httpClient;
-            _logger = logger;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -37,42 +30,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.ExternalImagePath))
+            var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
+
+            if (service != null)
             {
-                if (liveTvItem.ExternalImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    imageResponse.Path = liveTvItem.ExternalImagePath;
-                    imageResponse.Protocol = MediaProtocol.Http;
-                    imageResponse.HasImage = true;
-                }
-                else
-                {
-                    imageResponse.Path = liveTvItem.ExternalImagePath;
-                    imageResponse.HasImage = true;
-                }
-            }
-            else
-            {
-                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
+                    var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
 
-                if (service != null)
-                {
-                    try
+                    var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
+
+                    if (response != null)
                     {
-                        var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
-
-                        var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
-
-                        if (response != null)
-                        {
-                            imageResponse.HasImage = true;
-                            imageResponse.Stream = response.Stream;
-                            imageResponse.Format = response.Format;
-                        }
+                        imageResponse.HasImage = true;
+                        imageResponse.Stream = response.Stream;
+                        imageResponse.Format = response.Format;
                     }
-                    catch (NotImplementedException)
-                    {
-                    }
+                }
+                catch (NotImplementedException)
+                {
                 }
             }
 

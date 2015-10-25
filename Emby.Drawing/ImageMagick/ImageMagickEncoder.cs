@@ -17,15 +17,15 @@ namespace Emby.Drawing.ImageMagick
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
-		private readonly IHttpClient _httpClient;
-		private readonly IFileSystem _fileSystem;
+        private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
 
         public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
 
             LogImageMagickVersion();
         }
@@ -81,7 +81,7 @@ namespace Emby.Drawing.ImageMagick
             try
             {
                 var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".webp");
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                 using (var wand = new MagickWand(1, 1, new PixelWand("none", 1)))
                 {
@@ -104,6 +104,7 @@ namespace Emby.Drawing.ImageMagick
                 wand.CurrentImage.TrimImage(10);
                 wand.SaveImage(outputPath);
             }
+            SaveDelay();
         }
 
         public ImageSize GetImageSize(string path)
@@ -163,6 +164,7 @@ namespace Emby.Drawing.ImageMagick
                     }
                 }
             }
+            SaveDelay();
         }
 
         /// <summary>
@@ -185,7 +187,7 @@ namespace Emby.Drawing.ImageMagick
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-					var task = new PlayedIndicatorDrawer(_appPaths, _httpClient, _fileSystem).DrawPlayedIndicator(wand, currentImageSize);
+                    var task = new PlayedIndicatorDrawer(_appPaths, _httpClient, _fileSystem).DrawPlayedIndicator(wand, currentImageSize);
                     Task.WaitAll(task);
                 }
                 else if (options.UnplayedCount.HasValue)
@@ -223,6 +225,15 @@ namespace Emby.Drawing.ImageMagick
             {
                 new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
+
+            SaveDelay();
+        }
+
+        private void SaveDelay()
+        {
+            // For some reason the images are not always getting released right away
+            var task = Task.Delay(300);
+            Task.WaitAll(task);
         }
 
         public string Name

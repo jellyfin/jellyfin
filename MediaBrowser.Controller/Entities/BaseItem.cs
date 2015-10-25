@@ -186,13 +186,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
-        /// </summary>
-        /// <value>The image path.</value>
-        [IgnoreDataMember]
-        public string ExternalImagePath { get; set; }
-
-        /// <summary>
         /// Gets or sets the etag.
         /// </summary>
         /// <value>The etag.</value>

@@ -330,11 +330,6 @@ namespace MediaBrowser.ServerApplication
             _logger.Info("Shutting down");
 
             _appHost.Dispose();
-
-            if (!_isRunningAsService)
-            {
-                SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
-            }
         }
 
         /// <summary>

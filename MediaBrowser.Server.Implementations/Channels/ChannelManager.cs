@@ -216,9 +216,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 try
                 {
-                    var item = await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
-
-                    _libraryManager.RegisterItem(item);
+                    await GetChannel(channelInfo, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -246,8 +244,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (item == null)
             {
                 item = GetChannel(channel, CancellationToken.None).Result;
-
-                _libraryManager.RegisterItem(item);
             }
 
             return item;
@@ -463,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 item.Name = channelInfo.Name;
             }
-
+            
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
                 ForceSave = isNew
@@ -1264,7 +1260,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var channelItem = (IChannelItem)item;
 
-            channelItem.ExternalImagePath = info.ImageUrl;
             channelItem.ChannelId = internalChannelId.ToString("N");
 
             if (!string.Equals(channelItem.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
@@ -1291,12 +1286,19 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
+            if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+            {
+                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+            }
+
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
-                _libraryManager.RegisterItem(item);
 
-                await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
+                if (info.People != null && info.People.Count > 0)
+                {
+                    await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
+                }
             }
 
             return item;
