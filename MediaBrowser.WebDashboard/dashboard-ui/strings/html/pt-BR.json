@@ -1520,10 +1520,10 @@
     "ButtonSignOut": "Sair",
     "HeaderCameraUpload": "Upload da C\u00e2mera",
     "SelectCameraUploadServers": "Fazer upload das fotos da c\u00e2mera para os seguintes servidores:",
-    "ButtonClear": "Clear",
-    "ButtonEditImages": "Edit Images",
-    "LabelFolder": "Folder:",
-    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
-    "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "ButtonClear": "Limpar",
+    "ButtonEditImages": "Editar Imagens",
+    "LabelFolder": "Pasta:",
+    "LabelAdditionalFoldersCanBeAddedHelp": "Pastas adicionais podem ser adicionadas a esta biblioteca depois da configura\u00e7\u00e3o.",
+    "HeadersFolders": "Pastas",
+    "LabelDisplayName": "Nome para exibi\u00e7\u00e3o:"
 }

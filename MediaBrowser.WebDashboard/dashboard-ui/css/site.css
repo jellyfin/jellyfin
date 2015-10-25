@@ -472,7 +472,7 @@ select {
     margin: 0 0 .5em 0;
     background: none;
     border: 1px solid rgb(221, 221, 221);
-    border-radius: 3px;
+    border-width: 0 0 1px 0;
     /* Prefixed box-sizing rules necessary for older browsers */
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -484,8 +484,8 @@ select {
     font-family: inherit;
     font-weight: bold;
     color: inherit;
-    padding: .6em .8em .5em .8em;
-    text-align: center;
+    padding: .6em .8em .3em 0;
+    cursor: pointer;
 }
 
     select:not([data-inline='true']) {
@@ -494,7 +494,7 @@ select {
 
 .ui-body-a select {
     background: none;
-    border-color: rgb(221, 221, 221);
+    border-color: #757575;
 }
 
     .ui-body-a select option {
@@ -502,11 +502,12 @@ select {
     }
 
 .ui-body-b select {
-    border-color: #1f1f1f;
-    background: #373737;
+    background: none;
+    border-color: #454545;
 }
 
     .ui-body-b select option {
+        background: #333;
         color: #fff;
     }
 

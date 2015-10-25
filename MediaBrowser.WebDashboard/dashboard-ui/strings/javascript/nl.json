@@ -738,7 +738,7 @@
     "MessageForgotPasswordFileCreated": "Het volgende bestand met instructies hoe nu verder te gaan is gemaakt:",
     "MessageForgotPasswordFileExpiration": "De herstel pincode verloopt {0}.",
     "MessageInvalidForgotPasswordPin": "Er is een ongeldige of verlopen pincode ingegeven. Probeer opnieuw.",
-    "MessagePasswordResetForUsers": "Passwords have been removed for the following users. To login, sign in with a blank password.",
+    "MessagePasswordResetForUsers": "Wachtwoorden van de volgende gebruikers zijn verwijderd. Gebruik een leeg wachtwoord om aan te melden.",
     "HeaderInviteGuest": "Nodig gast uit",
     "ButtonLinkMyEmbyAccount": "Koppel mijn account nu",
     "MessageConnectAccountRequiredToInviteGuest": "Om gasten uit te kunnen nodigen moet u uw Emby account aan deze server koppelen.",
@@ -908,8 +908,8 @@
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Voeg Media Bibliotheek toe",
     "ButtonManageFolders": "Beheer mappen",
-    "HeaderTryDragAndDrop": "Try Drag and Drop",
-    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
-    "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
-    "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser."
+    "HeaderTryDragAndDrop": "Probeer 'Drag and Drop'",
+    "TryDragAndDropMessage": "Gebruik 'Drag and Drop' om je afspeellijst aan te passen.",
+    "HeaderTryMicrosoftEdge": "Probeer Microsoft Edge",
+    "MessageTryMicrosoftEdge": "Voor een betere ervaring in Windows 10 gebruik je de nieuwe Microsoft Edge browser."
 }
