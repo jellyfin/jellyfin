@@ -429,6 +429,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 return await GetProgramsAsyncInternal(channelId, startDateUtc, endDateUtc, cancellationToken).ConfigureAwait(false);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error getting programs", ex);

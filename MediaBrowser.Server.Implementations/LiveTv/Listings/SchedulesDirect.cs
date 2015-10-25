@@ -156,10 +156,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                         //              schedule.programID + " which says it has images? " +
                         //              programDict[schedule.programID].hasImageArtwork);
 
-                        var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
-                        if (imageIndex > -1)
+                        if (images != null)
                         {
-                            programDict[schedule.programID].images = GetProgramLogo(ApiUrl, images[imageIndex]);
+                            var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
+                            if (imageIndex > -1)
+                            {
+                                programDict[schedule.programID].images = GetProgramLogo(ApiUrl, images[imageIndex]);
+                            }
                         }
 
                         programsInfo.Add(GetProgram(channelNumber, schedule, programDict[schedule.programID]));
@@ -410,7 +413,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private string GetProgramLogo(string apiUrl, ScheduleDirect.ShowImages images)
         {
-            string url = "";
+            string url = null;
             if (images.data != null)
             {
                 var smallImages = images.data.Where(i => i.size == "Sm").ToList();
@@ -423,13 +426,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     logoIndex = 0;
                 }
-                if (images.data[logoIndex].uri.Contains("http"))
+                var uri = images.data[logoIndex].uri;
+
+                if (!string.IsNullOrWhiteSpace(uri))
                 {
-                    url = images.data[logoIndex].uri;
-                }
-                else
-                {
-                    url = apiUrl + "/image/" + images.data[logoIndex].uri;
+                    if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        url = uri;
+                    }
+                    else
+                    {
+                        url = apiUrl + "/image/" + uri;
+                    }
                 }
                 //_logger.Debug("URL for image is : " + url);
             }
