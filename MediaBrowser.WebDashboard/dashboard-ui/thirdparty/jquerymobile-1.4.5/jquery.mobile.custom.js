@@ -3179,11 +3179,24 @@ $.widget( "mobile.page", {
 				}, from );
 			}
 
-			// TODO deprecate prevPage in favor of previous
-			this._triggerWithDeprecated( prefix + "show", {
-				prevPage: from || $( "" ),
-				toPage: to
-			}, to );
+		    // TODO deprecate prevPage in favor of previous
+            if (!prefix  && $.browser.msie) {
+
+                // Add a delay for IE because it seems to be having issues with web components
+                var curr = this;
+                setTimeout(function() {
+                    curr._triggerWithDeprecated(prefix + "show", {
+                        prevPage: from || $(""),
+                        toPage: to
+                    }, to);
+                }, 50);
+
+            } else {
+                this._triggerWithDeprecated(prefix + "show", {
+                    prevPage: from || $(""),
+                    toPage: to
+                }, to);
+            }
 		},
 
 		// TODO make private once change has been defined in the widget

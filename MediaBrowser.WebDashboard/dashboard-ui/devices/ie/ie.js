@@ -24,6 +24,8 @@
             });
 
             appStorage.setItem("ieswitchtoedge", expectedValue);
+        } else {
+            
         }
     }
 
