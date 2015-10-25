@@ -24,7 +24,7 @@
 
         folderHtml += '</div>';
 
-        $('.folderGroupList', page).html(folderHtml).trigger('create');
+        $('.folderGroupList', page).html(folderHtml);
     }
 
     function renderViewStyles(page, user, result) {
@@ -49,7 +49,7 @@
 
         folderHtml += '</div>';
 
-        $('.viewStylesList', page).html(folderHtml).trigger('create');
+        $('.viewStylesList', page).html(folderHtml);
 
         if (result.length) {
             $('.viewStylesSection', page).show();
@@ -80,7 +80,7 @@
 
         folderHtml += '</div>';
 
-        $('.latestItemsList', page).html(folderHtml).trigger('create');
+        $('.latestItemsList', page).html(folderHtml);
     }
 
     function renderViewOrder(page, user, result) {
@@ -122,7 +122,7 @@
 
         }).join('');
 
-        $('.viewOrderList', page).html(html).trigger('create');
+        $('.viewOrderList', page).html(html);
     }
 
     function loadForm(page, user, displayPreferences) {
@@ -239,7 +239,7 @@
         $('.viewOrderList', page).on('click', '.btnViewItemMove', function () {
 
             var li = $(this).parents('.viewItem');
-            var ul = li.parents('ul');
+            var ul = li.parents('.paperList');
 
             if ($(this).hasClass('btnViewItemDown')) {
 
@@ -256,15 +256,21 @@
 
             $('.viewItem', ul).each(function () {
 
+                var btn = $('.btnViewItemMove', this)[0];
+
                 if ($(this).prev('.viewItem').length) {
-                    $('.btnViewItemMove', this).addClass('btnViewItemUp').removeClass('btnViewItemDown').attr('data-icon', 'arrow-u').removeClass('ui-icon-arrow-d').addClass('ui-icon-arrow-u');
+
+                    btn.classList.add('btnViewItemUp');
+                    btn.classList.remove('btnViewItemDown');
+                    btn.icon = 'keyboard-arrow-up';
                 } else {
-                    $('.btnViewItemMove', this).addClass('btnViewItemDown').removeClass('btnViewItemUp').attr('data-icon', 'arrow-d').removeClass('ui-icon-arrow-u').addClass('ui-icon-arrow-d');
+
+                    btn.classList.remove('btnViewItemUp');
+                    btn.classList.add('btnViewItemDown');
+                    btn.icon = 'keyboard-arrow-down';
                 }
 
             });
-
-            ul.listview('destroy').listview({});
         });
 
         $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
