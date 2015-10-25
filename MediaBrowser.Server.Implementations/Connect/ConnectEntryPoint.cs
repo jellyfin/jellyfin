@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     using (var stream = await _httpClient.Get(new HttpRequestOptions
                     {
                         Url = ipLookupUrl,
-                        UserAgent = "Emby Server/" + _appHost.ApplicationVersion,
+                        UserAgent = "Emby/" + _appHost.ApplicationVersion,
                         LogErrors = logErrors
 
                     }).ConfigureAwait(false))
@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         {
                             var address = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                            if (IsValid(address))
+                            if (IsValid(address, ipLookupUrl))
                             {
                                 ((ConnectManager)_connectManager).OnWanAddressResolved(address);
                                 CacheAddress(address);
@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
-                if (IsValid(endpoint))
+                if (IsValid(endpoint, "cache"))
                 {
                     ((ConnectManager)_connectManager).OnWanAddressResolved(endpoint);
                 }
@@ -137,14 +137,14 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private bool IsValid(string address)
+        private bool IsValid(string address, string source)
         {
             IPAddress ipAddress;
             var valid = IPAddress.TryParse(address, out ipAddress);
 
             if (!valid)
             {
-                _logger.Error("{0} is not a valid ip address", address);
+                _logger.Error("{0} is not a valid ip address. Source: {1}", address, source);
             }
 
             return valid;
