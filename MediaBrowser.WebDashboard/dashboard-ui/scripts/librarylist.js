@@ -1031,11 +1031,11 @@
         }
 
         // Don't do this on the home page
-        if (page.classList.contains('homePage') || page.classList.contains('itemDetailPage')) {
+        if (page.classList.contains('homePage') || page.classList.contains('itemDetailPage') || page.classList.contains('liveTvPage')) {
             return;
         }
 
-        var expectedValue = "7";
+        var expectedValue = "8";
         if (appStorage.getItem("tapholdhelp") == expectedValue) {
             return;
         }

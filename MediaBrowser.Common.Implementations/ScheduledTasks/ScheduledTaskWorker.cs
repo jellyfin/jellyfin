@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
@@ -302,6 +301,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 return _id;
             }
+        }
+
+        public void ReloadTriggerEvents()
+        {
+            ReloadTriggerEvents(false);
         }
 
         /// <summary>

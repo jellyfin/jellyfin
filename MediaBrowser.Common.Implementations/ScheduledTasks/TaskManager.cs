@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using Microsoft.Win32;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
@@ -69,6 +70,28 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             _fileSystem = fileSystem;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
+
+            BindToSystemEvent();
+        }
+
+        private void BindToSystemEvent()
+        {
+            try
+            {
+                SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            }
+            catch
+            {
+
+            }
+        }
+
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            foreach (var task in ScheduledTasks)
+            {
+                task.ReloadTriggerEvents();
+            }
         }
 
         /// <summary>
@@ -127,7 +150,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             QueueScheduledTask<T>(new TaskExecutionOptions());
         }
-        
+
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
