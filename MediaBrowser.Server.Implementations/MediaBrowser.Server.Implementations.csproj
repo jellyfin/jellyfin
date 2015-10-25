@@ -108,7 +108,6 @@
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
-    <Compile Include="Channels\ChannelItemImageProvider.cs" />
     <Compile Include="Channels\ChannelManager.cs" />
     <Compile Include="Channels\ChannelPostScanTask.cs" />
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />

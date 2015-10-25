@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +13,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     public class RecordingImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
 
-        public RecordingImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger)
+        public RecordingImageProvider(ILiveTvManager liveTvManager)
         {
             _liveTvManager = liveTvManager;
-            _httpClient = httpClient;
-            _logger = logger;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -36,55 +30,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.ExternalImagePath))
+            var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
+
+            if (service != null)
             {
-                if (liveTvItem.ExternalImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    var options = new HttpRequestOptions
-                    {
-                        CancellationToken = cancellationToken,
-                        Url = liveTvItem.ExternalImagePath
-                    };
+                    var response = await service.GetRecordingImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
 
-                    var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
-
-                    if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    if (response != null)
                     {
                         imageResponse.HasImage = true;
-                        imageResponse.Stream = response.Content;
-                        imageResponse.SetFormatFromMimeType(response.ContentType);
-                    }
-                    else
-                    {
-                        _logger.Error("Provider did not return an image content type.");
+                        imageResponse.Stream = response.Stream;
+                        imageResponse.Format = response.Format;
                     }
                 }
-                else
+                catch (NotImplementedException)
                 {
-                    imageResponse.Path = liveTvItem.ExternalImagePath;
-                    imageResponse.HasImage = true;
-                }
-            }
-            else
-            {
-                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
-
-                if (service != null)
-                {
-                    try
-                    {
-                        var response = await service.GetRecordingImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
-
-                        if (response != null)
-                        {
-                            imageResponse.HasImage = true;
-                            imageResponse.Stream = response.Stream;
-                            imageResponse.Format = response.Format;
-                        }
-                    }
-                    catch (NotImplementedException)
-                    {
-                    }
                 }
             }
 

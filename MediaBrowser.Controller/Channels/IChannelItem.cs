@@ -7,7 +7,5 @@ namespace MediaBrowser.Controller.Channels
         string ChannelId { get; set; }
 
         string ExternalId { get; set; }
-
-        string ExternalImagePath { get; set; }
     }
 }

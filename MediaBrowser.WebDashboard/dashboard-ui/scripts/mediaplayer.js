@@ -425,6 +425,10 @@
                         Method: 'Embed'
                     });
                     profile.SubtitleProfiles.push({
+                        Format: 'subrip',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
                         Format: 'ass',
                         Method: 'Embed'
                     });

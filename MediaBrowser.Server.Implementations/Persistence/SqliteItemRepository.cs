@@ -196,7 +196,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataCountryCode", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsHD", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalEtag", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalImagePath", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "DateLastRefreshed", "DATETIME");
 
             PrepareStatements();
@@ -290,7 +289,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "PreferredMetadataCountryCode",
             "IsHD",
             "ExternalEtag",
-            "ExternalImagePath",
             "DateLastRefreshed"
         };
 
@@ -378,7 +376,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "PreferredMetadataCountryCode",
                 "IsHD",
                 "ExternalEtag",
-                "ExternalImagePath",
                 "DateLastRefreshed"
             };
             _saveItemCommand = _connection.CreateCommand();
@@ -598,7 +595,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.PreferredMetadataCountryCode;
                     _saveItemCommand.GetParameter(index++).Value = item.IsHD;
                     _saveItemCommand.GetParameter(index++).Value = item.ExternalEtag;
-                    _saveItemCommand.GetParameter(index++).Value = item.ExternalImagePath;
 
                     if (item.DateLastRefreshed == default(DateTime))
                     {
@@ -827,12 +823,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(23))
             {
-                item.ExternalImagePath = reader.GetString(23);
-            }
-
-            if (!reader.IsDBNull(24))
-            {
-                item.DateLastRefreshed = reader.GetDateTime(24).ToUniversalTime();
+                item.DateLastRefreshed = reader.GetDateTime(23).ToUniversalTime();
             }
 
             return item;

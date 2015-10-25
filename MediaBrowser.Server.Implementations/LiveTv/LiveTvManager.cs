@@ -577,7 +577,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             //    replaceImages.Add(ImageType.Primary);
             //}
 
-            item.ExternalImagePath = string.IsNullOrWhiteSpace(channelInfo.ImageUrl) ? channelInfo.ImagePath : channelInfo.ImageUrl;
+            if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+            {
+                item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+            }
+            else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
+            {
+                item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+            }
 
             if (string.IsNullOrEmpty(item.Name))
             {
@@ -636,7 +643,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Name = info.Name;
             item.OfficialRating = item.OfficialRating ?? info.OfficialRating;
             item.Overview = item.Overview ?? info.Overview;
-            item.ExternalImagePath = string.IsNullOrWhiteSpace(info.ImagePath) ? info.ImageUrl : info.ImagePath;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
             item.HomePageUrl = info.HomePageUrl;
@@ -647,6 +653,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.IndexNumber = info.EpisodeNumber;
             item.ParentIndexNumber = info.SeasonNumber;
 
+            if (!string.IsNullOrWhiteSpace(info.ImagePath))
+            {
+                item.SetImagePath(ImageType.Primary, info.ImagePath);
+            }
+            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+            {
+                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+            }
+            
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
@@ -722,7 +737,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.Audio = info.Audio;
             recording.EndDate = info.EndDate;
             recording.EpisodeTitle = info.EpisodeTitle;
-            recording.ExternalImagePath = string.IsNullOrWhiteSpace(info.ImagePath) ? info.ImageUrl : info.ImagePath;
             recording.IsHD = info.IsHD;
             recording.IsKids = info.IsKids;
             recording.IsLive = info.IsLive;
@@ -735,6 +749,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.SeriesTimerId = info.SeriesTimerId;
             recording.StartDate = info.StartDate;
 
+            if (!string.IsNullOrWhiteSpace(info.ImagePath))
+            {
+                item.SetImagePath(ImageType.Primary, info.ImagePath);
+            }
+            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+            {
+                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+            }
+            
             var statusChanged = info.Status != recording.Status;
 
             recording.Status = info.Status;
@@ -1830,7 +1853,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     OriginalAirDate = program.PremiereDate,
                     Overview = program.Overview,
                     StartDate = program.StartDate,
-                    ImagePath = program.ExternalImagePath,
+                    //ImagePath = program.ExternalImagePath,
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };
