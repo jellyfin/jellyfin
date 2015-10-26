@@ -151,7 +151,10 @@
 
                     var dlg = PaperDialogHelper.createDialog({
                         size: 'small',
-                        theme: 'a'
+                        theme: 'a',
+
+                        // In (at least) chrome this is causing the text field to not be editable
+                        modal: false
                     });
 
                     var html = '';

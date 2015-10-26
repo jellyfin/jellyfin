@@ -1035,7 +1035,7 @@ var Dashboard = {
             name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
-            selected: page.classList.contains("mediaLibraryPage"),
+            selected: page.classList.contains("librarySectionPage"),
             icon: 'video-library'
         }, {
             name: Globalize.translate('TabMetadata'),
