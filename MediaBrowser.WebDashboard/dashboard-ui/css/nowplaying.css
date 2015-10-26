@@ -13,9 +13,9 @@
     margin: 2px 1px;
 }
 
-.nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
-    display: inline-block !important;
-}
+    .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
+        display: inline-block !important;
+    }
 
 .nowPlayingPageImage img {
     max-height: 360px;
@@ -98,7 +98,7 @@
 @media all and (max-width: 600px) and (orientation: portrait) {
 
     .btnSlideshow {
-        display: block;
+        display: block !important;
         margin-top: 1em;
     }
 }
