@@ -421,9 +421,11 @@ namespace Emby.Drawing
             {
                 size = GetImageSizeInternal(path, allowSlowMethod);
 
-                StartSaveImageSizeTimer();
-
-                _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
+                if (size.Width > 0 && size.Height > 0)
+                {
+                    StartSaveImageSizeTimer();
+                    _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
+                }
             }
 
             return size;
