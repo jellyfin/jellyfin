@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -290,13 +291,6 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                var lib = ApiEntryPoint.Instance.GetEncodingOptions().H264Encoder;
-
-                if (!string.IsNullOrWhiteSpace(lib))
-                {
-                    return lib;
-                }
-
                 return "libx264";
             }
         }
@@ -810,13 +804,53 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
+        /// Gets the name of the output video codec
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        protected string GetVideoDecoder(StreamState state)
+        {
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                {
+                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (MediaEncoder.SupportsDecoder("h264_qsv"))
+                            {
+                                return "-c:v h264_qsv ";
+                            }
+                            break;
+                        case "mpeg2video":
+                            if (MediaEncoder.SupportsDecoder("mpeg2_qsv"))
+                            {
+                                return "-c:v mpeg2_qsv ";
+                            }
+                            break;
+                        case "vc1":
+                            if (MediaEncoder.SupportsDecoder("vc1_qsv"))
+                            {
+                                return "-c:v vc1_qsv ";
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // leave blank so ffmpeg will decide
+            return null;
+        }
+
+        /// <summary>
         /// Gets the input argument.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
         protected string GetInputArgument(StreamState state)
         {
-            var arg = "-i " + GetInputPathArgument(state);
+            var arg = string.Format("-i {0}", GetInputPathArgument(state));
 
             if (state.SubtitleStream != null)
             {
@@ -826,7 +860,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            return arg;
+            return arg.Trim();
         }
 
         private string GetInputPathArgument(StreamState state)
@@ -840,7 +874,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (!(state.VideoType == VideoType.Iso && state.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(mediaPath, state.InputProtocol, state.IsoMount, state.PlayableStreamFileNames);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(FileSystem, mediaPath, state.InputProtocol, state.IsoMount, state.PlayableStreamFileNames);
                 }
             }
 
@@ -889,7 +923,7 @@ namespace MediaBrowser.Api.Playback
             CancellationTokenSource cancellationTokenSource,
             string workingDirectory = null)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
@@ -942,7 +976,7 @@ namespace MediaBrowser.Api.Playback
             Logger.Info(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
@@ -972,7 +1006,7 @@ namespace MediaBrowser.Api.Playback
             StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-            while (!File.Exists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+			while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
@@ -1027,6 +1061,7 @@ namespace MediaBrowser.Api.Playback
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -1151,15 +1186,8 @@ namespace MediaBrowser.Api.Playback
 
             if (bitrate.HasValue)
             {
-                var hasFixedResolution = state.VideoRequest.HasFixedResolution;
-
                 if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (hasFixedResolution)
-                    {
-                        return string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
                     // With vpx when crf is used, b:v becomes a max rate
                     // https://trac.ffmpeg.org/wiki/vpxEncodingGuide. But higher bitrate source files -b:v causes judder so limite the bitrate but dont allow it to "saturate" the bitrate. So dont contrain it down just up.
                     return string.Format(" -maxrate:v {0} -bufsize:v ({0}*2) -b:v {0}", bitrate.Value.ToString(UsCulture));
@@ -1170,36 +1198,15 @@ namespace MediaBrowser.Api.Playback
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
-                // h264_qsv
-                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                // h264
+                if (isHls)
                 {
-                    if (hasFixedResolution)
-                    {
-                        if (isHls)
-                        {
-                            return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                        }
-
-                        return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
-                    return string.Format(" -b:v {0} -maxrate ({0}*1.2) -bufsize ({0}*2)", bitrate.Value.ToString(UsCulture));
+                    return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                        bitrate.Value.ToString(UsCulture),
+                        (bitrate.Value * 2).ToString(UsCulture));
                 }
 
-                // H264
-                if (hasFixedResolution)
-                {
-                    if (isHls)
-                    {
-                        return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
-                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
-                }
-
-                return string.Format(" -maxrate {0} -bufsize {1}",
-                    bitrate.Value.ToString(UsCulture),
-                    (bitrate.Value * 2).ToString(UsCulture));
+                return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
             }
 
             return string.Empty;
@@ -1986,7 +1993,8 @@ namespace MediaBrowser.Api.Playback
                 state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
-                state.TargetAudioStreamCount);
+                state.TargetAudioStreamCount,
+                state.TargetVideoCodecTag);
 
             if (mediaProfile != null)
             {
@@ -2083,7 +2091,8 @@ namespace MediaBrowser.Api.Playback
                     state.IsTargetCabac,
                     state.TargetRefFrames,
                     state.TargetVideoStreamCount,
-                    state.TargetAudioStreamCount
+                    state.TargetAudioStreamCount,
+                    state.TargetVideoCodecTag
 
                     ).FirstOrDefault() ?? string.Empty;
             }
@@ -2156,6 +2165,12 @@ namespace MediaBrowser.Api.Playback
             if (state.ReadInputAtNativeFramerate)
             {
                 inputModifier += " -re";
+            }
+
+            var videoDecoder = GetVideoDecoder(state);
+            if (!string.IsNullOrWhiteSpace(videoDecoder))
+            {
+                inputModifier += " " + videoDecoder;
             }
 
             return inputModifier;

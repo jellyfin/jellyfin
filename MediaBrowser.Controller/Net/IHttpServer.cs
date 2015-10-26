@@ -53,5 +53,10 @@ namespace MediaBrowser.Controller.Net
         /// Inits this instance.
         /// </summary>
         void Init(IEnumerable<IRestfulService> services);
+
+        /// <summary>
+        /// If set, all requests will respond with this message
+        /// </summary>
+        string GlobalResponse { get; set; }
     }
 }

@@ -4,18 +4,17 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage noSecondaryNavPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,scripts/livetvcomponents">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,scripts/livetvcomponents">
 
         <div id="tvShowsTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="tvrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-                <a href="tvlatest.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
-                <a href="tvupcoming.html"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
-                <a href="tvshows.html" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
-                <a href="episodes.html" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
-                <a href="tvgenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-                <a href="tvpeople.html" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
-                <a href="tvstudios.html" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
+                <a href="tv.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="tv.html?tab=1"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+                <a href="tv.html?tab=2"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+                <a href="tv.html?tab=3" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+                <a href="tv.html?tab=4" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+                <a href="tv.html?tab=5"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+                <a href="tv.html?tab=6" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
             </div>
         </div>
 
@@ -51,8 +50,7 @@
                         <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
                         <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
                         <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                        <paper-button raised class="subdued btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
-                        <paper-button raised class="subdued btnShare notext hide"><iron-icon icon="share"></iron-icon></paper-button>
+                        <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                         <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         <div class="detailUserDataIcons userDataIcons"></div>
                     </div>
@@ -72,8 +70,7 @@
                 <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
                 <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
                 <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                <paper-button raised class="subdued btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
-                <paper-button raised class="subdued btnShare notext hide"><iron-icon icon="share"></iron-icon></paper-button>
+                <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                 <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                 <div class="detailUserDataIcons userDataIcons"></div>
             </div>
@@ -146,13 +143,15 @@
                     </h1>
                     <div>
                         <p id="awardSummary"></p>
-                        <div id="criticRatingSummary" class="criticReview criticRatingSummary" style="display: none;">
-                            <p style="margin: 0 0 .5em -40px; font-weight: bold;">TOMATOMETER®</p>
-                            <div class="reviewScore">
-                                <img src="css/images/fresh.png">
-                            </div>
-                            <div class="criticRatingScore"></div>
-                            <div class="criticRatingSummaryText"></div>
+                        <div class="paperList" id="criticRatingSummary">
+                            <paper-icon-item>
+                                <paper-fab mini style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></paper-fab>
+                                <paper-item-body three-line>
+                                    <div>TOMATOMETER®</div>
+                                    <div class="criticRatingScore"></div>
+                                    <div class="criticRatingSummaryText" style="white-space: normal;" secondary></div>
+                                </paper-item-body>
+                            </paper-icon-item>
                         </div>
                         <div id="criticReviewsContent"></div>
                     </div>
@@ -196,8 +195,8 @@
                 <div class="detailSection audioVideoMediaInfo hide">
                     <h1>${HeaderMediaInfo}</h1>
                     <div>
-                        <div class="splitVersionContainer" style="border-bottom: 1px solid #444;">
-                            <button type="button" class="btnSplitVersions" data-mini="true" data-inline="true" data-icon="delete" title="${ButtonSplitVersionsApart}">${ButtonSplitVersionsApart}</button>
+                        <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
+                            <paper-button raised class="btnSplitVersions subdued">${ButtonSplitVersionsApart}</paper-button>
                         </div>
                         <div id="mediaInfoContent" class="mediaInfoContent"></div>
                     </div>

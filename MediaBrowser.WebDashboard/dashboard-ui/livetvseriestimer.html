@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss" data-backbutton="true" data-menubutton="false">
+    <div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
@@ -44,19 +44,19 @@
                         <paper-checkbox id="chkAnyTime">${OptionRecordAnytime}</paper-checkbox>
                         <paper-checkbox id="chkAllChannels">${OptionRecordOnAllChannels}</paper-checkbox>
                     </div>
-                    <br/>
+                    <br />
                     <div data-role="collapsible" data-mini="true">
                         <h3>${HeaderAdvanced}</h3>
                         <div>
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                                </li>
-                                <li>
-                                    <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                                </li>
-                            </ul>
+                            <div>
+                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                            </div>
+                            <br />
+                            <div>
+                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                            </div>
+                            <br />
                         </div>
                     </div>
                     <br />

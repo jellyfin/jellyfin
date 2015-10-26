@@ -41,12 +41,6 @@ namespace MediaBrowser.Controller.Providers
         public DateTime? DateLastImagesRefresh { get; set; }
 
         /// <summary>
-        /// Gets or sets the last result.
-        /// </summary>
-        /// <value>The last result.</value>
-        public ProviderRefreshStatus LastStatus { get; set; }
-
-        /// <summary>
         /// Gets or sets the last result error message.
         /// </summary>
         /// <value>The last result error message.</value>
@@ -54,33 +48,19 @@ namespace MediaBrowser.Controller.Providers
 
         public DateTime? ItemDateModified { get; set; }
 
-        public void AddStatus(ProviderRefreshStatus status, string errorMessage)
+        public void AddStatus(string errorMessage)
         {
-            if (LastStatus != status)
-            {
-                IsDirty = true;
-            }
-
             if (string.IsNullOrEmpty(LastErrorMessage))
             {
                 LastErrorMessage = errorMessage;
             }
-            if (LastStatus == ProviderRefreshStatus.Success)
-            {
-                LastStatus = status;
-            }
-        }
-
-        public MetadataStatus()
-        {
-            LastStatus = ProviderRefreshStatus.Success;
         }
 
         public bool IsDirty { get; private set; }
 
-        public void SetDateLastMetadataRefresh(DateTime date)
+        public void SetDateLastMetadataRefresh(DateTime? date)
         {
-            if (date != (DateLastMetadataRefresh ?? DateTime.MinValue))
+            if (date != DateLastMetadataRefresh)
             {
                 IsDirty = true;
             }
@@ -88,9 +68,9 @@ namespace MediaBrowser.Controller.Providers
             DateLastMetadataRefresh = date;
         }
 
-        public void SetDateLastImagesRefresh(DateTime date)
+        public void SetDateLastImagesRefresh(DateTime? date)
         {
-            if (date != (DateLastImagesRefresh ?? DateTime.MinValue))
+            if (date != DateLastImagesRefresh)
             {
                 IsDirty = true;
             }

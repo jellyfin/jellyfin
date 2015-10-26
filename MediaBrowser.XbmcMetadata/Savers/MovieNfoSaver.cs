@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -29,7 +30,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var list = new List<string>();
 
-            if (item.VideoType == VideoType.Dvd)
+            if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {
                 var path = item.ContainingFolderPath;
 

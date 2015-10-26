@@ -195,18 +195,16 @@ namespace MediaBrowser.Controller.Providers
         /// Gets the item identity providers.
         /// </summary>
         /// <typeparam name="TLookupInfo">The type of the t lookup information.</typeparam>
-        /// <typeparam name="TIdentity">The type of the t identity.</typeparam>
         /// <returns>IEnumerable&lt;IItemIdentityProvider&lt;TLookupInfo, TIdentity&gt;&gt;.</returns>
-        IEnumerable<IItemIdentityProvider<TLookupInfo, TIdentity>> GetItemIdentityProviders<TLookupInfo, TIdentity>()
-            where TLookupInfo : ItemLookupInfo
-            where TIdentity : IItemIdentity;
+        IEnumerable<IItemIdentityProvider<TLookupInfo>> GetItemIdentityProviders<TLookupInfo>()
+            where TLookupInfo : ItemLookupInfo;
 
         /// <summary>
         /// Gets the item identity converters.
         /// </summary>
-        /// <typeparam name="TIdentity">The type of the t identity.</typeparam>
+        /// <typeparam name="TLookupInfo">The type of the t lookup information.</typeparam>
         /// <returns>IEnumerable&lt;IItemIdentityConverter&lt;TIdentity&gt;&gt;.</returns>
-        IEnumerable<IItemIdentityConverter<TIdentity>> GetItemIdentityConverters<TIdentity>()
-            where TIdentity : IItemIdentity;
+        IEnumerable<IItemIdentityConverter<TLookupInfo>> GetItemIdentityConverters<TLookupInfo>()
+            where TLookupInfo : ItemLookupInfo;
     }
 }

@@ -902,7 +902,8 @@
     jQuery.uaMatch = function (ua) {
         ua = ua.toLowerCase();
 
-        var match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||
+        var match = /(edge)[ \/]([\w.]+)/.exec(ua) ||
+            /(chrome)[ \/]([\w.]+)/.exec(ua) ||
             /(safari)[ \/]([\w.]+)/.exec(ua) ||
             /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||
             /(msie) ([\w.]+)/.exec(ua) ||
@@ -945,7 +946,7 @@
         browser[matched.platform] = true;
     }
 
-    if (userAgent.toLowerCase().indexOf("webkit") != -1 && !browser.chrome && !browser.msie) {
+    if (userAgent.toLowerCase().indexOf("webkit") != -1 && !browser.chrome && !browser.msie && !browser.edge) {
         browser.safari = true;
     }
 
@@ -960,6 +961,8 @@
     if (browser.msie && !browser.mobile && userAgent.toLowerCase().indexOf("xbox") != -1) {
         browser.tv = true;
     }
+
+    browser.androidVersion = md.version('Android');
 
     if (browser.ipad || browser.iphone) {
         if (userAgent.toLowerCase().indexOf('cpu os 9') != -1) {

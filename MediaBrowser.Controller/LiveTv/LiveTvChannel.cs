@@ -47,12 +47,6 @@ namespace MediaBrowser.Controller.LiveTv
         public string Number { get; set; }
 
         /// <summary>
-        /// Gets or sets the external identifier.
-        /// </summary>
-        /// <value>The external identifier.</value>
-        public string ExternalId { get; set; }
-        
-        /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>
@@ -64,24 +58,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The name of the service.</value>
         public string ServiceName { get; set; }
 
-        /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
-        /// </summary>
-        /// <value>The image path.</value>
-        public string ProviderImagePath { get; set; }
-
-        /// <summary>
-        /// Supply the image url if it can be downloaded
-        /// </summary>
-        /// <value>The image URL.</value>
-        public string ProviderImageUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has image.
-        /// </summary>
-        /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
-        public bool? HasProviderImage { get; set; }
-
+        [IgnoreDataMember]
         public override LocationType LocationType
         {
             get

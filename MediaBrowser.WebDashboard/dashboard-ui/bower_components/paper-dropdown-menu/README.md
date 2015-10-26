@@ -10,14 +10,16 @@ menu. It could be a `paper-menu` or element that triggers `iron-activate` when
 selecting its children.
 Example:
 
-    <paper-dropdown-menu label="Your favourite pastry">
-      <paper-menu class="dropdown-content">
-        <paper-item>Croissant</paper-item>
-        <paper-item>Donut</paper-item>
-        <paper-item>Financier</paper-item>
-        <paper-item>Madeleine</paper-item>
-      </paper-menu>
-    </paper-dropdown-menu>
+```html
+<paper-dropdown-menu label="Your favourite pastry">
+  <paper-menu class="dropdown-content">
+    <paper-item>Croissant</paper-item>
+    <paper-item>Donut</paper-item>
+    <paper-item>Financier</paper-item>
+    <paper-item>Madeleine</paper-item>
+  </paper-menu>
+</paper-dropdown-menu>
+```
     
 This example renders a dropdown menu with 4 options.
 ### Styling

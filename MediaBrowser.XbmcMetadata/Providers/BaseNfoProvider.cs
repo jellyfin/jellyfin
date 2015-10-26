@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -55,7 +56,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             FileSystem = fileSystem;
         }
 
-        protected abstract FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService);
+        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {

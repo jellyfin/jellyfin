@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -65,27 +66,30 @@ namespace MediaBrowser.Providers.TV
             var season = (Season)item;
             var series = season.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId) && season.IndexNumber.HasValue)
+            if (series != null && season.IndexNumber.HasValue && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
-
-                // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
-
-                var path = Path.Combine(seriesDataPath, "banners.xml");
-
-                var identity = season.Identities.OfType<SeasonIdentity>()
-                    .FirstOrDefault(id => id.Type == MetadataProviders.Tvdb.ToString());
-
+                var seriesProviderIds = series.ProviderIds;
                 var seasonNumber = season.IndexNumber.Value;
+
+                var identity = TvdbSeasonIdentityProvider.ParseIdentity(season.GetProviderId(TvdbSeasonIdentityProvider.FullIdKey));
+                if (identity == null)
+                {
+                    identity = new TvdbSeasonIdentity(series.GetProviderId(MetadataProviders.Tvdb), seasonNumber);
+                }
 
                 if (identity != null)
                 {
-                    seasonNumber = AdjustForSeriesOffset(series, identity.SeasonIndex);
+                    var id = identity.Value;
+                    seasonNumber = AdjustForSeriesOffset(series, id.Index);
+
+                    seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    seriesProviderIds[MetadataProviders.Tvdb.ToString()] = id.SeriesId;
                 }
-                
+
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+
+                var path = Path.Combine(seriesDataPath, "banners.xml");
+
                 try
                 {
                     return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
@@ -383,7 +387,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
 
-                var fileInfo = new FileInfo(imagesXmlPath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
                 return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

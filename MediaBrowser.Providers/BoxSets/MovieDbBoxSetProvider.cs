@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -156,7 +157,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _json.SerializeToFile(mainResult, dataFilePath);
         }

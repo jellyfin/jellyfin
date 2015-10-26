@@ -24,14 +24,20 @@ namespace MediaBrowser.Controller.Entities.Audio
         IThemeMedia,
         IArchivable
     {
-        public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
         public List<string> Tags { get; set; }
-        public ExtraType ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
-        public bool IsThemeMedia { get; set; }
+        [IgnoreDataMember]
+        public bool IsThemeMedia
+        {
+            get
+            {
+                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeSong;
+            }
+        }
 
         public Audio()
         {
@@ -45,12 +51,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has embedded image.
-        /// </summary>
-        /// <value><c>true</c> if this instance has embedded image; otherwise, <c>false</c>.</value>
-        public bool HasEmbeddedImage { get; set; }
 
         [IgnoreDataMember]
         protected override bool SupportsOwnedItems
@@ -212,8 +212,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,
                 Container = i.Container,
-                Size = i.Size,
-                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                Size = i.Size
             };
 
             if (string.IsNullOrEmpty(info.Container))

@@ -111,7 +111,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard bottomPaddedCard";
 
         if (user.Policy.IsDisabled) {
             cssClass += ' grayscale';
@@ -218,7 +218,7 @@
 
     function showPendingUserMenu(elem) {
 
-        require(['jqmpopup'], function() {
+        require(['jqmpopup'], function () {
             var card = $(elem).parents('.card');
             var page = $(elem).parents('.page');
             var id = card.attr('data-id');
@@ -255,7 +255,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard alternateHover bottomPaddedCard";
+        var cssClass = "card squareCard bottomPaddedCard";
 
         html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
 
@@ -281,12 +281,11 @@
 
         html += '<div class="cardFooter">';
 
-        html += '<div class="cardText" style="text-align:right; float:right;">';
-
-        html += '<button class="btnUserMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 2px 0 0;"></button>';
+        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
         html += "</div>";
 
-        html += '<div class="cardText" style="margin-right: 30px; padding: 11px 0 10px;">';
+        html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
         html += user.UserName;
         html += "</div>";
 
@@ -468,6 +467,11 @@
         $('.btnInvite', page).on('click', function () {
 
             showInvitePopup(page);
+        });
+
+        $('.btnAddUser', page).on('click', function () {
+
+            Dashboard.navigate('usernew.html');
         });
 
         $('.addUserForm').off('submit', onSubmit).on('submit', onSubmit);

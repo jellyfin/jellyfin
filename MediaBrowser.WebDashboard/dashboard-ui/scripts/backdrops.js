@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var pageBackgroundCreated;
+
     function getElement() {
 
         //var elem = $('.backdropContainer');
@@ -12,6 +14,15 @@
         var elem = document.documentElement;
 
         elem.classList.add('backdropContainer');
+        elem.classList.add('noFade');
+
+        if (!pageBackgroundCreated) {
+            pageBackgroundCreated = true;
+            var div = document.createElement('div');
+            div.classList.add('pageBackground');
+            document.body.insertBefore(div, document.body.firstChild);
+        }
+
         return elem;
     }
 
@@ -19,6 +30,7 @@
 
         var elem = document.documentElement;
         elem.classList.remove('backdropContainer');
+        elem.removeAttribute('data-url');
         elem.style.backgroundImage = '';
     }
 
@@ -71,6 +83,11 @@
 
     function setBackdropImage(elem, url) {
 
+        if (url == elem.getAttribute('data-url')) {
+            return;
+        }
+
+        elem.setAttribute('data-url', url);
         ImageLoader.lazyImage(elem, url);
     }
 
@@ -109,7 +126,9 @@
 
     function setDefault(page) {
 
-        getElement().style.backgroundImage = "url(css/images/splash.jpg)";
+        var elem = getElement();
+        elem.style.backgroundImage = "url(css/images/splash.jpg)";
+        elem.setAttribute('data-url', 'css/images/splash.jpg');
         page = $(page)[0];
         page.classList.add('backdropPage');
         page.classList.add('staticBackdropPage');
@@ -194,28 +213,25 @@
         }
     }
 
-    Events.on(document, 'pagebeforeshow', ".page", function () {
+    pageClassOn('pagebeforeshow', "page", function () {
 
         var page = this;
 
-        if (!page.classList.contains('staticBackdropPage')) {
+        if (page.classList.contains('backdropPage')) {
 
-            if (page.classList.contains('backdropPage')) {
+            if (enabled()) {
+                var type = page.getAttribute('data-backdroptype');
 
-                if (enabled()) {
-                    var type = page.getAttribute('data-backdroptype');
+                var parentId = page.classList.contains('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
 
-                    var parentId = page.classList.contains('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
+                showBackdrop(type, parentId);
 
-                    showBackdrop(type, parentId);
-
-                } else {
-                    page.classList.remove('backdropPage');
-                    clearBackdrop();
-                }
             } else {
+                page.classList.remove('backdropPage');
                 clearBackdrop();
             }
+        } else {
+            clearBackdrop();
         }
 
     });
@@ -224,7 +240,8 @@
 
         setBackdrops: setBackdrops,
         setBackdropUrl: setBackdropUrl,
-        setDefault: setDefault
+        setDefault: setDefault,
+        clear: clearBackdrop
     };
 
 })(jQuery, document);

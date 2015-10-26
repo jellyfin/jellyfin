@@ -17,7 +17,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #222;
+    background-color: #000;
     color: #fff;
 }
 
@@ -49,10 +49,6 @@
         background-color: rgba(0, 0, 0, .7);
     }
 
-.videoControlButtons {
-    padding: 0 .5em;
-}
-
 .videoTopControls {
     padding: 0 1em;
     background-color: rgba(0, 0, 0, .5);
@@ -69,15 +65,29 @@
     padding-top: .5em;
 }
 
-    .videoAdvancedControls iron-icon {
-        width: 32px;
-        height: 32px;
+    .videoAdvancedControls paper-icon-button {
+        width: 30px;
+        height: 30px;
     }
 
 .nowPlayingInfo {
     text-align: center;
     padding: 1.5em 1em 2em 1em;
 }
+
+.guide {
+    height: 400px;
+    overflow: auto;
+    background-color: #000 !important;
+}
+
+    .guide .tvGuideHeader {
+        position: static !important;
+    }
+
+    .guide .programContainer {
+        margin-top: 0 !important;
+    }
 
 #videoPlayer .nowPlayingImage img {
     height: auto !important;
@@ -97,6 +107,36 @@
     width: 70%;
     font-weight: normal;
     font-size: 14px;
+}
+
+.videoPositionSlider {
+    width: 300px;
+    vertical-align: middle;
+    margin-left: -1em;
+}
+
+@media all and (max-width: 440px) {
+    .videoPositionSlider {
+        width: 240px;
+    }
+}
+
+@media all and (max-width: 400px) {
+    .videoPositionSlider {
+        width: 220px;
+    }
+}
+
+@media all and (max-width: 350px) {
+    .videoPositionSlider {
+        width: 200px;
+    }
+}
+
+@media all and (max-width: 320px) {
+    .videoPositionSlider {
+        width: 170px;
+    }
 }
 
 @media all and (max-width: 1200px) {
@@ -185,10 +225,6 @@
     max-height: 100%;
 }
 
-    /* Hack for safari because it doesn't allow clickable content over the video surface. */
-    /*.itemVideo { (;top: 9%!important;height: 91% !important;); }
-.itemVideo { [;top: 9%!important;height: 91% !important;]; }*/
-
     #videoPlayer .inactive {
         display: none !important;
     }
@@ -202,7 +238,6 @@
 @media all and (max-width: 1200px), all and (max-height: 720px) {
     .videoControls .currentTime {
         margin-right: 0;
-        min-width: 120px;
     }
 }
 

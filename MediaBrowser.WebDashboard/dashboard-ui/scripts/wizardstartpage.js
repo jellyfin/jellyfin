@@ -6,7 +6,7 @@
 
             return '<option value="' + l.Value + '">' + l.Name + '</option>';
 
-        })).val(config.UICulture).selectmenu('refresh');
+        })).val(config.UICulture);
 
         Dashboard.hideLoadingMsg();
     }
@@ -46,7 +46,7 @@
 
         $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#wizardStartPage", function () {
+    }).on('pageshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
         var page = this;

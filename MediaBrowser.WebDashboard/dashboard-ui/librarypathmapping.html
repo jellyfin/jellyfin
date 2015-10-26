@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="libraryPathMappingPage" data-role="page" class="page type-interior mediaLibraryPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="jqmtable,scripts/librarypathmapping">
+    <div id="libraryPathMappingPage" data-role="page" class="page type-interior librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="jqmtable,scripts/librarypathmapping">
 
         <div data-role="content">
             <div class="content-primary">
@@ -20,9 +20,9 @@
                     <table id="tblPaths" data-role="table" data-mode="reflow" class="ui-responsive">
                         <thead>
                             <tr>
-                                <th></th>
                                 <th>${HeaderFrom}</th>
                                 <th>${HeaderTo}</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody class="tbodyPathSubstitutions"></tbody>
@@ -47,9 +47,9 @@
                             <div class="fieldDescription">${LabelToHelp}</div>
                         </div>
                         <br />
-                        <p>
-                            <button type="submit" data-mini="true" data-icon="plus">${ButtonAdd}</button>
-                        </p>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                        </button>
                     </div>
 
                 </form>

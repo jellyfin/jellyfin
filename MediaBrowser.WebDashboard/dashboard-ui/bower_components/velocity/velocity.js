@@ -1,4 +1,4 @@
-/*! VelocityJS.org (1.2.2). (C) 2014 Julian Shapiro. MIT @license: en.wikipedia.org/wiki/MIT_License */
+/*! VelocityJS.org (1.2.3). (C) 2014 Julian Shapiro. MIT @license: en.wikipedia.org/wiki/MIT_License */
 
 /*************************
    Velocity jQuery Shim
@@ -2074,7 +2074,7 @@ return function (global, window, document, undefined) {
         /* Support is included for jQuery's argument overloading: $.animate(propertyMap [, duration] [, easing] [, complete]).
            Overloading is detected by checking for the absence of an object being passed into options. */
         /* Note: The stop and finish actions do not accept animation options, and are therefore excluded from this check. */
-        if (!/^(stop|finish)$/i.test(propertiesMap) && !$.isPlainObject(options)) {
+        if (!/^(stop|finish|finishAll)$/i.test(propertiesMap) && !$.isPlainObject(options)) {
             /* The utility function shifts all arguments one position to the right, so we adjust for that offset. */
             var startingArgumentPosition = argumentIndex + 1;
 
@@ -2140,6 +2140,7 @@ return function (global, window, document, undefined) {
                 break;
 
             case "finish":
+            case "finishAll":
             case "stop":
                 /*******************
                     Action: Stop
@@ -2157,6 +2158,22 @@ return function (global, window, document, undefined) {
                         }
 
                         delete Data(element).delayTimer;
+                    }
+
+                    /* If we want to finish everything in the queue, we have to iterate through it
+                       and call each function. This will make them active calls below, which will
+                       cause them to be applied via the duration setting. */
+                    if (propertiesMap === "finishAll" && (options === true || Type.isString(options))) {
+                        /* Iterate through the items in the element's queue. */
+                        $.each($.queue(element, Type.isString(options) ? options : ""), function(_, item) {
+                            /* The queue array can contain an "inprogress" string, which we skip. */
+                            if (Type.isFunction(item)) {
+                                item();
+                            }
+                        });
+
+                        /* Clearing the $.queue() array is achieved by resetting it to []. */
+                        $.queue(element, Type.isString(options) ? options : "", []);
                     }
                 });
 
@@ -2190,10 +2207,11 @@ return function (global, window, document, undefined) {
                             }
 
                             /* Iterate through the calls targeted by the stop command. */
-                            $.each(elements, function(l, element) {                                
+                            $.each(elements, function(l, element) {
                                 /* Check that this call was applied to the target element. */
                                 if (element === activeElement) {
-                                    /* Optionally clear the remaining queued calls. */
+                                    /* Optionally clear the remaining queued calls. If we're doing "finishAll" this won't find anything,
+                                       due to the queue-clearing above. */
                                     if (options === true || Type.isString(options)) {
                                         /* Iterate through the items in the element's queue. */
                                         $.each($.queue(element, Type.isString(options) ? options : ""), function(_, item) {
@@ -2221,7 +2239,7 @@ return function (global, window, document, undefined) {
                                         }
 
                                         callsToStop.push(i);
-                                    } else if (propertiesMap === "finish") {
+                                    } else if (propertiesMap === "finish" || propertiesMap === "finishAll") {
                                         /* To get active tweens to finish immediately, we forcefully shorten their durations to 1ms so that
                                         they finish upon the next rAf tick then proceed with normal call completion logic. */
                                         activeCall[2].duration = 1;
@@ -3473,7 +3491,7 @@ return function (global, window, document, undefined) {
                             tween.currentValue = currentValue;
 
                             /* If we're tweening a fake 'tween' property in order to log transition values, update the one-per-call variable so that
-                               it can be passed into the progress callback. */ 
+                               it can be passed into the progress callback. */
                             if (property === "tween") {
                                 tweenDummyValue = currentValue;
                             } else {

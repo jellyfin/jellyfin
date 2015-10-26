@@ -5,7 +5,7 @@
         $('#txtSyncTempPath', page).val(config.TemporaryPath || '');
         $('#txtUploadSpeedLimit', page).val((config.UploadSpeedLimitBytes / 1000000) || '');
         $('#txtCpuCoreLimit', page).val(config.TranscodingCpuCoreLimit);
-        $('#chkEnableFullSpeedConversion', page).checked(config.EnableFullSpeedTranscoding).checkboxradio('refresh');
+        $('#chkEnableFullSpeedConversion', page).checked(config.EnableFullSpeedTranscoding);
 
         Dashboard.hideLoadingMsg();
     }
@@ -35,24 +35,26 @@
 
         $('#btnSelectSyncTempPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtSyncTempPath', page).val(path);
+                    callback: function (path) {
+                        if (path) {
+                            $('#txtSyncTempPath', page).val(path);
+                        }
+                        picker.close();
                     }
-                    picker.close();
-                }
+                });
             });
         });
 
         $('.syncSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#syncSettingsPage", function () {
+    }).on('pageshow', "#syncSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

@@ -1,6 +1,6 @@
 {
   "name": "paper-input",
-  "version": "1.0.12",
+  "version": "1.0.15",
   "description": "Material design text fields",
   "authors": [
     "The Polymer Authors"
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/PolymerElements/paper-input",
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
+    "polymer": "Polymer/polymer#^1.1.0",
     "iron-autogrow-textarea": "PolymerElements/iron-autogrow-textarea#^1.0.0",
     "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
     "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#^1.0.0",
@@ -35,22 +35,22 @@
     "paper-styles": "PolymerElements/paper-styles#^1.0.0"
   },
   "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "web-component-tester": "Polymer/web-component-tester#^3.3.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
     "iron-validator-behavior": "PolymerElements/iron-validator-behavior#^1.0.0",
-    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
   },
-  "_release": "1.0.12",
+  "_release": "1.0.15",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.12",
-    "commit": "bcfc2998c1e83d0c2ad7206e84717ae98145c45a"
+    "tag": "v1.0.15",
+    "commit": "34d19454e0ea13b1a809add8c87fba128fbc9940"
   },
-  "_source": "git://github.com/polymerelements/paper-input.git",
-  "_target": "^1.0.9",
-  "_originalSource": "polymerelements/paper-input"
+  "_source": "git://github.com/PolymerElements/paper-input.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/paper-input"
 }

@@ -133,11 +133,6 @@
                     html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
                 }
                 break;
-            case "UnidentifiedImage":
-                if (rRow.IsUnidentified) {
-                    html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
-                }
-                break;
             case "TagsPrimaryImage":
                 if (!rRow.HasImageTagsPrimary) {
                     html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="width:18px"/></a>';
@@ -174,9 +169,6 @@
             case "StatusImage":
                 if (rRow.HasLockData) {
                     html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
-                }
-                if (rRow.IsUnidentified) {
-                    html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
@@ -298,7 +290,7 @@
                     }
                 }
             });
-            $('#selectPageSize', page).val(selected).selectmenu('refresh');
+            $('#selectPageSize', page).val(selected);
 
         });
     }
@@ -504,14 +496,13 @@
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
 
         //Management
         $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
         $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
 
-        $('#chkIsUnidentified', page).checked(query.IsUnidentified == true).checkboxradio('refresh');
         $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
 
         //Episodes
@@ -519,7 +510,7 @@
         $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
-        $('#selectIncludeItemTypes').val(query.IncludeItemTypes).selectmenu('refresh');
+        $('#selectIncludeItemTypes').val(query.IncludeItemTypes);
     }
 
     var filtersLoaded;
@@ -775,14 +766,6 @@
             reloadItems(page);
         });
 
-        $('#chkIsUnidentified', page).on('change', function () {
-
-            query.StartIndex = 0;
-            query.IsUnidentified = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
         //Episodes
         $('#chkMissingEpisode', page).on('change', function () {
 
@@ -846,8 +829,18 @@
             query.StartIndex = 0;
             reloadItems(page);
         });
+
+        $(page.getElementsByClassName('viewTabButton')).on('click', function () {
+
+            var parent = $(this).parents('.viewPanel');
+            $('.viewTabButton', parent).removeClass('ui-btn-active');
+            this.classList.add('ui-btn-active');
+
+            $('.viewTab', parent).addClass('hide');
+            $('.' + this.getAttribute('data-tab'), parent).removeClass('hide');
+        });
     })
-	.on('pageshowready', "#libraryReportManagerPage", function () {
+	.on('pageshow', "#libraryReportManagerPage", function () {
 
 	    query.UserId = Dashboard.getCurrentUserId();
 	    var page = this;
@@ -855,7 +848,7 @@
 
 	    QueryReportFilters.onPageShow(page, query);
 	    QueryReportColumns.onPageShow(page, query);
-	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
+	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).trigger('change');
 
 	    updateFilterControls(page);
 

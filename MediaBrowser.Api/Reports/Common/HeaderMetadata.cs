@@ -43,7 +43,6 @@ namespace MediaBrowser.Api.Reports
 		MusicArtist,
 		AudioAlbum,
         Locked,
-        Unidentified,
         ImagePrimary,
         ImageBackdrop,
         ImageLogo,

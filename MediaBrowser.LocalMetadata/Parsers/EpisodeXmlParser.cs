@@ -8,6 +8,8 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Xml;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -17,10 +19,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
         private List<LocalImageInfo> _imagesFound;
+        private readonly IFileSystem _fileSystem;
 
-        public EpisodeXmlParser(ILogger logger)
+        public EpisodeXmlParser(ILogger logger, IFileSystem fileSystem)
             : base(logger)
         {
+            _fileSystem = fileSystem;
         }
 
         private string _xmlPath;
@@ -80,7 +84,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             var parentFolder = Path.GetDirectoryName(_xmlPath);
                             filename = Path.Combine(parentFolder, filename);
-                            var file = new FileInfo(filename);
+                            var file = _fileSystem.GetFileInfo(filename);
 
                             if (file.Exists)
                             {

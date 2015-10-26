@@ -34,23 +34,32 @@
     top: -2px;
 }
 
-.availableImagesList {
-    overflow-y: auto;
-    width: 300px;
-    height: 400px;
-    text-align: center;
-}
-
 .remoteImageContainer {
     display: inline-block;
-    margin: 8px;
+    margin: 5px;
     vertical-align: top;
 }
 
 .remoteImageDetails {
-    background: #eee;
-    padding: 3px 5px;
+    text-align: left;
+    background: #282828;
+    position: relative;
+    padding: 5px 5px 2px;
 }
+
+    .remoteImageDetails paper-icon-button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+
+.remoteImageDetailText {
+    padding: 5px 5px;
+}
+
+    .remoteImageDetailText + .remoteImageDetailText {
+        color: #ccc;
+    }
 
 .remoteImage {
     background-position: center bottom;
@@ -63,8 +72,8 @@
 }
 
 .remotePosterImage {
-    width: 150px;
-    height: 225px;
+    width: 140px;
+    height: 210px;
 }
 
 .remoteBackdropImage {
@@ -80,6 +89,37 @@
 .remoteDiscImage {
     width: 180px;
     height: 180px;
+}
+
+@media all and (min-width: 600px) {
+
+    .remotePosterImage {
+        width: 160px;
+        height: 240px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .remotePosterImage {
+        width: 200px;
+        height: 300px;
+    }
+
+    .remoteBackdropImage {
+        width: 320px;
+        height: 180px;
+    }
+
+    .remoteDiscImage {
+        width: 240px;
+        height: 240px;
+    }
+
+    .remoteBannerImage {
+        width: 544px;
+        height: 100px;
+    }
 }
 
 .editorfieldDescription {
@@ -156,19 +196,7 @@
     background: #52B54B !important;
 }
 
-@media all and (min-width: 500px) {
-
-    .availableImagesList {
-        width: 400px;
-    }
-}
-
 @media all and (min-width: 600px) {
-
-    .availableImagesList {
-        width: 500px;
-        height: 450px;
-    }
 
     .remoteBannerImage {
         width: 450px;
@@ -200,32 +228,38 @@
 
 .editorTile {
     display: inline-block;
-    margin: .5em;
     text-align: center;
     vertical-align: middle;
 }
 
+.editorTileInner {
+    margin: 1em .5em;
+}
+
 .imageEditorTile {
-    width: 256px;
-    background-color: #282828;
+    width: 100%;
     padding: 0;
 }
 
 .editorTile h3 {
-    text-transform: uppercase;
-    background: #444;
-    padding: .5em 0;
     text-align: center;
-    margin-top: 0;
-    color: #ddd;
+    margin: .5em 0 .7em;
 }
 
 .editorTile p {
     margin: .5em 0;
 }
 
-.editorTileInner {
-    padding: 1em;
+.editorTileFooter {
+    padding: .5em;
+}
+
+.ui-body-a .editorTileFooter {
+    background-color: #fff;
+}
+
+.ui-body-b .editorTileFooter {
+    background-color: #282828;
 }
 
 .editorTile .ui-field-contain {
@@ -265,6 +299,10 @@
     .subtitleViewerContent {
         width: 400px;
     }
+
+    .imageEditorTile {
+        width: 50%;
+    }
 }
 
 @media all and (min-width: 600px) {
@@ -280,10 +318,6 @@
 
 @media all and (min-width: 700px) {
 
-    .availableImagesList {
-        width: 600px;
-    }
-
     .popupIdentify {
         width: 500px;
     }
@@ -291,13 +325,13 @@
     .subtitleViewerContent {
         width: 600px;
     }
+
+    .imageEditorTile {
+        width: 33.3%;
+    }
 }
 
 @media all and (min-width: 800px) {
-
-    .availableImagesList {
-        width: 700px;
-    }
 
     .editPageSidebar {
         position: fixed;
@@ -321,10 +355,6 @@
 
 @media all and (min-width: 900px) {
 
-    .availableImagesList {
-        width: 800px;
-    }
-
     .popupIdentify {
         width: 700px;
     }
@@ -332,20 +362,16 @@
 
 @media all and (min-width: 1000px) {
 
-    .availableImagesList {
-        width: 900px;
-    }
-
     .popupIdentify {
         width: 800px;
+    }
+
+    .imageEditorTile {
+        width: 25%;
     }
 }
 
 @media all and (min-width: 1100px) {
-
-    .availableImagesList {
-        width: 1000px;
-    }
 
     .popupIdentify {
         width: 900px;
@@ -354,33 +380,19 @@
 
 @media all and (min-width: 1200px) {
 
-    .availableImagesList {
-        width: 1100px;
-    }
-
     .popupIdentify {
         width: 1000px;
     }
-}
 
-@media all and (min-width: 1300px) {
-
-    .availableImagesList {
-        width: 1200px;
+    .imageEditorTile {
+        width: 20%;
     }
 }
 
 @media all and (min-width: 1400px) {
 
-    .availableImagesList {
-        width: 1300px;
-    }
-}
-
-@media all and (min-width: 1500px) {
-
-    .availableImagesList {
-        width: 1400px;
+    .imageEditorTile {
+        width: 16.666666666666666666666666666667%;
     }
 }
 
@@ -393,10 +405,10 @@
     .editPageInnerContent {
         width: 72.5%;
     }
-}
 
-.popupIdentify form, .identificationSearchResults {
-    overflow-y: auto;
+    .imageEditorTile {
+        width: 14.285714285714285714285714285714%;
+    }
 }
 
 .collectionItemSearchResults {
@@ -407,20 +419,12 @@
 
 @media all and (min-height: 500px) {
 
-    .popupIdentify form, .identificationSearchResults {
-        height: 350px;
-    }
-
     .subtitleViewerContent {
         height: 400px;
     }
 }
 
 @media all and (min-height: 600px) {
-
-    .popupIdentify form, .identificationSearchResults {
-        height: 450px;
-    }
 
     .collectionItemSearchResults {
         max-height: 70%;
@@ -433,10 +437,6 @@
 
 @media all and (min-height: 700px) {
 
-    .popupIdentify form, .identificationSearchResults {
-        height: 550px;
-    }
-
     .collectionItemSearchResults {
         max-height: 75%;
     }
@@ -448,26 +448,7 @@
 
 @media all and (min-height: 800px) {
 
-    .availableImagesList {
-        height: 600px;
-    }
-
-    .popupIdentify form, .identificationSearchResults {
-        height: 600px;
-    }
-
     .collectionItemSearchResults {
         max-height: 80%;
-    }
-}
-
-@media all and (min-height: 900px) {
-
-    .availableImagesList {
-        height: 700px;
-    }
-
-    .popupIdentify form, .identificationSearchResults {
-        height: 700px;
     }
 }

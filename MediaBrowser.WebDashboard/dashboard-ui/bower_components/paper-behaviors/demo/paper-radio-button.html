@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-inky-focus-behavior.html">
+<link rel="import" href="../paper-checked-element-behavior.html">
 
 <dom-module id="paper-radio-button">
 
@@ -89,7 +89,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="radioContainer">
       <div id="offRadio"></div>
       <div id="onRadio"></div>
-      <paper-ripple id="ink" class="circle" center></paper-ripple>
     </div>
   </template>
 
@@ -98,7 +97,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -107,6 +106,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ready: function() {
         this.toggles = true;
+      },
+
+      _createRipple: function() {
+        this._rippleContainer = this.$.radioContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
 
     });

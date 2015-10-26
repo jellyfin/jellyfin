@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvtimer,livetvcss" data-backbutton="true" data-menubutton="false">
+    <div id="liveTvTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcollapsible,scripts/livetvcomponents,scripts/livetvtimer,livetvcss" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
 
@@ -37,14 +37,14 @@
                     <h3>${HeaderAdvanced}</h3>
                     <div>
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                            </li>
-                            <li>
-                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                            </li>
-                        </ul>
+                        <div>
+                            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
                     </div>
                 </div>
                 <br />

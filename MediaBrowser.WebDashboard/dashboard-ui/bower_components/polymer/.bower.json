@@ -1,6 +1,6 @@
 {
   "name": "polymer",
-  "version": "1.1.2",
+  "version": "1.1.5",
   "main": [
     "polymer.html"
   ],
@@ -25,11 +25,11 @@
   },
   "private": true,
   "homepage": "https://github.com/Polymer/polymer",
-  "_release": "1.1.2",
+  "_release": "1.1.5",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.2",
-    "commit": "9b0a25e347404ac164bc610bbd2ccbc91b6799b2"
+    "tag": "v1.1.5",
+    "commit": "4c94736fac6681e84ec8c00da53484c5d3c2226b"
   },
   "_source": "git://github.com/Polymer/polymer.git",
   "_target": "^1.0.0",

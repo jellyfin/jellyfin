@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvnewrecording,livetvcss" data-backbutton="true" data-menubutton="false">
+    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcollapsible,scripts/livetvcomponents,scripts/livetvnewrecording,livetvcss" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <form class="liveTvNewRecordingForm" style="margin: 0 auto;">
@@ -54,24 +54,24 @@
                     <h3>${HeaderAdvanced}</h3>
                     <div>
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                            </li>
-                            <li>
-                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                            </li>
-                        </ul>
+                        <div>
+                            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
                     </div>
                 </div>
                 <br />
                 <br />
                 <div>
                     <div class="supporterContainer hide">
-                        <p>${MessageActiveSupporterMembershipRequiredSeriesRecordings}</p>
+                        <p>${MessageActiveSubscriptionRequiredSeriesRecordings}</p>
                         <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
-                        <a class="clearLink btnSupporter hide" href="http://emby.media/donate" target="_blank"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
-                        <br/>
+                        <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
+                        <br />
                     </div>
                     <button type="submit" data-role="none" class="clearButton btnSubmitContainer">
                         <paper-button raised class="submit block" style="background:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>

@@ -27,7 +27,7 @@
 
         ApiClientBridge.init(AppInfo.appName, AppInfo.appVersion, AppInfo.deviceId, AppInfo.deviceName, JSON.stringify(capabilities));
 
-        initAjax();
+        //initAjax();
     }
 
     var baseAjaxMethod;
@@ -67,8 +67,10 @@
             request.headers.accept = 'application/json';
         }
 
+        var method = request.type || "GET";
+
         var javaRequest = {
-            Method: request.type || "GET",
+            Method: method,
             Url: request.url,
             RequestHeaders: request.headers
         };
@@ -85,7 +87,7 @@
             javaRequest.RequestContentType = request.contentType;
         }
 
-        Logger.log("Sending request: " + JSON.stringify(javaRequest));
+        //Logger.log("Sending request: " + JSON.stringify(javaRequest));
 
         ApiClientBridge.sendRequest(JSON.stringify(javaRequest), request.dataType, id);
 
@@ -129,10 +131,53 @@
         return error;
     }
 
+    function getDownloadSpeed(bytes, url) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        ApiClientBridge.getDownloadSpeed(bytes, url);
+
+        Events.on(AndroidAjax, 'downloadspeedresponse', function (e, response) {
+
+            Events.off(AndroidAjax, 'downloadspeedresponse');
+
+            if (response) {
+
+                deferred.resolveWith(null, [response]);
+            }
+            else {
+
+                // Need to mimic the jquery ajax error response
+                deferred.reject();
+            }
+
+        });
+
+        return deferred.promise();
+    }
+
+    function initApiClient(newApiClient) {
+        newApiClient.getDownloadSpeed = function (bytes) {
+            return getDownloadSpeed(bytes, newApiClient.getUrl('Playback/BitrateTest', {
+                api_key: newApiClient.accessToken(),
+                Size: bytes
+            }));
+        };
+    }
+
+    Events.on(ConnectionManager, 'apiclientcreated', function (e, newApiClient) {
+
+        initApiClient(newApiClient);
+    });
+
     Events.on(ConnectionManager.credentialProvider(), 'credentialsupdated', updateCredentials);
 
     updateCredentials();
     initNativeConnectionManager();
+
+    if (window.ApiClient) {
+        initApiClient(window.ApiClient);
+    }
 
     window.AndroidAjax = {
 
@@ -143,6 +188,10 @@
         onError: function (id, response) {
 
             Events.trigger(AndroidAjax, 'response' + id, [false, response]);
+        },
+        onDownloadSpeedResponse: function (response) {
+
+            Events.trigger(AndroidAjax, 'downloadspeedresponse', [response]);
         }
     };
 

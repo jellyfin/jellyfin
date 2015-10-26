@@ -61,6 +61,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(mq.queryMatches, true);
           });
 
+          test('automatically wrap with parens', function() {
+            mq.query = 'min-width: 1px';
+            assert.equal(mq.queryMatches, true);
+          });
+
+          suite('query does not activate on empty string or null', function() {
+
+            test('empty string', function() {
+              mq.query = '';
+              assert.notOk(mq._mq);
+            });
+
+            test('null', function() {
+              mq.query = null;
+              assert.notOk(mq._mq);
+            });
+
+          });
+
+          test('media query destroys on detach', function() {
+            mq.query = '(max-width: 800px)';
+            mq.parentNode.removeChild(mq);
+            Polymer.dom.flush();
+            assert.notOk(mq._mq);
+          });
+
+          test('media query re-enables on attach', function() {
+            mq.query = '(max-width: 800px)';
+            var parent = mq.parentNode;
+            parent.removeChild(mq);
+            Polymer.dom.flush();
+            parent.appendChild(mq);
+            Polymer.dom.flush();
+            assert.ok(mq._mq);
+          });
+
         });
 
       });

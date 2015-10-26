@@ -172,5 +172,6 @@
     "HeaderProducer": "Productores",
     "HeaderWriter": "Guionistas",
     "HeaderParentalRatings": "Clasificaci\u00f3n Parental",
-    "HeaderCommunityRatings": "Clasificaciones de la comunidad"
+    "HeaderCommunityRatings": "Clasificaciones de la comunidad",
+    "StartupEmbyServerIsLoading": "El servidor Emby esta cargando. Por favor intente de nuevo dentro de poco."
 }

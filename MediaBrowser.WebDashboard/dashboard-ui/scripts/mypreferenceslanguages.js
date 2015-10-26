@@ -13,7 +13,7 @@
             html += "<option value='" + culture.ThreeLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html).selectmenu("refresh");
+        $(select).html(html);
     }
 
     function loadForm(page, user, loggedInUser, allCulturesPromise) {
@@ -23,11 +23,11 @@
             populateLanguages($('#selectAudioLanguage', page), allCultures);
             populateLanguages($('#selectSubtitleLanguage', page), allCultures);
 
-            $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "").selectmenu("refresh");
-            $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "").selectmenu("refresh");
+            $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "");
+            $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "");
         });
 
-        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh").trigger('change');
+        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
         page.querySelector('.chkEnableCinemaMode').checked = user.Configuration.EnableCinemaMode || false;
@@ -39,10 +39,18 @@
             return '<option value="' + i.bitrate + '">' + i.name + '</option>';
 
         }).join('');
-        $('#selectMaxBitrate', page).html(bitrateOptions).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
 
+        bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
 
-        $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
+        $('#selectMaxBitrate', page).html(bitrateOptions);
+
+        if (AppSettings.enableAutomaticBitrateDetection()) {
+            $('#selectMaxBitrate', page).val('');
+        } else {
+            $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate());
+        }
+
+        $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate());
 
         Dashboard.hideLoadingMsg();
     }
@@ -100,7 +108,13 @@
 
         AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
-        AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+        if ($('#selectMaxBitrate', page).val()) {
+            AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+            AppSettings.enableAutomaticBitrateDetection(false);
+        } else {
+            AppSettings.enableAutomaticBitrateDetection(true);
+        }
+
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
         AppSettings.enableChromecastAc3(page.querySelector('.chkEnableChromecastAc3').checked);
 
@@ -129,7 +143,7 @@
         $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshowready', "#languagePreferencesPage", function () {
+    }).on('pageshow', "#languagePreferencesPage", function () {
 
         var page = this;
 

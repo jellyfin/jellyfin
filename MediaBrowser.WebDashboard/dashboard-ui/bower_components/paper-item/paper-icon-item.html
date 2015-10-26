@@ -9,7 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../iron-behaviors/iron-button-state.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="paper-item-shared-styles.html">
 
 <!--
 `<paper-icon-item>` is a convenience element to make an item with icon. It is a non interactive list
@@ -38,49 +41,42 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-icon-item">
-
-  <link rel="import" type="css" href="paper-item-shared.css">
-
-  <style>
-
-    :host {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--paper-font-subhead);
-
-      @apply(--paper-item);
-      @apply(--paper-icon-item);
-    }
-
-    .content-icon {
-      width: var(--paper-item-icon-width, 56px);
-    }
-
-  </style>
-
   <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+        @apply(--paper-icon-item);
+      }
+
+      .content-icon {
+        width: var(--paper-item-icon-width, 56px);
+      }
+    </style>
+
     <div id="contentIcon" class="content-icon layout horizontal center">
       <content select="[item-icon]"></content>
     </div>
     <content></content>
   </template>
 
+  <script>
+    Polymer({
+      is: 'paper-icon-item',
+
+      hostAttributes: {
+        'role': 'listitem',
+        'tabindex': '0'
+      },
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ]
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-icon-item',
-
-    hostAttributes: {
-      'role': 'listitem'
-    }
-
-  });
-
-})();
-
-</script>

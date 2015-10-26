@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Dto
 {
@@ -397,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             else if (item is LiveTvProgram)
             {
-                _livetvManager().AddInfoToProgramDto(item, dto, user);
+                _livetvManager().AddInfoToProgramDto(item, dto, fields.Contains(ItemFields.ChannelInfo), user);
             }
 
             return dto;
@@ -908,12 +909,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DisplayMediaType = item.DisplayMediaType;
             }
 
-            // Leave null if false
-            if (item.IsUnidentified)
-            {
-                dto.IsUnidentified = item.IsUnidentified;
-            }
-
             if (fields.Contains(ItemFields.Settings))
             {
                 dto.LockedFields = item.LockedFields;
@@ -1047,14 +1042,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.IsFolder = item.IsFolder;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
+            dto.IsHD = item.IsHD;
 
-            var hasLang = item as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                dto.PreferredMetadataCountryCode = hasLang.PreferredMetadataCountryCode;
-                dto.PreferredMetadataLanguage = hasLang.PreferredMetadataLanguage;
-            }
+            dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
+            dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
 
             var hasCriticRating = item as IHasCriticRating;
             if (hasCriticRating != null)
@@ -1318,7 +1309,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
                 dto.IsoType = video.IsoType;
-                dto.IsHD = video.IsHD;
+
+                if (video.HasSubtitles)
+                {
+                    dto.HasSubtitles = video.HasSubtitles;
+                }
 
                 if (video.AdditionalParts.Count != 0)
                 {
@@ -1432,8 +1427,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
                 dto.SeriesStatus = series.Status;
-
-                dto.SeasonCount = series.SeasonCount;
 
                 if (fields.Contains(ItemFields.Settings))
                 {
@@ -1590,7 +1583,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 foreach (var map in _config.Configuration.PathSubstitutions)
                 {
-                    path = _fileSystem.SubstitutePath(path, map.From, map.To);
+                    path = _libraryManager.SubstitutePath(path, map.From, map.To);
                 }
             }
 
@@ -1755,12 +1748,10 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (imageInfo == null)
+            if (imageInfo == null || !imageInfo.IsLocalFile)
             {
                 return;
             }
-
-            var path = imageInfo.Path;
 
             ImageSize size;
 

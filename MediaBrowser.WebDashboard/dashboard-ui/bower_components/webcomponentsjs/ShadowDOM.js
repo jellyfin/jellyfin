@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.12
+// @version 0.7.14
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -3145,18 +3145,29 @@ window.ShadowDOMPolyfill = {};
   "use strict";
   var Element = scope.wrappers.Element;
   var HTMLElement = scope.wrappers.HTMLElement;
-  var registerObject = scope.registerObject;
+  var registerWrapper = scope.registerWrapper;
   var defineWrapGetter = scope.defineWrapGetter;
+  var unsafeUnwrap = scope.unsafeUnwrap;
+  var wrap = scope.wrap;
+  var mixin = scope.mixin;
   var SVG_NS = "http://www.w3.org/2000/svg";
+  var OriginalSVGElement = window.SVGElement;
   var svgTitleElement = document.createElementNS(SVG_NS, "title");
-  var SVGTitleElement = registerObject(svgTitleElement);
-  var SVGElement = Object.getPrototypeOf(SVGTitleElement.prototype).constructor;
   if (!("classList" in svgTitleElement)) {
     var descr = Object.getOwnPropertyDescriptor(Element.prototype, "classList");
     Object.defineProperty(HTMLElement.prototype, "classList", descr);
     delete Element.prototype.classList;
   }
-  defineWrapGetter(SVGElement, "ownerSVGElement");
+  function SVGElement(node) {
+    Element.call(this, node);
+  }
+  SVGElement.prototype = Object.create(Element.prototype);
+  mixin(SVGElement.prototype, {
+    get ownerSVGElement() {
+      return wrap(unsafeUnwrap(this).ownerSVGElement);
+    }
+  });
+  registerWrapper(OriginalSVGElement, SVGElement, document.createElementNS(SVG_NS, "title"));
   scope.wrappers.SVGElement = SVGElement;
 })(window.ShadowDOMPolyfill);
 
@@ -3300,20 +3311,27 @@ window.ShadowDOMPolyfill = {};
 
 (function(scope) {
   "use strict";
+  var Node = scope.wrappers.Node;
   var GetElementsByInterface = scope.GetElementsByInterface;
   var NonElementParentNodeInterface = scope.NonElementParentNodeInterface;
   var ParentNodeInterface = scope.ParentNodeInterface;
   var SelectorsInterface = scope.SelectorsInterface;
   var mixin = scope.mixin;
   var registerObject = scope.registerObject;
-  var DocumentFragment = registerObject(document.createDocumentFragment());
+  var registerWrapper = scope.registerWrapper;
+  var OriginalDocumentFragment = window.DocumentFragment;
+  function DocumentFragment(node) {
+    Node.call(this, node);
+  }
+  DocumentFragment.prototype = Object.create(Node.prototype);
   mixin(DocumentFragment.prototype, ParentNodeInterface);
   mixin(DocumentFragment.prototype, SelectorsInterface);
   mixin(DocumentFragment.prototype, GetElementsByInterface);
   mixin(DocumentFragment.prototype, NonElementParentNodeInterface);
+  registerWrapper(OriginalDocumentFragment, DocumentFragment, document.createDocumentFragment());
+  scope.wrappers.DocumentFragment = DocumentFragment;
   var Comment = registerObject(document.createComment(""));
   scope.wrappers.Comment = Comment;
-  scope.wrappers.DocumentFragment = DocumentFragment;
 })(window.ShadowDOMPolyfill);
 
 (function(scope) {

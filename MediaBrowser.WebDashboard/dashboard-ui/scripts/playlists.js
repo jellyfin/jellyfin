@@ -32,7 +32,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function showLoadingMessage(page) {
@@ -73,9 +73,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
-
-            var trigger = false;
+            }));
 
             if (result.TotalRecordCount) {
 
@@ -85,7 +83,6 @@
                         items: result.Items,
                         sortBy: query.SortBy
                     });
-                    trigger = true;
                 }
                 else if (view == "PosterCard") {
                     html = LibraryBrowser.getPosterViewHtml({
@@ -142,10 +139,6 @@
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

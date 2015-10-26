@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -43,7 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var audio = (Audio)item;
 
             // Can't extract if we didn't find a video stream in the file
-            if (!audio.HasEmbeddedImage)
+            if (!audio.GetMediaSources(false).Take(1).SelectMany(i => i.MediaStreams).Any(i => i.Type == MediaStreamType.EmbeddedImage))
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -55,7 +56,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var path = GetAudioImagePath(item);
 
-            if (!File.Exists(path))
+			if (!_fileSystem.FileExists(path))
             {
                 var semaphore = GetLock(path);
 
@@ -65,9 +66,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 try
                 {
                     // Check again in case it was saved while waiting for the lock
-                    if (!File.Exists(path))
+					if (!_fileSystem.FileExists(path))
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+						_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                         using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, cancellationToken).ConfigureAwait(false))
                         {

@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>basic</title>
+
+  <link rel="stylesheet" href="sandbox.css" />
+
+</head>
+<body>
+
+  <h1>basic</h1>
+
+  <div id="basic" class="container">
+    <div class="item"></div>
+    <div class="item h4"></div>
+    <div class="item w2 h2"></div>
+    <div class="item w2"></div>
+    <div class="item h3"></div>
+    <div class="item w3"></div>
+    <div class="item"></div>
+    <div class="item h4"></div>
+    <div class="item"></div>
+    <div class="item w2 h4"></div>
+    <div class="item w2"></div>
+    <div class="item h5"></div>
+    <div class="item w3"></div>
+    <div class="item"></div>
+    <div class="item h4"></div>
+    <div class="item"></div>
+    <div class="item w2 h5"></div>
+    <div class="item w2"></div>
+    <div class="item h3"></div>
+    <div class="item w3"></div>
+    <div class="item"></div>
+  </div>
+
+<script src="../bower_components/eventEmitter/EventEmitter.js"></script>
+<script src="../bower_components/eventie/eventie.js"></script>
+<script src="../bower_components/doc-ready/doc-ready.js"></script>
+<script src="../bower_components/get-style-property/get-style-property.js"></script>
+<script src="../bower_components/get-size/get-size.js"></script>
+<script src="../bower_components/jquery-bridget/jquery.bridget.js"></script>
+<script src="../bower_components/matches-selector/matches-selector.js"></script>
+<script src="../bower_components/fizzy-ui-utils/utils.js"></script>
+<script src="../bower_components/outlayer/item.js"></script>
+<script src="../bower_components/outlayer/outlayer.js"></script>
+
+<script src="../masonry.js"></script>
+
+<script>
+docReady( function() {
+  var container = document.querySelector('#basic');
+  var msnry = new Masonry( container, {
+    columnWidth: 60
+  });
+});
+</script>
+
+</body>
+</html>

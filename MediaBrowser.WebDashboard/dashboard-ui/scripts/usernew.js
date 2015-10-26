@@ -106,6 +106,11 @@
             ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
+
+        }).fail(function() {
+
+            Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -151,7 +156,7 @@
 
         $('.newUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#newUserPage", function () {
+    }).on('pageshow', "#newUserPage", function () {
 
         var page = this;
 

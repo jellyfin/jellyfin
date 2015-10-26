@@ -45,6 +45,7 @@
     width: auto !important;
     height: auto !important;
     touch-action: auto !important;
+    overflow: visible;
 }
 
 .mainDrawerPanelPreInit #drawer {
@@ -72,6 +73,7 @@
 .mainDrawerPanel #main {
     left: 0 !important;
     position: static !important;
+    z-index: 1;
 }
 
 .mainDrawerPanel #scrim {
@@ -104,7 +106,7 @@
 }
 
     .headerButton img {
-        height: 19px;
+        height: 26px !important;
         vertical-align: middle;
     }
 
@@ -133,12 +135,7 @@
     display: none;
 }
 
-.barsMenuButton:hover {
-    opacity: .5 !important;
-}
-
 .libraryMenuButtonText {
-    color: #fff !important;
     text-decoration: none;
     font-weight: 400 !important;
     font-size: 15px;
@@ -148,6 +145,24 @@
     cursor: default;
     position: relative;
     top: 1px;
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media all and (min-width: 500px) {
+
+    .libraryMenuButtonText {
+        max-width: 200px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .libraryMenuButtonText {
+        max-width: 300px;
+    }
 }
 
 .logoLibraryMenuButtonText {
@@ -155,7 +170,7 @@
     color: #333;
 }
 
-.ui-page-theme-b .logoLibraryMenuButtonText, .ui-bar-b .logoLibraryMenuButtonText {
+.ui-body-b .logoLibraryMenuButtonText, .ui-bar-b .logoLibraryMenuButtonText {
     color: #fff;
 }
 
@@ -191,16 +206,21 @@
     -webkit-overflow-scrolling: touch;
 }
 
+    .libraryViewNav::-webkit-scrollbar {
+        height: 0 !important;
+        display: none;
+    }
+
 .libraryViewNavWithMinHeight {
     min-height: 48px;
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #121212;
+    background-color: #101010;
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(18, 18, 18, .75);
+        background-color: rgba(18, 18, 18, .60);
     }
 
 .paperLibraryViewNav {
@@ -209,11 +229,6 @@
 
 .libraryViewNav iron-icon {
     display: none;
-}
-
-.bottomSecondaryNav .libraryViewNav {
-    top: initial;
-    bottom: 0;
 }
 
 .libraryViewNav::-webkit-scrollbar {
@@ -229,22 +244,18 @@
     vertical-align: middle;
 }
 
-.headerButtonRight:hover {
-    opacity: .5;
-}
-
-.viewMenuLink:hover {
-    color: #fff;
-}
-
-    .viewMenuLink:hover img {
-        opacity: .5;
+    .viewMenuLink:hover {
+        color: #fff;
     }
 
-.viewMenuLink img {
-    height: 24px;
-    vertical-align: top;
-}
+        .viewMenuLink:hover img {
+            opacity: .5;
+        }
+
+    .viewMenuLink img {
+        height: 24px;
+        vertical-align: top;
+    }
 
 .viewMenuSecondary {
     position: absolute;
@@ -273,7 +284,7 @@
 }
 
 .libraryViewNav .ui-btn-active {
-    border-bottom-color: #38c;
+    border-bottom-color: #52B54B;
     color: #fff !important;
 }
 
@@ -283,16 +294,35 @@
     text-align: center;
 }
 
+.libraryViewNav #tabsContainer {
+    margin: auto;
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+    touch-action: auto !important;
+}
+
+.libraryViewNav paper-tabs {
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+    overflow-x: visible !important;
+}
+
+.libraryViewNav paper-tab {
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+
 .basicPaperLibraryTabs .libraryViewNav paper-tabs {
     display: none;
 }
 
 .fullPaperLibraryTabs .legacyTabs {
     display: none;
-}
-
-.libraryViewNav a:not(.ui-btn-active):hover {
-    color: #2ad;
 }
 
 @media all and (max-width: 400px) {
@@ -367,11 +397,11 @@
     display: none !important;
 }
 
-.libraryDocument .sidebarLinkNotifications {
+.dashboardDocument .lnkMySync {
     display: none !important;
 }
 
-.dashboardDocument .lnkMySync {
+.dashboardDocument .dashboardEntryHeaderButton {
     display: none !important;
 }
 
@@ -380,6 +410,10 @@
 }
 
 .dashboardDocument .headerVoiceButton {
+    display: none !important;
+}
+
+body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
 

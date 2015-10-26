@@ -5,12 +5,12 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderHomeScreenSettings}" data-require="scripts/mypreferenceshome,paperbuttonstyle,jqmicons" data-backbutton="true" data-menubutton="false">
+    <div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderHomeScreenSettings}" data-require="scripts/mypreferenceshome,paperbuttonstyle" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <form class="homeScreenPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
 
-                <div class="detailSection">
+                <div class="detailSection homeSections">
                     <h1>
                         ${HeaderHomePage}
                     </h1>
@@ -122,7 +122,7 @@
                     </h1>
                     <div class="detailSectionContent">
                         <p>${LabelSelectUserViewOrder}</p>
-                        <div class="viewOrderList">
+                        <div class="paperList viewOrderList">
 
                         </div>
                     </div>

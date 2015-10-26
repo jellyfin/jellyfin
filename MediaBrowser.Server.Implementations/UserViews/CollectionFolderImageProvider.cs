@@ -10,8 +10,10 @@ using MediaBrowser.Server.Implementations.Photos;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.UserViews
 {
@@ -91,18 +93,20 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
         }
 
-        public override bool Supports(IHasImages item)
+        protected override bool Supports(IHasImages item)
         {
             return item is CollectionFolder;
         }
 
-        protected override async Task<bool> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPath, ImageType imageType, int imageIndex)
+        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
+            var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
+
             if (imageType == ImageType.Primary)
             {
                 if (itemsWithImages.Count == 0)
                 {
-                    return false;
+                    return null;
                 }
 
                 return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);

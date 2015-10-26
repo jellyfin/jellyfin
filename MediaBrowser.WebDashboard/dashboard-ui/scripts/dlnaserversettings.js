@@ -6,13 +6,13 @@
         $('#chkBlastAliveMessages', page).checked(config.BlastAliveMessages).checkboxradio("refresh");
         $('#txtBlastInterval', page).val(config.BlastAliveMessageIntervalSeconds);
 
-        $('#chkEnableEnhancedMovies', page).checked(config.EnableEnhancedMovies).checkboxradio("refresh");
+        $('#chkEnableMovieFolders', page).checked(config.EnableMovieFolders).checkboxradio("refresh");
 
         var usersHtml = users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
 
-        $('#selectUser', page).html(usersHtml).val(config.DefaultUserId || '').selectmenu("refresh");
+        $('#selectUser', page).html(usersHtml).val(config.DefaultUserId || '');
 
         Dashboard.hideLoadingMsg();
     }
@@ -30,7 +30,7 @@
             config.BlastAliveMessageIntervalSeconds = $('#txtBlastInterval', form).val();
             config.DefaultUserId = $('#selectUser', form).val();
 
-            config.EnableEnhancedMovies = $('#chkEnableEnhancedMovies', form).checked();
+            config.EnableMovieFolders = $('#chkEnableMovieFolders', form).checked();
 
             ApiClient.updateNamedConfiguration("dlna", config).done(Dashboard.processServerConfigurationUpdateResult);
         });
@@ -43,7 +43,7 @@
 
         $('.dlnaServerSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#dlnaServerSettingsPage", function () {
+    }).on('pageshow', "#dlnaServerSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

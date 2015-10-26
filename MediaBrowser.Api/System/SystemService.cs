@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Api.System
 {
@@ -118,18 +119,17 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetServerLogs request)
         {
-            List<FileInfo> files;
+            List<FileSystemMetadata> files;
 
             try
             {
-                files = new DirectoryInfo(_appPaths.LogDirectoryPath)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
+				files = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                     .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
             catch (DirectoryNotFoundException)
             {
-                files = new List<FileInfo>();
+                files = new List<FileSystemMetadata>();
             }
 
             var result = files.Select(i => new LogFile
@@ -149,8 +149,7 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetLogFile request)
         {
-            var file = new DirectoryInfo(_appPaths.LogDirectoryPath)
-                .EnumerateFiles("*", SearchOption.AllDirectories)
+			var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);

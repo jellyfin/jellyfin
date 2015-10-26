@@ -30,33 +30,25 @@ Custom property | Description | Default
 `--paper-input-char-counter` | Mixin applied to the element | `{}`
 -->
 <dom-module id="paper-input-char-counter">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      float: right;
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-char-counter);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        float: right;
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-char-counter);
+      }
+    </style>
 
     <span>[[_charCounterStr]]</span>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input-char-counter',
 
     behaviors: [
@@ -64,12 +56,10 @@ Custom property | Description | Default
     ],
 
     properties: {
-
       _charCounterStr: {
         type: String,
         value: '0'
       }
-
     },
 
     update: function(state) {
@@ -87,9 +77,5 @@ Custom property | Description | Default
       }
       this._charCounterStr = str;
     }
-
   });
-
-})();
-
 </script>

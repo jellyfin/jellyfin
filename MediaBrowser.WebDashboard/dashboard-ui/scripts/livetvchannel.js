@@ -96,7 +96,7 @@
             html += '</a>';
         }
 
-        $('#childrenContent', page).html(html).trigger('create').createGuideHoverMenu('.tvProgramInfo');
+        $('#childrenContent', page).html(html).createGuideHoverMenu('.tvProgramInfo');
     }
 
     function loadPrograms(page, channelId) {

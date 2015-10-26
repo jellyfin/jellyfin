@@ -6,6 +6,17 @@
         page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
         page.querySelector('#chkSyncLosslessAudio').checked = AppSettings.syncLosslessAudio();
 
+        var uploadServers = AppSettings.cameraUploadServers();
+
+        page.querySelector('.uploadServerList').innerHTML = ConnectionManager.getSavedServers().map(function (s) {
+
+            var checkedHtml = uploadServers.indexOf(s.Id) == -1 ? '' : ' checked';
+            var html = '<paper-checkbox' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '">' + s.Name + '</paper-checkbox>';
+
+            return html;
+
+        }).join('');
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -14,6 +25,15 @@
         AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
         AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
         AppSettings.syncLosslessAudio(page.querySelector('#chkSyncLosslessAudio').checked);
+
+        AppSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
+
+            return i.checked;
+
+        }).map(function (i) {
+
+            return i.getAttribute('data-id');
+        }));
 
         Dashboard.hideLoadingMsg();
         Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -52,7 +72,7 @@
             });
         });
 
-    }).on('pageshowready', "#syncPreferencesPage", function () {
+    }).on('pageshow', "#syncPreferencesPage", function () {
 
         var page = this;
 
@@ -64,6 +84,12 @@
 
             loadForm(page, user);
         });
+
+        if (AppInfo.supportsSyncPathSetting) {
+            page.querySelector('.fldSyncPath').classList.remove('hide');
+        } else {
+            page.querySelector('.fldSyncPath').classList.add('hide');
+        }
     });
 
 })(jQuery, window, document);

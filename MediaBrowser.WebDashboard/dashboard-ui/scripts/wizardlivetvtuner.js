@@ -43,7 +43,7 @@
 
         apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
 
-            $('#selectTunerType', page).val(config.LiveTvTunerType || 'hdhomerun').selectmenu("refresh");
+            $('#selectTunerType', page).val(config.LiveTvTunerType || 'hdhomerun');
             page.querySelector('.txtDevicePath').value = config.LiveTvTunerPath || '';
 
             Dashboard.hideLoadingMsg();
@@ -89,7 +89,7 @@
 
         $('.btnSkip', page).on('click', skip);
 
-    }).on('pageshowready', "#wizardTunerPage", function () {
+    }).on('pageshow', "#wizardTunerPage", function () {
 
         var page = this;
 

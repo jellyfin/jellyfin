@@ -4,7 +4,7 @@
 }
 
 .nowPlayingText {
-    display: inline-block;.
+    display: inline-block;
     font-weight: normal;
     position: relative;
     top: -7px;
@@ -18,13 +18,13 @@
     max-width: 130px;
 }
 
-.mediaButton.infoButton iron-icon {
+.mediaButton.infoButton {
     width: 34px;
     height: 34px;
 }
 
 .mediaButton.active {
-    color: #2ad;
+    color: #52B54B;
 }
 
 @media (min-width: 500px) {

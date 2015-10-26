@@ -12,9 +12,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../iron-checked-element-behavior/iron-checked-element-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
+
 <!--
+Material design: [Checkbox](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-checkbox)
 
 `paper-checkbox` is a button that can be either checked or unchecked.  User
 can tap the checkbox to check or uncheck it.  Usually you use checkboxes
@@ -47,7 +48,7 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-checkbox">
-  <template>
+  <template strip-whitespace>
     <style>
       :host {
         display: inline-block;
@@ -199,13 +200,12 @@ Custom property | Description | Default
     </style>
 
     <div id="checkboxContainer">
-      <paper-ripple id="ink" class="circle" center checked$="[[checked]]"></paper-ripple>
       <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
     </div>
 
-    <div id="checkboxLabel" aria-hidden="true"><content></content></div>
+    <div id="checkboxLabel"><content></content></div>
   </template>
 
   <script>
@@ -213,8 +213,7 @@ Custom property | Description | Default
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -241,37 +240,6 @@ Custom property | Description | Default
         }
       },
 
-      attached: function() {
-        this._isReady = true;
-
-        // Don't stomp over a user-set aria-label.
-        if (!this.getAttribute('aria-label')) {
-          this.updateAriaLabel();
-        }
-      },
-
-      /**
-       * Update the checkbox aria-label. This is a temporary workaround not
-       * being able to observe changes in <content>
-       * (see: https://github.com/Polymer/polymer/issues/1773)
-       *
-       * Call this if you manually change the contents of the checkbox
-       * and want the aria-label to match the new contents.
-       */
-      updateAriaLabel: function() {
-        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
-      },
-
       _computeCheckboxClass: function(checked, invalid) {
         var className = '';
         if (checked) {
@@ -285,7 +253,14 @@ Custom property | Description | Default
 
       _computeCheckmarkClass: function(checked) {
         return checked ? '' : 'hidden';
+      },
+
+      // create ripple inside the checkboxContainer
+      _createRipple: function() {
+        this._rippleContainer = this.$.checkboxContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
+
     });
   </script>
 </dom-module>

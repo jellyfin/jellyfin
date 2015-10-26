@@ -67,7 +67,9 @@
                 });
             }
 
-            $('#recentlyAddedItems', page).html(html).lazyChildren();
+            var recentlyAddedItems = page.querySelector('#recentlyAddedItems');
+            recentlyAddedItems.innerHTML = html;
+            ImageLoader.lazyChildren(recentlyAddedItems);
             LibraryBrowser.setLastRefreshed(page);
         });
     }
@@ -123,7 +125,7 @@
                     preferThumb: true,
                     shape: getThumbShape(),
                     overlayText: true,
-                    showTitle: true,
+                    showTitle: false,
                     lazy: true,
                     showDetailsMenu: true,
                     overlayPlayButton: true
@@ -219,22 +221,21 @@
             if (!recommendations.length) {
 
                 $('.noItemsMessage', page).show();
-                $('.recommendations', page).html('');
+                page.querySelector('.recommendations').innerHTML = '';
                 return;
             }
 
             var html = recommendations.map(getRecommendationHtml).join('');
 
             $('.noItemsMessage', page).hide();
-            $('.recommendations', page).html(html).lazyChildren();
+
+            var recs = page.querySelector('.recommendations');
+            recs.innerHTML = html;
+            ImageLoader.lazyChildren(recs);
         });
     }
 
-    function loadSuggestionsTab(page, tabContent) {
-
-        var parentId = LibraryMenu.getTopParentId();
-
-        var userId = Dashboard.getCurrentUserId();
+    function initSuggestedTab(page, tabContent) {
 
         var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
@@ -242,6 +243,15 @@
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
+
+        $(containers).createCardMenus();
+    }
+
+    function loadSuggestionsTab(page, tabContent) {
+
+        var parentId = LibraryMenu.getTopParentId();
+
+        var userId = Dashboard.getCurrentUserId();
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             console.log('loadSuggestionsTab');
@@ -265,6 +275,7 @@
         switch (index) {
 
             case 0:
+                initMethod = 'initSuggestedTab';
                 renderMethod = 'renderSuggestedTab';
                 break;
             case 1:
@@ -288,11 +299,6 @@
                 renderMethod = 'renderGenresTab';
                 break;
             case 5:
-                depends.push('scripts/moviepeople');
-                renderMethod = 'renderPeopleTab';
-                initMethod = 'initPeopleTab';
-                break;
-            case 6:
                 depends.push('scripts/moviestudios');
                 renderMethod = 'renderStudiosTab';
                 break;
@@ -315,8 +321,9 @@
 
     window.MoviesPage = window.MoviesPage || {};
     window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
+    window.MoviesPage.initSuggestedTab = initSuggestedTab;
 
-    $(document).on('pageinit', "#moviesPage", function () {
+    pageIdOn('pageinit', "moviesPage", function () {
 
         var page = this;
 
@@ -336,8 +343,9 @@
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
         });
+    });
 
-    }).on('pageshowready', "#moviesPage", function () {
+    pageIdOn('pageshow', "moviesPage", function () {
 
         var page = this;
 
@@ -360,6 +368,23 @@
             }
         }
 
+        $(MediaController).on('playbackstop', onPlaybackStop);
     });
+
+    pageIdOn('pagebeforehide', "moviesPage", function () {
+
+        var page = this;
+        $(MediaController).off('playbackstop', onPlaybackStop);
+    });
+
+    function onPlaybackStop(e, state) {
+
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $($.mobile.activePage)[0];
+            var pages = page.querySelector('neon-animated-pages');
+
+            $(pages).trigger('tabchange');
+        }
+    }
 
 })(jQuery, document);

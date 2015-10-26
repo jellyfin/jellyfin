@@ -50,7 +50,7 @@
 
         html += '<paper-icon-item class="serverItem" data-id="' + server.Id + '">';
 
-        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
+        html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
         html += '<paper-item-body class="lnkServer" two-line>';
         html += '<a class="clearLink" href="#">';
@@ -59,9 +59,9 @@
         html += server.Name;
         html += '</div>';
 
-        html += '<div secondary>';
-        html += MediaBrowser.ServerInfo.getServerAddress(server, server.LastConnectionMode);
-        html += '</div>';
+        //html += '<div secondary>';
+        //html += MediaBrowser.ServerInfo.getServerAddress(server, server.LastConnectionMode);
+        //html += '</div>';
 
         html += '</a>';
         html += '</paper-item-body>';
@@ -89,7 +89,7 @@
 
         html += servers.map(getServerHtml).join('');
 
-        var elem = $('.serverList', page).html(html).trigger('create');
+        var elem = $('.serverList', page).html(html);
 
         $('.lnkServer', elem).on('click', function () {
 
@@ -259,7 +259,7 @@
 
         html += '<paper-icon-item class="inviteItem" data-id="' + invite.Id + '">';
 
-        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
+        html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
         html += '<paper-item-body two-line>';
 
@@ -286,7 +286,7 @@
 
         var html = list.map(getPendingInviteHtml).join('');
 
-        var elem = $('.invitationList', page).html(html).trigger('create');
+        var elem = $('.invitationList', page).html(html);
 
         $('.btnInviteMenu', elem).on('click', function () {
             showPendingInviteMenu(this);
@@ -346,7 +346,7 @@
         var page = this;
         updatePageStyle(page);
 
-    }).on('pageshowready', "#selectServerPage", function () {
+    }).on('pageshow', "#selectServerPage", function () {
 
         var page = this;
 

@@ -26,8 +26,8 @@
     */
     var $w = $(window);
 
-    var thresholdX = Math.max(screen.availWidth * 1.5, 1000);
-    var thresholdY = Math.max(screen.availHeight * 1.5, 1000);
+    var thresholdX = Math.max(screen.availWidth);
+    var thresholdY = Math.max(screen.availHeight);
 
     function visibleInViewport(elem, partial, hidden, direction) {
 
@@ -94,7 +94,7 @@
         }
     }
 
-    function unveilElements(elems) {
+    function unveilElements(elems, parent) {
 
         if (!elems.length) {
             return;
@@ -104,6 +104,14 @@
 
         unveilId++;
         var eventNamespace = 'unveil' + unveilId;
+
+        var parents = [];
+        if (parent) {
+            parents = parent.querySelectorAll('.itemsContainer');
+            if (!parents.length) {
+                parents = [parent];
+            }
+        }
 
         function unveil() {
 
@@ -123,11 +131,19 @@
             if (!images.length) {
                 Events.off(document, 'scroll.' + eventNamespace);
                 Events.off(window, 'resize.' + eventNamespace);
+
+                if (parents.length) {
+                    Events.off($(parents), 'scroll.' + eventNamespace, unveil);
+                }
             }
         }
 
         Events.on(document, 'scroll.' + eventNamespace, unveil);
         Events.on(window, 'resize.' + eventNamespace, unveil);
+
+        if (parents.length) {
+            Events.on($(parents), 'scroll.' + eventNamespace, unveil);
+        }
 
         unveil();
     }
@@ -146,7 +162,7 @@
 
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'));
+        unveilElements(elem.getElementsByClassName('lazy'), elem);
     }
 
     $.fn.lazyChildren = function () {
@@ -184,6 +200,21 @@
         } else {
             elem.setAttribute("src", url);
         }
+
+        if ($.browser.chrome && !$.browser.mobile) {
+            if (!elem.classList.contains('noFade')) {
+                fadeIn(elem, 1);
+            }
+        }
+    }
+
+    function fadeIn(elem, iterations) {
+
+        var keyframes = [
+          { opacity: '0', offset: 0 },
+          { opacity: '1', offset: 1 }];
+        var timing = { duration: 200, iterations: iterations };
+        return elem.animate(keyframes, timing);
     }
 
     function simpleImageStore() {

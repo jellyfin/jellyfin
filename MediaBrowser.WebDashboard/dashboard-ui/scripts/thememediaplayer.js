@@ -59,7 +59,7 @@
         return MediaController.getCurrentPlayer();
     }
 
-    Events.on(document, 'thememediadownload', ".libraryPage", function (e, themeMediaResult) {
+    Events.on(document, 'thememediadownload', function (e, themeMediaResult) {
 
         if (!enabled()) {
             return;

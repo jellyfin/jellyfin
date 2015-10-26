@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>getSize</title>
+
+  <style>
+    .container {
+      width: 300px;
+      height: 200px;
+      margin-bottom: 10px;
+      border: 1px solid;
+      position: relative;
+    }
+
+    .box {
+      color: blue;
+      background: pink;
+    }
+
+    .border-box {
+      -webkit-box-sizing: border-box;
+         -moz-box-sizing: border-box;
+              box-sizing: border-box;
+    }
+
+    #box1, #box2 {
+      width: 50%;
+      height: 50%;
+      border: 10px solid;
+      padding: 10px;
+    }
+
+    #box3, #box4 {
+       width: 50%;
+       height: 50%;
+       border: 0px solid;
+       margin: 10%;
+       padding: 10px;
+     }
+
+    #box5, #box6 {
+       width: 100px;
+       height: 100px;
+       border: 10px solid;
+       margin: 10%;
+       padding: 5%;
+     }
+
+    </style>
+
+</head>
+<body>
+
+  <h1>getSize</h1>
+
+  <div class="container">
+    <div id="box1" class="box">box1</div>
+  </div>
+
+  <div class="container">
+    <div id="box2" class="box border-box">box2</div>
+  </div>
+
+  <div class="container">
+    <div id="box3" class="box">box3</div>
+  </div>
+
+  <div class="container">
+    <div id="box4" class="box border-box">box4</div>
+  </div>
+
+  <div class="container">
+    <div id="box5" class="box">box5</div>
+  </div>
+
+  <div class="container">
+    <div id="box6" class="box border-box">box6</div>
+  </div>
+
+  <script src="get-size.js"></script>
+
+</body>
+</html>

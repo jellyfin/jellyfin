@@ -247,11 +247,9 @@
             }
 
             listOptions.items = result.Items;
-            var trigger = false;
 
             if (type == 'Audio') {
                 html = LibraryBrowser.getListViewHtml(listOptions);
-                trigger = true;
             } else {
                 html = LibraryBrowser.getPosterViewHtml(listOptions);
             }
@@ -260,10 +258,6 @@
             itemsContainer.innerHTML = html;
 
             $(itemsContainer).createCardMenus();
-
-            if (trigger) {
-                $(itemsContainer).trigger('create');
-            }
             ImageLoader.lazyChildren(itemsContainer);
         });
     }

@@ -55,6 +55,7 @@
         });
 
         $('.btnCloseSearch').on('click', function () {
+            self.hide();
             Events.trigger(self, 'closed');
         });
 

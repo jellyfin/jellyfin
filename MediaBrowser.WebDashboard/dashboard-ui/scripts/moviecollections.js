@@ -33,7 +33,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('collections');
     }
 
     function reloadItems(page) {
@@ -69,8 +69,6 @@
 
             })).trigger('create');
 
-            var trigger = false;
-
             if (result.TotalRecordCount) {
 
                 var context = getParameterByName('context');
@@ -82,7 +80,6 @@
                         context: context,
                         sortBy: query.SortBy
                     });
-                    trigger = true;
                 }
                 else if (view == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
@@ -140,10 +137,6 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            if (trigger) {
-                $(elem).trigger('create');
-            }
-
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
                 reloadItems(page);
@@ -198,14 +191,14 @@
 
     function initPage(tabContent) {
 
-        $('select.selectView').on('change', function () {
+        // The button is created dynamically
+        $('.btnNewCollection', tabContent).on('click', function () {
 
-            var newView = this.value;
-            getPageData().view = newView;
+            require(['collectioneditor'], function (collectioneditor) {
 
-            reloadItems(tabContent);
+                new collectioneditor().show();
 
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
+            });
         });
     }
 

@@ -44,7 +44,7 @@
             configPageUrl :
             null;
 
-        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard alternateHover bottomPaddedCard'>";
+        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard bottomPaddedCard'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
@@ -219,7 +219,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#pluginsPage", function () {
+    $(document).on('pageshow', "#pluginsPage", function () {
 
         reloadList(this);
     });

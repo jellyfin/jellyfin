@@ -28,14 +28,11 @@
 
                         </div>
 
-                        <br /><br />
+                        <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtUploadPath">${LabelCameraUploadPath}</label>
-                                <div style="display: inline-block; width: 85%;">
-                                    <input type="text" id="txtUploadPath" />
-                                </div>
-                                <button id="btnSelectUploadPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
+                                <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
                                 <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
                             </li>
                             <li>
@@ -50,8 +47,6 @@
                                 <button type="submit" data-role="none" class="clearButton">
                                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                                 </button>
-
-                                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                             </li>
                         </ul>
 

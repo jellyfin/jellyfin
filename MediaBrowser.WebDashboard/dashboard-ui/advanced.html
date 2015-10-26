@@ -12,7 +12,6 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
                     <a href="dashboardhosting.html" data-role="button">${TabHosting}</a>
-                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
                 <form class="advancedConfigurationForm">
 
@@ -42,7 +41,7 @@
                                     </div>
                                 </li>
                                 <li>
-                                    <label for="selectAutomaticUpdateLevel">${LabelAutomaticUpdateLevel}</label>
+                                    <label class="lnlAutomaticUpdateLevel" for="selectAutomaticUpdateLevel"></label>
                                     <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
                                         <option value="Release">${OptionRelease}</option>
                                         <option value="Beta">${OptionBeta}</option>
@@ -78,11 +77,8 @@
                             <br /><br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label for="txtDashboardSourcePath">${LabelDashboardSourcePath}</label>
-                                    <div style="display: inline-block; width: 85%;">
-                                        <input type="text" id="txtDashboardSourcePath" />
-                                    </div>
-                                    <button id="btnSelectDashboardSourcePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                    <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
+                                    <paper-icon-button id="btnSelectDashboardSourcePath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
                                     <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
                                 </li>
                             </ul>
@@ -94,8 +90,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
 
                     </ul>

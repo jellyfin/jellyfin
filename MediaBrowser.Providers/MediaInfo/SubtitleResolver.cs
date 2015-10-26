@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -99,7 +100,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public static IEnumerable<FileSystemInfo> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
+        public static IEnumerable<FileSystemMetadata> GetSubtitleFiles(Video video, IDirectoryService directoryService, IFileSystem fileSystem, bool clearCache)
         {
             var containingPath = video.ContainingFolderPath;
 

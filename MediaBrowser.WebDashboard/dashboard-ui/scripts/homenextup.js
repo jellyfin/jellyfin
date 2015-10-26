@@ -1,10 +1,5 @@
 ﻿(function ($, document) {
 
-    function getView() {
-
-        return 'Thumb';
-    }
-
     function reload(page) {
 
         Dashboard.showLoadingMsg();
@@ -23,7 +18,6 @@
             Limit: limit,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
@@ -35,39 +29,22 @@
             } else {
                 page.querySelector('.noNextUpItems').classList.remove('hide');
             }
-            var view = getView();
+
             var html = '';
 
-            if (view == 'ThumbCard') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    preferThumb: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true,
-                    context: 'home-nextup'
-                });
-
-            } else if (view == 'Thumb') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: false,
-                    lazy: true,
-                    preferThumb: true,
-                    showDetailsMenu: true,
-                    centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
-                    context: 'home-nextup'
-                });
-            }
+            html += LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "backdrop",
+                showTitle: true,
+                showParentTitle: true,
+                overlayText: false,
+                lazy: true,
+                preferThumb: true,
+                showDetailsMenu: true,
+                centerText: true,
+                overlayPlayButton: AppInfo.enableAppLayouts,
+                context: 'home-nextup'
+            });
 
             var elem = page.querySelector('#nextUpItems');
             elem.innerHTML = html;

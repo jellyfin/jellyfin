@@ -19,6 +19,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -65,7 +66,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 .CreateJob(options, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
-            Directory.CreateDirectory(Path.GetDirectoryName(encodingJob.OutputFilePath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(encodingJob.OutputFilePath));
 
             encodingJob.ReadInputAtNativeFramerate = options.ReadInputAtNativeFramerate;
 
@@ -112,7 +113,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Logger.Info(commandLineLogMessage);
 
             var logFilePath = Path.Combine(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, "transcode-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             encodingJob.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
@@ -144,7 +145,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             new JobLogger(Logger).StartStreamingLog(encodingJob, process.StandardError.BaseStream, encodingJob.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-            while (!File.Exists(encodingJob.OutputFilePath) && !encodingJob.HasExited)
+			while (!FileSystem.FileExists(encodingJob.OutputFilePath) && !encodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
@@ -342,7 +343,53 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 inputModifier += " -re";
             }
 
+            var videoDecoder = GetVideoDecoder(job);
+            if (!string.IsNullOrWhiteSpace(videoDecoder))
+            {
+                inputModifier += " " + videoDecoder;
+            }
+
             return inputModifier;
+        }
+
+        /// <summary>
+        /// Gets the name of the output video codec
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        protected string GetVideoDecoder(EncodingJob state)
+        {
+            if (string.Equals(GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                {
+                    switch (state.MediaSource.VideoStream.Codec.ToLower())
+                    {
+                        case "avc":
+                        case "h264":
+                            if (MediaEncoder.SupportsDecoder("h264_qsv"))
+                            {
+                                return "-c:v h264_qsv ";
+                            }
+                            break;
+                        case "mpeg2video":
+                            if (MediaEncoder.SupportsDecoder("mpeg2_qsv"))
+                            {
+                                return "-c:v mpeg2_qsv ";
+                            }
+                            break;
+                        case "vc1":
+                            if (MediaEncoder.SupportsDecoder("vc1_qsv"))
+                            {
+                                return "-c:v vc1_qsv ";
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // leave blank so ffmpeg will decide
+            return null;
         }
 
         private string GetUserAgentParam(EncodingJob job)
@@ -422,7 +469,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (!(job.VideoType == VideoType.Iso && job.IsoMount == null))
                 {
-                    inputPath = MediaEncoderHelpers.GetInputArgument(job.MediaPath, job.InputProtocol, job.IsoMount, job.PlayableStreamFileNames);
+                    inputPath = MediaEncoderHelpers.GetInputArgument(FileSystem, job.MediaPath, job.InputProtocol, job.IsoMount, job.PlayableStreamFileNames);
                 }
             }
 
@@ -436,7 +483,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.IsoMount = await IsoManager.Mount(state.MediaPath, cancellationToken).ConfigureAwait(false);
             }
 
-            if (state.MediaSource.RequiresOpening)
+            if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.LiveStreamId))
             {
                 var liveStreamResponse = await MediaSourceManager.OpenLiveStream(new LiveStreamRequest
                 {

@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage" data-require="jqmpopup,scripts/medialibrarypage,scripts/taskbutton,paperbuttonstyle">
+    <div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage" data-require="scripts/medialibrarypage,scripts/taskbutton">
 
         <div data-role="content">
 
@@ -18,44 +18,8 @@
                 </div>
 
                 <br />
-                <div id="divMediaLibrary">
-                    <p>
-                        <button type="button" data-mini="true" data-icon="plus" onclick="MediaLibraryPage.addVirtualFolder();">${ButtonAddMediaFolder}</button>
-                    </p>
-                    <div id="divVirtualFolders"></div>
-                </div>
-
-                <div data-role="popup" id="popupEnterText" class="popup">
-
-                    <div class="ui-corner-top ui-bar-a" style="text-align: center; padding: 0 20px;">
-                        <h3></h3>
-                    </div>
-
-                    <div data-role="content">
-                        <form id="textEntryForm" style="width:280px;">
-                            <div id="fldCollectionType" style="margin:.5em 0 1.5em;">
-                                <label for="selectCollectionType">${LabelContentType}</label>
-                                <select id="selectCollectionType" name="selectCollectionType" data-mini="true"></select>
-                                <div class="collectionTypeFieldDescription fieldDescription">
-                                </div>
-                            </div>
-                            <p>
-                                <label id="lblValue" for="txtValue"></label>
-                                <input type="text" id="txtValue" required="required" />
-                            </p>
-                            <br />
-                            <p>
-                                <button type="submit" data-theme="b" data-icon="check">
-                                    ${ButtonOk}
-                                </button>
-                                <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                                    ${ButtonCancel}
-                                </button>
-                            </p>
-                        </form>
-                    </div>
-
-                </div>
+                <div id="divVirtualFolders"></div>
+                <br />
                 <br />
                 <div class="wizardNavigation">
                     <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>

@@ -118,6 +118,14 @@ namespace MediaBrowser.Api
         public string Name { get; set; }
     }
 
+    [Route("/Appstore/Register", "POST", Summary = "Registers an appstore sale")]
+    [Authenticated]
+    public class RegisterAppstoreSale
+    {
+        [ApiMember(Name = "Parameters", Description = "Java representation of parameters to pass through to admin server", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string Parameters { get; set; }
+    }
+
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -263,6 +271,16 @@ namespace MediaBrowser.Api
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        /// <summary>
+        /// Post app store sale
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task Post(RegisterAppstoreSale request)
+        {
+            await _securityManager.RegisterAppStoreSale(request.Parameters);
         }
 
         /// <summary>

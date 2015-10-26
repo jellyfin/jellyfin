@@ -4,30 +4,26 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended">
+    <div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="jqmpanel,jqmcollapsible,scripts/moviesrecommended">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
-                <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
-                <paper-tab><iron-icon icon="local-movies"></iron-icon>${TabMovies}</paper-tab>
-                <paper-tab class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</paper-tab>
-                <paper-tab><iron-icon icon="video-library"></iron-icon>${TabCollections}</paper-tab>
-                <paper-tab><iron-icon icon="video-library"></iron-icon>${TabGenres}</paper-tab>
-                <paper-tab class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</paper-tab>
-                <paper-tab class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</paper-tab>
+                <paper-tab>${TabSuggestions}</paper-tab>
+                <paper-tab>${TabMovies}</paper-tab>
+                <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
+                <paper-tab>${TabCollections}</paper-tab>
+                <paper-tab>${TabGenres}</paper-tab>
+                <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
-                <a href="movies.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-                <a href="movies.html?tab=1"><iron-icon icon="local-movies"></iron-icon>${TabMovies}</a>
-                <a href="movies.html?tab=2" class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</a>
-                <a href="movies.html?tab=3"><iron-icon icon="video-library"></iron-icon>${TabCollections}</a>
-                <a href="movies.html?tab=4"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-                <a href="movies.html?tab=5" class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
-                <a href="movies.html?tab=6" class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</a>
+                <a href="movies.html">${TabSuggestions}</a>
+                <a href="movies.html?tab=1">${TabMovies}</a>
+                <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
+                <a href="movies.html?tab=3">${TabCollections}</a>
+                <a href="movies.html?tab=4">${TabGenres}</a>
+                <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
             </div>
         </div>
-
-        <div class="pageBackground"></div>
 
         <div class="ehsContent fullWidth">
             <neon-animated-pages>
@@ -36,20 +32,20 @@
                         <div id="resumableSection" style="display: none;" class="homePageSection">
                             <div>
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                             </div>
 
-                            <div id="resumableItems" class="itemsContainer">
+                            <div id="resumableItems" class="itemsContainer noautoinit">
                             </div>
                         </div>
 
                         <div class="homePageSection">
                             <div>
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                             </div>
 
-                            <div id="recentlyAddedItems" class="itemsContainer">
+                            <div id="recentlyAddedItems" class="itemsContainer noautoinit">
                             </div>
                         </div>
 
@@ -68,17 +64,8 @@
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
-
-                            <div class="selectionCommands" style="display: none;">
-                                <div class="selectionCommandsControlGroup">
-                                    <button class="btnAddToPlaylist" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToPlaylist}">${ButtonAddToPlaylist}</button>
-                                    <button class="btnMergeVersions" data-mini="true" data-icon="recycle" data-inline="true" title="${ButtonGroupVersions}">${ButtonGroupVersions}</button>
-                                    <button class="btnAddToCollection" data-mini="true" data-icon="plus" data-inline="true" title="${ButtonAddToCollection}">${ButtonAddToCollection}</button>
-                                    <button class="btnSyncItems" data-mini="true" data-icon="refresh" data-inline="true" title="${ButtonSync}">${ButtonSync}</button>
-                                </div>
-                            </div>
                         </div>
-                        <div class="itemsContainer"></div>
+                        <div class="itemsContainer" style="text-align:center;"></div>
                     </div>
                 </neon-animatable>
                 <neon-animatable>
@@ -89,7 +76,7 @@
                             <div class="listTopPaging">
                             </div>
                         </div>
-                        <div class="itemsContainer"></div>
+                        <div class="itemsContainer" style="text-align:center;"></div>
                         <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
                     </div>
                 </neon-animatable>
@@ -120,17 +107,6 @@
                 </neon-animatable>
                 <neon-animatable>
                     <div class="pageTabContent" data-index="5">
-                        <div class="alphabetPicker">
-                        </div>
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer"></div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="6">
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
@@ -141,149 +117,113 @@
             </neon-animated-pages>
         </div>
 
-        <div data-role="panel" class="viewPanel movieViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+        <div data-role="panel" class="viewPanel movieViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        ${HeaderFilters}
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkPlayedMovie" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayedMovie">${OptionPlayed}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkUnplayedMovie" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayedMovie">${OptionUnplayed}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkResumableMovie" data-filter="IsResumable" data-mini="true">
-                    <label for="chkResumableMovie">${OptionResumable}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteMovie" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteMovie">${OptionFavorite}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesMovie" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesMovie">${OptionLikes}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesMovie" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesMovie">${OptionDislikes}</label>
-                </fieldset>
-                <br />
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
-
-                    <div class="filterOptions">
+                    <div>
+                        <h1>
+                            ${HeaderFilters}
+                        </h1>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
+                        </div>
                     </div>
-                </div>
+                    <br />
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
-                    <h2>${HeaderParentalRatings}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
+                        <h2>${HeaderGenres}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
-                    <h2>${HeaderTags}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
+                        <h2>${HeaderParentalRatings}</h2>
 
-                    <div class="filterOptions">
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true">
-                    <h2>${HeaderVideoTypes}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
+                        <h2>${HeaderTags}</h2>
 
-                    <div data-role="controlgroup">
-
-                        <input class="chkVideoTypeFilter chkBluray" type="checkbox" id="chkBlurayMovie" data-filter="Bluray" data-mini="true">
-                        <label for="chkBlurayMovie">${OptionBluray}</label>
-
-                        <input class="chkVideoTypeFilter chkDvd" type="checkbox" id="chkDvdMovie" data-filter="Dvd" data-mini="true">
-                        <label for="chkDvdMovie">${OptionDvd}</label>
-
-                        <input class="chkVideoTypeFilter chkIso" type="checkbox" id="chkIsoMovie" data-filter="Iso" data-mini="true">
-                        <label for="chkIsoMovie">${OptionIso}</label>
-
-                        <input class="chkHDFilter IsHD" type="checkbox" id="chkHDMovie" data-filter="IsHD" data-mini="true">
-                        <label for="chkHDMovie">${OptionIsHD}</label>
-
-                        <input class="chkSDFilter IsHD" type="checkbox" id="chkSDMovie" data-filter="IsHD" data-mini="true">
-                        <label for="chkSDMovie">${OptionIsSD}</label>
-
-                        <input class="chk3DFilter chk3D" type="checkbox" id="chk3DMovie" data-filter="Digital3D,Sbs3D" data-mini="true">
-                        <label for="chk3DMovie">${Option3D}</label>
+                        <div class="filterOptions">
+                        </div>
                     </div>
-                </div>
 
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
-                    <h2>${HeaderYears}</h2>
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true">
+                        <h2>${HeaderVideoTypes}</h2>
 
-                    <div class="filterOptions">
+                        <div>
+
+                            <div class="checkboxContainer">
+                                <input class="chkVideoTypeFilter chkBluray" type="checkbox" id="chkBlurayMovie" data-filter="Bluray" data-role="none">
+                                <label for="chkBlurayMovie">${OptionBluray}</label>
+                            </div>
+
+                            <div class="checkboxContainer">
+                                <input class="chkVideoTypeFilter chkDvd" type="checkbox" id="chkDvdMovie" data-filter="Dvd" data-role="none">
+                                <label for="chkDvdMovie">${OptionDvd}</label>
+                            </div>
+
+                            <div class="checkboxContainer">
+                                <input class="chkVideoTypeFilter chkIso" type="checkbox" id="chkIsoMovie" data-filter="Iso" data-role="none">
+                                <label for="chkIsoMovie">${OptionIso}</label>
+                            </div>
+
+                            <div class="checkboxContainer">
+                                <input class="chkHDFilter IsHD" type="checkbox" id="chkHDMovie" data-filter="IsHD" data-role="none">
+                                <label for="chkHDMovie">${OptionIsHD}</label>
+                            </div>
+
+                            <div class="checkboxContainer">
+                                <input class="chkSDFilter IsHD" type="checkbox" id="chkSDMovie" data-filter="IsHD" data-role="none">
+                                <label for="chkSDMovie">${OptionIsSD}</label>
+                            </div>
+
+                            <div class="checkboxContainer">
+                                <input class="chk3DFilter chk3D" type="checkbox" id="chk3DMovie" data-filter="Digital3D,Sbs3D" data-role="none">
+                                <label for="chk3DMovie">${Option3D}</label>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </form>
+
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
+                        <h2>${HeaderYears}</h2>
+
+                        <div class="filterOptions">
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div data-role="panel" class="viewPanel trailerViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
+        <div data-role="panel" class="viewPanel trailerViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
+            <div class="ui-panel-inner">
+                <form>
 
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        ${HeaderFilters}
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkPlayedTrailer" data-filter="IsPlayed" data-mini="true">
-                    <label for="chkPlayedTrailer">${OptionPlayed}</label>
+                    <div>
+                        <h1>
+                            ${HeaderFilters}
+                        </h1>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
+                            <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
+                        </div>
+                    </div>
 
-                    <input class="chkStandardFilter" type="checkbox" id="chkUnplayedTrailer" data-filter="IsUnPlayed" data-mini="true">
-                    <label for="chkUnplayedTrailer">${OptionUnplayed}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkResumableTrailer" data-filter="IsResumable" data-mini="true">
-                    <label for="chkResumableTrailer">${OptionResumable}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteTrailer" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoriteTrailer">${OptionFavorite}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesTrailer" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesTrailer">${OptionLikes}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesTrailer" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesTrailer">${OptionDislikes}</label>
-                </fieldset>
-
-            </form>
-        </div>
-        <div data-role="panel" class="viewPanel peopleViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        ${HeaderFilters}
-                    </legend>
-                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoritePerson" data-filter="IsFavorite" data-mini="true">
-                    <label for="chkIsFavoritePerson">${OptionFavorite}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkLikesPerson" data-filter="Likes" data-mini="true">
-                    <label for="chkLikesPerson">${OptionLikes}</label>
-
-                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesPerson" data-filter="Dislikes" data-mini="true">
-                    <label for="chkDislikesPerson">${OptionDislikes}</label>
-                </fieldset>
-                <fieldset data-role="controlgroup">
-                    <legend>
-                        ${HeaderPersonTypes}
-                    </legend>
-                    <input class="chkPersonTypeFilter" type="checkbox" id="chkActorPerson" data-filter="Actor" data-mini="true">
-                    <label for="chkActorPerson">${OptionActors}</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" id="chkDirectorPerson" data-filter="Director" data-mini="true">
-                    <label for="chkDirectorPerson">${OptionDirectors}</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" id="chkProducerPerson" data-filter="Producer" data-mini="true">
-                    <label for="chkProducerPerson">${OptionProducers}</label>
-
-                    <input class="chkPersonTypeFilter" type="checkbox" id="chkWriterPerson" data-filter="Writer" data-mini="true">
-                    <label for="chkWriterPerson">${OptionWriters}</label>
-                </fieldset>
-            </form>
+                </form>
+            </div>
         </div>
         <div data-role="content">
 

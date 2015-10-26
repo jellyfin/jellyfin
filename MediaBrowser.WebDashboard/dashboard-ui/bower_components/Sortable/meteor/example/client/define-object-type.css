@@ -1,0 +1,57 @@
+.glyphicon {
+  vertical-align: baseline;
+  font-size: 80%;
+  margin-right: 0.5em;
+}
+
+[class^="mdi-"], [class*=" mdi-"] {
+  vertical-align: baseline;
+  font-size: 90%;
+  margin-right: 0.4em;
+}
+
+.list-pair {
+  display: flex;  /* use the flexbox  model */
+  flex-direction: row;
+}
+.sortable {
+/*  font-size: 2em;*/
+}
+
+.sortable.source {
+  /*background: #9FA8DA;*/
+  flex: 0 0 auto;
+  margin-right: 1em;
+  cursor: move;
+  cursor: -webkit-grabbing;
+}
+
+.sortable.target {
+  /*background: #3F51B5;*/
+  flex: 1 1 auto;
+  margin-left: 1em;
+}
+
+.target .well {
+
+}
+
+.sortable-handle {
+  cursor: move;
+  cursor: -webkit-grabbing;
+}
+.sortable-handle.pull-right {
+  margin-top: 0.3em;
+}
+
+.sortable-ghost {
+  opacity: 0.6;
+}
+
+/* show the remove button on hover */
+.removable .close {
+  display: none;
+}
+.removable:hover .close {
+  display: block;
+}

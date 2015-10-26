@@ -4,6 +4,27 @@
 
     function getDefaultSection(index) {
 
+        if (AppInfo.isNativeApp && $.browser.safari) {
+
+            switch (index) {
+
+                case 0:
+                    return defaultFirstSection;
+                case 1:
+                    return 'resume';
+                case 2:
+                    return 'nextup';
+                case 3:
+                    return 'latestmovies';
+                case 4:
+                    return 'latestepisodes';
+                case 5:
+                    return 'latesttvrecordings';
+                default:
+                    return '';
+            }
+        }
+
         switch (index) {
 
             case 0:
@@ -37,6 +58,12 @@
         if (section == 'latestmedia') {
             return Sections.loadRecentlyAdded(elem, user);
         }
+        else if (section == 'latestmovies') {
+            return Sections.loadLatestMovies(elem, user);
+        }
+        else if (section == 'latestepisodes') {
+            return Sections.loadLatestEpisodes(elem, user);
+        }
         else if (section == 'librarytiles') {
             return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
         }
@@ -55,7 +82,9 @@
         else if (section == 'resume') {
             return Sections.loadResume(elem, userId);
         }
-
+        else if (section == 'nextup') {
+            return Sections.loadNextUp(elem, userId);
+        }
         else if (section == 'latesttvrecordings') {
             return Sections.loadLatestLiveTvRecordings(elem, userId);
         }
@@ -75,7 +104,7 @@
     function loadSections(page, user, displayPreferences) {
 
         var i, length;
-        var sectionCount = 4;
+        var sectionCount = 6;
 
         var elem = page.querySelector('.sections');
 
@@ -228,7 +257,7 @@
         });
     }
 
-    $(document).on('pageinit', "#indexPage", function () {
+    pageIdOn('pageinit', "indexPage", function () {
 
         var page = this;
 
@@ -245,7 +274,36 @@
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
+        if (AppInfo.enableHomeTabs) {
+            page.classList.remove('noSecondaryNavPage');
+            page.querySelector('.libraryViewNav').classList.remove('hide');
+        } else {
+            page.classList.add('noSecondaryNavPage');
+            page.querySelector('.libraryViewNav').classList.add('hide');
+        }
     });
+
+    pageIdOn('pageshow', "indexPage", function () {
+
+        var page = this;
+        $(MediaController).on('playbackstop', onPlaybackStop);
+    });
+
+    pageIdOn('pagebeforehide', "indexPage", function () {
+
+        var page = this;
+        $(MediaController).off('playbackstop', onPlaybackStop);
+    });
+
+    function onPlaybackStop(e, state) {
+
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $($.mobile.activePage)[0];
+            var pages = page.querySelector('neon-animated-pages');
+
+            $(pages).trigger('tabchange');
+        }
+    }
 
     function getDisplayPreferences(key, userId) {
 

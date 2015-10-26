@@ -32,7 +32,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('genres');
     }
 
     function reloadItems(page) {
@@ -60,15 +60,12 @@
 
             })).trigger('create');
 
-            var trigger = false;
-
             if (view == "List") {
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     sortBy: query.SortBy
                 });
-                trigger = true;
             }
             else if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -119,10 +116,6 @@
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

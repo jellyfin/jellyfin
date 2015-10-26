@@ -29,27 +29,30 @@
 
         $('#btnSelectTranscodingTempPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtTranscodingTempPath', page).val(path);
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectTranscodingPath'),
+                        if (path) {
+                            $('#txtTranscodingTempPath', page).val(path);
+                        }
+                        picker.close();
+                    },
 
-                instruction: Globalize.translate('HeaderSelectTranscodingPathHelp')
+                    header: Globalize.translate('HeaderSelectTranscodingPath'),
+
+                    instruction: Globalize.translate('HeaderSelectTranscodingPathHelp')
+                });
             });
         });
 
         $('.streamingSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#streamingSettingsPage", function () {
+    }).on('pageshow', "#streamingSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

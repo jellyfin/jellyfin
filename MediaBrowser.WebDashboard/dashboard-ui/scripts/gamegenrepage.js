@@ -12,7 +12,7 @@
 
     function getSavedQueryKey() {
 
-        return 'gamegenres' + (query.ParentId || '');
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {
@@ -32,7 +32,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
@@ -68,7 +68,7 @@
 
     function updateFilterControls(page) {
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     $(document).on('pageinit', "#gameGenresPage", function () {

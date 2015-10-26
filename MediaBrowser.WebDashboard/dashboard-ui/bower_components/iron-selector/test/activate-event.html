@@ -130,6 +130,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(s.selected, '0');
       });
 
+      test('activates after detach and re-attach', function() {
+        // Detach and re-attach
+        var parent = s.parentNode;
+        parent.removeChild(s);
+        parent.appendChild(s);
+        
+        // select Item 2
+        s.children[2].dispatchEvent(new CustomEvent('tap', {bubbles: true}));
+        assert.equal(s.selected, '2');
+      });
+
     });
 
   </script>

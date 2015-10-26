@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
@@ -62,11 +63,11 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private IEnumerable<FileSystemInfo> GetFiles(IHasImages item, bool includeDirectories, IDirectoryService directoryService)
+        private IEnumerable<FileSystemMetadata> GetFiles(IHasImages item, bool includeDirectories, IDirectoryService directoryService)
         {
             if (item.LocationType != LocationType.FileSystem)
             {
-                return new List<FileSystemInfo>();
+                return new List<FileSystemMetadata>();
             }
 
             var path = item.ContainingFolderPath;
@@ -127,7 +128,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return list;
         }
 
-        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, bool supportParentSeriesFiles, IDirectoryService directoryService)
+        private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, bool supportParentSeriesFiles, IDirectoryService directoryService)
         {
             var imagePrefix = item.FileNameWithoutExtension + "-";
             var isInMixedFolder = item.IsInMixedFolder;
@@ -164,7 +165,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder)
+        private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
             var names = new List<string>
             {
@@ -206,7 +207,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder, IDirectoryService directoryService)
+        private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder, IDirectoryService directoryService)
         {
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", isInMixedFolder, ImageType.Backdrop);
 
@@ -261,12 +262,12 @@ namespace MediaBrowser.LocalMetadata.Images
             }));
         }
 
-        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, bool isInMixedFolder)
+        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
             PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", isInMixedFolder, ImageType.Screenshot);
         }
 
-        private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemInfo> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
+        private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
         {
             AddImage(files, images, imagePrefix + firstFileName, type);
 
@@ -349,7 +350,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private bool AddImage(List<FileSystemInfo> files, List<LocalImageInfo> images, string name, string imagePrefix, bool isInMixedFolder, ImageType type)
+        private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, string imagePrefix, bool isInMixedFolder, ImageType type)
         {
             var added = AddImage(files, images, imagePrefix + name, type);
 
@@ -364,9 +365,9 @@ namespace MediaBrowser.LocalMetadata.Images
             return added;
         }
 
-        private bool AddImage(IEnumerable<FileSystemInfo> files, List<LocalImageInfo> images, string name, ImageType type)
+        private bool AddImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
         {
-            var image = GetImage(files, name) as FileInfo;
+            var image = GetImage(files, name);
 
             if (image != null)
             {
@@ -382,7 +383,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private void AddCacheKeyImage(IEnumerable<FileSystemInfo> files, List<LocalImageInfo> images, ImageType type)
+        private void AddCacheKeyImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, ImageType type)
         {
             var candidates = files
                 .Where(i => _fileSystem.GetFileNameWithoutExtension(i).StartsWith(type.ToString() + "_key_", StringComparison.OrdinalIgnoreCase))
@@ -390,7 +391,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var image = BaseItem.SupportedImageExtensions
                 .Select(i => candidates.FirstOrDefault(c => string.Equals(c.Extension, i, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault(i => i != null) as FileInfo;
+                .FirstOrDefault(i => i != null);
 
             if (image != null)
             {
@@ -402,7 +403,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private FileSystemInfo GetImage(IEnumerable<FileSystemInfo> files, string name)
+        private FileSystemMetadata GetImage(IEnumerable<FileSystemMetadata> files, string name)
         {
             return files.FirstOrDefault(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase));
         }

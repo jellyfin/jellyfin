@@ -52,7 +52,6 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsHD { get; set; }
         public bool? IsInBoxSet { get; set; }
         public bool? IsLocked { get; set; }
-        public bool? IsUnidentified { get; set; }
         public bool? IsPlaceHolder { get; set; }
         public bool? IsYearMismatched { get; set; }
 
@@ -98,7 +97,11 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsCurrentSchema { get; set; }
         public bool? HasDeadParentId { get; set; }
-    
+        public bool? IsOffline { get; set; }
+        public LocationType? LocationType { get; set; }
+
+        public Guid? ParentId { get; set; }
+        
         public InternalItemsQuery()
         {
             Tags = new string[] { };

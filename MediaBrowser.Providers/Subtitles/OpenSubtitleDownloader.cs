@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             if (!(loginResponse is MethodResponseLogIn))
             {
-                throw new UnauthorizedAccessException("Authentication to OpenSubtitles failed.");
+                throw new Exception("Authentication to OpenSubtitles failed.");
             }
 
             _lastLogin = DateTime.UtcNow;

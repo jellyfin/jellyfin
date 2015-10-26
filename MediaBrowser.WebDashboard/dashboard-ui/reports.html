@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="jqmtable,scripts/reports,detailtablecss,jqmicons">
+    <div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
         <div data-role="content">
             <div style="text-align: center;">
                 <div class="viewControls">
@@ -43,10 +43,10 @@
             <div class="listBottomPaging">
             </div>
 
-            <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+            <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
                 <form>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                        <a href="#" id="tabView" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                        <a href="#" id="tabView" data-role="button" class="viewTabButton ui-btn-active" data-tab="tabView">${TabView}</a>
                         <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                     </div>
 
@@ -89,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div class="tabFilter viewTab" id="tabFilterBox">
+                    <div class="tabFilter viewTab hide" id="tabFilterBox">
                         <fieldset data-role="controlgroup">
                             <legend>
                                 ${HeaderFilters}
@@ -125,9 +125,6 @@
 
                                 <input class="chkMissingRating" type="checkbox" name="chkMissingRating" id="chkMissingRating">
                                 <label for="chkMissingRating">${OptionMissingParentalRating}</label>
-
-                                <input class="chkIsUnidentified" type="checkbox" id="chkIsUnidentified">
-                                <label for="chkIsUnidentified">${OptionUnidentified}</label>
 
                                 <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch">
                                 <label for="chkYearMismatch">${OptionFileMetadataYearMismatch}</label>

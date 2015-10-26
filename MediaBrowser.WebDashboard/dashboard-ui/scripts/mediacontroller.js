@@ -141,7 +141,12 @@
         html += '</div>';
 
         html += '<div class="buttons">';
-        html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+
+        // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
+        if (screen.availWidth >= 600) {
+            html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+        }
+
         html += '<paper-button dialog-dismiss onclick="MediaController.disconnectFromPlayer();">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
         html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
         html += '</div>';
@@ -242,7 +247,22 @@
             if (player.isLocalPlayer) {
                 monitorPlayer(player);
             }
+
+            Events.on(player, 'playbackstop', onPlaybackStop);
+            Events.on(player, 'beforeplaybackstart', onBeforePlaybackStart);
         };
+
+        function onBeforePlaybackStart(e, state) {
+            $(self).trigger('beforeplaybackstart', [state, this]);
+        }
+
+        function onPlaybackStart(e, state) {
+            $(self).trigger('playbackstart', [state, this]);
+        }
+
+        function onPlaybackStop(e, state) {
+            $(self).trigger('playbackstop', [state, this]);
+        }
 
         self.getPlayerInfo = function () {
 
@@ -434,7 +454,12 @@
             return deferred.promise();
         };
 
-        function doWithPlaybackValidation(fn) {
+        function doWithPlaybackValidation(player, fn) {
+
+            if (!player.isLocalPlayer) {
+                fn();
+                return;
+            }
 
             requirejs(["scripts/registrationservices"], function () {
                 RegistrationServices.validateFeature('playback').done(fn);
@@ -463,7 +488,7 @@
 
         self.play = function (options) {
 
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };
                 }
@@ -474,13 +499,13 @@
 
         self.shuffle = function (id) {
 
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.shuffle(id);
             });
         };
 
         self.instantMix = function (id) {
-            doWithPlaybackValidation(function () {
+            doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.instantMix(id);
             });
         };
@@ -582,6 +607,12 @@
         };
 
         self.currentPlaylistIndex = function (i) {
+
+            if (i == null) {
+                // TODO: Get this implemented in all of the players
+                return currentPlayer.currentPlaylistIndex ? currentPlayer.currentPlaylistIndex() : -1;
+            }
+
             currentPlayer.currentPlaylistIndex(i);
         };
 
@@ -745,26 +776,33 @@
                 var serverInfo = ApiClient.serverInfo();
 
                 if (serverInfo.Id) {
-                    var localMediaSource = window.LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId);
+                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).done(function (localMediaSource) {
+                        // Use the local media source if a specific one wasn't requested, or the smae one was requested
+                        if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
 
-                    // Use the local media source if a specific one wasn't requested, or the smae one was requested
-                    if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
+                            var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
 
-                        var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
+                            deferred.resolveWith(null, [playbackInfo]);
+                            return;
+                        }
 
-                        deferred.resolveWith(null, [playbackInfo]);
-                        return;
-                    }
+                        getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred);
+                    });
+                    return;
                 }
 
-                self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
-                    deferred.resolveWith(null, [result]);
-                }).fail(function () {
-                    deferred.reject();
-                });
+                getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred);
             });
 
             return deferred.promise();
+        }
+
+        function getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred) {
+            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+                deferred.resolveWith(null, [result]);
+            }).fail(function () {
+                deferred.reject();
+            });
         }
 
         self.getPlaybackInfoInternal = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
@@ -834,18 +872,36 @@
 
         self.supportsDirectPlay = function (mediaSource) {
 
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+            var deferred = $.Deferred();
+            if (mediaSource.SupportsDirectPlay) {
 
-                // TODO: Need to verify the host is going to be reachable
-                return true;
+                if (mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+
+                    // If this is the only way it can be played, then allow it
+                    if (!mediaSource.SupportsDirectStream && !mediaSource.SupportsTranscoding) {
+                        deferred.resolveWith(null, [true]);
+                    }
+                    else {
+                        var val = mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                        deferred.resolveWith(null, [val]);
+                    }
+                }
+
+                if (mediaSource.Protocol == 'File') {
+
+                    require(['localassetmanager'], function () {
+
+                        LocalAssetManager.fileExists(mediaSource.Path).done(function (exists) {
+                            Logger.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
+                            deferred.resolveWith(null, [exists]);
+                        });
+                    });
+                }
             }
-
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'File') {
-
-                return FileSystemBridge.fileExists(mediaSource.Path);
+            else {
+                deferred.resolveWith(null, [false]);
             }
-
-            return false;
+            return deferred.promise();
         };
 
         self.showPlayerSelection = showPlayerSelection;

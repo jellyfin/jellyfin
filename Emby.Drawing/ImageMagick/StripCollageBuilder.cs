@@ -2,16 +2,20 @@
 using MediaBrowser.Common.Configuration;
 using System;
 using System.Collections.Generic;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
     public class StripCollageBuilder
     {
         private readonly IApplicationPaths _appPaths;
+		private readonly IFileSystem _fileSystem;
 
-        public StripCollageBuilder(IApplicationPaths appPaths)
+		public StripCollageBuilder(IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+			_fileSystem = fileSystem;
         }
 
         public void BuildPosterCollage(List<string> paths, string outputPath, int width, int height, string text)
@@ -145,17 +149,17 @@ namespace Emby.Drawing.ImageMagick
 
         private MagickWand BuildPosterCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 3);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * 0.225);
+                    var iSlice = Convert.ToInt32(width * 0.3);
                     int iTrans = Convert.ToInt32(height * .25);
                     int iHeight = Convert.ToInt32(height * .65);
-                    var horizontalImagePadding = Convert.ToInt32(width * 0.0275);
+                    var horizontalImagePadding = Convert.ToInt32(width * 0.0366);
 
                     foreach (var element in wandImages.ImageList)
                     {
@@ -350,14 +354,14 @@ namespace Emby.Drawing.ImageMagick
 
         private MagickWand BuildSquareCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 3);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .225);
+                    var iSlice = Convert.ToInt32(width * .3);
                     int iTrans = Convert.ToInt32(height * .25);
                     int iHeight = Convert.ToInt32(height * .63);
                     var horizontalImagePadding = Convert.ToInt32(width * 0.02);
@@ -490,7 +494,7 @@ namespace Emby.Drawing.ImageMagick
 
         private string MontserratLightFont
         {
-            get { return PlayedIndicatorDrawer.ExtractFont("MontserratLight.otf", _appPaths); }
+			get { return PlayedIndicatorDrawer.ExtractFont("MontserratLight.otf", _appPaths, _fileSystem); }
         }
     }
 }

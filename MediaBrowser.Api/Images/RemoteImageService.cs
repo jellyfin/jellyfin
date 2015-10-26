@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Api.Images
 {
@@ -237,7 +238,7 @@ namespace MediaBrowser.Api.Images
                     contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                if (File.Exists(contentPath))
+				if (_fileSystem.FileExists(contentPath))
                 {
                     return ToStaticFileResult(contentPath);
                 }
@@ -281,7 +282,7 @@ namespace MediaBrowser.Api.Images
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
                 using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
@@ -290,7 +291,7 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
             using (var writer = new StreamWriter(pointerCachePath))
             {
                 await writer.WriteAsync(fullCachePath).ConfigureAwait(false);

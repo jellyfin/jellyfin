@@ -142,6 +142,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(selectedEventCounter, 0);
       });
 
+      suite('items changing', function() {
+        test('cause iron-items-changed to fire', function(done) {
+          var newItem = document.createElement('div');
+          var changeCount = 0;
+
+          newItem.id = 'item999';
+
+          s2.addEventListener('iron-items-changed', function() {
+            changeCount++;
+          });
+
+          s2.appendChild(newItem);
+
+          Polymer.Base.async(function() {
+            s2.removeChild(newItem);
+
+            Polymer.Base.async(function() {
+              expect(changeCount).to.be.equal(2);
+              done();
+            }, 1);
+          }, 1);
+        });
+      });
+
+      suite('dynamic selector', function() {
+        test('selects dynamically added child automatically', function(done) {
+          var selector = document.createElement('iron-selector');
+          var child = document.createElement('div');
+
+          selector.selected = '0';
+          child.textContent = 'Item 0';
+
+          Polymer.dom(selector).appendChild(child);
+          document.body.appendChild(selector);
+
+          Polymer.Base.async(function() {
+            assert.equal(child.className, 'iron-selected');
+            document.body.removeChild(selector);
+            done();
+          }, 1);
+        });
+      });
     });
 
   </script>

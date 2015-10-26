@@ -196,7 +196,7 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["scripts/registrationservices"], function () {
+        requirejs(["scripts/registrationservices", "jqmcollapsible", "jqmpanel"], function () {
             RegistrationServices.validateFeature('sync').done(function () {
                 showSyncMenuInternal(options);
             });
@@ -236,7 +236,7 @@
             html += '<div class="formFields"></div>';
 
             html += '<p>';
-            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
+            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
             html += '</p>';
 
             html += '</form>';
@@ -244,7 +244,6 @@
             html += '</div>';
 
             $(document.body).append(html);
-            require(['paperbuttonstyle']);
 
             var elem = $('.syncPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
                 $(this).off("panelclose").remove();
@@ -351,17 +350,21 @@
             var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
             return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
 
-        }).join('')).trigger('change').selectmenu('refresh');
+        }).join('')).trigger('change');
 
         $('#selectQuality', form).html(options.QualityOptions.map(function (o) {
 
             var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
             return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
 
-        }).join('')).trigger('change').selectmenu('refresh');
+        }).join('')).trigger('change');
     }
 
     function isAvailable(item, user) {
+
+        if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
+            return false;
+        }
 
         return item.SupportsSync;
     }
@@ -408,7 +411,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pageshowready', ".libraryPage", function () {
+    }).on('pageshow', ".libraryPage", function () {
 
         var page = this;
 

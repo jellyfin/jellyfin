@@ -12,10 +12,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../iron-checked-element-behavior/iron-checked-element-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
 
 <!--
+Material design: [Switch](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-switch)
+
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
 by tapping or by dragging the switch.
 
@@ -39,6 +40,7 @@ Custom property | Description | Default
 `--paper-toggle-button-unchecked-button` | Mixin applied to the slider button when the input is not checked | `{}`
 `--paper-toggle-button-checked-bar` | Mixin applied to the slider when the input is checked | `{}`
 `--paper-toggle-button-checked-button` | Mixin applied to the slider button when the input is checked | `{}`
+`--paper-toggle-button-label-color` | Label color | `--primary-text-color`
 
 @group Paper Elements
 @element paper-toggle-button
@@ -47,7 +49,7 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-toggle-button">
-  <template>
+  <template strip-whitespace>
 
     <style>
       :host {
@@ -62,43 +64,7 @@ Custom property | Description | Default
         outline:none;
       }
 
-      :host .toggle-bar {
-        background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
-        @apply(--paper-toggle-button-unchecked-bar);
-      }
-
-      :host .toggle-button {
-        background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
-        @apply(--paper-toggle-button-unchecked-button);
-      }
-
-      :host([checked]) .toggle-bar {
-        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
-        @apply(--paper-toggle-button-checked-bar);
-      }
-
-      :host([checked]) .toggle-button {
-        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
-        @apply(--paper-toggle-button-checked-button);
-      }
-
-      :host .toggle-ink {
-        color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
-      }
-
-      :host([checked]) .toggle-ink {
-        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
-      }
-
-      /* ID selectors should not be overriden by users. */
-
-      #toggleContainer {
-        position: relative;
-        width: 36px;
-        height: 14px;
-      }
-
-      #toggleBar {
+      .toggle-bar {
         position: absolute;
         height: 100%;
         width: 100%;
@@ -106,18 +72,11 @@ Custom property | Description | Default
         pointer-events: none;
         opacity: 0.4;
         transition: background-color linear .08s;
+        background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
+        @apply(--paper-toggle-button-unchecked-bar);
       }
 
-      :host([checked]) #toggleBar {
-        opacity: 0.5;
-      }
-
-      :host([disabled]) #toggleBar {
-        background-color: #000;
-        opacity: 0.12;
-      }
-
-      #toggleButton {
+      .toggle-button {
         position: absolute;
         top: -3px;
         height: 20px;
@@ -127,24 +86,42 @@ Custom property | Description | Default
         transition: -webkit-transform linear .08s, background-color linear .08s;
         transition: transform linear .08s, background-color linear .08s;
         will-change: transform;
+        background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
+        @apply(--paper-toggle-button-unchecked-button);
       }
 
-      #toggleButton.dragging {
+      .toggle-button.dragging {
         -webkit-transition: none;
         transition: none;
       }
 
-      :host([checked]) #toggleButton {
+      :host([checked]:not([disabled])) .toggle-bar {
+        opacity: 0.5;
+        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-bar);
+      }
+
+      :host([disabled]) .toggle-bar {
+        background-color: #000;
+        opacity: 0.12;
+      }
+
+      :host([checked]) .toggle-button {
         -webkit-transform: translate(16px, 0);
         transform: translate(16px, 0);
       }
 
-      :host([disabled]) #toggleButton {
+      :host([checked]:not([disabled])) .toggle-button {
+        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
+        @apply(--paper-toggle-button-checked-button);
+      }
+
+      :host([disabled]) .toggle-button {
         background-color: #bdbdbd;
         opacity: 1;
       }
 
-      #ink {
+      .toggle-ink {
         position: absolute;
         top: -14px;
         left: -14px;
@@ -152,15 +129,38 @@ Custom property | Description | Default
         height: 48px;
         opacity: 0.5;
         pointer-events: none;
+        color: var(--paper-toggle-button-unchecked-ink-color, --primary-text-color);
+      }
+
+      :host([checked]) .toggle-ink {
+        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
+      }
+
+      .toggle-container {
+        display: inline-block;
+        position: relative;
+        width: 36px;
+        height: 14px;
+      }
+
+      .toggle-label {
+        position: relative;
+        top: -2px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        white-space: normal;
+        pointer-events: none;
+        color: var(--paper-toggle-button-label-color, --primary-text-color);
       }
     </style>
 
-    <div id="toggleContainer">
+    <div class="toggle-container">
       <div id="toggleBar" class="toggle-bar"></div>
-      <div id="toggleButton" class="toggle-button">
-        <paper-ripple id="ink" class="toggle-ink circle" recenters></paper-ripple>
-      </div>
+      <div id="toggleButton" class="toggle-button"></div>
     </div>
+
+    <div class="toggle-label"><content></content></div>
 
   </template>
 
@@ -169,8 +169,7 @@ Custom property | Description | Default
       is: 'paper-toggle-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -194,20 +193,6 @@ Custom property | Description | Default
 
       listeners: {
         track: '_ontrack'
-      },
-
-      ready: function() {
-        this._isReady = true;
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
       },
 
       _ontrack: function(event) {
@@ -242,6 +227,16 @@ Custom property | Description | Default
       _trackEnd: function(track) {
         this.$.toggleButton.classList.remove('dragging');
         this.transform('', this.$.toggleButton);
+      },
+
+      // customize the element's ripple
+      _createRipple: function() {
+        this._rippleContainer = this.$.toggleButton;
+        var ripple = Polymer.PaperRippleBehavior._createRipple();
+        ripple.id = 'ink';
+        ripple.setAttribute('recenters', '');
+        ripple.classList.add('circle', 'toggle-ink');
+        return ripple;
       }
 
     });

@@ -9,7 +9,23 @@
         var mediaElement;
         var self = this;
 
+        function hideStatusBar() {
+            if (options.type == 'video' && window.StatusBar) {
+                //StatusBar.backgroundColorByName("black");
+                //StatusBar.overlaysWebView(true);
+                StatusBar.hide();
+            }
+        }
+
+        function showStatusBar() {
+            if (options.type == 'video' && window.StatusBar) {
+                StatusBar.show();
+                //StatusBar.overlaysWebView(false);
+            }
+        }
+
         function onEnded() {
+            showStatusBar();
             $(self).trigger('ended');
         }
 
@@ -24,7 +40,7 @@
                 if (duration) {
                     if (time >= (duration - 1)) {
 
-                        onEnded();
+                        //onEnded();
                         return;
                     }
                 }
@@ -66,6 +82,7 @@
             var errorCode = this.error ? this.error.code : '';
             Logger.log('Media element error code: ' + errorCode);
 
+            showStatusBar();
             $(self).trigger('error');
         }
 
@@ -142,6 +159,8 @@
 
         function onOneVideoPlaying() {
 
+            hideStatusBar();
+
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             if (requiresNativeControls) {
@@ -214,7 +233,8 @@
 
             var requiresNativeControls = !self.enableCustomVideoControls();
 
-            var poster = options.poster ? (' poster="' + options.poster + '"') : '';
+            // Safari often displays the poster under the video and it doesn't look good
+            var poster = !$.browser.safari && options.poster ? (' poster="' + options.poster + '"') : '';
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
@@ -281,7 +301,14 @@
                 if (isViblastStarted) {
                     _currentTime = mediaElement.currentTime;
 
-                    viblast('#' + mediaElement.id).stop();
+                    // Sometimes this fails
+                    try {
+                        viblast('#' + mediaElement.id).stop();
+                    }
+                    catch (err) {
+                        Logger.log(err);
+                    }
+
                     isViblastStarted = false;
                 }
             }
@@ -311,7 +338,7 @@
         };
 
         var currentSrc;
-        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
+        self.setCurrentSrc = function (streamInfo, item, mediaSource, tracks) {
 
             var elem = mediaElement;
 
@@ -320,7 +347,7 @@
                 return;
             }
 
-            if (!val) {
+            if (!streamInfo) {
                 currentSrc = null;
                 elem.src = null;
                 elem.src = "";
@@ -332,6 +359,12 @@
                 }
 
                 return;
+            }
+
+            var val = streamInfo.url;
+
+            if (AppInfo.isNativeApp && $.browser.safari) {
+                val = val.replace('file://', '');
             }
 
             requiresSettingStartTimeOnStart = false;
@@ -473,6 +506,8 @@
                     $(elem).remove();
                 }
             }
+
+            showStatusBar();
         };
 
         self.supportsTextTracks = function () {
@@ -552,6 +587,16 @@
         };
 
         self.enableCustomVideoControls = function () {
+
+            if (AppInfo.isNativeApp && $.browser.safari) {
+
+                if (navigator.userAgent.toLowerCase().indexOf('iphone') != -1) {
+                    return true;
+                }
+
+                // Need to disable it in order to support picture in picture
+                return false;
+            }
 
             return self.canAutoPlayVideo() && !$.browser.mobile;
         };

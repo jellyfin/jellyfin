@@ -108,18 +108,19 @@
 }
 
 .headerSearchInput {
-    margin: 0;
-    background: #222;
-    border: 0;
-    color: #ddd;
-    border-radius: 3px;
-    padding: 4px 0 3px 0;
-    text-indent: 50px;
+    margin: 0!important;
+    background: #222!important;
+    border: 0!important;
+    color: #ddd!important;
+    border-radius: 3px!important;
+    padding: 4px 0 3px 0!important;
+    text-indent: 50px!important;
     font-size: 16px;
     font-family: inherit;
     outline: none;
     vertical-align: middle;
-    width: 85%;
+    width: 85%!important;
+    display: inline-block!important;
 }
 
 .searchInputIcon {
@@ -140,19 +141,19 @@
 
 @media all and (min-width: 600px) {
     .headerSearchInput {
-        width: 90%;
+        width: 90% !important;
     }
 }
 
 @media all and (min-width: 800px) {
     .headerSearchInput {
-        width: 93%;
+        width: 93% !important;
     }
 }
 
 @media all and (min-width: 1200px) {
     .headerSearchInput {
-        width: 96%;
+        width: 96% !important;
     }
 }
 
@@ -167,7 +168,6 @@
 
 .searchResultsOverlay {
     position: fixed;
-    background: rgba(34, 34, 34, 1);
     top: 50px;
     left: 0;
     right: 0;

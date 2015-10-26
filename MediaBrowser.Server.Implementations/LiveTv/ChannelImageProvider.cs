@@ -39,57 +39,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.ProviderImagePath))
+            var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
+
+            if (service != null)
             {
-                imageResponse.Path = liveTvItem.ProviderImagePath;
-                imageResponse.HasImage = true;
-            }
-            else if (!string.IsNullOrEmpty(liveTvItem.ProviderImageUrl))
-            {
-                var options = new HttpRequestOptions
+                try
                 {
-                    CancellationToken = cancellationToken,
-                    Url = liveTvItem.ProviderImageUrl,
+                    var response = await service.GetChannelImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
 
-                    // Some image hosts require a user agent to be specified.
-                    UserAgent = "Emby Server/" + _appHost.ApplicationVersion
-                };
-
-                var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
-
-                var contentType = response.ContentType;
-
-                if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageResponse.HasImage = true;
-                    imageResponse.Stream = response.Content;
-                    imageResponse.SetFormatFromMimeType(contentType);
-                }
-                else
-                {
-                    _logger.Error("Provider did not return an image content type.");
-                }
-            }
-            else if (liveTvItem.HasProviderImage ?? true)
-            {
-                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
-
-                if (service != null)
-                {
-                    try
+                    if (response != null)
                     {
-                        var response = await service.GetChannelImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
-
-                        if (response != null)
-                        {
-                            imageResponse.HasImage = true;
-                            imageResponse.Stream = response.Stream;
-                            imageResponse.Format = response.Format;
-                        }
+                        imageResponse.HasImage = true;
+                        imageResponse.Stream = response.Stream;
+                        imageResponse.Format = response.Format;
                     }
-                    catch (NotImplementedException)
-                    {
-                    }
+                }
+                catch (NotImplementedException)
+                {
                 }
             }
 

@@ -11,10 +11,9 @@
     <AssemblyName>MediaBrowser.Server.Implementations</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <RestorePackages>true</RestorePackages>
+    <ReleaseVersion>
+    </ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +23,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -33,7 +31,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -42,34 +39,28 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.5614.25103, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Naming, Version=1.0.5748.36038, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.37\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Nat, Version=1.2.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Nat.1.2.24.0\lib\net40\Mono.Nat.dll</HintPath>
-    </Reference>
-    <Reference Include="MoreLinq, Version=1.1.17511.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\morelinq.1.1.0\lib\net35\MoreLinq.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.38\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.5634.16042, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SocketHttpListener, Version=1.0.5754.42244, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SocketHttpListener.1.0.0.7\lib\net45\SocketHttpListener.dll</HintPath>
+      <HintPath>..\packages\SocketHttpListener.1.0.0.10\lib\net45\SocketHttpListener.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -100,6 +91,12 @@
     <Reference Include="UniversalDetector">
       <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Nat">
+      <HintPath>..\packages\Mono.Nat.1.2.24.0\lib\net40\Mono.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.1.1\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -111,7 +108,6 @@
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
-    <Compile Include="Channels\ChannelItemImageProvider.cs" />
     <Compile Include="Channels\ChannelManager.cs" />
     <Compile Include="Channels\ChannelPostScanTask.cs" />
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
@@ -240,8 +236,10 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
+    <Compile Include="Notifications\IConfigurableNotificationService.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
@@ -255,10 +253,8 @@
     <Compile Include="Notifications\InternalNotificationService.cs" />
     <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
     <Compile Include="Notifications\NotificationManager.cs" />
-    <Compile Include="Persistence\SqliteChapterRepository.cs" />
     <Compile Include="Persistence\SqliteExtensions.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
-    <Compile Include="Persistence\SqliteMediaStreamsRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
@@ -334,7 +330,6 @@
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Sync\SyncConvertScheduledTask.cs" />
     <Compile Include="Sync\TargetDataProvider.cs" />
-    <Compile Include="Themes\AppThemeManager.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
@@ -413,6 +408,7 @@
     <EmbeddedResource Include="Localization\Core\vi.json" />
     <EmbeddedResource Include="Localization\Core\zh-CN.json" />
     <EmbeddedResource Include="Localization\Core\zh-TW.json" />
+    <EmbeddedResource Include="Localization\Core\zh-HK.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

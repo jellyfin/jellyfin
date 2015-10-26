@@ -16,12 +16,12 @@
     text-align: center;
 }
 
-    .mediaButton iron-icon {
-        height: 40px;
-        width: 40px;
-    }
+.mediaButton {
+    height: 40px;
+    width: 40px;
+}
 
-    .mediaButton.remoteControlButton iron-icon, .mediaButton.muteButton iron-icon, .mediaButton.unmuteButton iron-icon {
+    .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
         height: 26px;
     }
 
@@ -62,12 +62,12 @@
     max-width: 130px;
 }
 
-.toggleRepeatButton iron-icon {
+.toggleRepeatButton {
     height: 32px;
 }
 
 .repeatActive {
-    color: #3367d6;
+    color: #52B54B;
 }
 
 @media (min-width: 500px) {
@@ -105,6 +105,9 @@
     vertical-align: middle;
     text-align: center;
     margin-top: 12px;
+    position: relative;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
+    z-index: 2;
 }
 
 .nowPlayingBarPositionContainer {
@@ -141,8 +144,8 @@
 }
 
 .nowPlayingBarPositionSlider #sliderKnobInner {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .nowPlayingBarRight {
@@ -150,6 +153,8 @@
     bottom: 12px;
     right: 10px;
     vertical-align: middle;
+    /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
+    z-index: 2;
 }
 
 .mediaButton img {
@@ -159,8 +164,6 @@
 .nowPlayingBarCurrentTime {
     vertical-align: middle;
     font-weight: normal;
-    position: absolute;
-    bottom: 31px;
     text-align: center;
     display: inline-block;
     margin: 0 auto;
@@ -204,8 +207,9 @@
 
     .nowPlayingBarCurrentTime {
         padding-left: 0;
-        bottom: 30px;
+        top: 12px;
         right: 130px;
+        position: absolute;
     }
 
     .nowPlayingBarCenter > *:not(.nowPlayingBarCurrentTime) {

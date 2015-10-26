@@ -30,6 +30,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations
 {
@@ -93,7 +94,7 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// The _XML serializer
         /// </summary>
-        protected readonly IXmlSerializer XmlSerializer = new XmlSerializer();
+        protected readonly IXmlSerializer XmlSerializer;
 
         /// <summary>
         /// Gets assemblies that failed to load
@@ -180,7 +181,7 @@ namespace MediaBrowser.Common.Implementations
             {
                 if (_deviceId == null)
                 {
-                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"));
+                    _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"), FileSystemManager);
                 }
 
                 return _deviceId.Value;
@@ -199,6 +200,7 @@ namespace MediaBrowser.Common.Implementations
             ILogManager logManager, 
             IFileSystem fileSystem)
         {
+			XmlSerializer = new MediaBrowser.Common.Implementations.Serialization.XmlSerializer (fileSystem);
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -320,7 +322,7 @@ namespace MediaBrowser.Common.Implementations
 
         protected virtual IJsonSerializer CreateJsonSerializer()
         {
-            return new JsonSerializer();
+            return new JsonSerializer(FileSystemManager);
         }
 
         private void SetHttpLimit()
@@ -414,6 +416,8 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
+            RegisterModules();
+            
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>();
         }
@@ -449,7 +453,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger);
+			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, FileSystemManager);
 
 			RegisterSingleInstance(JsonSerializer);
 			RegisterSingleInstance(XmlSerializer);
@@ -473,13 +477,12 @@ namespace MediaBrowser.Common.Implementations
 			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
 			RegisterSingleInstance(InstallationManager);
 
-			ZipClient = new ZipClient();
+			ZipClient = new ZipClient(FileSystemManager);
 			RegisterSingleInstance(ZipClient);
 
 			IsoManager = new IsoManager();
 			RegisterSingleInstance(IsoManager);
 
-			RegisterModules();
 			return Task.FromResult (true);
         }
 
@@ -522,6 +525,14 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (ReflectionTypeLoadException ex)
             {
+                if (ex.LoaderExceptions != null)
+                {
+                    foreach (var loaderException in ex.LoaderExceptions)
+                    {
+                        Logger.Error("LoaderException: " + loaderException.Message);
+                    }
+                }
+                
                 // If it fails we can still get a list of the Types it was able to resolve
                 return ex.Types.Where(t => t != null);
             }
@@ -581,7 +592,7 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
             where T : class
         {
-            Container.RegisterSingle(obj);
+            Container.RegisterSingleton(obj);
 
             if (manageLifetime)
             {
@@ -607,7 +618,7 @@ namespace MediaBrowser.Common.Implementations
         protected void RegisterSingleInstance<T>(Func<T> func)
             where T : class
         {
-            Container.RegisterSingle(func);
+            Container.RegisterSingleton(func);
         }
 
         void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)

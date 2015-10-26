@@ -1,0 +1,28 @@
+﻿.ui-body-b h1, .ui-body-b h2 {
+    color: #FF9100;
+}
+
+.viewMenuBar, .halloweenInfoButton {
+    color: #FF9100 !important;
+}
+
+.barsMenuButton {
+    color: #FF9100 !important;
+}
+
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #FF9100 !important;
+    color: #FF9100 !important;
+}
+
+paper-button[raised].more {
+    background: #FF9100;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #FF9100 !important;
+}
+
+.channelTimeslotHeader {
+    border-right-color: #FF9100 !important;
+}

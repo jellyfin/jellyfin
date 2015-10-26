@@ -521,12 +521,12 @@ namespace MediaBrowser.Api.LiveTv
 
             if (user == null)
             {
-                throw new UnauthorizedAccessException("Anonymous live tv management is not allowed.");
+                throw new SecurityException("Anonymous live tv management is not allowed.");
             }
 
             if (!user.Policy.EnableLiveTvManagement)
             {
-                throw new UnauthorizedAccessException("The current user does not have permission to manage live tv.");
+                throw new SecurityException("The current user does not have permission to manage live tv.");
             }
         }
 

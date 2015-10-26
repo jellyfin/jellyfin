@@ -79,9 +79,13 @@
             }
         }
 
+        function getEmbyServerUrl(baseUrl, handler) {
+            return baseUrl + "/emby/" + handler;
+        }
+
         function tryConnect(url, timeout) {
 
-            url += "/system/info/public";
+            url = getEmbyServerUrl(url, "system/info/public");
 
             logger.log('tryConnect url: ' + url);
 
@@ -124,6 +128,17 @@
         self.connectToken = function () {
 
             return credentialProvider.credentials().ConnectAccessToken;
+        };
+
+        self.getServerInfo = function (id) {
+
+            var servers = credentialProvider.credentials().Servers;
+
+            return servers.filter(function (s) {
+
+                return s.Id == id;
+
+            })[0];
         };
 
         self.getLastUsedServer = function () {
@@ -242,26 +257,11 @@
                 Events.trigger(self, 'apiclientcreated', [apiClient]);
             }
 
-            if (server.AccessToken && server.UserId) {
-
-                apiClient.setAuthenticationInfo(server.AccessToken, server.UserId);
-            }
-            else {
-
-                apiClient.clearAuthenticationInfo();
-            }
-
             logger.log('returning instance from getOrAddApiClient');
             return apiClient;
         }
 
         self.getOrCreateApiClient = function (serverId) {
-
-            var apiClient = self.getApiClient(serverId);
-
-            if (apiClient) {
-                return apiClient;
-            }
 
             var credentials = credentialProvider.credentials();
             var servers = credentials.Servers.filter(function (s) {
@@ -287,7 +287,9 @@
 
             var server = servers.length ? servers[0] : apiClient.serverInfo();
 
-            server.DateLastAccessed = new Date().getTime();
+            if (options.updateDateLastAccessed !== false) {
+                server.DateLastAccessed = new Date().getTime();
+            }
             server.Id = result.ServerId;
 
             if (saveCredentials) {
@@ -309,12 +311,12 @@
 
         function saveUserInfoIntoCredentials(server, user) {
 
-            //ServerUserInfo info = new ServerUserInfo();
-            //info.setIsSignedInOffline(true);
-            //info.setId(user.getId());
+            var info = {
+                Id: user.Id,
+                IsSignedInOffline: true
+            }
 
-            //// Record user info here
-            //server.AddOrUpdate(info);
+            credentialProvider.addOrUpdateUser(server, info);
         }
 
         function afterConnected(apiClient, options) {
@@ -401,7 +403,7 @@
 
             var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
-            url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
+            url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
             return HttpClient.send({
                 type: "GET",
@@ -432,7 +434,7 @@
             HttpClient.send({
 
                 type: "GET",
-                url: url + "/system/info",
+                url: getEmbyServerUrl(url, "System/Info"),
                 dataType: "json",
                 headers: {
                     "X-MediaBrowser-Token": server.AccessToken
@@ -447,7 +449,7 @@
                     HttpClient.send({
 
                         type: "GET",
-                        url: url + "/users/" + server.UserId,
+                        url: getEmbyServerUrl(url, "users/" + server.UserId),
                         dataType: "json",
                         headers: {
                             "X-MediaBrowser-Token": server.AccessToken
@@ -667,6 +669,19 @@
             return deferred.promise();
         }
 
+        self.getSavedServers = function () {
+
+            var credentials = credentialProvider.credentials();
+
+            var servers = credentials.Servers.slice(0);
+
+            servers.sort(function (a, b) {
+                return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
+            });
+
+            return servers;
+        };
+
         self.getAvailableServers = function () {
 
             logger.log('Begin getAvailableServers');
@@ -726,7 +741,7 @@
             var deferred = DeferredBuilder.Deferred();
 
             require(['serverdiscovery'], function () {
-                ServerDiscovery.findServers(2500).done(function (foundServers) {
+                ServerDiscovery.findServers(1000).done(function (foundServers) {
 
                     var servers = foundServers.map(function (foundServer) {
 
@@ -869,7 +884,7 @@
             var tests = [];
 
             if (server.LastConnectionMode != null) {
-                tests.push(server.LastConnectionMode);
+                //tests.push(server.LastConnectionMode);
             }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
@@ -879,6 +894,7 @@
 
             var wakeOnLanSendTime = new Date().getTime();
 
+            options = options || {};
             testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
 
             return deferred.promise();
@@ -907,7 +923,7 @@
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
                 enableRetry = true;
-                timeout = 7000;
+                timeout = 10000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {
@@ -987,7 +1003,9 @@
 
             updateServerInfo(server, systemInfo);
 
-            server.DateLastAccessed = new Date().getTime();
+            if (options.updateDateLastAccessed !== false) {
+                server.DateLastAccessed = new Date().getTime();
+            }
             server.LastConnectionMode = connectionMode;
             credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);

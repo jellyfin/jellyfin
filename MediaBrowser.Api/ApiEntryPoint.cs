@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Api
 {
@@ -95,7 +96,7 @@ namespace MediaBrowser.Api
         {
             var path = _config.ApplicationPaths.TranscodingTempPath;
 
-            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+            foreach (var file in _fileSystem.GetFilePaths(path, true)
                 .ToList())
             {
                 _fileSystem.DeleteFile(file);
@@ -567,7 +568,7 @@ namespace MediaBrowser.Api
             var directory = Path.GetDirectoryName(outputFilePath);
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
-            var filesToDelete = Directory.EnumerateFiles(directory)
+            var filesToDelete = _fileSystem.GetFilePaths(directory)
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1)
                 .ToList();
 
@@ -577,7 +578,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    Logger.Info("Deleting HLS file {0}", file);
+                    Logger.Debug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
                 }
                 catch (DirectoryNotFoundException)

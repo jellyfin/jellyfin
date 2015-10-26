@@ -2,7 +2,7 @@
 
     function loadPage(page, config) {
 
-        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '').selectmenu("refresh");
+        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '');
 
         Dashboard.hideLoadingMsg();
     }
@@ -31,7 +31,7 @@
 
         $('.channelSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#channelSettingsPage", function () {
+    }).on('pageshow', "#channelSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

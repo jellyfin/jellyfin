@@ -1,6 +1,6 @@
 {
   "name": "iron-a11y-announcer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A singleton element that simplifies announcing text to screen readers.",
   "keywords": [
     "web-components",

@@ -19,30 +19,24 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtSyncTempPath">${LabelSyncTempPath}</label>
-                            <div style="display: inline-block; width: 85%;">
-                                <input type="text" id="txtSyncTempPath" />
-                            </div>
-                            <button id="btnSelectSyncTempPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <paper-input type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" style="display: inline-block; width: 84%;"></paper-input>
+                            <paper-icon-button id="btnSelectSyncTempPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
                             <div class="fieldDescription">
                                 ${LabelSyncTempPathHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="txtUploadSpeedLimit">${LabelUploadSpeedLimit}</label>
-                            <input type="number" id="txtUploadSpeedLimit" min="0" step=".5" />
+                            <paper-input type="number" min="0" step=".5" id="txtUploadSpeedLimit" label="${LabelUploadSpeedLimit}"></paper-input>
                         </li>
                         <li>
-                            <label for="txtCpuCoreLimit">${LabelConversionCpuCoreLimit}</label>
-                            <input type="number" id="txtCpuCoreLimit" min="0" max="8" step="1" required="required" />
+                            <paper-input type="number" min="0" max="8" step="1" id="txtCpuCoreLimit" label="${LabelConversionCpuCoreLimit}" required="required"></paper-input>
                             <div class="fieldDescription">
                                 ${LabelConversionCpuCoreLimitHelp}
                             </div>
                         </li>
                         <li>
-                            <label for="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</label>
-                            <input type="checkbox" id="chkEnableFullSpeedConversion" />
-                            <div class="fieldDescription">
+                            <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">
                                 ${OptionEnableFullSpeedConversionHelp}
                             </div>
                         </li>

@@ -32,7 +32,7 @@
 
         $('.dlnaSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#dlnaSettingsPage", function () {
+    }).on('pageshow', "#dlnaSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

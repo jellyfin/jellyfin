@@ -29,7 +29,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('trailers');
     }
 
     function reloadItems(page, viewPanel) {
@@ -144,7 +144,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }

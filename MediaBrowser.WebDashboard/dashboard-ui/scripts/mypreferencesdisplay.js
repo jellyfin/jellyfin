@@ -6,10 +6,10 @@
         page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
         page.querySelector('.chkGroupMoviesIntoCollections').checked = user.Configuration.GroupMoviesIntoBoxSets || false;
 
-        $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '').selectmenu("refresh");
-        $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '').selectmenu("refresh");
+        $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '');
+        $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '');
 
-        $('#selectLanguage', page).val(AppSettings.displayLanguage()).selectmenu("refresh");
+        $('#selectLanguage', page).val(AppSettings.displayLanguage());
 
         page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
 
@@ -59,7 +59,7 @@
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#displayPreferencesPage", function () {
+    }).on('pageshow', "#displayPreferencesPage", function () {
 
         var page = this;
 

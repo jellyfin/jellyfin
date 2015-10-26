@@ -3,10 +3,11 @@ using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Notifications;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace MediaBrowser.Server.Implementations.Notifications
 {
-    public class InternalNotificationService : INotificationService
+    public class InternalNotificationService : INotificationService, IConfigurableNotificationService
     {
         private readonly INotificationsRepository _repo;
 
@@ -36,6 +37,24 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         public bool IsEnabledForUser(User user)
         {
+            return user.Policy.IsAdministrator;
+        }
+
+        public bool IsHidden
+        {
+            get { return true; }
+        }
+
+        public bool IsEnabled(string notificationType)
+        {
+            if (notificationType.IndexOf("playback", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+            if (notificationType.IndexOf("newlibrarycontent", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
             return true;
         }
     }

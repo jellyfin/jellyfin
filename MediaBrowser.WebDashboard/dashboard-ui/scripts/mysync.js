@@ -6,18 +6,18 @@
 
             if (LocalSync.isSupported()) {
 
-                page.querySelector('.localSyncStatus').classList.remove('hide');
-
                 var status = LocalSync.getSyncStatus();
 
                 page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
                 page.querySelector('.syncSpinner').active = status == "Active";
 
-                page.querySelector('.btnSyncNow').disabled = status == "Active";
+                if (status == "Active") {
+                    page.querySelector('.btnSyncNow').classList.add('hide');
+                }
+                else {
+                    page.querySelector('.btnSyncNow').classList.remove('hide');
+                }
 
-            } else {
-                page.querySelector('.localSyncStatus').classList.add('hide');
-                page.querySelector('.syncSpinner').active = false;
             }
         });
     }
@@ -26,7 +26,7 @@
 
         require(['localsync'], function () {
 
-            LocalSync.startSync();
+            LocalSync.sync();
             Dashboard.alert(Globalize.translate('MessageSyncStarted'));
             refreshSyncStatus(page);
         });
@@ -42,7 +42,19 @@
             syncNow(page);
         });
 
-    }).on('pageshowready', "#mySyncActivityPage", function () {
+        require(['localsync'], function () {
+
+            if (LocalSync.isSupported()) {
+
+                page.querySelector('.localSyncStatus').classList.remove('hide');
+
+            } else {
+                page.querySelector('.localSyncStatus').classList.add('hide');
+                page.querySelector('.syncSpinner').active = false;
+            }
+        });
+
+    }).on('pagebeforeshow', "#mySyncActivityPage", function () {
 
         var page = this;
 

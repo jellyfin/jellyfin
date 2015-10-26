@@ -338,8 +338,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="dto">The dto.</param>
+        /// <param name="addChannelInfo">if set to <c>true</c> [add channel information].</param>
         /// <param name="user">The user.</param>
-        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, User user = null);
+        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, bool addChannelInfo, User user = null);
         /// <summary>
         /// Saves the tuner host.
         /// </summary>

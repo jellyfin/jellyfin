@@ -29,7 +29,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('studios');
     }
 
     function reloadItems(page) {
@@ -85,13 +85,11 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#tvStudiosPage", function () {
+    window.TvPage.renderStudiosTab = function (page, tabContent) {
 
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reloadItems(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadItems(tabContent);
         }
-    });
+    };
 
 })(jQuery, document);

@@ -1,0 +1,36 @@
+﻿<form class="uploadItemImageForm" style="max-width: 100%;">
+    <h2>${HeaderAddUpdateImage}</h2>
+    <div>
+        <p>${LabelJpgPngOnly}</p>
+        <input type="file" accept="image/*" id="uploadImage" name="uploadImage" />
+        <br />
+        <br />
+        <div id="imageDropZone" class="imageDropZone">
+            <h3>${LabelDropImageHere}</h3>
+            <output id="imageOutput"></output>
+        </div>
+        <div id="fldUpload" style="display: none;">
+            <br />
+            <div>
+                <label for="selectImageType">${LabelImageType}</label>
+                <select id="selectImageType" name="selectImageType">
+                    <option value="Primary">${OptionPrimary}</option>
+                    <option value="Art">${OptionArt}</option>
+                    <option value="Backdrop">${OptionBackdrop}</option>
+                    <option value="Banner">${OptionBanner}</option>
+                    <option value="Box">${OptionBox}</option>
+                    <option value="BoxRear">${OptionBoxRear}</option>
+                    <option value="Disc">${OptionDisc}</option>
+                    <option value="Icon">${OptionIcon}</option>
+                    <option value="Logo">${OptionLogo}</option>
+                    <option value="Menu">${OptionMenu}</option>
+                    <option value="Screenshot">${OptionScreenshot}</option>
+                    <option value="Thumb">${OptionThumb}</option>
+                </select>
+            </div>
+            <button type="submit" data-role="none" class="clearButton">
+                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonUpload}</span></paper-button>
+            </button>
+        </div>
+    </div>
+</form>

@@ -56,7 +56,14 @@
 
                 // Use the embedded server for iOS8, and also if we don't know the iOS version, just to be safe
                 //if (($.browser.iOSVersion || 0) < 9) {
+                var index = url.indexOf('/Documents');
+                if (index != -1) {
+                    return url.substring(index);
+                }
+                else {
                     return url.replace('file://', '');
+                }
+
                 //}
             }
             return url;
@@ -71,14 +78,14 @@
             var deferred = DeferredBuilder.Deferred();
             var key = getCacheKey(originalUrl);
 
-            Logger.log('getImageUrl:' + originalUrl);
+            //Logger.log('getImageUrl:' + originalUrl);
 
             getFileSystem().done(function (fileSystem) {
                 var path = fileSystem.root.toURL() + "/emby/cache/" + key;
 
                 resolveLocalFileSystemURL(path, function (fileEntry) {
                     var localUrl = normalizeReturnUrl(fileEntry.toURL());
-                    Logger.log('returning cached file: ' + localUrl);
+                    //Logger.log('returning cached file: ' + localUrl);
                     deferred.resolveWith(null, [localUrl]);
 
                 }, function () {

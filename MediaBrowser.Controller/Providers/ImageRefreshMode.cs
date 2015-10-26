@@ -8,14 +8,14 @@ namespace MediaBrowser.Controller.Providers
         None = 0,
 
         /// <summary>
-        /// The default
-        /// </summary>
-        Default = 1,
-
-        /// <summary>
         /// Existing images will be validated
         /// </summary>
-        ValidationOnly = 2,
+        ValidationOnly = 1,
+
+        /// <summary>
+        /// The default
+        /// </summary>
+        Default = 2,
 
         /// <summary>
         /// All providers will be executed to search for new metadata

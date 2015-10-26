@@ -20,7 +20,7 @@
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
-    "LabelApiDocumentation": "Documentation API",
+    "LabelApiDocumentation": "Documentation de l'API",
     "LabelDeveloperResources": "Ressources pour d\u00e9veloppeurs",
     "LabelBrowseLibrary": "Parcourir la biblioth\u00e8que",
     "LabelConfigureServer": "Configurer Emby",
@@ -172,5 +172,6 @@
     "HeaderProducer": "Producteurs",
     "HeaderWriter": "Auteur(e)s",
     "HeaderParentalRatings": "Note parentale",
-    "HeaderCommunityRatings": "Classification de la communaut\u00e9"
+    "HeaderCommunityRatings": "Classification de la communaut\u00e9",
+    "StartupEmbyServerIsLoading": "Le serveur Emby est en cours de chargement. Veuillez r\u00e9essayer dans quelques instant."
 }

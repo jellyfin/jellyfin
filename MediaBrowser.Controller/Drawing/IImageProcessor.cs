@@ -28,17 +28,17 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the size of the image.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>ImageSize.</returns>
-        ImageSize GetImageSize(string path);
-
-        /// <summary>
-        /// Gets the size of the image.
-        /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>ImageSize.</returns>
         ImageSize GetImageSize(ItemImageInfo info);
 
+        /// <summary>
+        /// Gets the size of the image.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>ImageSize.</returns>
+        ImageSize GetImageSize(string path);
+        
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -105,5 +105,11 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         Task CreateImageCollage(ImageCollageOptions options);
+
+        /// <summary>
+        /// Gets a value indicating whether [supports image collage creation].
+        /// </summary>
+        /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
+        bool SupportsImageCollageCreation { get; }
     }
 }

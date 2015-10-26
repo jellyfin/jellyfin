@@ -1,0 +1,239 @@
+﻿html, body, .ui-btn, .pageTitle {
+    font-family: San Francisco, Helvetica Neue;
+}
+
+body {
+    font-size: 15px;
+}
+
+.ui-body-b a:visited {
+    color: #007AFF /*{b-link-visited}*/;
+}
+
+.ui-body-b a {
+    color: #007AFF /*{b-link-color}*/;
+    font-weight: 500;
+}
+
+.ui-body-b select {
+    -webkit-appearance: none;
+}
+
+.pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
+    padding-top: 88px !important;
+}
+
+.libraryPage:not(.noSecondaryNavPage) {
+    padding-top: 85px !important;
+}
+
+.backdropContainer {
+    /* This isn't implemented right and ends up looking terrible */
+    background-attachment: initial;
+}
+
+.background-theme-b, paper-dialog.background-theme-b {
+    background: #181818;
+}
+
+.backdropContainer .pageBackground {
+    background-color: rgba(28,28,28,.92) !important;
+}
+
+.homeTopViews .defaultBackground .cardImage {
+    background-color: #303030;
+}
+
+.viewMenuBar {
+    /* It needs this in order to retain height since we're positioning the contents absolutely */
+    height: 50px;
+}
+
+.viewMenuBar, .libraryViewNav, paper-tabs {
+    background-color: #000;
+}
+
+    .viewMenuBar.semiTransparent {
+        background-color: #000;
+    }
+
+    .libraryViewNav a {
+        font-weight: 400;
+        text-transform: none;
+        color: #ccc !important;
+        padding: 12px 13px 8px;
+    }
+
+    .libraryViewNav .tab-content {
+        display: block !important;
+    }
+
+    .libraryViewNav paper-tabs {
+        flex-grow: 0 !important;
+        height: 36px;
+    }
+
+    .libraryViewNav paper-tab {
+        height: auto !important;
+        flex-grow: 0 !important;
+    }
+
+    .libraryViewNav #selectionBar {
+        background-color: transparent !important;
+    }
+
+    .libraryViewNav #tabsContainer {
+        flex-grow: 0 !important;
+    }
+
+.ui-body-b .paperList {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.settingsMenuHeader {
+    display: none;
+}
+
+@media all and (max-width: 600px) {
+
+    .libraryViewNav a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+.libraryViewNav a {
+    border-bottom: 0;
+}
+
+.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+    color: #52B54B !important;
+}
+
+.channelTimeslotHeader {
+    border-right-color: #52B54B !important;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #52B54B !important;
+}
+
+.libraryViewNav, paper-tabs {
+    font-size: 12px;
+}
+
+h1, h1 a {
+    font-weight: 400 !important;
+}
+
+.btnNotificationsInner {
+    font-weight: 400;
+}
+
+.channelList {
+    font-weight: 400;
+}
+
+.channelHeaderCellInner {
+    font-weight: 400;
+}
+
+.tvGuideHeader {
+    top: 86px !important;
+}
+
+.libraryMenuButtonText {
+    font-weight: 500 !important;
+    position: absolute;
+    left: 100px;
+    right: 100px;
+    text-align: center;
+    font-size: 16px;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+@media all and (max-width: 400px) {
+
+    .libraryMenuButtonText {
+        display: block;
+    }
+}
+
+.libraryPanelHeader span {
+    font-weight: 400;
+}
+
+.noSecondaryNavPage .itemBackdrop {
+    margin-top: 0;
+}
+
+paper-tab {
+    text-transform: none !important;
+}
+
+.visualCardBox {
+    background: none !important;
+    -moz-box-shadow: none;
+    -ms-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+    .visualCardBox .outerCardFooter {
+        padding: 0;
+    }
+
+.cardBox {
+    margin: 5px;
+}
+
+.cardImage {
+    border-radius: 10px;
+}
+
+.viewMenuSearch {
+    background: #1c1c1c;
+}
+
+@media (min-width: 600px) {
+
+    /* This needs a little extra space to account for the longer date format */
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 209px;
+    }
+
+    .programGrid, .timeslotHeaders {
+        margin-left: 210px;
+    }
+}
+
+.bottomFab {
+    bottom: 120px !important;
+}
+
+.sidebarLinkText {
+    font-weight: 400 !important;
+}
+
+#footer {
+    /* Eliminate transparency to prevent clicks from passing through to the elements underneath */
+    background-color: rgb(26,26,26);
+}
+
+.nowPlayingPageBackButton {
+    display: none !important;
+}
+
+.nowPlayingPage .libraryViewNav {
+    top: 0 !important;
+}
+
+.nowPlayingPage {
+    padding-top: 50px !important;
+}
+
+.localSyncStatus .labelSyncStatus {
+    display: none !important;
+}

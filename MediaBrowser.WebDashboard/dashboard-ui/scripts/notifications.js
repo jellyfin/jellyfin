@@ -27,6 +27,10 @@
                 return;
             }
 
+            if (!window.ApiClient) {
+                return;
+            }
+
             var promise = self.getNotificationsSummary();
 
             if (!promise) {
@@ -117,64 +121,49 @@
 
     function getNotificationHtml(notification) {
 
-        var html = '';
+        var itemHtml = '';
 
-        var cssClass = notification.IsRead ? "flyoutNotification" : "flyoutNotification unreadFlyoutNotification";
-
-        html += '<div data-notificationid="' + notification.Id + '" class="' + cssClass + '">';
-
-        html += '<div class="notificationImage">';
-        html += getImageHtml(notification);
-        html += '</div>';
-
-        html += '<div class="notificationContent">';
-
-        html += '<p style="font-size:16px;margin: .5em 0 .5em;" class="notificationName">';
         if (notification.Url) {
-            html += '<a href="' + notification.Url + '" target="_blank" style="text-decoration:none;">' + notification.Name + '</a>';
-        } else {
-            html += notification.Name;
-        }
-        html += '</p>';
-
-        html += '<p class="notificationTime" style="margin: .5em 0;">' + humane_date(notification.Date) + '</p>';
-
-        if (notification.Description) {
-            html += '<p style="margin: .5em 0;max-height:150px;overflow:hidden;text-overflow:ellipsis;">' + notification.Description + '</p>';
+            itemHtml += '<a class="clearLink" href="' + notification.Url + '" target="_blank">';
         }
 
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    }
-
-    function getImageHtml(notification) {
+        itemHtml += '<paper-icon-item>';
 
         if (notification.Level == "Error") {
-
-            return '<div class="imgNotification imgNotificationError"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
-
-        }
-        if (notification.Level == "Warning") {
-
-            return '<div class="imgNotification imgNotificationWarning"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
-
+            itemHtml += '<paper-fab mini class="" style="background:#cc3333;" icon="error" item-icon></paper-fab>';
+        } else {
+            itemHtml += '<paper-fabmini  class="blue" icon="dvr" item-icon></paper-fab>';
         }
 
-        return '<div class="imgNotification imgNotificationNormal"><div class="imgNotificationInner imgNotificationIcon"></div></div>';
+        itemHtml += '<paper-item-body three-line>';
 
+        itemHtml += '<div>';
+        itemHtml += notification.Name;
+        itemHtml += '</div>';
+
+        itemHtml += '<div secondary>';
+        itemHtml += humane_date(notification.Date);
+        itemHtml += '</div>';
+
+        if (notification.Description) {
+            itemHtml += '<div secondary>';
+            itemHtml += notification.Description;
+            itemHtml += '</div>';
+        }
+
+        itemHtml += '</paper-item-body>';
+
+        itemHtml += '</paper-icon-item>';
+
+        if (notification.Url) {
+            itemHtml += '</a>';
+        }
+
+        return itemHtml;
     }
 
     window.Notifications = new notifications();
-
-    $(document).on('libraryMenuCreated', function (e) {
-
-        if (window.ApiClient) {
-            Notifications.updateNotificationCount();
-        }
-    });
+    var needsRefresh = true;
 
     function onWebSocketMessage(e, msg) {
         if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
@@ -189,6 +178,12 @@
         $(apiClient).off("websocketmessage", onWebSocketMessage).on("websocketmessage", onWebSocketMessage);
     }
 
+    $(document).on('headercreated', function (e, apiClient) {
+        $('.btnNotifications').on('click', function () {
+            Dashboard.navigate('notificationlist.html');
+        });
+    });
+
     Dashboard.ready(function () {
 
         if (window.ApiClient) {
@@ -198,6 +193,24 @@
         $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
+
+        Events.on(ConnectionManager, 'localusersignedin', function () {
+            needsRefresh = true;
+        });
+
+        Events.on(ConnectionManager, 'localusersignedout', function () {
+            needsRefresh = true;
+        });
+    });
+
+    pageClassOn('pageshow', "type-interior", function () {
+
+        var page = $(this);
+
+        if (needsRefresh) {
+            Notifications.updateNotificationCount();
+        }
+
     });
 
 })(jQuery, document, Dashboard, LibraryBrowser);

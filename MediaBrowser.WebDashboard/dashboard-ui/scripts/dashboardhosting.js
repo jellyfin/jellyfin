@@ -40,7 +40,7 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#dashboardHostingPage", function () {
+    $(document).on('pageshow', "#dashboardHostingPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -58,22 +58,25 @@
 
         $('#btnSelectCertPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                includeFiles: true,
-                includeDirectories: true,
+                picker.show({
 
-                callback: function (path) {
+                    includeFiles: true,
+                    includeDirectories: true,
 
-                    if (path) {
-                        $('#txtCertificatePath', page).val(path);
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectCertificatePath')
+                        if (path) {
+                            $('#txtCertificatePath', page).val(path);
+                        }
+                        picker.close();
+                    },
+
+                    header: Globalize.translate('HeaderSelectCertificatePath')
+                });
             });
         });
 

@@ -30,89 +30,116 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="transitingProgress">
+    <template>
+      <paper-progress class="transiting"></paper-progress>
+    </template>
+  </test-fixture>
+
   <script>
-    suite('<paper-progress>', function() {
-      var range;
+    suite('basic features', function() {
+      var progress;
 
       setup(function() {
-        range = fixture('trivialProgress');
+        progress = fixture('trivialProgress');
       });
 
       test('check default', function() {
-        assert.equal(range.min, 0);
-        assert.equal(range.max, 100);
-        assert.equal(range.value, 0);
+        assert.equal(progress.min, 0);
+        assert.equal(progress.max, 100);
+        assert.equal(progress.value, 0);
       });
 
       test('set value', function(done) {
-        range.value = 50;
+        progress.value = 50;
         asyncPlatformFlush(function() {
-          assert.equal(range.value, 50);
+          assert.equal(progress.value, 50);
           // test clamp value
-          range.value = 60.1;
+          progress.value = 60.1;
           asyncPlatformFlush(function() {
-            assert.equal(range.value, 60);
+            assert.equal(progress.value, 60);
             done();
           });
         });
       });
 
       test('set max', function(done) {
-        range.max = 10;
-        range.value = 11;
+        progress.max = 10;
+        progress.value = 11;
         asyncPlatformFlush(function() {
-          assert.equal(range.value, range.max);
+          assert.equal(progress.value, progress.max);
           done();
         });
       });
 
       test('test ratio', function(done) {
-        range.max = 10;
-        range.value = 5;
+        progress.max = 10;
+        progress.value = 5;
         asyncPlatformFlush(function() {
-          assert.equal(range.ratio, 50);
+          assert.equal(progress.ratio, 50);
           done();
         });
       });
 
       test('test secondary ratio', function(done) {
-        range.max = 10;
-        range.secondaryProgress = 5;
+        progress.max = 10;
+        progress.secondaryProgress = 5;
         asyncPlatformFlush(function() {
-          assert.equal(range.secondaryRatio, 50);
+          assert.equal(progress.secondaryRatio, 50);
           done();
         });
       });
 
       test('set min', function(done) {
-        range.min = 10
-        range.max = 50;
-        range.value = 30;
+        progress.min = 10
+        progress.max = 50;
+        progress.value = 30;
         asyncPlatformFlush(function() {
-          assert.equal(range.ratio, 50);
-          range.value = 0;
+          assert.equal(progress.ratio, 50);
+          progress.value = 0;
           asyncPlatformFlush(function() {
-            assert.equal(range.value, range.min);
+            assert.equal(progress.value, progress.min);
             done();
           });
         });
       });
 
       test('set step', function(done) {
-        range.min = 0;
-        range.max = 10;
-        range.value = 5.1;
+        progress.min = 0;
+        progress.max = 10;
+        progress.value = 5.1;
         asyncPlatformFlush(function() {
-          assert.equal(range.value, 5);
-          range.step = 0.1;
-          range.value = 5.1;
+          assert.equal(progress.value, 5);
+          progress.step = 0.1;
+          progress.value = 5.1;
           asyncPlatformFlush(function() {
-            assert.equal(range.value, 5.1);
+            assert.equal(progress.value, 5.1);
             done();
           });
         });
       });
+    });
 
+    suite('transiting class', function() {
+      var progress;
+
+      setup(function() {
+        progress = fixture('transitingProgress');
+      });
+
+      test('progress bars', function() {
+        var stylesForPrimaryProgress = window.getComputedStyle(progress.$.primaryProgress);
+        var stylesForSecondaryProgress = window.getComputedStyle(progress.$.secondaryProgress);
+        var transitionProp = stylesForPrimaryProgress['transition-property'];
+
+        assert.isTrue(transitionProp === 'transform' || transitionProp === '-webkit-transform');
+        assert.equal(stylesForPrimaryProgress['transition-duration'], '0.08s');
+
+        transitionProp = stylesForSecondaryProgress['transition-property'];
+
+        assert.isTrue(transitionProp === 'transform' || transitionProp === '-webkit-transform');
+        assert.equal(stylesForSecondaryProgress['transition-duration'], '0.08s');
+      });
     });
 
   </script>

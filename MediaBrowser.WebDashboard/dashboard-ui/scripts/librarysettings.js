@@ -10,9 +10,7 @@
 
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
-        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor).selectmenu("refresh");
-
-        $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
+        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor);
 
         $('#chkEnableAudioArchiveFiles', page).checked(config.EnableAudioArchiveFiles).checkboxradio("refresh");
         $('#chkEnableVideoArchiveFiles', page).checked(config.EnableVideoArchiveFiles).checkboxradio("refresh");
@@ -26,8 +24,6 @@
         var form = this;
 
         ApiClient.getServerConfiguration().done(function (config) {
-
-            config.ItemsByNamePath = $('#txtItemsByNamePath', form).val();
 
             config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
@@ -43,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#librarySettingsPage", function () {
+    $(document).on('pageshow', "#librarySettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -59,27 +55,16 @@
 
         var page = this;
 
-        $('#btnSelectIBNPath', page).on("click.selectDirectory", function () {
-
-            var picker = new DirectoryBrowser(page);
-
-            picker.show({
-
-                callback: function (path) {
-
-                    if (path) {
-                        $('#txtItemsByNamePath', page).val(path);
-                    }
-                    picker.close();
-                },
-
-                header: Globalize.translate('HeaderSelectImagesByNamePath'),
-
-                instruction: Globalize.translate('HeaderSelectImagesByNamePathHelp')
-            });
-        });
-
         $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        ApiClient.getSystemInfo().done(function (systemInfo) {
+
+            if (systemInfo.SupportsLibraryMonitor) {
+                page.querySelector('.fldLibraryMonitor').classList.remove('hide');
+            } else {
+                page.querySelector('.fldLibraryMonitor').classList.add('hide');
+            }
+        });
     });
 
 })(jQuery, document, window);

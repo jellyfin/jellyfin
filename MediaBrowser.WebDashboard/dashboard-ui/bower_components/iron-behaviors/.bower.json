@@ -1,6 +1,6 @@
 {
   "name": "iron-behaviors",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Provides a set of behaviors for the iron elements",
   "private": true,
   "authors": [
@@ -28,11 +28,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "homepage": "https://github.com/PolymerElements/iron-behaviors",
-  "_release": "1.0.8",
+  "_release": "1.0.9",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.8",
-    "commit": "663ad706b43989f4961d945b8116cf4db346532f"
+    "tag": "v1.0.9",
+    "commit": "4b8cab62a4916cc4b1dbd262cbb7eb1eec624b6f"
   },
   "_source": "git://github.com/PolymerElements/iron-behaviors.git",
   "_target": "^1.0.0",

@@ -27,14 +27,16 @@
 
         var html = '';
 
-        html += '<div class="paperList">';
+        if (devices.length) {
+            html += '<div class="paperList">';
+        }
 
         html += devices.map(function (d) {
 
             var deviceHtml = '';
             deviceHtml += '<paper-icon-item>';
 
-            deviceHtml += '<paper-fab class="listAvatar" style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
+            deviceHtml += '<paper-fab mini style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
 
             deviceHtml += '<paper-item-body three-line>';
             deviceHtml += '<a class="clearLink" href="device.html?id=' + d.Id + '">';
@@ -65,7 +67,9 @@
 
         }).join('');
 
-        html += '</div>';
+        if (devices.length) {
+            html += '</div>';
+        }
 
         var elem = $('.devicesList', page).html(html).trigger('create');
 
@@ -90,7 +94,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#devicesPage", function () {
+    $(document).on('pageshow', "#devicesPage", function () {
 
         var page = this;
 

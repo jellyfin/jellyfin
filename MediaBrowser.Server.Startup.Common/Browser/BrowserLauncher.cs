@@ -24,15 +24,6 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         }
 
         /// <summary>
-        /// Opens the github.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public static void OpenGithub(ILogger logger)
-        {
-            OpenUrl("https://github.com/MediaBrowser/MediaBrowser", logger);
-        }
-
-        /// <summary>
         /// Opens the community.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -59,18 +50,6 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         public static void OpenDashboard(IServerApplicationHost appHost, ILogger logger)
         {
             OpenDashboardPage("dashboard.html", appHost, logger);
-        }
-
-        /// <summary>
-        /// Opens the swagger.
-        /// </summary>
-        /// <param name="appHost">The app host.</param>
-        /// <param name="logger">The logger.</param>
-        public static void OpenSwagger(IServerApplicationHost appHost, ILogger logger)
-        {
-            var url = appHost.GetLocalApiUrl("localhost") + "/swagger-ui/index.html";
-
-            OpenUrl(url, logger);
         }
 
         /// <summary>

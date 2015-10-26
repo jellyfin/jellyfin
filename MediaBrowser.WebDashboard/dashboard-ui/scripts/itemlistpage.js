@@ -1,13 +1,10 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
-
     var currentItem;
 
     var data = {};
 
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -26,16 +23,21 @@
 
             pageData.query.Filters = "";
             pageData.query.NameStartsWithOrGreater = '';
+            pageData.view = LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
             pageData.query.ParentId = getParameterByName('parentId');
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
     }
 
+    function getQuery() {
+
+        return getPageData().query;
+    }
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function reloadItems(page) {
@@ -60,13 +62,20 @@
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
 
+            var view = getPageData().view;
+
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                addLayoutButton: true,
+                currentLayout: view,
+                viewIcon: 'filter-list',
+                sortButton: true,
+                layouts: 'Poster,PosterCard'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -102,6 +111,7 @@
                 posterOptions.showTitle = true;
                 posterOptions.showYear = true;
                 posterOptions.cardLayout = true;
+                posterOptions.centerText = false;
 
                 html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
@@ -118,6 +128,58 @@
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
                 reloadItems(page);
+            });
+
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                reloadItems(page);
+            });
+
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                LibraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionNameSort'),
+                        id: 'SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionCommunityRating'),
+                        id: 'CommunityRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionCriticRating'),
+                        id: 'CriticRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDateAdded'),
+                        id: 'DateCreated,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDatePlayed'),
+                        id: 'DatePlayed,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionParentalRating'),
+                        id: 'OfficialRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionPlayCount'),
+                        id: 'PlayCount,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionReleaseDate'),
+                        id: 'PremiereDate,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionRuntime'),
+                        id: 'Runtime,SortName'
+                    }],
+                    callback: function () {
+                        reloadItems(page);
+                    },
+                    query: query
+                });
             });
 
             LibraryBrowser.saveQueryValues(getParameterByName('parentId'), query);
@@ -146,18 +208,6 @@
     function updateFilterControls(page) {
 
         var query = getQuery();
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
 
         $('.chkStandardFilter', page).each(function () {
 
@@ -166,12 +216,9 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
-
-        $('#selectView', page).val(view).selectmenu('refresh');
+        });
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     function onListItemClick(e) {
@@ -192,20 +239,6 @@
 
         var page = this;
 
-        $('.radioSortBy', this).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
-        });
-
         $('.chkStandardFilter', this).on('change', function () {
 
             var query = getQuery();
@@ -224,15 +257,6 @@
             reloadItems(page);
         });
 
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
-
-            reloadItems(page);
-
-            LibraryBrowser.saveViewSetting(getParameterByName('parentId'), view);
-        });
-
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
             var query = getQuery();
@@ -249,30 +273,13 @@
             reloadItems(page);
         });
 
-        $('#selectPageSize', page).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
         $(page).on('click', '.mediaItem', onListItemClick);
 
     }).on('pagebeforeshow', "#itemListPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
-
-                if (val) {
-                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-                } else {
-                    reloadItems(page);
-                }
-            });
-        }
-
+        reloadItems(page);
         updateFilterControls(page);
         LibraryMenu.setBackButtonVisible(getParameterByName('context'));
 

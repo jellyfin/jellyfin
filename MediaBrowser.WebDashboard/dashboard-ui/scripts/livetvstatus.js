@@ -24,70 +24,70 @@
 
         var html = '';
 
-        for (var i = 0, length = tuners.length; i < length; i++) {
+        if (tuners.length) {
+            html += '<div class="paperList">';
 
-            var tuner = tuners[i];
+            for (var i = 0, length = tuners.length; i < length; i++) {
 
-            html += '<tr>';
+                var tuner = tuners[i];
+                html += '<paper-icon-item>';
 
-            html += '<td>';
-            html += tuner.Name;
-            html += '</td>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
 
-            html += '<td>';
-            html += tuner.SourceType;
-            html += '</td>';
+                html += '<paper-item-body two-line>';
 
-            html += '<td>';
+                html += '<div>';
+                html += tuner.Name;
+                html += '</div>';
 
-            if (tuner.Status == 'RecordingTv') {
-                if (tuner.ChannelName) {
+                html += '<div secondary>';
+                html += tuner.SourceType;
+                html += '</div>';
 
-                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
-                    html += Globalize.translate('StatusRecordingProgram').replace('{0}', tuner.ChannelName);
-                    html += '</a>';
-                } else {
+                html += '<div secondary>';
+                if (tuner.Status == 'RecordingTv') {
+                    if (tuner.ChannelName) {
 
-                    html += Globalize.translate('StatusRecording');
+                        html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
+                        html += Globalize.translate('StatusRecordingProgram').replace('{0}', tuner.ChannelName);
+                        html += '</a>';
+                    } else {
+
+                        html += Globalize.translate('StatusRecording');
+                    }
                 }
-            }
-            else if (tuner.Status == 'LiveTv') {
+                else if (tuner.Status == 'LiveTv') {
 
-                if (tuner.ChannelName) {
+                    if (tuner.ChannelName) {
 
-                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
-                    html += Globalize.translate('StatusWatchingProgram').replace('{0}', tuner.ChannelName);
-                    html += '</a>';
-                } else {
+                        html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
+                        html += Globalize.translate('StatusWatchingProgram').replace('{0}', tuner.ChannelName);
+                        html += '</a>';
+                    } else {
 
-                    html += Globalize.translate('StatusWatching');
+                        html += Globalize.translate('StatusWatching');
+                    }
                 }
-            }
-            else {
-                html += tuner.Status;
-            }
-            html += '</td>';
+                else {
+                    html += tuner.Status;
+                }
+                html += '</div>';
 
-            html += '<td>';
-
-            if (tuner.ProgramName) {
-                html += tuner.ProgramName;
+                html += '</paper-item-body>';
+                html += '<paper-icon-button icon="refresh" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"></paper-icon-button>';
+                html += '</paper-icon-item>';
             }
 
-            html += '</td>';
-
-            html += '<td>';
-            html += tuner.Clients.join('<br/>');
-            html += '</td>';
-
-            html += '<td>';
-            html += '<button data-tunerid="' + tuner.Id + '" type="button" data-inline="true" data-icon="refresh" data-mini="true" data-iconpos="notext" class="btnResetTuner organizerButton" title="' + Globalize.translate('ButtonResetTuner') + '">' + Globalize.translate('ButtonResetTuner') + '</button>';
-            html += '</td>';
-
-            html += '</tr>';
+            html += '</div>';
         }
 
-        var elem = $('.tunersResultBody', page).html(html).parents('.tblTuners').table("refresh").trigger('create');
+        if (tuners.length) {
+            page.querySelector('.tunerSection').classList.remove('hide');
+        } else {
+            page.querySelector('.tunerSection').classList.add('hide');
+        }
+
+        var elem = $('.tunerList', page).html(html);
 
         $('.btnResetTuner', elem).on('click', function () {
 
@@ -196,7 +196,7 @@
 
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
                 html += '<a class="clearLink" href="' + href + '">';
@@ -300,7 +300,7 @@
                 var provider = providers[i];
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
 
@@ -493,11 +493,28 @@
             addProvider(this);
         });
 
-    }).on('pageshowready', "#liveTvStatusPage", function () {
+    }).on('pageshow', "#liveTvStatusPage", function () {
 
         var page = this;
 
         reload(page);
+
+        // on here
+        $('.btnRefresh', page).taskButton({
+            mode: 'on',
+            progressElem: page.querySelector('.refreshGuideProgress'),
+            taskKey: 'RefreshGuide'
+        });
+
+    }).on('pagehide', "#liveTvStatusPage", function () {
+
+        var page = this;
+
+        // off here
+        $('.btnRefreshGuide', page).taskButton({
+            mode: 'off'
+        });
+
     });
 
 })(jQuery, document, window);

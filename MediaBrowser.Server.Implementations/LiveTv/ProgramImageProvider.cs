@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +13,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     public class ProgramImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
 
-        public ProgramImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger)
+        public ProgramImageProvider(ILiveTvManager liveTvManager)
         {
             _liveTvManager = liveTvManager;
-            _httpClient = httpClient;
-            _logger = logger;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -36,54 +30,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.ProviderImagePath))
-            {
-                imageResponse.Path = liveTvItem.ProviderImagePath;
-                imageResponse.HasImage = true;
-            }
-            else if (!string.IsNullOrEmpty(liveTvItem.ProviderImageUrl))
-            {
-                var options = new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Url = liveTvItem.ProviderImageUrl
-                };
+            var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
-                var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
-
-                if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                {
-                    imageResponse.HasImage = true;
-                    imageResponse.Stream = response.Content;
-                    imageResponse.SetFormatFromMimeType(response.ContentType);
-                }
-                else
-                {
-                    _logger.Error("Provider did not return an image content type.");
-                }
-            }
-            else if (liveTvItem.HasProviderImage ?? true)
+            if (service != null)
             {
-                var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
-
-                if (service != null)
+                try
                 {
-                    try
+                    var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
+
+                    var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
+
+                    if (response != null)
                     {
-                        var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
-
-                        var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
-
-                        if (response != null)
-                        {
-                            imageResponse.HasImage = true;
-                            imageResponse.Stream = response.Stream;
-                            imageResponse.Format = response.Format;
-                        }
+                        imageResponse.HasImage = true;
+                        imageResponse.Stream = response.Stream;
+                        imageResponse.Format = response.Format;
                     }
-                    catch (NotImplementedException)
-                    {
-                    }
+                }
+                catch (NotImplementedException)
+                {
                 }
             }
 
@@ -115,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (liveTvItem != null)
             {
-                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.HasProviderImage ?? true);
+                return !liveTvItem.HasImage(ImageType.Primary);
             }
             return false;
         }

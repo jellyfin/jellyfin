@@ -18,6 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using UniversalDetector;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -49,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             get
             {
-                return Path.Combine(_appPaths.CachePath, "subtitles");
+                return Path.Combine(_appPaths.DataPath, "subtitles");
             }
         }
 
@@ -183,7 +184,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return File.OpenRead(path);
+            return _fileSystem.OpenRead(path);
         }
 
         private Encoding GetEncoding(string charset)
@@ -346,7 +347,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!File.Exists(outputPath))
+				if (!_fileSystem.FileExists(outputPath))
                 {
                     await ConvertTextSubtitleToSrtInternal(inputPath, inputProtocol, outputPath, cancellationToken).ConfigureAwait(false);
                 }
@@ -383,7 +384,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var encodingParam = await GetSubtitleFileCharacterSet(inputPath, inputProtocol, cancellationToken).ConfigureAwait(false);
 
@@ -410,10 +411,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             };
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
                 true);
@@ -466,7 +467,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 failed = true;
 
-                if (File.Exists(outputPath))
+				if (_fileSystem.FileExists(outputPath))
                 {
                     try
                     {
@@ -479,7 +480,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
             }
-            else if (!File.Exists(outputPath))
+			else if (!_fileSystem.FileExists(outputPath))
             {
                 failed = true;
             }
@@ -515,7 +516,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                if (!File.Exists(outputPath))
+				if (!_fileSystem.FileExists(outputPath))
                 {
                     await ExtractTextSubtitleInternal(_mediaEncoder.GetInputArgument(inputFiles, protocol), subtitleStreamIndex,
                             outputCodec, outputPath, cancellationToken).ConfigureAwait(false);
@@ -540,7 +541,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException("outputPath");
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var processArgs = string.Format("-i {0} -map 0:{1} -an -vn -c:s {2} \"{3}\"", inputPath,
                 subtitleStreamIndex, outputCodec, outputPath);
@@ -566,7 +567,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
                 true);
@@ -635,7 +636,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     _logger.ErrorException("Error deleting extracted subtitle {0}", ex, outputPath);
                 }
             }
-            else if (!File.Exists(outputPath))
+			else if (!_fileSystem.FileExists(outputPath))
             {
                 failed = true;
             }

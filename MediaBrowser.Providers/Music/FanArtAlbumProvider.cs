@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -375,7 +376,7 @@ namespace MediaBrowser.Providers.Music
                     // Process images
                     var artistXmlPath = FanartArtistProvider.GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
-                    var fileInfo = new FileInfo(artistXmlPath);
+                    var fileInfo = _fileSystem.GetFileInfo(artistXmlPath);
 
                     return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
                 }

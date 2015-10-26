@@ -170,7 +170,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>ILogger.</returns>
-        public ILogger GetLogger(string name)
+        public Model.Logging.ILogger GetLogger(string name)
         {
             return new NLogger(name, this);
         }
@@ -208,7 +208,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         {
             LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".txt");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
+			Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
 
             AddFileTarget(LogFilePath, level);
 

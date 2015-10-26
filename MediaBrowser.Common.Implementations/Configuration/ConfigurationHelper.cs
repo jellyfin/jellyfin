@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {
@@ -27,7 +28,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
             // Use try/catch to avoid the extra file system lookup using File.Exists
             try
             {
-                buffer = File.ReadAllBytes(path);
+				buffer = File.ReadAllBytes(path);
 
                 configuration = xmlSerializer.DeserializeFromBytes(type, buffer);
             }
@@ -46,10 +47,10 @@ namespace MediaBrowser.Common.Implementations.Configuration
                 // If the file didn't exist before, or if something has changed, re-save
                 if (buffer == null || !buffer.SequenceEqual(newBytes))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+					Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                     // Save it after load in case we got new items
-                    File.WriteAllBytes(path, newBytes);
+					File.WriteAllBytes(path, newBytes);
                 }
 
                 return configuration;

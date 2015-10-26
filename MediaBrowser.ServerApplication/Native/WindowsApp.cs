@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
 using System.Reflection;
+using CommonIO;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -22,7 +22,10 @@ namespace MediaBrowser.ServerApplication.Native
         {
             var list = new List<Assembly>();
 
-            list.Add(typeof(PismoIsoManager).Assembly);
+            if (!System.Environment.Is64BitProcess)
+            {
+                list.Add(typeof(PismoIsoManager).Assembly);
+            }
 
             list.Add(GetType().Assembly);
             
@@ -45,6 +48,11 @@ namespace MediaBrowser.ServerApplication.Native
                     OperatingSystemVersionString = System.Environment.OSVersion.VersionString
                 };
             }
+        }
+
+        public bool SupportsLibraryMonitor
+        {
+            get { return true; }
         }
 
         public bool SupportsRunningAsService

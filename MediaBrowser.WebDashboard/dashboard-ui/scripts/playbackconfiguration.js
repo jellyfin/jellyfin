@@ -31,7 +31,7 @@
 
         $('.playbackConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#playbackConfigurationPage", function () {
+    }).on('pageshow', "#playbackConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

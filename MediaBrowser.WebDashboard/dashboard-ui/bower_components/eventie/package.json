@@ -1,0 +1,23 @@
+{
+  "name": "eventie",
+  "version": "1.0.6",
+  "description": "Event binding helper",
+  "main": "eventie.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/desandro/eventie.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/desandro/eventie/issues"
+  },
+  "homepage": "https://github.com/desandro/eventie",
+  "keywords": [
+    "DOM",
+    "event"
+  ],
+  "author": "David DeSandro"
+}

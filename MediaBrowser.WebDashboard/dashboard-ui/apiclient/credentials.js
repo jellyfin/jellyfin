@@ -13,7 +13,7 @@
         function ensure() {
 
             if (!credentials) {
-                
+
                 var json = appStorage.getItem(key) || '{}';
 
                 Logger.log('credentials initialized with: ' + json);
@@ -106,6 +106,24 @@
             else {
                 list.push(server);
                 return server;
+            }
+        };
+
+        self.addOrUpdateUser = function (server, user) {
+
+            server.Users = server.Users || [];
+
+            var existing = server.Users.filter(function (s) {
+                return s.Id == user.Id;
+            })[0];
+
+            if (existing) {
+
+                // Merge the data
+                existing.IsSignedInOffline = true;
+            }
+            else {
+                server.Users.push(user);
             }
         };
     };

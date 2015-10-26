@@ -1,0 +1,37 @@
+﻿<form class="popupIdentifyForm" style="margin:auto;">
+
+    <p>${HeaderIdentifyItemHelp}</p>
+
+    <div>
+        <paper-input type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}"></paper-input>
+    </div>
+    <div class="fldLookupYear">
+        <paper-input type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}"></paper-input>
+    </div>
+
+    <div class="identifyProviderIds">
+    </div>
+
+    <p>
+        <button type="submit" data-role="none" class="clearButton">
+            <paper-button raised class="submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></paper-button>
+        </button>
+    </p>
+</form>
+<div class="identificationSearchResults" style="display:none; text-align: center;">
+
+    <div class="identificationSearchResultList"></div>
+</div>
+
+<form class="identifyOptionsForm" style="display:none;margin:auto;">
+
+    <div class="selectedSearchResult"></div>
+    <br />
+    <div>
+        <paper-checkbox id="chkIdentifyReplaceImages" checked>${OptionReplaceExistingImages}</paper-checkbox>
+    </div>
+    <br />
+    <button type="submit" data-role="none" class="clearButton">
+        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></paper-button>
+    </button>
+</form>

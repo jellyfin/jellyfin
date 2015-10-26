@@ -66,7 +66,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey();
     }
 
     function onListItemClick(e) {
@@ -104,7 +104,6 @@
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-            var trigger = false;
 
             if (query.IncludeItemTypes == "Audio") {
 
@@ -114,7 +113,6 @@
                     defaultAction: 'playallfromhere',
                     smallIcon: true
                 }) + '</div>';
-                trigger = true;
 
             } else {
                 var posterOptions = {
@@ -147,10 +145,6 @@
             var elem = page.querySelector('#items');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
-
-            if (trigger) {
-                $(elem).trigger('create');
-            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

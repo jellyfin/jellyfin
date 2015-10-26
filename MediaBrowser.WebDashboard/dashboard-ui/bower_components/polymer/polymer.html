@@ -357,7 +357,15 @@ this.listen(node, name, listeners[key]);
 }
 },
 listen: function (node, eventName, methodName) {
-this._listen(node, eventName, this._createEventHandler(node, eventName, methodName));
+var handler = this._recallEventHandler(this, eventName, node, methodName);
+if (!handler) {
+handler = this._createEventHandler(node, eventName, methodName);
+}
+if (handler._listening) {
+return;
+}
+this._listen(node, eventName, handler);
+handler._listening = true;
 },
 _boundListenerKey: function (eventName, methodName) {
 return eventName + ':' + methodName;
@@ -396,6 +404,7 @@ host[methodName](e, e.detail);
 host._warn(host._logf('_createEventHandler', 'listener method `' + methodName + '` not defined'));
 }
 };
+handler._listening = false;
 this._recordEventHandler(host, eventName, node, methodName, handler);
 return handler;
 },
@@ -403,6 +412,7 @@ unlisten: function (node, eventName, methodName) {
 var handler = this._recallEventHandler(this, eventName, node, methodName);
 if (handler) {
 this._unlisten(node, eventName, handler);
+handler._listening = false;
 }
 },
 _listen: function (node, eventName, handler) {
@@ -687,9 +697,9 @@ gd = gobj[dep];
 if (gd && gd[name]) {
 gd[name] = (gd[name] || 1) - 1;
 gd._count = (gd._count || 1) - 1;
-}
 if (gd._count === 0) {
 node.removeEventListener(dep, this.handleNative);
+}
 }
 }
 }
@@ -1250,6 +1260,12 @@ elt[n] = props[n];
 }
 }
 return elt;
+},
+isLightDescendant: function (node) {
+return this.contains(node) && Polymer.dom(this).getOwnerRoot() === Polymer.dom(node).getOwnerRoot();
+},
+isLocalDescendant: function (node) {
+return this.root === Polymer.dom(node).getOwnerRoot();
 }
 });
 Polymer.Bind = {
@@ -1817,6 +1833,7 @@ var h$ = this._handlers;
 for (var i = 0, l = h$.length, h; i < l && (h = h$[i]); i++) {
 h[0].call(this, h[1], h[2]);
 }
+this._handlers = [];
 }
 });
 (function () {
@@ -1940,7 +1957,7 @@ this._boundPaths = this._boundPaths || {};
 if (from) {
 this._boundPaths[to] = from;
 } else {
-this.unbindPath(to);
+this.unlinkPaths(to);
 }
 },
 unlinkPaths: function (path) {
@@ -1949,23 +1966,13 @@ delete this._boundPaths[path];
 }
 },
 _notifyBoundPaths: function (path, value) {
-var from, to;
 for (var a in this._boundPaths) {
 var b = this._boundPaths[a];
 if (path.indexOf(a + '.') == 0) {
-from = a;
-to = b;
-break;
+this.notifyPath(this._fixPath(b, a, path), value);
+} else if (path.indexOf(b + '.') == 0) {
+this.notifyPath(this._fixPath(a, b, path), value);
 }
-if (path.indexOf(b + '.') == 0) {
-from = b;
-to = a;
-break;
-}
-}
-if (from && to) {
-var p = this._fixPath(to, from, path);
-this.notifyPath(p, value);
 }
 },
 _fixPath: function (property, root, path) {
@@ -2060,6 +2067,22 @@ if (args.length) {
 this._notifySplice(array, path, 0, args.length, []);
 }
 return ret;
+},
+prepareModelNotifyPath: function (model) {
+this.mixin(model, {
+fire: Polymer.Base.fire,
+notifyPath: Polymer.Base.notifyPath,
+_EVENT_CHANGED: Polymer.Base._EVENT_CHANGED,
+_notifyPath: Polymer.Base._notifyPath,
+_pathEffector: Polymer.Base._pathEffector,
+_annotationPathEffect: Polymer.Base._annotationPathEffect,
+_complexObserverPathEffect: Polymer.Base._complexObserverPathEffect,
+_annotatedComputationPathEffect: Polymer.Base._annotatedComputationPathEffect,
+_computePathEffect: Polymer.Base._computePathEffect,
+_modelForPath: Polymer.Base._modelForPath,
+_pathMatchesEffect: Polymer.Base._pathMatchesEffect,
+_notifyBoundPaths: Polymer.Base._notifyBoundPaths
+});
 }
 });
 }());
@@ -2193,7 +2216,7 @@ MIXIN_RULE: 1000
 OPEN_BRACE: '{',
 CLOSE_BRACE: '}',
 _rx: {
-comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -3267,6 +3290,7 @@ properties: { __hideTemplateChildren__: { observer: '_showHideChildren' } },
 _instanceProps: Polymer.nob,
 _parentPropPrefix: '_parent_',
 templatize: function (template) {
+this._templatized = template;
 if (!template._content) {
 template._content = template.content;
 }
@@ -3277,11 +3301,11 @@ return;
 }
 var archetype = Object.create(Polymer.Base);
 this._customPrepAnnotations(archetype, template);
+this._prepParentProperties(archetype, template);
 archetype._prepEffects();
 this._customPrepEffects(archetype);
 archetype._prepBehaviors();
 archetype._prepBindings();
-this._prepParentProperties(archetype, template);
 archetype._notifyPath = this._notifyPathImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
@@ -3364,6 +3388,7 @@ delete parentProps[prop];
 proto = archetype._parentPropProto = Object.create(null);
 if (template != this) {
 Polymer.Bind.prepareModel(proto);
+Polymer.Base.prepareModelNotifyPath(proto);
 }
 for (prop in parentProps) {
 var parentProp = this._parentPropPrefix + prop;
@@ -3382,6 +3407,7 @@ Polymer.Bind.prepareInstance(template);
 template._forwardParentProp = this._forwardParentProp.bind(this);
 }
 this._extendTemplate(template, proto);
+template._pathEffector = this._pathEffectorImpl.bind(this);
 }
 },
 _createForwardPropEffector: function (prop) {
@@ -3392,7 +3418,7 @@ this._forwardParentProp(prop, value);
 _createHostPropEffector: function (prop) {
 var prefix = this._parentPropPrefix;
 return function (source, value) {
-this.dataHost[prefix + prop] = value;
+this.dataHost._templatized[prefix + prop] = value;
 };
 },
 _createInstancePropEffector: function (prop) {
@@ -3424,16 +3450,17 @@ var dot = path.indexOf('.');
 var root = dot < 0 ? path : path.slice(0, dot);
 dataHost._forwardInstancePath.call(dataHost, this, path, value);
 if (root in dataHost._parentProps) {
-dataHost.notifyPath(dataHost._parentPropPrefix + path, value);
+dataHost._templatized.notifyPath(dataHost._parentPropPrefix + path, value);
 }
 },
-_pathEffector: function (path, value, fromAbove) {
+_pathEffectorImpl: function (path, value, fromAbove) {
 if (this._forwardParentPath) {
 if (path.indexOf(this._parentPropPrefix) === 0) {
-this._forwardParentPath(path.substring(8), value);
+var subPath = path.substring(this._parentPropPrefix.length);
+this._forwardParentPath(subPath, value);
 }
 }
-Polymer.Base._pathEffector.apply(this, arguments);
+Polymer.Base._pathEffector.call(this._templatized, path, value, fromAbove);
 },
 _constructorImpl: function (model, host) {
 this._rootDataHost = host._getRootDataHost();
@@ -3476,8 +3503,9 @@ return host._scopeElementClass(node, value);
 stamp: function (model) {
 model = model || {};
 if (this._parentProps) {
+var templatized = this._templatized;
 for (var prop in this._parentProps) {
-model[prop] = this[this._parentPropPrefix + prop];
+model[prop] = templatized[this._parentPropPrefix + prop];
 }
 }
 return new this.ctor(model, this);
@@ -4085,7 +4113,7 @@ this.deselect(item);
 }
 } else {
 this.push('selected', item);
-skey = this._selectedColl.getKey(item);
+var skey = this._selectedColl.getKey(item);
 this.linkPaths('selected.' + skey, 'items.' + key);
 }
 } else {

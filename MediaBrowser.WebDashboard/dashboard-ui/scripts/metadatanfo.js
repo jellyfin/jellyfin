@@ -10,8 +10,8 @@
             return '<option value="' + user.Id + '">' + user.Name + '</option>';
         }).join('');
 
-        $('#selectUser', page).html(html).val(config.UserId || '').selectmenu('refresh');
-        $('#selectReleaseDateFormat', page).val(config.ReleaseDateFormat).selectmenu('refresh');
+        $('#selectUser', page).html(html).val(config.UserId || '');
+        $('#selectReleaseDateFormat', page).val(config.ReleaseDateFormat);
         $('#chkSaveImagePaths', page).checked(config.SaveImagePathsInNfo).checkboxradio('refresh');
         $('#chkEnablePathSubstitution', page).checked(config.EnablePathSubstitution).checkboxradio('refresh');
         $('#chkEnableExtraThumbs', page).checked(config.EnableExtraThumbsDuplication).checkboxradio('refresh');
@@ -43,7 +43,7 @@
 
         $('.metadataNfoForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataNfoPage", function () {
+    }).on('pageshow', "#metadataNfoPage", function () {
 
         Dashboard.showLoadingMsg();
 

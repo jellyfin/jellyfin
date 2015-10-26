@@ -8,6 +8,22 @@
 
     window.AppSettings = {
 
+        enableAutomaticBitrateDetection: function (val) {
+
+            if (val != null) {
+                update('enableAutomaticBitrateDetection', val.toString());
+            }
+
+            var savedVal = appStorage.getItem('enableAutomaticBitrateDetection');
+
+            if (!savedVal) {
+                if (AppInfo.isNativeApp) {
+                    //return false;
+                }
+            }
+
+            return appStorage.getItem('enableAutomaticBitrateDetection') != 'false';
+        },
         maxStreamingBitrate: function (val) {
 
             if (val != null) {
@@ -39,14 +55,6 @@
             }
 
             return appStorage.getItem('externalplayers') == 'true';
-        },
-        enableItemPreviews: function (val) {
-
-            if (val != null) {
-                update('enableItemPreviews', val.toString());
-            }
-
-            return appStorage.getItem('enableItemPreviews') == 'true';
         },
         enableFullScreen: function (val) {
 
@@ -88,6 +96,21 @@
             }
 
             return appStorage.getItem('displayLanguage') || 'en-US';
+        },
+
+        cameraUploadServers: function (val) {
+
+            if (val != null) {
+                update('cameraUploadServers', val.join(','));
+            }
+
+            val = appStorage.getItem('cameraUploadServers');
+
+            if (val) {
+                return val.split(',');
+            }
+
+            return [];
         },
 
         displayPreferencesKey: function () {

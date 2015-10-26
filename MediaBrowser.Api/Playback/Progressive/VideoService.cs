@@ -11,12 +11,14 @@ using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
     /// Class GetVideoStream
     /// </summary>
+    [Route("/Videos/{Id}/stream.mpegts", "GET")]
     [Route("/Videos/{Id}/stream.ts", "GET")]
     [Route("/Videos/{Id}/stream.webm", "GET")]
     [Route("/Videos/{Id}/stream.asf", "GET")]

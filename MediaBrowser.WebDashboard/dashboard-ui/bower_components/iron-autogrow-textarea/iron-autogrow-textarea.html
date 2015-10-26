@@ -26,6 +26,12 @@ Example:
 Because the `textarea`'s `value` property is not observable, you should use
 this element's `bind-value` instead for imperative updates.
 
+### Styling
+The following custom properties and mixins are available for styling:
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`
+
 @group Iron Elements
 @hero hero.svg
 @demo demo/index.html
@@ -62,6 +68,7 @@ this element's `bind-value` instead for imperative updates.
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      @apply(--iron-autogrow-textarea);
     }
 
     ::content textarea:invalid {
@@ -82,6 +89,7 @@ this element's `bind-value` instead for imperative updates.
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
         required$="[[required]]"
+        disabled$="[[disabled]]"
         rows$="[[rows]]"
         maxlength$="[[maxlength]]"></textarea>
     </div>
@@ -219,6 +227,36 @@ this element's `bind-value` instead for imperative updates.
     },
 
     /**
+     * Returns textarea's selection start.
+     * @type Number
+     */
+    get selectionStart() {
+      return this.$.textarea.selectionStart;
+    },
+
+    /**
+     * Returns textarea's selection end.
+     * @type Number
+     */
+    get selectionEnd() {
+      return this.$.textarea.selectionEnd;
+    },
+
+    /**
+     * Sets the textarea's selection start.
+     */
+    set selectionStart(value) {
+      this.$.textarea.selectionStart = value;
+    },
+
+    /**
+     * Sets the textarea's selection end.
+     */
+    set selectionEnd(value) {
+      this.$.textarea.selectionEnd = value;
+    },
+
+    /**
      * Returns true if `value` is valid. The validator provided in `validator`
      * will be used first, if it exists; otherwise, the `textarea`'s validity
      * is used.
@@ -242,32 +280,27 @@ this element's `bind-value` instead for imperative updates.
       return valid;
     },
 
-    _update: function() {
-      this.$.mirror.innerHTML = this._valueForMirror();
-
-      var textarea = this.textarea;
-      // If the value of the textarea was updated imperatively, then we
-      // need to manually update bindValue as well.
-      if (textarea && this.bindValue != textarea.value) {
-        this.bindValue = textarea.value;
-      }
-    },
-
     _bindValueChanged: function() {
       var textarea = this.textarea;
       if (!textarea) {
         return;
       }
 
-      textarea.value = this.bindValue;
-      this._update();
+      // If the bindValue changed manually, then we need to also update
+      // the underlying textarea's value. Otherwise this change was probably
+      // generated from the _onInput handler, and the two values are already
+      // the same.
+      if (textarea.value !== this.bindValue) {
+        textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+      }
+
+      this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
     },
 
     _onInput: function(event) {
       this.bindValue = event.path ? event.path[0].value : event.target.value;
-      this._update();
     },
 
     _constrain: function(tokens) {

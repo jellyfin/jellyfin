@@ -15,6 +15,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Intros
 {
@@ -25,14 +27,16 @@ namespace MediaBrowser.Server.Implementations.Intros
         private readonly ILocalizationManager _localization;
         private readonly IConfigurationManager _serverConfig;
         private readonly ILibraryManager _libraryManager;
+        private readonly IFileSystem _fileSystem;
 
-        public DefaultIntroProvider(ISecurityManager security, IChannelManager channelManager, ILocalizationManager localization, IConfigurationManager serverConfig, ILibraryManager libraryManager)
+        public DefaultIntroProvider(ISecurityManager security, IChannelManager channelManager, ILocalizationManager localization, IConfigurationManager serverConfig, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _security = security;
             _channelManager = channelManager;
             _localization = localization;
             _serverConfig = serverConfig;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         public async Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, User user)
@@ -79,8 +83,16 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (config.EnableIntrosFromMoviesInLibrary)
             {
-                var itemsWithTrailers = user.RootFolder
-                    .GetRecursiveChildren(user, i =>
+                var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(Movie).Name },
+
+                    User = user
+
+                }).Items;
+
+                var itemsWithTrailers = inputItems
+                    .Where(i =>
                     {
                         var hasTrailers = i as IHasTrailers;
 
@@ -232,7 +244,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 return new List<string>();
             }
 
-            return Directory.EnumerateFiles(options.CustomIntroPath, "*", SearchOption.AllDirectories)
+            return _fileSystem.GetFilePaths(options.CustomIntroPath, true)
                 .Where(_libraryManager.IsVideoFile);
         }
 

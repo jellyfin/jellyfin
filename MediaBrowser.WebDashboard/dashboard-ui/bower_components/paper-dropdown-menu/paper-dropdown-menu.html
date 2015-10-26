@@ -43,6 +43,9 @@ Example:
 
 This example renders a dropdown menu with 4 options.
 
+Similarly to using `iron-select`, `iron-deselect` events will cause the
+current selection of the `paper-dropdown-menu` to be cleared.
+
 ### Styling
 
 The following custom properties and mixins are also available for styling:
@@ -73,6 +76,12 @@ respectively.
       position: relative;
       text-align: left;
       cursor: pointer;
+
+      /* NOTE(cdata): Both values are needed, since some phones require the
+       * value to be `transparent`.
+       */
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-tap-highlight-color: transparent;
 
       --paper-input-container-input: {
         overflow: hidden;
@@ -108,6 +117,7 @@ respectively.
     }
 
     paper-menu-button {
+      display: block;
       @apply(--paper-dropdown-menu-button);
     }
 
@@ -131,6 +141,7 @@ respectively.
       disabled="[[disabled]]"
       no-animations="[[noAnimations]]"
       on-iron-select="_onIronSelect"
+      on-iron-deselect="_onIronDeselect"
       opened="{{opened}}">
       <div class="dropdown-trigger">
         <paper-ripple></paper-ripple>
@@ -189,6 +200,8 @@ respectively.
          * The last selected item. An item is selected if the dropdown menu has
          * a child with class `dropdown-content`, and that child triggers an
          * `iron-select` event with the selected `item` in the `detail`.
+         *
+         * @type {?Object}
          */
         selectedItem: {
           type: Object,
@@ -304,6 +317,15 @@ respectively.
       },
 
       /**
+       * A handler that is called when `iron-deselect` is fired.
+       *
+       * @param {CustomEvent} event An `iron-deselect` event.
+       */
+      _onIronDeselect: function(event) {
+        this._setSelectedItem(null);
+      },
+
+      /**
        * A handler that is called when the dropdown is tapped.
        *
        * @param {CustomEvent} event A tap event.
@@ -345,4 +367,3 @@ respectively.
     });
   })();
 </script>
-

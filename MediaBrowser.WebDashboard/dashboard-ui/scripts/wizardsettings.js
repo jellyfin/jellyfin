@@ -34,8 +34,8 @@
         Dashboard.populateLanguages($('#selectLanguage', page), cultures);
         Dashboard.populateCountries($('#selectCountry', page), countries);
 
-        $('#selectLanguage', page).val(config.PreferredMetadataLanguage).selectmenu("refresh");
-        $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
+        $('#selectLanguage', page).val(config.PreferredMetadataLanguage);
+        $('#selectCountry', page).val(config.MetadataCountryCode);
 
         Dashboard.hideLoadingMsg();
     }
@@ -76,7 +76,7 @@
 
         $('.wizardSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#wizardSettingsPage", function () {
+    }).on('pageshow', "#wizardSettingsPage", function () {
 
         var page = this;
 

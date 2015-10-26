@@ -67,7 +67,7 @@
             return false;
         });
 
-    }).on('pageshowready', "#liveTvTunerProviderHdHomerunPage", function () {
+    }).on('pageshow', "#liveTvTunerProviderHdHomerunPage", function () {
 
         var providerId = getParameterByName('id');
         var page = this;

@@ -7,30 +7,13 @@
 <body>
     <div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,paperbuttonstyle">
 
-        <style>
-            .listAvatar.green {
-                background-color: #81c784;
-            }
-
-            .listAvatar.orange {
-                background-color: #ffd54f;
-            }
-
-            .listAvatar.blue {
-                background-color: #4fc3f7;
-            }
-
-            .listAvatar.red {
-                background-color: #e57373;
-            }
-        </style>
         <div data-role="content">
             <div class="readOnlyContent" style="margin: 0 auto;">
-                <h1>${HeaderSettings}</h1>
+                <h1 class="settingsMenuHeader">${HeaderSettings}</h1>
                 <div class="paperList">
                     <a href="#" class="clearLink lnkDisplayPreferences">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar blue" icon="tv" item-icon></paper-fab>
+                            <paper-fab mini class="blue" icon="tv" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonDisplaySettings}</div>
                                 <div secondary>${ButtonDisplaySettingsHelp}</div>
@@ -40,7 +23,7 @@
 
                     <a href="#" class="clearLink lnkHomeScreenPreferences">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar red" icon="home" item-icon></paper-fab>
+                            <paper-fab mini class="red" icon="home" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonHomeScreenSettings}</div>
                                 <div secondary>${ButtonHomeScreenSettingsHelp}</div>
@@ -50,7 +33,7 @@
 
                     <a href="#" class="clearLink lnkLanguagePreferences">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar green" icon="play-circle-filled" item-icon></paper-fab>
+                            <paper-fab mini class="green" icon="play-circle-filled" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonPlaybackSettings}</div>
                                 <div secondary>${ButtonPlaybackSettingsHelp}</div>
@@ -60,7 +43,7 @@
 
                     <a href="#" class="clearLink lnkMyProfile">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar orange" icon="person" item-icon></paper-fab>
+                            <paper-fab mini class="orange" icon="person" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonProfile}</div>
                                 <div secondary>${ButtonProfileHelp}</div>
@@ -70,13 +53,47 @@
 
                     <a href="#" class="clearLink lnkSync hide">
                         <paper-icon-item>
-                            <paper-fab class="listAvatar" icon="refresh" style="background-color:#673AB7;" item-icon></paper-fab>
+                            <paper-fab mini icon="sync" style="background-color: #673AB7;" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonSyncSettings}</div>
                                 <div secondary>${ButtonSyncSettingsHelp}</div>
                             </paper-item-body>
                         </paper-icon-item>
                     </a>
+                </div>
+
+                <div class="userSection hide">
+                    <h1 class="headerUser"></h1>
+                    <div class="paperList">
+                        <a href="selectserver.html" class="clearLink">
+                            <paper-icon-item>
+                                <paper-fab mini icon="wifi" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${HeaderSelectServer}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                            <paper-icon-item class="btnLogout">
+                                <paper-fab mini icon="lock" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${ButtonSignOut}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="adminSection hide">
+                    <h1>${HeaderAdmin}</h1>
+                    <div class="paperList">
+                        <a href="dashboard.html" class="clearLink">
+                            <paper-icon-item>
+                                <paper-fab mini icon="settings" style="background-color: #444;" item-icon></paper-fab>
+                                <paper-item-body two-line>
+                                    <div>${ButtonServerDashboard}</div>
+                                </paper-item-body>
+                            </paper-icon-item>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

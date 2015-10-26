@@ -42,7 +42,6 @@
 		<script>
 
 		// Needed tests:
-		// - "finish"
 		// - new stop behvaior
 		// - e/p/o shorthands
 
@@ -981,6 +980,62 @@
 				notEqual(Data($target2, pluginName).tweensContainer.width, undefined, "Next queue item started.");
 
 				equal(Velocity.Utilities.queue($target3, "").length, 0, "Full queue array cleared.");
+
+				start();
+			}, asyncCheckDuration);
+		});
+
+		/******************
+		   Command: Finish
+		******************/
+
+		QUnit.asyncTest("Command: Finish / FinishAll", function() {
+			expect(9);
+
+			var $target1 = getTarget();
+			/* Ensure an error isn't thrown when "finish" is called on a $target that isn't animating. */
+			Velocity($target1, "finish");
+
+			/* Animate to defaultProperties, and then "finish" to jump to the end of it. */
+			Velocity($target1, defaultProperties, Velocity.Utilities.extend({}, defaultOptions, { delay: 1000}));
+			Velocity($target1, "finish");
+
+			setTimeout(function() {
+				/* Ensure "finish" has removed all queued animations. */
+				/* We're using the element's queue length as a proxy. 0 and 1 both mean that the element's queue has been cleared -- a length of 1 just indicates that the animation is in progress. */
+				equal(Velocity.Utilities.queue($target1).length <= 1, true, "Queue cleared.");
+
+				/* End result of the animation should be applied */
+				equal(parseFloat(Velocity.CSS.getPropertyValue($target1, "width")), defaultProperties.width, "Standard end value #1 was set.");
+				equal(parseFloat(Velocity.CSS.getPropertyValue($target1, "opacity")), defaultProperties.opacity, "Standard end value #2 was set.");
+			}, asyncCheckDuration);
+
+			var $target2 = getTarget();
+			Velocity($target2, { opacity: 0 }, Velocity.Utilities.extend({}, defaultOptions, { delay: 1000 }));
+			Velocity($target2, { width: 0 }, defaultOptions);
+			Velocity($target2, "finish");
+
+			var $target3 = getTarget();
+			Velocity($target3, { opacity: 0, width: 50 }, Velocity.Utilities.extend({}, defaultOptions, { delay: 1000 }));
+			Velocity($target3, { width: 0 }, defaultOptions);
+			Velocity($target3, { width: 100 }, defaultOptions);
+			Velocity($target3, "finish", true);
+
+			var $target4 = getTarget();
+			Velocity($target4, { opacity: 0, width: 50 }, Velocity.Utilities.extend({}, defaultOptions, { delay: 1000 }));
+			Velocity($target4, { width: 0 }, defaultOptions);
+			Velocity($target4, { width: 100 }, defaultOptions);
+			Velocity($target4, "finishAll", true);
+
+			setTimeout(function() {
+				equal(Data($target2, pluginName).tweensContainer.opacity, undefined, "Active call stopped.");
+				notEqual(Data($target2, pluginName).tweensContainer.width, undefined, "Next queue item started.");
+
+				equal(Velocity.Utilities.queue($target3, "").length, 0, "Full queue array cleared.");
+				equal(parseFloat(Velocity.CSS.getPropertyValue($target3, "width")), 50, "Just the first call's width was applied.");
+
+				equal(Velocity.Utilities.queue($target4, "").length, 0, "Full queue array cleared.");
+				equal(parseFloat(Velocity.CSS.getPropertyValue($target4, "width")), 100, "The last call's width was applied.");
 
 				start();
 			}, asyncCheckDuration);

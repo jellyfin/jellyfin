@@ -9,9 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
-<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
 <!--
 The progress bars are for situations where the percentage completed can be
@@ -57,17 +57,20 @@ the value changed. You can also customize the transition:
       --paper-progress-transition-timing-function: ease;
       --paper-progress-transition-transition-delay: 0s;
     }
-    
+
 The following mixins are available for styling:
 
-
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--paper-progress-container` | Mixin applied to container | `{}`
-
-
-
+Custom property                             | Description                                 | Default
+--------------------------------------------|---------------------------------------------|----------
+--paper-progress-container-color            | Mixin applied to container                  | --google-grey-300
+--paper-progress-transition-duration        | Duration of the transition                  | 0.008s
+--paper-progress-transition-timing-function | The timing function for the transition      | ease
+--paper-progress-transition-delay           | delay for the transition                    | 0s
+--paper-progress-active-color               | The color of the active bar                 | --google-green-500
+--paper-progress-secondary-color            | The color of the secondary bar              | --google-green-100
+--paper-progress-disabled-active-color      | The color of the active bar if disabled     | --google-grey-500
+--paper-progress-disabled-secondary-color   | The color of the secondary bar if disabled  | --google-grey-300
+--paper-progress-height                     | The height of the progress bar              | 4px
 
 @group Paper Elements
 @element paper-progress
@@ -78,12 +81,34 @@ Custom property | Description | Default
 <dom-module id="paper-progress">
   <style>
     :host {
-      display: inline-block;
+      display: block;
       width: 200px;
-      height: 4px;
+      position: relative;
+      overflow: hidden;
     }
 
-    :host(.transiting) #activeProgress,
+    #progressContainer {
+      position: relative;
+    }
+
+    #progressContainer,
+    /* the stripe for the indeterminate animation*/
+    .indeterminate:after {
+      height: var(--paper-progress-height, 4px);
+    }
+
+    #primaryProgress,
+    #secondaryProgress,
+    .indeterminate:after {
+      @apply(--layout-fit);
+    }
+
+    #progressContainer,
+    .indeterminate:after {
+      background-color: var(--paper-progress-container-color, --google-grey-300);
+    }
+
+    :host(.transiting) #primaryProgress,
     :host(.transiting) #secondaryProgress {
       -webkit-transition-property: -webkit-transform;
       transition-property: transform;
@@ -101,48 +126,45 @@ Custom property | Description | Default
       transition-delay: var(--paper-progress-transition-delay, 0s);
     }
 
-    #progressContainer {
-      position: relative;
-      height: 100%;
-      overflow: hidden;
-      @apply(--paper-progress-container);
-    }
-    
-    #progressContainer, #indeterminateSplitter {
-      background-color: var(--paper-progress-container-color, --google-grey-300);
-    }
-
-    #activeProgress,
+    #primaryProgress,
     #secondaryProgress {
+      @apply(--layout-fit);
       -webkit-transform-origin: left center;
       transform-origin: left center;
       -webkit-transform: scaleX(0);
       transform: scaleX(0);
+      will-change: transform;
     }
 
-    #activeProgress {
+    #primaryProgress {
       background-color: var(--paper-progress-active-color, --google-green-500);
     }
 
     #secondaryProgress {
+      position: relative;
       background-color: var(--paper-progress-secondary-color, --google-green-100);
     }
-    
-    #indeterminateSplitter {
-      display: none;
+
+    :host([disabled]) #primaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
     }
 
-    #activeProgress.indeterminate {
+    :host([disabled]) #secondaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-300);
+    }
+
+    :host(:not([disabled])) #primaryProgress.indeterminate {
       -webkit-transform-origin: right center;
       transform-origin: right center;
       -webkit-animation: indeterminate-bar 2s linear infinite;
       animation: indeterminate-bar 2s linear infinite;
     }
 
-    #indeterminateSplitter.indeterminate {
-      display: block;
+    :host(:not([disabled])) #primaryProgress.indeterminate:after {
+      content: "";
       -webkit-transform-origin: center center;
       transform-origin: center center;
+
       -webkit-animation: indeterminate-splitter 2s linear infinite;
       animation: indeterminate-splitter 2s linear infinite;
     }
@@ -212,10 +234,9 @@ Custom property | Description | Default
     }
   </style>
   <template>
-    <div id="progressContainer" role="progressbar" aria-valuenow$="{{value}}" aria-valuemin$="{{min}}" aria-valuemax$="{{max}}">
-      <div id="secondaryProgress" class="fit"></div>
-      <div id="activeProgress" class="fit"></div>
-      <div id="indeterminateSplitter" class="fit"></div>
+    <div id="progressContainer">
+      <div id="secondaryProgress" hidden$="[[_hideSecondaryProgress(secondaryRatio)]]"></div>
+      <div id="primaryProgress"></div>
     </div>
   </template>
 </dom-module>
@@ -236,8 +257,7 @@ Custom property | Description | Default
        */
       secondaryProgress: {
         type: Number,
-        value: 0,
-        notify: true
+        value: 0
       },
 
       /**
@@ -246,8 +266,7 @@ Custom property | Description | Default
       secondaryRatio: {
         type: Number,
         value: 0,
-        readOnly: true,
-        observer: '_secondaryRatioChanged'
+        readOnly: true
       },
 
       /**
@@ -256,21 +275,32 @@ Custom property | Description | Default
       indeterminate: {
         type: Boolean,
         value: false,
-        notify: true,
         observer: '_toggleIndeterminate'
+      },
+
+      /**
+       * True if the progress is disabled.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: '_disabledChanged'
       }
     },
 
     observers: [
-      '_ratioChanged(ratio)',
-      '_secondaryProgressChanged(secondaryProgress, min, max)'
+      '_progressChanged(secondaryProgress, value, min, max)'
     ],
 
-    _toggleIndeterminate: function() {
+    hostAttributes: {
+      role: 'progressbar'
+    },
+
+    _toggleIndeterminate: function(indeterminate) {
       // If we use attribute/class binding, the animation sometimes doesn't translate properly
       // on Safari 7.1. So instead, we toggle the class here in the update method.
-      this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
-      this.toggleClass('indeterminate', this.indeterminate, this.$.indeterminateSplitter);
+      this.toggleClass('indeterminate', indeterminate, this.$.primaryProgress);
     },
 
     _transformProgress: function(progress, ratio) {
@@ -278,17 +308,34 @@ Custom property | Description | Default
       progress.style.transform = progress.style.webkitTransform = transform;
     },
 
-    _ratioChanged: function(ratio) {
-      this._transformProgress(this.$.activeProgress, ratio);
+    _mainRatioChanged: function(ratio) {
+      this._transformProgress(this.$.primaryProgress, ratio);
     },
 
-    _secondaryRatioChanged: function(secondaryRatio) {
+    _progressChanged: function(secondaryProgress, value, min, max) {
+      secondaryProgress = this._clampValue(secondaryProgress);
+      value = this._clampValue(value);
+
+      var secondaryRatio = this._calcRatio(secondaryProgress) * 100;
+      var mainRatio = this._calcRatio(value) * 100;
+
+      this._setSecondaryRatio(secondaryRatio);
       this._transformProgress(this.$.secondaryProgress, secondaryRatio);
+      this._transformProgress(this.$.primaryProgress, mainRatio);
+
+      this.secondaryProgress = secondaryProgress;
+
+      this.setAttribute('aria-valuenow', value);
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
     },
 
-    _secondaryProgressChanged: function() {
-      this.secondaryProgress = this._clampValue(this.secondaryProgress);
-      this._setSecondaryRatio(this._calcRatio(this.secondaryProgress) * 100);
+    _disabledChanged: function(disabled) {
+      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    },
+
+    _hideSecondaryProgress: function(secondaryRatio) {
+      return secondaryRatio === 0;
     }
 
   });

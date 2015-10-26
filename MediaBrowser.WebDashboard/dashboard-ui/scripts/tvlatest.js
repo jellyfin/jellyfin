@@ -77,13 +77,11 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
+    window.TvPage.renderLatestTab = function (page, tabContent) {
 
-        var page = this;
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadLatest(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadLatest(tabContent);
         }
-    });
-
+    };
 
 })(jQuery, document);

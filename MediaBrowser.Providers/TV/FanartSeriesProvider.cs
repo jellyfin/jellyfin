@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -309,7 +310,7 @@ namespace MediaBrowser.Providers.TV
 
             var path = GetFanartJsonPath(tvdbId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {
@@ -356,7 +357,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesFilePath = GetFanartJsonPath(tvdbId);
 
-                var fileInfo = new FileInfo(imagesFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

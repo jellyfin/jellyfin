@@ -29,7 +29,7 @@
 
     function getSavedQueryKey(tab) {
 
-        return getWindowUrl() + "&tab=" + tab;
+        return LibraryBrowser.getSavedQueryKey('tab=' + tab);
     }
 
     function reloadItems(page, tabIndex) {
@@ -60,7 +60,7 @@
                     items: result.Items,
                     shape: "square",
                     context: getParameterByName('context') || 'photos',
-                    overlayText: tabIndex != 0,
+                    overlayText: true,
                     lazy: true,
                     coverImage: true,
                     showTitle: tabIndex == 0,

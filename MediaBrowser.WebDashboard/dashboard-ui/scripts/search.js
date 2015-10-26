@@ -147,7 +147,7 @@
 
         if (createIfNeeded && !elem) {
 
-            var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
+            var html = '<div class="searchResultsOverlay ui-body-b smoothScrollY background-theme-b">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 

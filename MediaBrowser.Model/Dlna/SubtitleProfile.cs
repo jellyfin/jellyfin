@@ -28,15 +28,20 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        public bool SupportsLanguage(string language)
+        public bool SupportsLanguage(string subLanguage)
         {
-            if (string.IsNullOrEmpty(language))
+            if (string.IsNullOrEmpty(Language))
             {
-                language = "und";
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(subLanguage))
+            {
+                subLanguage = "und";
             }
 
             List<string> languages = GetLanguages();
-            return languages.Count == 0 || ListHelper.ContainsIgnoreCase(languages, language);
+            return languages.Count == 0 || ListHelper.ContainsIgnoreCase(languages, subLanguage);
         }
     }
 }

@@ -4,6 +4,8 @@ using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {
@@ -46,17 +48,19 @@ namespace MediaBrowser.Server.Implementations.Playlists
     public class PlaylistsDynamicFolder : IVirtualFolderCreator
     {
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public PlaylistsDynamicFolder(IApplicationPaths appPaths)
+        public PlaylistsDynamicFolder(IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         public BasePluginFolder GetFolder()
         {
             var path = Path.Combine(_appPaths.DataPath, "playlists");
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
 
             return new PlaylistsFolder
             {

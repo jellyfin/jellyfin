@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
+    public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IConfigurationManager _config;

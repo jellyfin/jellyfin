@@ -251,7 +251,7 @@
 
                 logger.log("Reconnect attempt failed to " + url);
 
-                if (currentRetryCount <= 5) {
+                if (currentRetryCount < 5) {
 
                     var newConnectionMode = switchConnectionMode(connectionMode);
 
@@ -355,6 +355,10 @@
             if (!url) {
                 throw new Error("serverAddress is yet not set");
             }
+            var lowered = url.toLowerCase();
+            if (lowered.indexOf('/emby') == -1 && lowered.indexOf('/mediabrowser') == -1) {
+                url += '/emby';
+            }
 
             if (name.charAt(0) != '/') {
                 url += '/';
@@ -363,7 +367,10 @@
             url += name;
 
             if (params) {
-                url += "?" + HttpClient.param(params);
+                params = HttpClient.param(params);
+                if (params) {
+                    url += "?" + params;
+                }
             }
 
             return url;
@@ -398,13 +405,13 @@
 
         self.openWebSocket = function () {
 
-            var accessToken = self.serverInfo().AccessToken;
+            var accessToken = self.accessToken();
 
             if (!accessToken) {
                 throw new Error("Cannot open web socket without access token.");
             }
 
-            var url = serverAddress.replace('http', 'ws');
+            var url = self.getUrl("socket").replace("/socket", "").replace('http', 'ws');
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;
 
@@ -501,17 +508,17 @@
                 Size: byteSize
             });
 
-            var now = new Date().getTime();
-
             var deferred = DeferredBuilder.Deferred();
+
+            var now = new Date().getTime();
 
             self.get(url).done(function () {
 
-                var responseTime = new Date().getTime() - now;
-                var bytesPerSecond = byteSize / responseTime;
-                bytesPerSecond *= 1000;
+                var responseTimeSeconds = (new Date().getTime() - now) / 1000;
+                var bytesPerSecond = byteSize / responseTimeSeconds;
+                var bitrate = Math.round(bytesPerSecond * 8);
 
-                deferred.resolveWith(null, [bytesPerSecond]);
+                deferred.resolveWith(null, [bitrate]);
 
             }).fail(function () {
 
@@ -528,12 +535,12 @@
             // First try a small amount so that we don't hang up their mobile connection
             self.getDownloadSpeed(1000000).done(function (bitrate) {
 
-                if (bitrate < 3000000) {
+                if (bitrate < 1000000) {
                     deferred.resolveWith(null, [Math.round(bitrate * .8)]);
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    self.getDownloadSpeed(3000000).done(function (bitrate) {
+                    self.getDownloadSpeed(2400000).done(function (bitrate) {
 
                         deferred.resolveWith(null, [Math.round(bitrate * .8)]);
 
@@ -653,7 +660,7 @@
                 self.setAuthenticationInfo(null, null);
             };
 
-            if (self.serverInfo().AccessToken) {
+            if (self.accessToken()) {
                 var url = self.getUrl("Sessions/Logout");
 
                 return self.ajax({
@@ -663,8 +670,9 @@
             }
 
             var deferred = DeferredBuilder.Deferred();
+            done();
             deferred.resolveWith(null, []);
-            return deferred.promise().always(done);
+            return deferred.promise();
         };
 
         function getRemoteImagePrefix(options) {
@@ -1587,6 +1595,36 @@
             });
         };
 
+        /**
+         * Gets the current server configuration
+         */
+        self.getDevicesOptions = function () {
+
+            var url = self.getUrl("System/Configuration/devices");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
+         * Gets the current server configuration
+         */
+        self.getContentUploadHistory = function () {
+
+            var url = self.getUrl("Devices/CameraUploads", {
+                DeviceId: self.deviceId()
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         self.getNamedConfiguration = function (name) {
 
             var url = self.getUrl("System/Configuration/" + name);
@@ -1762,7 +1800,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1783,7 +1821,11 @@
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify({
+                    Paths: initialPaths
+                }),
+                contentType: 'application/json'
             });
         };
 
@@ -2193,6 +2235,25 @@
         };
 
         /**
+         * Gets a user by id
+         * @param {String} id
+         */
+        self.getOfflineUser = function (id) {
+
+            if (!id) {
+                throw new Error("Must supply a userId");
+            }
+
+            var url = self.getUrl("Users/" + id + "/Offline");
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        /**
          * Gets a studio
          */
         self.getStudio = function (name, userId) {
@@ -2517,9 +2578,19 @@
 
             options.imageType = "thumb";
 
-            var itemId = item.ImageTags && item.ImageTags.Thumb ? item.Id : item.ParentThumbItemId;
+            if (item.ImageTags && item.ImageTags.Thumb) {
 
-            return itemId ? self.getImageUrl(itemId, options) : null;
+                options.tag = item.ImageTags.Thumb;
+                return self.getImageUrl(item.Id, options);
+            }
+            else if (item.ParentThumbItemId) {
+
+                options.tag = item.ImageTags.ParentThumbImageTag;
+                return self.getImageUrl(item.ParentThumbItemId, options);
+
+            } else {
+                return null;
+            }
         };
 
         /**
@@ -2538,29 +2609,31 @@
 
             var url = self.getUrl("Users/authenticatebyname");
 
-            var postData = {
-                password: CryptoJS.SHA1(password || "").toString(),
-                Username: name
-            };
+            require(["cryptojs-sha1"], function () {
+                var postData = {
+                    password: CryptoJS.SHA1(password || "").toString(),
+                    Username: name
+                };
 
-            self.ajax({
-                type: "POST",
-                url: url,
-                data: JSON.stringify(postData),
-                dataType: "json",
-                contentType: "application/json"
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: JSON.stringify(postData),
+                    dataType: "json",
+                    contentType: "application/json"
 
-            }).done(function (result) {
+                }).done(function (result) {
 
-                if (self.onAuthenticated) {
-                    self.onAuthenticated(self, result);
-                }
+                    if (self.onAuthenticated) {
+                        self.onAuthenticated(self, result);
+                    }
 
-                deferred.resolveWith(null, [result]);
+                    deferred.resolveWith(null, [result]);
 
-            }).fail(function () {
+                }).fail(function () {
 
-                deferred.reject();
+                    deferred.reject();
+                });
             });
 
             return deferred.promise();
@@ -2574,20 +2647,35 @@
          */
         self.updateUserPassword = function (userId, currentPassword, newPassword) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!userId) {
-                throw new Error("null userId");
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/" + userId + "/Password");
 
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: {
-                    currentPassword: CryptoJS.SHA1(currentPassword).toString(),
-                    newPassword: CryptoJS.SHA1(newPassword).toString()
-                }
+            require(["cryptojs-sha1"], function () {
+
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        currentPassword: CryptoJS.SHA1(currentPassword).toString(),
+                        newPassword: CryptoJS.SHA1(newPassword).toString()
+                    }
+                }).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+
+                    deferred.reject();
+                });
             });
+
+            return deferred.promise();
         };
 
         /**
@@ -2597,19 +2685,34 @@
          */
         self.updateEasyPassword = function (userId, newPassword) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!userId) {
-                throw new Error("null userId");
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/" + userId + "/EasyPassword");
 
-            return self.ajax({
-                type: "POST",
-                url: url,
-                data: {
-                    newPassword: CryptoJS.SHA1(newPassword).toString()
-                }
+            require(["cryptojs-sha1"], function () {
+
+                self.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        newPassword: CryptoJS.SHA1(newPassword).toString()
+                    }
+                }).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+
+                    deferred.reject();
+                });
             });
+
+            return deferred.promise();
         };
 
         /**
@@ -3363,6 +3466,70 @@
                 type: "POST",
                 data: JSON.stringify(options),
                 contentType: "application/json",
+                url: url
+            });
+        };
+
+        self.reportOfflineActions = function (actions) {
+
+            if (!actions) {
+                throw new Error("null actions");
+            }
+
+            var url = self.getUrl("Sync/OfflineActions");
+
+            return self.ajax({
+                type: "POST",
+                data: JSON.stringify(actions),
+                contentType: "application/json",
+                url: url
+            });
+        };
+
+        self.syncData = function (data) {
+
+            if (!data) {
+                throw new Error("null data");
+            }
+
+            var url = self.getUrl("Sync/Data");
+
+            return self.ajax({
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.getReadySyncItems = function (deviceId) {
+
+            if (!deviceId) {
+                throw new Error("null deviceId");
+            }
+
+            var url = self.getUrl("Sync/Items/Ready", {
+                TargetId: deviceId
+            });
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.reportSyncJobItemTransferred = function (syncJobItemId) {
+
+            if (!syncJobItemId) {
+                throw new Error("null syncJobItemId");
+            }
+
+            var url = self.getUrl("Sync/JobItems/" + syncJobItemId + "/Transferred");
+
+            return self.ajax({
+                type: "POST",
                 url: url
             });
         };

@@ -58,7 +58,7 @@
     }
 
     function renderImage(page, item) {
-        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, '#');
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, false);
     }
 
     $(document).on('pageinit', "#publicSharedItemPage", function () {
@@ -79,7 +79,7 @@
 
         });
 
-    }).on('pageshowready', "#publicSharedItemPage", function () {
+    }).on('pageshow', "#publicSharedItemPage", function () {
 
         var page = this;
 

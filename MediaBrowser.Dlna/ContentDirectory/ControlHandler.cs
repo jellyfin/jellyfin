@@ -523,7 +523,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             if (context == null || context.IsFolder)
             {
                 var movie = item as Movie;
-                if (movie != null && options.EnableEnhancedMovies)
+                if (movie != null && options.EnableMovieFolders)
                 {
                     if (movie.GetTrailerIds().Count > 0 ||
                         movie.SpecialFeatureIds.Count > 0)

@@ -47,11 +47,20 @@
     }
 
     function enableScrollX() {
+
         return $.browser.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {
         return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function getPortraitShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'portrait';
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
     }
 
     function getLibraryButtonsHtml(items) {
@@ -175,7 +184,7 @@
             Limit: limit,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
         return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
@@ -203,6 +212,93 @@
                     showTitle: cardLayout,
                     showYear: cardLayout,
                     showDetailsMenu: true,
+                    context: 'home'
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
+        });
+    }
+
+    function loadLatestMovies(elem, user) {
+
+        var options = {
+
+            Limit: 12,
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Thumb",
+            IncludeItemTypes: "Movie"
+        };
+
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+
+            var html = '';
+
+            var scrollX = enableScrollX();
+
+            if (items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMovies') + '</h1>';
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: getPortraitShape(),
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    lazy: true,
+                    context: 'home',
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
+        });
+    }
+
+    function loadLatestEpisodes(elem, user) {
+
+        var options = {
+
+            Limit: 12,
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Thumb",
+            IncludeItemTypes: "Episode"
+        };
+
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+
+            var html = '';
+
+            var scrollX = enableScrollX();
+
+            if (items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestEpisodes') + '</h1>';
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    preferThumb: true,
+                    shape: getThumbShape(),
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    lazy: true,
                     context: 'home'
                 });
                 html += '</div>';
@@ -267,17 +363,23 @@
 
             if (items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
+                var screenWidth = $(window).width();
 
                 html += '<div>';
-                html += '<h1 class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 html += '</div>';
 
-                html += '<div class="homeTopViews">';
+                var scrollX = enableScrollX() && $.browser.safari && screenWidth > 800;
+
+                if (scrollX) {
+                    html += '<div class="hiddenScrollX itemsContainer homeTopViews">';
+                } else {
+                    html += '<div class="itemsContainer homeTopViews">';
+                }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
-                    shape: shape,
+                    shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
                     centerText: true,
                     lazy: true,
@@ -327,8 +429,6 @@
 
             var html = '';
 
-            var cardLayout = AppInfo.hasLowImageBandwidth;
-
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 if (enableScrollX()) {
@@ -340,14 +440,58 @@
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
-                    overlayText: screenWidth >= 800 && !cardLayout,
+                    overlayText: false,
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,
-                    cardLayout: cardLayout,
                     showDetailsMenu: true,
                     overlayPlayButton: true,
-                    context: 'home'
+                    context: 'home',
+                    centerText: true
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+
+            ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
+        });
+    }
+
+    function loadNextUp(elem, userId) {
+
+        var query = {
+
+            Limit: 20,
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+            UserId: userId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+        };
+
+        ApiClient.getNextUpEpisodes(query).done(function (result) {
+
+            var html = '';
+
+            if (result.Items.length) {
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderNextUp') + '</h1>';
+                if (enableScrollX()) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: getThumbShape(),
+                    overlayText: false,
+                    showTitle: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    overlayPlayButton: true,
+                    context: 'home',
+                    centerText: true
                 });
                 html += '</div>';
             }
@@ -478,9 +622,14 @@
                 html += '</div>';
             }
 
+            if (enableScrollX()) {
+                html += '<div class="hiddenScrollX itemsContainer">';
+            } else {
+                html += '<div class="itemsContainer">';
+            }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "autohome",
+                shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
                 coverImage: true,
@@ -488,9 +637,11 @@
                 showDetailsMenu: true,
                 centerText: true
             });
+            html += '</div>';
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 
@@ -499,9 +650,12 @@
         loadLatestChannelMedia: loadLatestChannelMedia,
         loadLibraryTiles: loadLibraryTiles,
         loadResume: loadResume,
+        loadNextUp: loadNextUp,
         loadLatestChannelItems: loadLatestChannelItems,
         loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
-        loadlibraryButtons: loadlibraryButtons
+        loadlibraryButtons: loadlibraryButtons,
+        loadLatestMovies: loadLatestMovies,
+        loadLatestEpisodes: loadLatestEpisodes
     };
 
 })(jQuery, document);

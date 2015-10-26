@@ -4,7 +4,7 @@
     <title>${TitleLiveTV}</title>
 </head>
 <body>
-    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="jqmtable,scripts/livetvstatus,scripts/taskbutton,detailtablecss">
+    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,scripts/taskbutton">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,37 +19,41 @@
 
                     <div class="liveTvStatusContent" style="display: none;">
 
-                        <h1>${HeaderTunerDevices}</h1>
-                        <paper-button raised class="submit btnAddDevice block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                        <div>
+                            <h1 style="display:inline-block;vertical-align:middle;">${HeaderTunerDevices}</h1>
+                            <paper-button raised class="btnAddDevice submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                                <iron-icon icon="add"></iron-icon>
+                                <span>${ButtonAdd}</span>
+                            </paper-button>
+                        </div>
                         <div class="devicesList">
                         </div>
 
                         <div>
                             <br />
-                            <h1>${HeaderGuideProviders}</h1>
+                            <div>
+                                <h1 style="display:inline-block;vertical-align:middle;">${HeaderGuideProviders}</h1>
+                                <paper-button raised class="btnAddProvider submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                                    <iron-icon icon="add"></iron-icon>
+                                    <span>${ButtonAdd}</span>
+                                </paper-button>
+                            </div>
                             <p>${AddGuideProviderHelp}</p>
-                            <paper-button raised class="submit btnAddProvider block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
                             <div class="providerList">
                             </div>
+                            <div>
 
+                                <paper-button raised class="btnRefresh block"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefreshGuideData}</span></paper-button>
+                                <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
+                            </div>
                         </div>
-
                         <br />
-                        <h1>${HeaderTvTuners}</h1>
+                        <div class="tunerSection hide">
+                            <h1>${HeaderTvTuners}</h1>
 
-                        <table data-role="table" data-mode="reflow" class="tblTuners stripedTable ui-responsive table-stroke">
-                            <thead>
-                                <tr>
-                                    <th>${HeaderName}</th>
-                                    <th>${HeaderSource}</th>
-                                    <th>${HeaderStatus}</th>
-                                    <th>${HeaderProgram}</th>
-                                    <th>${HeaderClients}</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody class="tunersResultBody"></tbody>
-                        </table>
+                            <div class="tunerList">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="servicesSection" style="display:none;">

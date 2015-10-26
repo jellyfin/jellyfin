@@ -75,30 +75,26 @@
     bottom: 0;
     right: 0;
     color: #333;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(210,210,210,.9);
+    border-radius: 500px;
+    padding: 6px;
+    margin: 0 .5em .5em 0;
 }
-
-    .cardOverlayPlayButton iron-icon {
-        width: 20px;
-        height: 20px;
-        background-color: rgba(210,210,210,.9);
-        border-radius: 500px;
-        padding: 6px;
-    }
 
 .cardOverlayMoreButton {
     position: absolute;
     bottom: 0;
     right: 0;
     color: #333;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(210,210,210,.9);
+    border-radius: 500px;
+    padding: 6px;
+    margin: 0 .5em .5em 0;
 }
-
-    .cardOverlayMoreButton iron-icon {
-        width: 20px;
-        height: 20px;
-        background-color: rgba(210,210,210,.9);
-        border-radius: 500px;
-        padding: 6px;
-    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -126,7 +122,7 @@
     margin: 7px;
 }
 
-.ui-page-theme-b .visualCardBox {
+.ui-body-b .visualCardBox {
     background: rgba(40,40,40,.85);
     border-radius: 3px;
 }
@@ -204,6 +200,10 @@
         background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.75) 100%) !important; /* W3C */
     }
 
+        .cardContent .cardFooter:not(.fullCardFooter) {
+            background: rgba(0, 0, 0, .6) !important;
+        }
+
 .lightCardFooter {
     background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%) !important; /* FF3.6+ */
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))) !important; /* Chrome,Safari4+ */
@@ -251,7 +251,7 @@
 }
 
 .cardContent .cardFooter .cardText {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .cardOverlayInner {
@@ -312,20 +312,20 @@
     background-position: center center;
 }
 
+.ui-body-b .iconCardImage {
+    color: #fff;
+}
+
 .iconCardImage {
+    display: flex;
+    align-items: center;
     text-align: center;
-    position: relative;
+    justify-content: center;
 }
 
     .iconCardImage iron-icon {
-        color: rgb(255, 255, 255);
-        position: absolute;
-        left: 0;
-        right: 0;
-        width: 50%;
-        height:  50%;
-        margin: auto;
-        top: 22%;
+        width: 30%;
+        height: 30%;
     }
 
 .bannerCard {
@@ -418,10 +418,6 @@
 }
 
 @media all and (min-width: 700px) {
-    .bannerCard {
-        width: 50%;
-    }
-
     .squareCard {
         width: 25%;
     }
@@ -434,6 +430,10 @@
 }
 
 @media all and (min-width: 800px) {
+
+    .bannerCard {
+        width: 50%;
+    }
 
     .portraitCard {
         width: 20%;

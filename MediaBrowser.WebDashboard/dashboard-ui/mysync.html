@@ -10,21 +10,21 @@
 
             <div class="supporterPromotionContainer" style="display:none;text-align: right;">
                 <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
-                    <a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;">
+                    <paper-button raised class="accent block btnSyncSupporter">
                         <div class="mainText">
                         </div>
-                        <div class="btnLearnMore" style="font-weight:normal;font-size:90%;margin-top:5px;">
+                        <div class="btnLearnMore" style="font-weight: normal; font-size: 90%; margin-top: 5px;">
                             ${ButtonLearnMore}
                         </div>
-                    </a>
+                    </paper-button>
                 </div>
             </div>
             <div class="ehsContent" style="clear:both;">
                 <br />
                 <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
-                    <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus">${LabelSyncStatus}</span>
+                    <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus"></span>
                     <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
-                    <paper-fab class="btnSyncNow bottomFab" icon="refresh" style="position:fixed;right:20px;background-color:#2ad;z-index:10;"></paper-fab>
+                    <paper-fab class="btnSyncNow mini accent" icon="sync" style="margin-right:.5em;"></paper-fab>
                 </div>
                 <div class="syncActivity">
 

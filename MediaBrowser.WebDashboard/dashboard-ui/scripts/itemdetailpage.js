@@ -45,6 +45,7 @@
         getPromise().done(function (item) {
 
             reloadFromItem(page, item);
+            window.scrollTo(0, 0);
         });
     }
 
@@ -75,6 +76,8 @@
                 Backdrops.setBackdrops(page, [item]);
             }
             else {
+                //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+                //Backdrops.setBackdrops(page, [item]);
                 hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
 
@@ -113,12 +116,6 @@
                 $('.btnSync', page).removeClass('hide');
             } else {
                 $('.btnSync', page).addClass('hide');
-            }
-
-            if (LibraryBrowser.canShare(item, user)) {
-                $('.btnShare', page).removeClass('hide');
-            } else {
-                $('.btnShare', page).addClass('hide');
             }
 
             if (item.Type == 'Program' && item.TimerId) {
@@ -248,9 +245,7 @@
 
     function renderImage(page, item, user) {
 
-        var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemmetadata.html?tab=3&id=" + item.Id : "";
-
-        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, user.Policy.IsAdministrator && item.MediaType != 'Photo');
     }
 
     function refreshImage(page, item, user) {
@@ -308,6 +303,7 @@
         $('.itemTabs', page).hide();
 
         if (context == 'tv') {
+
             $(page).removeClass('noSecondaryNavPage');
 
             $('#tvShowsTabs', page).show();
@@ -375,7 +371,7 @@
             $('#castCollapsible', page).hide();
         } else {
             $('#castCollapsible', page).show();
-            renderCast(page, item, context, 6);
+            renderCast(page, item, context, enableScrollX() ? null : 6);
         }
 
         if (item.PartCount && item.PartCount > 1) {
@@ -638,6 +634,22 @@
         });
     }
 
+    function enableScrollX() {
+        return $.browser.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function getPortraitShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'detailPagePortrait';
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'detailPageSquare';
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'detailPage169';
+    }
+
     function renderSimilarItems(page, item, context) {
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Program" || item.Type == "Recording" || item.Type == "Game" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "ChannelVideoItem") {
@@ -648,7 +660,7 @@
             return;
         }
 
-        var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? "detailPageSquare" : "detailPagePortrait";
+        var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
         var screenWidth = $(window).width();
         var screenHeight = $(window).height();
 
@@ -660,6 +672,10 @@
 
         if (screenWidth >= 800 && screenHeight >= 1000) {
             options.limit *= 2;
+        }
+
+        if (enableScrollX()) {
+            options.limit = 12;
         }
 
         ApiClient.getSimilarItems(item.Id, options).done(function (result) {
@@ -674,7 +690,14 @@
 
             $('.similiarHeader', elem).html(Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name));
 
-            var html = LibraryBrowser.getPosterViewHtml({
+            var html = '';
+
+            if (enableScrollX()) {
+                html += '<div class="hiddenScrollX itemsContainer">';
+            } else {
+                html += '<div class="itemsContainer">';
+            }
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -687,6 +710,7 @@
                 coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
                 overlayPlayButton: true
             });
+            html += '</div>';
 
             $('#similarContent', page).html(html).lazyChildren().createCardMenus();
         });
@@ -834,7 +858,6 @@
         promise.done(function (result) {
 
             var html = '';
-            var trigger = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -848,7 +871,6 @@
                     defaultAction: 'playallfromhere',
                     lazy: true
                 });
-                trigger = true;
 
             }
             else if (item.Type == "Series") {
@@ -889,10 +911,6 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            if (trigger) {
-                $(elem).trigger('create');
-            }
-
             if (item.Type == "BoxSet") {
 
                 var collectionItemTypes = [
@@ -903,7 +921,7 @@
                     { name: Globalize.translate('HeaderBooks'), type: 'Book' }
                 ];
 
-                renderCollectionItems(page, collectionItemTypes, result.Items, user, context);
+                renderCollectionItems(page, item, collectionItemTypes, result.Items, user, context);
             }
         });
 
@@ -957,7 +975,10 @@
         });
     }
 
-    function renderCollectionItems(page, types, items, user) {
+    function renderCollectionItems(page, parentItem, types, items, user) {
+
+        // First empty out existing content
+        page.querySelector('.collectionItems').innerHTML = '';
 
         for (var i = 0, length = types.length; i < length; i++) {
 
@@ -970,7 +991,7 @@
             });
 
             if (typeItems.length) {
-                renderCollectionItemType(page, type, typeItems, user);
+                renderCollectionItemType(page, parentItem, type, typeItems, user);
             }
         }
 
@@ -987,17 +1008,17 @@
         });
 
         if (otherTypeItems.length) {
-            renderCollectionItemType(page, otherType, otherTypeItems, user);
+            renderCollectionItemType(page, parentItem, otherType, otherTypeItems, user);
         }
 
         if (!items.length) {
-            renderCollectionItemType(page, { name: Globalize.translate('HeaderItems') }, items, user);
+            renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items, user);
         }
 
-        $('.collectionItems', page).trigger('create').createCardMenus();
+        $('.collectionItems .itemsContainer', page).createCardMenus();
     }
 
-    function renderCollectionItemType(page, type, items, user, context) {
+    function renderCollectionItemType(page, parentItem, type, items, user, context) {
 
         var html = '';
 
@@ -1006,13 +1027,9 @@
         html += '<h1>';
         html += '<span>' + type.name + '</span>';
 
-        if (user.Policy.IsAdministrator) {
-            html += '<a class="detailSectionHeaderButton clearLink" style="margin-top:-8px;display:inline-block;" href="edititemmetadata.html?tab=2&id=' + currentItem.Id + '" title="' + Globalize.translate('ButtonEdit') + '" style="display:none;"><paper-icon-button icon="mode-edit"></paper-icon-button></a>';
-        }
-
         html += '</h1>';
 
-        html += '<div class="detailSectionContent">';
+        html += '<div class="detailSectionContent itemsContainer">';
 
         var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
 
@@ -1023,7 +1040,10 @@
             centerText: true,
             context: context,
             lazy: true,
-            showDetailsMenu: true
+            showDetailsMenu: true,
+            overlayMoreButton: true,
+            showAddToCollection: false,
+            showRemoveFromCollection: true
         });
         html += '</div>';
 
@@ -1032,6 +1052,31 @@
         var collectionItems = page.querySelector('.collectionItems');
         $(collectionItems).append(html);
         ImageLoader.lazyChildren(collectionItems);
+
+        $(collectionItems).off('removefromcollection').on('removefromcollection', function (e, itemId) {
+
+            removeFromCollection(page, parentItem, [itemId], user, context);
+        });
+    }
+
+    function removeFromCollection(page, parentItem, itemIds, user, context) {
+
+        Dashboard.showLoadingMsg();
+
+        var url = ApiClient.getUrl("Collections/" + parentItem.Id + "/Items", {
+
+            Ids: itemIds.join(',')
+        });
+
+        ApiClient.ajax({
+            type: "DELETE",
+            url: url
+
+        }).done(function () {
+
+            renderChildren(page, parentItem, user, context);
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function renderUserDataIcons(page, item) {
@@ -1069,30 +1114,31 @@
 
         var reviews = result.Items;
 
+        if (reviews.length) {
+            html += '<div class="paperList">';
+        }
+
         for (var i = 0, length = reviews.length; i < length; i++) {
 
             var review = reviews[i];
 
-            html += '<div class="criticReview">';
-
-            html += '<div class="reviewScore">';
-
+            html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
 
             if (review.Score != null) {
-                html += review.Score;
+                //html += review.Score;
             }
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<img src="css/images/fresh.png" />';
+                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
                 } else {
-                    html += '<img src="css/images/rotten.png" />';
+                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
                 }
             }
 
-            html += '</div>';
+            html += '<paper-item-body three-line>';
 
-            html += '<div class="reviewCaption">' + review.Caption + '</div>';
+            html += '<div style="white-space:normal;">' + review.Caption + '</div>';
 
             var vals = [];
 
@@ -1103,8 +1149,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div class="reviewerName">' + vals.join(', ') + '.';
-
+            html += '<div secondary>' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1118,13 +1163,17 @@
                 }
 
             }
-
             html += '</div>';
 
             if (review.Url) {
-                html += '<div class="reviewLink"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div secondary><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
+            html += '</paper-item-body>';
+
+            html += '</paper-icon-item>';
+        }
+        if (reviews.length) {
             html += '</div>';
         }
 
@@ -1167,7 +1216,7 @@
                 smallIcon: true
             });
 
-            $('#themeSongsContent', page).html(html).trigger('create');
+            page.querySelector('#themeSongsContent').innerHTML = html;
         } else {
             $('#themeSongsCollapsible', page).hide();
         }
@@ -1179,7 +1228,7 @@
 
             $('#themeVideosCollapsible', page).show();
 
-            $('#themeVideosContent', page).html(getVideosHtml(items, user)).lazyChildren().trigger('create');
+            $('#themeVideosContent', page).html(getVideosHtml(items, user)).lazyChildren();
         } else {
             $('#themeVideosCollapsible', page).hide();
         }
@@ -1201,7 +1250,7 @@
 
                 $('#musicVideosCollapsible', page).show();
 
-                $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).lazyChildren().trigger('create');
+                $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
             } else {
                 $('#musicVideosCollapsible', page).hide();
             }
@@ -1217,7 +1266,7 @@
 
                 $('#additionalPartsCollapsible', page).show();
 
-                $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).lazyChildren().trigger('create');
+                $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
             } else {
                 $('#additionalPartsCollapsible', page).hide();
             }
@@ -1231,6 +1280,13 @@
 
         var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
+        if (enableScrollX()) {
+            html += '<div class="hiddenScrollX itemsContainer">';
+            limit = null;
+        } else {
+            html += '<div class="itemsContainer">';
+        }
+
         for (var i = 0, length = chapters.length; i < length; i++) {
 
             if (limit && i >= limit) {
@@ -1242,7 +1298,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card detailPage169Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card '+getThumbShape()+'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';
@@ -1286,6 +1342,8 @@
 
             html += '</a>';
         }
+
+        html += '</div>';
 
         if (limit && chapters.length > limit) {
             html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
@@ -1542,6 +1600,11 @@
 
     function renderCast(page, item, context, limit, isStatic) {
 
+        if (enableScrollX()) {
+            renderHorizontalCast(page, item, context, isStatic);
+            return;
+        }
+
         var html = '';
 
         var casts = item.People || [];
@@ -1608,6 +1671,153 @@
         if (limit && casts.length > limit) {
             html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
+
+        var castContent = page.querySelector('#castContent');
+        castContent.innerHTML = html;
+        ImageLoader.lazyChildren(castContent);
+    }
+
+    function renderHorizontalCast(page, item, context, isStatic) {
+
+        var html = '';
+
+        if (enableScrollX()) {
+            html += '<div class="hiddenScrollX itemsContainer">';
+        } else {
+            html += '<div class="itemsContainer">';
+        }
+
+        var casts = item.People || [];
+
+        casts = casts.filter(function (c) {
+
+            return c.PrimaryImageTag;
+        });
+
+        for (var i = 0, length = casts.length; i < length; i++) {
+
+            var cast = casts[i];
+            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
+
+            html += '<div class="card ' + getPortraitShape() + 'Card">';
+
+            html += '<div class="cardBox">';
+            html += '<div class="cardScalable">';
+
+            var imgUrl;
+            var lazy = true;
+
+            if (cast.PrimaryImageTag) {
+
+                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
+                    width: 100,
+                    tag: cast.PrimaryImageTag,
+                    type: "primary",
+                    minScale: 2
+                });
+
+            } else {
+
+                imgUrl = "css/images/items/list/person.png";
+                lazy = false;
+            }
+
+            html += '<div class="cardPadder"></div>';
+
+            html += '<a class="cardContent" href="' + href + '">';
+            if (lazy) {
+                html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '"></div>';
+            } else {
+                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            }
+
+            //cardFooter
+            html += "</div>";
+
+            // cardContent
+            html += '</a>';
+
+            // cardScalable
+            html += '</div>';
+
+            html += '<div class="cardFooter outerCardFooter">';
+            html += '<div class="cardText">' + cast.Name + '</div>';
+            html += '<div class="cardText">';
+
+            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
+
+            if (role == "GuestStar") {
+                role = Globalize.translate('ValueGuestStar');
+            }
+
+            role = role || "";
+
+            var maxlength = 40;
+
+            if (role.length > maxlength) {
+                role = role.substring(0, maxlength - 3) + '...';
+            }
+
+            html += role;
+            html += '</div>';
+
+            // cardBox
+            html += '</div>';
+
+            html += '</div>';
+
+            //html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
+
+            //var imgUrl;
+            //var lazy = true;
+
+            //if (cast.PrimaryImageTag) {
+
+            //    imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
+            //        width: 100,
+            //        tag: cast.PrimaryImageTag,
+            //        type: "primary",
+            //        minScale: 2
+            //    });
+
+            //} else {
+
+            //    imgUrl = "css/images/items/list/person.png";
+            //    lazy = false;
+            //}
+
+            //if (lazy) {
+            //    html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
+            //} else {
+            //    html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            //}
+
+            //html += '<div class="tileContent">';
+
+            //html += '<p>' + cast.Name + '</p>';
+
+            //var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
+
+            //if (role == "GuestStar") {
+            //    role = Globalize.translate('ValueGuestStar');
+            //}
+
+            //role = role || "";
+
+            //var maxlength = 40;
+
+            //if (role.length > maxlength) {
+            //    role = role.substring(0, maxlength - 3) + '...';
+            //}
+
+            //html += '<p>' + role + '</p>';
+
+            //html += '</div>';
+
+            //html += '</a>';
+        }
+
+        html += '</div>';
 
         var castContent = page.querySelector('#castContent');
         castContent.innerHTML = html;
@@ -1745,13 +1955,6 @@
             deleteTimer(page, currentItem.TimerId);
         });
 
-        $('.btnShare', page).on('click', function () {
-
-            require(['sharingmanager'], function () {
-                SharingManager.showMenu(Dashboard.getCurrentUserId(), currentItem.Id);
-            });
-        });
-
         $('.btnMoreCommands', page).on('click', function () {
 
             var button = this;
@@ -1793,10 +1996,10 @@
             renderCriticReviews(page, currentItem);
         });
 
-        var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        for (var i = 0, length = btnMore.length; i < length; i++) {
-            btnMore[i].icon = AppInfo.moreIcon;
-        }
+        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
+        //for (var i = 0, length = btnMore.length; i < length; i++) {
+        //    btnMore[i].icon = AppInfo.moreIcon;
+        //}
 
     }).on('pagebeforeshow', "#itemDetailPage", function () {
 

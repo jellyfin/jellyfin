@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Channels
 
         ChannelMediaContentType ContentType { get; set; }
 
-        ExtraType ExtraType { get; set; }
+        ExtraType? ExtraType { get; set; }
 
         List<ChannelMediaInfo> ChannelMediaSources { get; set; }
     }

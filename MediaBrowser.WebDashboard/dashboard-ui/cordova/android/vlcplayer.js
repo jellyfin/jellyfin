@@ -90,56 +90,59 @@
             }
         };
 
-        function getPlaybackStartInfoForVideoActivity(videoUrl, mediaSource, item) {
-
-            var state = {
-                PlayState: {}
-            };
-
-            var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
-
-            if (audioStreamIndex) {
-                state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
-            }
-            state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
-
-            state.PlayState.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
-                'DirectStream' :
-                'Transcode';
-
-            state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
-            state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
-
-            state.PlayState.MediaSourceId = mediaSource.Id;
-
-            state.NowPlayingItem = {
-                RunTimeTicks: mediaSource.RunTimeTicks
-            };
-
-            state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+        function getPlaybackStartInfoForVideoActivity(streamInfo, mediaSource, item) {
 
             var playbackStartInfo = {
                 QueueableMediaTypes: item.MediaType,
                 ItemId: item.Id,
-                NowPlayingItem: state.NowPlayingItem
+                NowPlayingItem: {},
+                MediaSourceId: mediaSource.Id
             };
 
-            return $.extend(playbackStartInfo, state.PlayState);
+            if (mediaSource.RunTimeTicks) {
+                playbackStartInfo.NowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
+            }
+
+            var videoUrl = streamInfo.url;
+            var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
+
+            if (audioStreamIndex) {
+                playbackStartInfo.AudioStreamIndex = parseInt(audioStreamIndex);
+            }
+
+            // TODO: This should be passed in rather than going out to get it
+            if (MediaPlayer.currentSubtitleStreamIndex != null) {
+                playbackStartInfo.SubtitleStreamIndex = MediaPlayer.currentSubtitleStreamIndex;
+            }
+
+            playbackStartInfo.PlayMethod = streamInfo.playMethod;
+
+            playbackStartInfo.LiveStreamId = mediaSource.LiveStreamId;
+            playbackStartInfo.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
+
+            // Seeing some deserialization errors around this property
+            if (mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0) {
+                playbackStartInfo.CanSeek = true;
+            }
+
+            return playbackStartInfo;
         }
 
-        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
+        self.setCurrentSrc = function (streamInfo, item, mediaSource, tracks) {
 
-            if (!val) {
+            if (!streamInfo) {
                 self.destroy();
                 return;
             }
 
+            var val = streamInfo.url;
             var tIndex = val.indexOf('#t=');
             var startPosMs = 0;
 
             if (tIndex != -1) {
                 startPosMs = val.substring(tIndex + 3);
                 startPosMs = parseFloat(startPosMs) * 1000;
+                val = val.split('#')[0];
             }
 
             if (options.type == 'audio') {
@@ -147,7 +150,7 @@
                 AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), options.poster);
             } else {
 
-                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(val, mediaSource, item);
+                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(streamInfo, mediaSource, item);
 
                 var serverUrl = ApiClient.serverAddress();
 
@@ -185,8 +188,6 @@
 
                 playerState.currentSrc = val;
                 self.report('playing', null, startPosMs, false, 100);
-
-                playerState.currentSrc = val;
             }
         };
 
@@ -255,13 +256,9 @@
             return deferred.promise();
         };
 
-        self.onActivityClosed = function (wasStopped, hasError, endPositionMs, currentSrc) {
+        self.onActivityClosed = function (wasStopped, hasError, endPositionMs) {
 
             playerState.currentTime = endPositionMs;
-
-            if (currentSrc) {
-                playerState.currentSrc = currentSrc;
-            }
 
             if (wasStopped) {
                 MediaPlayer.stop(false);

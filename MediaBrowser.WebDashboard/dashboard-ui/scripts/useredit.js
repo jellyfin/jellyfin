@@ -78,6 +78,13 @@
                     callback: actionCallback
 
                 });
+            }).fail(function () {
+
+                Dashboard.alert({
+
+                    message: Globalize.translate('ErrorRemovingEmbyConnectAccount')
+
+                });
             });
 
         }
@@ -102,6 +109,13 @@
 
                     callback: actionCallback
 
+                }).fail(function () {
+
+                    Dashboard.alert({
+
+                        message: Globalize.translate('ErrorAddingEmbyConnectAccount')
+
+                    });
                 });
             });
         } else {

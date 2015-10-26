@@ -61,10 +61,10 @@
         }
 
         if (imgUrl) {
-            html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            html += '<paper-fab mini class="blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
         }
         else {
-            html += '<paper-fab class="listAvatar blue" icon="refresh" item-icon></paper-fab>';
+            html += '<paper-fab mini class="blue" icon="sync" item-icon></paper-fab>';
         }
 
         html += '<paper-item-body three-line>';
@@ -83,6 +83,10 @@
             html += '<br/>';
             html += Globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
         }
+        html += '</div>';
+
+        html += '<div secondary style="padding-top:5px;">';
+        html += '<paper-progress class="mini" style="width:100%;" value="' + (jobItem.Progress || 0) + '"></paper-progress>';
         html += '</div>';
 
         html += '</paper-item-body>';
@@ -258,10 +262,10 @@
     function fillJobValues(page, job, editOptions) {
 
         $('#txtSyncJobName', page).val(job.Name);
-        $('#selectProfile', page).val(job.Profile || '').trigger('change').selectmenu('refresh');
-        $('#selectQuality', page).val(job.Quality || '').trigger('change').selectmenu('refresh');
-        $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly).checkboxradio('refresh');
-        $('#chkSyncNewContent', page).checked(job.SyncNewContent).checkboxradio('refresh');
+        $('#selectProfile', page).val(job.Profile || '').trigger('change');
+        $('#selectQuality', page).val(job.Quality || '').trigger('change');
+        $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly);
+        $('#chkSyncNewContent', page).checked(job.SyncNewContent);
         $('#txtItemLimit', page).val(job.ItemLimit);
 
         if (job.Bitrate) {
@@ -390,7 +394,7 @@
 
         $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', ".syncJobPage", function () {
+    }).on('pageshow', ".syncJobPage", function () {
 
         var page = this;
         loadJob(page);

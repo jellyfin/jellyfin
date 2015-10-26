@@ -27,11 +27,37 @@
           return (win || window).location.href;
       }
 
+      function getWindowLocationSearch(win) {
+
+          var search = (win || window).location.search;
+
+          if (!search) {
+
+              var index = window.location.href.indexOf('?');
+              if (index != -1) {
+                  search = window.location.href.substring(index);
+              }
+          }
+
+          return search || '';
+      }
+      function getParameterByName(name, url) {
+          name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+          var regexS = "[\\?&]" + name + "=([^&#]*)";
+          var regex = new RegExp(regexS, "i");
+
+          var results = regex.exec(url || getWindowLocationSearch());
+          if (results == null)
+              return "";
+          else
+              return decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+
       function getResourcePath() {
 
           var path = "../../resources";
 
-          if (getWindowUrl().toLowerCase().indexOf('/mediabrowser') != -1) {
+          if (getWindowUrl().toLowerCase().indexOf('/emby') != -1) {
               path = "../" + path;
           }
 
@@ -58,6 +84,8 @@
         $('pre code').each(function(i, e) {
           hljs.highlightBlock(e)
         });
+
+        $('#input_apiKey').val(getParameterByName('api_key') || '').trigger('change');
       },
       onFailure: function(data) {
         log("Unable to Load SwaggerUI");
@@ -66,14 +94,14 @@
       sorter : "alpha"
     });
 
-    $('#input_apiKey').change(function() {
-      var key = $('#input_apiKey')[0].value;
-      log("key: " + key);
-      if(key && key.trim() != "") {
-        log("added key " + key);
-        window.authorizations.add("key", new ApiKeyAuthorization("api_key", key, "query"));
-      }
-    })
+      $('#input_apiKey').change(function () {
+          var key = $('#input_apiKey')[0].value;
+          log("key: " + key);
+          if (key && key.trim() != "") {
+              log("added key " + key);
+              window.authorizations.add("key", new ApiKeyAuthorization("api_key", key, "query"));
+          }
+      });
     window.swaggerUi.load();
   });
   </script>

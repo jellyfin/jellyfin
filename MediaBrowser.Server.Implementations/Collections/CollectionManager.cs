@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
@@ -21,17 +22,19 @@ namespace MediaBrowser.Server.Implementations.Collections
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
         public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
-        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger)
+        public CollectionManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = logger;
+            _providerManager = providerManager;
         }
 
         public Folder GetCollectionsFolder(string userId)
@@ -70,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             try
             {
-                Directory.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 var collection = new BoxSet
                 {
@@ -88,12 +91,18 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 await parentFolder.AddChild(collection, CancellationToken.None).ConfigureAwait(false);
 
-                await collection.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), CancellationToken.None)
-                    .ConfigureAwait(false);
-
                 if (options.ItemIdList.Count > 0)
                 {
-                    await AddToCollection(collection.Id, options.ItemIdList, false);
+                    await AddToCollection(collection.Id, options.ItemIdList, false, new MetadataRefreshOptions(_fileSystem)
+                    {
+                        // The initial adding of items is going to create a local metadata file
+                        // This will cause internet metadata to be skipped as a result
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                    });
+                }
+                else
+                {
+                    _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
                 }
 
                 EventHelper.FireEventIfNotNull(CollectionCreated, this, new CollectionCreatedEventArgs
@@ -141,10 +150,10 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
-            return AddToCollection(collectionId, ids, true);
+            return AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(_fileSystem));
         }
 
-        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent)
+        private async Task AddToCollection(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
 
@@ -168,29 +177,31 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 itemList.Add(item);
 
-                if (currentLinkedChildren.Any(i => i.Id == itemId))
+                if (currentLinkedChildren.All(i => i.Id != itemId))
                 {
-                    throw new ArgumentException("Item already exists in collection");
+                    list.Add(LinkedChild.Create(item));
                 }
-
-                list.Add(LinkedChild.Create(item));
             }
 
-            collection.LinkedChildren.AddRange(list);
-
-            collection.UpdateRatingToContent();
-
-            await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
-
-            if (fireEvent)
+            if (list.Count > 0)
             {
-                EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
-                {
-                    Collection = collection,
-                    ItemsChanged = itemList
+                collection.LinkedChildren.AddRange(list);
 
-                }, _logger);
+                collection.UpdateRatingToContent();
+
+                await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                _providerManager.QueueRefresh(collection.Id, refreshOptions);
+
+                if (fireEvent)
+                {
+                    EventHelper.FireEventIfNotNull(ItemsAddedToCollection, this, new CollectionModifiedEventArgs
+                    {
+                        Collection = collection,
+                        ItemsChanged = itemList
+
+                    }, _logger);
+                }
             }
         }
 
@@ -225,8 +236,8 @@ namespace MediaBrowser.Server.Implementations.Collections
                 }
             }
 
-            var shortcutFiles = Directory
-                .EnumerateFiles(collection.Path, "*", SearchOption.TopDirectoryOnly)
+            var shortcutFiles = _fileSystem
+                .GetFilePaths(collection.Path)
                 .Where(i => _fileSystem.IsShortcut(i))
                 .ToList();
 
@@ -263,7 +274,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             collection.UpdateRatingToContent();
 
             await collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await collection.RefreshMetadata(CancellationToken.None).ConfigureAwait(false);
+            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(_fileSystem));
 
             EventHelper.FireEventIfNotNull(ItemsRemovedFromCollection, this, new CollectionModifiedEventArgs
             {

@@ -5,7 +5,7 @@
         $('.liveTvSettingsForm', page).show();
         $('.noLiveTvServices', page).hide();
 
-        $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
+        $('#selectGuideDays', page).val(config.GuideDays || '');
 
         $('#chkMovies', page).checked(config.EnableMovieProviders);
         $('#chkOrganize', page).checked(config.EnableAutoOrganize);
@@ -49,21 +49,24 @@
 
         $('#btnSelectRecordingPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtRecordingPath', page).val(path);
+                    callback: function (path) {
+
+                        if (path) {
+                            $('#txtRecordingPath', page).val(path);
+                        }
+                        picker.close();
                     }
-                    picker.close();
-                }
+                });
             });
         });
 
-    }).on('pageshowready', "#liveTvSettingsPage", function () {
+    }).on('pageshow', "#liveTvSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

@@ -5,31 +5,33 @@
     margin: 0 !important;
     float: right;
     vertical-align: middle;
+    min-width: 4.1em;
 }
 
 .btnNotificationsInner {
     color: #fff;
-    font-weight: 400;
-    display: none;
+    font-weight: 500;
     position: relative;
-    top: -4px;
-    padding: 3px 8px;
     border-radius: 1000px;
+    background: #444;
+    line-height: 28px;
+    min-width: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .levelNormal {
     background-color: #4d90fe;
-    display: block;
 }
 
 .levelWarning {
     background-color: #FF7537;
-    display: block;
 }
 
 .levelError {
     background-color: #d14836;
-    display: block;
 }
 
 .flyoutNotification {

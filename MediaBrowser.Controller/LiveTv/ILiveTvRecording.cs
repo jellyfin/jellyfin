@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ILiveTvRecording : IHasImages, IHasMediaSources, IHasUserData, ILiveTvItem, IHasStartDate, IHasProgramAttributes
     {
         string ChannelId { get; }
-        string ProgramId { get; set; }
         string MediaType { get; }
 
         string Container { get; }
@@ -31,16 +30,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool CanDelete(User user);
 
-        string ProviderImagePath { get; set; }
-
-        string ProviderImageUrl { get; set; }
-
-        string ExternalId { get; set; }
-        string EpisodeTitle { get; set; }
         string SeriesTimerId { get; set; }
         RecordingStatus Status { get; set; }
         DateTime? EndDate { get; set; }
-        ChannelType ChannelType { get; set; }
         DateTime DateLastSaved { get; set; }
         DateTime DateCreated { get; set; }
         DateTime DateModified { get; set; }

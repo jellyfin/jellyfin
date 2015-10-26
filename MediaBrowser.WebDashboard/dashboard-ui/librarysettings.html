@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage" data-require="scripts/librarysettings">
+    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="scripts/librarysettings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -15,17 +15,6 @@
                 </div>
 
                 <form class="librarySettingsForm">
-
-                    <ul data-role="listview" class="ulForm">
-                        <li class="fldImagesByName" style="display:none;">
-                            <label for="txtItemsByNamePath">${LabelImagesByNamePath}</label>
-                            <div style="display: inline-block; width: 85%;">
-                                <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
-                            </div>
-                            <button id="btnSelectIBNPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
-                            <div class="fieldDescription">${LabelImagesByNamePathHelp}</div>
-                        </li>
-                    </ul>
 
                     <div data-role="collapsible">
                         <h2>${HeaderAudio}</h2>
@@ -66,7 +55,7 @@
                     </div>
                     <br />
                     <ul data-role="listview" class="ulForm">
-                        <li>
+                        <li class="fldLibraryMonitor hide">
                             <label for="selectEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
                             <select id="selectEnableRealtimeMonitor" data-mini="true">
                                 <option value="Auto">${OptionAuto}</option>

@@ -12,7 +12,6 @@
     <StartupObject>MediaBrowser.Server.Mono.MainClass</StartupObject>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,6 +52,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
@@ -61,6 +64,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="ServiceStack.Interfaces">

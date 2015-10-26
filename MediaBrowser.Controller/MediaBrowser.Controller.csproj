@@ -11,10 +11,9 @@
     <AssemblyName>MediaBrowser.Controller</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <RestorePackages>true</RestorePackages>
+    <ReleaseVersion>
+    </ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +23,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -33,7 +31,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
@@ -45,15 +42,17 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MoreLinq, Version=1.1.17511.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\morelinq.1.1.0\lib\net35\MoreLinq.dll</HintPath>
+    <Reference Include="Patterns.Logging">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -65,6 +64,9 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.1.1\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -81,7 +83,6 @@
     <Compile Include="Channels\ChannelParentalRating.cs" />
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
-    <Compile Include="Channels\IChannelFactory.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
     <Compile Include="Channels\IChannelItem.cs" />
     <Compile Include="Channels\ChannelAudioItem.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasOriginalTitle.cs" />
-    <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
@@ -273,7 +273,6 @@
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\DynamicImageInfo.cs" />
     <Compile Include="Providers\DynamicImageResponse.cs" />
-    <Compile Include="Providers\EpisodeIdentity.cs" />
     <Compile Include="Providers\EpisodeInfo.cs" />
     <Compile Include="Providers\ExtraInfo.cs" />
     <Compile Include="Providers\ExtraSource.cs" />
@@ -287,14 +286,12 @@
     <Compile Include="Providers\IForcedProvider.cs" />
     <Compile Include="Providers\IHasChangeMonitor.cs" />
     <Compile Include="Entities\IHasMetadata.cs" />
-    <Compile Include="Providers\IHasIdentities.cs" />
     <Compile Include="Providers\IHasItemChangeMonitor.cs" />
     <Compile Include="Providers\IHasLookupInfo.cs" />
     <Compile Include="Providers\IHasOrder.cs" />
     <Compile Include="Providers\IImageFileSaver.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
     <Compile Include="Providers\IImageSaver.cs" />
-    <Compile Include="Providers\IItemIdentity.cs" />
     <Compile Include="Providers\IItemIdentityConverter.cs" />
     <Compile Include="Providers\IItemIdentityProvider.cs" />
     <Compile Include="Providers\ILocalImageFileProvider.cs" />
@@ -319,9 +316,7 @@
     <Compile Include="Providers\MusicVideoInfo.cs" />
     <Compile Include="Providers\PersonLookupInfo.cs" />
     <Compile Include="Providers\RemoteSearchQuery.cs" />
-    <Compile Include="Providers\SeasonIdentity.cs" />
     <Compile Include="Providers\SeasonInfo.cs" />
-    <Compile Include="Providers\SeriesIdentity.cs" />
     <Compile Include="Providers\SeriesInfo.cs" />
     <Compile Include="Providers\SeriesOrderTypes.cs" />
     <Compile Include="Providers\SongInfo.cs" />
@@ -418,8 +413,6 @@
     <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Sync\SyncedFileInfo.cs" />
     <Compile Include="Sync\SyncedItemProgress.cs" />
-    <Compile Include="Themes\IAppThemeManager.cs" />
-    <Compile Include="Themes\InternalThemeImage.cs" />
     <Compile Include="TV\ITVSeriesManager.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,94 @@
+<head>
+  <title>Reactive RubaXa:Sortable for Meteor</title>
+</head>
+
+<body>
+  {{> navbar}}
+
+  <div class="container">
+    <div class="page-header">
+      <h1>RubaXa:Sortable - reactive reorderable lists for Meteor</h1>
+      <h2>Drag attribute types from the left to define an object type on the right</h2>
+      <h3>Drag the <i class="sortable-handle mdi-action-view-headline"></i> handle to reorder elements</h3>
+    </div>
+
+    {{> typeDefinition}}
+  </div>
+</body>
+
+<template name="typeDefinition">
+
+  <div class="row">
+    <div class="list-pair col-sm-12">
+
+      <div class="sortable source list-group" id="types">
+        {{#sortable items=types options=typesOptions}}
+          <div class="list-group-item well well-sm">
+            {{{icon}}} {{name}}
+          </div>
+        {{/sortable}}
+      </div>
+
+      <div class="sortable target" id="object">
+        {{#sortable items=attributes animation="100" handle=".sortable-handle" ghostClass="sortable-ghost" options=attributesOptions}}
+          {{> sortableItemTarget}}
+        {{/sortable}}
+      </div>
+
+    </div>
+  </div>
+
+</template>
+
+<template name="sortableItemTarget">
+  <div data-id="{{order}}" class="sortable-item removable well well-sm">
+    {{{icon}}}
+    <i class="sortable-handle mdi-action-view-headline pull-right"></i>
+    <span class="name">{{name}}</span>
+    <span class="badge">{{order}}</span>
+    <button type="button" class="close" data-dismiss="alert">
+      <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+    </button>
+  </div>
+</template>
+
+
+<template name="navbar">
+  <div class="navbar navbar-inverse">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-inverse-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://atmospherejs.com/rubaxa/sortable">RubaXa:Sortable</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-inverse-collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="http://rubaxa-sortable.meteor.com">Meteor Demo</a></li>
+        <li><a href="https://rubaxa.github.io/Sortable/" target="_blank">Sortable standalone demo</a></li>
+        <li class="dropdown">
+          <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">Source <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li class="dropdown-header">GitHub</li>
+            <li><a href="https://github.com/RubaXa/Sortable/tree/dev/meteor/example" target="_blank">This demo</a></li>
+            <li><a href="https://github.com/RubaXa/Sortable/tree/dev/meteor" target="_blank">Meteor integration</a></li>
+            <li><a href="https://github.com/RubaXa/Sortable" target="_blank">rubaxa/sortable</a></li>
+            <li class="divider"></li>
+            <li><a href="https://atmospherejs.com/rubaxa/sortable">Star this package on Atmosphere!</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">Resources <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="http://www.meteorpedia.com/read/Packaging_existing_Libraries">Packaging 3rd party libraries for Meteor</a></li>
+            <li><a href="https://twitter.com/dandv">Author: @dandv</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>

@@ -1,12 +1,4 @@
 <html><head><meta charset="UTF-8"><!--
-    @license
-    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-    Code distributed by Google as part of the polymer project is also
-    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
@@ -80,10 +72,10 @@ prototype = {};
 }
 var factory = desugar(prototype);
 prototype = factory.prototype;
-var options = {
-prototype: prototype,
-extends: prototype.extends
-};
+var options = { prototype: prototype };
+if (prototype.extends) {
+options.extends = prototype.extends;
+}
 Polymer.telemetry._registrate(prototype);
 document.registerElement(prototype.is, options);
 return factory;
@@ -600,7 +592,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.1.2';
+Polymer.version = '1.1.5';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -2479,7 +2471,15 @@ this.listen(node, name, listeners[key]);
 }
 },
 listen: function (node, eventName, methodName) {
-this._listen(node, eventName, this._createEventHandler(node, eventName, methodName));
+var handler = this._recallEventHandler(this, eventName, node, methodName);
+if (!handler) {
+handler = this._createEventHandler(node, eventName, methodName);
+}
+if (handler._listening) {
+return;
+}
+this._listen(node, eventName, handler);
+handler._listening = true;
 },
 _boundListenerKey: function (eventName, methodName) {
 return eventName + ':' + methodName;
@@ -2518,6 +2518,7 @@ host[methodName](e, e.detail);
 host._warn(host._logf('_createEventHandler', 'listener method `' + methodName + '` not defined'));
 }
 };
+handler._listening = false;
 this._recordEventHandler(host, eventName, node, methodName, handler);
 return handler;
 },
@@ -2525,6 +2526,7 @@ unlisten: function (node, eventName, methodName) {
 var handler = this._recallEventHandler(this, eventName, node, methodName);
 if (handler) {
 this._unlisten(node, eventName, handler);
+handler._listening = false;
 }
 },
 _listen: function (node, eventName, handler) {
@@ -2809,9 +2811,9 @@ gd = gobj[dep];
 if (gd && gd[name]) {
 gd[name] = (gd[name] || 1) - 1;
 gd._count = (gd._count || 1) - 1;
-}
 if (gd._count === 0) {
 node.removeEventListener(dep, this.handleNative);
+}
 }
 }
 }
@@ -3372,6 +3374,12 @@ elt[n] = props[n];
 }
 }
 return elt;
+},
+isLightDescendant: function (node) {
+return this.contains(node) && Polymer.dom(this).getOwnerRoot() === Polymer.dom(node).getOwnerRoot();
+},
+isLocalDescendant: function (node) {
+return this.root === Polymer.dom(node).getOwnerRoot();
 }
 });
 Polymer.Bind = {
@@ -3939,6 +3947,7 @@ var h$ = this._handlers;
 for (var i = 0, l = h$.length, h; i < l && (h = h$[i]); i++) {
 h[0].call(this, h[1], h[2]);
 }
+this._handlers = [];
 }
 });
 (function () {
@@ -4062,7 +4071,7 @@ this._boundPaths = this._boundPaths || {};
 if (from) {
 this._boundPaths[to] = from;
 } else {
-this.unbindPath(to);
+this.unlinkPaths(to);
 }
 },
 unlinkPaths: function (path) {
@@ -4071,23 +4080,13 @@ delete this._boundPaths[path];
 }
 },
 _notifyBoundPaths: function (path, value) {
-var from, to;
 for (var a in this._boundPaths) {
 var b = this._boundPaths[a];
 if (path.indexOf(a + '.') == 0) {
-from = a;
-to = b;
-break;
+this.notifyPath(this._fixPath(b, a, path), value);
+} else if (path.indexOf(b + '.') == 0) {
+this.notifyPath(this._fixPath(a, b, path), value);
 }
-if (path.indexOf(b + '.') == 0) {
-from = b;
-to = a;
-break;
-}
-}
-if (from && to) {
-var p = this._fixPath(to, from, path);
-this.notifyPath(p, value);
 }
 },
 _fixPath: function (property, root, path) {
@@ -4182,6 +4181,22 @@ if (args.length) {
 this._notifySplice(array, path, 0, args.length, []);
 }
 return ret;
+},
+prepareModelNotifyPath: function (model) {
+this.mixin(model, {
+fire: Polymer.Base.fire,
+notifyPath: Polymer.Base.notifyPath,
+_EVENT_CHANGED: Polymer.Base._EVENT_CHANGED,
+_notifyPath: Polymer.Base._notifyPath,
+_pathEffector: Polymer.Base._pathEffector,
+_annotationPathEffect: Polymer.Base._annotationPathEffect,
+_complexObserverPathEffect: Polymer.Base._complexObserverPathEffect,
+_annotatedComputationPathEffect: Polymer.Base._annotatedComputationPathEffect,
+_computePathEffect: Polymer.Base._computePathEffect,
+_modelForPath: Polymer.Base._modelForPath,
+_pathMatchesEffect: Polymer.Base._pathMatchesEffect,
+_notifyBoundPaths: Polymer.Base._notifyBoundPaths
+});
 }
 });
 }());
@@ -4315,7 +4330,7 @@ MIXIN_RULE: 1000
 OPEN_BRACE: '{',
 CLOSE_BRACE: '}',
 _rx: {
-comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -5389,6 +5404,7 @@ properties: { __hideTemplateChildren__: { observer: '_showHideChildren' } },
 _instanceProps: Polymer.nob,
 _parentPropPrefix: '_parent_',
 templatize: function (template) {
+this._templatized = template;
 if (!template._content) {
 template._content = template.content;
 }
@@ -5399,11 +5415,11 @@ return;
 }
 var archetype = Object.create(Polymer.Base);
 this._customPrepAnnotations(archetype, template);
+this._prepParentProperties(archetype, template);
 archetype._prepEffects();
 this._customPrepEffects(archetype);
 archetype._prepBehaviors();
 archetype._prepBindings();
-this._prepParentProperties(archetype, template);
 archetype._notifyPath = this._notifyPathImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
@@ -5486,6 +5502,7 @@ delete parentProps[prop];
 proto = archetype._parentPropProto = Object.create(null);
 if (template != this) {
 Polymer.Bind.prepareModel(proto);
+Polymer.Base.prepareModelNotifyPath(proto);
 }
 for (prop in parentProps) {
 var parentProp = this._parentPropPrefix + prop;
@@ -5504,6 +5521,7 @@ Polymer.Bind.prepareInstance(template);
 template._forwardParentProp = this._forwardParentProp.bind(this);
 }
 this._extendTemplate(template, proto);
+template._pathEffector = this._pathEffectorImpl.bind(this);
 }
 },
 _createForwardPropEffector: function (prop) {
@@ -5514,7 +5532,7 @@ this._forwardParentProp(prop, value);
 _createHostPropEffector: function (prop) {
 var prefix = this._parentPropPrefix;
 return function (source, value) {
-this.dataHost[prefix + prop] = value;
+this.dataHost._templatized[prefix + prop] = value;
 };
 },
 _createInstancePropEffector: function (prop) {
@@ -5546,16 +5564,17 @@ var dot = path.indexOf('.');
 var root = dot < 0 ? path : path.slice(0, dot);
 dataHost._forwardInstancePath.call(dataHost, this, path, value);
 if (root in dataHost._parentProps) {
-dataHost.notifyPath(dataHost._parentPropPrefix + path, value);
+dataHost._templatized.notifyPath(dataHost._parentPropPrefix + path, value);
 }
 },
-_pathEffector: function (path, value, fromAbove) {
+_pathEffectorImpl: function (path, value, fromAbove) {
 if (this._forwardParentPath) {
 if (path.indexOf(this._parentPropPrefix) === 0) {
-this._forwardParentPath(path.substring(8), value);
+var subPath = path.substring(this._parentPropPrefix.length);
+this._forwardParentPath(subPath, value);
 }
 }
-Polymer.Base._pathEffector.apply(this, arguments);
+Polymer.Base._pathEffector.call(this._templatized, path, value, fromAbove);
 },
 _constructorImpl: function (model, host) {
 this._rootDataHost = host._getRootDataHost();
@@ -5598,8 +5617,9 @@ return host._scopeElementClass(node, value);
 stamp: function (model) {
 model = model || {};
 if (this._parentProps) {
+var templatized = this._templatized;
 for (var prop in this._parentProps) {
-model[prop] = this[this._parentPropPrefix + prop];
+model[prop] = templatized[this._parentPropPrefix + prop];
 }
 }
 return new this.ctor(model, this);
@@ -6207,7 +6227,7 @@ this.deselect(item);
 }
 } else {
 this.push('selected', item);
-skey = this._selectedColl.getKey(item);
+var skey = this._selectedColl.getKey(item);
 this.linkPaths('selected.' + skey, 'items.' + key);
 }
 } else {
@@ -6662,7 +6682,7 @@ this.fire('dom-change');
      * `keys` property is pressed.
      *
      * @demo demo/index.html
-     * @polymerBehavior IronA11yKeysBehavior
+     * @polymerBehavior
      */
     Polymer.IronA11yKeysBehavior = {
       properties: {
@@ -7050,33 +7070,7 @@ this.fire('dom-change');
       }
     },
 
-    _eventSourceIsPrimaryInput: function(event) {
-      event = event.detail.sourceEvent || event;
-
-      // Always true for non-mouse events....
-      if (!this._mouseEventRe.test(event.type)) {
-        return true;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
-      if ('buttons' in event) {
-        return event.buttons === 1;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/which
-      if (typeof event.which === 'number') {
-        return event.which < 2;
-      }
-
-      // http://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-      return event.button < 1;
-    },
-
     _downHandler: function(event) {
-      if (!this._eventSourceIsPrimaryInput(event)) {
-        return;
-      }
-
       this._setPointerDown(true);
       this._setPressed(true);
       this._setReceivedFocusFromKeyboard(false);
@@ -7158,24 +7152,141 @@ this.fire('dom-change');
 </script>
 <script>
 
-  /** @polymerBehavior */
+  /** 
+   * `Polymer.PaperRippleBehavior` dynamically implements a ripple 
+   * when the element has focus via pointer or keyboard.
+   *
+   * NOTE: This behavior is intended to be used in conjunction with and after
+   * `Polymer.IronButtonState` and `Polymer.IronControlState`.
+   *
+   * @polymerBehavior Polymer.PaperRippleBehavior 
+   */
+  Polymer.PaperRippleBehavior = {
+
+    properties: {
+      /**
+       * If true, the element will not produce a ripple effect when interacted
+       * with via the pointer.
+       */
+      noink: {
+        type: Boolean,
+        observer: '_noinkChanged'
+      }
+    },
+
+    /**
+     * Ensures a `<paper-ripple>` element is available when the element is 
+     * focused.
+     */
+    _buttonStateChanged: function() {
+      if (this.focused) {
+        this.ensureRipple();
+      }
+    },
+
+    /** 
+     * In addition to the functionality provided in `IronButtonState`, ensures
+     * a ripple effect is created when the element is in a `pressed` state.
+     */
+    _downHandler: function(event) {
+      Polymer.IronButtonStateImpl._downHandler.call(this, event);
+      if (this.pressed) {
+        this.ensureRipple(event);
+      }
+    },
+
+    /**
+     * Ensures this element contains a ripple effect. For startup efficiency 
+     * the ripple effect is dynamically on demand when needed.
+     * @param {event} triggeringEvent (optional) event that triggered the 
+     * ripple.
+     */
+    ensureRipple: function(triggeringEvent) {
+      if (!this.hasRipple()) {
+        this._ripple = this._createRipple();
+        this._ripple.noink = this.noink;
+        var rippleContainer = this._rippleContainer || this.root;
+        if (rippleContainer) {
+          Polymer.dom(rippleContainer).appendChild(this._ripple);
+        }
+        var domContainer = rippleContainer === this.shadyRoot ? this : 
+          rippleContainer;
+        if (triggeringEvent && domContainer.contains(triggeringEvent.target)) {
+          this._ripple.uiDownAction(triggeringEvent);
+        }
+      }
+    },
+
+    /**
+     * Returns the `<paper-ripple>` element used by this element to create
+     * ripple effects. The element's ripple is created on demand, when
+     * necessary, and calling this method will force the 
+     * ripple to be created.
+     */
+    getRipple: function() {
+      this.ensureRipple();
+      return this._ripple;
+    },
+
+    /**
+     * Returns true if this element currently contains a ripple effect.
+     * @return {boolean}
+     */
+    hasRipple: function() {
+      return Boolean(this._ripple);
+    },
+
+    /**
+     * Create the element's ripple effect via creating a `<paper-ripple>`.
+     * Override this method to customize the ripple element.
+     * @return {element} Returns a `<paper-ripple>` element.
+     */
+    _createRipple: function() {
+      return document.createElement('paper-ripple');
+    },
+
+    _noinkChanged: function(noink) {
+      if (this.hasRipple()) {
+        this._ripple.noink = noink;
+      }
+    }
+
+  };
+
+</script>
+<script>
+
+  /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
 
-      _elevation: {
-        type: Number
+      /**
+       * The z-depth of this element, from 0-5. Setting to 0 will remove the
+       * shadow, and each increasing number greater than 0 will be "deeper"
+       * than the last.
+       *
+       * @attribute elevation
+       * @type number
+       * @default 1
+       */
+      elevation: {
+        type: Number,
+        reflectToAttribute: true,
+        readOnly: true
       }
 
     },
 
     observers: [
-      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)'
+      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)',
+      '_computeKeyboardClass(receivedFocusFromKeyboard)'
     ],
 
     hostAttributes: {
       role: 'button',
-      tabindex: '0'
+      tabindex: '0',
+      animated: true
     },
 
     _calculateElevation: function() {
@@ -7187,18 +7298,352 @@ this.fire('dom-change');
       } else if (this.receivedFocusFromKeyboard) {
         e = 3;
       }
-      this._elevation = e;
+      this._setElevation(e);
+    },
+
+    _computeKeyboardClass: function(receivedFocusFromKeyboard) {
+      this.classList.toggle('keyboard-focus', receivedFocusFromKeyboard);
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes down, 
+     * create a ripple down effect.
+     */
+    _spaceKeyDownHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiDownAction();
+      }
+    },
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes up, 
+     * create a ripple up effect.
+     */
+    _spaceKeyUpHandler: function(event) {
+      Polymer.IronButtonStateImpl._spaceKeyUpHandler.call(this, event);
+      if (this.hasRipple()) {
+        this._ripple.uiUpAction();
+      }
     }
+
   };
 
   /** @polymerBehavior */
   Polymer.PaperButtonBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperButtonBehaviorImpl
   ];
 
 </script>
+
+
+<style>
+  /* IE 10 support for HTML5 hidden attr */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<style is="custom-style">
+  :root {
+
+    --layout: {
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+    };
+
+    --layout-inline: {
+      display: -ms-inline-flexbox;
+      display: -webkit-inline-flex;
+      display: inline-flex;
+    };
+
+    --layout-horizontal: {
+      /* @apply(--layout); */
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+
+      -ms-flex-direction: row;
+      -webkit-flex-direction: row;
+      flex-direction: row;
+    };
+
+    --layout-horizontal-reverse: {
+      -ms-flex-direction: row-reverse;
+      -webkit-flex-direction: row-reverse;
+      flex-direction: row-reverse;
+    };
+
+    --layout-vertical: {
+      /* @apply(--layout); */
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+
+      -ms-flex-direction: column;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+    };
+
+    --layout-vertical-reverse: {
+      -ms-flex-direction: column-reverse;
+      -webkit-flex-direction: column-reverse;
+      flex-direction: column-reverse;
+    };
+
+    --layout-wrap: {
+      -ms-flex-wrap: wrap;
+      -webkit-flex-wrap: wrap;
+      flex-wrap: wrap;
+    };
+
+    --layout-wrap-reverse: {
+      -ms-flex-wrap: wrap-reverse;
+      -webkit-flex-wrap: wrap-reverse;
+      flex-wrap: wrap-reverse;
+    };
+
+    --layout-flex-auto: {
+      -ms-flex: 1 1 auto;
+      -webkit-flex: 1 1 auto;
+      flex: 1 1 auto;
+    };
+
+    --layout-flex-none: {
+      -ms-flex: none;
+      -webkit-flex: none;
+      flex: none;
+    };
+
+    --layout-flex: {
+      -ms-flex: 1 1 0.000000001px;
+      -webkit-flex: 1;
+      flex: 1;
+      -webkit-flex-basis: 0.000000001px;
+      flex-basis: 0.000000001px;
+    };
+
+    --layout-flex-2: {
+      -ms-flex: 2;
+      -webkit-flex: 2;
+      flex: 2;
+    };
+
+    --layout-flex-3: {
+      -ms-flex: 3;
+      -webkit-flex: 3;
+      flex: 3;
+    };
+
+    --layout-flex-4: {
+      -ms-flex: 4;
+      -webkit-flex: 4;
+      flex: 4;
+    };
+
+    --layout-flex-5: {
+      -ms-flex: 5;
+      -webkit-flex: 5;
+      flex: 5;
+    };
+
+    --layout-flex-6: {
+      -ms-flex: 6;
+      -webkit-flex: 6;
+      flex: 6;
+    };
+
+    --layout-flex-7: {
+      -ms-flex: 7;
+      -webkit-flex: 7;
+      flex: 7;
+    };
+
+    --layout-flex-8: {
+      -ms-flex: 8;
+      -webkit-flex: 8;
+      flex: 8;
+    };
+
+    --layout-flex-9: {
+      -ms-flex: 9;
+      -webkit-flex: 9;
+      flex: 9;
+    };
+
+    --layout-flex-10: {
+      -ms-flex: 10;
+      -webkit-flex: 10;
+      flex: 10;
+    };
+
+    --layout-flex-11: {
+      -ms-flex: 11;
+      -webkit-flex: 11;
+      flex: 11;
+    };
+
+    --layout-flex-12: {
+      -ms-flex: 12;
+      -webkit-flex: 12;
+      flex: 12;
+    };
+
+    /* alignment in cross axis */
+
+    --layout-start: {
+      -ms-flex-align: start;
+      -webkit-align-items: flex-start;
+      align-items: flex-start;
+    };
+
+    --layout-center: {
+      -ms-flex-align: center;
+      -webkit-align-items: center;
+      align-items: center;
+    };
+
+    --layout-end: {
+      -ms-flex-align: end;
+      -webkit-align-items: flex-end;
+      align-items: flex-end;
+    };
+
+    /* alignment in main axis */
+
+    --layout-start-justified: {
+      -ms-flex-pack: start;
+      -webkit-justify-content: flex-start;
+      justify-content: flex-start;
+    };
+
+    --layout-center-justified: {
+      -ms-flex-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+    };
+
+    --layout-end-justified: {
+      -ms-flex-pack: end;
+      -webkit-justify-content: flex-end;
+      justify-content: flex-end;
+    };
+
+    --layout-around-justified: {
+      -ms-flex-pack: around;
+      -webkit-justify-content: space-around;
+      justify-content: space-around;
+    };
+
+    --layout-justified: {
+      -ms-flex-pack: justify;
+      -webkit-justify-content: space-between;
+      justify-content: space-between;
+    };
+
+    --layout-center-center: {
+      /* @apply(--layout-center --layout-center-justified); */
+      -ms-flex-align: center;
+      -webkit-align-items: center;
+      align-items: center;
+      -ms-flex-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+    };
+
+    /* self alignment */
+
+    --layout-self-start: {
+      -ms-align-self: flex-start;
+      -webkit-align-self: flex-start;
+      align-self: flex-start;
+    };
+
+    --layout-self-center: {
+      -ms-align-self: center;
+      -webkit-align-self: center;
+      align-self: center;
+    };
+
+    --layout-self-end: {
+      -ms-align-self: flex-end;
+      -webkit-align-self: flex-end;
+      align-self: flex-end;
+    };
+
+    --layout-self-stretch: {
+      -ms-align-self: stretch;
+      -webkit-align-self: stretch;
+      align-self: stretch;
+    };
+
+    /*******************************
+              Other Layout
+    *******************************/
+
+    --layout-block: {
+      display: block;
+    };
+
+    --layout-invisible: {
+      visibility: hidden !important;
+    };
+
+    --layout-relative: {
+      position: relative;
+    };
+
+    --layout-fit: {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-scroll: {
+      -webkit-overflow-scrolling: touch;
+      overflow: auto;
+    };
+
+    /* fixed position */
+
+    --layout-fixed-top: {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+    };
+
+    --layout-fixed-right: {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    };
+
+    --layout-fixed-bottom: {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-fixed-left: {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+  }
+
+</style>
 
 
 <style is="custom-style">
@@ -7746,310 +8191,6 @@ this.fire('dom-change');
     --light-disabled-opacity: 0.3; /* or hint text */
     --light-secondary-opacity: 0.7; /* or icon */
     --light-primary-opacity: 1.0;
-
-  }
-
-</style>
-<style>
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-</style>
-
-<style is="custom-style">
-  :root {
-
-    --layout: {
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-    };
-
-    --layout-inline: {
-      display: -ms-inline-flexbox;
-      display: -webkit-inline-flex;
-      display: inline-flex;
-    };
-
-    --layout-horizontal: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-
-      -ms-flex-direction: row;
-      -webkit-flex-direction: row;
-      flex-direction: row;
-    };
-
-    --layout-horizontal-reverse: {
-      -ms-flex-direction: row-reverse;
-      -webkit-flex-direction: row-reverse;
-      flex-direction: row-reverse;
-    };
-
-    --layout-vertical: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    };
-
-    --layout-vertical-reverse: {
-      -ms-flex-direction: column-reverse;
-      -webkit-flex-direction: column-reverse;
-      flex-direction: column-reverse;
-    };
-
-    --layout-wrap: {
-      -ms-flex-wrap: wrap;
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    };
-
-    --layout-wrap-reverse: {
-      -ms-flex-wrap: wrap-reverse;
-      -webkit-flex-wrap: wrap-reverse;
-      flex-wrap: wrap-reverse;
-    };
-
-    --layout-flex-auto: {
-      -ms-flex: 1 1 auto;
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    };
-
-    --layout-flex-none: {
-      -ms-flex: none;
-      -webkit-flex: none;
-      flex: none;
-    };
-
-    --layout-flex: {
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    };
-
-    --layout-flex-2: {
-      -ms-flex: 2;
-      -webkit-flex: 2;
-      flex: 2;
-    };
-
-    --layout-flex-3: {
-      -ms-flex: 3;
-      -webkit-flex: 3;
-      flex: 3;
-    };
-
-    --layout-flex-4: {
-      -ms-flex: 4;
-      -webkit-flex: 4;
-      flex: 4;
-    };
-
-    --layout-flex-5: {
-      -ms-flex: 5;
-      -webkit-flex: 5;
-      flex: 5;
-    };
-
-    --layout-flex-6: {
-      -ms-flex: 6;
-      -webkit-flex: 6;
-      flex: 6;
-    };
-
-    --layout-flex-7: {
-      -ms-flex: 7;
-      -webkit-flex: 7;
-      flex: 7;
-    };
-
-    --layout-flex-8: {
-      -ms-flex: 8;
-      -webkit-flex: 8;
-      flex: 8;
-    };
-
-    --layout-flex-9: {
-      -ms-flex: 9;
-      -webkit-flex: 9;
-      flex: 9;
-    };
-
-    --layout-flex-10: {
-      -ms-flex: 10;
-      -webkit-flex: 10;
-      flex: 10;
-    };
-
-    --layout-flex-11: {
-      -ms-flex: 11;
-      -webkit-flex: 11;
-      flex: 11;
-    };
-
-    --layout-flex-12: {
-      -ms-flex: 12;
-      -webkit-flex: 12;
-      flex: 12;
-    };
-
-    /* alignment in cross axis */
-
-    --layout-start: {
-      -ms-flex-align: start;
-      -webkit-align-items: flex-start;
-      align-items: flex-start;
-    };
-
-    --layout-center: {
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-    };
-
-    --layout-end: {
-      -ms-flex-align: end;
-      -webkit-align-items: flex-end;
-      align-items: flex-end;
-    };
-
-    /* alignment in main axis */
-
-    --layout-start-justified: {
-      -ms-flex-pack: start;
-      -webkit-justify-content: flex-start;
-      justify-content: flex-start;
-    };
-
-    --layout-center-justified: {
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    --layout-end-justified: {
-      -ms-flex-pack: end;
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    };
-
-    --layout-around-justified: {
-      -ms-flex-pack: around;
-      -webkit-justify-content: space-around;
-      justify-content: space-around;
-    };
-
-    --layout-justified: {
-      -ms-flex-pack: justify;
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    };
-
-    --layout-center-center: {
-      /* @apply(--layout-center --layout-center-justified); */
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    /* self alignment */
-
-    --layout-self-start: {
-      -ms-align-self: flex-start;
-      -webkit-align-self: flex-start;
-      align-self: flex-start;
-    };
-
-    --layout-self-center: {
-      -ms-align-self: center;
-      -webkit-align-self: center;
-      align-self: center;
-    };
-
-    --layout-self-end: {
-      -ms-align-self: flex-end;
-      -webkit-align-self: flex-end;
-      align-self: flex-end;
-    };
-
-    --layout-self-stretch: {
-      -ms-align-self: stretch;
-      -webkit-align-self: stretch;
-      align-self: stretch;
-    };
-
-    /*******************************
-              Other Layout
-    *******************************/
-
-    --layout-block: {
-      display: block;
-    };
-
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
-
-    --layout-relative: {
-      position: relative;
-    };
-
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
 
   }
 
@@ -9850,7 +9991,8 @@ intent. Closing generally implies that the user acknowledged the content on the 
 it will cancel whenever the user taps outside it or presses the escape key. This behavior is
 configurable with the `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
 `close()` should be called explicitly by the implementer when the user interacts with a control
-in the overlay element.
+in the overlay element. When the dialog is canceled, the overlay fires an 'iron-overlay-canceled'
+event. Call `preventDefault` on this event to prevent the overlay from closing.
 
 ### Positioning
 
@@ -9961,7 +10103,7 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     listeners: {
-      'click': '_onClick',
+      'tap': '_onClick',
       'iron-resize': '_onIronResize'
     },
 
@@ -10021,7 +10163,12 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Cancels the overlay.
      */
     cancel: function() {
-      this.opened = false,
+      var cancelEvent = this.fire('iron-overlay-canceled', undefined, {cancelable: true});
+      if (cancelEvent.defaultPrevented) {
+        return;
+      }
+
+      this.opened = false;
       this._setCanceled(true);
     },
 
@@ -10079,8 +10226,16 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     _toggleListener: function(enable, node, event, boundListener, capture) {
       if (enable) {
+        // enable document-wide tap recognizer
+        if (event === 'tap') {
+          Polymer.Gestures.add(document, 'tap', null);
+        }
         node.addEventListener(event, boundListener, capture);
       } else {
+        // disable document-wide tap recognizer
+        if (event === 'tap') {
+          Polymer.Gestures.remove(document, 'tap', null);
+        }
         node.removeEventListener(event, boundListener, capture);
       }
     },
@@ -10091,10 +10246,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
       // async so we don't auto-close immediately via a click.
       this._toggleListenersAsync = this.async(function() {
-        this._toggleListener(this.opened, document, 'click', this._boundOnCaptureClick, true);
+        this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
         this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
         this._toggleListenersAsync = null;
-      });
+      }, 1);
     },
 
     // tasks which must occur before opening; e.g. making the element visible
@@ -10345,7 +10500,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     listeners: {
-      'click': '_onDialogClick',
+      'tap': '_onDialogClick',
       'iron-overlay-opened': '_onIronOverlayOpened',
       'iron-overlay-closed': '_onIronOverlayClosed'
     },
@@ -10717,7 +10872,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * the selected item or undefined if there is no selection.
      */
     get: function() {
-      return this.multi ? this.selection : this.selection[0];
+      return this.multi ? this.selection.slice() : this.selection[0];
     },
 
     /**
@@ -10803,14 +10958,39 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   /** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
 
+      /**
+       * Fired when iron-selector is activated (selected or deselected).
+       * It is fired before the selected items are changed.
+       * Cancel the event to abort selection.
+       *
+       * @event iron-activate
+       */
+
+      /**
+       * Fired when an item is selected
+       *
+       * @event iron-select
+       */
+
+      /**
+       * Fired when an item is deselected
+       *
+       * @event iron-deselect
+       */
+
+      /**
+       * Fired when the list of selectable items changes (e.g., items are
+       * added or removed). The detail of the event is a list of mutation
+       * records that describe what changed.
+       *
+       * @event iron-items-changed
+       */
+
     properties: {
 
       /**
        * If you want to use the attribute value of an element for `selected` instead of the index,
        * set this to the name of the attribute.
-       *
-       * @attribute attrForSelected
-       * @type {string}
        */
       attrForSelected: {
         type: String,
@@ -10819,9 +10999,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * Gets or sets the selected element. The default is to use the index of the item.
-       *
-       * @attribute selected
-       * @type {string}
        */
       selected: {
         type: String,
@@ -10830,9 +11007,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * Returns the currently selected item.
-       *
-       * @attribute selectedItem
-       * @type {Object}
        */
       selectedItem: {
         type: Object,
@@ -10844,10 +11018,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        * The event that fires from items when they are selected. Selectable
        * will listen for this event from items and update the selection state.
        * Set to empty string to listen to no events.
-       *
-       * @attribute activateEvent
-       * @type {string}
-       * @default 'tap'
        */
       activateEvent: {
         type: String,
@@ -10856,19 +11026,13 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       },
 
       /**
-       * This is a CSS selector sting.  If this is set, only items that matches the CSS selector
+       * This is a CSS selector string.  If this is set, only items that match the CSS selector
        * are selectable.
-       *
-       * @attribute selectable
-       * @type {string}
        */
       selectable: String,
 
       /**
        * The class to set on elements when selected.
-       *
-       * @attribute selectedClass
-       * @type {string}
        */
       selectedClass: {
         type: String,
@@ -10877,33 +11041,48 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * The attribute to set on elements when selected.
-       *
-       * @attribute selectedAttribute
-       * @type {string}
        */
       selectedAttribute: {
         type: String,
         value: null
-      }
+      },
 
+      /**
+       * The set of excluded elements where the key is the `localName`
+       * of the element that will be ignored from the item list.
+       *
+       * @type {object}
+       * @default {template: 1}
+       */
+      _excludedLocalNames: {
+        type: Object,
+        value: function() {
+          return {
+            'template': 1
+          };
+        }
+      }
     },
 
     observers: [
       '_updateSelected(attrForSelected, selected)'
     ],
 
-    excludedLocalNames: {
-      'template': 1
-    },
-
     created: function() {
       this._bindFilterItem = this._filterItem.bind(this);
       this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
+      // TODO(cdata): When polymer/polymer#2535 lands, we do not need to do this
+      // book keeping anymore:
+      this.__listeningForActivate = false;
     },
 
     attached: function() {
       this._observer = this._observeItems(this);
       this._contentObserver = this._observeContent(this);
+      if (!this.selectedItem && this.selected) {
+        this._updateSelected(this.attrForSelected,this.selected)
+      }
+      this._addListener(this.activateEvent);
     },
 
     detached: function() {
@@ -10970,13 +11149,17 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _addListener: function(eventName) {
+      if (!this.isAttached || this.__listeningForActivate) {
+        return;
+      }
+
+      this.__listeningForActivate = true;
       this.listen(this, eventName, '_activateHandler');
     },
 
     _removeListener: function(eventName) {
-      // There is no unlisten yet...
-      // https://github.com/Polymer/polymer/issues/1639
-      //this.removeEventListener(eventName, this._bindActivateHandler);
+      this.unlisten(this, eventName, '_activateHandler');
+      this.__listeningForActivate = false;
     },
 
     _activateEventChanged: function(eventName, old) {
@@ -10993,7 +11176,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
+      return !this._excludedLocalNames[node.localName];
     },
 
     _valueToItem: function(value) {
@@ -11052,7 +11235,15 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
     // observe items change under the given node.
     _observeItems: function(node) {
-      var observer = new MutationObserver(function() {
+      // TODO(cdata): Update this when we get distributed children changed.
+      var observer = new MutationObserver(function(mutations) {
+        // Let other interested parties know about the change so that
+        // we don't have to recreate mutation observers everywher.
+        this.fire('iron-items-changed', mutations, {
+          bubbles: false,
+          cancelable: false
+        });
+
         if (this.selected != null) {
           this._updateSelected();
         }
@@ -11065,11 +11256,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _activateHandler: function(e) {
-      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
-      // can just remove the old event listener.
-      if (e.type !== this.activateEvent) {
-        return;
-      }
       var t = e.target;
       var items = this.items;
       while (t && t != this) {
@@ -11100,7 +11286,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
-   * @polymerBehavior Polymer.PaperInkyFocusBehavior
+   * @polymerBehavior Polymer.PaperInkyFocusBehaviorImpl
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
 
@@ -11109,11 +11295,20 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     ],
 
     _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (!this.$.ink) {
-        return;
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
       }
+      if (this.hasRipple()) {
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
+    },
 
-      this.$.ink.holdDown = receivedFocusFromKeyboard;
+    _createRipple: function() {
+      var ripple = Polymer.PaperRippleBehavior._createRipple();
+      ripple.id = 'ink';
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+      return ripple;
     }
 
   };
@@ -11122,6 +11317,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   Polymer.PaperInkyFocusBehavior = [
     Polymer.IronButtonState,
     Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
 
@@ -11154,23 +11350,47 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       query: {
         type: String,
         observer: 'queryChanged'
+      },
+
+      _boundMQHandler: {
+        value: function() {
+          return this.queryHandler.bind(this);
+        }
       }
-
     },
 
-    created: function() {
-      this._mqHandler = this.queryHandler.bind(this);
+    attached: function() {
+      this.queryChanged();
     },
 
-    queryChanged: function(query) {
+    detached: function() {
+      this._remove();
+    },
+
+    _add: function() {
       if (this._mq) {
-        this._mq.removeListener(this._mqHandler);
+        this._mq.addListener(this._boundMQHandler);
+      }
+    },
+
+    _remove: function() {
+      if (this._mq) {
+        this._mq.removeListener(this._boundMQHandler);
+      }
+      this._mq = null;
+    },
+
+    queryChanged: function() {
+      this._remove();
+      var query = this.query;
+      if (!query) {
+        return;
       }
       if (query[0] !== '(') {
         query = '(' + query + ')';
       }
       this._mq = window.matchMedia(query);
-      this._mq.addListener(this._mqHandler);
+      this._add();
       this.queryHandler(this._mq);
     },
 
@@ -11273,9 +11493,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       var i = this.selectedValues.indexOf(value);
       var unselected = i < 0;
       if (unselected) {
-        this.selectedValues.push(value);
+        this.push('selectedValues',value);
       } else {
-        this.selectedValues.splice(i, 1);
+        this.splice('selectedValues',i,1);
       }
       this._selection.setItemSelected(this._valueToItem(value), unselected);
     }
@@ -11391,59 +11611,27 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
     listeners: {
       'focus': '_onFocus',
-      'keydown': '_onKeydown'
+      'keydown': '_onKeydown',
+      'iron-items-changed': '_onIronItemsChanged'
     },
 
     keyBindings: {
       'up': '_onUpKey',
       'down': '_onDownKey',
       'esc': '_onEscKey',
-      'enter': '_onEnterKey',
       'shift+tab:keydown': '_onShiftTabDown'
     },
 
-    _updateMultiselectable: function(multi) {
-      if (multi) {
-        this.setAttribute('aria-multiselectable', 'true');
-      } else {
-        this.removeAttribute('aria-multiselectable');
-      }
+    attached: function() {
+      this._resetTabindices();
     },
 
-    _onShiftTabDown: function() {
-      var oldTabIndex;
-
-      Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
-
-      oldTabIndex = this.getAttribute('tabindex');
-
-      this.setAttribute('tabindex', '-1');
-
-      this.async(function() {
-        this.setAttribute('tabindex', oldTabIndex);
-        Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-      // Note: polymer/polymer#1305
-      }, 1);
-    },
-
-    _applySelection: function(item, isSelected) {
-      if (isSelected) {
-        item.setAttribute('aria-selected', 'true');
-      } else {
-        item.removeAttribute('aria-selected');
-      }
-
-      Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
-    },
-
-    _focusedItemChanged: function(focusedItem, old) {
-      old && old.setAttribute('tabindex', '-1');
-      if (focusedItem) {
-        focusedItem.setAttribute('tabindex', '0');
-        focusedItem.focus();
-      }
-    },
-
+    /**
+     * Selects the given value. If the `multi` property is true, then the selected state of the
+     * `value` will be toggled; otherwise the `value` will be selected.
+     *
+     * @param {string} value the value to select.
+     */
     select: function(value) {
       if (this._defaultFocusAsync) {
         this.cancelAsync(this._defaultFocusAsync);
@@ -11455,6 +11643,152 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       Polymer.IronMultiSelectableBehaviorImpl.select.apply(this, arguments);
     },
 
+    /**
+     * Resets all tabindex attributes to the appropriate value based on the
+     * current selection state. The appropriate value is `0` (focusable) for
+     * the default selected item, and `-1` (not keyboard focusable) for all
+     * other items.
+     */
+    _resetTabindices: function() {
+      var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
+
+      this.items.forEach(function(item) {
+        item.setAttribute('tabindex', item === selectedItem ? '0' : '-1');
+      }, this);
+    },
+
+    /**
+     * Sets appropriate ARIA based on whether or not the menu is meant to be
+     * multi-selectable.
+     *
+     * @param {boolean} multi True if the menu should be multi-selectable.
+     */
+    _updateMultiselectable: function(multi) {
+      if (multi) {
+        this.setAttribute('aria-multiselectable', 'true');
+      } else {
+        this.removeAttribute('aria-multiselectable');
+      }
+    },
+
+    /**
+     * Given a KeyboardEvent, this method will focus the appropriate item in the
+     * menu (if there is a relevant item, and it is possible to focus it).
+     *
+     * @param {KeyboardEvent} event A KeyboardEvent.
+     */
+    _focusWithKeyboardEvent: function(event) {
+      for (var i = 0, item; item = this.items[i]; i++) {
+        var attr = this.attrForItemTitle || 'textContent';
+        var title = item[attr] || item.getAttribute(attr);
+        if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
+          this._setFocusedItem(item);
+          break;
+        }
+      }
+    },
+
+    /**
+     * Focuses the previous item (relative to the currently focused item) in the
+     * menu.
+     */
+    _focusPrevious: function() {
+      var length = this.items.length;
+      var index = (Number(this.indexOf(this.focusedItem)) - 1 + length) % length;
+      this._setFocusedItem(this.items[index]);
+    },
+
+    /**
+     * Focuses the next item (relative to the currently focused item) in the
+     * menu.
+     */
+    _focusNext: function() {
+      var index = (Number(this.indexOf(this.focusedItem)) + 1) % this.items.length;
+      this._setFocusedItem(this.items[index]);
+    },
+
+    /**
+     * Mutates items in the menu based on provided selection details, so that
+     * all items correctly reflect selection state.
+     *
+     * @param {Element} item An item in the menu.
+     * @param {boolean} isSelected True if the item should be shown in a
+     * selected state, otherwise false.
+     */
+    _applySelection: function(item, isSelected) {
+      if (isSelected) {
+        item.setAttribute('aria-selected', 'true');
+      } else {
+        item.removeAttribute('aria-selected');
+      }
+
+      Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
+    },
+
+    /**
+     * Discretely updates tabindex values among menu items as the focused item
+     * changes.
+     *
+     * @param {Element} focusedItem The element that is currently focused.
+     * @param {?Element} old The last element that was considered focused, if
+     * applicable.
+     */
+    _focusedItemChanged: function(focusedItem, old) {
+      old && old.setAttribute('tabindex', '-1');
+      if (focusedItem) {
+        focusedItem.setAttribute('tabindex', '0');
+        focusedItem.focus();
+      }
+    },
+
+    /**
+     * A handler that responds to mutation changes related to the list of items
+     * in the menu.
+     *
+     * @param {CustomEvent} event An event containing mutation records as its
+     * detail.
+     */
+    _onIronItemsChanged: function(event) {
+      var mutations = event.detail;
+      var mutation;
+      var index;
+
+      for (index = 0; index < mutations.length; ++index) {
+        mutation = mutations[index];
+
+        if (mutation.addedNodes.length) {
+          this._resetTabindices();
+          break;
+        }
+      }
+    },
+
+    /**
+     * Handler that is called when a shift+tab keypress is detected by the menu.
+     *
+     * @param {CustomEvent} event A key combination event.
+     */
+    _onShiftTabDown: function(event) {
+      var oldTabIndex;
+
+      Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
+
+      oldTabIndex = this.getAttribute('tabindex');
+
+      this.setAttribute('tabindex', '-1');
+
+      this.async(function() {
+        this.setAttribute('tabindex', oldTabIndex);
+        Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
+      // NOTE(cdata): polymer/polymer#1305
+      }, 1);
+    },
+
+    /**
+     * Handler that is called when the menu receives focus.
+     *
+     * @param {FocusEvent} event A focus event.
+     */
     _onFocus: function(event) {
       if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
         return;
@@ -11476,62 +11810,48 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }, 100);
     },
 
-    _onUpKey: function() {
+    /**
+     * Handler that is called when the up key is pressed.
+     *
+     * @param {CustomEvent} event A key combination event.
+     */
+    _onUpKey: function(event) {
       // up and down arrows moves the focus
       this._focusPrevious();
     },
 
-    _onDownKey: function() {
+    /**
+     * Handler that is called when the down key is pressed.
+     *
+     * @param {CustomEvent} event A key combination event.
+     */
+    _onDownKey: function(event) {
       this._focusNext();
     },
 
-    _onEscKey: function() {
+    /**
+     * Handler that is called when the esc key is pressed.
+     *
+     * @param {CustomEvent} event A key combination event.
+     */
+    _onEscKey: function(event) {
       // esc blurs the control
       this.focusedItem.blur();
     },
 
-    _onEnterKey: function(event) {
-      // enter activates the item unless it is disabled
-      this._activateFocused(event.detail.keyboardEvent);
-    },
-
+    /**
+     * Handler that is called when a keydown event is detected.
+     *
+     * @param {KeyboardEvent} event A keyboard event.
+     */
     _onKeydown: function(event) {
-      if (this.keyboardEventMatchesKeys(event, 'up down esc enter')) {
+      if (this.keyboardEventMatchesKeys(event, 'up down esc')) {
         return;
       }
 
       // all other keys focus the menu item starting with that character
       this._focusWithKeyboardEvent(event);
-    },
-
-    _focusWithKeyboardEvent: function(event) {
-      for (var i = 0, item; item = this.items[i]; i++) {
-        var attr = this.attrForItemTitle || 'textContent';
-        var title = item[attr] || item.getAttribute(attr);
-        if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
-          this._setFocusedItem(item);
-          break;
-        }
-      }
-    },
-
-    _activateFocused: function(event) {
-      if (!this.focusedItem.hasAttribute('disabled')) {
-        this._activateHandler(event);
-      }
-    },
-
-    _focusPrevious: function() {
-      var length = this.items.length;
-      var index = (Number(this.indexOf(this.focusedItem)) - 1 + length) % length;
-      this._setFocusedItem(this.items[index]);
-    },
-
-    _focusNext: function() {
-      var index = (Number(this.indexOf(this.focusedItem)) + 1) % this.items.length;
-      this._setFocusedItem(this.items[index]);
     }
-
   };
 
   Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
@@ -11563,11 +11883,13 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _onUpKey: function(event) {
-      this._activateFocused(event.detail.keyboardEvent);
+      this.focusedItem.click();
+      event.detail.keyboardEvent.preventDefault();
     },
 
     _onDownKey: function(event) {
-      this._activateFocused(event.detail.keyboardEvent);
+      this.focusedItem.click();
+      event.detail.keyboardEvent.preventDefault();
     },
 
     _onLeftKey: function() {
@@ -11579,7 +11901,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _onKeydown: function(event) {
-      if (this.keyboardEventMatchesKeys(event, 'up down left right esc enter')) {
+      if (this.keyboardEventMatchesKeys(event, 'up down left right esc')) {
         return;
       }
 
@@ -11721,6 +12043,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      */
     _nameChanged: function() {
       new Polymer.IronMeta({type: 'iconset', key: this.name, value: this});
+      this.async(function() {
+        this.fire('iron-iconset-added', this, {node: window});
+      });
     },
 
     /**
@@ -11761,13 +12086,15 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      */
     _prepareSvgClone: function(sourceSvg, size) {
       if (sourceSvg) {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', ['0', '0', size, size].join(' '));
+        var content = sourceSvg.cloneNode(true),
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+            viewBox = content.getAttribute('viewBox') || '0 0 ' + size + ' ' + size;
+        svg.setAttribute('viewBox', viewBox);
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         // TODO(dfreedm): `pointer-events: none` works around https://crbug.com/370136
         // TODO(sjmiles): inline style may not be ideal, but avoids requiring a shadow-root
         svg.style.cssText = 'pointer-events: none; display: block; width: 100%; height: 100%;';
-        svg.appendChild(sourceSvg.cloneNode(true)).removeAttribute('id');
+        svg.appendChild(content).removeAttribute('id');
         return svg;
       }
       return null;
@@ -11860,7 +12187,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     *
     * as a work around we can divide by the reciprocal of `step`
     */
-    return this.step ? (Math.round(value / this.step) / (1 / this.step)) : value;
+    // polymer/issues/2493
+    value = parseFloat(value);
+    return this.step ? (Math.round((value + this.min) / this.step) / (1 / this.step)) - this.min : value;
   },
 
   _validateValue: function() {
@@ -12308,6 +12637,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   Polymer.PaperInputBehaviorImpl = {
 
     properties: {
+      /**
+       * Fired when the input changes due to user interaction.
+       *
+       * @event change
+       */
 
       /**
        * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
@@ -12340,7 +12674,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
        */
       invalid: {
         type: Boolean,
-        value: false
+        value: false,
+        notify: true
       },
 
       /**
@@ -12556,6 +12891,20 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         value: 'off'
       },
 
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+       */
+      autosave: {
+        type: String
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `results` property, , used with type=search.
+       */
+      results: {
+        type: Number
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -12677,6 +13026,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         label.id = labelledBy;
       }
       this._ariaLabelledBy = labelledBy;
+    },
+
+    _onChange:function(event) {
+      // In the Shadow DOM, the `change` event is not leaked into the
+      // ancestor tree, so we must do this manually.
+      // See https://w3c.github.io/webcomponents/spec/shadow/#events-that-are-not-leaked-into-ancestor-trees.
+      if (this.shadowRoot) {
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
     }
 
   };
@@ -12825,6 +13187,55 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   ];
 
 </script>
+<script>
+
+  /**
+   * Use `Polymer.PaperCheckedElementBehavior` to implement a custom element
+   * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
+   * and is compatible with having a ripple effect.
+   * @polymerBehavior Polymer.PaperCheckedElementBehavior
+   */
+  Polymer.PaperCheckedElementBehaviorImpl = {
+
+    /**
+     * Synchronizes the element's checked state with its ripple effect.
+     */
+    _checkedChanged: function() {
+      Polymer.IronCheckedElementBehaviorImpl._checkedChanged.call(this);
+      if (this.hasRipple()) {
+        if (this.checked) {
+          this._ripple.setAttribute('checked', '');
+        } else {
+          this._ripple.removeAttribute('checked');
+        }
+      }
+    },
+
+    /**
+     * Synchronizes the element's `active` and `checked` state.
+     */
+    _buttonStateChanged: function() {
+      Polymer.PaperRippleBehavior._buttonStateChanged.call(this);
+      if (this.disabled) {
+        return;
+      }
+      if (this.isAttached) {
+        this.checked = this.active;
+      }
+    }
+
+  };
+
+  /** @polymerBehavior Polymer.PaperCheckedElementBehavior */
+  Polymer.PaperCheckedElementBehavior = [
+    Polymer.PaperInkyFocusBehavior,
+    Polymer.IronCheckedElementBehavior,
+    Polymer.PaperCheckedElementBehaviorImpl
+  ];
+
+</script>
+
+
 
 
 
@@ -12911,72 +13322,78 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   
 
-  <style>
-    :host {
-      display: block;
-      position: absolute;
-      border-radius: inherit;
-      overflow: hidden;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-    }
-
-    :host([animating]) {
-      /* This resolves a rendering issue in Chrome (as of 40) where the
-         ripple is not properly clipped by its parent (which may have
-         rounded corners). See: http://jsbin.com/temexa/4
-
-         Note: We only apply this style conditionally. Otherwise, the browser
-         will create a new compositing layer for every ripple element on the
-         page, and that would be bad. */
-      -webkit-transform: translate(0, 0);
-      transform: translate3d(0, 0, 0);
-    }
-
-    :host([noink]) {
-      pointer-events: none;
-    }
-
-    #background,
-    #waves,
-    .wave-container,
-    .wave {
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    #background,
-    .wave {
-      opacity: 0;
-    }
-
-    #waves,
-    .wave {
-      overflow: hidden;
-    }
-
-    .wave-container,
-    .wave {
-      border-radius: 50%;
-    }
-
-    :host(.circle) #background,
-    :host(.circle) #waves {
-      border-radius: 50%;
-    }
-
-    :host(.circle) .wave-container {
-      overflow: hidden;
-    }
-
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        border-radius: inherit;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        /* See PolymerElements/paper-behaviors/issues/34. On non-Chrome browsers,
+         * creating a node (with a position:absolute) in the middle of an event
+         * handler "interrupts" that event handler (which happens when the
+         * ripple is created on demand) */
+        pointer-events: none;
+      }
+
+      :host([animating]) {
+        /* This resolves a rendering issue in Chrome (as of 40) where the
+           ripple is not properly clipped by its parent (which may have
+           rounded corners). See: http://jsbin.com/temexa/4
+
+           Note: We only apply this style conditionally. Otherwise, the browser
+           will create a new compositing layer for every ripple element on the
+           page, and that would be bad. */
+        -webkit-transform: translate(0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+
+      :host([noink]) {
+        pointer-events: none;
+      }
+
+      #background,
+      #waves,
+      .wave-container,
+      .wave {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #background,
+      .wave {
+        opacity: 0;
+      }
+
+      #waves,
+      .wave {
+        overflow: hidden;
+      }
+
+      .wave-container,
+      .wave {
+        border-radius: 50%;
+      }
+
+      :host(.circle) #background,
+      :host(.circle) #waves {
+        border-radius: 50%;
+      }
+
+      :host(.circle) .wave-container {
+        overflow: hidden;
+      }
+    </style>
+
     <div id="background"></div>
     <div id="waves"></div>
   </template>
@@ -12984,20 +13401,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 <script>
   (function() {
     var Utility = {
-      cssColorWithAlpha: function(cssColor, alpha) {
-        var parts = cssColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-
-        if (typeof alpha == 'undefined') {
-          alpha = 1;
-        }
-
-        if (!parts) {
-          return 'rgba(255, 255, 255, ' + alpha + ')';
-        }
-
-        return 'rgba(' + parts[1] + ', ' + parts[2] + ', ' + parts[3] + ', ' + alpha + ')';
-      },
-
       distance: function(x1, y1, x2, y2) {
         var xDelta = (x1 - x2);
         var yDelta = (y1 - y2);
@@ -13005,13 +13408,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
       },
 
-      now: (function() {
-        if (window.performance && window.performance.now) {
-          return window.performance.now.bind(window.performance);
-        }
-
-        return Date.now;
-      })()
+      now: window.performance && window.performance.now ?
+          window.performance.now.bind(window.performance) : Date.now
     };
 
     /**
@@ -13379,6 +13777,17 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           observer: '_holdDownChanged'
         },
 
+        /**
+         * If true, the ripple will not generate a ripple effect
+         * via pointer interaction.
+         * Calling ripple's imperative api like `simulatedRipple` will
+         * still generate the ripple effect.
+         */
+        noink: {
+          type: Boolean,
+          value: false
+        },
+
         _animating: {
           type: Boolean
         },
@@ -13390,6 +13799,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           }
         }
       },
+
+      observers: [
+        '_noinkChanged(noink, isAttached)'
+      ],
 
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
@@ -13411,12 +13824,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       attached: function() {
-        this.listen(this.target, 'up', 'upAction');
-        this.listen(this.target, 'down', 'downAction');
+        this.listen(this.target, 'up', 'uiUpAction');
+        this.listen(this.target, 'down', 'uiDownAction');
+      },
 
-        if (!this.target.hasAttribute('noink')) {
-          this.keyEventTarget = this.target;
-        }
+      detached: function() {
+        this.unlisten(this.target, 'up', 'uiUpAction');
+        this.unlisten(this.target, 'down', 'uiDownAction');
       },
 
       get shouldKeepAnimating () {
@@ -13438,7 +13852,22 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }, 1);
       },
 
-      /** @param {Event=} event */
+      /**
+       * Provokes a ripple down effect via a UI event,
+       * respecting the `noink` property.
+       * @param {Event=} event
+       */
+      uiDownAction: function(event) {
+        if (!this.noink) {
+          this.downAction(event);
+        }
+      },
+
+      /**
+       * Provokes a ripple down effect via a UI event,
+       * *not* respecting the `noink` property.
+       * @param {Event=} event
+       */
       downAction: function(event) {
         if (this.holdDown && this.ripples.length > 0) {
           return;
@@ -13453,7 +13882,22 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      /** @param {Event=} event */
+      /**
+       * Provokes a ripple up effect via a UI event,
+       * respecting the `noink` property.
+       * @param {Event=} event
+       */
+      uiUpAction: function(event) {
+        if (!this.noink) {
+          this.upAction(event);
+        }
+      },
+
+      /**
+       * Provokes a ripple up effect via a UI event,
+       * *not* respecting the `noink` property.
+       * @param {Event=} event
+       */
       upAction: function(event) {
         if (this.holdDown) {
           return;
@@ -13526,100 +13970,99 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       _onEnterKeydown: function() {
-        this.downAction();
-        this.async(this.upAction, 1);
+        this.uiDownAction();
+        this.async(this.uiUpAction, 1);
       },
 
       _onSpaceKeydown: function() {
-        this.downAction();
+        this.uiDownAction();
       },
 
       _onSpaceKeyup: function() {
-        this.upAction();
+        this.uiUpAction();
       },
 
-      _holdDownChanged: function(holdDown) {
-        if (holdDown) {
+      // note: holdDown does not respect noink since it can be a focus based
+      // effect.
+      _holdDownChanged: function(newVal, oldVal) {
+        if (oldVal === undefined) {
+          return;
+        }
+        if (newVal) {
           this.downAction();
         } else {
           this.upAction();
+        }
+      },
+
+      _noinkChanged: function(noink, attached) {
+        if (attached) {
+          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });
   })();
 </script>
 <dom-module id="paper-button" assetpath="bower_components/paper-button/">
+  <template strip-whitespace="">
 
-  <style>
+    <style include="paper-material">
+      :host {
+        display: inline-block;
+        position: relative;
+        box-sizing: border-box;
+        min-width: 5.14em;
+        margin: 0 0.29em;
+        background: transparent;
+        text-align: center;
+        font: inherit;
+        text-transform: uppercase;
+        outline-width: 0;
+        border-radius: 3px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+        padding: 0.7em 0.57em;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      box-sizing: border-box;
-      min-width: 5.14em;
-      margin: 0 0.29em;
-      background: transparent;
-      text-align: center;
-      font: inherit;
-      text-transform: uppercase;
-      outline: none;
-      border-radius: 3px;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        @apply(--paper-button);
+      }
 
-      @apply(--paper-button);
-    }
+      :host([raised].keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-raised-keyboard-focus);
+      }
 
-    .keyboard-focus {
-      font-weight: bold;
-    }
+      :host(:not([raised]).keyboard-focus) {
+        font-weight: bold;
+        @apply(--paper-button-flat-keyboard-focus);
+      }
 
-    :host([disabled]) {
-      background: #eaeaea;
-      color: #a8a8a8;
-      cursor: auto;
-      pointer-events: none;
+      :host([disabled]) {
+        background: #eaeaea;
+        color: #a8a8a8;
+        cursor: auto;
+        pointer-events: none;
 
-      @apply(--paper-button-disabled);
-    }
+        @apply(--paper-button-disabled);
+      }
 
-    :host([noink]) paper-ripple {
-      display: none;
-    }
+      paper-ripple {
+        color: var(--paper-button-ink-color);
+      }
 
-    paper-material {
-      border-radius: inherit;
-    }
-
-    .content > ::content * {
-      text-transform: inherit;
-    }
-
-    .content {
-      padding: 0.7em 0.57em
-    }
-  </style>
-
-  <template>
-
-    <paper-ripple></paper-ripple>
-
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated="">
-      <content></content>
-    </paper-material>
-
+      :host > ::content * {
+        text-transform: inherit;
+      }
+    </style>
+    <content></content>
   </template>
-
 </dom-module>
 
 <script>
-
   Polymer({
-
     is: 'paper-button',
 
     behaviors: [
@@ -13627,7 +14070,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     ],
 
     properties: {
-
       /**
        * If true, the button should be styled with a shadow.
        */
@@ -13641,21 +14083,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this._elevation = 0;
+        this.elevation = 0;
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content ';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
   });
-
 </script>
 <dom-module id="iron-a11y-announcer" assetpath="bower_components/iron-a11y-announcer/">
   <style>
@@ -13667,7 +14100,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   </style>
 
   <template>
-    <span aria-live$="[[mode]]">[[_text]]</span>
+    <div aria-live$="[[mode]]">[[_text]]</div>
   </template>
 
   <script>
@@ -14416,11 +14849,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           observer: '_srcChanged'
         },
-        
+
+        /**
+         * @type {!Polymer.IronMeta}
+         */
         _meta: {
           value: Polymer.Base.create('iron-meta', {type: 'iconset'})
         }
-        
+
       },
 
       _DEFAULT_ICONSET: 'icons',
@@ -14444,12 +14880,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _updateIcon: function() {
         if (this._usesIconset()) {
           if (this._iconsetName) {
-            this._iconset = this._meta.byKey(this._iconsetName);
+            this._iconset = /** @type {?Polymer.Iconset} */ (
+              this._meta.byKey(this._iconsetName));
             if (this._iconset) {
               this._iconset.applyIcon(this, this._iconName, this.theme);
+              this.unlisten(window, 'iron-iconset-added', '_updateIcon');
             } else {
-              this._warn(this._logf('_updateIcon', 'could not find iconset `'
-                + this._iconsetName + '`, did you import the iconset?'));
+              this.listen(window, 'iron-iconset-added', '_updateIcon');
             }
           }
         } else {
@@ -14470,62 +14907,59 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </dom-module>
 <dom-module id="paper-fab" assetpath="bower_components/paper-fab/">
-  <style>
+  <template strip-whitespace="">
+    <style include="paper-material">
 
-    :host {
-      display: inline-block;
-      position: relative;
-      outline: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      cursor: pointer;
+      :host {
+        display: inline-block;
+        position: relative;
+        outline: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        user-select: none;
+        cursor: pointer;
 
-      box-sizing: border-box;
-      min-width: 0;
-      width: 56px;
-      height: 56px;
-      background: var(--paper-fab-background, --accent-color);
-      color: var(--text-primary-color);
-      border-radius: 50%;
-      padding: 16px;
+        box-sizing: border-box;
+        min-width: 0;
+        width: 56px;
+        height: 56px;
+        background: var(--paper-fab-background, --accent-color);
+        color: var(--text-primary-color);
+        border-radius: 50%;
+        padding: 16px;
 
-      z-index: 0;
+        z-index: 0;
 
-      @apply(--paper-fab);
-    }
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+        @apply(--paper-fab);
+      }
 
-    :host([mini]) {
-      width: 40px;
-      height: 40px;
-      padding: 8px;
+      :host([mini]) {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
 
-      @apply(--paper-fab-mini);
-    }
+        @apply(--paper-fab-mini);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-fab-disabled-text, --paper-grey-500);
-      background: var(--paper-fab-disabled-background, --paper-grey-300);
-      @apply(--paper-fab-disabled);
-    }
+      :host([disabled]) {
+        color: var(--paper-fab-disabled-text, --paper-grey-500);
+        background: var(--paper-fab-disabled-background, --paper-grey-300);
+        @apply(--paper-fab-disabled);
+      }
 
-    paper-material {
-      border-radius: inherit;
-      @apply(--layout-fit);
-      @apply(--layout-vertical);
-      @apply(--layout-center-center);
-    }
+      iron-icon {
+        @apply(--paper-fab-iron-icon);
+      }
 
-    .keyboard-focus {
-      background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
-    }
-  </style>
-  <template>
-    <paper-ripple></paper-ripple>
-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated="">
-      <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
-    </paper-material>
+      :host(.keyboard-focus) {
+        background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
+      }
+    </style>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
   </template>
 </dom-module>
 <script>
@@ -14573,16 +15007,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       mini: {
         type: Boolean,
-        value: false
+        value: false,
+        reflectToAttribute: true
       }
-    },
-
-    _computeContentClass: function(receivedFocusFromKeyboard) {
-      var className = 'content';
-      if (receivedFocusFromKeyboard) {
-        className += ' keyboard-focus';
-      }
-      return className;
     }
 
   });
@@ -14706,11 +15133,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 :host {
   display: block;
   margin: 24px 40px;
+  -webkit-overflow-scrolling: touch;
 
   background: var(--paper-dialog-background-color, --primary-background-color);
   color: var(--paper-dialog-color, --primary-text-color);
 
-  @apply(--layout-scroll);
   @apply(--paper-font-body1);
   @apply(--shadow-elevation-16dp);
   @apply(--paper-dialog);
@@ -15115,91 +15542,96 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 })();
 </script>
 <dom-module id="paper-icon-button" assetpath="bower_components/paper-icon-button/">
-  <style>
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
 
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
+        width: 24px;
+        @apply(--paper-icon-button);
+      }
 
-      @apply(--paper-icon-button);
-    }
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
 
-    :host #ink {
-      color: var(--paper-icon-button-ink-color, --primary-text-color);
-      opacity: 0.6;
-    }
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+        @apply(--paper-icon-button-disabled);
+      }
 
-    :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-      pointer-events: none;
-      cursor: auto;
-      @apply(--paper-icon-button-disabled);
-    }
-  </style>
-  <template>
-    <paper-ripple id="ink" class="circle" center=""></paper-ripple>
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
+
+  <script>
+    Polymer({
+      is: 'paper-icon-button',
+
+      hostAttributes: {
+        role: 'button',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.PaperInkyFocusBehavior
+      ],
+
+      properties: {
+        /**
+         * The URL of an image for the icon. If the src property is specified,
+         * the icon property should not be.
+         */
+        src: {
+          type: String
+        },
+
+        /**
+         * Specifies the icon name or index in the set of icons available in
+         * the icon's icon set. If the icon property is specified,
+         * the src property should not be.
+         */
+        icon: {
+          type: String
+        },
+
+        /**
+         * Specifies the alternate text for the button, for accessibility.
+         */
+        alt: {
+          type: String,
+          observer: "_altChanged"
+        }
+      },
+
+      _altChanged: function(newValue, oldValue) {
+        var label = this.getAttribute('aria-label');
+
+        // Don't stomp over a user-set aria-label.
+        if (!label || oldValue == label) {
+          this.setAttribute('aria-label', newValue);
+        }
+      }
+    });
+  </script>
 </dom-module>
-<script>
-  Polymer({
-    is: 'paper-icon-button',
-
-    hostAttributes: {
-      role: 'button',
-      tabindex: '0'
-    },
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    properties: {
-      /**
-       * The URL of an image for the icon. If the src property is specified,
-       * the icon property should not be.
-       */
-      src: {
-        type: String
-      },
-
-      /**
-       * Specifies the icon name or index in the set of icons available in
-       * the icon's icon set. If the icon property is specified,
-       * the src property should not be.
-       */
-      icon: {
-        type: String
-      },
-
-      /**
-       * Specifies the alternate text for the button, for accessibility.
-       */
-      alt: {
-        type: String,
-        observer: "_altChanged"
-      }
-    },
-
-    _altChanged: function(newValue, oldValue) {
-      var label = this.getAttribute('aria-label');
-
-      // Don't stomp over a user-set aria-label.
-      if (!label || oldValue == label) {
-        this.setAttribute('aria-label', newValue);
-      }
-    }
-  });
-</script>
 <dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
   <style>
 /**
@@ -16017,6 +16449,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     .not-visible {
       opacity: 0;
+      cursor: default;
     }
 
     paper-icon-button {
@@ -16064,9 +16497,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
   <template>
 
-    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown" tabindex="-1"></paper-icon-button>
 
-    <div id="tabsContainer" class="flex" on-scroll="_scroll">
+    <div id="tabsContainer" class="flex" on-track="_scroll" on-down="_down">
 
       <div id="tabsContent" class$="[[_computeTabsContentClass(scrollable)]]">
 
@@ -16078,7 +16511,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     </div>
 
-    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown"></paper-icon-button>
+    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown" tabindex="-1"></paper-icon-button>
 
   </template>
 
@@ -16201,6 +16634,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       'iron-deselect': '_onIronDeselect'
     },
 
+    ready: function() {
+      this.setScrollDirection('y', this.$.tabsContainer);
+    },
+
     _computeScrollButtonClass: function(hideThisButton, scrollable, hideScrollButtons) {
       if (!scrollable || hideScrollButtons) {
         return 'hidden';
@@ -16255,24 +16692,43 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       );
     },
 
-    _scroll: function() {
-      var scrollLeft;
 
+    _scroll: function(e, detail) {
       if (!this.scrollable) {
         return;
       }
 
-      scrollLeft = this.$.tabsContainer.scrollLeft;
+      var ddx = (detail && -detail.ddx) || 0;
+      this._affectScroll(ddx);
+    },
+
+    _down: function(e) {
+      // go one beat async to defeat IronMenuBehavior
+      // autorefocus-on-no-selection timeout
+      this.async(function() {
+        if (this._defaultFocusAsync) {
+          this.cancelAsync(this._defaultFocusAsync);
+          this._defaultFocusAsync = null;
+        }
+      }, 1);
+    },
+
+    _affectScroll: function(dx) {
+      this.$.tabsContainer.scrollLeft += dx;
+
+      var scrollLeft = this.$.tabsContainer.scrollLeft;
 
       this._leftHidden = scrollLeft === 0;
       this._rightHidden = scrollLeft === this._tabContainerScrollSize;
     },
 
     _onLeftScrollButtonDown: function() {
+      this._scrollToLeft();
       this._holdJob = setInterval(this._scrollToLeft.bind(this), this._holdDelay);
     },
 
     _onRightScrollButtonDown: function() {
+      this._scrollToRight();
       this._holdJob = setInterval(this._scrollToRight.bind(this), this._holdDelay);
     },
 
@@ -16282,11 +16738,11 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     },
 
     _scrollToLeft: function() {
-      this.$.tabsContainer.scrollLeft -= this._step;
+      this._affectScroll(-this._step);
     },
 
     _scrollToRight: function() {
-      this.$.tabsContainer.scrollLeft += this._step;
+      this._affectScroll(this._step);
     },
 
     _tabChanged: function(tab, old) {
@@ -16378,12 +16834,34 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 <dom-module id="paper-progress" assetpath="bower_components/paper-progress/">
   <style>
     :host {
-      display: inline-block;
+      display: block;
       width: 200px;
-      height: 4px;
+      position: relative;
+      overflow: hidden;
     }
 
-    :host(.transiting) #activeProgress,
+    #progressContainer {
+      position: relative;
+    }
+
+    #progressContainer,
+    /* the stripe for the indeterminate animation*/
+    .indeterminate:after {
+      height: var(--paper-progress-height, 4px);
+    }
+
+    #primaryProgress,
+    #secondaryProgress,
+    .indeterminate:after {
+      @apply(--layout-fit);
+    }
+
+    #progressContainer,
+    .indeterminate:after {
+      background-color: var(--paper-progress-container-color, --google-grey-300);
+    }
+
+    :host(.transiting) #primaryProgress,
     :host(.transiting) #secondaryProgress {
       -webkit-transition-property: -webkit-transform;
       transition-property: transform;
@@ -16401,48 +16879,45 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       transition-delay: var(--paper-progress-transition-delay, 0s);
     }
 
-    #progressContainer {
-      position: relative;
-      height: 100%;
-      overflow: hidden;
-      @apply(--paper-progress-container);
-    }
-    
-    #progressContainer, #indeterminateSplitter {
-      background-color: var(--paper-progress-container-color, --google-grey-300);
-    }
-
-    #activeProgress,
+    #primaryProgress,
     #secondaryProgress {
+      @apply(--layout-fit);
       -webkit-transform-origin: left center;
       transform-origin: left center;
       -webkit-transform: scaleX(0);
       transform: scaleX(0);
+      will-change: transform;
     }
 
-    #activeProgress {
+    #primaryProgress {
       background-color: var(--paper-progress-active-color, --google-green-500);
     }
 
     #secondaryProgress {
+      position: relative;
       background-color: var(--paper-progress-secondary-color, --google-green-100);
     }
-    
-    #indeterminateSplitter {
-      display: none;
+
+    :host([disabled]) #primaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
     }
 
-    #activeProgress.indeterminate {
+    :host([disabled]) #secondaryProgress {
+      background-color: var(--paper-progress-disabled-active-color, --google-grey-300);
+    }
+
+    :host(:not([disabled])) #primaryProgress.indeterminate {
       -webkit-transform-origin: right center;
       transform-origin: right center;
       -webkit-animation: indeterminate-bar 2s linear infinite;
       animation: indeterminate-bar 2s linear infinite;
     }
 
-    #indeterminateSplitter.indeterminate {
-      display: block;
+    :host(:not([disabled])) #primaryProgress.indeterminate:after {
+      content: "";
       -webkit-transform-origin: center center;
       transform-origin: center center;
+
       -webkit-animation: indeterminate-splitter 2s linear infinite;
       animation: indeterminate-splitter 2s linear infinite;
     }
@@ -16512,10 +16987,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     }
   </style>
   <template>
-    <div id="progressContainer" role="progressbar" aria-valuenow$="{{value}}" aria-valuemin$="{{min}}" aria-valuemax$="{{max}}">
-      <div id="secondaryProgress" class="fit"></div>
-      <div id="activeProgress" class="fit"></div>
-      <div id="indeterminateSplitter" class="fit"></div>
+    <div id="progressContainer">
+      <div id="secondaryProgress" hidden$="[[_hideSecondaryProgress(secondaryRatio)]]"></div>
+      <div id="primaryProgress"></div>
     </div>
   </template>
 </dom-module>
@@ -16536,8 +17010,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
        */
       secondaryProgress: {
         type: Number,
-        value: 0,
-        notify: true
+        value: 0
       },
 
       /**
@@ -16546,8 +17019,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       secondaryRatio: {
         type: Number,
         value: 0,
-        readOnly: true,
-        observer: '_secondaryRatioChanged'
+        readOnly: true
       },
 
       /**
@@ -16556,21 +17028,32 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       indeterminate: {
         type: Boolean,
         value: false,
-        notify: true,
         observer: '_toggleIndeterminate'
+      },
+
+      /**
+       * True if the progress is disabled.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: '_disabledChanged'
       }
     },
 
     observers: [
-      '_ratioChanged(ratio)',
-      '_secondaryProgressChanged(secondaryProgress, min, max)'
+      '_progressChanged(secondaryProgress, value, min, max)'
     ],
 
-    _toggleIndeterminate: function() {
+    hostAttributes: {
+      role: 'progressbar'
+    },
+
+    _toggleIndeterminate: function(indeterminate) {
       // If we use attribute/class binding, the animation sometimes doesn't translate properly
       // on Safari 7.1. So instead, we toggle the class here in the update method.
-      this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
-      this.toggleClass('indeterminate', this.indeterminate, this.$.indeterminateSplitter);
+      this.toggleClass('indeterminate', indeterminate, this.$.primaryProgress);
     },
 
     _transformProgress: function(progress, ratio) {
@@ -16578,200 +17061,215 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       progress.style.transform = progress.style.webkitTransform = transform;
     },
 
-    _ratioChanged: function(ratio) {
-      this._transformProgress(this.$.activeProgress, ratio);
+    _mainRatioChanged: function(ratio) {
+      this._transformProgress(this.$.primaryProgress, ratio);
     },
 
-    _secondaryRatioChanged: function(secondaryRatio) {
+    _progressChanged: function(secondaryProgress, value, min, max) {
+      secondaryProgress = this._clampValue(secondaryProgress);
+      value = this._clampValue(value);
+
+      var secondaryRatio = this._calcRatio(secondaryProgress) * 100;
+      var mainRatio = this._calcRatio(value) * 100;
+
+      this._setSecondaryRatio(secondaryRatio);
       this._transformProgress(this.$.secondaryProgress, secondaryRatio);
+      this._transformProgress(this.$.primaryProgress, mainRatio);
+
+      this.secondaryProgress = secondaryProgress;
+
+      this.setAttribute('aria-valuenow', value);
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
     },
 
-    _secondaryProgressChanged: function() {
-      this.secondaryProgress = this._clampValue(this.secondaryProgress);
-      this._setSecondaryRatio(this._calcRatio(this.secondaryProgress) * 100);
+    _disabledChanged: function(disabled) {
+      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    },
+
+    _hideSecondaryProgress: function(secondaryRatio) {
+      return secondaryRatio === 0;
     }
 
   });
 
 </script>
 <dom-module id="paper-input-container" assetpath="bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: block;
-      padding: 8px 0;
-
-      @apply(--paper-input-container);
-    }
-
-    :host[inline] {
-      display: inline-block;
-    }
-
-    :host([disabled]) {
-      pointer-events: none;
-      opacity: 0.33;
-
-      @apply(--paper-input-container-disabled);
-    }
-
-    .floated-label-placeholder {
-      @apply(--paper-font-caption);
-    }
-
-    .underline {
-      position: relative;
-    }
-
-    .focused-line {
-      height: 2px;
-
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-      -webkit-transform: scale3d(0,1,1);
-      transform: scale3d(0,1,1);
-
-      background: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-underline-focus);
-    }
-
-    .underline.is-highlighted .focused-line {
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .underline.is-invalid .focused-line {
-      background: var(--paper-input-container-invalid-color, --google-red-500);
-
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .unfocused-line {
-      height: 1px;
-      background: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-input-container-underline);
-    }
-
-    :host([disabled]) .unfocused-line {
-      border-bottom: 1px dashed;
-      border-color: var(--paper-input-container-color, --secondary-text-color);
-      background: transparent;
-
-      @apply(--paper-input-container-underline-disabled);
-    }
-
-    .label-and-input-container {
-      @apply(--layout-flex);
-      @apply(--layout-relative);
-    }
-
-    .input-content {
-      position: relative;
-      @apply(--layout-horizontal);
-      @apply(--layout-end);
-    }
-
-    .input-content ::content label,
-    .input-content ::content .paper-input-label {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      font: inherit;
-      color: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-label);
-    }
-
-    .input-content.label-is-floating ::content label,
-    .input-content.label-is-floating ::content .paper-input-label {
-      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-      transform: translate3d(0, -75%, 0) scale(0.75);
-      -webkit-transform-origin: left top;
-      transform-origin: left top;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .input-content.label-is-highlighted ::content label,
-    .input-content.label-is-highlighted ::content .paper-input-label {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-label-focus);
-    }
-
-    .input-content.is-invalid ::content label,
-    .input-content.is-invalid ::content .paper-input-label {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .input-content.label-is-hidden ::content label,
-    .input-content.label-is-hidden ::content .paper-input-label {
-      visibility: hidden;
-    }
-
-    .input-content ::content input,
-    .input-content ::content textarea,
-    .input-content ::content iron-autogrow-textarea,
-    .input-content ::content .paper-input-input {
-      position: relative; /* to make a stacking context */
-      outline: none;
-      box-shadow: none;
-      padding: 0;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--paper-input-container-input-color, --primary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-input);
-    }
-
-    ::content [prefix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-prefix);
-    }
-
-    ::content [suffix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-suffix);
-    }
-
-    /* Firefox sets a min-width on the input, which can cause layout issues */
-    .input-content ::content input {
-      min-width: 0;
-    }
-
-    .input-content ::content textarea {
-      resize: none;
-    }
-
-    .add-on-content.is-invalid ::content * {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .add-on-content.is-highlighted ::content * {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        @apply(--paper-input-container);
+      }
+
+      :host[inline] {
+        display: inline-block;
+      }
+
+      :host([disabled]) {
+        pointer-events: none;
+        opacity: 0.33;
+
+        @apply(--paper-input-container-disabled);
+      }
+
+      .floated-label-placeholder {
+        @apply(--paper-font-caption);
+      }
+
+      .underline {
+        position: relative;
+      }
+
+      .focused-line {
+        height: 2px;
+
+        -webkit-transform-origin: center center;
+        transform-origin: center center;
+        -webkit-transform: scale3d(0,1,1);
+        transform: scale3d(0,1,1);
+
+        background: var(--paper-input-container-focus-color, --default-primary-color);
+
+        @apply(--paper-input-container-underline-focus);
+      }
+
+      .underline.is-highlighted .focused-line {
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .underline.is-invalid .focused-line {
+        background: var(--paper-input-container-invalid-color, --google-red-500);
+
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .unfocused-line {
+        height: 1px;
+        background: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-input-container-underline);
+      }
+
+      :host([disabled]) .unfocused-line {
+        border-bottom: 1px dashed;
+        border-color: var(--paper-input-container-color, --secondary-text-color);
+        background: transparent;
+
+        @apply(--paper-input-container-underline-disabled);
+      }
+
+      .label-and-input-container {
+        @apply(--layout-flex);
+        @apply(--layout-relative);
+      }
+
+      .input-content {
+        position: relative;
+        @apply(--layout-horizontal);
+        @apply(--layout-end);
+      }
+
+      .input-content ::content label,
+      .input-content ::content .paper-input-label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        font: inherit;
+        color: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-label);
+      }
+
+      .input-content.label-is-floating ::content label,
+      .input-content.label-is-floating ::content .paper-input-label {
+        -webkit-transform: translateY(-75%) scale(0.75);
+        transform: translateY(-75%) scale(0.75);
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .input-content.label-is-highlighted ::content label,
+      .input-content.label-is-highlighted ::content .paper-input-label {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+
+        @apply(--paper-input-container-label-focus);
+      }
+
+      .input-content.is-invalid ::content label,
+      .input-content.is-invalid ::content .paper-input-label {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .input-content.label-is-hidden ::content label,
+      .input-content.label-is-hidden ::content .paper-input-label {
+        visibility: hidden;
+      }
+
+      .input-content ::content input,
+      .input-content ::content textarea,
+      .input-content ::content iron-autogrow-textarea,
+      .input-content ::content .paper-input-input {
+        position: relative; /* to make a stacking context */
+        outline: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--paper-input-container-input-color, --primary-text-color);
+        -webkit-appearance: none;
+
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-input);
+      }
+
+      ::content [prefix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-prefix);
+      }
+
+      ::content [suffix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-suffix);
+      }
+
+      /* Firefox sets a min-width on the input, which can cause layout issues */
+      .input-content ::content input {
+        min-width: 0;
+      }
+
+      .input-content ::content textarea {
+        resize: none;
+      }
+
+      .add-on-content.is-invalid ::content * {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .add-on-content.is-highlighted ::content * {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+      }
+    </style>
 
     <template is="dom-if" if="[[!noLabelFloat]]">
       <div class="floated-label-placeholder">&nbsp;</div>
@@ -16795,18 +17293,13 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     </div>
 
   </template>
-
 </dom-module>
 
 <script>
-(function() {
-
   Polymer({
-
     is: 'paper-input-container',
 
     properties: {
-
       /**
        * Set to true to disable the floating label. The label disappears when the input value is
        * not null.
@@ -16842,7 +17335,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       /**
        * True if the input is invalid. This property is set automatically when the input value
-       * changes if auto-validating, or when the `iron-input-valid` event is heard from a child.
+       * changes if auto-validating, or when the `iron-input-validate` event is heard from a child.
        */
       invalid: {
         observer: '_invalidChanged',
@@ -16904,7 +17397,6 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
           return this._onValueChanged.bind(this);
         }
       }
-
     },
 
     listeners: {
@@ -17046,9 +17538,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
           }
           // The label might have a horizontal offset if a prefix element exists
           // which needs to be undone when displayed as a floating label.
-          if (this.$.prefix && label && label.offsetParent &&
-              Polymer.dom(this.$.prefix).getDistributedNodes().length > 0) {
-           label.style.left = -label.offsetParent.offsetLeft + 'px';
+          if (Polymer.dom(this.$.prefix).getDistributedNodes().length > 0 &&
+              label && label.offsetParent) {
+            label.style.left = -label.offsetParent.offsetLeft + 'px';
           }
         } else {
           // When the label is not floating, it should overlap the input element.
@@ -17083,46 +17575,35 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       }
       return cls;
     }
-
   });
-
-})();
 </script>
 <dom-module id="paper-input-error" assetpath="bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      visibility: hidden;
-      float: left;
-
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-error);
-    }
-
-    :host([invalid]) {
-      visibility: visible;
-    };
-
-  </style>
-
   <template>
 
+    <style>
+      :host {
+        display: inline-block;
+        visibility: hidden;
+
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-error);
+        position: absolute;
+      }
+
+      :host([invalid]) {
+        visibility: visible;
+      };
+    </style>
+
     <content></content>
-
+    
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input-error',
 
     behaviors: [
@@ -17130,7 +17611,6 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     ],
 
     properties: {
-
       /**
        * True if the error is showing.
        */
@@ -17139,46 +17619,33 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
         reflectToAttribute: true,
         type: Boolean
       }
-
     },
 
     update: function(state) {
       this._setInvalid(state.invalid);
     }
-
-  })
-
-})();
-
+  });
 </script>
 <dom-module id="paper-input-char-counter" assetpath="bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      float: right;
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-char-counter);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        float: right;
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-char-counter);
+      }
+    </style>
 
     <span>[[_charCounterStr]]</span>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input-char-counter',
 
     behaviors: [
@@ -17186,12 +17653,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     ],
 
     properties: {
-
       _charCounterStr: {
         type: String,
         value: '0'
       }
-
     },
 
     update: function(state) {
@@ -17209,39 +17674,32 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       }
       this._charCounterStr = str;
     }
-
   });
-
-})();
-
 </script>
 <dom-module id="paper-input" assetpath="bower_components/paper-input/">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    input::-webkit-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input::-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-ms-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+      }
+
+      input::-webkit-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input::-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-ms-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+    </style>
 
     <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
@@ -17249,7 +17707,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" autosave$="[[autosave]]" ,="" results$="[[results]]">
 
       <content select="[suffix]"></content>
 
@@ -17264,15 +17722,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input',
 
     behaviors: [
@@ -17280,281 +17733,255 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       Polymer.PaperInputBehavior,
       Polymer.IronControlState
     ]
-
-  })
-
-})();
-
+  });
 </script>
 <dom-module id="paper-slider" assetpath="bower_components/paper-slider/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        width: 200px;
+        cursor: default;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
+        --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+      }
 
-  <style>
-/**
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
+      /* focus shows the ripple */
+      :host(:focus) {
+        outline: none;
+      }
 
-:host {
-  display: inline-block;
-  width: 200px;
-  cursor: default;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
+      #sliderContainer {
+        position: relative;
+        width: calc(100% - 32px);
+        height: 32px;
+      }
 
-:host(:not([disabled])) #sliderBar {
-  --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
-}
+      #sliderContainer:focus {
+        outline: 0;
+      }
 
-:host(:not([disabled])) #sliderBar {
-  --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
-}
+      #sliderContainer.editable {
+        float: left;
+        width: calc(100% - 72px);
+        margin: 12px 0;
+      }
 
-:host([disabled]) #sliderBar {
-  --paper-progress-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-}
+      .bar-container {
+        position: absolute;
+        top: 0;
+        left: 16px;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
 
-:host([disabled]) #sliderBar {
-  --paper-progress-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
-}
+      .ring > .bar-container {
+        left: 20px;
+        width: calc(100% - 4px);
+        transition: left 0.18s ease, width 0.18s ease;
+      }
 
-:host(:focus) {
-  outline: none;
-}
+      .ring.expand:not(.pin) > .bar-container {
+        left: 30px;
+        width: calc(100% - 14px);
+      }
 
-#sliderContainer {
-  position: relative;
-  width: calc(100% - 32px);
-  height: 32px;
-}
+      .ring.expand.dragging > .bar-container {
+        transition: none;
+      }
 
-#sliderContainer.editable {
-  float: left;
-  width: calc(100% - 72px);
-  margin: 12px 0;
-}
+      #sliderBar {
+        position: absolute;
+        top: 15px;
+        left: 0;
+        width: 100%;
+        padding: 8px 0;
+        margin: -8px 0;
+        background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-height: var(--paper-slider-height, 2px);
+      }
 
-.bar-container {
-  position: absolute;
-  top: 0;
-  left: 16px;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
+      .ring #sliderBar {
+        left: -4px;
+        width: calc(100% + 4px);
+      }
 
-.ring > .bar-container {
-  left: 20px;
-  width: calc(100% - 4px);
-  transition: left 0.18s ease, width 0.18s ease;
-}
+      .ring.expand:not(.pin) #sliderBar {
+        left: -14px;
+        width: calc(100% + 14px);
+      }
 
-.ring.expand:not(.pin) > .bar-container {
-  left: 30px;
-  width: calc(100% - 14px);
-}
+      .slider-markers {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        height: 2px;
+        width: calc(100% + 2px);
+        box-sizing: border-box;
+        pointer-events: none;
+      }
 
-.ring.expand.dragging > .bar-container {
-  transition: none;
-}
+      .slider-markers::after,
+      .slider-marker::after {
+        content: "";
+        display: block;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: black;
+      }
 
-#sliderBar {
-  position: absolute;
-  top: 15px;
-  left: 0;
-  height: 2px;
-  width: 100%;
-  padding: 8px 0;
-  margin: -8px 0;
-  background-color: var(--paper-slider-bar-color, transparent);
-}
+      #sliderKnob {
+        @apply(--layout-center-justified);
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
 
-.ring #sliderBar {
-  left: -4px;
-  width: calc(100% + 4px);
-}
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 32px;
+        height: 32px;
+      }
 
-.ring.expand:not(.pin) #sliderBar {
-  left: -14px;
-  width: calc(100% + 14px);
-}
+      .transiting > #sliderKnob {
+        transition: left 0.08s ease;
+      }
 
-.slider-markers {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  height: 2px;
-  width: calc(100% + 2px);
-  box-sizing: border-box;
-  pointer-events: none;
-}
+      #sliderKnob:focus {
+        outline: none;
+      }
 
-.slider-markers::after,
-.slider-marker::after {
-  content: "";
-  display: block;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background-color: black;
-}
+      #sliderKnob.dragging {
+        transition: none;
+      }
 
-#sliderKnob {
-  @apply(--layout-center-justified);
-  @apply(--layout-center);
-  @apply(--layout-horizontal);
+      .snaps > #sliderKnob.dragging {
+        transition: -webkit-transform 0.08s ease;
+        transition: transform 0.08s ease;
+      }
 
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 32px;
-  height: 32px;
-}
+      #sliderKnobInner {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--paper-slider-knob-color, --google-blue-700);
 
-.transiting > #sliderKnob {
-  transition: left 0.08s ease;
-}
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
 
-#sliderKnob:focus {
-  outline: none;
-}
+        transition-property: height, width, background-color, border;
+        transition-duration: 0.1s;
+        transition-timing-function: ease;
+      }
 
-#sliderKnob.dragging {
-  transition: none;
-}
+      .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+        width: 100%;
+        height: 100%;
 
-.snaps > #sliderKnob.dragging {
-  transition: -webkit-transform 0.08s ease;
-  transition: transform 0.08s ease;
-}
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
 
-#sliderKnobInner {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: var(--paper-slider-knob-color, --google-blue-700);
+      .ring > #sliderKnob > #sliderKnobInner {
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+      }
 
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
+      #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-color, --google-blue-700);
+      }
 
-  transition-property: height, width, background-color, border;
-  transition-duration: 0.1s;
-  transition-timing-function: ease;
-}
+      .pin > #sliderKnob > #sliderKnobInner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 26px;
+        height: 26px;
+        margin-left: 3px;
+        border-radius: 50% 50% 50% 0;
 
-.expand:not(.pin) > #sliderKnob > #sliderKnobInner {
-  width: 100%;
-  height: 100%;
+        -webkit-transform: rotate(-45deg) scale(0) translate(0);
+        transform: rotate(-45deg) scale(0) translate(0);
+      }
 
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
+      #sliderKnobInner::before,
+      #sliderKnobInner::after {
+        transition: -webkit-transform .2s ease, background-color .18s ease;
+        transition: transform .2s ease, background-color .18s ease;
+      }
 
-.ring > #sliderKnob > #sliderKnobInner {
-  background-color: var(--paper-slider-knob-start-color, transparent);
-  border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
-}
+      .pin.ring > #sliderKnob > #sliderKnobInner::before {
+        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+      }
 
-#sliderKnobInner::before {
-  background-color: var(--paper-slider-pin-color, --google-blue-700);
-}
+      .pin.expand > #sliderKnob > #sliderKnobInner::before {
+        -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
+        transform: rotate(-45deg) scale(1) translate(17px, -17px);
+      }
 
-.pin > #sliderKnob > #sliderKnobInner::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 26px;
-  height: 26px;
-  margin-left: 3px;
-  border-radius: 50% 50% 50% 0;
+      .pin > #sliderKnob > #sliderKnobInner::after {
+        content: attr(value);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 26px;
+        text-align: center;
+        color: var(--paper-slider-font-color, #fff);
+        font-size: 10px;
 
-  -webkit-transform: rotate(-45deg) scale(0) translate(0);
-  transform: rotate(-45deg) scale(0) translate(0);
-}
+        -webkit-transform: scale(0) translate(0);
+        transform: scale(0) translate(0);
+      }
 
-#sliderKnobInner::before,
-#sliderKnobInner::after {
-  transition: -webkit-transform .2s ease, background-color .18s ease;
-  transition: transform .2s ease, background-color .18s ease;
-}
+      .pin.expand > #sliderKnob > #sliderKnobInner::after {
+        -webkit-transform: scale(1) translate(0, -17px);
+        transform: scale(1) translate(0, -17px);
+      }
 
-.pin.ring > #sliderKnob > #sliderKnobInner::before {
-  background-color: var(--paper-slider-pin-start-color, #c8c8c8);
-}
+      /* paper-input */
+      .slider-input {
+        width: 50px;
+        float: right;
+        overflow: hidden;
+        --paper-input-container-input: {
+          text-align: center;
+        };
+      }
 
-.pin.expand > #sliderKnob > #sliderKnobInner::before {
-  -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
-  transform: rotate(-45deg) scale(1) translate(17px, -17px);
-}
+      /* disabled state */
+      #sliderContainer.disabled {
+        pointer-events: none;
+      }
 
-.pin > #sliderKnob > #sliderKnobInner::after {
-  content: attr(value);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 26px;
-  text-align: center;
-  color: var(--paper-slider-font-color, #fff);
-  font-size: 10px;
+      .disabled > #sliderKnob > #sliderKnobInner {
+        width: 8px;
+        height: 8px;
+        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+      }
 
-  -webkit-transform: scale(0) translate(0);
-  transform: scale(0) translate(0);
-}
+      .disabled.ring > #sliderKnob > #sliderKnobInner {
+        background-color: transparent;
+      }
 
-.pin.expand > #sliderKnob > #sliderKnobInner::after {
-  -webkit-transform: scale(1) translate(0, -17px);
-  transform: scale(1) translate(0, -17px);
-}
+      paper-ripple {
+        color: var(--paper-slider-knob-color, --google-blue-700);
+      }
 
-/* editable: paper-input */
-.slider-input {
-  width: 40px;
-  float: right;
-  overflow: hidden;
-}
-
-.slider-input {
-  --paper-input-container-input: {
-      text-align: center;
-  };
-}
-
-/* disabled state */
-#sliderContainer.disabled {
-  pointer-events: none;
-}
-
-.disabled > #sliderKnob > #sliderKnobInner {
-  width: 8px;
-  height: 8px;
-  background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
-}
-
-.disabled.ring > #sliderKnob > #sliderKnobInner {
-  background-color: transparent;
-}
-
-paper-ripple {
-  color: var(--paper-slider-knob-color, --google-blue-700);
-}
-
-</style>
-
-  <template>
+    </style>
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
-        <paper-progress class$="[[_getProgressClass(transiting)]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
+        <paper-progress disabled$="[[disabled]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
         </paper-progress>
       </div>
 
@@ -17567,18 +17994,14 @@ paper-ripple {
       </template>
 
       <div id="sliderKnob" class="center-justified center horizontal layout" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
-          <paper-ripple center="" id="ink" class="circle" hidden$="[[!receivedFocusFromKeyboard]]">
-          </paper-ripple>
           <div id="sliderKnobInner" value$="[[pinValue]]"></div>
       </div>
     </div>
-
     <template is="dom-if" if="[[editable]]">
-      <paper-input id="input" class="slider-input" disabled$="[[disabled]]" on-change="_inputChange" value="[[_fixForInput(immediateValue)]]">
+      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
       </paper-input>
     </template>
   </template>
-
 </dom-module>
 
 <script>
@@ -17640,7 +18063,8 @@ paper-ripple {
       immediateValue: {
         type: Number,
         value: 0,
-        readOnly: true
+        readOnly: true,
+        notify: true
       },
 
       /**
@@ -17686,8 +18110,6 @@ paper-ripple {
 
     observers: [
       '_updateKnob(value, min, max, snaps, step)',
-      '_minChanged(min)',
-      '_maxChanged(max)',
       '_valueChanged(value)',
       '_immediateValueChanged(immediateValue)'
     ],
@@ -17704,7 +18126,6 @@ paper-ripple {
 
     ready: function() {
       // issue polymer/polymer#1305
-
       this.async(function() {
         this._updateKnob(this.value);
       }, 1);
@@ -17726,20 +18147,15 @@ paper-ripple {
       this.value = this._clampValue(this.value - this.step);
     },
 
-    _updateKnob: function(value) {
+    _updateKnob: function(value, min, max, snaps, step) {
+      this.setAttribute('aria-valuemin', min);
+      this.setAttribute('aria-valuemax', max);
+      this.setAttribute('aria-valuenow', value);
+
       this._positionKnob(this._calcRatio(value));
     },
 
-    _minChanged: function() {
-      this.setAttribute('aria-valuemin', this.min);
-    },
-
-    _maxChanged: function() {
-      this.setAttribute('aria-valuemax', this.max);
-    },
-
     _valueChanged: function() {
-      this.setAttribute('aria-valuenow', this.value);
       this.fire('value-change');
     },
 
@@ -17753,11 +18169,6 @@ paper-ripple {
 
     _secondaryProgressChanged: function() {
       this.secondaryProgress = this._clampValue(this.secondaryProgress);
-    },
-
-    _fixForInput: function(immediateValue) {
-      // paper-input/issues/114
-      return this.immediateValue.toString();
     },
 
     _expandKnob: function() {
@@ -17775,11 +18186,6 @@ paper-ripple {
       this._setRatio(this._calcRatio(this.immediateValue));
 
       this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _inputChange: function() {
-      this.value = this.$$('#input').value;
-      this.fire('change');
     },
 
     _calcKnobPosition: function(ratio) {
@@ -17808,7 +18214,6 @@ paper-ripple {
       this._minx = - this._startx;
       this._maxx = this._w - this._startx;
       this.$.sliderKnob.classList.add('dragging');
-
       this._setDragging(true);
     },
 
@@ -17840,6 +18245,9 @@ paper-ripple {
       s.transform = s.webkitTransform = '';
 
       this.fire('change');
+    },
+    _setPinValue: function (value) {
+        this.pinValue = value;
     },
 
     _knobdown: function(event) {
@@ -17903,46 +18311,73 @@ paper-ripple {
     },
 
     _getClassNames: function() {
-      var classes = {};
-
-      classes.disabled = this.disabled;
-      classes.pin = this.pin;
-      classes.snaps = this.snaps;
-      classes.ring = this.immediateValue <= this.min;
-      classes.expand = this.expand;
-      classes.dragging = this.dragging;
-      classes.transiting = this.transiting;
-      classes.editable = this.editable;
-
-      return this._mergeClasses(classes);
-    },
-
-    _getProgressClass: function() {
       return this._mergeClasses({
-        transiting: this.transiting
+        disabled: this.disabled,
+        pin: this.pin,
+        snaps: this.snaps,
+        ring: this.immediateValue <= this.min,
+        expand: this.expand,
+        dragging: this.dragging,
+        transiting: this.transiting,
+        editable: this.editable
       });
     },
 
     _incrementKey: function(event) {
-      if (event.detail.key === 'end') {
-        this.value = this.max;
-      } else {
-        this.increment();
+      if (!this.disabled) {
+        if (event.detail.key === 'end') {
+          this.value = this.max;
+        } else {
+          this.increment();
+        }
+        this.fire('change');
       }
-      this.fire('change');
     },
 
     _decrementKey: function(event) {
-      if (event.detail.key === 'home') {
-        this.value = this.min;
-      } else {
-        this.decrement();
+      if (!this.disabled) {
+        if (event.detail.key === 'home') {
+          this.value = this.min;
+        } else {
+          this.decrement();
+        }
+        this.fire('change');
       }
+    },
+
+    _changeValue: function(event) {
+      this.value = event.target.value;
       this.fire('change');
     },
-    _setPinValue: function (value) {
-        this.pinValue = value;
+
+    _inputKeyDown: function(event) {
+      event.stopPropagation();
+    },
+
+    // create the element ripple inside the `sliderKnob`
+    _createRipple: function() {
+      this._rippleContainer = this.$.sliderKnob;
+      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+    },
+
+    // Hide the ripple when user is not interacting with keyboard.
+    // This behavior is different from other ripple-y controls, but is
+    // according to spec: https://www.google.com/design/spec/components/sliders.html
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
+      }
+      if (this.hasRipple()) {
+        // note, ripple must be un-hidden prior to setting `holdDown`
+        if (receivedFocusFromKeyboard) {
+          this._ripple.removeAttribute('hidden');
+        } else {
+          this._ripple.setAttribute('hidden', '');
+        }
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
     }
+
   });
 
   /**
@@ -18073,6 +18508,7 @@ paper-ripple {
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      @apply(--iron-autogrow-textarea);
     }
 
     ::content textarea:invalid {
@@ -18086,7 +18522,7 @@ paper-ripple {
 
     
     <div class="textarea-container fit">
-      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
+      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" disabled$="[[disabled]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
     </div>
   </template>
 </dom-module>
@@ -18222,6 +18658,36 @@ paper-ripple {
     },
 
     /**
+     * Returns textarea's selection start.
+     * @type Number
+     */
+    get selectionStart() {
+      return this.$.textarea.selectionStart;
+    },
+
+    /**
+     * Returns textarea's selection end.
+     * @type Number
+     */
+    get selectionEnd() {
+      return this.$.textarea.selectionEnd;
+    },
+
+    /**
+     * Sets the textarea's selection start.
+     */
+    set selectionStart(value) {
+      this.$.textarea.selectionStart = value;
+    },
+
+    /**
+     * Sets the textarea's selection end.
+     */
+    set selectionEnd(value) {
+      this.$.textarea.selectionEnd = value;
+    },
+
+    /**
      * Returns true if `value` is valid. The validator provided in `validator`
      * will be used first, if it exists; otherwise, the `textarea`'s validity
      * is used.
@@ -18245,32 +18711,27 @@ paper-ripple {
       return valid;
     },
 
-    _update: function() {
-      this.$.mirror.innerHTML = this._valueForMirror();
-
-      var textarea = this.textarea;
-      // If the value of the textarea was updated imperatively, then we
-      // need to manually update bindValue as well.
-      if (textarea && this.bindValue != textarea.value) {
-        this.bindValue = textarea.value;
-      }
-    },
-
     _bindValueChanged: function() {
       var textarea = this.textarea;
       if (!textarea) {
         return;
       }
 
-      textarea.value = this.bindValue;
-      this._update();
+      // If the bindValue changed manually, then we need to also update
+      // the underlying textarea's value. Otherwise this change was probably
+      // generated from the _onInput handler, and the two values are already
+      // the same.
+      if (textarea.value !== this.bindValue) {
+        textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+      }
+
+      this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
     },
 
     _onInput: function(event) {
       this.bindValue = event.path ? event.path[0].value : event.target.value;
-      this._update();
     },
 
     _constrain: function(tokens) {
@@ -18309,16 +18770,16 @@ paper-ripple {
 <dom-module id="paper-textarea" assetpath="bower_components/paper-input/">
   <template>
     <style>
-    :host {
-      display: block;
-    }
+      :host {
+        display: block;
+      }
     </style>
 
     <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <iron-autogrow-textarea id="input" class="paper-input-input" bind-value="{{value}}" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" maxlength$="[[maxlength]]" autocapitalize$="[[autocapitalize]]" rows$="[[rows]]" max-rows$="[[maxRows]]"></iron-autogrow-textarea>
+      <iron-autogrow-textarea id="input" class="paper-input-input" bind-value="{{value}}" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" maxlength$="[[maxlength]]" autocapitalize$="[[autocapitalize]]" rows$="[[rows]]" max-rows$="[[maxRows]]" on-change="_onChange"></iron-autogrow-textarea>
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
@@ -18331,15 +18792,10 @@ paper-ripple {
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-textarea',
 
     behaviors: [
@@ -18347,7 +18803,6 @@ paper-ripple {
     ],
 
     properties: {
-
       _ariaLabelledBy: {
         observer: '_ariaLabelledByChanged',
         type: String
@@ -18381,8 +18836,7 @@ paper-ripple {
       maxRows: {
        type: Number,
        value: 0
-      },
-
+      }
     },
 
     _ariaLabelledByChanged: function(ariaLabelledBy) {
@@ -18392,14 +18846,10 @@ paper-ripple {
     _ariaDescribedByChanged: function(ariaDescribedBy) {
       this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
     }
-
   });
-
-})();
-
 </script>
 <dom-module id="paper-checkbox" assetpath="bower_components/paper-checkbox/">
-  <template>
+  <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -18551,13 +19001,12 @@ paper-ripple {
     </style>
 
     <div id="checkboxContainer">
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
       <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
     </div>
 
-    <div id="checkboxLabel" aria-hidden="true"><content></content></div>
+    <div id="checkboxLabel"><content></content></div>
   </template>
 
   <script>
@@ -18565,8 +19014,7 @@ paper-ripple {
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -18593,37 +19041,6 @@ paper-ripple {
         }
       },
 
-      attached: function() {
-        this._isReady = true;
-
-        // Don't stomp over a user-set aria-label.
-        if (!this.getAttribute('aria-label')) {
-          this.updateAriaLabel();
-        }
-      },
-
-      /**
-       * Update the checkbox aria-label. This is a temporary workaround not
-       * being able to observe changes in <content>
-       * (see: https://github.com/Polymer/polymer/issues/1773)
-       *
-       * Call this if you manually change the contents of the checkbox
-       * and want the aria-label to match the new contents.
-       */
-      updateAriaLabel: function() {
-        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
-      },
-
-      // button-behavior hook
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
-      },
-
       _computeCheckboxClass: function(checked, invalid) {
         var className = '';
         if (checked) {
@@ -18637,258 +19054,257 @@ paper-ripple {
 
       _computeCheckmarkClass: function(checked) {
         return checked ? '' : 'hidden';
+      },
+
+      // create ripple inside the checkboxContainer
+      _createRipple: function() {
+        this._rippleContainer = this.$.checkboxContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
+
+    });
+  </script>
+</dom-module>
+<dom-module id="paper-item-shared-styles" assetpath="bower_components/paper-item/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        min-height: var(--paper-item-min-height, 48px);
+        padding: 0px 16px;
+      }
+
+      :host > ::content > *:not(:first-child):not(:last-child) {
+        margin-right: 16px;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-item" assetpath="bower_components/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
+    <content></content>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'paper-item',
+
+      hostAttributes: {
+        role: 'listitem',
+        tabindex: '0'
+      },
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ]
     });
   </script>
 </dom-module>
 <dom-module id="paper-icon-item" assetpath="bower_components/paper-item/">
-
-  <style>
-/*
-    @license
-    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-    Code distributed by Google as part of the polymer project is also
-    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
-:host {
-  display: block;
-  min-height: var(--paper-item-min-height, 48px);
-  padding: 0px 16px;
-}
-
-:host > ::content > *:not(:first-child):not(:last-child) {
-  margin-right: 16px;
-}
-
-</style>
-
-  <style>
-
-    :host {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--paper-font-subhead);
-
-      @apply(--paper-item);
-      @apply(--paper-icon-item);
-    }
-
-    .content-icon {
-      width: var(--paper-item-icon-width, 56px);
-    }
-
-  </style>
-
   <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+        @apply(--paper-icon-item);
+      }
+
+      .content-icon {
+        width: var(--paper-item-icon-width, 56px);
+      }
+    </style>
+
     <div id="contentIcon" class="content-icon layout horizontal center">
       <content select="[item-icon]"></content>
     </div>
     <content></content>
   </template>
 
+  <script>
+    Polymer({
+      is: 'paper-icon-item',
+
+      hostAttributes: {
+        'role': 'listitem',
+        'tabindex': '0'
+      },
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ]
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-icon-item',
-
-    hostAttributes: {
-      'role': 'listitem'
-    }
-
-  });
-
-})();
-
-</script>
 <dom-module id="paper-item-body" assetpath="bower_components/paper-item/">
-
-  <style>
-
-    :host {
-      overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
-      @apply(--layout-vertical);
-      @apply(--layout-center-justified);
-      @apply(--layout-flex);
-    }
-
-    :host([two-line]) {
-      min-height: var(--paper-item-body-two-line-min-height, 72px);
-    }
-
-    :host([three-line]) {
-      min-height: var(--paper-item-body-three-line-min-height, 88px);
-    }
-
-    :host > ::content > * {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    :host > ::content [secondary] {
-      color: var(--paper-item-body-secondary-color, --secondary-text-color);
-      @apply(--paper-font-body1);
-
-      @apply(--paper-item-body-secondary);
-    }
-
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        @apply(--layout-flex);
+      }
+
+      :host([two-line]) {
+        min-height: var(--paper-item-body-two-line-min-height, 72px);
+      }
+
+      :host([three-line]) {
+        min-height: var(--paper-item-body-three-line-min-height, 88px);
+      }
+
+      :host > ::content > * {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      :host > ::content [secondary] {
+        color: var(--paper-item-body-secondary-color, --secondary-text-color);
+        @apply(--paper-font-body1);
+
+        @apply(--paper-item-body-secondary);
+      }
+    </style>
+
     <content></content>
   </template>
 
+  <script>
+    Polymer({
+      is: 'paper-item-body'
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-item-body'
-
-  });
-
-})();
-
-</script>
 <dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        white-space: nowrap;
+      }
 
-  <style>
-/**
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
+      :host(:focus) {
+        outline: none;
+      }
 
-:host {
-  display: inline-block;
-  white-space: nowrap;
-}
+      #radioContainer {
+        display: inline-block;
+        position: relative;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        vertical-align: middle;
+      }
 
-:host(:focus) {
-  outline: none;
-}
+      :host #ink {
+        position: absolute;
+        top: -16px;
+        left: -16px;
+        width: 48px;
+        height: 48px;
+        color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
+        opacity: 0.6;
+        pointer-events: none;
+      }
 
-#radioContainer {
-  display: inline-block;
-  position: relative;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  vertical-align: middle;
-}
+      :host #ink[checked] {
+        color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
+      }
 
-:host #ink {
-  position: absolute;
-  top: -16px;
-  left: -16px;
-  width: 48px;
-  height: 48px;
-  color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
-  opacity: 0.6;
-  pointer-events: none;
-}
+      :host #offRadio {
+        position: absolute;
+        box-sizing: content-box;
+        top: 0px;
+        left: 0px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: solid 2px;
+        background-color: var(--paper-radio-button-unchecked-background-color, transparent);
+        border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        transition: border-color 0.28s;
+      }
 
-:host #ink[checked] {
-  color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
-}
+      :host #onRadio {
+        position: absolute;
+        box-sizing: content-box;
+        top: 4px;
+        left: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        -webkit-transform: scale(0);
+        transform: scale(0);
+        transition: -webkit-transform ease 0.28s;
+        transition: transform ease 0.28s;
+      }
 
-:host #offRadio {
-  position: absolute;
-  box-sizing: content-box;
-  top: 0px;
-  left: 0px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: solid 2px;
-  background-color: var(--paper-radio-button-unchecked-background-color, transparent);
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  transition: border-color 0.28s;
-}
+      :host([checked]) #offRadio {
+        border-color: var(--paper-radio-button-checked-color, --default-primary-color);
+      }
 
-:host #onRadio {
-  position: absolute;
-  box-sizing: content-box;
-  top: 4px;
-  left: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--paper-radio-button-checked-color, --default-primary-color);
-  -webkit-transform: scale(0);
-  transform: scale(0);
-  transition: -webkit-transform ease 0.28s;
-  transition: transform ease 0.28s;
-}
+      :host([checked]) #onRadio {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+      }
 
-:host([checked]) #offRadio {
-  border-color: var(--paper-radio-button-checked-color, --default-primary-color);
-}
+      #radioLabel {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        white-space: normal;
+        pointer-events: none;
+        color: var(--paper-radio-button-label-color, --primary-text-color);
+      }
 
-:host([checked]) #onRadio {
-  -webkit-transform: scale(1);
-  transform: scale(1);
-}
+      #radioLabel[hidden] {
+        display: none;
+      }
 
-#radioLabel {
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 10px;
-  white-space: normal;
-  pointer-events: none;
-  color: var(--paper-radio-button-label-color, --primary-text-color);
-}
+      /* disabled state */
+      :host([disabled]) {
+        pointer-events: none;
+      }
 
-#radioLabel[hidden] {
-  display: none;
-}
+      :host([disabled]) #offRadio {
+        border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        opacity: 0.5;
+      }
 
-/* disabled state */
-:host([disabled]) {
-  pointer-events: none;
-}
+      :host([disabled][checked]) #onRadio {
+        background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        opacity: 0.5;
+      }
 
-:host([disabled]) #offRadio {
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled][checked]) #onRadio {
-  background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled]) #radioLabel {
-  /* slightly darker than the button, so that it's readable */
-  opacity: 0.65;
-}
-
-</style>
-
-  <template>
+      :host([disabled]) #radioLabel {
+        /* slightly darker than the button, so that it's readable */
+        opacity: 0.65;
+      }
+    </style>
 
     <div id="radioContainer">
       <div id="offRadio"></div>
       <div id="onRadio"></div>
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
     </div>
 
     <div id="radioLabel"><content></content></div>
@@ -18900,8 +19316,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior,
-        Polymer.IronCheckedElementBehavior
+        Polymer.PaperCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -18923,45 +19338,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @event iron-change
          */
 
-         ariaActiveAttribute: {
-           value: 'aria-checked'
-         }
-      },
-
-      attached: function() {
-        this._isReady = true;
-
-        // Don't stomp over a user-set aria-label.
-        if (!this.getAttribute('aria-label')) {
-          this.updateAriaLabel();
+        ariaActiveAttribute: {
+          type: String,
+          value: 'aria-checked'
         }
       },
 
-      /**
-       * Update the checkbox aria-label. This is a temporary workaround not
-       * being able to observe changes in <content>
-       * (see: https://github.com/Polymer/polymer/issues/1773)
-       *
-       * Call this if you manually change the contents of the checkbox
-       * and want the aria-label to match the new contents.
-       */
-      updateAriaLabel: function() {
-        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
-      },
-
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
+      // create the element ripple inside the `radioContainer`
+      _createRipple: function() {
+        this._rippleContainer = this.$.radioContainer;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
     })
   </script>
 
 </dom-module>
-<dom-module name="paper-radio-group">
+<dom-module id="paper-radio-group" assetpath="bower_components/paper-radio-group/">
   <style>
     :host {
       display: inline-block;
@@ -18994,6 +19386,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     properties: {
       /**
+       * Fired when the radio group selection changes.
+       *
+       * @event paper-radio-group-changed
+       */
+
+      /**
        * Overriden from Polymer.IronSelectableBehavior
        */
       attrForSelected: {
@@ -19015,6 +19413,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       selectable: {
         type: String,
         value: 'paper-radio-button'
+      },
+
+      /**
+       * If true, radio-buttons can be deselected
+       */
+      allowEmptySelection: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -19030,10 +19436,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (this.selected) {
         var oldItem = this._valueToItem(this.selected);
 
-        // Do not allow unchecking the selected item.
         if (this.selected == value) {
-          oldItem.checked = true;
-          return;
+          // If deselecting is allowed we'll have to apply an empty selection.
+          // Otherwise, we should force the selection to stay and make this
+          // action a no-op.
+          if (this.allowEmptySelection) {
+            value = '';
+          } else {
+            oldItem.checked = true;
+            return;
+          }
         }
 
         if (oldItem)
@@ -19079,11 +19491,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <svg>
         <defs>
             <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
+            <g id="add-circle"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"></path></g>
+            <g id="clear-all"><path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z"></path></g>
             <g id="airplay"><defs><path id="a" d="M0 0h24v24H0V0z"></path></defs><defs><path id="c" d="M0 0h24v24H0V0z"></path></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"></use></clipPath><clipPath id="d" clip-path="url(#b)"><use xlink:href="#c" overflow="visible"></use></clipPath><path d="M6 22h12l-6-6zM21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v-2H3V5h18v12h-4v2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" clip-path="url(#d)"></path></g>
+            <g id="call-merge"><path d="M17 20.41L18.41 19 15 15.59 13.59 17 17 20.41zM7.5 8H11v5.59L5.59 19 7 20.41l6-6V8h3.5L12 3.5 7.5 8z"></path></g>
             <g id="album"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path></g>
             <g id="check"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></g>
             <g id="close"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g>
-            <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
             <g id="arrow-back"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></g>
             <g id="arrow-forward"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path></g>
             <g id="delete"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></g>
@@ -19164,6 +19578,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <g id="music-note"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></g>
             <g id="more-horiz"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g>
             <g id="repeat"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></g>
+            <g id="remove-circle"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"></path></g>
             <g id="repeat-one"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-4-2V9h-1l-2 1v1h1.5v4H13z"></path></g>
             <g id="open-in-browser"><path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h4v-2H5V8h14v10h-4v2h4c1.1 0 2-.9 2-2V6c0-1.1-.89-2-2-2zm-7 6l-4 4h3v6h2v-6h3l-4-4z"></path></g>
             <g id="cloud-download"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"></path></g>
@@ -19174,6 +19589,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <g id="error"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></g>
             <g id="wifi"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"></path></g>
             <g id="ondemand-video"><path d="M21 3H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.11-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7z"></path></g>
+            <g id="closed-caption"><path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"></path></g>
+            <g id="sync"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></g>
+            <g id="sync-disabled"><path d="M10 6.35V4.26c-.8.21-1.55.54-2.23.96l1.46 1.46c.25-.12.5-.24.77-.33zm-7.14-.94l2.36 2.36C4.45 8.99 4 10.44 4 12c0 2.21.91 4.2 2.36 5.64L4 20h6v-6l-2.24 2.24C6.68 15.15 6 13.66 6 12c0-1 .25-1.94.68-2.77l8.08 8.08c-.25.13-.5.25-.77.34v2.09c.8-.21 1.55-.54 2.23-.96l2.36 2.36 1.27-1.27L4.14 4.14 2.86 5.41zM20 4h-6v6l2.24-2.24C17.32 8.85 18 10.34 18 12c0 1-.25 1.94-.68 2.77l1.46 1.46C19.55 15.01 20 13.56 20 12c0-2.21-.91-4.2-2.36-5.64L20 4z"></path></g>
+            <g id="sync-problem"><path d="M3 12c0 2.21.91 4.2 2.36 5.64L3 20h6v-6l-2.24 2.24C5.68 15.15 5 13.66 5 12c0-2.61 1.67-4.83 4-5.65V4.26C5.55 5.15 3 8.27 3 12zm8 5h2v-2h-2v2zM21 4h-6v6l2.24-2.24C18.32 8.85 19 10.34 19 12c0 2.61-1.67 4.83-4 5.65v2.09c3.45-.89 6-4.01 6-7.74 0-2.21-.91-4.2-2.36-5.64L21 4zm-10 9h2V7h-2v6z"></path></g>
+            <g id="notifications-active"><path d="M6.58 3.58L5.15 2.15C2.76 3.97 1.18 6.8 1.03 10h2c.15-2.65 1.51-4.97 3.55-6.42zM19.97 10h2c-.15-3.2-1.73-6.03-4.13-7.85l-1.43 1.43c2.05 1.45 3.41 3.77 3.56 6.42zm-1.97.5c0-3.07-2.13-5.64-5-6.32V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5v.68c-2.87.68-5 3.25-5 6.32V16l-2 2v1h17v-1l-2-2v-5.5zM11.5 22c.14 0 .27-.01.4-.04.65-.13 1.19-.58 1.44-1.18.1-.24.16-.5.16-.78h-4c0 1.1.9 2 2 2z"></path></g>
+            <g id="notifications-off"><path d="M11.5 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 10.5c0-3.07-2.13-5.64-5-6.32V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5v.68c-.51.12-.99.32-1.45.56L18 14.18V10.5zm-.27 8.5l2 2L21 19.73 4.27 3 3 4.27l2.92 2.92C5.34 8.16 5 9.29 5 10.5V16l-2 2v1h14.73z"></path></g>
         </defs>
     </svg>
 </iron-iconset-svg>

@@ -17,7 +17,6 @@ namespace MediaBrowser.Api.Reports
         TrailersImage,
         SpecialsImage,
         LockDataImage,
-        UnidentifiedImage,
         TagsPrimaryImage,
         TagsBackdropImage,
         TagsLogoImage,

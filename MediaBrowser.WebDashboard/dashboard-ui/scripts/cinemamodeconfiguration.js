@@ -57,25 +57,28 @@
 
         $('#btnSelectCustomIntrosPath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtCustomIntrosPath', page).val(path);
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectCustomIntrosPath')
+                        if (path) {
+                            $('#txtCustomIntrosPath', page).val(path);
+                        }
+                        picker.close();
+                    },
+
+                    header: Globalize.translate('HeaderSelectCustomIntrosPath')
+                });
             });
         });
 
         $('.cinemaModeConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#cinemaModeConfigurationPage", function () {
+    }).on('pageshow', "#cinemaModeConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -93,7 +96,5 @@
             $('.lnkSupporterLearnMore', page).hide();
         }
     });
-
-    window.CinemaModeConfigurationPage = new cinemaModeConfigurationPage();
 
 })(jQuery, document, window);

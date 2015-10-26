@@ -413,7 +413,7 @@
         $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);
         $('.localAccessForm').off('submit', UpdatePasswordPage.onLocalAccessSubmit).on('submit', UpdatePasswordPage.onLocalAccessSubmit);
 
-    }).on('pageshowready', ".userPasswordPage", function () {
+    }).on('pageshow', ".userPasswordPage", function () {
 
         var page = this;
 

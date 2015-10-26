@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {
@@ -9,8 +11,11 @@ namespace MediaBrowser.Common.Implementations.Serialization
     /// </summary>
     public class JsonSerializer : IJsonSerializer
     {
-        public JsonSerializer()
+        private readonly IFileSystem _fileSystem;
+        
+        public JsonSerializer(IFileSystem fileSystem)
         {
+            _fileSystem = fileSystem;
             Configure();
         }
 
@@ -53,7 +58,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-            using (Stream stream = File.Open(file, FileMode.Create))
+			using (Stream stream = _fileSystem.GetFileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 SerializeToStream(obj, stream);
             }

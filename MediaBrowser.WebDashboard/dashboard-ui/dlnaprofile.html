@@ -118,10 +118,13 @@
                                     </li>
                                 </ul>
 
-                                <h2>
-                                    <span style="vertical-align:middle;">${HeaderHttpHeaders}</span>
-                                    <button class="btnAddIdentificationHttpHeader" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
-                                </h2>
+                                <div>
+                                    <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
+                                    <paper-button raised class="submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
+                                        <iron-icon icon="add"></iron-icon>
+                                        <span>${ButtonNew}</span>
+                                    </paper-button>
+                                </div>
                                 <div class="httpHeaderIdentificationList"></div>
                             </div>
                         </div>
@@ -286,10 +289,13 @@
                         <div data-role="collapsible">
                             <h2>${HeaderXmlSettings}</h2>
                             <div>
-                                <h2>
-                                    <span style="vertical-align:middle;">${HeaderXmlDocumentAttributes}</span>
-                                    <button class="btnAddXmlDocumentAttribute" data-icon="plus" data-iconpos="notext" data-inline="true" type="button" style="vertical-align:middle;margin-left:.25em;">${ButtonAdd}</button>
-                                </h2>
+                                <div>
+                                    <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
+                                    <paper-button raised class="submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
+                                        <iron-icon icon="add"></iron-icon>
+                                        <span>${ButtonNew}</span>
+                                    </paper-button>
+                                </div>
                                 <div class="xmlDocumentAttributeList"></div>
                                 <div class="fieldDescription">${XmlDocumentAttributeListHelp}</div>
                                 <br />

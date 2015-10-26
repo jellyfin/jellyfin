@@ -12,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Localization
 {
@@ -58,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             var localizationPath = LocalizationPath;
 
-            Directory.CreateDirectory(localizationPath);
+			_fileSystem.CreateDirectory(localizationPath);
 
             var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileName)
@@ -212,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private void LoadRatings(string file)
         {
-            var dict = File.ReadAllLines(file).Select(i =>
+			var dict = File.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {

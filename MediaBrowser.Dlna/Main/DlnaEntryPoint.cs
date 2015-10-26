@@ -81,8 +81,6 @@ namespace MediaBrowser.Dlna.Main
             ReloadComponents();
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
-
-            DlnaChannelFactory.Instance.Start(() => _registeredServerIds);
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)

@@ -490,6 +490,21 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
+        /// Gets the target video codec tag.
+        /// </summary>
+        /// <value>The target video codec tag.</value>
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                MediaStream stream = TargetVideoStream;
+                return !IsDirectStream
+                    ? null
+                    : stream == null ? null : stream.CodecTag;
+            }
+        }
+
+        /// <summary>
         /// Predicts the audio bitrate that will be in the output stream
         /// </summary>
         public int? TargetAudioBitrate

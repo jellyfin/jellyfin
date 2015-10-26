@@ -154,15 +154,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // The selection should not change, but wait for a little bit just
           // in case it would and an event would be fired.
           setTimeout(function() {
-            try {
-              expect(items[0].checked).to.be.equal(true);
-              expect(items[1].checked).to.be.equal(false);
-              expect(items[2].checked).to.be.equal(false);
-              done();
-            } catch (e) {
-              done(e)
-            }
-          }, 200);
+            expect(items[0].checked).to.be.equal(true);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(false);
+            done();
+          }, 1);
+        });
+
+        test('clicking the selected item should deselect if allow-empty-selection is set', function (done) {
+          var g = fixture('WithSelection');
+          g.allowEmptySelection = true;
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+          MockInteractions.tap(items[0]);
+
+          // The selection should not change, but wait for a little bit just
+          // in case it would and an event would be fired.
+          setTimeout(function() {
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(false);
+            done();
+          }, 1);
         });
 
       });

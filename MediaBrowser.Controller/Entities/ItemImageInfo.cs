@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -22,5 +23,21 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The date modified.</value>
         public DateTime DateModified { get; set; }
+
+        [IgnoreDataMember]
+        public bool IsLocalFile
+        {
+            get
+            {
+                if (Path != null)
+                {
+                    if (Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
     }
 }

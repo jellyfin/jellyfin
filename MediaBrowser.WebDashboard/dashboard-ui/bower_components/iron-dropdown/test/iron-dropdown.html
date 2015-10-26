@@ -33,6 +33,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="NonLockingDropdown">
+    <template>
+      <iron-dropdown>
+        <div class="dropdown-content" allow-outside-scroll>I don't lock scroll!</div>
+      </iron-dropdown>
+    </template>
+  </test-fixture>
+
   <test-fixture id="AlignedDropdown">
     <template>
       <div style="display: block; position: relative; width: 100px; height: 100px;">
@@ -128,6 +136,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               done();
             });
           });
+        });
+      });
+
+      suite('locking scroll', function() {
+        var dropdown;
+
+        setup(function() {
+          dropdown = fixture('NonLockingDropdown');
+        });
+
+        test('can be disabled with `allowOutsideScroll`', function() {
+          dropdown.open();
+
+          expect(Polymer.IronDropdownScrollManager.elementIsScrollLocked(document.body))
+            .to.be.equal(false);
         });
       });
 

@@ -39,7 +39,7 @@
 
             html += '<paper-icon-item>';
 
-            html += '<paper-fab class="listAvatar" icon="live-tv" item-icon></paper-fab>';
+            html += '<paper-fab mini icon="live-tv" item-icon></paper-fab>';
 
             html += '<paper-item-body three-line>';
             html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
@@ -87,7 +87,7 @@
             html += '</div>';
         }
 
-        var elem = $('#items', page).html(html).trigger('create');
+        var elem = $('#items', page).html(html);
 
         $('.btnCancelSeries', elem).on('click', function () {
 

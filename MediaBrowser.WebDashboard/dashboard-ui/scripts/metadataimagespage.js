@@ -15,7 +15,7 @@
             html += '<option value="' + tab.type + '"' + isChecked + '>' + Globalize.translate(tab.name) + '</option>';
         }
 
-        $('#selectItemType', page).html(html).selectmenu('refresh').trigger('change');
+        $('#selectItemType', page).html(html).trigger('change');
 
         Dashboard.hideLoadingMsg();
     }
@@ -175,17 +175,18 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0;">';
-                if (i == 0) {
-                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
-                } else if (i == (plugins.length - 1)) {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
+                html += '<div style="margin:6px 0 0;">';
+
+                if (i > 0) {
+                    html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
+                } else {
+                    html += '<paper-icon-button disabled class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
                 }
-                else {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
+
+                if (i < (plugins.length - 1)) {
+                    html += '<paper-icon-button class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
+                } else {
+                    html += '<paper-icon-button disabled class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
                 }
                 html += '</div>';
             }
@@ -298,17 +299,18 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0;">';
-                if (i == 0) {
-                    html += '<button data-inline="true" disabled="disabled" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
-                } else if (i == (plugins.length - 1)) {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" disabled="disabled" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
+                html += '<div style="margin:6px 0 0;">';
+
+                if (i > 0) {
+                    html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
+                } else {
+                    html += '<paper-icon-button disabled class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
                 }
-                else {
-                    html += '<button data-inline="true" class="btnUp" data-pluginindex="' + i + '" type="button" data-icon="arrow-u" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonUp') + '</button>';
-                    html += '<button data-inline="true" class="btnDown" data-pluginindex="' + i + '" type="button" data-icon="arrow-d" data-mini="true" data-iconpos="notext" style="margin: 0 1px;">' + Globalize.translate('ButtonDown') + '</button>';
+
+                if (i < (plugins.length - 1)) {
+                    html += '<paper-icon-button class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
+                } else {
+                    html += '<paper-icon-button disabled class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
                 }
                 html += '</div>';
             }
@@ -560,7 +562,7 @@
 
         $('.metadataImagesConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataImagesConfigurationPage", function () {
+    }).on('pageshow', "#metadataImagesConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

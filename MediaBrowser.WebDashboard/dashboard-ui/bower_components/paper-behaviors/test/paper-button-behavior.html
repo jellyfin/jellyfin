@@ -39,19 +39,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       test('normal (no states)', function() {
-        assert.equal(button._elevation, 1);
+        assert.equal(button.elevation, 1);
       });
 
       test('set disabled property', function() {
         button.disabled = true;
-        assert.equal(button._elevation, 0);
+        assert.equal(button.elevation, 0);
       });
 
       test('pressed and released', function() {
         MockInteractions.down(button);
-        assert.equal(button._elevation, 4);
+        assert.equal(button.elevation, 4);
         MockInteractions.up(button);
-        assert.equal(button._elevation, 1);
+        assert.equal(button.elevation, 1);
+        assert.ok(button.hasRipple());
       });
 
       suite('a button with toggles', function() {
@@ -62,7 +63,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('activated by tap', function(done) {
           MockInteractions.downAndUp(button, function() {
             try {
-              assert.equal(button._elevation, 4);
+              assert.equal(button.elevation, 4);
+              assert.ok(button.hasRipple());
               done();
             } catch (e) {
               done(e);
@@ -73,7 +75,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('receives focused', function() {
         MockInteractions.focus(button);
-        assert.equal(button._elevation, 3);
+        assert.equal(button.elevation, 3);
+        assert.ok(button.hasRipple());
       });
     });
   </script>

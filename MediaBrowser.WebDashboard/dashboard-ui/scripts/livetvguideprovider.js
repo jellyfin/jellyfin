@@ -2,7 +2,7 @@
 
     function init(page, type, providerId) {
 
-        var url = 'tvproviders/' + type + '.js';
+        var url = 'components/tvproviders/' + type + '.js';
 
         require([url], function (factory) {
 
@@ -15,10 +15,10 @@
 
     function loadTemplate(page, type, providerId) {
 
-        ApiClient.ajax({
+        HttpClient.send({
 
             type: 'GET',
-            url: 'tvproviders/' + type + '.template.html'
+            url: 'components/tvproviders/' + type + '.template.html'
 
         }).done(function (html) {
 
@@ -30,7 +30,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#liveTvGuideProviderPage", function () {
+    $(document).on('pageshow', "#liveTvGuideProviderPage", function () {
 
         Dashboard.showLoadingMsg();
 

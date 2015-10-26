@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="jqmpopup,scripts/medialibrarypage,scripts/taskbutton">
+    <div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/medialibrarypage,scripts/taskbutton">
 
         <div data-role="content">
             <div class="content-primary">
@@ -13,54 +13,15 @@
                     <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
                     <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
                 </div>
-                <div class="readOnlyContent">
-                    <div id="divMediaLibrary">
-                        <p>
-                            <button type="button" data-mini="true" data-icon="plus" data-iconpos="right" onclick="MediaLibraryPage.addVirtualFolder();">${ButtonAddMediaFolder}</button>
-                        </p>
-                        <div id="divVirtualFolders"></div>
-                    </div>
 
-                    <br />
-                    <div class="readOnlyContent">
-                        <button type="button" class="btnRefresh" data-icon="refresh" data-mini="true">${ButtonScanLibrary}</button>
-                        <progress max="100" min="0" style="width: 100%;" class="refreshProgress"></progress>
-                        <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshResult"></span></div>
-                    </div>
+                <div id="divVirtualFolders"></div>
+                <br />
+                <div>
 
+                    <paper-button raised class="btnRefresh"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></paper-button>
+                    <progress max="100" min="0" style="display: inline-block; vertical-align: middle;" class="refreshProgress"></progress>
                 </div>
             </div>
-        </div>
-        <div data-role="popup" id="popupEnterText" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3></h3>
-            </div>
-
-            <div data-role="content">
-                <form id="textEntryForm" style="width:280px;">
-                    <div id="fldCollectionType" style="margin:.5em 0 1.5em;">
-                        <label for="selectCollectionType">${LabelContentType}</label>
-                        <select id="selectCollectionType" name="selectCollectionType" data-mini="true"></select>
-                        <div class="collectionTypeFieldDescription fieldDescription">
-                        </div>
-                    </div>
-                    <p>
-                        <label id="lblValue" for="txtValue"></label>
-                        <input type="text" id="txtValue" required="required" />
-                    </p>
-                    <br />
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
         </div>
     </div>
 </body>

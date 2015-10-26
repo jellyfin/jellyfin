@@ -23,6 +23,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
@@ -40,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
         private readonly ISecurityManager _securityManager;
+        private readonly IFileSystem _fileSystem;
 
         private ConnectData _data = new ConnectData();
 
@@ -104,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             IEncryptionManager encryption,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config, IUserManager userManager, IProviderManager providerManager, ISecurityManager securityManager)
+            IServerConfigurationManager config, IUserManager userManager, IProviderManager providerManager, ISecurityManager securityManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -116,6 +119,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _userManager = userManager;
             _providerManager = providerManager;
             _securityManager = securityManager;
+            _fileSystem = fileSystem;
 
             _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
             _config.ConfigurationUpdated += _config_ConfigurationUpdated;
@@ -315,7 +319,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 var json = _json.SerializeToString(_data);
 
@@ -323,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 lock (_dataFileLock)
                 {
-                    File.WriteAllText(path, encrypted, Encoding.UTF8);
+					_fileSystem.WriteAllText(path, encrypted, Encoding.UTF8);
                 }
             }
             catch (Exception ex)
@@ -340,7 +344,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 lock (_dataFileLock)
                 {
-                    var encrypted = File.ReadAllText(path, Encoding.UTF8);
+					var encrypted = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
                     var json = _encryption.DecryptString(encrypted);
 
@@ -932,7 +936,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                             {
                                 var length = response.ContentLength;
 
-                                if (length != new FileInfo(user.GetImageInfo(ImageType.Primary, 0).Path).Length)
+                                if (length != _fileSystem.GetFileInfo(user.GetImageInfo(ImageType.Primary, 0).Path).Length)
                                 {
                                     changed = true;
                                 }
@@ -943,7 +947,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         {
                             await _providerManager.SaveImage(user, imageUrl, _connectImageSemaphore, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
 
-                            await user.RefreshMetadata(new MetadataRefreshOptions
+                            await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
                             {
                                 ForceSave = true,
 
@@ -1076,20 +1080,25 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
 
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey}
+                };
+
+            options.SetPostData(postData);
+
             SetServerAccessToken(options);
             SetApplicationHeader(options);
 
             // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "GET").ConfigureAwait(false)).Content)
+            using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
             {
                 return _json.DeserializeFromStream<ConnectSupporterSummary>(stream);
             }
@@ -1104,15 +1113,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-            url += "&userId=" + id;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey},
+                    {"userId", id}
+                };
+
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
             SetApplicationHeader(options);
@@ -1132,15 +1146,20 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var url = GetConnectUrl("keyAssociation");
 
-            url += "?serverId=" + ConnectServerId;
-            url += "&supporterKey=" + _securityManager.SupporterKey;
-            url += "&userId=" + id;
-
             var options = new HttpRequestOptions
             {
                 Url = url,
                 CancellationToken = CancellationToken.None
             };
+
+            var postData = new Dictionary<string, string>
+                {
+                    {"serverId", ConnectServerId},
+                    {"supporterKey", _securityManager.SupporterKey},
+                    {"userId", id}
+                };
+
+            options.SetPostData(postData);
 
             SetServerAccessToken(options);
             SetApplicationHeader(options);

@@ -29,8 +29,6 @@
 
         var html = "";
 
-        html += '<ul data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="action">';
-
         var currentCategory;
 
         for (var i = 0, length = tasks.length; i < length; i++) {
@@ -40,38 +38,58 @@
             if (task.Category != currentCategory) {
                 currentCategory = task.Category;
 
-                html += "<li data-role='list-divider'>" + currentCategory + "</li>";
+                if (currentCategory) {
+                    html += '</div>';
+                    html += '</div>';
+                }
+                html += '<div style="margin-bottom:2em;">';
+                html += '<h1>';
+                html += currentCategory;
+                html += '</h1>';
+
+                html += '<div class="paperList">';
             }
 
-            html += "<li title='" + task.Description + "'>";
+            html += '<paper-icon-item class="scheduledTaskPaperIconItem" data-status="' + task.State + '">';
 
-            html += "<a href='scheduledtask.html?id=" + task.Id + "'>";
+            html += "<a item-icon class='clearLink' href='scheduledtask.html?id=" + task.Id + "'>";
+            html += '<paper-fab mini icon="schedule"></paper-fab>';
+            html += "</a>";
 
-            html += "<h3>" + task.Name + "</h3>";
+            html += '<paper-item-body two-line>';
+            html += "<a class='clearLink' href='scheduledtask.html?id=" + task.Id + "'>";
 
-            html += "<p id='" + task.Id + "'>" + getTaskProgressHtml(task) + "</p>";
+            html += "<div>" + task.Name + "</div>";
+            //html += "<div secondary>" + task.Description + "</div>";
+
+            html += "<div secondary id='taskProgress" + task.Id + "'>" + getTaskProgressHtml(task) + "</div>";
+
+            html += "</a>";
+            html += '</paper-item-body>';
 
             if (task.State == "Idle") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='action'>" + Globalize.translate('ButtonStart') + "</a>";
+                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="play-arrow" class="btnStartTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"></paper-icon-button>';
             }
             else if (task.State == "Running") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='delete'>" + Globalize.translate('ButtonStop') + "</a>";
+                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="stop" class="btnStopTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStop') + '"></paper-icon-button>';
 
             } else {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='action' style='display:none;'>" + Globalize.translate('ButtonStart') + "</a>";
+                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="play-arrow" class="btnStartTask hide" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"></paper-icon-button>';
             }
 
-            html += "</a>";
-
-            html += "</li>";
+            html += '</paper-icon-item>';
         }
 
-        html += "</ul>";
+        if (tasks.length) {
+            html += '</div>';
+            html += '</div>';
+        }
 
-        $('.divScheduledTasks', page).html(html).trigger('create');
+        var divScheduledTasks = page.querySelector('.divScheduledTasks');
+        divScheduledTasks.innerHTML = html;
     }
 
     function getTaskProgressHtml(task) {
@@ -99,9 +117,9 @@
 
             var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
-            html += '<progress max="100" value="' + progress + '" title="' + progress + '%">';
+            html += '<paper-progress max="100" value="' + progress + '" title="' + progress + '%">';
             html += '' + progress + '%';
-            html += '</progress>';
+            html += '</paper-progress>';
 
             html += "<span style='color:#009F00;margin-left:5px;'>" + progress + "%</span>";
 
@@ -118,7 +136,7 @@
 
             var tasks = msg.Data;
 
-            var page = $.mobile.activePage;
+            var page = $($.mobile.activePage)[0];
 
             updateTasks(page, tasks);
         }
@@ -129,49 +147,60 @@
 
             var task = tasks[i];
 
-            $('#' + task.Id, page).html(getTaskProgressHtml(task));
+            page.querySelector('#taskProgress' + task.Id).innerHTML = getTaskProgressHtml(task);
 
-            var btnTask = $('#btnTask' + task.Id, page);
+            var btnTask = page.querySelector('#btnTask' + task.Id);
 
             updateTaskButton(btnTask, task.State);
         }
     }
 
-    function updateTaskButton(btnTask, state) {
-
-        var elem;
+    function updateTaskButton(elem, state) {
 
         if (state == "Idle") {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "action").attr("title", Globalize.translate('ButtonStart'));
-
-            elem.removeClass('ui-icon-delete').addClass('ui-icon-action');
+            elem.classList.add('btnStartTask');
+            elem.classList.remove('btnStopTask');
+            elem.classList.remove('hide');
+            elem.icon = 'play-arrow';
+            elem.title = Globalize.translate('ButtonStart');
         }
         else if (state == "Running") {
 
-            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "delete").attr("title", Globalize.translate('ButtonStop'));
-
-            elem.removeClass('ui-icon-action').addClass('ui-icon-delete');
+            elem.classList.remove('btnStartTask');
+            elem.classList.add('btnStopTask');
+            elem.classList.remove('hide');
+            elem.icon = 'stop';
+            elem.title = Globalize.translate('ButtonStop');
 
         } else {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "action").attr("title", Globalize.translate('ButtonStart'));
-
-            elem.removeClass('ui-icon-delete').addClass('ui-icon-action');
+            elem.classList.add('btnStartTask');
+            elem.classList.remove('btnStopTask');
+            elem.classList.add('hide');
+            elem.icon = 'play-arrow';
+            elem.title = Globalize.translate('ButtonStart');
         }
+
+        var item = $(elem).parents('paper-icon-item')[0];
+        item.setAttribute('data-status', state);
     }
 
     function onWebSocketConnectionOpen() {
 
+        var page = $($.mobile.activePage)[0];
+
         startInterval();
-        reloadList($.mobile.activePage);
+        reloadList(page);
     }
 
     var pollInterval;
     function onPollIntervalFired() {
 
+        var page = $($.mobile.activePage)[0];
+
         if (!ApiClient.isWebSocketOpen()) {
-            reloadList($.mobile.activePage);
+            reloadList(page);
         }
     }
 
@@ -204,7 +233,7 @@
             var id = button.getAttribute('data-taskid');
             ApiClient.startScheduledTask(id).done(function () {
 
-                updateTaskButton($(button), "Running");
+                updateTaskButton(button, "Running");
                 reloadList(page);
             });
 
@@ -214,12 +243,12 @@
             var id = button.getAttribute('data-taskid');
             ApiClient.stopScheduledTask(id).done(function () {
 
-                updateTaskButton($(button), "");
+                updateTaskButton(button, "");
                 reloadList(page);
             });
         });
 
-    }).on('pageshowready', "#scheduledTasksPage", function () {
+    }).on('pageshow', "#scheduledTasksPage", function () {
 
         var page = this;
 

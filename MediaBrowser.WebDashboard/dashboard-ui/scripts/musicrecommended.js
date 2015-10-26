@@ -87,7 +87,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play',
+                defaultAction: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -132,7 +132,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'play',
+                defaultAction: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -186,25 +186,138 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
+    function initSuggestedTab(page, tabContent) {
 
-        var parentId = LibraryMenu.getTopParentId();
-
-        var page = this;
-
-        var containers = page.querySelectorAll('.itemsContainer');
+        var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
             $(containers).addClass('hiddenScrollX');
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadLatest(page, parentId);
-            loadPlaylists(page, parentId);
-            loadRecentlyPlayed(page, parentId);
-            loadFrequentlyPlayed(page, parentId);
+        $(containers).createCardMenus();
+    }
+
+    function loadSuggestionsTab(page, tabContent) {
+
+        var parentId = LibraryMenu.getTopParentId();
+
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            console.log('loadSuggestionsTab');
+            loadLatest(tabContent, parentId);
+            loadPlaylists(tabContent, parentId);
+            loadRecentlyPlayed(tabContent, parentId);
+            loadFrequentlyPlayed(tabContent, parentId);
         }
+    }
+
+    function loadTab(page, index) {
+
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'MusicPage';
+        var renderMethod = '';
+        var initMethod = '';
+
+        switch (index) {
+
+            case 0:
+                initMethod = 'initSuggestedTab';
+                renderMethod = 'renderSuggestedTab';
+                break;
+            case 1:
+                depends.push('scripts/musicalbums');
+                renderMethod = 'renderAlbumsTab';
+                initMethod = 'initAlbumsTab';
+                depends.push('scripts/queryfilters');
+                break;
+            case 2:
+                depends.push('scripts/musicalbumartists');
+                renderMethod = 'renderAlbumArtistsTab';
+                initMethod = 'initAlbumArtistsTab';
+                depends.push('scripts/queryfilters');
+                break;
+            case 3:
+                depends.push('scripts/musicartists');
+                renderMethod = 'renderArtistsTab';
+                initMethod = 'initArtistsTab';
+                depends.push('scripts/queryfilters');
+                break;
+            case 4:
+                depends.push('scripts/songs');
+                renderMethod = 'renderSongsTab';
+                initMethod = 'initSongsTab';
+                depends.push('scripts/queryfilters');
+                break;
+            case 5:
+                depends.push('scripts/musicgenres');
+                renderMethod = 'renderGenresTab';
+                break;
+            default:
+                break;
+        }
+
+        require(depends, function () {
+
+            if (initMethod && !tabContent.initComplete) {
+
+                window[scope][initMethod](page, tabContent);
+                tabContent.initComplete = true;
+            }
+
+            window[scope][renderMethod](page, tabContent);
+
+        });
+    }
+
+    window.MusicPage = window.MusicPage || {};
+    window.MusicPage.renderSuggestedTab = loadSuggestionsTab;
+    window.MusicPage.initSuggestedTab = initSuggestedTab;
+
+    $(document).on('pageinit', "#musicRecommendedPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        var baseUrl = 'music.html';
+        var topParentId = LibraryMenu.getTopParentId();
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+    }).on('pageshow', "#musicRecommendedPage", function () {
+
+        var page = this;
+
+        if (!page.getAttribute('data-title')) {
+
+            var parentId = LibraryMenu.getTopParentId();
+
+            if (parentId) {
+
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+
+                    page.setAttribute('data-title', item.Name);
+                    LibraryMenu.setTitle(item.Name);
+                });
+
+
+            } else {
+                page.setAttribute('data-title', Globalize.translate('TabMusic'));
+                LibraryMenu.setTitle(Globalize.translate('TabMusic'));
+            }
+        }
+
     });
 
 

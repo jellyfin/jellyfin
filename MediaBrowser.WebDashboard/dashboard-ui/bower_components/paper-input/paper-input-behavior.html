@@ -25,6 +25,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   Polymer.PaperInputBehaviorImpl = {
 
     properties: {
+      /**
+       * Fired when the input changes due to user interaction.
+       *
+       * @event change
+       */
 
       /**
        * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
@@ -57,7 +62,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       invalid: {
         type: Boolean,
-        value: false
+        value: false,
+        notify: true
       },
 
       /**
@@ -273,6 +279,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value: 'off'
       },
 
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+       */
+      autosave: {
+        type: String
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `results` property, , used with type=search.
+       */
+      results: {
+        type: Number
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -394,6 +414,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         label.id = labelledBy;
       }
       this._ariaLabelledBy = labelledBy;
+    },
+
+    _onChange:function(event) {
+      // In the Shadow DOM, the `change` event is not leaked into the
+      // ancestor tree, so we must do this manually.
+      // See https://w3c.github.io/webcomponents/spec/shadow/#events-that-are-not-leaked-into-ancestor-trees.
+      if (this.shadowRoot) {
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
     }
 
   };

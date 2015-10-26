@@ -1,0 +1,36 @@
+{
+  "name": "get-style-property",
+  "main": "get-style-property.js",
+  "version": "1.0.4",
+  "homepage": "https://github.com/desandro/get-style-property",
+  "authors": [
+    "David DeSandro <desandrocodes@gmail.com>"
+  ],
+  "description": "quick & dirty CSS property testing",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "CSS",
+    "DOM"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "1.0.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.4",
+    "commit": "34fc5e4a0f252964ed2790138b8d7d30d04b55c1"
+  },
+  "_source": "git://github.com/desandro/get-style-property.git",
+  "_target": "~1.0.4",
+  "_originalSource": "get-style-property"
+}

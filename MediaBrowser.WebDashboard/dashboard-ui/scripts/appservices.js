@@ -72,7 +72,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow pageinit pageshow', "#appServicesPage", function () {
+    $(document).on('pagebeforeshow pageshow', "#appServicesPage", function () {
 
         // This needs both events for the helpurl to get done at the right time
 
@@ -95,20 +95,10 @@
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
 
-    }).on('pagebeforeshow', "#appServicesPage", function () {
-
-        // This needs both events for the helpurl to get done at the right time
-
-        var page = this;
-
-        var context = getParameterByName('context');
-
         $('.sectionTabs', page).hide();
         $('.' + context + 'SectionTabs', page).show();
 
-    }).on('pageshowready', "#appServicesPage", function () {
-
-        // This needs both events for the helpurl to get done at the right time
+    }).on('pageshow', "#appServicesPage", function () {
 
         var page = this;
 

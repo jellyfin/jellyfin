@@ -178,6 +178,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
+      test('value should notify', function(done) {
+        var targetValue = 10;
+
+        slider.addEventListener('value-changed', function(e) {
+          assert.equal(e.detail.value, targetValue);
+          done();
+        });
+        
+        slider.min = 0;
+        slider.max = 100;
+        slider.value = targetValue;
+      });
+
+      test('immediateValue should notify', function(done) {
+        var targetValue = 50;
+
+        slider.addEventListener('immediate-value-changed', function(e) {
+          assert.equal(e.detail.value, targetValue);
+          assert.equal(slider.immediateValue, targetValue);
+          done();
+        });
+        
+        var cursor = MockInteractions.topLeftOfNode(slider.$.sliderBar);
+        cursor.x += slider.$.sliderBar.getBoundingClientRect().width * targetValue/100;
+
+        slider.min = 0;
+        slider.max = 100;
+        MockInteractions.down(slider.$.sliderBar, cursor);
+      });
+
     });
 
   </script>

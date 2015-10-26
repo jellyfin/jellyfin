@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -75,7 +76,7 @@ namespace MediaBrowser.Providers.TV
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(new RemoteImageInfo[] { });
         }
 
-        private RemoteImageInfo GetImageInfo(FileInfo xmlFile, CancellationToken cancellationToken)
+        private RemoteImageInfo GetImageInfo(FileSystemMetadata xmlFile, CancellationToken cancellationToken)
         {
             var height = 225;
             var width = 400;

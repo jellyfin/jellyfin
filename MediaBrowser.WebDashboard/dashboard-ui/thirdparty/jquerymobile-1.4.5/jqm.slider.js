@@ -1,7 +1,7 @@
 ﻿(function ($, undefined) {
 
     $.widget("mobile.slider", $.extend({
-        initSelector: "input[type='range'], *[data-type='range'], *[data-role='slider']",
+        initSelector: "input[type='range']:not([data-role='none'])",
 
         widgetEventPrefix: "slide",
 
@@ -131,16 +131,16 @@
                 "change": "_controlChange",
                 "keyup": "_controlKeyup",
                 "blur": "_controlBlur",
-                "vmouseup": "_controlVMouseUp"
+                "mouseup": "_controlVMouseUp"
             });
 
-            slider.bind("vmousedown", $.proxy(this._sliderVMouseDown, this))
-                .bind("vclick", false);
+            slider.bind("mousedown", $.proxy(this._sliderVMouseDown, this))
+                .bind("click", false);
 
             // We have to instantiate a new function object for the unbind to work properly
             // since the method itself is defined in the prototype (causing it to unbind everything)
-            this._on(document, { "vmousemove": "_preventDocumentDrag" });
-            this._on(slider.add(document), { "vmouseup": "_sliderVMouseUp" });
+            this._on(document, { "mousemove": "_preventDocumentDrag" });
+            this._on(slider.add(document), { "mouseup": "_sliderVMouseUp" });
 
             slider.insertAfter(control);
 
@@ -153,14 +153,14 @@
 
             // bind the handle event callbacks and set the context to the widget instance
             this._on(this.handle, {
-                "vmousedown": "_handleVMouseDown",
+                "mousedown": "_handleVMouseDown",
                 "keydown": "_handleKeydown",
                 "keyup": "_handleKeyup"
             });
 
-            this.handle.bind("vclick", false);
+            this.handle.bind("click", false);
 
-            this._handleFormReset();
+            //this._handleFormReset();
 
             this.refresh(undefined, undefined, true);
         },
@@ -642,7 +642,7 @@
                 "reset": "_handleReset"
             });
             this._on(firstHandle, {
-                "vmousedown": "_dragFirstHandle"
+                "mousedown": "_dragFirstHandle"
             });
         },
         _handleReset: function () {
@@ -681,7 +681,7 @@
             this._proxy = false;
             //this stops dragging of the handle and brings the active track to the front
             //this makes clicks on the track go the the last handle used
-            this.element.find("input").trigger("vmouseup");
+            this.element.find("input").trigger("mouseup");
             this._sliderFirst.css("z-index", first ? 1 : "");
         },
 
@@ -870,8 +870,8 @@
 
             this._setOption("popupEnabled", this.options.popupEnabled);
 
-            this._on(this.handle, { "vmousedown": "_showPopup" });
-            this._on(this.slider.add(this.document), { "vmouseup": "_hidePopup" });
+            this._on(this.handle, { "mousedown": "_showPopup" });
+            this._on(this.slider.add(this.document), { "mouseup": "_hidePopup" });
             this._refresh();
         },
 

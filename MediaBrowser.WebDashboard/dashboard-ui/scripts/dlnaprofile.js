@@ -100,7 +100,7 @@
         var usersHtml = '<option></option>' + users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
-        $('#selectUser', page).html(usersHtml).val(profile.UserId || '').selectmenu("refresh");
+        $('#selectUser', page).html(usersHtml).val(profile.UserId || '');
 
         renderSubProfiles(page, profile);
     }
@@ -152,7 +152,7 @@
 
         $('#txtIdentificationHeaderName', popup).val(header.Name || '');
         $('#txtIdentificationHeaderValue', popup).val(header.Value || '');
-        $('#selectMatchType', popup).val(header.Match || 'Equals').selectmenu('refresh');
+        $('#selectMatchType', popup).val(header.Match || 'Equals');
 
         popup.popup('open');
     }
@@ -294,8 +294,8 @@
         var popup = $('#subtitleProfilePopup', page);
 
         $('#txtSubtitleProfileFormat', popup).val(profile.Format || '');
-        $('#selectSubtitleProfileMethod', popup).val(profile.Method || '').selectmenu('refresh');
-        $('#selectSubtitleProfileDidlMode', popup).val(profile.DidlMode || '').selectmenu('refresh');
+        $('#selectSubtitleProfileMethod', popup).val(profile.Method || '');
+        $('#selectSubtitleProfileDidlMode', popup).val(profile.DidlMode || '');
 
         popup.popup('open');
     }
@@ -419,7 +419,7 @@
 
         var popup = $('#popupEditDirectPlayProfile', page);
 
-        $('#selectDirectPlayProfileType', popup).val(directPlayProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#selectDirectPlayProfileType', popup).val(directPlayProfile.Type || 'Video').trigger('change');
         $('#txtDirectPlayContainer', popup).val(directPlayProfile.Container || '');
         $('#txtDirectPlayAudioCodec', popup).val(directPlayProfile.AudioCodec || '');
         $('#txtDirectPlayVideoCodec', popup).val(directPlayProfile.VideoCodec || '');
@@ -491,11 +491,11 @@
 
         var popup = $('#transcodingProfilePopup', page);
 
-        $('#selectTranscodingProfileType', popup).val(transcodingProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#selectTranscodingProfileType', popup).val(transcodingProfile.Type || 'Video').trigger('change');
         $('#txtTranscodingContainer', popup).val(transcodingProfile.Container || '');
         $('#txtTranscodingAudioCodec', popup).val(transcodingProfile.AudioCodec || '');
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
-        $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http').selectmenu('refresh');
+        $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http');
 
         $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
         $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false).checkboxradio('refresh');
@@ -614,7 +614,7 @@
 
         var popup = $('#containerProfilePopup', page);
 
-        $('#selectContainerProfileType', popup).val(containerProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#selectContainerProfileType', popup).val(containerProfile.Type || 'Video').trigger('change');
         $('#txtContainerProfileContainer', popup).val(containerProfile.Container || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
@@ -716,7 +716,7 @@
 
         var popup = $('#codecProfilePopup', page);
 
-        $('#selectCodecProfileType', popup).val(codecProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#selectCodecProfileType', popup).val(codecProfile.Type || 'Video').trigger('change');
         $('#txtCodecProfileCodec', popup).val(codecProfile.Codec || '');
 
         $('.radioTabButton:first', popup).checked(true).checkboxradio('refresh').trigger('change');
@@ -822,7 +822,7 @@
 
         var popup = $('#responseProfilePopup', page);
 
-        $('#selectResponseProfileType', popup).val(responseProfile.Type || 'Video').selectmenu('refresh').trigger('change');
+        $('#selectResponseProfileType', popup).val(responseProfile.Type || 'Video').trigger('change');
         $('#txtResponseProfileContainer', popup).val(responseProfile.Container || '');
         $('#txtResponseProfileAudioCodec', popup).val(responseProfile.AudioCodec || '');
         $('#txtResponseProfileVideoCodec', popup).val(responseProfile.VideoCodec || '');
@@ -1066,7 +1066,7 @@
         $('.xmlAttributeForm').off('submit', DlnaProfilePage.onXmlAttributeFormSubmit).on('submit', DlnaProfilePage.onXmlAttributeFormSubmit);
         $('.subtitleProfileForm').off('submit', DlnaProfilePage.onSubtitleProfileFormSubmit).on('submit', DlnaProfilePage.onSubtitleProfileFormSubmit);
 
-    }).on('pageshowready', "#dlnaProfilePage", function () {
+    }).on('pageshow', "#dlnaProfilePage", function () {
 
         var page = this;
 

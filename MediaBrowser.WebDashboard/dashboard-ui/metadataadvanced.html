@@ -21,12 +21,10 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtMetadataPath">${LabelMetadataPath}</label>
-                            <div style="display: inline-block; width: 85%;">
-                                <input type="text" id="txtMetadataPath" />
-                            </div>
-                            <button id="btnSelectMetadataPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <paper-input id="txtMetadataPath" label="${LabelMetadataPath}" style="width:85%;display:inline-block;"></paper-input>
+                            <paper-icon-button id="btnSelectMetadataPath" icon="search"></paper-icon-button>
                             <div class="fieldDescription">${LabelMetadataPathHelp}</div>
+                            <br />
                         </li>
                         <li>
                             <label for="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</label>
@@ -64,29 +62,6 @@
                         <h2>${HeaderChapters}</h2>
                         <div>
                             <br />
-                            <div style="display: none;">
-                                <p>${HeaderChapterDownloadingHelp}</p>
-
-                                <div class="chapterDownloadSettings" style="display: none;">
-                                    <fieldset data-role="controlgroup">
-                                        <legend>${HeaderDownloadChaptersFor}</legend>
-                                        <input type="checkbox" id="chkDownloadChapterMovies" />
-                                        <label for="chkDownloadChapterMovies">${OptionMovies}</label>
-
-                                        <input type="checkbox" id="chkDownloadChapterEpisodes" />
-                                        <label for="chkDownloadChapterEpisodes">${OptionEpisodes}</label>
-                                    </fieldset>
-                                    <br />
-                                    <div class="chapterFetchers">
-                                    </div>
-                                    <br />
-                                    <br />
-                                </div>
-                                <div class="noChapterProviders" style="display: none; color: green;">
-                                    <p>${MessageNoChapterProviders}</p>
-                                    <br />
-                                </div>
-                            </div>
                             <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
                                 <li>
                                     <label>${HeaderExtractChapterImagesFor}</label>

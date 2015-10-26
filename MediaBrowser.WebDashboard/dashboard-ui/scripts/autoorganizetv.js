@@ -74,7 +74,7 @@
 
         $('#txtDeleteLeftOverFiles', page).val(tvOptions.LeftOverFileExtensionsToDelete.join(';'));
 
-        $('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString()).selectmenu('refresh');
+        $('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString());
 
     }
 
@@ -133,27 +133,30 @@
 
         $('#btnSelectWatchFolder', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        $('#txtWatchFolder', page).val(path);
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectWatchFolder'),
+                        if (path) {
+                            $('#txtWatchFolder', page).val(path);
+                        }
+                        picker.close();
+                    },
 
-                instruction: Globalize.translate('HeaderSelectWatchFolderHelp')
+                    header: Globalize.translate('HeaderSelectWatchFolder'),
+
+                    instruction: Globalize.translate('HeaderSelectWatchFolderHelp')
+                });
             });
         });
 
         $('.libraryFileOrganizerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#libraryFileOrganizerPage", function () {
+    }).on('pageshow', "#libraryFileOrganizerPage", function () {
 
         var page = this;
 

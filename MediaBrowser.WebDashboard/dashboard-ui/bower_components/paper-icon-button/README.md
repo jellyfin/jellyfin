@@ -24,26 +24,3 @@ Example:
 <paper-icon-button icon="favorite"></paper-icon-button>
 <paper-icon-button src="star.png"></paper-icon-button>
 ```
-
-Styling
--------
-
-Style the button with CSS as you would a normal DOM element. If you are using the icons
-provided by `iron-icons`, they will inherit the foreground color of the button.
-
-```html
-<!-- make a red "favorite" button -->
-<paper-icon-button icon="favorite" style="color: red;"></paper-icon-button>
-```
-
-By default, the ripple is the same color as the foreground at 25% opacity. You may
-customize the color using this selector:
-
-```css
-/* make #my-button use a blue ripple instead of foreground color */
-#my-button::shadow #ripple {
-  color: blue;
-}
-```
-
-The opacity of the ripple is not customizable via CSS.

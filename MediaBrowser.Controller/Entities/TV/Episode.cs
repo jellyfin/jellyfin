@@ -296,9 +296,16 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var hasChanges = base.BeforeMetadataRefresh();
 
-            if (LibraryManager.FillMissingEpisodeNumbersFromPath(this))
+            try
             {
-                hasChanges = true;
+                if (LibraryManager.FillMissingEpisodeNumbersFromPath(this))
+                {
+                    hasChanges = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error in FillMissingEpisodeNumbersFromPath. Episode: {0}", ex, Path ?? Name ?? Id.ToString());
             }
 
             return hasChanges;

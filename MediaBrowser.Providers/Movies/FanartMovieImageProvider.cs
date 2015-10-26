@@ -19,6 +19,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Movies
@@ -58,6 +62,30 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
+            //var channelItem = item as IChannelMediaItem;
+
+            //if (channelItem != null)
+            //{
+            //    if (channelItem.ContentType == ChannelMediaContentType.Movie)
+            //    {
+            //        return true;
+            //    }
+            //    if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
+            //    {
+            //        if (channelItem.ExtraType == ExtraType.Trailer)
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //}
+
+            // Supports images for tv movies
+            //var tvProgram = item as LiveTvProgram;
+            //if (tvProgram != null && tvProgram.IsMovie)
+            //{
+            //    return true;
+            //}
+            
             return item is Movie || item is BoxSet || item is MusicVideo;
         }
 
@@ -234,7 +262,7 @@ namespace MediaBrowser.Providers.Movies
                 // Process images
                 var path = GetFanartJsonPath(id);
 
-                var fileInfo = new FileInfo(path);
+                var fileInfo = _fileSystem.GetFileInfo(path);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
@@ -293,7 +321,7 @@ namespace MediaBrowser.Providers.Movies
 
             var path = GetFanartJsonPath(id);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {

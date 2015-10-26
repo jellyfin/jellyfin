@@ -1,12 +1,13 @@
 {
   "name": "iron-flex-layout",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provide flexbox-based layouts",
   "keywords": [
     "web-components",
     "polymer",
     "layout"
   ],
+  "main": "iron-flex-layout.html",
   "private": true,
   "license": "http://polymer.github.io/LICENSE.txt",
   "authors": [
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "paper-styles": "polymerelements/paper-styles#^1.0.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0"
   }
 }

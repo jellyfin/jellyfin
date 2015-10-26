@@ -45,7 +45,16 @@
             url: apiClient.getUrl('Startup/User'),
             dataType: 'json'
 
-        }).done(onUpdateUserComplete);
+        }).done(onUpdateUserComplete).fail(function () {
+
+            var msgKey = form.querySelector('#txtConnectUserName').value ? 'ErrorAddingEmbyConnectAccount' : 'DefaultErrorMessage';
+
+            Dashboard.alert({
+
+                message: Globalize.translate(msgKey)
+
+            });
+        });
     }
 
     function onSubmit() {
@@ -60,7 +69,7 @@
 
         $('.wizardUserForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#wizardUserPage", function () {
+    }).on('pageshow', "#wizardUserPage", function () {
 
         Dashboard.showLoadingMsg();
 

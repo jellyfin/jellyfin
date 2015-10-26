@@ -44,7 +44,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     paper-button[toggles] {
-      transition: background-color 0.3s;
+      transition: all 0.3s;
     }
 
     paper-button[toggles][active] {
@@ -92,12 +92,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       background: #eee;
     }
 
-    paper-button.ripple::shadow paper-ripple {
-      color: var(--paper-pink-a200);
-    }
-
-    paper-button.ripple paper-ripple {
-      color: var(--paper-pink-a200);
+    paper-button.ripple {
+      --paper-button-ink-color: var(--paper-pink-a200);
     }
 
   </style>

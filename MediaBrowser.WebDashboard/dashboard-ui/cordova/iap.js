@@ -1,11 +1,22 @@
 ﻿(function () {
 
-    var unlockAlias = "premium features";
-    var unlockAppProductId = 'appunlock';
-
     var updatedProducts = [];
+    var enteredEmail;
+
+    function getStoreFeatureId(feature) {
+
+        if (feature == 'embypremieremonthly') {
+            return 'emby.subscription.monthly';
+        }
+
+        return 'appunlock';
+    }
 
     function updateProductInfo(product) {
+
+        if (product.id == 'appunlock') {
+            product.owned = false;
+        }
 
         updatedProducts = updatedProducts.filter(function (r) {
             return r.id != product.id;
@@ -16,17 +27,9 @@
         Events.trigger(IapManager, 'productupdated', [product]);
     }
 
-    function normalizeId(id) {
+    function getProduct(feature) {
 
-        // This is what i named it in itunes
-        id = id.replace('premiumunlock', 'appunlock');
-
-        return id;
-    }
-
-    function getProduct(id) {
-
-        id = normalizeId(id);
+        var id = getStoreFeatureId(feature);
 
         var products = updatedProducts.filter(function (r) {
             return r.id == id;
@@ -35,15 +38,47 @@
         return products.length ? products[0] : null;
     }
 
-    function isPurchaseAvailable(id) {
-        var product = getProduct(id);
+    function isPurchaseAvailable(feature) {
+
+        var product = getProduct(feature);
 
         return product != null && product.valid /*&& product.canPurchase*/;
     }
 
-    function beginPurchase(id) {
-        id = normalizeId(id);
+    function beginPurchase(feature, email) {
+
+        if (email) {
+            enteredEmail = email;
+        }
+
+        var id = getStoreFeatureId(feature);
         store.order(id);
+    }
+
+    function restorePurchase(id) {
+        store.refresh();
+    }
+
+    var transactionIds = {};
+
+    function updateOriginalTransactionInfo(transactionId, originalTransactionId) {
+
+        alert('updateOriginalTransactionInfo ' + transactionId + '-' + originalTransactionId);
+
+        if (!transactionId) {
+            return;
+        }
+        if (!originalTransactionId) {
+            return;
+        }
+        if (transactionId == 'null') {
+            return;
+        }
+        if (originalTransactionId == 'null') {
+            return;
+        }
+
+        transactionIds[transactionId] = originalTransactionId;
     }
 
     function validateProduct(product, callback) {
@@ -51,22 +86,100 @@
         // product attributes:
         // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
 
-        callback(true, {
+        if (!product.transaction) {
+            Logger.log('Transaction info missing. Failing validateProduct');
+            callback(false, product);
+            return;
+        }
 
+        if (!product.transaction.id) {
+            Logger.log('Transaction id missing. Failing validateProduct');
+            callback(false, product);
+            return;
+        }
+
+        var productId = product.id;
+        var transactionId = product.transaction.id;
+        transactionId = transactionIds[transactionId] || transactionId;
+        var receipt = product.transaction.appStoreReceipt;
+        var price = product.price;
+
+        var postData = {
+            store: "Apple",
+            application: "com.emby.mobile",
+            product: productId,
+            type: "Subscription",
+            feature: "MBSClubMonthly",
+            storeToken: receipt,
+            amt: price,
+            storeId: transactionId
+        };
+
+        if (enteredEmail) {
+            postData.email = enteredEmail;
+        }
+
+        ApiClient.ajax({
+
+            type: "POST",
+            url: ApiClient.getUrl("Appstore/Register"),
+            data: {
+                Parameters: JSON.stringify(postData)
+            }
+        }).done(function () {
+
+            alert('validate ok');
+            callback(true, product);
+
+        }).fail(function (e) {
+
+            alert('validate fail');
+            callback(false, product);
+        });
+    }
+
+    function initProduct(id, requiresVerification, type) {
+
+        store.register({
+            id: id,
+            alias: id,
+            type: type
         });
 
-        //callback(true, { ... transaction details ... }); // success!
+        // When purchase of the full version is approved,
+        // show some logs and finish the transaction.
+        store.when(id).approved(function (product) {
 
-        //// OR
-        //callback(false, {
-        //    error: {
-        //        code: store.PURCHASE_EXPIRED,
-        //        message: "XYZ"
-        //    }
-        //});
+            //product.finish();
+            if (requiresVerification) {
+                product.verify();
+            } else {
+                product.finish();
+            }
+        });
 
-        //// OR
-        //callback(false, "Impossible to proceed with validation");  
+        if (requiresVerification) {
+            store.when(id).verified(function (p) {
+                alert('verified');
+                updateProductInfo(p);
+                p.finish();
+            });
+        }
+
+        // The play button can only be accessed when the user
+        // owns the full version.
+        store.when(id).updated(function (product) {
+
+            if (product.loaded && product.valid && product.state == store.APPROVED) {
+                Logger.log('finishing previously created transaction');
+                if (requiresVerification) {
+                    product.verify();
+                } else {
+                    product.finish();
+                }
+            }
+            updateProductInfo(product);
+        });
     }
 
     function initializeStore() {
@@ -77,35 +190,8 @@
 
         store.validator = validateProduct;
 
-        // iOS
-        store.register({
-            id: unlockAppProductId,
-            alias: unlockAlias,
-            type: store.NON_CONSUMABLE
-        });
-
-        // When purchase of the full version is approved,
-        // show some logs and finish the transaction.
-        store.when(unlockAppProductId).approved(function (order) {
-            log('You just unlocked the FULL VERSION!');
-            order.finish();
-        });
-
-        store.when(unlockAppProductId).verified(function (p) {
-            log("verified");
-            p.finish();
-        });
-
-        // The play button can only be accessed when the user
-        // owns the full version.
-        store.when(unlockAppProductId).updated(function (product) {
-
-            if (product.loaded && product.valid && product.state == store.APPROVED) {
-                Logger.log('finishing previously created transaction');
-                product.finish();
-            }
-            updateProductInfo(product);
-        });
+        initProduct(getStoreFeatureId(""), false, store.NON_CONSUMABLE);
+        initProduct(getStoreFeatureId("embypremieremonthly"), true, store.PAID_SUBSCRIPTION);
 
         // When every goes as expected, it's time to celebrate!
         // The "ready" event should be welcomed with music and fireworks,
@@ -120,10 +206,36 @@
         store.refresh();
     }
 
+    function getSubscriptionOptions() {
+        var deferred = DeferredBuilder.Deferred();
+
+        var options = [];
+
+        options.push({
+            feature: 'embypremieremonthly',
+            buttonText: 'EmbyPremiereMonthlyWithPrice'
+        });
+
+        options = options.filter(function (o) {
+            return getProduct(o.feature) != null;
+
+        }).map(function (o) {
+
+            o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
+            return o;
+        });
+
+        deferred.resolveWith(null, [options]);
+        return deferred.promise();
+    }
+
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         getProductInfo: getProduct,
-        beginPurchase: beginPurchase
+        beginPurchase: beginPurchase,
+        restorePurchase: restorePurchase,
+        getSubscriptionOptions: getSubscriptionOptions,
+        updateOriginalTransactionInfo: updateOriginalTransactionInfo
     };
 
     initializeStore();

@@ -1,11 +1,8 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Thumb');
-
     var data = {};
 
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -21,21 +18,27 @@
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
                     Limit: LibraryBrowser.getDefaultPageSize()
-                }
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Thumb')
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
     }
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('series');
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
@@ -46,6 +49,8 @@
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
 
+            var view = getPageData().view;
+
             var html = '';
             var trigger = false;
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -53,7 +58,14 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                viewPanelClass: 'seriesViewPanel',
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                viewIcon: 'filter-list',
+                sortButton: true,
+                currentLayout: view,
+                layouts: 'Banner,List,Poster,PosterCard,Thumb,ThumbCard'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -136,12 +148,60 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
+            });
+
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                reloadItems(page, viewPanel);
+            });
+
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                LibraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionNameSort'),
+                        id: 'SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionImdbRating'),
+                        id: 'CommunityRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDateAdded'),
+                        id: 'DateCreated,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDatePlayed'),
+                        id: 'DatePlayed,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionMetascore'),
+                        id: 'Metascore,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionParentalRating'),
+                        id: 'OfficialRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionPlayCount'),
+                        id: 'PlayCount,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionReleaseDate'),
+                        id: 'PremiereDate,SortName'
+                    }],
+                    callback: function () {
+                        reloadItems(page, viewPanel);
+                    },
+                    query: query
+                });
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -151,101 +211,67 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (getQuery().SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (getQuery().SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStatus', page).each(function () {
+        $('.chkStatus', viewPanel).each(function () {
 
             var filters = "," + (getQuery().SeriesStatus || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('.chkStandardFilter', page).each(function () {
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (getQuery().Filters || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('.chkAirDays', page).each(function () {
+        $('.chkAirDays', viewPanel).each(function () {
 
             var filters = "," + (getQuery().AirDays || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         var query = getQuery();
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#chkTrailer', viewPanel).checked(query.HasTrailer == true);
+        $('#chkThemeSong', viewPanel).checked(query.HasThemeSong == true);
+        $('#chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true);
+        $('#chkSpecialFeature', viewPanel).checked(query.HasSpecialFeature == true);
 
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-        $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
-
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWith);
     }
 
-    var filtersLoaded;
-    function reloadFiltersIfNeeded(page) {
+    function reloadFiltersIfNeeded(tabContent, viewPanel) {
 
-        if (!filtersLoaded) {
+        if (!getPageData().filtersLoaded) {
 
-            filtersLoaded = true;
+            getPageData().filtersLoaded = true;
 
             var query = getQuery();
+            QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {
 
-            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
-
-                reloadItems(page);
+                reloadItems(tabContent, viewPanel);
             });
         }
     }
 
-    $(document).on('pageinit', "#tvShowsPage", function () {
+    function initPage(tabContent, viewPanel) {
 
-        var page = this;
+        $(viewPanel).on('panelopen', function () {
 
-        $('.viewPanel', page).on('panelopen', function () {
-
-            reloadFiltersIfNeeded(page);
+            reloadFiltersIfNeeded(tabContent, viewPanel);
         });
 
-        $('.radioSortBy', this).on('click', function () {
-            var query = getQuery();
-            query.SortBy = this.getAttribute('data-sortby');
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            var query = getQuery();
-            query.SortOrder = this.getAttribute('data-sortorder');
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -259,10 +285,10 @@
 
             query.Filters = filters;
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkStatus', this).on('change', function () {
+        $('.chkStatus', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -276,10 +302,10 @@
 
             query.SeriesStatus = filters;
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkAirDays', this).on('change', function () {
+        $('.chkAirDays', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -293,128 +319,95 @@
 
             query.AirDays = filters;
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#selectView', this).on('change', function () {
-
-            var query = getQuery();
-            view = this.value;
-
-            if (view == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.SortOrder = "Descending";
-                query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
-
-            } else {
-                reloadItems(page);
-            }
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
-        });
-
-        $('#chkTrailer', this).on('change', function () {
+        $('#chkTrailer', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeSong', this).on('change', function () {
+        $('#chkThemeSong', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeSong = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkSpecialFeature', this).on('change', function () {
+        $('#chkSpecialFeature', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasSpecialFeature = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeVideo', this).on('change', function () {
+        $('#chkThemeVideo', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#radioBasicFilters', this).on('change', function () {
+        $('#radioBasicFilters', viewPanel).on('change', function () {
 
             if (this.checked) {
-                $('.basicFilters', page).show();
-                $('.advancedFilters', page).hide();
+                $('.basicFilters', viewPanel).show();
+                $('.advancedFilters', viewPanel).hide();
             } else {
-                $('.basicFilters', page).hide();
+                $('.basicFilters', viewPanel).hide();
             }
         });
 
-        $('#radioAdvancedFilters', this).on('change', function () {
+        $('#radioAdvancedFilters', viewPanel).on('change', function () {
 
             if (this.checked) {
-                $('.advancedFilters', page).show();
-                $('.basicFilters', page).hide();
+                $('.advancedFilters', viewPanel).show();
+                $('.basicFilters', viewPanel).hide();
             } else {
-                $('.advancedFilters', page).hide();
+                $('.advancedFilters', viewPanel).hide();
             }
         });
+    }
 
-        $('#selectPageSize', page).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
+    window.TvPage.initSeriesTab = function (page, tabContent) {
 
-    }).on('pagebeforeshow', "#tvShowsPage", function () {
+        var viewPanel = page.querySelector('.seriesViewPanel');
+        initPage(tabContent, viewPanel);
+    };
 
-        var query = getQuery();
+    window.TvPage.renderSeriesTab = function (page, tabContent) {
 
-        var page = this;
-
-        var viewKey = getSavedQueryKey();
-
-        QueryFilters.onPageShow(page, query);
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
-
-                if (val) {
-                    Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
-                } else {
-                    reloadItems(page);
-                }
-            });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.seriesViewPanel');
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(tabContent, viewPanel);
         }
-
-        updateFilterControls(this);
-    });
+    };
 
 })(jQuery, document);

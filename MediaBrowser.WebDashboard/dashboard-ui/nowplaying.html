@@ -4,20 +4,28 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paperbuttonstyle">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="jqmcollapsible,scripts/nowplayingpage">
+
+        <div class="libraryViewNav hide">
+            <div>
+                <a href="#" data-index="0">${TabNowPlaying}</a>
+                <a href="#" data-index="1">${TabControls}</a>
+                <a href="#" data-index="2">${TabPlaylist}</a>
+            </div>
+        </div>
 
         <div data-role="content" style="overflow:visible;">
 
-            <paper-fab mini icon="arrow-back" class="white" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
+            <paper-fab mini icon="arrow-back" class="white nowPlayingPageBackButton" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
             <div style="float:right;position:relative;top:5px;right:5px;text-align:right;">
                 <div>
                     <span class="nowPlayingSelectedPlayer"></span>
-                    <paper-fab mini icon="slideshow" class="btnSlideshow" style="vertical-align:middle;background:#888;z-index:1;margin-right:.5em;"></paper-fab>
                     <paper-fab mini icon="cast" class="blue nowPlayingCastIcon" onclick="MediaController.showPlayerSelection();" style="vertical-align:middle;"></paper-fab>
+                    <paper-fab mini icon="slideshow" class="btnSlideshow" style="vertical-align:middle;background:#888;z-index:1;margin-left:.5em;"></paper-fab>
                 </div>
             </div>
 
-            <neon-animated-pages selected="{{selected}}">
+            <neon-animated-pages>
                 <neon-animatable>
                     <div style="text-align:center;">
 
@@ -48,7 +56,7 @@
                             </div>
                             <div class="buttonsRow2">
                                 <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
-                                <paper-fab icon="subtitles" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
+                                <paper-fab icon="closed-caption" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
                                 <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
                                 <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
                             </div>
@@ -144,18 +152,10 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="playlist itemsContainer" style="max-width:800px;margin: 1.5em auto 0;">
+                    <div class="playlist itemsContainer" style="max-width:800px;margin: 2em auto 0;padding-bottom:200px;">
                     </div>
                 </neon-animatable>
             </neon-animated-pages>
-
-            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs" hidescrollbuttons noink>
-
-                <paper-tab>${TabNowPlaying}</paper-tab>
-                <paper-tab>${TabControls}</paper-tab>
-                <paper-tab>${TabPlaylist}</paper-tab>
-
-            </paper-tabs>
 
         </div>
 
@@ -165,6 +165,13 @@
             </div>
         </div>
 
+        <paper-tabs class="nowPlayingPagePaperTabs" hidescrollbuttons noink>
+
+            <paper-tab>${TabNowPlaying}</paper-tab>
+            <paper-tab>${TabControls}</paper-tab>
+            <paper-tab>${TabPlaylist}</paper-tab>
+
+        </paper-tabs>
     </div>
 </body>
 </html>

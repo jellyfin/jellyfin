@@ -104,7 +104,7 @@
 
     }
 
-    $(document).on('pageshowready', "#dlnaProfilesPage", function () {
+    $(document).on('pageshow', "#dlnaProfilesPage", function () {
 
         var page = this;
 

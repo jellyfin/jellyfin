@@ -15,6 +15,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -24,15 +26,17 @@ namespace MediaBrowser.Providers.TV
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
+        private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization)
+        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
         {
             _logger = logger;
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
+            _fileSystem = fileSystem;
         }
 
         public async Task Run(IEnumerable<IGrouping<string, Series>> series, CancellationToken cancellationToken)
@@ -119,7 +123,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var series in group)
                 {
-                    var directoryService = new DirectoryService();
+                    var directoryService = new DirectoryService(_fileSystem);
 
                     await series.RefreshMetadata(new MetadataRefreshOptions(directoryService)
                     {
@@ -395,7 +399,7 @@ namespace MediaBrowser.Providers.TV
 
             if (season == null)
             {
-                var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager);
+                var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager, _fileSystem);
                 season = await provider.AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
             }
 
@@ -413,7 +417,7 @@ namespace MediaBrowser.Providers.TV
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
 
-            await episode.RefreshMetadata(new MetadataRefreshOptions
+			await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
             }, cancellationToken).ConfigureAwait(false);
         }

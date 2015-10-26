@@ -35,6 +35,14 @@ for `suffix`).
       <paper-icon-button suffix icon="clear"></paper-icon-button>
     </paper-input>
 
+A `paper-input` can use the native `type=search` features. However, since
+we can't control the native styling of the input, it's recommended to use
+a placeholder text, or `always-float-label`, as to not overlap the native search icon.
+
+    <paper-input label="search!" type="search"
+        placeholder="search for cats" autosave="test" results="5">
+    </paper-input>
+
 See `Polymer.PaperInputBehavior` for more API docs.
 
 ### Styling
@@ -49,32 +57,29 @@ style this element.
 -->
 
 <dom-module id="paper-input">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    input::-webkit-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input::-moz-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-    input:-ms-input-placeholder {
-      color: var(--paper-input-container-color, --secondary-text-color);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+      }
+
+      input::-webkit-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input::-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+
+      input:-ms-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+    </style>
 
     <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
@@ -108,7 +113,10 @@ style this element.
         list$="[[list]]"
         size$="[[size]]"
         autocapitalize$="[[autocapitalize]]"
-        autocorrect$="[[autocorrect]]">
+        autocorrect$="[[autocorrect]]"
+        on-change="_onChange"
+        autosave$="[[autosave]]",
+        results$="[[results]]">
 
       <content select="[suffix]"></content>
 
@@ -123,15 +131,10 @@ style this element.
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input',
 
     behaviors: [
@@ -139,9 +142,5 @@ style this element.
       Polymer.PaperInputBehavior,
       Polymer.IronControlState
     ]
-
-  })
-
-})();
-
+  });
 </script>

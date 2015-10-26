@@ -90,7 +90,7 @@
 
             $('#txtTitle', page).val(notificationConfig.Title || typeInfo.DefaultTitle);
 
-            $('#selectUsers', page).val(notificationConfig.SendToUserMode).selectmenu('refresh').trigger('change');
+            $('#selectUsers', page).val(notificationConfig.SendToUserMode).trigger('change');
 
         });
     }
@@ -177,7 +177,7 @@
 
         $('.notificationSettingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#notificationSettingPage", function () {
+    }).on('pageshow', "#notificationSettingPage", function () {
 
         var page = this;
 

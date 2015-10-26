@@ -4,7 +4,7 @@
         crossDomain: true
     });
 
-    if ($.browser.msie) {
+    if ($.browser.msie || $.browser.edge) {
 
         // This is unfortunately required due to IE's over-aggressive caching. 
         // https://github.com/MediaBrowser/MediaBrowser/issues/179
@@ -14,7 +14,6 @@
     }
 })();
 
-// TODO: Deprecated in 1.9
 $.support.cors = true;
 
 $(document).one('click', WebNotifications.requestPermission);
@@ -34,8 +33,6 @@ var Dashboard = {
         //$.mobile.popup.prototype.options.theme = "c";
         //$.mobile.popup.prototype.options.transition = "none";
 
-        //$.mobile.keepNative = "textarea";
-
         if ($.browser.mobile) {
             $.mobile.defaultPageTransition = "none";
         } else {
@@ -44,21 +41,9 @@ var Dashboard = {
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
 
         // Make panels a little larger than the defaults
-        $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
-        $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
         //$.event.special.swipe.verticalDistanceThreshold = 40;
         //$.mobile.page.prototype.options.domCache = true;
-
-
-
-
-        $.mobile.loadingMessage = false;
-        //$.mobile.loader.prototype.options.disabled = true;
-        //$.mobile.loader.prototype.options.html = "";
-        //$.mobile.loader.prototype.options.textVisible = false;
-        //$.mobile.loader.prototype.options.textOnly = true;
-        //$.mobile.loader.prototype.options.text = "";
 
         $.mobile.hideUrlBar = false;
         $.mobile.autoInitializePage = false;
@@ -67,7 +52,6 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none'),.paper-input,textarea.style-scope";
 
         $.mobile.filterHtml = Dashboard.filterHtml;
     },
@@ -110,6 +94,18 @@ var Dashboard = {
 
             var url = data.url.toLowerCase();
 
+            // Don't bounce to login on failures to contact our external servers
+            if (url.indexOf('emby.media') != -1 || url.indexOf('mb3admin.com') != -1) {
+                Dashboard.hideLoadingMsg();
+                return;
+            }
+
+            // Don't bounce if the failure is in a sync service
+            if (url.indexOf('/sync') != -1) {
+                Dashboard.hideLoadingMsg();
+                return;
+            }
+
             // Bounce to the login screen, but not if a password entry fails, obviously
             if (url.indexOf('/password') == -1 &&
                 url.indexOf('/authenticate') == -1 &&
@@ -133,11 +129,27 @@ var Dashboard = {
         }
     },
 
+    onPopupOpen: function () {
+        Dashboard.popupCount = (Dashboard.popupCount || 0) + 1;
+        document.body.classList.add('bodyWithPopupOpen');
+    },
+
+    onPopupClose: function () {
+
+        Dashboard.popupCount = (Dashboard.popupCount || 1) - 1;
+
+        if (!Dashboard.popupCount) {
+            document.body.classList.remove('bodyWithPopupOpen');
+        }
+    },
+
     getCurrentUser: function () {
 
         if (!Dashboard.getUserPromise) {
 
-            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(Dashboard.logout);
+            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(function () {
+                Dashboard.getUserPromise = null;
+            });
         }
 
         return Dashboard.getUserPromise;
@@ -232,6 +244,9 @@ var Dashboard = {
 
     importCss: function (url) {
 
+        var originalUrl = url;
+        url += "?v=" + window.dashboardVersion;
+
         if (!Dashboard.importedCss) {
             Dashboard.importedCss = [];
         }
@@ -247,9 +262,18 @@ var Dashboard = {
         } else {
             var link = document.createElement('link');
             link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('data-url', originalUrl);
             link.setAttribute('type', 'text/css');
             link.setAttribute('href', url);
             document.head.appendChild(link);
+        }
+    },
+
+    removeStylesheet: function (url) {
+
+        var elem = document.querySelector('link[data-url=\'' + url + '\']');
+        if (elem) {
+            elem.parentNode.removeChild(elem);
         }
     },
 
@@ -416,10 +440,10 @@ var Dashboard = {
             elem = $('<p id="' + options.id + '" class="footerNotification"></p>').appendTo(parentElem);
         }
 
-        var onclick = removeOnHide ? "$(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "$(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
+        var onclick = removeOnHide ? "jQuery(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "jQuery(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
 
         if (options.allowHide !== false) {
-            options.html += "<span style='margin-left: 1em;'><button type='button' onclick='" + onclick + "' data-icon='delete' data-iconpos='notext' data-mini='true' data-inline='true' data-theme='b'>" + Globalize.translate('ButtonHide') + "</button></span>";
+            options.html += "<span style='margin-left: 1em;'><paper-button class='submit' onclick='" + onclick + "'>" + Globalize.translate('ButtonHide') + "</paper-button></span>";
         }
 
         if (options.forceShow) {
@@ -490,7 +514,7 @@ var Dashboard = {
         } else {
 
             // IE renders it incorrectly
-            if (!$.browser.msie) {
+            if (!$.browser.msie && !$.browser.edge) {
                 elem = document.createElement("paper-spinner");
                 elem.classList.add('docspinner');
 
@@ -787,33 +811,33 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+        require(['jqmpanel'], function () {
+            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
-        html += '<h3 class="userHeader">';
+            html += '<h3 class="userHeader">';
 
-        html += '</h3>';
+            html += '</h3>';
 
-        html += '<form>';
+            html += '<form>';
 
-        html += '<p class="preferencesContainer"></p>';
+            html += '<p class="preferencesContainer"></p>';
 
-        html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
+            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
-        html += '</form>';
-        html += '</div>';
+            html += '</form>';
+            html += '</div>';
 
-        $(document.body).append(html);
+            $(document.body).append(html);
 
-        var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
+            var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
 
-            $(this).off("panelclose").remove();
+                $(this).off("panelclose").remove();
+            });
+
+            ConnectionManager.user(window.ApiClient).done(function (user) {
+                Dashboard.updateUserFlyout(elem, user);
+            });
         });
-
-        ConnectionManager.user(window.ApiClient).done(function (user) {
-            Dashboard.updateUserFlyout(elem, user);
-        });
-
-        require(['jqmicons']);
     },
 
     updateUserFlyout: function (elem, user) {
@@ -1011,7 +1035,7 @@ var Dashboard = {
             name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
-            selected: page.classList.contains("mediaLibraryPage"),
+            selected: page.classList.contains("librarySectionPage"),
             icon: 'video-library'
         }, {
             name: Globalize.translate('TabMetadata'),
@@ -1027,7 +1051,7 @@ var Dashboard = {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
             selected: page.classList.contains('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'refresh'
+            icon: 'sync'
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -1408,10 +1432,14 @@ var Dashboard = {
 
     setPageTitle: function (title) {
 
-        var elem = $($.mobile.activePage)[0].querySelector('.pageTitle');
+        var page = $.mobile.activePage;
 
-        if (elem) {
-            elem.innerHTML = title;
+        if (page) {
+            var elem = $(page)[0].querySelector('.pageTitle');
+
+            if (elem) {
+                elem.innerHTML = title;
+            }
         }
 
         if (title) {
@@ -1470,7 +1498,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html).selectmenu("refresh");
+        $(select).html(html);
     },
 
     populateCountries: function (select, allCountries) {
@@ -1486,7 +1514,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html).selectmenu("refresh");
+        $(select).html(html);
     },
 
     getSupportedRemoteCommands: function () {
@@ -1531,7 +1559,7 @@ var Dashboard = {
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova() && !$.browser.safari) {
             caps.SupportsOfflineAccess = true;
             caps.SupportsSync = true;
             caps.SupportsContentUploading = true;
@@ -1556,13 +1584,19 @@ var Dashboard = {
 
                 quality -= 10;
 
-                if (isBackdrop) {
-                    quality -= 15;
-                }
-
             } else {
 
                 quality -= 40;
+            }
+        }
+
+        if (typeof ($.browser.androidVersion) == 'number' && !isNaN($.browser.androidVersion)) {
+            if ($.browser.androidVersion < 5) {
+                quality -= 10;
+
+                if ($.browser.androidVersion < 4.4) {
+                    quality -= 10;
+                }
             }
         }
 
@@ -1582,7 +1616,7 @@ var Dashboard = {
         }
     },
 
-    getAppInfo: function (appName, deviceId, deviceName) {
+    getAppInfo: function (appName, appVersion, deviceId, deviceName) {
 
         function generateDeviceName() {
 
@@ -1598,6 +1632,8 @@ var Dashboard = {
                 name = "Opera";
             } else if ($.browser.mozilla) {
                 name = "Firefox";
+            } else if ($.browser.edge) {
+                name = "Edge";
             }
 
             if ($.browser.version) {
@@ -1614,7 +1650,7 @@ var Dashboard = {
             return name;
         }
 
-        var appVersion = window.dashboardVersion;
+        appVersion = appVersion || window.dashboardVersion;
         appName = appName || "Emby Web Client";
 
         deviceName = deviceName || generateDeviceName();
@@ -1682,6 +1718,17 @@ var Dashboard = {
 
     exit: function () {
         Dashboard.logout();
+    },
+
+    loadDragula: function (callback) {
+
+        require(['dragula'], function (dragula) {
+
+            Dashboard.importCss('bower_components/dragula.js/dist/dragula.min.css');
+
+            callback(dragula);
+        });
+
     }
 };
 
@@ -1706,6 +1753,12 @@ var AppInfo = {};
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
+        AppInfo.enableNavDrawer = true;
+        AppInfo.enableSearchInTopMenu = true;
+        AppInfo.enableHomeFavorites = true;
+        AppInfo.enableNowPlayingBar = true;
+        AppInfo.enableHomeTabs = true;
+        AppInfo.enableNowPlayingPageBottomTabs = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1720,8 +1773,17 @@ var AppInfo = {};
             }
 
             if (isCordova) {
-                AppInfo.enableBottomTabs = true;
                 //AppInfo.enableSectionTransitions = true;
+                AppInfo.enableNavDrawer = false;
+                AppInfo.enableSearchInTopMenu = false;
+                AppInfo.enableHomeFavorites = false;
+                AppInfo.enableHomeTabs = false;
+                AppInfo.enableNowPlayingPageBottomTabs = false;
+
+                // Disable the now playing bar for the iphone since we already have the now playing tab at the bottom
+                if (navigator.userAgent.toString().toLowerCase().indexOf('iphone') != -1) {
+                    AppInfo.enableNowPlayingBar = false;
+                }
 
             } else {
                 if (isMobile) {
@@ -1738,7 +1800,6 @@ var AppInfo = {};
 
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
-            AppInfo.enablePeopleTabs = true;
             AppInfo.enableTvEpisodesTab = true;
             AppInfo.enableMovieTrailersTab = true;
         }
@@ -1768,7 +1829,6 @@ var AppInfo = {};
 
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
-
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsFullScreen = isCordova && isAndroid;
@@ -1865,10 +1925,6 @@ var AppInfo = {};
 
         var elem = document.documentElement;
 
-        if (AppInfo.enableBottomTabs) {
-            elem.classList.add('bottomSecondaryNav');
-        }
-
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
         }
@@ -1879,10 +1935,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableStudioTabs) {
             elem.classList.add('studioTabDisabled');
-        }
-
-        if (!AppInfo.enablePeopleTabs) {
-            elem.classList.add('peopleTabDisabled');
         }
 
         if (!AppInfo.enableTvEpisodesTab) {
@@ -1900,22 +1952,45 @@ var AppInfo = {};
         if (AppInfo.isNativeApp) {
             elem.classList.add('nativeApp');
         }
+
+        if (!AppInfo.enableHomeFavorites) {
+            elem.classList.add('homeFavoritesDisabled');
+        }
+    }
+
+    function loadTheme() {
+
+        var name = getParameterByName('theme');
+        if (name) {
+            require(['themes/' + name + '/theme']);
+            return;
+        }
+
+        var date = new Date();
+        var month = date.getMonth();
+        var day = date.getDate();
+
+        if (month == 9 && day >= 30) {
+            require(['themes/halloween/theme']);
+            return;
+        }
     }
 
     function onDocumentReady() {
 
+        if ($.browser.msie) {
+            require(['devices/ie/ie']);
+        }
+
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp) {
             if ($.browser.android) {
-                Dashboard.importCss('themes/android.css');
+                Dashboard.importCss('devices/android.css');
+            } else if ($.browser.safari) {
+                Dashboard.importCss('devices/ios/ios.css');
             }
-            else if ($.browser.safari) {
-                Dashboard.importCss('themes/ios.css');
-            }
-        }
-
-        if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
-            Dashboard.importCss('thirdparty/paper-ie10.css');
+        } else {
+            loadTheme();
         }
 
         if ($.browser.safari && $.browser.mobile) {
@@ -1956,8 +2031,6 @@ var AppInfo = {};
             return false;
         });
 
-        require(['filesystem']);
-
         if (Dashboard.isRunningInCordova()) {
             require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
 
@@ -1977,19 +2050,48 @@ var AppInfo = {};
             }
         }
 
+        if (AppInfo.enableNowPlayingBar) {
+            require(['scripts/nowplayingbar']);
+            Dashboard.importCss('css/nowplayingbar.css');
+        }
+
         if (navigator.splashscreen) {
             navigator.splashscreen.hide();
         }
     }
 
-    function init(deferred, capabilities, appName, deviceId, deviceName) {
+    function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
+
+        var urlArgs = "v=" + window.dashboardVersion;
+
+        if ($.browser.msie || $.browser.edge) {
+            urlArgs += new Date().getTime();
+        }
+
+        var paths = {
+            velocity: "bower_components/velocity/velocity.min",
+            tvguide: 'components/tvguide/tvguide',
+            directorybrowser: 'components/directorybrowser/directorybrowser',
+            collectioneditor: 'components/collectioneditor/collectioneditor',
+            playlisteditor: 'components/playlisteditor/playlisteditor',
+            medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
+            medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
+            howler: 'bower_components/howler.js/howler.min',
+            sortable: 'bower_components/Sortable/Sortable.min'
+        };
+
+        if (Dashboard.isRunningInCordova()) {
+            paths.prompt = "cordova/prompt";
+        } else {
+            paths.prompt = "components/prompt";
+        }
+
+        paths.masonry = "bower_components/masonry/dist/masonry.pkgd.min";
 
         requirejs.config({
-            urlArgs: "v=" + window.dashboardVersion,
+            urlArgs: urlArgs,
 
-            paths: {
-                "velocity": "bower_components/velocity/velocity.min"
-            }
+            paths: paths
         });
 
         // Required since jQuery is loaded before requireJs
@@ -2012,20 +2114,10 @@ var AppInfo = {};
             define("wakeonlan", ["apiclient/wakeonlan"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("localassetmanager", ["cordova/android/localassetmanager"]);
+        if (Dashboard.isRunningInCordova()) {
+            define("localassetmanager", ["cordova/localassetmanager"]);
         } else {
             define("localassetmanager", ["apiclient/localassetmanager"]);
-        }
-
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("filesystem", ["cordova/android/filesystem"]);
-        }
-        else if (Dashboard.isRunningInCordova()) {
-            define("filesystem", ["cordova/filesystem"]);
-        }
-        else {
-            define("filesystem", ["thirdparty/filesystem"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
@@ -2035,6 +2127,10 @@ var AppInfo = {};
         if (Dashboard.isRunningInCordova() && $.browser.android) {
             define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
+        }
+        else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            define("audiorenderer", ["cordova/ios/vlcplayer"]);
+            define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
             define("audiorenderer", ["scripts/htmlmediarenderer"]);
@@ -2108,11 +2204,66 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.listview.css');
+            return {};
+        });
+
+        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css');
+            return {};
+        });
+
+        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.collapsible.css');
+            return {};
+        });
+
+        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.checkbox.css');
+            return {};
+        });
+
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel"], function () {
+            $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
+            $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
+
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.panel.css');
+            return {};
+        });
+
         define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
             return Hammer;
         });
 
-        $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
+        define("cryptojs-sha1", ["apiclient/sha1"]);
+
+        define("contentuploader", ["apiclient/sync/contentuploader"]);
+        define("serversync", ["apiclient/sync/serversync"]);
+        define("multiserversync", ["apiclient/sync/multiserversync"]);
+        define("offlineusersync", ["apiclient/sync/offlineusersync"]);
+        define("mediasync", ["apiclient/sync/mediasync"]);
+
+        if (Dashboard.isRunningInCordova()) {
+            define("fileupload", ["cordova/fileupload"]);
+        } else {
+            define("fileupload", ["apiclient/fileupload"]);
+        }
+
+        var deps = [];
+
+        if (!deviceId) {
+            deps.push('cryptojs-sha1');
+        }
+
+        require(deps, function () {
+            $.extend(AppInfo, Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName));
+
+            initAfterDependencies(deferred, capabilities);
+        });
+    }
+
+    function initAfterDependencies(deferred, capabilities) {
 
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
@@ -2125,7 +2276,7 @@ var AppInfo = {};
 
         drawer.drawerWidth = drawerWidth + "px";
 
-        if ($.browser.safari && !AppInfo.isNativeApp) {
+        if ($.browser.safari) {
             drawer.disableEdgeSwipe = true;
         }
 
@@ -2148,6 +2299,15 @@ var AppInfo = {};
                 }
 
                 AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
+            }
+            else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+
+                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
+
+                // TODO: This is going to exclude it from both playback and sync, so improve on this
+                if (AppSettings.syncLosslessAudio()) {
+                    AppInfo.directPlayAudioContainers.push('flac');
+                }
             }
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
@@ -2186,8 +2346,11 @@ var AppInfo = {};
                     depends = depends || [];
 
                     if (newHtml.indexOf('type-interior') != -1) {
-                        depends.push('jqmicons');
                         depends.push('jqmpopup');
+                        depends.push('jqmlistview');
+                        depends.push('jqmcollapsible');
+                        depends.push('jqmcontrolgroup');
+                        depends.push('jqmcheckbox');
                     }
 
                     require(depends, function () {
@@ -2206,20 +2369,44 @@ var AppInfo = {};
 
     function onAppReady(deferred) {
         onDocumentReady();
-        Dashboard.initPromiseDone = true;
-        $.mobile.initializePage();
-        deferred.resolve();
+
+        var deps = [];
+
+        if (AppInfo.isNativeApp && $.browser.safari) {
+
+            if (Dashboard.capabilities().SupportsSync) {
+                deps.push('cordova/ios/backgroundfetch');
+            }
+
+            deps.push('cordova/ios/tabbar');
+        }
+        if (AppInfo.isNativeApp && $.browser.android) {
+            deps.push('cordova/android/newapp');
+        }
+
+        require(deps, function () {
+
+            Dashboard.initPromiseDone = true;
+            $.mobile.initializePage();
+            deferred.resolve();
+        });
+        //require(['localsync']);
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
         require(['cordova/imagestore']);
 
-        var capablities = Dashboard.capabilities();
+        cordova.getAppVersion.getVersionNumber(function (appVersion) {
+            var capablities = Dashboard.capabilities();
 
-        var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+            var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
 
-        init(deferred, capablities, name, deviceId, device.model);
+            // Remove special characters
+            var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+
+            init(deferred, capablities, name, appVersion, deviceId, cleanDeviceName);
+        });
     }
 
     function initCordova(deferred) {
@@ -2254,13 +2441,36 @@ var AppInfo = {};
 
 })();
 
-Dashboard.jQueryMobileInit();
+function pageClassOn(eventName, className, fn) {
 
-$(document).on('pagecreate', ".page", function () {
+    $(document).on(eventName, function (e) {
+
+        var target = e.target;
+
+        if (target.classList.contains(className)) {
+            fn.call(target, e);
+        }
+    });
+}
+
+function pageIdOn(eventName, id, fn) {
+
+    $(document).on(eventName, function (e) {
+
+        var target = e.target;
+
+        if (target.id == id) {
+            fn.call(target, e);
+        }
+    });
+}
+
+pageClassOn('pagecreate', "page", function () {
 
     var page = $(this);
 
     var current = page.data('theme');
+
     if (!current) {
 
         var newTheme;
@@ -2276,35 +2486,45 @@ $(document).on('pagecreate', ".page", function () {
         if (current && current != newTheme) {
             page.page("option", "theme", newTheme);
         }
-
-        current = newTheme;
     }
 
-    if (current != 'a' && !$.browser.mobile) {
+});
+
+pageClassOn('pageshow', "page", function () {
+
+    var page = this;
+
+    var currentTheme = page.classList.contains('ui-page-theme-a') ? 'a' : 'b';
+    var docElem = document.documentElement;
+
+    if (currentTheme == 'a') {
+        docElem.classList.add('background-theme-a');
+        docElem.classList.remove('background-theme-b');
+        page.classList.add('ui-body-a');
+        page.classList.remove('ui-body-b');
+    } else {
+        docElem.classList.add('background-theme-b');
+        docElem.classList.remove('background-theme-a');
+        page.classList.add('ui-body-b');
+        page.classList.remove('ui-body-a');
+    }
+
+    if (currentTheme != 'a' && !$.browser.mobile) {
         document.body.classList.add('darkScrollbars');
     } else {
         document.body.classList.remove('darkScrollbars');
     }
 
-}).on('pageshow', ".page", function () {
-
-    var page = this;
-
-    var isWizardPage = page.classList.contains('wizardPage');
     Dashboard.ensurePageTitle(page);
 
     var apiClient = window.ApiClient;
-
-    if (isWizardPage) {
-        require(['jqmicons']);
-    }
 
     if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
 
         var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
-            require(['jqmicons']);
+
             Dashboard.ensureToolsMenu(page);
 
             Dashboard.getCurrentUser().done(function (user) {
@@ -2328,7 +2548,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !isWizardPage && this.id !== 'publicSharedItemPage') {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
@@ -2336,11 +2556,12 @@ $(document).on('pagecreate', ".page", function () {
         }
     }
 
-    Events.trigger(page, 'pageshowready');
-
     Dashboard.ensureHeader(page);
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
     }
+
 });
+
+Dashboard.jQueryMobileInit();

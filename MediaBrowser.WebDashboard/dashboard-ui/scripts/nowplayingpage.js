@@ -54,7 +54,6 @@
 
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
-        $(elem).trigger('create');
     }
 
     function selectCurrentChapter(elem, positionTicks) {
@@ -596,9 +595,12 @@
 
         setImageUrl(page, url);
 
-        Backdrops.setBackdropUrl(page, backdropUrl);
-
         if (item) {
+
+            // This should be outside of the IF
+            // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
+            Backdrops.setBackdropUrl(page, backdropUrl);
+
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).done(function (fullItem) {
                 page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
             });
@@ -675,7 +677,7 @@
         //    SortOrder: "Ascending",
         //    IncludeItemTypes: "Audio",
         //    Recursive: true,
-        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
+        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
         //    StartIndex: 0,
         //    ImageTypeLimit: 1,
         //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -698,8 +700,21 @@
 
         var itemsContainer = page.querySelector('.playlist');
         itemsContainer.innerHTML = html;
+
+        var index = MediaController.currentPlaylistIndex();
+
+        if (index != -1) {
+
+            var item = itemsContainer.querySelectorAll('.listItem')[index];
+            if (item) {
+                var img = item.querySelector('.listviewImage');
+
+                img.classList.remove('lazy');
+                img.classList.add('playlistIndexIndicatorImage');
+            }
+        }
+
         ImageLoader.lazyChildren(itemsContainer);
-        $(itemsContainer).trigger('create');
     }
 
     function onListItemClick(e) {
@@ -742,7 +757,7 @@
         });
     }
 
-    $(document).on('pageinit', "#nowPlayingPage", function () {
+    pageIdOn('pageinit', "nowPlayingPage", function () {
 
         var page = this;
 
@@ -758,19 +773,49 @@
         });
 
         var tabs = page.querySelector('paper-tabs');
-        tabs.alignBottom = true;
 
-        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
+        if (AppInfo.enableNowPlayingPageBottomTabs) {
+            tabs.classList.remove('hide');
+            page.querySelector('.libraryViewNav').classList.add('hide');
+        } else {
+            tabs.classList.add('hide');
+            page.querySelector('.libraryViewNav').classList.remove('hide');
+        }
+
+        tabs.classList.add('bottom');
+        tabs.alignBottom = true;
+        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelector('neon-animated-pages'));
 
         $(tabs).on('iron-select', function () {
             page.querySelector('neon-animated-pages').selected = this.selected;
+        });
+
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+            var btn = page.querySelector('.libraryViewNav a.ui-btn-active');
+
+            if (btn) {
+                btn.classList.remove('ui-btn-active');
+            }
+
+            page.querySelector('.libraryViewNav a[data-index=\'' + this.selected + '\']').classList.add('ui-btn-active');
+        });
+
+        $(page.querySelectorAll('.libraryViewNav a')).on('click', function () {
+            var newSelected = this.getAttribute('data-index');
+
+            if (AppInfo.enableNowPlayingPageBottomTabs) {
+                tabs.selected = newSelected;
+            } else {
+                page.querySelector('neon-animated-pages').selected = newSelected;
+            }
         });
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon(page);
         });
 
-    }).on('pagebeforeshow', "#nowPlayingPage", function () {
+    });
+    pageIdOn('pagebeforeshow', "nowPlayingPage", function () {
 
         $(document.body).addClass('hiddenViewMenuBar').addClass('hiddenNowPlayingBar');
         var page = this;
@@ -785,11 +830,24 @@
 
         var tab = window.location.hash;
         var selected = tab == '#playlist' ? 2 : 0;;
-        this.querySelectorAll('paper-tabs')[0].selected = selected;
+
+        this.querySelector('paper-tabs').selected = selected;
+
+        if (AppInfo.enableNowPlayingPageBottomTabs) {
+            this.querySelector('paper-tabs').selected = selected;
+        } else {
+
+            // hack alert. doing this because the neon elements don't seem to be initialized yet
+            setTimeout(function() {
+                
+                page.querySelector('neon-animated-pages').selected = selected;
+            }, 1000);
+        }
 
         updateCastIcon(page);
 
-    }).on('pagebeforehide', "#nowPlayingPage", function () {
+    });
+    pageIdOn('pagebeforehide', "nowPlayingPage", function () {
 
         releaseCurrentPlayer();
 

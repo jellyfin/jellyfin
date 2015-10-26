@@ -10,27 +10,33 @@
             <div class="content-primary">
                 <br />
                 <div class="detailSectionHeader">
-                    <h3 style="margin:.6em 0;">
+                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                         <span style="vertical-align:middle;">${HeaderUsers}</span>
-                        <a data-role="button" data-icon="plus" href="usernew.html" data-inline="true" data-mini="true" data-iconpos="notext" style="margin: 0 .5em; vertical-align:middle;">
-                            ${ButtonAddUser}
-                        </a>
                     </h3>
+                    <paper-button raised class="btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                        <iron-icon icon="add"></iron-icon>
+                        <span>${ButtonAdd}</span>
+                    </paper-button>
                 </div>
                 <div class="localUsers" style="text-align:left;margin-top:.5em;"></div>
 
                 <div class="detailSectionHeader" style="margin-top:2.5em;">
-                    <h3 style="margin:.6em 0;">
-                        <span style="vertical-align:middle;">${HeaderGuests}</span>
-                        <a class="btnInvite" data-role="button" data-icon="plus" href="#" data-rel="popup" data-position-to="window" data-inline="true" data-mini="true" data-iconpos="notext" style="margin: 0 0 0 .5em; vertical-align:middle;">
-                            ${ButtonInviteUser}
-                        </a>
+                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                        ${HeaderGuests}
                     </h3>
+                    <paper-button raised class="btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
+                        <iron-icon icon="add"></iron-icon>
+                        <span>${ButtonAdd}</span>
+                    </paper-button>
                 </div>
                 <div class="connectUsers" style="text-align:left;margin-top:.5em;"></div>
 
                 <div class="sectionPendingGuests" style="display:none;margin-top:2.5em;">
-                    <div class="detailSectionHeader" style="padding: 0 1em;">${HeaderPendingInvitations}</div>
+                    <div class="detailSectionHeader" style="margin-top:2.5em;">
+                        <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                            ${HeaderPendingInvitations}
+                        </h3>
+                    </div>
                     <div class="itemsContainer pending" style="text-align:left;margin-top:.5em;"></div>
                 </div>
             </div>

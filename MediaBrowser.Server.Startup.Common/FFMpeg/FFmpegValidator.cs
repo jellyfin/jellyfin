@@ -6,6 +6,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using MediaBrowser.Common.IO;
+using System.Collections.Generic;
+using CommonIO;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {
@@ -13,78 +16,74 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths)
+        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _logger = logger;
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
-        public void Validate(FFMpegInfo info)
+        public Tuple<List<string>,List<string>> Validate(FFMpegInfo info)
         {
             _logger.Info("FFMpeg: {0}", info.EncoderPath);
             _logger.Info("FFProbe: {0}", info.ProbePath);
 
-            string cacheKey;
+            var decoders = GetDecoders(info.EncoderPath);
+            var encoders = GetEncoders(info.EncoderPath);
 
+            return new Tuple<List<string>, List<string>>(decoders, encoders);
+        }
+
+        private List<string> GetDecoders(string ffmpegPath)
+        {
+            string output = string.Empty;
             try
             {
-                cacheKey = new FileInfo(info.EncoderPath).Length.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
-            }
-            catch (IOException)
-            {
-                // This could happen if ffmpeg is coming from a Path variable and we don't have the full path
-                cacheKey = Guid.NewGuid().ToString("N");
+                output = GetFFMpegOutput(ffmpegPath, "-decoders");
             }
             catch
             {
-                cacheKey = Guid.NewGuid().ToString("N");
             }
 
-            var cachePath = Path.Combine(_appPaths.CachePath, "1" + cacheKey);
+            var found = new List<string>();
+            var required = new[]
+            {
+                "h264_qsv",
+                "mpeg2_qsv",
+                "vc1_qsv"
+            };
 
-            ValidateCodecs(info.EncoderPath, cachePath);
+            foreach (var codec in required)
+            {
+                var srch = " " + codec + "  ";
+
+                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    _logger.Warn("ffmpeg is missing decoder " + codec);
+                }
+                else
+                {
+                    found.Add(codec);
+                }
+            }
+
+            return found;
         }
 
-        private void ValidateCodecs(string ffmpegPath, string cachePath)
+        private List<string> GetEncoders(string ffmpegPath)
         {
             string output = null;
             try
             {
-                output = File.ReadAllText(cachePath, Encoding.UTF8);
+                output = GetFFMpegOutput(ffmpegPath, "-encoders");
             }
             catch
             {
-
             }
 
-            if (string.IsNullOrWhiteSpace(output))
-            {
-                try
-                {
-                    output = GetFFMpegOutput(ffmpegPath, "-encoders");
-                }
-                catch
-                {
-                    return;
-                }
-
-                try
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-                    File.WriteAllText(cachePath, output, Encoding.UTF8);
-                }
-                catch
-                {
-
-                }
-            }
-
-            ValidateCodecsFromOutput(output);
-        }
-
-        private void ValidateCodecsFromOutput(string output)
-        {
+            var found = new List<string>();
             var required = new[]
             {
                 "libx264",
@@ -100,16 +99,21 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 "srt"
             };
 
-            foreach (var encoder in required)
+            foreach (var codec in required)
             {
-                var srch = " " + encoder + "  ";
+                var srch = " " + codec + "  ";
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    _logger.Error("ffmpeg is missing encoder " + encoder);
-                    //throw new ArgumentException("ffmpeg is missing encoder " + encoder);
+                    _logger.Warn("ffmpeg is missing encoder " + codec);
+                }
+                else
+                {
+                    found.Add(codec);
                 }
             }
+
+            return found;
         }
 
         private string GetFFMpegOutput(string path, string arguments)

@@ -20,7 +20,7 @@
 
             return '<option value="' + l.Value + '">' + l.Name + '</option>';
 
-        })).val(config.UICulture).selectmenu('refresh');
+        })).val(config.UICulture);
 
         currentLanguage = config.UICulture;
 
@@ -83,27 +83,30 @@
 
         $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
 
-            var picker = new DirectoryBrowser(page);
+            require(['directorybrowser'], function (directoryBrowser) {
 
-            picker.show({
+                var picker = new directoryBrowser();
 
-                callback: function (path) {
+                picker.show({
 
-                    if (path) {
-                        page.querySelector('#txtCachePath').value = path;
-                    }
-                    picker.close();
-                },
+                    callback: function (path) {
 
-                header: Globalize.translate('HeaderSelectServerCachePath'),
+                        if (path) {
+                            page.querySelector('#txtCachePath').value = path;
+                        }
+                        picker.close();
+                    },
 
-                instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
+                    header: Globalize.translate('HeaderSelectServerCachePath'),
+
+                    instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
+                });
             });
         });
 
         $('.dashboardGeneralForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#dashboardGeneralPage", function () {
+    }).on('pageshow', "#dashboardGeneralPage", function () {
 
         Dashboard.showLoadingMsg();
 

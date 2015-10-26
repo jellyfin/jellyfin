@@ -67,7 +67,7 @@
 			currentOptions.history = currentOptions.history && $.mobile.ajaxEnabled && $.mobile.hashListeningEnabled;
 
 			this._on(this.document, {
-				"vmousedown": "_handleDocumentVmousedown"
+				"mousedown": "_handleDocumentVmousedown"
 			});
 
 			// Define instance variables
@@ -104,7 +104,7 @@
 				._ui.focusElement = this._ui.container;
 
 			// Event handlers
-			this._on(this._ui.screen, { "vclick": "_eatEventAndClose" });
+			this._on(this._ui.screen, { "click": "_eatEventAndClose" });
 			this._on(this.window, {
 				orientationchange: $.proxy(this, "_handleWindowOrientationchange"),
 				resize: $.proxy(this, "_handleWindowResize"),
@@ -613,8 +613,7 @@
 		},
 
 		_openPrerequisitesComplete: function () {
-			var id = this.element.attr("id"),
-				firstFocus = this._ui.container.find(":focusable").first();
+			var id = this.element.attr("id");
 
 			this._ui.container.addClass("ui-popup-active");
 			this._isOpen = true;
@@ -623,9 +622,6 @@
 			// Check to see if currElement is not a child of the container.  If it's not, blur
 			if (!$.contains(this._ui.container[0], this.document[0].activeElement)) {
 				this._safelyBlur(this.document[0].activeElement);
-			}
-			if (firstFocus.length > 0) {
-				this._ui.focusElement = firstFocus;
 			}
 			this._ignoreResizeEvents();
 			if (id) {

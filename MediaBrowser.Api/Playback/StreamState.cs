@@ -74,7 +74,7 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                return ReadInputAtNativeFramerate ? 1000 : 0;
+                return 0;
             }
         }
 
@@ -454,6 +454,17 @@ namespace MediaBrowser.Api.Playback
                 return !string.IsNullOrEmpty(VideoRequest.Profile) && !Request.Static
                     ? VideoRequest.Profile
                     : stream == null ? null : stream.Profile;
+            }
+        }
+
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                var stream = VideoStream;
+                return !Request.Static
+                    ? null
+                    : stream == null ? null : stream.CodecTag;
             }
         }
 

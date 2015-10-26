@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Startup.Common
             _logManager.Flush();
 
             var path = Path.Combine(_appPaths.LogDirectoryPath, "unhandled_" + Guid.NewGuid() + ".txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var builder = LogHelper.GetLogMessage(ex);
 
@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Startup.Common
             Console.WriteLine("UnhandledException");
             Console.WriteLine(builder.ToString());
             
-            File.WriteAllText(path, builder.ToString());
+			File.WriteAllText(path, builder.ToString());
         }
     }
 }

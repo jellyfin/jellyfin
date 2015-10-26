@@ -7,6 +7,11 @@ namespace MediaBrowser.Server.Mono.Native
     /// </summary>
     internal class NativeApp : BaseMonoApp
     {
+        public NativeApp(StartupOptions startupOptions)
+            : base(startupOptions)
+        {
+        }
+
         /// <summary>
         /// Shutdowns this instance.
         /// </summary>

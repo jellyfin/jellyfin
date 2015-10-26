@@ -20,7 +20,12 @@
                     <div style="position: relative;">
                         <h2>${HeaderCustomDlnaProfiles}</h2>
                         <div style="position: absolute; right: 0; top: -12px;">
-                            <a data-role="button" data-icon="plus" data-mini="true" href="dlnaprofile.html">${ButtonNew}</a>
+                            <a class="clearLink" href="dlnaprofile.html">
+                                <paper-button raised class="submit mini">
+                                    <iron-icon icon="add"></iron-icon>
+                                    <span>${ButtonNew}</span>
+                                </paper-button>
+                            </a>
                         </div>
                     </div>
 

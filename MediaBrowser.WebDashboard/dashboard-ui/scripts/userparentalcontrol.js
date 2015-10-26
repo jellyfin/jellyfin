@@ -35,7 +35,7 @@
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
-        $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
+        $('#selectMaxParentalRating', page).html(html);
     }
 
     function loadUnratedItems(page, user) {
@@ -99,7 +99,7 @@
             }
         }
 
-        $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
+        $('#selectMaxParentalRating', page).val(ratingValue);
 
         if (user.Policy.IsAdministrator) {
             $('.accessScheduleSection', page).hide();
@@ -242,16 +242,6 @@
 
             // Disable default form submission
             return false;
-        },
-
-        onBlockedTagFormSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            saveBlockedTag(page);
-
-            // Disable default form submission
-            return false;
         }
     };
 
@@ -279,8 +269,8 @@
 
         html += '<option value="24">' + getDisplayTime(0) + '</option>';
 
-        $('#selectStart', page).html(html).selectmenu('refresh');
-        $('#selectEnd', page).html(html).selectmenu('refresh');
+        $('#selectStart', page).html(html);
+        $('#selectEnd', page).html(html);
     }
 
     function showSchedulePopup(page, schedule, index) {
@@ -291,9 +281,9 @@
 
         $('#fldScheduleIndex', page).val(index);
 
-        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday').selectmenu('refresh');
-        $('#selectStart', page).val(schedule.StartHour || 0).selectmenu('refresh');
-        $('#selectEnd', page).val(schedule.EndHour || 0).selectmenu('refresh');
+        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday');
+        $('#selectStart', page).val(schedule.StartHour || 0);
+        $('#selectEnd', page).val(schedule.EndHour || 0);
     }
 
     function saveSchedule(page) {
@@ -326,19 +316,6 @@
         $('#popupSchedule', page).popup('close');
     }
 
-    function saveBlockedTag(page) {
-
-        var tag = $('#txtBlockedTag', page).val();
-        var tags = getBlockedTagsFromPage(page);
-
-        if (tags.indexOf(tag) == -1) {
-            tags.push(tag);
-            loadBlockedTags(page, tags);
-        }
-
-        $('#popupBlockedTag', page).popup('close');
-    }
-
     function getSchedulesFromPage(page) {
 
         return $('.liSchedule', page).map(function () {
@@ -363,8 +340,25 @@
 
     function showBlockedTagPopup(page) {
 
-        $('#popupBlockedTag', page).popup('open');
-        $('#txtBlockedTag', page).val('').focus();
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                text: Globalize.translate('LabelTag'),
+                title: Globalize.translate('HeaderAddTag'),
+                callback: function(value) {
+                    
+                    if (value) {
+                        var tags = getBlockedTagsFromPage(page);
+
+                        if (tags.indexOf(value) == -1) {
+                            tags.push(value);
+                            loadBlockedTags(page, tags);
+                        }
+                    }
+                }
+            });
+
+        });
     }
 
     $(document).on('pageinit', "#userParentalControlPage", function () {
@@ -384,11 +378,10 @@
 
         populateHours(page);
 
-        $('.blockedTagForm').off('submit', UserParentalControlPage.onBlockedTagFormSubmit).on('submit', UserParentalControlPage.onBlockedTagFormSubmit);
         $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
         $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
 
-    }).on('pageshowready', "#userParentalControlPage", function () {
+    }).on('pageshow', "#userParentalControlPage", function () {
 
         var page = this;
 

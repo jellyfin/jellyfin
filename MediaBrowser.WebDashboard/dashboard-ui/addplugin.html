@@ -4,7 +4,7 @@
     <title>${TitlePlugins}</title>
 </head>
 <body>
-    <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/registrationservices,scripts/ratingdialog,scripts/addpluginpage,fontawesome">
+    <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/registrationservices,scripts/ratingdialog,scripts/addpluginpage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -64,16 +64,16 @@
                                         </p>
                                         <div class="supporterDescription">
 
-                                            <p>${MessageSupporterPluginRequiresMembership}</p>
+                                            <p>${MessagePluginRequiresSubscription}</p>
 
-                                            <p><a href="http://emby.media/donate" target="_blank">${LinkSupporterMembership}</a></p>
+                                            <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
 
                                         </div>
                                         <div class="premiumDescription">
 
                                             <p>${MessagePremiumPluginRequiresMembership}</p>
 
-                                            <p><a href="http://emby.media/donate" target="_blank">${LinkSupporterMembership}</a></p>
+                                            <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
                                         </div>
                                         <div class="premiumHasPrice" style="display: none">
                                             <p id="regPrice">
@@ -86,9 +86,11 @@
                                             <input type="hidden" id="featureId" name="item_number" value="">
                                             <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
                                             <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                                            <button type="submit" id="ppButton" data-role="none" class="btn" style="background-color:#179BD7">
-                                                <i class="fa fa-paypal"></i>
-                                                <span>${RegisterWithPayPal}</span>
+                                            <button type="submit" id="ppButton" class="clearButton">
+                                                <paper-button raised class="block" style="background-color: #179BD7;color:#fff;">
+                                                    <iron-icon icon="check"></iron-icon>
+                                                    <span>${RegisterWithPayPal}</span>
+                                                </paper-button>
                                             </button>
 
                                         </div>

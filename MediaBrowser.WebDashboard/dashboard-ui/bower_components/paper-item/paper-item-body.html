@@ -1,11 +1,11 @@
 <!--
-    @license
-    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-    Code distributed by Google as part of the polymer project is also
-    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
 <link rel="import" href="../polymer/polymer.html">
@@ -38,56 +38,43 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-item-body">
-
-  <style>
-
-    :host {
-      overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
-      @apply(--layout-vertical);
-      @apply(--layout-center-justified);
-      @apply(--layout-flex);
-    }
-
-    :host([two-line]) {
-      min-height: var(--paper-item-body-two-line-min-height, 72px);
-    }
-
-    :host([three-line]) {
-      min-height: var(--paper-item-body-three-line-min-height, 88px);
-    }
-
-    :host > ::content > * {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    :host > ::content [secondary] {
-      color: var(--paper-item-body-secondary-color, --secondary-text-color);
-      @apply(--paper-font-body1);
-
-      @apply(--paper-item-body-secondary);
-    }
-
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        @apply(--layout-flex);
+      }
+
+      :host([two-line]) {
+        min-height: var(--paper-item-body-two-line-min-height, 72px);
+      }
+
+      :host([three-line]) {
+        min-height: var(--paper-item-body-three-line-min-height, 88px);
+      }
+
+      :host > ::content > * {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      :host > ::content [secondary] {
+        color: var(--paper-item-body-secondary-color, --secondary-text-color);
+        @apply(--paper-font-body1);
+
+        @apply(--paper-item-body-secondary);
+      }
+    </style>
+
     <content></content>
   </template>
 
+  <script>
+    Polymer({
+      is: 'paper-item-body'
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'paper-item-body'
-
-  });
-
-})();
-
-</script>

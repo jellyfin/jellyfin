@@ -1,13 +1,7 @@
 ﻿(function ($, document) {
 
-    var pageSizeKey = 'people';
-
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
-
     var data = {};
-
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -22,46 +16,56 @@
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     Limit: LibraryBrowser.getDefaultPageSize()
-                }
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
     }
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return LibraryBrowser.getSavedQueryKey('artists');
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
         var query = getQuery();
+
         ApiClient.getArtists(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
 
-            var html = '';
+            var view = getPageData().view;
 
+            var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false,
-                addSelectionButton: true,
-                pageSizeKey: pageSizeKey
+                viewPanelClass: 'artistsViewPanel',
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                currentLayout: view,
+                viewButton: true,
+                viewIcon: 'filter-list'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
-            var trigger = false;
+            updateFilterControls(page, viewPanel);
 
             if (view == "List") {
 
@@ -70,7 +74,6 @@
                     context: 'music',
                     sortBy: query.SortBy
                 });
-                trigger = true;
             }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -98,22 +101,24 @@
                 });
             }
 
-            var elem = page.querySelector('.itemsContainer');
+            var elem = page.querySelector('#items');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
 
-            if (trigger) {
-                $(elem).trigger('create');
-            }
-
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
+            });
+
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -122,49 +127,44 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
         var query = getQuery();
-        $('.chkStandardFilter', page).each(function () {
+
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('#selectView', page).val(view).selectmenu('refresh');
-
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    var filtersLoaded;
-    function reloadFiltersIfNeeded(page) {
+    function reloadFiltersIfNeeded(page, viewPanel) {
 
-        var query = getQuery();
-        if (!filtersLoaded) {
+        if (!getPageData().filtersLoaded) {
 
-            filtersLoaded = true;
+            getPageData().filtersLoaded = true;
 
-            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
+            var query = getQuery();
+            QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {
 
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
         }
     }
 
-    $(document).on('pageinit', "#musicArtistsPage", function () {
+    function initPage(tabContent, viewPanel) {
 
-        var page = this;
+        $(viewPanel).on('panelopen', function () {
 
-        $('.viewPanel', page).on('panelopen', function () {
-
-            reloadFiltersIfNeeded(page);
+            reloadFiltersIfNeeded(tabContent, viewPanel);
         });
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -179,61 +179,40 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
             var query = getQuery();
+
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
             var query = getQuery();
+
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
+    }
 
-        $('#selectView', this).on('change', function () {
+    window.MusicPage.initArtistsTab = function (page, tabContent) {
 
-            view = this.value;
+        var viewPanel = page.querySelector('.artistsViewPanel');
+        initPage(tabContent, viewPanel);
+    };
 
-            reloadItems(page);
+    window.MusicPage.renderArtistsTab = function (page, tabContent) {
 
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshow', "#musicArtistsPage", function () {
-
-        var page = this;
-
-        var query = getQuery();
-
-        QueryFilters.onPageShow(page, query);
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
-
-                if (val) {
-                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-                } else {
-                    reloadItems(page);
-                }
-            });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.artistsViewPanel');
+            reloadItems(tabContent, viewPanel);
         }
-
-        updateFilterControls(this);
-    });
+    };
 
 })(jQuery, document);

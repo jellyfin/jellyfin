@@ -99,11 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('button with no label has no aria label', function() {
         assert.isTrue(!r1.getAttribute('aria-label'));
       });
-
-      test('button with a label sets an aria label', function() {
-        assert.isTrue(r2.getAttribute('aria-label') == "Batman");
-      });
-
+      
       test('button respects the user set aria-label', function() {
         var c = fixture('AriaLabel');
         assert.isTrue(c.getAttribute('aria-label') == "Batman");

@@ -2,10 +2,19 @@
     padding-top: 0 !important;
 }
 
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        margin: 2px 1px;
-        width: 70px;
-        height: 70px;
+.nowPlayingPagePaperTabs.bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+    margin: 2px 1px;
+}
+
+    .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
+        display: inline-block !important;
     }
 
 .nowPlayingPageImage img {
@@ -73,11 +82,24 @@
     box-shadow: 0 0 12px 7px #cc3333;
 }
 
+.playlistIndexIndicatorImage {
+    background-size: initial !important;
+    background-image: url(images/ani_equalizer_white.gif) !important;
+}
+
 @media all and (max-width: 700px) {
 
     .nowPlayingPageImage img {
         max-height: 160px;
         max-width: 200px;
+    }
+}
+
+@media all and (max-width: 600px) and (orientation: portrait) {
+
+    .btnSlideshow {
+        display: block !important;
+        margin-top: 1em;
     }
 }
 
@@ -198,7 +220,7 @@
     }
 }
 
-.nowPlayingPageUserDataButtons iron-icon {
+.nowPlayingPageUserDataButtons paper-icon-button {
     width: 40px;
     height: 40px;
 }

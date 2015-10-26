@@ -1,204 +1,255 @@
 ﻿(function () {
 
-    function isAndroid() {
-
-        return $.browser.android;
-    }
-
-    function getPremiumUnlockFeatureId() {
-
-        if (isAndroid()) {
-            return "com.mb.android.unlock";
-        }
-
-        return 'appunlock';
-    }
-
-    function validatePlayback(deferred) {
-
-        // Don't require validation on android
-        if (isAndroid()) {
-            deferred.resolve();
-            return;
-        }
-
-        validateFeature(getPremiumUnlockFeatureId(), deferred);
-    }
-
-    function validateLiveTV(deferred) {
-
-        if (!isAndroid()) {
-            deferred.resolve();
-            return;
-        }
-
-        validateFeature(getPremiumUnlockFeatureId(), deferred);
-    }
-
     function validateServerManagement(deferred) {
         deferred.resolve();
     }
 
-    function getRegistrationInfo(feature, enableSupporterUnlock) {
+    function getRegistrationInfo(feature) {
 
-        if (!enableSupporterUnlock) {
-            var deferred = $.Deferred();
-            deferred.resolveWith(null, [{}]);
-            return deferred.promise();
-        }
         return ConnectionManager.getRegistrationInfo(feature, ApiClient);
     }
 
     var validatedFeatures = [];
 
-    function validateFeature(id, deferred) {
+    function validateFeature(feature, deferred) {
 
-        if (validatedFeatures.indexOf(id) != -1) {
+        if (validatedFeatures.indexOf(feature) != -1) {
             deferred.resolve();
             return;
         }
 
-        var info = IapManager.getProductInfo(id) || {};
+        var info = IapManager.getProductInfo(feature) || {};
 
         if (info.owned) {
-            validatedFeatures.push(id);
+            notifyServer(info.id);
+            validatedFeatures.push(feature);
             deferred.resolve();
             return;
         }
 
-        var productInfo = {
-            enableSupporterUnlock: isAndroid(),
-            enableAppUnlock: IapManager.isPurchaseAvailable(id),
-            id: id,
-            price: info.price
-        };
+        var unlockableProductInfo = IapManager.isPurchaseAvailable(feature) ? {
+            enableAppUnlock: IapManager.isPurchaseAvailable(feature),
+            id: info.id,
+            price: info.price,
+            feature: feature
 
-        var prefix = isAndroid() ? 'android' : 'ios';
+        } : null;
+
+        var prefix = $.browser.android ? 'android' : 'ios';
 
         // Get supporter status
-        getRegistrationInfo(prefix + 'appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
+        getRegistrationInfo(prefix + 'appunlock').done(function (registrationInfo) {
 
             if (registrationInfo.IsRegistered) {
-                validatedFeatures.push(id);
+                validatedFeatures.push(feature);
                 deferred.resolve();
                 return;
             }
 
-            showInAppPurchaseInfo(productInfo, registrationInfo, deferred);
+            IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
+
+                var dialogOptions = {
+                    title: Globalize.translate('HeaderUnlockApp')
+                };
+
+                showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, registrationInfo, dialogOptions, deferred);
+            });
 
         }).fail(function () {
             deferred.reject();
         });
     }
 
-    function getInAppPurchaseElement(info) {
+    function notifyServer(id) {
 
-        require(['paperbuttonstyle']);
-        cancelInAppPurchase();
-
-        var html = '';
-        html += '<div class="inAppPurchaseOverlay" style="background-image:url(css/images/splash.jpg);top:0;left:0;right:0;bottom:0;position:fixed;background-position:center center;background-size:100% 100%;background-repeat:no-repeat;z-index:999999;">';
-        html += '<div class="inAppPurchaseOverlayInner" style="background:rgba(10,10,10,.8);width:100%;height:100%;color:#eee;">';
-
-
-        html += '<div class="inAppPurchaseForm" style="margin: 0 auto;padding: 30px 1em 0;">';
-
-        html += '<h1 style="color:#fff;">' + Globalize.translate('HeaderUnlockApp') + '</h1>';
-
-        html += '<p style="margin:2em 0;">';
-
-        if (info.enableSupporterUnlock && info.enableAppUnlock) {
-            html += Globalize.translate('MessageUnlockAppWithPurchaseOrSupporter');
-        }
-        else if (info.enableSupporterUnlock) {
-            html += Globalize.translate('MessageUnlockAppWithSupporter');
-        } else if (info.enableAppUnlock) {
-            html += Globalize.translate('MessageUnlockAppWithPurchase');
-        } else {
-            html += '<span style="color:red;">';
-            html += Globalize.translate('MessagePaymentServicesUnavailable');
-            html += '</span>';
-        }
-        html += '</p>';
-
-        if (info.enableSupporterUnlock) {
-            html += '<p style="margin:2em 0;">';
-            html += Globalize.translate('MessageToValidateSupporter');
-            html += '</p>';
+        if (!$.browser.android) {
+            return;
         }
 
-        if (info.enableAppUnlock) {
-
-            var unlockText = Globalize.translate('ButtonUnlockWithPurchase');
-            if (info.price) {
-                unlockText = Globalize.translate('ButtonUnlockPrice', info.price);
+        HttpClient.send({
+            type: "POST",
+            url: "https://mb3admin.com/admin/service/appstore/addDeviceFeature",
+            data: {
+                deviceId: ConnectionManager.deviceId(),
+                feature: 'com.mb.android.unlock'
+            },
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            headers: {
+                "X-EMBY-TOKEN": "EMBY_DEVICE"
             }
-            html += '<p>';
-            html += '<paper-button raised class="secondary block btnAppUnlock"><iron-icon icon="check"></iron-icon><span>' + unlockText + '</span></paper-button>';
-            html += '</p>';
-        }
 
-        if (info.enableSupporterUnlock) {
-            html += '<p>';
-            html += '<paper-button raised class="submit block btnSignInSupporter"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonUnlockWithSupporter') + '</span></paper-button>';
-            html += '</p>';
-        }
+        }).done(function (result) {
 
-        html += '<p>';
-        html += '<paper-button raised class="cancelDark block btnCancel"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
-        html += '</p>';
+            Logger.log('addDeviceFeature succeeded');
 
-        html += '</div>';
-
-        html += '</div>';
-        html += '</div>';
-
-        $(document.body).append(html);
-
-        return $('.inAppPurchaseOverlay');
+        }).fail(function () {
+            Logger.log('addDeviceFeature failed');
+        });
     }
 
     function cancelInAppPurchase() {
 
-        $('.inAppPurchaseOverlay').remove();
+        var elem = document.querySelector('.inAppPurchaseOverlay');
+        if (elem) {
+            PaperDialogHelper.close(elem);
+        }
     }
 
-    var currentDisplayingProductInfo = null;
+    var isCancelled = true;
+    var currentDisplayingProductInfos = [];
     var currentDisplayingDeferred = null;
 
     function clearCurrentDisplayingInfo() {
-        currentDisplayingProductInfo = null;
+        currentDisplayingProductInfos = [];
         currentDisplayingDeferred = null;
     }
 
-    function showInAppPurchaseInfo(info, serverRegistrationInfo, deferred) {
+    function showInAppPurchaseElement(subscriptionOptions, unlockableProductInfo, dialogOptions, deferred) {
 
-        var elem = getInAppPurchaseElement(info);
+        cancelInAppPurchase();
 
-        currentDisplayingProductInfo = info;
-        currentDisplayingDeferred = deferred;
+        // clone
+        currentDisplayingProductInfos = subscriptionOptions.slice(0);
 
-        $('.btnAppUnlock', elem).on('click', function () {
+        if (unlockableProductInfo) {
+            currentDisplayingProductInfos.push(unlockableProductInfo);
+        }
 
-            IapManager.beginPurchase(info.id);
+        var dlg = PaperDialogHelper.createDialog();
+
+        var html = '';
+        html += '<h2 class="dialogHeader">';
+        html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+        html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + dialogOptions.title + '</div>';
+        html += '</h2>';
+
+        html += '<div class="editorContent">';
+
+        html += '<form style="max-width: 800px;margin:auto;">';
+        html += '<p style="margin:2em 0;">';
+
+        if (unlockableProductInfo) {
+            html += Globalize.translate('MessageUnlockAppWithPurchaseOrSupporter');
+        }
+        else {
+            html += Globalize.translate('MessageUnlockAppWithSupporter');
+        }
+        html += '</p>';
+
+        html += '<p style="margin:2em 0;">';
+        html += Globalize.translate('MessageToValidateSupporter');
+        html += '</p>';
+
+        if (unlockableProductInfo) {
+
+            var unlockText = Globalize.translate('ButtonUnlockWithPurchase');
+            if (unlockableProductInfo.price) {
+                unlockText = Globalize.translate('ButtonUnlockPrice', unlockableProductInfo.price);
+            }
+            html += '<p>';
+            html += '<paper-button raised class="secondary block btnPurchase" data-feature="' + unlockableProductInfo.feature + '"><iron-icon icon="check"></iron-icon><span>' + unlockText + '</span></paper-button>';
+            html += '</p>';
+        }
+
+        for (var i = 0, length = subscriptionOptions.length; i < length; i++) {
+
+            html += '<p>';
+            html += '<paper-button raised class="submit block btnPurchase" data-email="true" data-feature="' + subscriptionOptions[i].feature + '"><iron-icon icon="check"></iron-icon><span>';
+            html += subscriptionOptions[i].buttonText;
+            html += '</span></paper-button>';
+            html += '</p>';
+        }
+
+        if (IapManager.restorePurchase) {
+            html += '<p>';
+            html += '<paper-button raised class="secondary block btnRestorePurchase" style="background-color: #673AB7;"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonRestorePreviousPurchase') + '</span></paper-button>';
+            html += '</p>';
+        }
+
+        html += '</form>';
+        html += '</div>';
+
+        dlg.innerHTML = html;
+        document.body.appendChild(dlg);
+
+        initInAppPurchaseElementEvents(dlg, deferred);
+
+        PaperDialogHelper.openWithHash(dlg, 'iap');
+
+        $('.btnCloseDialog', dlg).on('click', function () {
+
+            PaperDialogHelper.close(dlg);
         });
 
-        $('.btnCancel', elem).on('click', function () {
+        $(dlg).on('iron-overlay-closed', function () {
 
-            clearCurrentDisplayingInfo();
-            cancelInAppPurchase();
-
-            deferred.reject();
+            if (window.TabBar) {
+                TabBar.show();
+            }
         });
-        $('.btnSignInSupporter', elem).on('click', function () {
+
+        dlg.classList.add('inAppPurchaseOverlay');
+    }
+
+    function initInAppPurchaseElementEvents(elem, deferred) {
+
+        isCancelled = true;
+
+        $('.btnPurchase', elem).on('click', function () {
+
+            isCancelled = false;
+
+            if (this.getAttribute('data-email') == 'true') {
+                promptForEmail(this.getAttribute('data-feature'));
+            } else {
+                IapManager.beginPurchase(this.getAttribute('data-feature'));
+            }
+        });
+
+        $('.btnRestorePurchase', elem).on('click', function () {
+
+            isCancelled = false;
+            IapManager.restorePurchase();
+        });
+
+        $(elem).on('iron-overlay-closed', function () {
 
             clearCurrentDisplayingInfo();
 
-            Dashboard.alert({
-                message: Globalize.translate('MessagePleaseSignInLocalNetwork'),
-                callback: function () {
-                    cancelInAppPurchase();
-                    Dashboard.logout();
+            if (isCancelled) {
+                deferred.reject();
+            }
+
+            $(this).remove();
+        });
+    }
+
+    function showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, serverRegistrationInfo, dialogOptions, deferred) {
+
+        require(['components/paperdialoghelper'], function () {
+
+            if (window.TabBar) {
+                TabBar.hide();
+            }
+
+            showInAppPurchaseElement(subscriptionOptions, unlockableProductInfo, dialogOptions, deferred);
+
+            currentDisplayingDeferred = deferred;
+        });
+    }
+
+    function promptForEmail(feature) {
+
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                text: Globalize.translate('TextPleaseEnterYourEmailAddressForSubscription'),
+                title: Globalize.translate('HeaderEmailAddress'),
+                callback: function (email) {
+
+                    if (email) {
+                        IapManager.beginPurchase(feature, email);
+                    }
                 }
             });
         });
@@ -206,13 +257,18 @@
 
     function onProductUpdated(e, product) {
 
-        var currentInfo = currentDisplayingProductInfo;
         var deferred = currentDisplayingDeferred;
 
-        if (currentInfo && deferred) {
-            if (product.owned && product.id == currentInfo.id) {
+        if (deferred && product.owned) {
 
-                clearCurrentDisplayingInfo();
+            if (currentDisplayingProductInfos.filter(function (p) {
+
+                return product.id == p.id;
+
+            }).length) {
+
+                isCancelled = false;
+
                 cancelInAppPurchase();
                 deferred.resolve();
             }
@@ -228,31 +284,27 @@
                 return;
             }
 
-            Dashboard.showLoadingMsg();
-
-            ApiClient.getRegistrationInfo('Sync').done(function (registrationInfo) {
-
-                Dashboard.hideLoadingMsg();
+            // Get supporter status
+            getRegistrationInfo('Sync').done(function (registrationInfo) {
 
                 if (registrationInfo.IsRegistered) {
+                    validatedFeatures.push(feature);
                     deferred.resolve();
                     return;
                 }
 
-                Dashboard.alert({
-                    message: Globalize.translate('HeaderSyncRequiresSupporterMembershipAppVersion'),
-                    title: Globalize.translate('HeaderSync')
+                IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
+
+                    var dialogOptions = {
+                        title: Globalize.translate('HeaderUnlockSync')
+                    };
+
+                    showInAppPurchaseInfo(subscriptionOptions, null, registrationInfo, dialogOptions, deferred);
                 });
 
             }).fail(function () {
-
-                Dashboard.hideLoadingMsg();
-
-                Dashboard.alert({
-                    message: Globalize.translate('ErrorValidatingSupporterInfo')
-                });
+                deferred.reject();
             });
-
         });
     }
 
@@ -263,24 +315,13 @@
 
         },
 
-        addRecurringFields: function (page, period) {
-
-        },
-
-        initSupporterForm: function (page) {
-
-            $('.recurringSubscriptionCancellationHelp', page).html('');
-        },
-
         validateFeature: function (name) {
             var deferred = DeferredBuilder.Deferred();
 
             if (name == 'playback') {
-                validatePlayback(deferred);
+                validateFeature(name, deferred);
             } else if (name == 'livetv') {
-                validateLiveTV(deferred);
-            } else if (name == 'manageserver') {
-                validateServerManagement(deferred);
+                validateFeature(name, deferred);
             } else if (name == 'sync') {
                 validateSync(deferred);
             } else {
@@ -295,7 +336,7 @@
         Events.on(IapManager, 'productupdated', onProductUpdated);
     }
 
-    if (isAndroid()) {
+    if ($.browser.android) {
         requirejs(['cordova/android/iap'], onIapManagerLoaded);
     } else {
         requirejs(['cordova/iap'], onIapManagerLoaded);

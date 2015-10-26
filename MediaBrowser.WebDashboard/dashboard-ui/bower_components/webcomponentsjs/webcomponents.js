@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.12
+// @version 0.7.14
 window.WebComponents = window.WebComponents || {};
 
 (function(scope) {
@@ -3159,18 +3159,29 @@ if (WebComponents.flags.shadow) {
     "use strict";
     var Element = scope.wrappers.Element;
     var HTMLElement = scope.wrappers.HTMLElement;
-    var registerObject = scope.registerObject;
+    var registerWrapper = scope.registerWrapper;
     var defineWrapGetter = scope.defineWrapGetter;
+    var unsafeUnwrap = scope.unsafeUnwrap;
+    var wrap = scope.wrap;
+    var mixin = scope.mixin;
     var SVG_NS = "http://www.w3.org/2000/svg";
+    var OriginalSVGElement = window.SVGElement;
     var svgTitleElement = document.createElementNS(SVG_NS, "title");
-    var SVGTitleElement = registerObject(svgTitleElement);
-    var SVGElement = Object.getPrototypeOf(SVGTitleElement.prototype).constructor;
     if (!("classList" in svgTitleElement)) {
       var descr = Object.getOwnPropertyDescriptor(Element.prototype, "classList");
       Object.defineProperty(HTMLElement.prototype, "classList", descr);
       delete Element.prototype.classList;
     }
-    defineWrapGetter(SVGElement, "ownerSVGElement");
+    function SVGElement(node) {
+      Element.call(this, node);
+    }
+    SVGElement.prototype = Object.create(Element.prototype);
+    mixin(SVGElement.prototype, {
+      get ownerSVGElement() {
+        return wrap(unsafeUnwrap(this).ownerSVGElement);
+      }
+    });
+    registerWrapper(OriginalSVGElement, SVGElement, document.createElementNS(SVG_NS, "title"));
     scope.wrappers.SVGElement = SVGElement;
   })(window.ShadowDOMPolyfill);
   (function(scope) {
@@ -3309,20 +3320,27 @@ if (WebComponents.flags.shadow) {
   })(window.ShadowDOMPolyfill);
   (function(scope) {
     "use strict";
+    var Node = scope.wrappers.Node;
     var GetElementsByInterface = scope.GetElementsByInterface;
     var NonElementParentNodeInterface = scope.NonElementParentNodeInterface;
     var ParentNodeInterface = scope.ParentNodeInterface;
     var SelectorsInterface = scope.SelectorsInterface;
     var mixin = scope.mixin;
     var registerObject = scope.registerObject;
-    var DocumentFragment = registerObject(document.createDocumentFragment());
+    var registerWrapper = scope.registerWrapper;
+    var OriginalDocumentFragment = window.DocumentFragment;
+    function DocumentFragment(node) {
+      Node.call(this, node);
+    }
+    DocumentFragment.prototype = Object.create(Node.prototype);
     mixin(DocumentFragment.prototype, ParentNodeInterface);
     mixin(DocumentFragment.prototype, SelectorsInterface);
     mixin(DocumentFragment.prototype, GetElementsByInterface);
     mixin(DocumentFragment.prototype, NonElementParentNodeInterface);
+    registerWrapper(OriginalDocumentFragment, DocumentFragment, document.createDocumentFragment());
+    scope.wrappers.DocumentFragment = DocumentFragment;
     var Comment = registerObject(document.createComment(""));
     scope.wrappers.Comment = Comment;
-    scope.wrappers.DocumentFragment = DocumentFragment;
   })(window.ShadowDOMPolyfill);
   (function(scope) {
     "use strict";
@@ -4694,7 +4712,7 @@ if (WebComponents.flags.shadow) {
         }
       }
     };
-    var selectorRe = /([^{]*)({[\s\S]*?})/gim, cssCommentRe = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim, cssCommentNextSelectorRe = /\/\*\s*@polyfill ([^*]*\*+([^/*][^*]*\*+)*\/)([^{]*?){/gim, cssContentNextSelectorRe = /polyfill-next-selector[^}]*content\:[\s]*?['"](.*?)['"][;\s]*}([^{]*?){/gim, cssCommentRuleRe = /\/\*\s@polyfill-rule([^*]*\*+([^/*][^*]*\*+)*)\//gim, cssContentRuleRe = /(polyfill-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssCommentUnscopedRuleRe = /\/\*\s@polyfill-unscoped-rule([^*]*\*+([^/*][^*]*\*+)*)\//gim, cssContentUnscopedRuleRe = /(polyfill-unscoped-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssPseudoRe = /::(x-[^\s{,(]*)/gim, cssPartRe = /::part\(([^)]*)\)/gim, polyfillHost = "-shadowcsshost", polyfillHostContext = "-shadowcsscontext", parenSuffix = ")(?:\\((" + "(?:\\([^)(]*\\)|[^)(]*)+?" + ")\\))?([^,{]*)";
+    var selectorRe = /([^{]*)({[\s\S]*?})/gim, cssCommentRe = /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim, cssCommentNextSelectorRe = /\/\*\s*@polyfill ([^*]*\*+([^\/*][^*]*\*+)*\/)([^{]*?){/gim, cssContentNextSelectorRe = /polyfill-next-selector[^}]*content\:[\s]*?['"](.*?)['"][;\s]*}([^{]*?){/gim, cssCommentRuleRe = /\/\*\s@polyfill-rule([^*]*\*+([^\/*][^*]*\*+)*)\//gim, cssContentRuleRe = /(polyfill-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssCommentUnscopedRuleRe = /\/\*\s@polyfill-unscoped-rule([^*]*\*+([^\/*][^*]*\*+)*)\//gim, cssContentUnscopedRuleRe = /(polyfill-unscoped-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssPseudoRe = /::(x-[^\s{,(]*)/gim, cssPartRe = /::part\(([^)]*)\)/gim, polyfillHost = "-shadowcsshost", polyfillHostContext = "-shadowcsscontext", parenSuffix = ")(?:\\((" + "(?:\\([^)(]*\\)|[^)(]*)+?" + ")\\))?([^,{]*)";
     var cssColonHostRe = new RegExp("(" + polyfillHost + parenSuffix, "gim"), cssColonHostContextRe = new RegExp("(" + polyfillHostContext + parenSuffix, "gim"), selectorReSuffix = "([>\\s~+[.,{:][\\s\\S]*)?$", colonHostRe = /\:host/gim, colonHostContextRe = /\:host-context/gim, polyfillHostNoCombinator = polyfillHost + "-no-combinator", polyfillHostRe = new RegExp(polyfillHost, "gim"), polyfillHostContextRe = new RegExp(polyfillHostContext, "gim"), shadowDOMSelectorsRe = [ />>>/g, /::shadow/g, /::content/g, /\/deep\//g, /\/shadow\//g, /\/shadow-deep\//g, /\^\^/g, /\^/g ];
     function stylesToCssText(styles, preserveComments) {
       var cssText = "";
@@ -5379,7 +5397,7 @@ if (WebComponents.flags.shadow) {
     };
   }
   scope.URL = jURL;
-})(this);
+})(self);
 
 (function(global) {
   var registrationsTable = new WeakMap();
@@ -5678,7 +5696,7 @@ if (WebComponents.flags.shadow) {
   };
   global.JsMutationObserver = JsMutationObserver;
   if (!global.MutationObserver) global.MutationObserver = JsMutationObserver;
-})(window);
+})(self);
 
 window.HTMLImports = window.HTMLImports || {
   flags: {}
@@ -6398,7 +6416,7 @@ window.HTMLImports.addModule(function(scope) {
   if (scope.useNative) {
     return;
   }
-  if (isIE && typeof window.CustomEvent !== "function") {
+  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
     window.CustomEvent = function(inType, params) {
       params = params || {};
       var e = document.createEvent("CustomEvent");
@@ -7029,7 +7047,7 @@ window.CustomElements.addModule(function(scope) {
       });
     });
   }
-  if (isIE && typeof window.CustomEvent !== "function") {
+  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
     window.CustomEvent = function(inType, params) {
       params = params || {};
       var e = document.createEvent("CustomEvent");

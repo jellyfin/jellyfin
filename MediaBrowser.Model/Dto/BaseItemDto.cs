@@ -67,6 +67,8 @@ namespace MediaBrowser.Model.Dto
         public bool? CanDelete { get; set; }
         public bool? CanDownload { get; set; }
 
+        public bool? HasSubtitles { get; set; }
+        
         public string PreferredMetadataLanguage { get; set; }
         public string PreferredMetadataCountryCode { get; set; }
 
@@ -74,8 +76,6 @@ namespace MediaBrowser.Model.Dto
         public string ShareUrl { get; set; }
 
         public float? Metascore { get; set; }
-
-        public bool? IsUnidentified { get; set; }
         public bool? HasDynamicCategories { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
@@ -276,12 +276,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the season count.
-        /// </summary>
-        /// <value>The season count.</value>
-        public int? SeasonCount { get; set; }
 
         /// <summary>
         /// Gets or sets the players supported by a game.
@@ -1111,12 +1105,6 @@ namespace MediaBrowser.Model.Dto
         /// The start date of the recording, in UTC.
         /// </summary>
         public DateTime? StartDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the original air date.
-        /// </summary>
-        /// <value>The original air date.</value>
-        public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
         /// Gets or sets the completion percentage.

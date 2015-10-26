@@ -23,7 +23,7 @@
 
             currentItem = item;
 
-            if (item.Type == "UserRootFolder") {
+            if (!LibraryBrowser.supportsEditing(item.Type)) {
                 $('.editPageInnerContent', page)[0].style.visibility = 'hidden';
                 Dashboard.hideLoadingMsg();
                 return;
@@ -45,18 +45,6 @@
 
             setFieldVisibilities(page, item);
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
-
-            if (item.Type == "BoxSet") {
-                page.querySelector('.collectionItemsTabButton').classList.remove('hide');
-            } else {
-                page.querySelector('.collectionItemsTabButton').classList.add('hide');
-            }
-
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                page.querySelector('.subtitleTabButton').classList.remove('hide');
-            } else {
-                page.querySelector('.subtitleTabButton').classList.add('hide');
-            }
 
             if (item.MediaType == 'Photo') {
                 $('#btnEditImages', page).hide();
@@ -96,7 +84,7 @@
 
         }).join('');
 
-        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '').selectmenu('refresh');
+        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '');
     }
 
     function onExternalIdChange() {
@@ -292,20 +280,15 @@
             $('#fldYear', page).show();
         }
 
-        if (item.Type == "Movie" ||
-            item.Type == "Trailer" ||
-            item.Type == "Series" ||
-            item.Type == "Game" ||
-            item.Type == "BoxSet" ||
-            item.Type == "Person" ||
-            item.Type == "Book" ||
-            item.Type == "MusicAlbum" ||
-            item.Type == "MusicArtist") {
+        Dashboard.getCurrentUser().done(function (user) {
 
-            $('#btnIdentify', page).show();
-        } else {
-            $('#btnIdentify', page).hide();
-        }
+            if (LibraryBrowser.getMoreCommands(item, user).indexOf('identify') != -1) {
+
+                $('#btnIdentify', page).show();
+            } else {
+                $('#btnIdentify', page).hide();
+            }
+        });
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             $('#keywordsCollapsible', page).show();
@@ -377,9 +360,9 @@
             $('#fldDisplayOrder', page).show();
 
             $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
-            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>');
         } else {
-            $('#selectDisplayOrder', page).html('').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('');
             $('#fldDisplayOrder', page).hide();
         }
 
@@ -401,19 +384,19 @@
 
         populateRatings(parentalRatingOptions, select, item.OfficialRating);
 
-        select.val(item.OfficialRating || "").selectmenu('refresh');
+        select.val(item.OfficialRating || "");
 
         select = $('#selectCustomRating', page);
 
         populateRatings(parentalRatingOptions, select, item.CustomRating);
 
-        select.val(item.CustomRating || "").selectmenu('refresh');
+        select.val(item.CustomRating || "");
 
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
-        selectStatus.val(item.Status || "").selectmenu('refresh');
+        selectStatus.val(item.Status || "");
 
-        $('#select3dFormat', page).val(item.Video3DFormat || "").selectmenu('refresh');
+        $('#select3dFormat', page).val(item.Video3DFormat || "");
 
         $('.chkAirDay', page).each(function () {
 
@@ -481,7 +464,7 @@
 
         }).join(';'));
 
-        $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
+        $('#selectDisplayOrder', page).val(item.DisplayOrder);
 
         $('#txtArtist', page).val((item.ArtistItems || []).map(function (a) {
 
@@ -536,8 +519,8 @@
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
 
-        $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "").selectmenu('refresh');
-        $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "").selectmenu('refresh');
+        $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "");
+        $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "");
 
         if (item.RunTimeTicks) {
 
@@ -604,7 +587,7 @@
         $('#popupEditPerson', page).popup("open");
 
         $('#txtPersonName', page).val(person.Name || '');
-        $('#selectPersonType', page).val(person.Type || '').selectmenu('refresh');
+        $('#selectPersonType', page).val(person.Type || '');
         $('#txtPersonRole', page).val(person.Role || '');
 
         if (index == null) {
@@ -678,7 +661,7 @@
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
-        select.html(html).selectmenu("refresh");
+        select.html(html);
     }
 
     function populateStatus(select) {
@@ -687,7 +670,7 @@
         html += "<option value=''></option>";
         html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
         html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
-        select.html(html).selectmenu("refresh");
+        select.html(html);
     }
 
     function populateListView(list, items, sortCallback) {
@@ -996,14 +979,6 @@
             list.listview('refresh');
         };
 
-        self.onIdentificationFormSubmitted = function () {
-
-            var page = $(this).parents('.page');
-
-            searchForIdentificationResults(page);
-            return false;
-        };
-
         self.onRefreshFormSubmit = function () {
             var page = $(this).parents('.page');
 
@@ -1018,273 +993,16 @@
             savePersonInfo(page);
             return false;
         };
-
-        self.onIdentificationOptionsSubmit = function () {
-
-            var page = $(this).parents('.page');
-
-            submitIdentficationResult(page);
-            return false;
-        };
     }
 
     window.EditItemMetadataPage = new editItemMetadataPage();
-
-    function showIdentificationForm(page) {
-
-        var item = currentItem;
-
-        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
-
-            var html = '';
-
-            var providerIds = item.ProviderIds || {};
-
-            for (var i = 0, length = idList.length; i < length; i++) {
-
-                var idInfo = idList[i];
-
-                var id = "txtLookup" + idInfo.Key;
-
-                html += '<div data-role="fieldcontain">';
-
-                var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
-                html += '<label for="' + id + '">' + idLabel + '</label>';
-
-                var value = providerIds[idInfo.Key] || '';
-
-                html += '<input class="txtLookupId" value="' + value + '" data-providerkey="' + idInfo.Key + '" id="' + id + '" data-mini="true" />';
-
-                html += '</div>';
-            }
-
-            $('#txtLookupName', page).val(item.Name);
-
-            if (item.Type == "Person" || item.Type == "BoxSet") {
-
-                $('.fldLookupYear', page).hide();
-                $('#txtLookupYear', page).val('');
-            } else {
-
-                $('.fldLookupYear', page).show();
-                $('#txtLookupYear', page).val(item.ProductionYear);
-            }
-
-            $('.identifyProviderIds', page).html(html).trigger('create');
-
-            $('.identificationHeader', page).html(Globalize.translate('HeaderIdentify'));
-
-            $('.popupIdentifyForm', page).show();
-            $('.identificationSearchResults', page).hide();
-            $('.identifyOptionsForm', page).hide();
-            $('.btnIdentifyBack', page).hide();
-
-            $('.popupIdentifyItem', page).popup('open');
-        });
-    }
-
-    function searchForIdentificationResults(page) {
-
-        var lookupInfo = {
-            ProviderIds: {}
-        };
-
-        $('.identifyField', page).each(function () {
-
-            var value = this.value;
-
-            if (value) {
-
-                if (this.type == 'number') {
-                    value = parseInt(value);
-                }
-
-                lookupInfo[this.getAttribute('data-lookup')] = value;
-            }
-
-        });
-
-        var hasId = false;
-
-        $('.txtLookupId', page).each(function () {
-
-            var value = this.value;
-
-            if (value) {
-                hasId = true;
-            }
-            lookupInfo.ProviderIds[this.getAttribute('data-providerkey')] = value;
-
-        });
-
-        if (!hasId && !lookupInfo.Name) {
-            Dashboard.alert(Globalize.translate('MessagePleaseEnterNameOrId'));
-            return;
-        }
-
-        if (currentItem.GameSystem) {
-            lookupInfo.GameSystem = currentItem.GameSystem;
-        }
-
-        lookupInfo = {
-            SearchInfo: lookupInfo,
-            IncludeDisabledProviders: true
-        };
-
-        Dashboard.showLoadingMsg();
-
-        ApiClient.ajax({
-            type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
-            data: JSON.stringify(lookupInfo),
-            contentType: "application/json"
-
-        }).done(function (results) {
-
-            Dashboard.hideLoadingMsg();
-            showIdentificationSearchResults(page, results);
-        });
-    }
-
-    function getSearchImageDisplayUrl(url, provider) {
-        return ApiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
-    }
-
-    function getSearchResultHtml(result, index) {
-
-        var html = '';
-        var cssClass = "searchImageContainer remoteImageContainer";
-
-        if (currentItem.Type == "Episode") {
-            cssClass += " searchBackdropImageContainer";
-        }
-        else if (currentItem.Type == "MusicAlbum" || currentItem.Type == "MusicArtist") {
-            cssClass += " searchDiscImageContainer";
-        }
-        else {
-            cssClass += " searchPosterImageContainer";
-        }
-
-        html += '<div class="' + cssClass + '">';
-
-        if (result.ImageUrl) {
-            var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
-
-            html += '<a href="#" class="searchImage" data-index="' + index + '" style="background-image:url(\'' + displayUrl + '\');">';
-        } else {
-
-            html += '<a href="#" class="searchImage" data-index="' + index + '" style="background-image:url(\'css/images/items/list/remotesearch.png\');background-position: center center;">';
-        }
-        html += '</a>';
-
-        html += '<div class="remoteImageDetails">';
-        html += result.Name;
-        html += '</div>';
-
-        html += '<div class="remoteImageDetails">';
-        html += result.ProductionYear || '&nbsp;';
-        html += '</div>';
-
-        if (result.GameSystem) {
-            html += '<div class="remoteImageDetails">';
-            html += result.GameSystem;
-            html += '</div>';
-        }
-
-        html += '</div>';
-        return html;
-    }
-
-    function showIdentificationSearchResults(page, results) {
-
-        $('.popupIdentifyForm', page).hide();
-        $('.identificationSearchResults', page).show();
-        $('.identifyOptionsForm', page).hide();
-        $('.btnIdentifyBack', page).show();
-
-        var html = '';
-
-        for (var i = 0, length = results.length; i < length; i++) {
-
-            var result = results[i];
-
-            html += getSearchResultHtml(result, i);
-        }
-
-        var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
-
-        $('.searchImage', elem).on('click', function () {
-
-            var index = parseInt(this.getAttribute('data-index'));
-
-            var currentResult = results[index];
-
-            showIdentifyOptions(page, currentResult);
-        });
-    }
-
-    function showIdentifyOptions(page, identifyResult) {
-
-        $('.popupIdentifyForm', page).hide();
-        $('.identificationSearchResults', page).hide();
-        $('.identifyOptionsForm', page).show();
-        $('.btnIdentifyBack', page).show();
-        $('#chkIdentifyReplaceImages', page).checked(true).checkboxradio('refresh');
-
-        currentSearchResult = identifyResult;
-
-        var lines = [];
-        lines.push(identifyResult.Name);
-
-        if (identifyResult.ProductionYear) {
-            lines.push(identifyResult.ProductionYear);
-        }
-
-        if (identifyResult.GameSystem) {
-            lines.push(identifyResult.GameSystem);
-        }
-
-        var resultHtml = lines.join('<br/>');
-
-        if (identifyResult.ImageUrl) {
-            var displayUrl = getSearchImageDisplayUrl(identifyResult.ImageUrl, identifyResult.SearchProviderName);
-
-            resultHtml = '<img src="' + displayUrl + '" style="max-height:160px;" /><br/>' + resultHtml;
-        }
-
-        $('.selectedSearchResult', page).html(resultHtml);
-    }
-
-    function submitIdentficationResult(page) {
-
-        Dashboard.showLoadingMsg();
-
-        var options = {
-            ReplaceAllImages: $('#chkIdentifyReplaceImages', page).checked()
-        };
-
-        ApiClient.ajax({
-            type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
-            data: JSON.stringify(currentSearchResult),
-            contentType: "application/json"
-
-        }).done(function () {
-
-            Dashboard.hideLoadingMsg();
-
-            $('.popupIdentifyItem', page).popup('close');
-
-            reload(page);
-        });
-    }
 
     function performAdvancedRefresh(page) {
 
         $('.popupAdvancedRefresh', page).popup('open');
 
-        $('#selectMetadataRefreshMode', page).val('all').selectmenu('refresh');
-        $('#selectImageRefreshMode', page).val('missing').selectmenu('refresh');
+        $('#selectMetadataRefreshMode', page).val('all');
+        $('#selectImageRefreshMode', page).val('missing');
     }
 
     function performSimpleRefresh(page) {
@@ -1390,6 +1108,12 @@
                 });
             }
 
+            menuItems.push({
+                name: Globalize.translate('ButtonEditImages'),
+                id: 'editimages',
+                ironIcon: 'photo'
+            });
+
             require(['actionsheet'], function () {
 
                 ActionSheetElement.show({
@@ -1405,6 +1129,9 @@
                             case 'delete':
                                 LibraryBrowser.deleteItem(currentItem.Id);
                                 break;
+                            case 'editimages':
+                                LibraryBrowser.editImages(currentItem.Id);
+                                break;
                             default:
                                 break;
                         }
@@ -1416,50 +1143,32 @@
         });
     }
 
-    function showTab(page, index) {
-
-        $('.editorTab', page).addClass('hide')[index].classList.remove('hide');
-    }
-
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 
         $('.btnSimpleRefresh', this).on('click', function () {
 
-            performSimpleRefresh(page);
+            performAdvancedRefresh(page);
+        });
+
+        $('.btnEditImages', page).on('click', function () {
+
+            LibraryBrowser.editImages(currentItem.Id);
         });
 
         $('#btnIdentify', page).on('click', function () {
 
-            showIdentificationForm(page);
-        });
-
-        $('.btnIdentifyBack', page).on('click', function () {
-
-            if ($('.identifyOptionsForm', page).is(':visible')) {
-
-                $('.identifyOptionsForm', page).hide();
-
-                $('.identificationSearchResults', page).show();
-                $('.popupIdentifyForm', page).hide();
-            } else {
-
-                $('.identificationSearchResults', page).hide();
-                $('.popupIdentifyForm', page).show();
-                $(this).hide();
-            }
+            LibraryBrowser.identifyItem(currentItem.Id);
         });
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
 
-                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
-
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                $(page.querySelector('paper-tabs')).trigger('tabchange');
+                reload(page);
             }
         });
 
@@ -1469,45 +1178,19 @@
         });
 
         $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
-        $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
         $('.popupEditPersonForm').off('submit', EditItemMetadataPage.onPersonInfoFormSubmit).on('submit', EditItemMetadataPage.onPersonInfoFormSubmit);
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
-        $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
-
-        var tabs = page.querySelector('paper-tabs');
-
-        configurePaperLibraryTabs(page, tabs);
-
-        $(tabs).on('iron-select', function () {
-
-            var self = this;
-
-            setTimeout(function () {
-                Events.trigger(self, 'tabchange');
-            }, 400);
-
-        }).on('tabchange', function () {
-            var selected = this.selected;
-
-            showTab(page, selected);
-            loadTab(page, parseInt(this.selected));
-        });
-
-        page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
 
         $('.btnMore', page).on('click', function () {
             showMoreMenu(page, this);
         });
 
-    }).on('pageshowready', "#editItemMetadataPage", function () {
+    }).on('pageshow', "#editItemMetadataPage", function () {
 
         var page = this;
 
         $(LibraryBrowser).on('itemdeleting', onItemDeleted);
-
-        var selected = parseInt(getParameterByName('tab') || '0');
-
-        page.querySelector('paper-tabs').selected = selected;
+        reload(page);
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
@@ -1515,49 +1198,7 @@
         $(LibraryBrowser).off('itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
-
     });
-
-    function configurePaperLibraryTabs(ownerpage, tabs) {
-
-        tabs.hideScrollButtons = true;
-        tabs.noSlide = true;
-
-        // Unfortunately we can't disable this because it causes iron-select to not fire in IE and Safari.
-        //tabs.noink = true;
-
-        $(ownerpage).on('pageshowready', function () {
-
-            var selected = tabs.selected;
-
-            if (selected == null) {
-
-                Logger.log('selected tab is null, checking query string');
-
-                selected = parseInt(getParameterByName('tab') || '0');
-
-                Logger.log('selected tab will be ' + selected);
-
-                tabs.selected = selected;
-
-            } else {
-                Events.trigger(tabs, 'tabchange');
-            }
-        });
-    }
-
-    function loadTab(page, index) {
-
-        switch (index) {
-
-            case 0:
-                reload(page);
-                break;
-            default:
-                reload(page);
-                break;
-        }
-    }
 
 })(jQuery, document, window);
 

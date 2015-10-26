@@ -120,7 +120,7 @@
 
 };
 
-$(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow);
+$(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
 (function () {
 
@@ -134,7 +134,7 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
 
             return '<option value="' + u.ConnectUserId + '">' + u.Name + '</option>';
 
-        }).join('')).selectmenu('refresh');
+        }).join(''));
     }
 
     function addUser(page, id) {
@@ -255,6 +255,18 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
 
     }
 
+    function loadUserInfo(page) {
+
+        ApiClient.getJSON(ApiClient.getUrl('System/SupporterInfo')).done(function (info) {
+
+            if (info.IsActiveSupporter) {
+                $('.supporterContainer', page).addClass('hide');
+            } else {
+                $('.supporterContainer', page).removeClass('hide');
+            }
+        });
+    }
+
     $(document).on('pageinit', "#supporterKeyPage", function () {
 
         var page = this;
@@ -267,10 +279,13 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
         $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
         $('.popupAddUserForm').on('submit', SupporterKeyPage.onAddConnectUserSubmit).on('submit', SupporterKeyPage.onAddConnectUserSubmit);
 
-    }).on('pageshowready', "#supporterKeyPage", function () {
+        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/premiere" target="_blank">', '</a>'));
+
+    }).on('pageshow', "#supporterKeyPage", function () {
 
         var page = this;
         loadConnectSupporters(page);
+        loadUserInfo(page);
     });
 
     window.SupporterKeyPage.onAddConnectUserSubmit = function () {

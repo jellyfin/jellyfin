@@ -2,13 +2,15 @@
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
     public class SeriesTimerManager : ItemDataProvider<SeriesTimerInfo>
     {
-        public SeriesTimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
-            : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public SeriesTimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
+            : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }
 

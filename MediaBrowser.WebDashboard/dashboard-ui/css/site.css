@@ -295,7 +295,6 @@
 
 /* jQuery mobile adds a text shadow that seems unnecessary. */
 * {
-    text-shadow: none !important;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -304,10 +303,11 @@ html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
     /* Prevent white flickering */
-    background-color: #262626;
+    background-color: #242424;
     /* Normalize for different browsers */
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 
 body {
@@ -323,6 +323,7 @@ body {
     /* Normalize for different browsers */
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 
 /* Without this, no content will be displayed in mobile safari */
@@ -351,10 +352,6 @@ body {
     text-decoration: none;
 }
 
-    .textlink:hover {
-        text-decoration: underline;
-    }
-
 h1, h1 a {
     font-weight: 300 !important;
     font-size: 24px;
@@ -381,7 +378,7 @@ h2 {
     font-weight: 500 !important;
 }
 
-h1 a {
+a, a:active, a:hover {
     text-decoration: none;
 }
 
@@ -427,6 +424,169 @@ h1 a:hover {
     height: 18px;
     width: 18px;
     margin: -10px 0 0 -10px;
+}
+
+fieldset {
+    border: none;
+}
+
+input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']) {
+    -webkit-appearance: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    height: 28.5938px;
+    letter-spacing: normal;
+    line-height: 18.2px;
+    list-style-image: none;
+    list-style-position: outside;
+    list-style-type: none;
+    min-height: 28.6px;
+    padding-bottom: 5.2px;
+    padding-left: 5.2px;
+    padding-right: 5.2px;
+    padding-top: 5.2px;
+    text-align: left;
+    text-indent: 0px;
+    text-rendering: auto;
+    text-shadow: none;
+    text-transform: none;
+    white-space: nowrap;
+    word-spacing: 0px;
+    writing-mode: lr-tb;
+    -webkit-writing-mode: horizontal-tb;
+    background: white;
+    width: 100%;
+    border: 1px solid #ccc;
+    color: #000;
+    margin: 0 0 3px 0;
+    border-radius: 4px;
+    display: block;
+}
+
+select {
+    width: 100%;
+    margin: 0 0 .5em 0;
+    background: none;
+    border: 1px solid rgb(221, 221, 221);
+    border-width: 0 0 1px 0;
+    /* Prefixed box-sizing rules necessary for older browsers */
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    /* Remove select styling */
+    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
+    font-size: inherit;
+    /* General select styles: change as needed */
+    font-family: inherit;
+    font-weight: bold;
+    color: inherit;
+    padding: .6em .8em .3em 0;
+    cursor: pointer;
+}
+
+    select:not([data-inline='true']) {
+        display: block;
+    }
+
+.ui-body-a select {
+    background: none;
+    border-color: #757575;
+}
+
+    .ui-body-a select option {
+        color: #000;
+    }
+
+.ui-body-b select {
+    background: none;
+    border-color: #454545;
+}
+
+    .ui-body-b select option {
+        background: #333;
+        color: #fff;
+    }
+
+a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    background-clip: padding-box;
+    border-radius: .3125em;
+    border: 1px solid #ddd !important;
+    color: rgb(51, 51, 51) !important;
+    cursor: pointer !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: 500 !important;
+    margin: 0 .25em !important;
+    display: inline-block;
+    padding: .8em 1em;
+    text-align: center;
+    text-decoration: none !important;
+    background: #f6f6f6 !important;
+    font-size: 16px;
+    -webkit-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+    -moz-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+    box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+}
+
+    a[data-role='button'][data-iconpos='notext'], button[data-iconpos='notext']:not([data-role='none']):not(.clearButton) {
+        padding: 4px;
+        border-radius: 50px;
+        outline: 0;
+    }
+
+    a[data-role='button']:not([data-inline='true']), button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+        display: block;
+        margin: .5em 0 !important;
+    }
+
+    a[data-role='button']:focus, button:not([data-role='none']):focus {
+        -webkit-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
+        -moz-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
+        box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
+    }
+
+button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+    width: 100%;
+}
+
+a[data-role='button'][data-theme='b'], button[data-theme='b']:not([data-role='none']):not(.clearButton) {
+    background: #4285f4 !important;
+    color: #fff !important;
+}
+
+div[data-role="controlgroup"] a[data-role='button'] {
+    display: inline-block !important;
+    margin: 0 !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+}
+
+    div[data-role="controlgroup"] a[data-role='button']:first-child {
+        border-bottom-left-radius: .3125em;
+        border-top-left-radius: .3125em;
+    }
+
+    div[data-role="controlgroup"] a[data-role='button']:last-child {
+        border-bottom-right-radius: .3125em;
+        border-top-right-radius: .3125em;
+    }
+
+    div[data-role="controlgroup"] a[data-role='button'] + a[data-role='button'] {
+        border-left-width: 0 !important;
+        margin: 0 0 0 -3px !important;
+    }
+
+div[data-role="controlgroup"] a.ui-btn-active {
+    background: #38c !important;
+    color: #fff !important;
 }
 
 .smoothScrollX {
@@ -505,7 +665,7 @@ h1 a:hover {
 }
 
 .largePanel {
-    width: 270px;
+    width: 270px !important;
 }
 
 /* Make panels larger */
@@ -517,10 +677,29 @@ h1 a:hover {
     left: 270px !important;
 }
 
+.checkboxContainer {
+    white-space: nowrap;
+}
+
+    .checkboxContainer input {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+    }
+
+    .checkboxContainer label {
+        vertical-align: middle;
+        display: inline-block;
+        padding: .7em .5em;
+    }
+
 @media all and (min-width: 340px) {
 
     .largePanel {
-        width: 300px;
+        width: 300px !important;
     }
 
     /* Make panels larger */
@@ -602,6 +781,13 @@ textarea {
     vertical-align: middle;
 }
 
+@media all and (max-height: 800px) {
+
+    .header {
+        display: none !important;
+    }
+}
+
 .btnCurrentUser {
     text-decoration: none;
 }
@@ -658,7 +844,7 @@ h1 .imageLink {
 }
 
 .paperCheckboxFieldDescription {
-    padding-left: 30px;
+    padding-left: 34px;
     padding-top: 5px;
 }
 
@@ -715,13 +901,13 @@ paper-input + .fieldDescription {
     box-shadow: -3px 0 10px 0 #555;*/
 }
 
-.ui-page-theme-a {
-    background: #f5f5f5;
+.background-theme-a, paper-dialog.background-theme-a {
+    background-color: #f7f7f7;
 }
 
-    .ui-page-theme-a .content-secondary {
-        background: #fff;
-    }
+.ui-page-theme-a .content-secondary {
+    background: #fff;
+}
 
 .sidebarLinks {
     margin-top: 1.5em;
@@ -882,6 +1068,14 @@ paper-input + .fieldDescription {
     background: #fff3a5;
     padding: 1em;
     border-radius: 5px;
+    margin-top: 2em;
+}
+
+.directoryPicker paper-item {
+    min-height: 36px;
+    border-bottom: 1px solid #eee;
+    outline: none;
+    cursor: pointer;
 }
 
 .premiumBanner img {
@@ -927,10 +1121,6 @@ paper-input + .fieldDescription {
     color: #fff;
     border: 0 !important;
     background-color: rgba(26,26,26,.94);
-}
-
-.footerOverBottomTabs {
-    bottom: 52px !important;
 }
 
 .footerNotification {
@@ -1412,3 +1602,52 @@ progress {
 .supporterMembershipDisabled .tabSupporterMembership {
     display: none;
 }
+
+.syncActivityForTarget {
+    margin: 0 0 3em 0;
+}
+
+    .syncActivityForTarget paper-fab {
+        border-radius: 0;
+    }
+
+@media all and (min-width: 800px) {
+
+    .syncActivityForTarget {
+        max-width: 600px;
+        margin: 0 3em 3em 0;
+        display: inline-block;
+        vertical-align: top;
+        min-width: 400px;
+    }
+}
+
+.scheduledTaskPaperIconItem {
+    outline: none !important;
+}
+
+    .scheduledTaskPaperIconItem[data-status='Idle'] paper-fab {
+        background-color: #999;
+    }
+
+    .scheduledTaskPaperIconItem[data-status="Cancelling"] paper-fab {
+        background-color: #cc3333;
+    }
+
+    .scheduledTaskPaperIconItem[data-status="Running"] paper-fab {
+        background-color: #52B54B;
+    }
+
+    .scheduledTaskPaperIconItem #progressContainer {
+        height: 8px !important;
+        border-radius: 5px;
+    }
+
+    .scheduledTaskPaperIconItem #primaryProgress {
+        border-bottom-left-radius: 5px;
+        border-top-left-radius: 5px;
+    }
+
+    .scheduledTaskPaperIconItem paper-progress {
+        display: inline-block;
+    }

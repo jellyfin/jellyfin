@@ -1,0 +1,24 @@
+{
+    "name": "eventEmitter",
+    "description": "Event based JavaScript for the browser",
+    "version": "4.3.0",
+    "main": [
+        "./EventEmitter.js"
+    ],
+    "author": {
+        "name": "Oliver Caldwell",
+        "web": "http://oli.me.uk/"
+    },
+    "license": "Unlicense",
+    "keywords": [
+        "events",
+        "structure"
+    ],
+    "ignore": [
+        "docs",
+        "tests",
+        "tools",
+        ".gitignore",
+        "package.json"
+    ]
+}

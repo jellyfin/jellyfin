@@ -133,7 +133,7 @@
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
-            html += '<div class="card squareCard alternateHover bottomPaddedCard"><div class="cardBox visualCardBox">';
+            html += '<div class="card squareCard bottomPaddedCard"><div class="cardBox visualCardBox">';
 
             html += '<div class="cardScalable">';
 
@@ -226,4 +226,4 @@ $(document).on('pageinit', "#loginPage", function () {
         Dashboard.navigate('forgotpassword.html');
     });
 
-}).on('pageshowready', "#loginPage", LoginPage.onPageShow);
+}).on('pageshow', "#loginPage", LoginPage.onPageShow);

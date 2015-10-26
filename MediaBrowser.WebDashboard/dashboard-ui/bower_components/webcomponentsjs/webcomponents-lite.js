@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.12
+// @version 0.7.14
 window.WebComponents = window.WebComponents || {};
 
 (function(scope) {
@@ -574,7 +574,7 @@ window.WebComponents = window.WebComponents || {};
     };
   }
   scope.URL = jURL;
-})(this);
+})(self);
 
 if (typeof WeakMap === "undefined") {
   (function() {
@@ -909,7 +909,7 @@ if (typeof WeakMap === "undefined") {
   };
   global.JsMutationObserver = JsMutationObserver;
   if (!global.MutationObserver) global.MutationObserver = JsMutationObserver;
-})(window);
+})(self);
 
 window.HTMLImports = window.HTMLImports || {
   flags: {}
@@ -1629,7 +1629,7 @@ window.HTMLImports.addModule(function(scope) {
   if (scope.useNative) {
     return;
   }
-  if (isIE && typeof window.CustomEvent !== "function") {
+  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
     window.CustomEvent = function(inType, params) {
       params = params || {};
       var e = document.createEvent("CustomEvent");
@@ -2260,7 +2260,7 @@ window.CustomElements.addModule(function(scope) {
       });
     });
   }
-  if (isIE && typeof window.CustomEvent !== "function") {
+  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
     window.CustomEvent = function(inType, params) {
       params = params || {};
       var e = document.createEvent("CustomEvent");
@@ -2367,6 +2367,37 @@ if (typeof HTMLTemplateElement === "undefined") {
     }
   })();
 }
+
+(function(scope) {
+  "use strict";
+  if (!window.performance) {
+    var start = Date.now();
+    window.performance = {
+      now: function() {
+        return Date.now() - start;
+      }
+    };
+  }
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function() {
+      var nativeRaf = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+      return nativeRaf ? function(callback) {
+        return nativeRaf(function() {
+          callback(performance.now());
+        });
+      } : function(callback) {
+        return window.setTimeout(callback, 1e3 / 60);
+      };
+    }();
+  }
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function() {
+      return window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || function(id) {
+        clearTimeout(id);
+      };
+    }();
+  }
+})(window.WebComponents);
 
 (function(scope) {
   var style = document.createElement("style");

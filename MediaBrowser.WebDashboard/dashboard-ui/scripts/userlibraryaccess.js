@@ -90,6 +90,12 @@
         $('.deviceAccess', page).show().html(html).trigger('create');
 
         $('#chkEnableAllDevices', page).checked(user.Policy.EnableAllDevices).checkboxradio('refresh').trigger('change');
+
+        if (user.Policy.IsAdministrator) {
+            page.querySelector('.deviceAccessContainer').classList.add('hide');
+        } else {
+            page.querySelector('.deviceAccessContainer').classList.remove('hide');
+        }
     }
 
     function loadUser(page, user, loggedInUser, mediaFolders, channels, devices) {
@@ -201,7 +207,7 @@
 
         $('.userLibraryAccessForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#userLibraryAccessPage", function () {
+    }).on('pageshow', "#userLibraryAccessPage", function () {
 
         var page = this;
 

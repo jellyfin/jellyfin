@@ -24,14 +24,12 @@
                             <label for="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</label>
                         </li>
                         <li>
-                            <label for="txtWatchFolder">${LabelWatchFolder}</label>
-                            <div style="display: inline-block; width: 85%;">
-                                <input type="text" id="txtWatchFolder" name="txtWatchFolder" />
-                            </div>
-                            <button id="btnSelectWatchFolder" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                            <paper-input id="txtWatchFolder" label="${LabelWatchFolder}" style="width:85%;display:inline-block;"></paper-input>
+                            <paper-icon-button id="btnSelectWatchFolder" icon="search"></paper-icon-button>
                             <div class="fieldDescription">
                                 <div>${LabelWatchFolderHelp}</div>
                             </div>
+                            <br/>
                         </li>
                         <li>
                             <label for="txtMinFileSize">${LabelMinFileSizeForOrganize}</label>
@@ -172,8 +170,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
 
                     </ul>

@@ -1,0 +1,54 @@
+{
+  "name": "masonry",
+  "version": "3.3.2",
+  "description": "Cascading grid layout library",
+  "main": "masonry.js",
+  "dependencies": {
+    "get-size": "~1.2.2",
+    "outlayer": "~1.4.0",
+    "fizzy-ui-utils": "~1.0.1"
+  },
+  "devDependencies": {
+    "jquery-bridget": "1.1.x",
+    "doc-ready": "1.x",
+    "qunit": "^1.12",
+    "jquery": ">=1.4.3 <2"
+  },
+  "ignore": [
+    "examples/",
+    "test/",
+    "CONTRIBUTING.mdown",
+    "Gruntfile.js",
+    "package.json",
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "homepage": "http://masonry.desandro.com",
+  "authors": [
+    "David DeSandro"
+  ],
+  "keywords": [
+    "masonry",
+    "layout",
+    "outlayer"
+  ],
+  "license": "MIT",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "_release": "3.3.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.3.2",
+    "commit": "48ed97fd2ebf0c126833bef6b29aff51781701e2"
+  },
+  "_source": "git://github.com/desandro/masonry.git",
+  "_target": "~3.3.2",
+  "_originalSource": "masonry",
+  "_direct": true
+}

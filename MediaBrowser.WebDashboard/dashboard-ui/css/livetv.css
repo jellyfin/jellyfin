@@ -2,6 +2,10 @@
     background: #161616;
 }
 
+.tvGuide {
+    text-align: left;
+}
+
 .tvGuideHeader {
     white-space: nowrap;
     position: fixed;
@@ -15,18 +19,9 @@
     position: static;
 }
 
-.bottomSecondaryNav .tvGuideHeader {
-    top: 48px;
-}
-
 .tvGuideHeader.headroom--unpinned {
     -webkit-transform: translateY(-98px);
     transform: translateY(-98px);
-}
-
-.bottomSecondaryNav .tvGuideHeader.headroom--unpinned {
-    -webkit-transform: translateY(-48px);
-    transform: translateY(-48px);
 }
 
 .tvProgramSectionHeader {
@@ -103,7 +98,7 @@
 .programAccent {
     position: absolute;
     bottom: 0;
-    left: 6px;
+    left: 0;
     right: 0;
     height: 2px;
 }
@@ -226,11 +221,11 @@
 }
 
 .channelTimeslotHeader {
-    border-right: 1px solid #38c;
+    border-right-color: #52B54B;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #38c;
+    background: #52B54B;
 }
 
 .timeslotHeader, .channelTimeslotHeader {
@@ -272,13 +267,9 @@
     position: absolute;
     top: 0;
     bottom: 6px;
-}
-
-.programCellInner {
     border-left: 6px solid #161616;
     background-color: #212121;
     display: block;
-    height: 100%;
     color: #fff !important;
     text-decoration: none;
     font-weight: 400 !important;
@@ -319,11 +310,14 @@
 }
 
 .guideChannelImage {
-    max-width: 60px;
-    max-height: 35px;
+    width: 60px;
+    height: 35px;
     position: absolute;
     right: 7px;
     top: 7px;
+    background-size: contain;
+    background-position: right center;
+    background-repeat: no-repeat;
 }
 
 @media (max-width: 1920px) {

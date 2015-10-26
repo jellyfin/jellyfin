@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -248,7 +249,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesFilePath = FanartSeriesProvider.Current.GetFanartJsonPath(tvdbId);
 
-                var fileInfo = new FileInfo(imagesFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

@@ -1,7 +1,7 @@
 {
   "name": "iron-icon",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "An element that supports displaying an icon",
   "main": "iron-icon.html",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
     "iron-iconset": "polymerelements/iron-iconset#^1.0.0",
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",

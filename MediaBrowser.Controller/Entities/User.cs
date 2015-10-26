@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public static IUserManager UserManager { get; set; }
         public static IXmlSerializer XmlSerializer { get; set; }
+        public bool EnableUserViews { get; set; }
 
         /// <summary>
         /// From now on all user paths will be Id-based. 
@@ -177,24 +178,24 @@ namespace MediaBrowser.Controller.Entities
                 var oldConfigurationDirectory = ConfigurationDirectoryPath;
 
                 // Exceptions will be thrown if these paths already exist
-                if (Directory.Exists(newConfigDirectory))
+				if (FileSystem.DirectoryExists(newConfigDirectory))
                 {
                     FileSystem.DeleteDirectory(newConfigDirectory, true);
                 }
 
-                if (Directory.Exists(oldConfigurationDirectory))
+				if (FileSystem.DirectoryExists(oldConfigurationDirectory))
                 {
-                    Directory.Move(oldConfigurationDirectory, newConfigDirectory);
+					FileSystem.MoveDirectory(oldConfigurationDirectory, newConfigDirectory);
                 }
                 else
                 {
-                    Directory.CreateDirectory(newConfigDirectory);
+					FileSystem.CreateDirectory(newConfigDirectory);
                 }
             }
 
             Name = newName;
 
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService())
+			return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem))
             {
                 ReplaceAllMetadata = true,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,

@@ -139,14 +139,14 @@ namespace MediaBrowser.Dlna.Ssdp
             values["MX"] = "3";
 
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
-            SendDatagram("M-SEARCH * HTTP/1.1", values, _ssdpEndp, localIp, false, 2);
+            SendDatagram("M-SEARCH * HTTP/1.1", values, _ssdpEndp, localIp, true, 2);
         }
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             EndPoint endpoint,
             EndPoint localAddress,
-            bool ignoreBindFailure,
+            bool isBroadcast,
             int sendCount)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
@@ -156,7 +156,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             for (var i = 0; i < sendCount; i++)
             {
-                var dgram = new Datagram(endpoint, localAddress, _logger, msg, ignoreBindFailure, enableDebugLogging);
+                var dgram = new Datagram(endpoint, localAddress, _logger, msg, isBroadcast, enableDebugLogging);
 
                 if (_messageQueue.Count == 0)
                 {
@@ -230,8 +230,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null, true, 1);
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), true, 1);
+                    SendDatagram(header, values, endpoint, null, false, 1);
+                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), false, 1);
                     //SendDatagram(header, values, endpoint, null, true);
 
                     if (enableDebugLogging)
@@ -516,7 +516,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
 
-            SendDatagram(header, values, _ssdpEndp, new IPEndPoint(dev.Address, 0), false, sendCount);
+            SendDatagram(header, values, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, sendCount);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)

@@ -18,7 +18,7 @@
                     appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                     deferred.resolve();
                 }
-                else if ((new Date().getTime() - lastMessage) > 432000000) {
+                else if ((new Date().getTime() - lastMessage) > 345600000) {
 
                     showPlaybackOverlay(deferred);
                 } else {
@@ -44,7 +44,7 @@
 
         html += '<br/>';
 
-        html += '<a class="clearLink" href="http://emby.media/donate" target="_blank"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
+        html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
         html += '<paper-button raised class="subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></paper-button>';
 
         html += '</div>';
@@ -82,7 +82,7 @@
                 }
 
                 Dashboard.alert({
-                    message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/donate" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
+                    message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/premiere" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
                     title: Globalize.translate('HeaderSync')
                 });
 
@@ -180,40 +180,6 @@
             } else {
                 $('.premiumPackage', page).hide();
             }
-        },
-
-        addRecurringFields: function (page, period) {
-
-            var form = page.querySelector('.supporterForm');
-
-            // Add recurring fields to form
-            $("<input type='hidden' name='a3' class='pprecurring' />")
-                .attr('value', $('#donateAmt', page).val())
-                .appendTo(form);
-
-            $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-                .appendTo(form);
-
-            //change command for subscriptions
-            $('#ppCmd', page).val('_xclick-subscriptions');
-
-            Events.trigger(form, 'create');
-
-        },
-
-        initSupporterForm: function (page) {
-
-            $('.supporterForm', page).attr('action', 'https://www.paypal.com/cgi-bin/webscr');
-            $('.recurringSubscriptionCancellationHelp', page).html(Globalize.translate('LabelRecurringDonationCanBeCancelledHelp'));
         },
 
         validateFeature: function (name) {

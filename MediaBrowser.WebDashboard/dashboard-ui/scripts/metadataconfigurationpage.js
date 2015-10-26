@@ -7,10 +7,10 @@
 
         $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
         $('#chkSaveLocal', page).checked(config.SaveLocalMeta).checkboxradio("refresh");
-        $('#selectLanguage', page).val(config.PreferredMetadataLanguage).selectmenu("refresh");
-        $('#selectCountry', page).val(config.MetadataCountryCode).selectmenu("refresh");
+        $('#selectLanguage', page).val(config.PreferredMetadataLanguage);
+        $('#selectCountry', page).val(config.MetadataCountryCode);
 
-        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
+        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention);
 
         Dashboard.hideLoadingMsg();
     }
@@ -42,7 +42,7 @@
 
         $('.metadataConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#metadataConfigurationPage", function () {
+    }).on('pageshow', "#metadataConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

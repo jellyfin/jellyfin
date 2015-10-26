@@ -123,14 +123,11 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    $(document).on('pagebeforeshow', "#tvUpcomingPage", function () {
+    window.TvPage.renderUpcomingTab = function (page, tabContent) {
 
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadUpcoming(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadUpcoming(tabContent);
         }
-    });
-
+    };
 
 })(jQuery, document);
