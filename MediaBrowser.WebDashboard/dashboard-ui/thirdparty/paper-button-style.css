@@ -459,15 +459,6 @@ paper-textarea.mono textarea {
     font-family: monospace !important;
 }
 
-.listAvatar {
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: #ccc;
-}
-
 .paperList {
     padding-top: 12px;
     margin: 12px auto;

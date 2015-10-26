@@ -32,10 +32,10 @@
                 itemHtml += '<paper-icon-item>';
 
                 if (i.Enabled) {
-                    itemHtml += '<paper-fab class="listAvatar blue" icon="notifications-active" item-icon></paper-fab>';
+                    itemHtml += '<paper-fab mini class="blue" icon="notifications-active" item-icon></paper-fab>';
                 }
                 else {
-                    itemHtml += '<paper-fab class="listAvatar" style="background-color:#999;" icon="notifications-off" item-icon></paper-fab>';
+                    itemHtml += '<paper-fab mini style="background-color:#999;" icon="notifications-off" item-icon></paper-fab>';
                 }
 
                 itemHtml += '<paper-item-body two-line>';

@@ -55,7 +55,7 @@
 
         html += '<paper-icon-item role="menuitem" class="lnkPath">';
 
-        html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
+        html += '<paper-fab mini style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
 
         html += '<paper-item-body>';
         html += path;

@@ -104,7 +104,7 @@
 
                 itemHtml += '<paper-icon-item>';
 
-                itemHtml += '<paper-fab class="listAvatar blue" icon="closed-caption" item-icon></paper-fab>';
+                itemHtml += '<paper-fab mini class="blue" icon="closed-caption" item-icon></paper-fab>';
 
                 var atts = [];
 
@@ -228,7 +228,7 @@
 
             html += '<paper-icon-item>';
 
-            html += '<paper-fab class="listAvatar blue" icon="closed-caption" item-icon></paper-fab>';
+            html += '<paper-fab mini class="blue" icon="closed-caption" item-icon></paper-fab>';
 
             if (result.Comment) {
                 html += '<paper-item-body three-line>';

@@ -50,7 +50,7 @@
 
         html += '<paper-icon-item class="serverItem" data-id="' + server.Id + '">';
 
-        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
+        html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
         html += '<paper-item-body class="lnkServer" two-line>';
         html += '<a class="clearLink" href="#">';
@@ -259,7 +259,7 @@
 
         html += '<paper-icon-item class="inviteItem" data-id="' + invite.Id + '">';
 
-        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
+        html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
         html += '<paper-item-body two-line>';
 

@@ -6,7 +6,7 @@
 
         html += '<paper-icon-item>';
 
-        html += '<paper-fab class="listAvatar blue" icon="live-tv" item-icon></paper-fab>';
+        html += '<paper-fab mini class="blue" icon="live-tv" item-icon></paper-fab>';
 
         html += '<paper-item-body two-line>';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';

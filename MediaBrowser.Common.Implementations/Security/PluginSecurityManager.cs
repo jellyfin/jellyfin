@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Implementations.Security
     public class PluginSecurityManager : ISecurityManager
     {
         private const string MBValidateUrl = MbAdmin.HttpsUrl + "service/registration/validate";
-        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "http://mb3admin.com/test/admin/" + "service/appstore/register";
+        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "http://mb3admin.com/admin/" + "service/appstore/register";
 
         /// <summary>
         /// The _is MB supporter
@@ -199,7 +199,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 Url = AppstoreRegUrl,
                 CancellationToken = CancellationToken.None
             };
-            options.RequestHeaders.Add("X-Emby-Token", /*_appHost.SystemId*/ "08606E86D043");
+            options.RequestHeaders.Add("X-Emby-Token", _appHost.SystemId);
             options.RequestContent = parameters;
             options.RequestContentType = "application/json";
 

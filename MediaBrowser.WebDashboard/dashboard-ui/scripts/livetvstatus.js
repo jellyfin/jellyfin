@@ -32,7 +32,7 @@
                 var tuner = tuners[i];
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
 
@@ -196,7 +196,7 @@
 
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
                 html += '<a class="clearLink" href="' + href + '">';
@@ -300,7 +300,7 @@
                 var provider = providers[i];
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
+                html += '<paper-fab mini style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
 

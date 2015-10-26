@@ -53,7 +53,7 @@
             html += '<paper-icon-item class="scheduledTaskPaperIconItem" data-status="' + task.State + '">';
 
             html += "<a item-icon class='clearLink' href='scheduledtask.html?id=" + task.Id + "'>";
-            html += '<paper-fab class="listAvatar" icon="schedule"></paper-fab>';
+            html += '<paper-fab mini icon="schedule"></paper-fab>';
             html += "</a>";
 
             html += '<paper-item-body two-line>';

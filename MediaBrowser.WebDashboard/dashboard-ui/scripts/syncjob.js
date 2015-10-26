@@ -61,10 +61,10 @@
         }
 
         if (imgUrl) {
-            html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            html += '<paper-fab mini class="blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
         }
         else {
-            html += '<paper-fab class="listAvatar blue" icon="sync" item-icon></paper-fab>';
+            html += '<paper-fab mini class="blue" icon="sync" item-icon></paper-fab>';
         }
 
         html += '<paper-item-body three-line>';

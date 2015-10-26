@@ -95,7 +95,7 @@
 
             currentHtml += '<paper-icon-item class="viewItem" data-viewid="' + view.Id + '">';
 
-            currentHtml += '<paper-fab class="listAvatar" style="background-color:#444;" icon="folder-open" item-icon></paper-fab>';
+            currentHtml += '<paper-fab mini style="background-color:#444;" icon="folder-open" item-icon></paper-fab>';
 
             currentHtml += '<paper-item-body>';
 

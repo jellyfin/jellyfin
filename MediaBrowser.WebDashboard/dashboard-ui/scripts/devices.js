@@ -36,7 +36,7 @@
             var deviceHtml = '';
             deviceHtml += '<paper-icon-item>';
 
-            deviceHtml += '<paper-fab class="listAvatar" style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
+            deviceHtml += '<paper-fab mini style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
 
             deviceHtml += '<paper-item-body three-line>';
             deviceHtml += '<a class="clearLink" href="device.html?id=' + d.Id + '">';

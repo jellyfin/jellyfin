@@ -129,7 +129,7 @@
                 itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">';
                 itemHtml += '<paper-icon-item>';
 
-                itemHtml += '<paper-fab class="listAvatar blue" icon="dvr" item-icon></paper-fab>';
+                itemHtml += '<paper-fab mini class="blue" icon="dvr" item-icon></paper-fab>';
 
                 itemHtml += '<paper-item-body three-line>';
 
@@ -1094,10 +1094,10 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
                 height: 40
             });
 
-            html += '<paper-fab class="listAvatar" style="background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            html += '<paper-fab mini style="background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
         }
         else {
-            html += '<paper-fab class="listAvatar" icon="dvr" style="background-color:' + color + '" item-icon></paper-fab>';
+            html += '<paper-fab mini icon="dvr" style="background-color:' + color + '" item-icon></paper-fab>';
         }
 
         html += '<paper-item-body three-line>';
