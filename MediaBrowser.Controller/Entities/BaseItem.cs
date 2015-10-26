@@ -1163,6 +1163,17 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         protected virtual bool GetBlockUnratedValue(UserPolicy config)
         {
+            // Don't block plain folders that are unrated. Let the media underneath get blocked
+            // Special folders like series and albums will override this method.
+            if (IsFolder)
+            {
+                return false;
+            }
+            if (this is IItemByName)
+            {
+                return false;
+            }
+
             return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }
 

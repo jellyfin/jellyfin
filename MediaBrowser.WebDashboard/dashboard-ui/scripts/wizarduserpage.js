@@ -45,7 +45,16 @@
             url: apiClient.getUrl('Startup/User'),
             dataType: 'json'
 
-        }).done(onUpdateUserComplete);
+        }).done(onUpdateUserComplete).fail(function () {
+
+            var msgKey = form.querySelector('#txtConnectUserName').value ? 'ErrorAddingEmbyConnectAccount' : 'DefaultErrorMessage';
+
+            Dashboard.alert({
+
+                message: Globalize.translate(msgKey)
+
+            });
+        });
     }
 
     function onSubmit() {

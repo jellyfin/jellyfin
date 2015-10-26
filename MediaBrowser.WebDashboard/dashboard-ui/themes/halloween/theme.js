@@ -4,8 +4,8 @@
     var iconCreated;
     var destroyed;
     var currentSound;
-    var cancelKey = 'cancelHalloween';
-    var cancelValue = '5';
+    var cancelKey = 'cancelHalloween2015';
+    var cancelValue = '6';
 
     function onPageShow() {
         var page = this;

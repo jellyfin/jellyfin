@@ -301,7 +301,14 @@
                 if (isViblastStarted) {
                     _currentTime = mediaElement.currentTime;
 
-                    viblast('#' + mediaElement.id).stop();
+                    // Sometimes this fails
+                    try {
+                        viblast('#' + mediaElement.id).stop();
+                    }
+                    catch (err) {
+                        Logger.log(err);
+                    }
+
                     isViblastStarted = false;
                 }
             }

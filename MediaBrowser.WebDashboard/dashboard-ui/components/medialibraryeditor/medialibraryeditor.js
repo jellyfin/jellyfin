@@ -17,7 +17,7 @@
 
         }).fail(function () {
 
-            Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
+            Dashboard.showError(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
         });
     }
 
