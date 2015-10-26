@@ -93,7 +93,9 @@
         // but skip it in IE because it's causing the entire browser to hang
         // Also have to disable for firefox because it's causing select elements to not be clickable
         if (!$.browser.msie && !$.browser.mozilla) {
-            dlg.setAttribute('modal', 'modal');
+            if (options.modal !== false) {
+                dlg.setAttribute('modal', 'modal');
+            }
         }
 
         //// seeing max call stack size exceeded in the debugger with this

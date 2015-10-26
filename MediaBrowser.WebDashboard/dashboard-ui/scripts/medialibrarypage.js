@@ -8,13 +8,6 @@
         });
     }
 
-    function processOperationResult(result) {
-
-        var page = $($.mobile.activePage)[0];
-
-        reloadLibrary(page);
-    }
-
     function addVirtualFolder(page) {
 
         require(['medialibrarycreator'], function (medialibrarycreator) {
@@ -22,7 +15,7 @@
             new medialibrarycreator().show({
 
                 collectionTypeOptions: getCollectionTypeOptions(),
-                refresh: shouldRefreshLibraryAfterChanges()
+                refresh: shouldRefreshLibraryAfterChanges(page)
 
             }).done(function (hasChanges) {
 
@@ -39,7 +32,7 @@
 
             new medialibraryeditor().show({
 
-                refresh: shouldRefreshLibraryAfterChanges(),
+                refresh: shouldRefreshLibraryAfterChanges(page),
                 library: virtualFolder
 
             }).done(function (hasChanges) {
@@ -64,9 +57,11 @@
 
             if (confirmResult) {
 
-                var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+                var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
-                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(processOperationResult);
+                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(function () {
+                    reloadLibrary(page);
+                });
             }
 
         });
@@ -83,9 +78,11 @@
 
                     if (newName && newName != virtualFolder.Name) {
 
-                        var refreshAfterChange = shouldRefreshLibraryAfterChanges();
+                        var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
-                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(processOperationResult);
+                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(function () {
+                            reloadLibrary(page);
+                        });
                     }
                 }
             });
@@ -164,9 +161,9 @@
         });
     }
 
-    function shouldRefreshLibraryAfterChanges() {
+    function shouldRefreshLibraryAfterChanges(page) {
 
-        return $($.mobile.activePage).is('#mediaLibraryPage');
+        return $(page).is('#mediaLibraryPage');
     }
 
     function reloadVirtualFolders(page, virtualFolders) {
@@ -187,7 +184,7 @@
 
             var virtualFolder = virtualFolders[i];
 
-            html += getVirtualFolderHtml(virtualFolder, i);
+            html += getVirtualFolderHtml(page, virtualFolder, i);
         }
 
         var divVirtualFolders = page.querySelector('#divVirtualFolders');
@@ -275,13 +272,13 @@
         }
     }
 
-    function getVirtualFolderHtml(virtualFolder, index) {
+    function getVirtualFolderHtml(page, virtualFolder, index) {
 
         var html = '';
 
         var style = "";
 
-        if ($($.mobile.activePage)[0].classList.contains('wizardPage')) {
+        if (page.classList.contains('wizardPage')) {
             style += "min-width:33.3%;";
         }
 

@@ -217,7 +217,10 @@
 
                     var dlg = PaperDialogHelper.createDialog({
                         theme: 'a',
-                        size: 'medium'
+                        size: 'medium',
+
+                        // In (at least) chrome this is causing the text field to not be editable
+                        modal: false
                     });
 
                     dlg.classList.add('directoryPicker');
