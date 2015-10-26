@@ -397,7 +397,7 @@
     "LabelPremiereProgram": "PREMIERE",
     "LabelHDProgram": "HD",
     "HeaderChangeFolderType": "Change Content Type",
-    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the folder with the new type.",
+    "HeaderChangeFolderTypeHelp": "To change the type, please remove and rebuild the library with the new type.",
     "HeaderAlert": "Alert",
     "MessagePleaseRestart": "Please restart to finish updating.",
     "ButtonRestart": "Restart",
@@ -921,5 +921,6 @@
     "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
     "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
     "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser.",
-    "ErrorAddingListingsToSchedulesDirect": "There was an error adding the lineup to your Schedules Direct account. Schedules Direct only allows a limited number of lineups per account. You may need to log into the Schedules Direct website and remove others listings from your account before proceeeding."
+    "ErrorAddingListingsToSchedulesDirect": "There was an error adding the lineup to your Schedules Direct account. Schedules Direct only allows a limited number of lineups per account. You may need to log into the Schedules Direct website and remove others listings from your account before proceeeding.",
+    "PleaseAddAtLeastOneFolder": "Please add at least one folder to this library by clicking the Add button."
 }

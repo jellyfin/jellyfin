@@ -2048,7 +2048,7 @@
 
             html += '<div class="cardOverlayTarget"></div>';
 
-            if (item.LocationType == "Offline" || item.LocationType == "Virtual") {
+            if (item.LocationType == "Virtual") {
                 if (options.showLocationTypeIndicator !== false) {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
                 }

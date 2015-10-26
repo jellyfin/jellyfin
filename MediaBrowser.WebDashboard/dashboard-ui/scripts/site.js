@@ -244,6 +244,7 @@ var Dashboard = {
 
     importCss: function (url) {
 
+        var originalUrl = url;
         url += "?v=" + window.dashboardVersion;
 
         if (!Dashboard.importedCss) {
@@ -261,9 +262,18 @@ var Dashboard = {
         } else {
             var link = document.createElement('link');
             link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('data-url', originalUrl);
             link.setAttribute('type', 'text/css');
             link.setAttribute('href', url);
             document.head.appendChild(link);
+        }
+    },
+
+    removeStylesheet: function (url) {
+
+        var elem = document.querySelector('link[data-url=\'' + url + '\']');
+        if (elem) {
+            elem.parentNode.removeChild(elem);
         }
     },
 

@@ -9,7 +9,6 @@ using System;
 using System.IO;
 using System.Linq;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -27,7 +26,7 @@ namespace Emby.Drawing.ImageMagick
             _httpClient = httpClient;
             _fileSystem = fileSystem;
 
-            LogImageMagickVersion();
+            LogVersion();
         }
 
         public string[] SupportedInputFormats
@@ -68,7 +67,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private void LogImageMagickVersion()
+        private void LogVersion()
         {
             _logger.Info("ImageMagick version: " + Wand.VersionString);
             TestWebp();
@@ -88,9 +87,9 @@ namespace Emby.Drawing.ImageMagick
                     wand.SaveImage(tmpPath);
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                _logger.ErrorException("Error loading webp: ", ex);
+                //_logger.ErrorException("Error loading webp: ", ex);
                 _webpAvailable = false;
             }
         }
@@ -254,6 +253,16 @@ namespace Emby.Drawing.ImageMagick
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
+        }
+
+        public bool SupportsImageCollageCreation
+        {
+            get { return true; }
+        }
+
+        public bool SupportsImageEncoding
+        {
+            get { return true; }
         }
     }
 }

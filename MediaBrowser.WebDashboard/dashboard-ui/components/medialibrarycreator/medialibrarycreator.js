@@ -3,21 +3,28 @@
     var currentDeferred;
     var hasChanges;
     var currentOptions;
+    var paths = [];
 
     function onSubmit() {
+
+        if (paths.length == 0) {
+            Dashboard.alert({
+                message: Globalize.translate('PleaseAddAtLeastOneFolder')
+            });
+            return false;
+        }
 
         var form = this;
         var dlg = $(form).parents('paper-dialog')[0];
 
         var name = $('#txtValue', form).val();
         var type = $('#selectCollectionType', form).val();
-        var path = $('#txtPath', form).val();
 
         if (type == 'mixed') {
             type = null;
         }
 
-        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, path).done(function () {
+        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).done(function () {
 
             hasChanges = true;
             PaperDialogHelper.close(dlg);
@@ -74,26 +81,90 @@
             }
         });
 
-        $('#btnSelectPath').on('click', function () {
+        $('.btnAddFolder', page).on('click', onAddButtonClick);
+        $('form', page).off('submit', onSubmit).on('submit', onSubmit);
+    }
 
-            require(['directorybrowser'], function (directoryBrowser) {
+    function onAddButtonClick() {
 
-                var picker = new directoryBrowser();
+        var page = $(this).parents('.editorContent')[0];
 
-                picker.show({
+        require(['directorybrowser'], function (directoryBrowser) {
 
-                    callback: function (path) {
-                        if (path) {
-                            $('#txtPath', page).val(path);
-                        }
-                        picker.close();
+            var picker = new directoryBrowser();
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        addMediaLocation(page, path);
                     }
+                    picker.close();
+                }
 
-                });
             });
         });
+    }
 
-        $('form', page).off('submit', onSubmit).on('submit', onSubmit);
+    function getFolderHtml(path, index) {
+
+        var html = '';
+
+        html += '<paper-icon-item role="menuitem" class="lnkPath">';
+
+        html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
+
+        html += '<paper-item-body>';
+        html += path;
+        html += '</paper-item-body>';
+
+        html += '<paper-icon-button icon="remove-circle" class="btnRemovePath" data-index="' + index + '"></paper-icon-button>';
+
+        html += '</paper-icon-item>';
+
+        return html;
+    }
+
+    function renderPaths(page) {
+        var foldersHtml = paths.map(getFolderHtml).join('');
+
+        var folderList = page.querySelector('.folderList');
+        folderList.innerHTML = foldersHtml;
+
+        if (foldersHtml) {
+            folderList.classList.remove('hide');
+        } else {
+            folderList.classList.add('hide');
+        }
+
+        $(page.querySelectorAll('.btnRemovePath')).on('click', onRemoveClick);
+    }
+
+    function addMediaLocation(page, path) {
+
+        if (paths.filter(function (p) {
+
+            return p.toLowerCase() == path.toLowerCase();
+
+        }).length == 0) {
+            paths.push(path);
+            renderPaths(page);
+        }
+    }
+
+    function onRemoveClick() {
+
+        var button = this;
+        var index = parseInt(button.getAttribute('data-index'));
+
+        var location = paths[index];
+        paths = paths.filter(function (p) {
+
+            return p.toLowerCase() != location.toLowerCase();
+        });
+        var page = $(this).parents('.editorContent')[0];
+        renderPaths(page);
     }
 
     function onDialogClosed() {
@@ -156,6 +227,8 @@
 
                         PaperDialogHelper.close(dlg);
                     });
+
+                    renderPaths(editorContent);
                 });
 
             });

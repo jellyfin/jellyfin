@@ -60,7 +60,7 @@
                     items: result.Items,
                     shape: "square",
                     context: getParameterByName('context') || 'photos',
-                    overlayText: tabIndex != 0,
+                    overlayText: true,
                     lazy: true,
                     coverImage: true,
                     showTitle: tabIndex == 0,

@@ -240,7 +240,8 @@
 
         setBackdrops: setBackdrops,
         setBackdropUrl: setBackdropUrl,
-        setDefault: setDefault
+        setDefault: setDefault,
+        clear: clearBackdrop
     };
 
 })(jQuery, document);

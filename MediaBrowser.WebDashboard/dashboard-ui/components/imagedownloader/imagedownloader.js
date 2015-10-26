@@ -106,7 +106,7 @@
             html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
 
             html += '<paper-icon-button icon="arrow-back" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
-            html += '<paper-icon-button icon="arrow-forward" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit > totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
+            html += '<paper-icon-button icon="arrow-forward" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
             html += '</div>';
         }
 

@@ -1,7 +1,5 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
-
     var currentItem;
 
     var data = {};
@@ -25,7 +23,7 @@
 
             pageData.query.Filters = "";
             pageData.query.NameStartsWithOrGreater = '';
-            pageData.view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+            pageData.view = LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
             pageData.query.ParentId = getParameterByName('parentId');
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);

@@ -125,7 +125,7 @@
                     preferThumb: true,
                     shape: getThumbShape(),
                     overlayText: true,
-                    showTitle: true,
+                    showTitle: false,
                     lazy: true,
                     showDetailsMenu: true,
                     overlayPlayButton: true

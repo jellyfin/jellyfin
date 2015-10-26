@@ -577,11 +577,20 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error loading ImageMagick. Will revert to GDI.", ex);
+                    Logger.Error("Error loading ImageMagick. Will revert to GDI.");
                 }
             }
 
-            return new GDIImageEncoder(FileSystemManager, LogManager.GetLogger("GDI"));
+            try
+            {
+                return new GDIImageEncoder(FileSystemManager, LogManager.GetLogger("GDI"));
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error loading GDI. Will revert to NullImageEncoder.");
+            }
+
+            return new NullImageEncoder();
         }
 
         protected override INetworkManager CreateNetworkManager(ILogger logger)

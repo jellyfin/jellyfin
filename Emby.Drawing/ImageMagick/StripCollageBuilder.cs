@@ -354,14 +354,14 @@ namespace Emby.Drawing.ImageMagick
 
         private MagickWand BuildSquareCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 3);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .225);
+                    var iSlice = Convert.ToInt32(width * .3);
                     int iTrans = Convert.ToInt32(height * .25);
                     int iHeight = Convert.ToInt32(height * .63);
                     var horizontalImagePadding = Convert.ToInt32(width * 0.02);

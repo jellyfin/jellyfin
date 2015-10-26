@@ -16,9 +16,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -116,7 +118,7 @@ namespace MediaBrowser.Providers.Movies
         public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
-			var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager, _fileSystem);
+            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager, _fileSystem);
 
             return movieDb.GetMetadata(id, cancellationToken);
         }
@@ -211,7 +213,7 @@ namespace MediaBrowser.Providers.Movies
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -309,25 +311,38 @@ namespace MediaBrowser.Providers.Movies
             var cacheMode = isTmdbId ? CacheMode.None : CacheMode.Unconditional;
             var cacheLength = TimeSpan.FromDays(3);
 
-            using (var json = await GetMovieDbResponse(new HttpRequestOptions
+            try
             {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader,
-                CacheMode = cacheMode,
-                CacheLength = cacheLength
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = AcceptHeader,
+                    CacheMode = cacheMode,
+                    CacheLength = cacheLength
 
-            }).ConfigureAwait(false))
+                }).ConfigureAwait(false))
+                {
+                    mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                }
+            }
+            catch (HttpException ex)
             {
-                mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                // Return null so that callers know there is no metadata for this id
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                throw;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // If the language preference isn't english, then have the overview fallback to english if it's blank
             if (mainResult != null &&
-                string.IsNullOrEmpty(mainResult.overview) && 
-                !string.IsNullOrEmpty(language) && 
+                string.IsNullOrEmpty(mainResult.overview) &&
+                !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");

@@ -92,11 +92,11 @@ namespace MediaBrowser.Server.Implementations.Photos
             string cacheKey,
             CancellationToken cancellationToken)
         {
-            var outputPath = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid() + ".png");
-            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
-            var imageCreated = await CreateImage(item, itemsWithImages, outputPath, imageType, 0).ConfigureAwait(false);
+            var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+            FileSystem.CreateDirectory(Path.GetDirectoryName(outputPathWithoutExtension));
+            string outputPath = await CreateImage(item, itemsWithImages, outputPathWithoutExtension, imageType, 0).ConfigureAwait(false);
 
-            if (!imageCreated)
+            if (string.IsNullOrWhiteSpace(outputPath))
             {
                 return ItemUpdateType.None;
             }
@@ -117,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected Task<string> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
@@ -144,22 +144,22 @@ namespace MediaBrowser.Server.Implementations.Photos
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        protected Task<bool> CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected Task<string> CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected Task<bool> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected Task<string> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        protected Task<string> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private Task<bool> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
+        private async Task<string> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             FileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -173,11 +173,16 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             if (options.InputPaths.Length == 0)
             {
-                return Task.FromResult(false);
+                return null;
             }
 
-            ImageProcessor.CreateImageCollage(options);
-            return Task.FromResult(true);
+            if (!ImageProcessor.SupportsImageCollageCreation)
+            {
+                return null;
+            }
+
+            await ImageProcessor.CreateImageCollage(options).ConfigureAwait(false);
+            return outputPath;
         }
 
         public string Name
@@ -185,16 +190,18 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return "Dynamic Image Provider"; }
         }
 
-        protected virtual async Task<bool> CreateImage(IHasImages item,
+        protected virtual async Task<string> CreateImage(IHasImages item,
             List<BaseItem> itemsWithImages,
-            string outputPath,
+            string outputPathWithoutExtension,
             ImageType imageType,
             int imageIndex)
         {
             if (itemsWithImages.Count == 0)
             {
-                return false;
+                return null;
             }
+
+            string outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
 
             if (imageType == ImageType.Thumb)
             {
@@ -207,7 +214,7 @@ namespace MediaBrowser.Server.Implementations.Photos
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
-                if (item is PhotoAlbum || item is Playlist)
+                if (item is Playlist)
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
@@ -320,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             var random = DateTime.Now.DayOfYear % MaxImageAgeDays;
 
             return items
-                .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
+                .OrderBy(i => (random + string.Empty + items.IndexOf(i)).GetMD5())
                 .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
