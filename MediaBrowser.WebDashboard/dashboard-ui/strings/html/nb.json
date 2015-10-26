@@ -1523,7 +1523,6 @@
     "ButtonClear": "Clear",
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
-    "LabelAdditionalFoldersCanBeAddedHelp": "Additional folders can be added to this library after setting it up.",
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:"
 }

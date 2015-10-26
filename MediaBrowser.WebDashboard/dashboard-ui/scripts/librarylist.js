@@ -594,9 +594,8 @@
             if (itemSelectionPanel) {
                 return onItemSelectionPanelClick(e, itemSelectionPanel);
             }
-
             if (card.classList.contains('groupedCard')) {
-                return onGroupedCardClick(e);
+                return onGroupedCardClick(e, card);
             }
         }
     }
