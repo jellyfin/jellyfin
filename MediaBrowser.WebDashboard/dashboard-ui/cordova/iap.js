@@ -59,6 +59,28 @@
         store.refresh();
     }
 
+    var transactionIds = {};
+
+    function updateOriginalTransactionInfo(transactionId, originalTransactionId) {
+
+        alert('updateOriginalTransactionInfo ' + transactionId + '-' + originalTransactionId);
+
+        if (!transactionId) {
+            return;
+        }
+        if (!originalTransactionId) {
+            return;
+        }
+        if (transactionId == 'null') {
+            return;
+        }
+        if (originalTransactionId == 'null') {
+            return;
+        }
+
+        transactionIds[transactionId] = originalTransactionId;
+    }
+
     function validateProduct(product, callback) {
 
         // product attributes:
@@ -78,6 +100,7 @@
 
         var productId = product.id;
         var transactionId = product.transaction.id;
+        transactionId = transactionIds[transactionId] || transactionId;
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
@@ -211,7 +234,8 @@
         getProductInfo: getProduct,
         beginPurchase: beginPurchase,
         restorePurchase: restorePurchase,
-        getSubscriptionOptions: getSubscriptionOptions
+        getSubscriptionOptions: getSubscriptionOptions,
+        updateOriginalTransactionInfo: updateOriginalTransactionInfo
     };
 
     initializeStore();
