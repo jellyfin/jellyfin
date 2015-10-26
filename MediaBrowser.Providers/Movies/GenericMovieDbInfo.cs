@@ -87,22 +87,26 @@ namespace MediaBrowser.Providers.Movies
             if (string.IsNullOrEmpty(tmdbId))
             {
                 movieInfo = await MovieDbProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);
-                if (movieInfo == null) return item;
+                if (movieInfo != null)
+                {
+                    tmdbId = movieInfo.id.ToString(_usCulture);
 
-                tmdbId = movieInfo.id.ToString(_usCulture);
-
-                dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
-                _jsonSerializer.SerializeToFile(movieInfo, dataFilePath);
+                    dataFilePath = MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+                    _jsonSerializer.SerializeToFile(movieInfo, dataFilePath);
+                }
             }
 
-            await MovieDbProvider.Current.EnsureMovieInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(tmdbId))
+            {
+                await MovieDbProvider.Current.EnsureMovieInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
-            dataFilePath = dataFilePath ?? MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
-            movieInfo = movieInfo ?? _jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(dataFilePath);
+                dataFilePath = dataFilePath ?? MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
+                movieInfo = movieInfo ?? _jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(dataFilePath);
 
-            ProcessMainInfo(item, preferredCountryCode, movieInfo);
-            item.HasMetadata = true;
+                ProcessMainInfo(item, preferredCountryCode, movieInfo);
+                item.HasMetadata = true;
+            }
 
             return item;
         }

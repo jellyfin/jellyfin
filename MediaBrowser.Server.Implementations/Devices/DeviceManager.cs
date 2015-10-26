@@ -265,6 +265,11 @@ namespace MediaBrowser.Server.Implementations.Devices
                 return true;
             }
 
+            if (policy.IsAdministrator)
+            {
+                return true;
+            }
+
             return ListHelper.ContainsIgnoreCase(policy.EnabledDevices, id);
         }
     }

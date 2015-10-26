@@ -333,7 +333,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 IsRepeat = repeat,
                 IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
                 ImageUrl = imageUrl,
-                HasImage = details.hasImageArtwork,
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
                 IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,

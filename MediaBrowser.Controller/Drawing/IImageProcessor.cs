@@ -105,5 +105,11 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         Task CreateImageCollage(ImageCollageOptions options);
+
+        /// <summary>
+        /// Gets a value indicating whether [supports image collage creation].
+        /// </summary>
+        /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
+        bool SupportsImageCollageCreation { get; }
     }
 }

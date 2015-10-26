@@ -110,6 +110,15 @@ namespace Emby.Drawing
             }
         }
 
+
+        public bool SupportsImageCollageCreation
+        {
+            get
+            {
+                return _imageEncoder.SupportsImageCollageCreation;
+            }
+        }
+
         private string ResizedImageCachePath
         {
             get
@@ -170,6 +179,11 @@ namespace Emby.Drawing
 
             var originalImagePath = originalImage.Path;
 
+            if (!_imageEncoder.SupportsImageEncoding)
+            {
+                return originalImagePath;
+            }
+
             if (options.HasDefaultOptions(originalImagePath) && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
             {
                 // Just spit out the original file if all the options are default
@@ -178,7 +192,7 @@ namespace Emby.Drawing
 
             var dateModified = originalImage.DateModified;
 
-            if (options.CropWhiteSpace)
+            if (options.CropWhiteSpace && _imageEncoder.SupportsImageEncoding)
             {
                 var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
 
@@ -294,6 +308,11 @@ namespace Emby.Drawing
                 imageProcessingLockTaken = true;
 
                 _imageEncoder.CropWhiteSpace(originalImagePath, croppedImagePath);
+            }
+            catch (NotImplementedException)
+            {
+                // No need to spam the log with an error message
+                return new Tuple<string, DateTime>(originalImagePath, dateModified);
             }
             catch (Exception ex)
             {

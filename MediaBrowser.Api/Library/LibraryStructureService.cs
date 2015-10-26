@@ -52,7 +52,7 @@ namespace MediaBrowser.Api.Library
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string[] Paths { get; set; }
     }
 
     [Route("/Library/VirtualFolders", "DELETE")]
@@ -207,11 +207,12 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException("There is already a media library with the name " + name + ".");
             }
 
-            if (!string.IsNullOrWhiteSpace(request.Path))
+            if (request.Paths != null)
             {
-                if (!_fileSystem.DirectoryExists(request.Path))
+                var invalidpath = request.Paths.FirstOrDefault(i => !_fileSystem.DirectoryExists(i));
+                if (invalidpath != null)
                 {
-                    throw new DirectoryNotFoundException("The specified folder does not exist.");
+                    throw new ArgumentException("The specified path does not exist: " + invalidpath + ".");
                 }
             }
             
@@ -231,9 +232,12 @@ namespace MediaBrowser.Api.Library
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(request.Path))
+                if (request.Paths != null)
                 {
-                    LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
+                    foreach (var path in request.Paths)
+                    {
+                        LibraryHelpers.AddMediaPath(_fileSystem, request.Name, path, _appPaths);
+                    }
                 }
             }
             finally

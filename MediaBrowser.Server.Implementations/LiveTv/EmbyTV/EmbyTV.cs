@@ -675,7 +675,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     Name = info.Name,
                     EpisodeTitle = info.EpisodeTitle,
                     ProgramId = info.Id,
-                    HasImage = info.HasImage,
                     ImagePath = info.ImagePath,
                     ImageUrl = info.ImageUrl,
                     OriginalAirDate = info.OriginalAirDate,

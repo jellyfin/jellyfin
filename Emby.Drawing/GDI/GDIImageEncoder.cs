@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Drawing;
+﻿using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
@@ -23,7 +22,20 @@ namespace Emby.Drawing.GDI
             _fileSystem = fileSystem;
             _logger = logger;
 
-            _logger.Info("GDI image processor initialized");
+            LogInfo();
+        }
+
+        private void LogInfo()
+        {
+            _logger.Info("GDIImageEncoder starting");
+            using (var stream = GetType().Assembly.GetManifestResourceStream(GetType().Namespace + ".empty.png"))
+            {
+                using (var img = Image.FromStream(stream))
+                {
+                    
+                }
+            }
+            _logger.Info("GDIImageEncoder started");
         }
 
         public string[] SupportedInputFormats
@@ -252,6 +264,16 @@ namespace Emby.Drawing.GDI
         public string Name
         {
             get { return "GDI"; }
+        }
+
+        public bool SupportsImageCollageCreation
+        {
+            get { return true; }
+        }
+
+        public bool SupportsImageEncoding
+        {
+            get { return true; }
         }
     }
 }
