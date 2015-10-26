@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Api.Library
 {
@@ -46,6 +47,12 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string[] Paths { get; set; }
     }
 
     [Route("/Library/VirtualFolders", "DELETE")]
@@ -195,22 +202,42 @@ namespace MediaBrowser.Api.Library
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
 
-            if (Directory.Exists(virtualFolderPath))
+            if (_fileSystem.DirectoryExists(virtualFolderPath))
             {
-                throw new ArgumentException("There is already a media collection with the name " + name + ".");
+                throw new ArgumentException("There is already a media library with the name " + name + ".");
             }
 
+            if (request.Paths != null)
+            {
+                var invalidpath = request.Paths.FirstOrDefault(i => !_fileSystem.DirectoryExists(i));
+                if (invalidpath != null)
+                {
+                    throw new ArgumentException("The specified path does not exist: " + invalidpath + ".");
+                }
+            }
+            
             _libraryMonitor.Stop();
 
             try
             {
-                Directory.CreateDirectory(virtualFolderPath);
+				_fileSystem.CreateDirectory(virtualFolderPath);
 
                 if (!string.IsNullOrEmpty(request.CollectionType))
                 {
                     var path = Path.Combine(virtualFolderPath, request.CollectionType + ".collection");
 
-                    File.Create(path);
+                    using (File.Create(path))
+                    {
+
+                    }
+                }
+
+                if (request.Paths != null)
+                {
+                    foreach (var path in request.Paths)
+                    {
+                        LibraryHelpers.AddMediaPath(_fileSystem, request.Name, path, _appPaths);
+                    }
                 }
             }
             finally
@@ -256,12 +283,12 @@ namespace MediaBrowser.Api.Library
             var currentPath = Path.Combine(rootFolderPath, request.Name);
             var newPath = Path.Combine(rootFolderPath, request.NewName);
 
-            if (!Directory.Exists(currentPath))
+			if (!_fileSystem.DirectoryExists(currentPath))
             {
                 throw new DirectoryNotFoundException("The media collection does not exist");
             }
 
-            if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
+			if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && _fileSystem.DirectoryExists(newPath))
             {
                 throw new ArgumentException("There is already a media collection with the name " + newPath + ".");
             }
@@ -276,11 +303,11 @@ namespace MediaBrowser.Api.Library
                     //Create an unique name
                     var temporaryName = Guid.NewGuid().ToString();
                     var temporaryPath = Path.Combine(rootFolderPath, temporaryName);
-                    Directory.Move(currentPath, temporaryPath);
+					_fileSystem.MoveDirectory(currentPath, temporaryPath);
                     currentPath = temporaryPath;
                 }
 
-                Directory.Move(currentPath, newPath);
+				_fileSystem.MoveDirectory(currentPath, newPath);
             }
             finally
             {
@@ -319,7 +346,7 @@ namespace MediaBrowser.Api.Library
 
             var path = Path.Combine(rootFolderPath, request.Name);
 
-            if (!Directory.Exists(path))
+			if (!_fileSystem.DirectoryExists(path))
             {
                 throw new DirectoryNotFoundException("The media folder does not exist");
             }

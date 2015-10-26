@@ -46,7 +46,7 @@
     "NotificationOptionInstallationFailed": "Falha na instala\u00e7\u00e3o",
     "NotificationOptionNewLibraryContent": "Adicionado novo conte\u00fado",
     "NotificationOptionNewLibraryContentMultiple": "Novo conte\u00fado adicionado (m\u00faltiplo)",
-    "NotificationOptionCameraImageUploaded": "Camera image uploaded",
+    "NotificationOptionCameraImageUploaded": "Imagem da c\u00e2mara carregada",
     "NotificationOptionUserLockedOut": "User locked out",
     "NotificationOptionServerRestartRequired": "\u00c9 necess\u00e1rio reiniciar o servidor",
     "ViewTypePlaylists": "Playlists",
@@ -172,5 +172,6 @@
     "HeaderProducer": "Producers",
     "HeaderWriter": "Writers",
     "HeaderParentalRatings": "Parental Ratings",
-    "HeaderCommunityRatings": "Community ratings"
+    "HeaderCommunityRatings": "Community ratings",
+    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
 }

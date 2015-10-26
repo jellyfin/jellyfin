@@ -15,6 +15,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Configuration
 {
@@ -23,14 +24,16 @@ namespace MediaBrowser.Server.Implementations.Configuration
     /// </summary>
     public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
     {
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="xmlSerializer">The XML serializer.</param>
-        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, logManager, xmlSerializer)
+        /// <param name="fileSystem">The file system.</param>
+        public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+            : base(applicationPaths, logManager, xmlSerializer, fileSystem)
         {
             UpdateItemsByNamePath();
             UpdateMetadataPath();
@@ -198,10 +201,12 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+                if (!FileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
+
+                EnsureWriteAccess(newPath);
             }
         }
 
@@ -218,10 +223,12 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+                if (!FileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
+
+                EnsureWriteAccess(newPath);
             }
         }
 

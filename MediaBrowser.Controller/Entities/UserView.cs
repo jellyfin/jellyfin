@@ -13,6 +13,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public string ViewType { get; set; }
         public Guid ParentId { get; set; }
+        public Guid DisplayParentId { get; set; }
 
         public Guid? UserId { get; set; }
         
@@ -28,7 +29,11 @@ namespace MediaBrowser.Controller.Entities
         {
             var parent = this as Folder;
 
-            if (ParentId != Guid.Empty)
+            if (DisplayParentId != Guid.Empty)
+            {
+                parent = LibraryManager.GetItemById(DisplayParentId) as Folder ?? parent;
+            }
+            else if (ParentId != Guid.Empty)
             {
                 parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
             }
@@ -82,7 +87,28 @@ namespace MediaBrowser.Controller.Entities
             {
                 CollectionType.Books,
                 CollectionType.HomeVideos,
-                CollectionType.Photos
+                CollectionType.Photos,
+                CollectionType.Playlists,
+                CollectionType.BoxSets,
+                CollectionType.MusicVideos
+            };
+
+            var collectionFolder = folder as ICollectionFolder;
+
+            if (collectionFolder == null)
+            {
+                return false;
+            }
+
+            return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        }
+
+        public static bool IsUserSpecific(Folder folder)
+        {
+            var standaloneTypes = new List<string>
+            {
+                CollectionType.Playlists,
+                CollectionType.BoxSets
             };
 
             var collectionFolder = folder as ICollectionFolder;

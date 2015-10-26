@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using CommonIO;
 using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.XbmcMetadata.Savers
@@ -199,6 +200,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
+            FileSystem.CreateDirectory(Path.GetDirectoryName(path));
+
             var file = new FileInfo(path);
 
             var wasHidden = false;
@@ -597,17 +600,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("tvcomid", tvcom);
             }
 
-            var hasLanguage = item as IHasPreferredMetadataLanguage;
-            if (hasLanguage != null)
+            if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
             {
-                if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataLanguage))
-                {
-                    writer.WriteElementString("language", hasLanguage.PreferredMetadataLanguage);
-                }
-                if (!string.IsNullOrEmpty(hasLanguage.PreferredMetadataCountryCode))
-                {
-                    writer.WriteElementString("countrycode", hasLanguage.PreferredMetadataCountryCode);
-                }
+                writer.WriteElementString("language", item.PreferredMetadataLanguage);
+            }
+            if (!string.IsNullOrEmpty(item.PreferredMetadataCountryCode))
+            {
+                writer.WriteElementString("countrycode", item.PreferredMetadataCountryCode);
             }
 
             if (item.PremiereDate.HasValue && !(item is Episode))
@@ -817,7 +816,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (options.SaveImagePathsInNfo)
             {
-                AddImages(item, writer, fileSystem, config);
+                AddImages(item, writer, libraryManager, config);
             }
 
             AddUserData(item, writer, userManager, userDataRepo, options);
@@ -881,20 +880,23 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        private static void AddImages(BaseItem item, XmlWriter writer, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static void AddImages(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IServerConfigurationManager config)
         {
             writer.WriteStartElement("art");
 
-            var poster = item.PrimaryImagePath;
+            var image = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (!string.IsNullOrEmpty(poster))
+            if (image != null && image.IsLocalFile)
             {
-                writer.WriteElementString("poster", GetPathToSave(item.PrimaryImagePath, fileSystem, config));
+                writer.WriteElementString("poster", GetPathToSave(image.Path, libraryManager, config));
             }
 
             foreach (var backdrop in item.GetImages(ImageType.Backdrop))
             {
-                writer.WriteElementString("fanart", GetPathToSave(backdrop.Path, fileSystem, config));
+                if (backdrop.IsLocalFile)
+                {
+                    writer.WriteElementString("fanart", GetPathToSave(backdrop.Path, libraryManager, config));
+                }
             }
 
             writer.WriteEndElement();
@@ -983,10 +985,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 try
                 {
                     var personEntity = libraryManager.GetPerson(person.Name);
+                    var image = personEntity.GetImageInfo(ImageType.Primary, 0);
 
-                    if (!string.IsNullOrEmpty(personEntity.PrimaryImagePath))
+                    if (image != null && image.IsLocalFile)
                     {
-                        writer.WriteElementString("thumb", GetPathToSave(personEntity.PrimaryImagePath, fileSystem, config));
+                        writer.WriteElementString("thumb", GetPathToSave(image.Path, libraryManager, config));
                     }
                 }
                 catch (Exception)
@@ -998,11 +1001,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        private static string GetPathToSave(string path, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static string GetPathToSave(string path, ILibraryManager libraryManager, IServerConfigurationManager config)
         {
             foreach (var map in config.Configuration.PathSubstitutions)
             {
-                path = fileSystem.SubstitutePath(path, map.From, map.To);
+                path = libraryManager.SubstitutePath(path, map.From, map.To);
             }
 
             return path;

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities
@@ -62,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> PhysicalLocationsList { get; set; }
 
-        protected override IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
+        protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs(directoryService).FileSystemChildren;
         }
@@ -73,7 +75,7 @@ namespace MediaBrowser.Controller.Entities
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths , directoryService)
             {
-                FileInfo = new DirectoryInfo(path),
+                FileInfo = FileSystem.GetDirectoryInfo(path),
                 Path = path,
                 Parent = Parent
             };
@@ -94,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
 
-                    fileSystemDictionary = paths.Select(i => (FileSystemInfo)new DirectoryInfo(i)).ToDictionary(i => i.FullName);
+                    fileSystemDictionary = paths.Select(FileSystem.GetDirectoryInfo).ToDictionary(i => i.FullName);
                 }
 
                 args.FileSystemDictionary = fileSystemDictionary;

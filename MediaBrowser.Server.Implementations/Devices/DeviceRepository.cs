@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -47,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         public Task SaveDevice(DeviceInfo device)
         {
             var path = Path.Combine(GetDevicePath(device.Id), "device.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {
@@ -111,8 +112,8 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             try
             {
-                return Directory
-                    .EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                return _fileSystem
+                    .GetFilePaths(path, true)
                     .Where(i => string.Equals(Path.GetFileName(i), "device.json", StringComparison.OrdinalIgnoreCase))
                     .ToList()
                     .Select(i =>
@@ -178,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         public void AddCameraUpload(string deviceId, LocalFileInfo file)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {

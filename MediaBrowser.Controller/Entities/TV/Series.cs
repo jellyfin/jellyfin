@@ -20,7 +20,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public List<Guid> SpecialFeatureIds { get; set; }
 
         public string OriginalTitle { get; set; }
-        public int SeasonCount { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
 

@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -61,23 +62,17 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
-            var series = (Series)item;
-            var seriesId = series.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!string.IsNullOrEmpty(seriesId))
+            if (TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
             {
                 var language = item.GetPreferredMetadataLanguage();
 
-                await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesId, language, cancellationToken).ConfigureAwait(false);
-
-                // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(item.ProviderIds, language, cancellationToken).ConfigureAwait(false);
 
                 var path = Path.Combine(seriesDataPath, "banners.xml");
 
                 try
                 {
-                    var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds);
+                    var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(item.ProviderIds);
                     if (seriesOffset != null && seriesOffset.Value != 0)
                         return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, cancellationToken);
                     
@@ -352,7 +347,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
 
-                var fileInfo = new FileInfo(imagesXmlPath);
+                var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
                 return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > (status.DateLastMetadataRefresh ?? DateTime.MinValue);
             }

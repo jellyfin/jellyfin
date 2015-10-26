@@ -31,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             get { return "emby"; }
         }
 
-        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             return GetListingsProvider(info.Country).GetProgramsAsync(info, channelNumber, startDateUtc, endDateUtc, cancellationToken);
         }

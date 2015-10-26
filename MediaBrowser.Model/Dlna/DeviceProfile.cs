@@ -286,7 +286,8 @@ namespace MediaBrowser.Model.Dlna
             bool? isCabac,
             int? refFrames,
             int? numVideoStreams,
-            int? numAudioStreams)
+            int? numAudioStreams,
+            string videoCodecTag)
         {
             container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
@@ -320,7 +321,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(c, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                    if (!conditionProcessor.IsVideoConditionSatisfied(c, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                     {
                         anyOff = true;
                         break;

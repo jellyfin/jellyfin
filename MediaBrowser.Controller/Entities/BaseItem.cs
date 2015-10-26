@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -38,7 +39,6 @@ namespace MediaBrowser.Controller.Entities
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
-            Identities = new List<IItemIdentity>();
         }
 
         /// <summary>
@@ -56,12 +56,16 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
+        public string PreferredMetadataCountryCode { get; set; }
+        public string PreferredMetadataLanguage { get; set; }
+
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
+        [IgnoreDataMember]
         public string ChannelId { get; set; }
 
         [IgnoreDataMember]
@@ -121,6 +125,12 @@ namespace MediaBrowser.Controller.Entities
         public Guid Id { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hd.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        public bool? IsHD { get; set; }
+
+        /// <summary>
         /// Return the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
@@ -162,6 +172,26 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Id of the program.
+        /// </summary>
+        [IgnoreDataMember]
+        public string ExternalId
+        {
+            get { return this.GetProviderId("ProviderExternalId"); }
+            set
+            {
+                this.SetProviderId("ProviderExternalId", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        [IgnoreDataMember]
+        public string ExternalEtag { get; set; }
+
         [IgnoreDataMember]
         public virtual bool IsHidden
         {
@@ -183,7 +213,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 // Local trailer, special feature, theme video, etc.
                 // An item that belongs to another item but is not part of the Parent-Child tree
-                return !IsFolder && Parent == null && LocationType == LocationType.FileSystem;
+                return !IsFolder && ParentId == Guid.Empty && LocationType == LocationType.FileSystem;
             }
         }
 
@@ -305,6 +335,9 @@ namespace MediaBrowser.Controller.Entities
 
         public DateTime DateLastSaved { get; set; }
 
+        [IgnoreDataMember]
+        public DateTime DateLastRefreshed { get; set; }
+
         /// <summary>
         /// The logger
         /// </summary>
@@ -331,30 +364,8 @@ namespace MediaBrowser.Controller.Entities
             return Name;
         }
 
-        /// <summary>
-        /// Returns true if this item should not attempt to fetch metadata
-        /// </summary>
-        /// <value><c>true</c> if [dont fetch meta]; otherwise, <c>false</c>.</value>
-        [Obsolete("Please use IsLocked instead of DontFetchMeta")]
-        public bool DontFetchMeta { get; set; }
-
         [IgnoreDataMember]
-        public bool IsLocked
-        {
-            get
-            {
-                return DontFetchMeta;
-            }
-            set
-            {
-                DontFetchMeta = value;
-            }
-        }
-
-        public bool IsUnidentified { get; set; }
-
-        [IgnoreDataMember]
-        public List<IItemIdentity> Identities { get; set; }
+        public bool IsLocked { get; set; }
 
         /// <summary>
         /// Gets or sets the locked fields.
@@ -484,7 +495,6 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ParentId { get; set; }
 
-        private Folder _parent;
         /// <summary>
         /// Gets or sets the parent.
         /// </summary>
@@ -494,11 +504,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_parent != null)
-                {
-                    return _parent;
-                }
-
                 if (ParentId != Guid.Empty)
                 {
                     return LibraryManager.GetItemById(ParentId) as Folder;
@@ -506,12 +511,14 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
-            set { _parent = value; }
+            set
+            {
+
+            }
         }
 
         public void SetParent(Folder parent)
         {
-            Parent = parent;
             ParentId = parent == null ? Guid.Empty : parent.Id;
         }
 
@@ -558,6 +565,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the end date.
         /// </summary>
         /// <value>The end date.</value>
+        [IgnoreDataMember]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -582,6 +590,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
+        //[IgnoreDataMember]
         public string CustomRating { get; set; }
 
         /// <summary>
@@ -589,12 +598,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-
-        /// <summary>
-        /// Gets or sets the people.
-        /// </summary>
-        /// <value>The people.</value>
-        public List<PersonInfo> People { get; set; }
 
         /// <summary>
         /// Gets or sets the studios.
@@ -618,6 +621,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
+        //[IgnoreDataMember]
         public float? CommunityRating { get; set; }
 
         /// <summary>
@@ -643,6 +647,7 @@ namespace MediaBrowser.Controller.Entities
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
+        //[IgnoreDataMember]
         public int? IndexNumber { get; set; }
 
         /// <summary>
@@ -662,7 +667,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrEmpty(CustomRating))
+                if (!string.IsNullOrWhiteSpace(CustomRating))
                 {
                     return CustomRating;
                 }
@@ -701,16 +706,16 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly))
+                .SelectMany(i => directoryService.GetFiles(i.FullName))
                 .ToList();
 
             // Support plex/xbmc convention
-            files.AddRange(fileSystemChildren.OfType<FileInfo>()
-                .Where(i => string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
+            files.AddRange(fileSystemChildren
+                .Where(i => !i.IsDirectory && string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
             return LibraryManager.ResolvePaths(files, directoryService, null)
@@ -737,11 +742,11 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
+        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.OfType<DirectoryInfo>()
+            var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.EnumerateFiles("*", SearchOption.TopDirectoryOnly));
+                .SelectMany(i => directoryService.GetFiles(i.FullName));
 
             return LibraryManager.ResolvePaths(files, directoryService, null)
                 .OfType<Video>()
@@ -765,7 +770,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
-            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService()), cancellationToken);
+            return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
         }
 
         /// <summary>
@@ -786,7 +791,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var files = locationType != LocationType.Remote && locationType != LocationType.Virtual ?
                         GetFileSystemChildren(options.DirectoryService).ToList() :
-                        new List<FileSystemInfo>();
+                        new List<FileSystemMetadata>();
 
                     var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
 
@@ -833,7 +838,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="fileSystemChildren"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var themeSongsChanged = false;
 
@@ -864,14 +869,14 @@ namespace MediaBrowser.Controller.Entities
             return themeSongsChanged || themeVideosChanged || localTrailersChanged;
         }
 
-        protected virtual IEnumerable<FileSystemInfo> GetFileSystemChildren(IDirectoryService directoryService)
+        protected virtual IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
             var path = ContainingFolderPath;
 
             return directoryService.GetFileSystemEntries(path);
         }
 
-        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshLocalTrailers(IHasTrailers item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newItems = LibraryManager.FindTrailers(this, fileSystemChildren, options.DirectoryService).ToList();
 
@@ -888,7 +893,7 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged;
         }
 
-        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService).ToList();
 
@@ -902,7 +907,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.IsThemeMedia = true;
+                    i.ExtraType = ExtraType.ThemeVideo;
                     subOptions.ForceSave = true;
                 }
 
@@ -919,7 +924,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
@@ -932,7 +937,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.IsThemeMedia = true;
+                    i.ExtraType = ExtraType.ThemeSong;
                     subOptions.ForceSave = true;
                 }
 
@@ -999,18 +1004,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataLanguage()
         {
-            string lang = null;
-
-            var hasLang = this as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                lang = hasLang.PreferredMetadataLanguage;
-            }
+            string lang = PreferredMetadataLanguage;
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                lang = Parents
                     .Select(i => i.PreferredMetadataLanguage)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
@@ -1036,18 +1034,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         public string GetPreferredMetadataCountryCode()
         {
-            string lang = null;
-
-            var hasLang = this as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                lang = hasLang.PreferredMetadataCountryCode;
-            }
+            string lang = PreferredMetadataCountryCode;
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents.OfType<IHasPreferredMetadataLanguage>()
+                lang = Parents
                     .Select(i => i.PreferredMetadataCountryCode)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
@@ -1114,7 +1105,14 @@ namespace MediaBrowser.Controller.Entities
             // Could not determine the integer value
             if (!value.HasValue)
             {
-                return true;
+                var isAllowed = !GetBlockUnratedValue(user.Policy);
+
+                if (!isAllowed)
+                {
+                    Logger.Debug("{0} has an unrecognized parental rating of {1}.", Name, rating);
+                }
+
+                return isAllowed;
             }
 
             return value.Value <= maxAllowedRating.Value;
@@ -1165,6 +1163,17 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         protected virtual bool GetBlockUnratedValue(UserPolicy config)
         {
+            // Don't block plain folders that are unrated. Let the media underneath get blocked
+            // Special folders like series and albums will override this method.
+            if (IsFolder)
+            {
+                return false;
+            }
+            if (this is IItemByName)
+            {
+                return false;
+            }
+
             return config.BlockUnratedItems.Contains(UnratedItem.Other);
         }
 
@@ -1418,7 +1427,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions());
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(FileSystem));
             return Task.FromResult(true);
         }
 
@@ -1434,7 +1443,24 @@ namespace MediaBrowser.Controller.Entities
             return GetImageInfo(type, imageIndex) != null;
         }
 
-        public void SetImagePath(ImageType type, int index, FileSystemInfo file)
+        public void SetImage(ItemImageInfo image, int index)
+        {
+            if (image.Type == ImageType.Chapter)
+            {
+                throw new ArgumentException("Cannot set chapter images using SetImagePath");
+            }
+
+            var existingImage = GetImageInfo(image.Type, index);
+
+            if (existingImage != null)
+            {
+                ImageInfos.Remove(existingImage);
+            }
+
+            ImageInfos.Add(image);
+        }
+
+        public void SetImagePath(ImageType type, int index, FileSystemMetadata file)
         {
             if (type == ImageType.Chapter)
             {
@@ -1475,18 +1501,21 @@ namespace MediaBrowser.Controller.Entities
             // Remove it from the item
             RemoveImage(info);
 
-            // Delete the source file
-            var currentFile = new FileInfo(info.Path);
-
-            // Deletion will fail if the file is hidden so remove the attribute first
-            if (currentFile.Exists)
+            if (info.IsLocalFile)
             {
-                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    currentFile.Attributes &= ~FileAttributes.Hidden;
-                }
+                // Delete the source file
+                var currentFile = new FileInfo(info.Path);
 
-                FileSystem.DeleteFile(currentFile.FullName);
+                // Deletion will fail if the file is hidden so remove the attribute first
+                if (currentFile.Exists)
+                {
+                    if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    {
+                        currentFile.Attributes &= ~FileAttributes.Hidden;
+                    }
+
+                    FileSystem.DeleteFile(currentFile.FullName);
+                }
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
@@ -1507,11 +1536,16 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool ValidateImages(IDirectoryService directoryService)
         {
-            var allDirectories = ImageInfos.Select(i => System.IO.Path.GetDirectoryName(i.Path)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-            var allFiles = allDirectories.SelectMany(directoryService.GetFiles).Select(i => i.FullName).ToList();
+            var allFiles = ImageInfos
+                .Where(i => i.IsLocalFile)
+                .Select(i => System.IO.Path.GetDirectoryName(i.Path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .SelectMany(directoryService.GetFiles)
+                .Select(i => i.FullName)
+                .ToList();
 
             var deletedImages = ImageInfos
-                .Where(image => !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
+                .Where(image => image.IsLocalFile && !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             if (deletedImages.Count > 0)
@@ -1584,11 +1618,6 @@ namespace MediaBrowser.Controller.Entities
             return ImageInfos.Where(i => i.Type == imageType);
         }
 
-        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
-        {
-            return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
-        }
-
         /// <summary>
         /// Adds the images.
         /// </summary>
@@ -1596,7 +1625,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
-        public bool AddImages(ImageType imageType, List<FileSystemInfo> images)
+        public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -1606,7 +1635,7 @@ namespace MediaBrowser.Controller.Entities
             var existingImages = GetImages(imageType)
                 .ToList();
 
-            var newImageList = new List<FileSystemInfo>();
+            var newImageList = new List<FileSystemMetadata>();
             var imageAdded = false;
 
             foreach (var newImage in images)
@@ -1626,7 +1655,10 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                    if (existing.IsLocalFile)
+                    {
+                        existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
+                    }
                 }
             }
 
@@ -1635,7 +1667,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-                    .Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
+                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !FileSystem.FileExists(i.Path))
                     .ToList();
 
                 ImageInfos = ImageInfos.Except(deleted).ToList();
@@ -1646,7 +1678,7 @@ namespace MediaBrowser.Controller.Entities
             return newImageList.Count > 0;
         }
 
-        private ItemImageInfo GetImageInfo(FileSystemInfo file, ImageType type)
+        private ItemImageInfo GetImageInfo(FileSystemMetadata file, ImageType type)
         {
             return new ItemImageInfo
             {
@@ -1683,6 +1715,12 @@ namespace MediaBrowser.Controller.Entities
             if (info1 == null || info2 == null)
             {
                 // Nothing to do
+                return Task.FromResult(true);
+            }
+
+            if (!info1.IsLocalFile || !info2.IsLocalFile)
+            {
+                // TODO: Not supported  yet
                 return Task.FromResult(true);
             }
 
@@ -1769,7 +1807,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
                 {
-                    path = FileSystem.SubstitutePath(path, map.From, map.To);
+                    path = LibraryManager.SubstitutePath(path, map.From, map.To);
                 }
             }
 
@@ -1810,7 +1848,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (video == null)
             {
-                video = LibraryManager.ResolvePath(new FileInfo(path)) as Video;
+                video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
 
                 newOptions.ForceSave = true;
             }

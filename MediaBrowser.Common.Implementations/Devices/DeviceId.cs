@@ -3,13 +3,16 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Text;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Devices
 {
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
-        private readonly ILogger _logger;
+		private readonly ILogger _logger;
+		private readonly IFileSystem _fileSystem;
 
         private readonly object _syncLock = new object();
 
@@ -24,7 +27,7 @@ namespace MediaBrowser.Common.Implementations.Devices
             {
                 lock (_syncLock)
                 {
-                    var value = File.ReadAllText(CachePath, Encoding.UTF8);
+					var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
                     Guid guid;
                     if (Guid.TryParse(value, out guid))
@@ -55,11 +58,11 @@ namespace MediaBrowser.Common.Implementations.Devices
             {
                 var path = CachePath;
 
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 lock (_syncLock)
                 {
-                    File.WriteAllText(path, id, Encoding.UTF8);
+                    _fileSystem.WriteAllText(path, id, Encoding.UTF8);
                 }
             }
             catch (Exception ex)
@@ -88,10 +91,15 @@ namespace MediaBrowser.Common.Implementations.Devices
 
         private string _id;
 
-        public DeviceId(IApplicationPaths appPaths, ILogger logger)
+        public DeviceId(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
         {
+			if (fileSystem == null) {
+				throw new ArgumentNullException ("fileSystem");
+			}
+
             _appPaths = appPaths;
             _logger = logger;
+			_fileSystem = fileSystem;
         }
 
         public string Value

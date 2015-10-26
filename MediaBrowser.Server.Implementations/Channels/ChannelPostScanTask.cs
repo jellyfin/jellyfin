@@ -87,6 +87,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 const int currentRefreshLevel = 1;
                 var maxRefreshLevel = features.AutoRefreshLevels ?? 0;
+                maxRefreshLevel = Math.Max(maxRefreshLevel, 2);
 
                 if (maxRefreshLevel > 0)
                 {
@@ -143,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task CleanChannel(Guid id, CancellationToken cancellationToken)
         {
-            _logger.Debug("Cleaning channel {0} from database", id);
+            _logger.Info("Cleaning channel {0} from database", id);
 
             // Delete all channel items
             var allIds = _libraryManager.GetItemIds(new InternalItemsQuery

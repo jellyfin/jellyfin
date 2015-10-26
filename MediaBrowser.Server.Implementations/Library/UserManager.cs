@@ -30,6 +30,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -454,7 +455,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public Task RefreshUsersMetadata(CancellationToken cancellationToken)
         {
-            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken)).ToList();
+            var tasks = Users.Select(user => user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken)).ToList();
 
             return Task.WhenAll(tasks);
         }
@@ -706,7 +707,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 Id = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
-                UsesIdForConfigurationPath = true
+                UsesIdForConfigurationPath = true,
+                EnableUserViews = true
             };
         }
 
@@ -745,7 +747,7 @@ namespace MediaBrowser.Server.Implementations.Library
             text.AppendLine(string.Empty);
             text.AppendLine("The pin code will expire at " + expiration.ToLocalTime().ToShortDateString() + " " + expiration.ToLocalTime().ToShortTimeString());
 
-            File.WriteAllText(path, text.ToString(), Encoding.UTF8);
+			_fileSystem.WriteAllText(path, text.ToString(), Encoding.UTF8);
 
             var result = new PasswordPinCreationResult
             {
@@ -919,7 +921,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var path = GetPolifyFilePath(user);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -1006,7 +1008,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configSyncLock)
             {

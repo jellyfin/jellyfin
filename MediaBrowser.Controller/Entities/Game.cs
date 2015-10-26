@@ -8,18 +8,10 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
     {
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-
-        public string PreferredMetadataLanguage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         public Game()
         {

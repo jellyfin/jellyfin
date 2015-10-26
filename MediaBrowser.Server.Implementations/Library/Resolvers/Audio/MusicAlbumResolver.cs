@@ -10,6 +10,7 @@ using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -107,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if the specified list contains music; otherwise, <c>false</c>.</returns>
-        private bool ContainsMusic(IEnumerable<FileSystemInfo> list,
+        private bool ContainsMusic(IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
             ILogger logger,

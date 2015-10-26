@@ -57,7 +57,7 @@ namespace MediaBrowser.Api.Playback
             Size = 102400;
         }
     }
-    
+
     [Authenticated]
     public class MediaInfoService : BaseApiService
     {
@@ -289,7 +289,7 @@ namespace MediaBrowser.Api.Playback
             if (mediaSource.SupportsDirectStream)
             {
                 options.MaxBitrate = GetMaxBitrate(maxBitrate);
-                
+
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -309,7 +309,7 @@ namespace MediaBrowser.Api.Playback
             if (mediaSource.SupportsTranscoding)
             {
                 options.MaxBitrate = GetMaxBitrate(maxBitrate);
-                
+
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -336,9 +336,15 @@ namespace MediaBrowser.Api.Playback
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
 
-            if (remoteClientMaxBitrate > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
+            if (remoteClientMaxBitrate > 0)
             {
-                maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);
+                var isInLocalNetwork = _networkManager.IsInLocalNetwork(Request.RemoteIp);
+
+                Logger.Info("RemoteClientBitrateLimit: {0}, RemoteIp: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, Request.RemoteIp, isInLocalNetwork);
+                if (!isInLocalNetwork)
+                {
+                    maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);
+                }
             }
 
             return maxBitrate;

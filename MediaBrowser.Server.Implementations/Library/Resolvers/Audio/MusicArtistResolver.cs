@@ -9,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {

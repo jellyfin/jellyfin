@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -78,7 +79,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override string CreateUserDataKey()
         {
-            var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
+            var key = Movie.GetMovieUserDataKey(this);
 
             if (!string.IsNullOrWhiteSpace(key))
             {

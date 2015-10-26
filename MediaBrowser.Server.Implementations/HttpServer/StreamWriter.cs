@@ -36,6 +36,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public Action OnComplete { get; set; }
+        public Action OnError { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
@@ -102,6 +103,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 Logger.ErrorException("Error streaming data", ex);
 
+                if (OnError != null)
+                {
+                    OnError();
+                }
+                
                 throw;
             }
             finally

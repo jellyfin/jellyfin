@@ -67,9 +67,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            else if (info.ProductionYear != null)
+            else if (info.IsMovie && info.ProductionYear != null)
             {
                 name += " (" + info.ProductionYear + ")";
+            }
+            else
+            {
+                name += " " + info.StartDate.ToString("yyyy-MM-dd");
             }
 
             return name;

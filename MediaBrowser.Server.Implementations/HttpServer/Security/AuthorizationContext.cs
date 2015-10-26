@@ -62,52 +62,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Version", out version);
             }
 
-            var token = httpReq.Headers["X-MediaBrowser-Token"];
+            var token = httpReq.Headers["X-Emby-Token"];
 
             if (string.IsNullOrWhiteSpace(token))
             {
+                token = httpReq.Headers["X-MediaBrowser-Token"];
+            }
+            if (string.IsNullOrWhiteSpace(token))
+            {
                 token = httpReq.QueryString["api_key"];
-            }
-
-            // Hack until iOS is updated
-            // TODO: Remove
-            if (string.IsNullOrWhiteSpace(client))
-            {
-                var userAgent = httpReq.Headers["User-Agent"] ?? string.Empty;
-
-                if (userAgent.IndexOf("mediabrowserios", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
-                    userAgent.IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    client = "iOS";
-                }
-
-                else if (userAgent.IndexOf("crKey", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    client = "Chromecast";
-                }
-            }
-
-            // Hack until iOS is updated
-            // TODO: Remove
-            if (string.IsNullOrWhiteSpace(device))
-            {
-                var userAgent = httpReq.Headers["User-Agent"] ?? string.Empty;
-
-                if (userAgent.IndexOf("iPhone", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    device = "iPhone";
-                }
-
-                else if (userAgent.IndexOf("iPad", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    device = "iPad";
-                }
-
-                else if (userAgent.IndexOf("crKey", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    device = "Chromecast";
-                }
             }
 
             var info = new AuthorizationInfo

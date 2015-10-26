@@ -87,6 +87,7 @@ namespace MediaBrowser.Common.Net
         public bool BufferContent { get; set; }
 
         public bool LogRequest { get; set; }
+        public bool LogErrors { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
         public bool EnableKeepAlive { get; set; }
@@ -116,6 +117,7 @@ namespace MediaBrowser.Common.Net
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             LogRequest = true;
+            LogErrors = true;
             CacheMode = CacheMode.None;
 
             TimeoutMs = 20000;

@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -27,13 +29,15 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
+        private readonly IFileSystem _fileSystem;
 
-        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, ILocalizationManager localization)
+        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, ILocalizationManager localization, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _config = config;
             _localization = localization;
+            _fileSystem = fileSystem;
         }
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
@@ -50,7 +54,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
+            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
 
@@ -64,12 +68,6 @@ namespace MediaBrowser.Providers.TV
 
                 var physicalEpisodes = episodes.Where(i => i.LocationType != LocationType.Virtual)
                     .ToList();
-
-                series.SeasonCount = episodes
-                    .Select(i => i.ParentIndexNumber ?? 0)
-                    .Where(i => i != 0)
-                    .Distinct()
-                    .Count();
 
                 series.SpecialFeatureIds = physicalEpisodes
                     .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)

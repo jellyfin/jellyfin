@@ -15,6 +15,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -24,17 +26,19 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
 
         private IMediaSourceProvider[] _providers;
         private readonly ILogger _logger;
 
-        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer)
+        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
             _jsonSerializer = jsonSerializer;
+            _fileSystem = fileSystem;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -77,10 +81,6 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return false;
             }
-            if (string.Equals(stream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
 
             return true;
         }
@@ -105,6 +105,18 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
+        private int GetMaxAllowedBitrateForExternalSubtitleStream()
+        {
+            // This is abitrary but at some point it becomes too slow to extract subtitles on the fly
+            // We need to learn more about when this is the case vs. when it isn't
+            if (Environment.ProcessorCount >= 8)
+            {
+                return 10000000;
+            }
+
+            return 2000000;
+        }
+
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
         {
             var list = streams.ToList();
@@ -117,9 +129,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var videoStream = list.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                // This is abitrary but at some point it becomes too slow to extract subtitles on the fly
-                // We need to learn more about when this is the case vs. when it isn't
-                const int maxAllowedBitrateForExternalSubtitleStream = 10000000;
+                int maxAllowedBitrateForExternalSubtitleStream = GetMaxAllowedBitrateForExternalSubtitleStream();
 
                 var videoBitrate = videoStream == null ? maxAllowedBitrateForExternalSubtitleStream : videoStream.BitRate ?? maxAllowedBitrateForExternalSubtitleStream;
 
@@ -170,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (source.Protocol == MediaProtocol.File)
                 {
                     // TODO: Path substitution
-                    if (!File.Exists(source.Path))
+                    if (!_fileSystem.FileExists(source.Path))
                     {
                         source.SupportsDirectStream = false;
                     }

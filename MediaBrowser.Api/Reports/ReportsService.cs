@@ -226,7 +226,6 @@ namespace MediaBrowser.Api.Reports
                 NameStartsWithOrGreater = request.NameStartsWithOrGreater,
                 HasImdbId = request.HasImdbId,
                 IsYearMismatched = request.IsYearMismatched,
-                IsUnidentified = request.IsUnidentified,
                 IsPlaceHolder = request.IsPlaceHolder,
                 IsLocked = request.IsLocked,
                 IsInBoxSet = request.IsInBoxSet,

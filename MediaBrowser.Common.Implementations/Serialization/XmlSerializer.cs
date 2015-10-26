@@ -3,6 +3,8 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {
@@ -11,6 +13,13 @@ namespace MediaBrowser.Common.Implementations.Serialization
     /// </summary>
     public class XmlSerializer : IXmlSerializer
     {
+		private IFileSystem _fileSystem;
+
+		public XmlSerializer(IFileSystem fileSystem) 
+		{
+			_fileSystem = fileSystem;
+		}
+
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
         private readonly ConcurrentDictionary<string, System.Xml.Serialization.XmlSerializer> _serializers =
@@ -83,7 +92,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromFile(Type type, string file)
         {
-            using (var stream = File.OpenRead(file))
+            using (var stream = _fileSystem.OpenRead(file))
             {
                 return DeserializeFromStream(type, stream);
             }

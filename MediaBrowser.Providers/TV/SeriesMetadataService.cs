@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -29,7 +30,7 @@ namespace MediaBrowser.Providers.TV
 
             if (refreshOptions.IsPostRecursiveRefresh)
             {
-                var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, LibraryManager);
+                var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, LibraryManager, FileSystem);
 
                 try
                 {
@@ -61,11 +62,6 @@ namespace MediaBrowser.Providers.TV
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
-
-            if (replaceData || targetItem.SeasonCount == 0)
-            {
-                targetItem.SeasonCount = sourceItem.SeasonCount;
-            }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.AirTime))
             {

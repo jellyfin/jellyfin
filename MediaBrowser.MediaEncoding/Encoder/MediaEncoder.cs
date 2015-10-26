@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -97,6 +98,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FFMpegPath = ffMpegPath;
         }
 
+        public void SetAvailableEncoders(List<string> list)
+        {
+
+        }
+
+        private List<string> _decoders = new List<string>();
+        public void SetAvailableDecoders(List<string> list)
+        {
+            _decoders = list.ToList();
+        }
+
+        public bool SupportsDecoder(string decoder)
+        {
+            return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets the encoder path.
         /// </summary>
@@ -116,7 +133,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
 
-            var inputFiles = MediaEncoderHelpers.GetInputArgument(request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
             var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
 
@@ -199,10 +216,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
                 try
                 {
                     StartProcess(processWrapper);
@@ -222,53 +239,55 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
 
-                    if (result != null)
+                    if (result.streams == null && result.format == null)
                     {
-                        if (result.streams != null)
+                        throw new ApplicationException("ffprobe failed - streams and format are both null.");
+                    }
+
+                    if (result.streams != null)
+                    {
+                        // Normalize aspect ratio if invalid
+                        foreach (var stream in result.streams)
                         {
-                            // Normalize aspect ratio if invalid
-                            foreach (var stream in result.streams)
+                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    stream.display_aspect_ratio = string.Empty;
-                                }
-                                if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    stream.sample_aspect_ratio = string.Empty;
-                                }
+                                stream.display_aspect_ratio = string.Empty;
+                            }
+                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.sample_aspect_ratio = string.Empty;
                             }
                         }
+                    }
 
-                        var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
-                        if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    {
+                        if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
                         {
-                            if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
+                            foreach (var stream in mediaInfo.MediaStreams)
                             {
-                                foreach (var stream in mediaInfo.MediaStreams)
+                                if (EnableKeyframeExtraction(mediaInfo, stream))
                                 {
-                                    if (EnableKeyframeExtraction(mediaInfo, stream))
+                                    try
                                     {
-                                        try
-                                        {
-                                            stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
-                                        }
-                                        catch (OperationCanceledException)
-                                        {
+                                        stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
 
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.ErrorException("Error getting key frame interval", ex);
-                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.ErrorException("Error getting key frame interval", ex);
                                     }
                                 }
                             }
                         }
-
-                        return mediaInfo;
                     }
+
+                    return mediaInfo;
                 }
                 catch
                 {
@@ -330,7 +349,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             using (process)
             {
@@ -356,7 +375,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 process.WaitForExit();
 
-                _logger.Debug("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
+                _logger.Info("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
                 //_logger.Debug("Found keyframes {0}", string.Join(",", lines.ToArray()));
                 return lines;
             }
@@ -483,9 +502,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            // TODO: Output in webp for smaller sizes
-            // -f image2 -f webp
-
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
             var args = useIFrame ? string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
                 string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
@@ -520,10 +536,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
+                await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
                 bool ranToCompletion;
 
                 var memoryStream = new MemoryStream();
@@ -605,7 +621,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
 
-            Directory.CreateDirectory(targetDirectory);
+            FileSystem.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
             var args = string.Format("-i {0} -threads 1 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);

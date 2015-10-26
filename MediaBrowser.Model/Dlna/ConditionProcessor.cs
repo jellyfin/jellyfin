@@ -20,16 +20,11 @@ namespace MediaBrowser.Model.Dlna
             bool? isCabac,
             int? refFrames,
             int? numVideoStreams,
-            int? numAudioStreams)
+            int? numAudioStreams,
+            string videoCodecTag)
         {
             switch (condition.Property)
             {
-                case ProfileConditionValue.AudioProfile:
-                    // TODO: Implement
-                    return true;
-                case ProfileConditionValue.Has64BitOffsets:
-                    // TODO: Implement
-                    return true;
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);
                 case ProfileConditionValue.IsCabac:
@@ -40,6 +35,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, videoLevel);
                 case ProfileConditionValue.VideoProfile:
                     return IsConditionSatisfied(condition, videoProfile);
+                case ProfileConditionValue.VideoCodecTag:
+                    return IsConditionSatisfied(condition, videoCodecTag);
                 case ProfileConditionValue.PacketLength:
                     return IsConditionSatisfied(condition, packetLength);
                 case ProfileConditionValue.VideoBitDepth:
@@ -59,7 +56,7 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.VideoTimestamp:
                     return IsConditionSatisfied(condition, timestamp);
                 default:
-                    throw new ArgumentException("Unexpected condition on video file: " + condition.Property);
+                    return true;
             }
         }
 

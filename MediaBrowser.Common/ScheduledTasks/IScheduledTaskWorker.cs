@@ -69,5 +69,10 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The unique id.</value>
         string Id { get; }
+
+        /// <summary>
+        /// Reloads the trigger events.
+        /// </summary>
+        void ReloadTriggerEvents();
     }
 }

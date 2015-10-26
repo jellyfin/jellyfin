@@ -157,7 +157,7 @@
     "HeaderVideo": "Video",
     "HeaderEmbeddedImage": "Ingesloten afbeelding",
     "HeaderResolution": "Resolutie",
-    "HeaderSubtitles": "Ondertitels",
+    "HeaderSubtitles": "Ondertiteling",
     "HeaderGenres": "Genres",
     "HeaderCountries": "Landen",
     "HeaderStatus": "Status",
@@ -172,5 +172,6 @@
     "HeaderProducer": "Producenten",
     "HeaderWriter": "Schrijvers",
     "HeaderParentalRatings": "Ouderlijke toezicht",
-    "HeaderCommunityRatings": "Gemeenschapswaardering"
+    "HeaderCommunityRatings": "Gemeenschapswaardering",
+    "StartupEmbyServerIsLoading": "Emby Server is aan het laden, probeer het later opnieuw."
 }

@@ -21,9 +21,9 @@
     "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
     "LabelGithub": "Github",
     "LabelApiDocumentation": "API\u6587\u6863",
-    "LabelDeveloperResources": "\u5f00\u53d1\u8d44\u6e90",
+    "LabelDeveloperResources": "\u5f00\u53d1\u8005\u8d44\u6e90",
     "LabelBrowseLibrary": "\u6d4f\u89c8\u5a92\u4f53\u5e93",
-    "LabelConfigureServer": "Configure Emby",
+    "LabelConfigureServer": "\u914d\u7f6eEmby",
     "LabelRestartServer": "\u91cd\u542f\u670d\u52a1\u5668",
     "CategorySync": "\u540c\u6b65",
     "CategoryUser": "\u7528\u6237",
@@ -172,5 +172,6 @@
     "HeaderProducer": "Producers",
     "HeaderWriter": "Writers",
     "HeaderParentalRatings": "\u5bb6\u957f\u5206\u7ea7",
-    "HeaderCommunityRatings": "Community ratings"
+    "HeaderCommunityRatings": "Community ratings",
+    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
 }

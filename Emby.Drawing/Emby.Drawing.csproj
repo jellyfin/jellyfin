@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,9 +31,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
     <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageMagickSharp.1.0.0.16\lib\net45\ImageMagickSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Patterns.Logging">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="policy.2.0.taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,11 +53,15 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="taglib-sharp">
+      <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Common\ImageHeader.cs" />
     <Compile Include="GDI\DynamicImageHelpers.cs" />
     <Compile Include="GDI\GDIImageEncoder.cs" />
     <Compile Include="GDI\ImageExtensions.cs" />
@@ -56,13 +69,13 @@
     <Compile Include="GDI\PlayedIndicatorDrawer.cs" />
     <Compile Include="GDI\UnplayedCountIndicator.cs" />
     <Compile Include="IImageEncoder.cs" />
-    <Compile Include="Common\ImageHeader.cs" />
     <Compile Include="ImageHelpers.cs" />
     <Compile Include="ImageMagick\ImageMagickEncoder.cs" />
     <Compile Include="ImageMagick\StripCollageBuilder.cs" />
     <Compile Include="ImageProcessor.cs" />
     <Compile Include="ImageMagick\PercentPlayedDrawer.cs" />
     <Compile Include="ImageMagick\PlayedIndicatorDrawer.cs" />
+    <Compile Include="NullImageEncoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ImageMagick\UnplayedCountIndicator.cs" />
   </ItemGroup>
@@ -86,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GDI\empty.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

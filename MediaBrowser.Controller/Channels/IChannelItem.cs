@@ -7,11 +7,5 @@ namespace MediaBrowser.Controller.Channels
         string ChannelId { get; set; }
 
         string ExternalId { get; set; }
-
-        ChannelItemType ChannelItemType { get; set; }
-
-        string OriginalImageUrl { get; set; }
-
-        string DataVersion { get; set; }
     }
 }

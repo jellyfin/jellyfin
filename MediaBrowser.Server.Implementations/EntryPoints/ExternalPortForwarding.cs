@@ -147,7 +147,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 //   It also can fail with others like 727-ExternalPortOnlySupportsWildcard, 728-NoPortMapsAvailable
                 // and those errors (upnp errors) could be useful for diagnosting.  
 
-                _logger.ErrorException("Error creating port forwarding rules", ex);
+                // Commenting out because users are reporting problems out of our control
+                //_logger.ErrorException("Error creating port forwarding rules", ex);
             }
         }
 

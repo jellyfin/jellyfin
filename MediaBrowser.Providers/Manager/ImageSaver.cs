@@ -16,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -122,35 +123,36 @@ namespace MediaBrowser.Providers.Manager
                 new[] { GetCacheKeyPath(item, type, mimeType, internalCacheKey) } :
                 GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
+            var retryPaths = !string.IsNullOrEmpty(internalCacheKey) ?
+                new[] { GetCacheKeyPath(item, type, mimeType, internalCacheKey) } :
+                GetSavePaths(item, type, imageIndex, mimeType, false);
+
             // If there are more than one output paths, the stream will need to be seekable
-            if (paths.Length > 1 && !source.CanSeek)
+            var memoryStream = new MemoryStream();
+            using (source)
             {
-                var memoryStream = new MemoryStream();
-                using (source)
-                {
-                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
-                }
-                memoryStream.Position = 0;
-                source = memoryStream;
+                await source.CopyToAsync(memoryStream).ConfigureAwait(false);
             }
 
-            var currentPath = GetCurrentImagePath(item, type, index);
+            source = memoryStream;
+
+            var currentImage = GetCurrentImage(item, type, index);
 
             using (source)
             {
-                var isFirst = true;
+                var currentPathIndex = 0;
 
                 foreach (var path in paths)
                 {
-                    // Seek back to the beginning
-                    if (!isFirst)
+                    source.Position = 0;
+                    string retryPath = null;
+                    if (paths.Length == retryPaths.Length)
                     {
-                        source.Position = 0;
+                        retryPath = retryPaths[currentPathIndex];
                     }
+                    await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
 
-                    await SaveImageToLocation(source, path, cancellationToken).ConfigureAwait(false);
-
-                    isFirst = false;
+                    currentPathIndex++;
                 }
             }
 
@@ -158,8 +160,10 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, paths[0]);
 
             // Delete the current path
-            if (!string.IsNullOrEmpty(currentPath) && !paths.Contains(currentPath, StringComparer.OrdinalIgnoreCase))
+            if (currentImage != null && currentImage.IsLocalFile && !paths.Contains(currentImage.Path, StringComparer.OrdinalIgnoreCase))
             {
+                var currentPath = currentImage.Path;
+
                 _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
                 try
@@ -182,6 +186,31 @@ namespace MediaBrowser.Providers.Manager
                     _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
                 }
             }
+        }
+
+        private async Task SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await SaveImageToLocation(source, path, cancellationToken).ConfigureAwait(false);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                var retry = !string.IsNullOrWhiteSpace(retryPath) && 
+                    !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
+
+                if (retry)
+                {
+                    _logger.Error("UnauthorizedAccessException - Access to path {0} is denied. Will retry saving to {1}", path, retryPath);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            source.Position = 0;
+            await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
         }
 
         private string GetCacheKeyPath(IHasImages item, ImageType type, string mimeType, string key)
@@ -208,7 +237,7 @@ namespace MediaBrowser.Providers.Manager
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
                 var file = new FileInfo(path);
@@ -235,11 +264,6 @@ namespace MediaBrowser.Providers.Manager
                     // Add back the attribute
                     file.Attributes |= FileAttributes.Hidden;
                 }
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.Error("Error saving image to {0}", ex, path);
-                throw new Exception(string.Format("Error saving image to {0}", path), ex);
             }
             finally
             {
@@ -279,9 +303,9 @@ namespace MediaBrowser.Providers.Manager
         /// or
         /// imageIndex
         /// </exception>
-        private string GetCurrentImagePath(IHasImages item, ImageType type, int imageIndex)
+        private ItemImageInfo GetCurrentImage(IHasImages item, ImageType type, int imageIndex)
         {
-            return item.GetImagePath(type, imageIndex);
+            return item.GetImageInfo(type, imageIndex);
         }
 
         /// <summary>
@@ -296,7 +320,7 @@ namespace MediaBrowser.Providers.Manager
         /// imageIndex</exception>
         private void SetImagePath(IHasImages item, ImageType type, int? imageIndex, string path)
         {
-            item.SetImagePath(type, imageIndex ?? 0, new FileInfo(path));
+            item.SetImagePath(type, imageIndex ?? 0, _fileSystem.GetFileInfo(path));
         }
 
         /// <summary>

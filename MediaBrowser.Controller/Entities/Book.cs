@@ -7,7 +7,7 @@ using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem, IHasTags, IHasPreferredMetadataLanguage, IHasLookupInfo<BookInfo>, IHasSeries
+    public class Book : BaseItem, IHasTags, IHasLookupInfo<BookInfo>, IHasSeries
     {
         public override string MediaType
         {
@@ -24,14 +24,6 @@ namespace MediaBrowser.Controller.Entities
         public List<string> Tags { get; set; }
 
         public string SeriesName { get; set; }
-
-        public string PreferredMetadataLanguage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
 
         public Book()
         {

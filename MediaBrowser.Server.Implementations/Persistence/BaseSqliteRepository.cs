@@ -46,11 +46,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        protected virtual void DisposeInternal()
-        {
-
-        }
-
         protected abstract void CloseConnection();
     }
 }

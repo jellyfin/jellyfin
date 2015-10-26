@@ -4,48 +4,52 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
         private readonly ILogger _logger;
+		private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, Dictionary<string,FileSystemInfo>> _cache =
-            new ConcurrentDictionary<string, Dictionary<string, FileSystemInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>> _cache =
+            new ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>>(StringComparer.OrdinalIgnoreCase);
 
-        public DirectoryService(ILogger logger)
+		public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
+			_fileSystem = fileSystem;
         }
 
-        public DirectoryService()
-            : this(new NullLogger())
+		public DirectoryService(IFileSystem fileSystem)
+            : this(new NullLogger(), fileSystem)
         {
         }
 
-        public IEnumerable<FileSystemInfo> GetFileSystemEntries(string path)
+        public IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path)
         {
             return GetFileSystemEntries(path, false);
         }
 
-        public Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path)
+        public Dictionary<string, FileSystemMetadata> GetFileSystemDictionary(string path)
         {
             return GetFileSystemDictionary(path, false);
         }
 
-        private Dictionary<string, FileSystemInfo> GetFileSystemDictionary(string path, bool clearCache)
+        private Dictionary<string, FileSystemMetadata> GetFileSystemDictionary(string path, bool clearCache)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
 
-            Dictionary<string, FileSystemInfo> entries;
+            Dictionary<string, FileSystemMetadata> entries;
 
             if (clearCache)
             {
-                Dictionary<string, FileSystemInfo> removed;
+                Dictionary<string, FileSystemMetadata> removed;
 
                 _cache.TryRemove(path, out removed);
             }
@@ -54,13 +58,12 @@ namespace MediaBrowser.Controller.Providers
             {
                 //_logger.Debug("Getting files for " + path);
 
-                entries = new Dictionary<string, FileSystemInfo>(StringComparer.OrdinalIgnoreCase);
+                entries = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
                 
                 try
                 {
                     // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-                    var list = new DirectoryInfo(path).EnumerateDirectories("*", SearchOption.TopDirectoryOnly)
-                        .Concat<FileSystemInfo>(new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly));
+					var list = _fileSystem.GetFileSystemEntries(path);
 
                     // Seeing dupes on some users file system for some reason
                     foreach (var item in list)
@@ -80,34 +83,34 @@ namespace MediaBrowser.Controller.Providers
             return entries;
         }
 
-        private IEnumerable<FileSystemInfo> GetFileSystemEntries(string path, bool clearCache)
+        private IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool clearCache)
         {
             return GetFileSystemDictionary(path, clearCache).Values;
         }
 
-        public IEnumerable<FileSystemInfo> GetFiles(string path)
+        public IEnumerable<FileSystemMetadata> GetFiles(string path)
         {
             return GetFiles(path, false);
         }
 
-        public IEnumerable<FileSystemInfo> GetFiles(string path, bool clearCache)
+        public IEnumerable<FileSystemMetadata> GetFiles(string path, bool clearCache)
         {
             return GetFileSystemEntries(path, clearCache).Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory);
         }
 
-        public FileSystemInfo GetFile(string path)
+        public FileSystemMetadata GetFile(string path)
         {
             var directory = Path.GetDirectoryName(path);
 
             var dict = GetFileSystemDictionary(directory, false);
 
-            FileSystemInfo entry;
+            FileSystemMetadata entry;
             dict.TryGetValue(path, out entry);
 
             return entry;
         }
 
-        public IEnumerable<FileSystemInfo> GetDirectories(string path)
+        public IEnumerable<FileSystemMetadata> GetDirectories(string path)
         {
             return GetFileSystemEntries(path, false).Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
         }

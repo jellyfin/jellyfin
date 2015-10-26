@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var msg = "HTTP Response " + statusCode + " to " + endPoint + responseTime;
 
-            logger.LogMultiline(msg, LogSeverity.Debug, log);
+            logger.LogMultiline(msg, LogSeverity.Info, log);
         }
     }
 }

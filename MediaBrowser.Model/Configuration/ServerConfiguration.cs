@@ -45,12 +45,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableHttps { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable user specific user views].
-        /// </summary>
-        /// <value><c>true</c> if [enable user specific user views]; otherwise, <c>false</c>.</value>
-        public bool EnableUserSpecificUserViews { get; set; }
-
-        /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
         /// </summary>
         /// <value>The value pointing to the file system where the ssl certiifcate is located..</value>
@@ -103,7 +97,13 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
         public bool DisableStartupScan { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable user views].
+        /// </summary>
+        /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
+        public bool EnableUserViews { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].
         /// </summary>
@@ -223,12 +223,18 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableWindowsShortcuts { get; set; }
 
         public bool EnableVideoFrameByFrameAnalysis { get; set; }
-        
+
+        public bool EnableDateLastRefresh { get; set; }
+
+        public string[] Migrations { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
+            Migrations = new string[] {};
+
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             PublicHttpsPort = 8920;
@@ -274,11 +280,6 @@ namespace MediaBrowser.Model.Configuration
 
             InsecureApps9 = new[]
             {
-                "Chromecast",
-                "iOS",
-                "Unknown app",
-                "iPad",
-                "iPhone",
                 "Windows Phone"
             };
 

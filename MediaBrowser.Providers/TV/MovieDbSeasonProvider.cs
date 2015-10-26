@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -190,7 +191,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, seasonNumber, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
 

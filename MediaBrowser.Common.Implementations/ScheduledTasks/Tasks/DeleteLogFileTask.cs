@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 {
@@ -58,7 +59,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             // Delete log files more than n days old
             var minDateModified = DateTime.UtcNow.AddDays(-(ConfigurationManager.CommonConfiguration.LogFileRetentionDays));
 
-            var filesToDelete = new DirectoryInfo(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath).EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
+			var filesToDelete = _fileSystem.GetFiles(ConfigurationManager.CommonApplicationPaths.LogDirectoryPath, true)
                           .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                           .ToList();
 

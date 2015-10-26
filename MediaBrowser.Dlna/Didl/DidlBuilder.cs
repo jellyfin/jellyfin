@@ -163,7 +163,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
-                streamInfo.TargetAudioStreamCount);
+                streamInfo.TargetAudioStreamCount,
+                streamInfo.TargetVideoCodecTag);
 
             foreach (var contentFeature in contentFeatureList)
             {
@@ -301,7 +302,8 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
-                streamInfo.TargetAudioStreamCount);
+                streamInfo.TargetAudioStreamCount,
+                streamInfo.TargetVideoCodecTag);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -996,6 +998,10 @@ namespace MediaBrowser.Dlna.Didl
 
             //}
 
+            var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
+                .TrimStart('.')
+                .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+
             return new ImageDownloadInfo
             {
                 ItemId = item.Id.ToString("N"),
@@ -1003,7 +1009,7 @@ namespace MediaBrowser.Dlna.Didl
                 ImageTag = tag,
                 Width = width,
                 Height = height,
-                File = imageInfo.Path,
+                Format = inputFormat,
                 ItemImageInfo = imageInfo
             };
         }
@@ -1019,7 +1025,7 @@ namespace MediaBrowser.Dlna.Didl
 
             internal bool IsDirectStream;
 
-            internal string File;
+            internal string Format;
 
             internal ItemImageInfo ItemImageInfo;
         }
@@ -1082,14 +1088,10 @@ namespace MediaBrowser.Dlna.Didl
                 width = Convert.ToInt32(newSize.Width);
                 height = Convert.ToInt32(newSize.Height);
 
-                var inputFormat = (Path.GetExtension(info.File) ?? string.Empty)
-                    .TrimStart('.')
-                    .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
-
                 var normalizedFormat = format
                     .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
 
-                if (string.Equals(inputFormat, normalizedFormat, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(info.Format, normalizedFormat, StringComparison.OrdinalIgnoreCase))
                 {
                     info.IsDirectStream = maxWidth >= width.Value && maxHeight >= height.Value;
                 }

@@ -17,6 +17,8 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CommonIO.Windows;
+using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -201,7 +203,8 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new NativeFileSystem(logManager.GetLogger("FileSystem"), false);
+            var fileSystem = new WindowsFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")));
+            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             var nativeApp = new WindowsApp(fileSystem)
             {
@@ -327,11 +330,6 @@ namespace MediaBrowser.ServerApplication
             _logger.Info("Shutting down");
 
             _appHost.Dispose();
-
-            if (!_isRunningAsService)
-            {
-                SetErrorMode(ErrorModes.SYSTEM_DEFAULT);
-            }
         }
 
         /// <summary>

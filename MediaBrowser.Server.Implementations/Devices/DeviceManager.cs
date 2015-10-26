@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -157,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             _libraryMonitor.ReportFileSystemChangeBeginning(path);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             try
             {
@@ -260,6 +261,11 @@ namespace MediaBrowser.Server.Implementations.Devices
         private bool CanAccessDevice(UserPolicy policy, string id)
         {
             if (policy.EnableAllDevices)
+            {
+                return true;
+            }
+
+            if (policy.IsAdministrator)
             {
                 return true;
             }

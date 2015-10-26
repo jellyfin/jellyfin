@@ -103,9 +103,8 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
-            audio.FormatName = mediaInfo.Container;
+            //audio.FormatName = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
-            audio.HasEmbeddedImage = mediaStreams.Any(i => i.Type == MediaStreamType.EmbeddedImage);
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;

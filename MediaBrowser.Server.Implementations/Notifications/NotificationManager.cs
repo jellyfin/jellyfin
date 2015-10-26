@@ -230,8 +230,19 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         private bool IsEnabled(INotificationService service, string notificationType)
         {
-            return string.IsNullOrEmpty(notificationType) ||
-                GetConfiguration().IsServiceEnabled(service.Name, notificationType);
+            if (string.IsNullOrEmpty(notificationType))
+            {
+                return true;
+            }
+
+            var configurable = service as IConfigurableNotificationService;
+
+            if (configurable != null)
+            {
+                return configurable.IsEnabled(notificationType);
+            }
+
+            return GetConfiguration().IsServiceEnabled(service.Name, notificationType);
         }
 
         public void AddParts(IEnumerable<INotificationService> services, IEnumerable<INotificationTypeFactory> notificationTypeFactories)
@@ -268,7 +279,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         public IEnumerable<NotificationServiceInfo> GetNotificationServices()
         {
-            return _services.Select(i => new NotificationServiceInfo
+            return _services.Where(i =>
+            {
+                var configurable = i as IConfigurableNotificationService;
+
+                return configurable == null || !configurable.IsHidden;
+
+            }).Select(i => new NotificationServiceInfo
             {
                 Name = i.Name,
                 Id = i.Name.GetMD5().ToString("N")

@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -148,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchShortcutInfo(Video video)
         {
-            video.ShortcutPath = File.ReadAllText(video.Path);
+			video.ShortcutPath = _fileSystem.ReadAllText(video.Path);
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, CancellationToken cancellationToken)

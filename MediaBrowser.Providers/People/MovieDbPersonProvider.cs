@@ -17,6 +17,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.People
 {
@@ -200,7 +201,7 @@ namespace MediaBrowser.Providers.People
 
             }).ConfigureAwait(false))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
                 using (var fs = _fileSystem.GetFileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {

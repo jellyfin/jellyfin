@@ -577,19 +577,9 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
         {
-            return GetResult(GetMediaFolders(user).SelectMany(i =>
-            {
-                var hasCollectionType = i as ICollectionFolder;
-                Func<BaseItem, bool> filter = b => b is BoxSet;
+            var collections = _collectionManager.GetCollections(user);
 
-                if (hasCollectionType != null && string.Equals(hasCollectionType.CollectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
-                {
-                    return i.GetChildren(user, true).Where(filter);
-                }
-
-                return i.GetRecursiveChildren(user, filter);
-
-            }), parent, query);
+            return GetResult(collections, parent, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetPhotosView(Folder queryParent, User user, InternalItemsQuery query)
@@ -1041,11 +1031,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsUnidentified.HasValue)
-            {
-                return false;
-            }
-
             if (request.IsYearMismatched.HasValue)
             {
                 return false;
@@ -1412,16 +1397,7 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.IsHD.Value;
                 var video = item as Video;
 
-                if (video == null || val != video.IsHD)
-                {
-                    return false;
-                }
-            }
-
-            if (query.IsUnidentified.HasValue)
-            {
-                var val = query.IsUnidentified.Value;
-                if (item.IsUnidentified != val)
+                if (video == null || !video.IsHD.HasValue || val != video.IsHD)
                 {
                     return false;
                 }
@@ -1808,6 +1784,13 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<Folder> GetMediaFolders(User user)
         {
+            if (user == null)
+            {
+                return _libraryManager.RootFolder
+                    .Children
+                    .OfType<Folder>()
+                    .Where(i => !UserView.IsExcludedFromGrouping(i));
+            }
             return user.RootFolder
                 .GetChildren(user, true, true)
                 .OfType<Folder>()
@@ -1816,6 +1799,16 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
+            if (user == null)
+            {
+                return GetMediaFolders(null)
+                    .Where(i =>
+                    {
+                        var folder = i as ICollectionFolder;
+
+                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                    });
+            }
             return GetMediaFolders(user)
                 .Where(i =>
                 {
@@ -1839,7 +1832,17 @@ namespace MediaBrowser.Controller.Entities
         {
             if (parent == null || parent is UserView)
             {
+                if (user == null)
+                {
+                    return GetMediaFolders(null, viewTypes).SelectMany(i => i.GetRecursiveChildren());
+                }
+
                 return GetMediaFolders(user, viewTypes).SelectMany(i => i.GetRecursiveChildren(user));
+            }
+
+            if (user == null)
+            {
+                return parent.GetRecursiveChildren();
             }
 
             return parent.GetRecursiveChildren(user);
@@ -1849,7 +1852,17 @@ namespace MediaBrowser.Controller.Entities
         {
             if (parent == null || parent is UserView)
             {
+                if (user == null)
+                {
+                    return GetMediaFolders(null, viewTypes).SelectMany(i => i.GetRecursiveChildren(filter));
+                }
+
                 return GetMediaFolders(user, viewTypes).SelectMany(i => i.GetRecursiveChildren(user, filter));
+            }
+
+            if (user == null)
+            {
+                return parent.GetRecursiveChildren(filter);
             }
 
             return parent.GetRecursiveChildren(user, filter);

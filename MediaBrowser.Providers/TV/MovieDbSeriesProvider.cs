@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -194,7 +195,7 @@ namespace MediaBrowser.Providers.TV
             tmdbId = seriesInfo.id.ToString(_usCulture);
 
             dataFilePath = GetDataFilePath(tmdbId, language);
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
@@ -289,7 +290,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -412,7 +413,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
                 var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
 
-                var fileInfo = new FileInfo(dataFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

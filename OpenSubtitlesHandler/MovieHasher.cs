@@ -9,17 +9,7 @@ namespace OpenSubtitlesHandler
 {
     public class MovieHasher
     {
-        public static byte[] ComputeMovieHash(string filename)
-        {
-            byte[] result;
-            using (Stream input = File.OpenRead(filename))
-            {
-                result = ComputeMovieHash(input);
-            }
-            return result;
-        }
-
-        private static byte[] ComputeMovieHash(Stream input)
+        public static byte[] ComputeMovieHash(Stream input)
         {
             long lhash, streamsize;
             streamsize = input.Length;

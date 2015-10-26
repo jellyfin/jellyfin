@@ -99,7 +99,7 @@ namespace MediaBrowser.Common.Implementations.Security
             {
                 try
                 {
-                    contents = File.ReadAllLines(licenseFile);
+					contents = File.ReadAllLines(licenseFile);
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -107,7 +107,7 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
                 catch (FileNotFoundException)
                 {
-                    (File.Create(licenseFile)).Close();
+					(File.Create(licenseFile)).Close();
                 }
             }
             if (contents != null && contents.Length > 0)
@@ -150,8 +150,8 @@ namespace MediaBrowser.Common.Implementations.Security
             }
 
             var licenseFile = Filename;
-            Directory.CreateDirectory(Path.GetDirectoryName(licenseFile));
-            lock (_fileLock) File.WriteAllLines(licenseFile, lines);
+			Directory.CreateDirectory(Path.GetDirectoryName(licenseFile));
+			lock (_fileLock) File.WriteAllLines(licenseFile, lines);
         }
     }
 }

@@ -326,26 +326,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.Nullable{System.Int32}.</returns>
         private int? GetNumAudioChannelsParam(EncodingJobOptions request, MediaStream audioStream, string outputAudioCodec)
         {
-            if (audioStream != null)
-            {
-                var codec = outputAudioCodec ?? string.Empty;
+            var inputChannels = audioStream == null
+                            ? null
+                            : audioStream.Channels;
 
-                if (audioStream.Channels > 2 && codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    // wmav2 currently only supports two channel output
-                    return 2;
-                }
+            if (inputChannels <= 0)
+            {
+                inputChannels = null;
+            }
+
+            var codec = outputAudioCodec ?? string.Empty;
+
+            if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                // wmav2 currently only supports two channel output
+                return Math.Min(2, inputChannels ?? 2);
             }
 
             if (request.MaxAudioChannels.HasValue)
             {
-                if (audioStream != null && audioStream.Channels.HasValue)
+                if (inputChannels.HasValue)
                 {
-                    return Math.Min(request.MaxAudioChannels.Value, audioStream.Channels.Value);
+                    return Math.Min(request.MaxAudioChannels.Value, inputChannels.Value);
                 }
 
+                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
+                    ? 2
+                    : 6;
+
                 // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
-                return Math.Min(request.MaxAudioChannels.Value, 5);
+                return Math.Min(request.MaxAudioChannels.Value, channelLimit);
             }
 
             return request.AudioChannels;
@@ -515,6 +525,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         internal static bool CanStreamCopyVideo(EncodingJobOptions request, MediaStream videoStream)
         {
             if (videoStream.IsInterlaced)
+            {
+                return false;
+            }
+
+            if (videoStream.IsAnamorphic ?? false)
             {
                 return false;
             }
@@ -735,7 +750,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
-                state.TargetAudioStreamCount);
+                state.TargetAudioStreamCount,
+                state.TargetVideoCodecTag);
 
             if (mediaProfile != null)
             {

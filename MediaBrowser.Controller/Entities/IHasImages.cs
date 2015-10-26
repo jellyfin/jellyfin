@@ -2,7 +2,11 @@
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -67,7 +71,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
         /// <param name="file">The file.</param>
-        void SetImagePath(ImageType type, int index, FileSystemInfo file);
+        void SetImagePath(ImageType type, int index, FileSystemMetadata file);
 
         /// <summary>
         /// Determines whether the specified type has image.
@@ -134,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool AddImages(ImageType imageType, List<FileSystemInfo> images);
+        bool AddImages(ImageType imageType, List<FileSystemMetadata> images);
 
         /// <summary>
         /// Determines whether [is save local metadata enabled].
@@ -189,6 +193,21 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="image">The image.</param>
         void RemoveImage(ItemImageInfo image);
+
+        /// <summary>
+        /// Updates to repository.
+        /// </summary>
+        /// <param name="updateReason">The update reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sets the image.
+        /// </summary>
+        /// <param name="image">The image.</param>
+        /// <param name="index">The index.</param>
+        void SetImage(ItemImageInfo image, int index);
     }
 
     public static class HasImagesExtensions
@@ -215,7 +234,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">The item.</param>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="file">The file.</param>
-        public static void SetImagePath(this IHasImages item, ImageType imageType, FileSystemInfo file)
+        public static void SetImagePath(this IHasImages item, ImageType imageType, FileSystemMetadata file)
         {
             item.SetImagePath(imageType, 0, file);
         }
@@ -228,7 +247,18 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="file">The file.</param>
         public static void SetImagePath(this IHasImages item, ImageType imageType, string file)
         {
-            item.SetImagePath(imageType, new FileInfo(file));
+            if (file.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
+            {
+                item.SetImage(new ItemImageInfo
+                {
+                    Path = file,
+                    Type = imageType
+                }, 0);
+            }
+            else
+            {
+                item.SetImagePath(imageType, BaseItem.FileSystem.GetFileInfo(file));
+            }
         }
     }
 }

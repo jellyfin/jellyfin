@@ -5,6 +5,7 @@ using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Logging;
 using System.IO;
 using System.Threading;
+using CommonIO;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
@@ -23,27 +24,22 @@ namespace MediaBrowser.LocalMetadata.Providers
             new MovieXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return GetXmlFileInfo(info, FileSystem);
         }
 
-        public static FileInfo GetXmlFileInfo(ItemInfo info, IFileSystem fileSystem)
+        public static FileSystemMetadata GetXmlFileInfo(ItemInfo info, IFileSystem fileSystem)
         {
             var fileInfo = fileSystem.GetFileSystemInfo(info.Path);
 
-            var directoryInfo = fileInfo as DirectoryInfo;
-
-            if (directoryInfo == null)
-            {
-                directoryInfo = new DirectoryInfo(Path.GetDirectoryName(info.Path));
-            }
+            var directoryInfo = fileInfo.IsDirectory ? fileInfo : fileSystem.GetDirectoryInfo(Path.GetDirectoryName(info.Path));
 
             var directoryPath = directoryInfo.FullName;
 
             var specificFile = Path.Combine(directoryPath, fileSystem.GetFileNameWithoutExtension(info.Path) + ".xml");
 
-            var file = new FileInfo(specificFile);
+            var file = fileSystem.GetFileInfo(specificFile);
 
             // In a mixed folder, only {moviename}.xml is supported
             if (info.IsInMixedFolder)
@@ -52,7 +48,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             }
 
             // If in it's own folder, prefer movie.xml, but allow the specific file as well
-            var movieFile = new FileInfo(Path.Combine(directoryPath, "movie.xml"));
+            var movieFile = fileSystem.GetFileInfo(Path.Combine(directoryPath, "movie.xml"));
 
             return movieFile.Exists ? movieFile : file;
         }

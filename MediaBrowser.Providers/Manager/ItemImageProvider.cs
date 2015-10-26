@@ -16,6 +16,8 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -137,11 +139,24 @@ namespace MediaBrowser.Providers.Manager
                         {
                             if (!string.IsNullOrEmpty(response.Path))
                             {
-                                var mimeType = MimeTypes.GetMimeType(response.Path);
+                                if (response.Protocol == MediaProtocol.Http)
+                                {
+                                    _logger.Debug("Setting image url into item {0}", item.Id);
+                                    item.SetImage(new ItemImageInfo
+                                    {
+                                        Path = response.Path,
+                                        Type = imageType
 
-                                var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+                                    }, 0);
+                                }
+                                else
+                                {
+                                    var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                await _providerManager.SaveImage(item, stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
+                                    var stream = _fileSystem.GetFileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, true);
+
+                                    await _providerManager.SaveImage(item, stream, mimeType, imageType, null, response.InternalCacheKey, cancellationToken).ConfigureAwait(false);
+                                }
                             }
                             else
                             {
@@ -163,7 +178,6 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
         }
@@ -302,7 +316,6 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                result.Status = ProviderRefreshStatus.CompletedWithErrors;
                 _logger.ErrorException("Error in {0}", ex, provider.Name);
             }
         }
@@ -358,7 +371,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (deleted)
             {
-                item.ValidateImages(new DirectoryService(_logger));
+                item.ValidateImages(new DirectoryService(_logger, _fileSystem));
             }
         }
 
@@ -392,10 +405,13 @@ namespace MediaBrowser.Providers.Manager
                 else
                 {
                     var existing = item.GetImageInfo(type, 0);
-                    if (existing != null && !File.Exists(existing.Path))
+                    if (existing != null)
                     {
-                        item.RemoveImage(existing);
-                        changed = true;
+                        if (existing.IsLocalFile && !_fileSystem.FileExists(existing.Path))
+                        {
+                            item.RemoveImage(existing);
+                            changed = true;
+                        }
                     }
                 }
             }
@@ -452,6 +468,13 @@ namespace MediaBrowser.Providers.Manager
 
                 var url = image.Url;
 
+                if (EnableImageStub(item, type))
+                {
+                    SaveImageStub(item, type, url);
+                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    return true;
+                }
+
                 try
                 {
                     var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
@@ -475,6 +498,28 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
+        private bool EnableImageStub(IHasImages item, ImageType type)
+        {
+            if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SaveImageStub(IHasImages item, ImageType imageType, string url)
+        {
+            var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
+
+            item.SetImage(new ItemImageInfo
+            {
+                Path = url,
+                Type = imageType
+
+            }, newIndex);
+        }
+
         private async Task DownloadBackdrops(IHasImages item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
@@ -490,6 +535,13 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 var url = image.Url;
+
+                if (EnableImageStub(item, imageType))
+                {
+                    SaveImageStub(item, imageType, url);
+                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    return;
+                }
 
                 try
                 {

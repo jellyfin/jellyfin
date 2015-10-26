@@ -53,6 +53,12 @@ namespace MediaBrowser.Server.Startup.Common
         bool SupportsAutoRunAtStartup { get; }
 
         /// <summary>
+        /// Gets a value indicating whether [supports library monitor].
+        /// </summary>
+        /// <value><c>true</c> if [supports library monitor]; otherwise, <c>false</c>.</value>
+        bool SupportsLibraryMonitor { get; }
+        
+        /// <summary>
         /// Gets a value indicating whether this instance can self update.
         /// </summary>
         /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -65,11 +66,11 @@ namespace MediaBrowser.Providers.TV
 
             var path = FanartSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
-            Directory.CreateDirectory(path);
+			_fileSystem.CreateDirectory(path);
             
             var timestampFile = Path.Combine(path, "time.txt");
 
-            var timestampFileInfo = new FileInfo(timestampFile);
+            var timestampFileInfo = _fileSystem.GetFileInfo(timestampFile);
 
             // Don't check for updates every single time
             if (timestampFileInfo.Exists && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(timestampFileInfo)).TotalDays < 3)
@@ -78,7 +79,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Find out the last time we queried for updates
-            var lastUpdateTime = timestampFileInfo.Exists ? File.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
+			var lastUpdateTime = timestampFileInfo.Exists ? _fileSystem.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
 
             var existingDirectories = Directory.EnumerateDirectories(path).Select(Path.GetFileName).ToList();
 
@@ -94,7 +95,7 @@ namespace MediaBrowser.Providers.TV
 
             var newUpdateTime = Convert.ToInt64(DateTimeToUnixTimestamp(DateTime.UtcNow)).ToString(UsCulture);
             
-            File.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
+			_fileSystem.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
 
             progress.Report(100);
         }

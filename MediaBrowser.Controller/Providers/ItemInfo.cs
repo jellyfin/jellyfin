@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Providers
             if (video != null)
             {
                 VideoType = video.VideoType;
+                IsPlaceHolder = video.IsPlaceHolder;
             }
         }
 
@@ -26,5 +27,6 @@ namespace MediaBrowser.Controller.Providers
         public string ContainingFolderPath { get; set; }
         public VideoType VideoType { get; set; }
         public bool IsInMixedFolder { get; set; }
+        public bool IsPlaceHolder { get; set; }
     }
 }

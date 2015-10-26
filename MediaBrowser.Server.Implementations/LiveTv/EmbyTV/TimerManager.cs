@@ -7,6 +7,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -16,8 +18,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
 
-        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
-            : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
+            : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }
 

@@ -9,6 +9,8 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Threading;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
@@ -16,11 +18,13 @@ namespace MediaBrowser.LocalMetadata.Savers
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
+        private IFileSystem _fileSystem;
 
-        public SeriesXmlProvider(IServerConfigurationManager config, ILibraryManager libraryManager)
+        public SeriesXmlProvider(IServerConfigurationManager config, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _config = config;
             _libraryManager = libraryManager;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -134,7 +138,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     // Deprecated. No longer saving in this field.
                     "AnimeSeriesIndex"
-                }, _config);
+                }, _config, _fileSystem);
         }
 
         /// <summary>

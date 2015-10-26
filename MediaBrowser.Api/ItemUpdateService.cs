@@ -211,11 +211,6 @@ namespace MediaBrowser.Api
 
             UpdateItem(request, item);
 
-            if (isLockedChanged && item.IsLocked)
-            {
-                item.IsUnidentified = false;
-            }
-
             await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
             if (request.People != null)
@@ -321,13 +316,8 @@ namespace MediaBrowser.Api
 
             SetProductionLocations(item, request);
 
-            var hasLang = item as IHasPreferredMetadataLanguage;
-
-            if (hasLang != null)
-            {
-                hasLang.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
-                hasLang.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
-            }
+            item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
+            item.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
 
             var hasDisplayOrder = item as IHasDisplayOrder;
             if (hasDisplayOrder != null)

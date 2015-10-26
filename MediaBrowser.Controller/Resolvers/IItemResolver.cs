@@ -3,6 +3,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Resolvers
 {
@@ -26,8 +28,8 @@ namespace MediaBrowser.Controller.Resolvers
 
     public interface IMultiItemResolver
     {
-        MultiItemResolverResult ResolveMultiple(Folder parent, 
-            List<FileSystemInfo> files, 
+        MultiItemResolverResult ResolveMultiple(Folder parent,
+            List<FileSystemMetadata> files, 
             string collectionType,
             IDirectoryService directoryService);
     }
@@ -35,12 +37,12 @@ namespace MediaBrowser.Controller.Resolvers
     public class MultiItemResolverResult
     {
         public List<BaseItem> Items { get; set; }
-        public List<FileSystemInfo> ExtraFiles { get; set; }
+        public List<FileSystemMetadata> ExtraFiles { get; set; }
 
         public MultiItemResolverResult()
         {
             Items = new List<BaseItem>();
-            ExtraFiles = new List<FileSystemInfo>();
+            ExtraFiles = new List<FileSystemMetadata>();
         }
     }
 }

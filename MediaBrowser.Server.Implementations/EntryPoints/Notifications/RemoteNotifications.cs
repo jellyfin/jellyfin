@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
@@ -60,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         {
             var dataPath = Path.Combine(_appPaths.DataPath, "remotenotifications.json");
 
-            var lastRunTime = File.Exists(dataPath) ? _fileSystem.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
+			var lastRunTime = _fileSystem.FileExists(dataPath) ? _fileSystem.GetLastWriteTimeUtc(dataPath) : DateTime.MinValue;
 
             try
             {
@@ -88,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             {
                 var notifications = _json.DeserializeFromStream<RemoteNotification[]>(stream);
 
-                File.WriteAllText(dataPath, string.Empty);
+				_fileSystem.WriteAllText(dataPath, string.Empty);
 
                 await CreateNotifications(notifications, lastRunTime).ConfigureAwait(false);
             }

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 {
@@ -95,7 +96,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <param name="progress">The progress.</param>
         private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
         {
-            var filesToDelete = new DirectoryInfo(directory).EnumerateFiles("*", SearchOption.AllDirectories)
+			var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                 .ToList();
 
@@ -120,14 +121,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             progress.Report(100);
         }
 
-        private static void DeleteEmptyFolders(string parent)
+        private void DeleteEmptyFolders(string parent)
         {
-            foreach (var directory in Directory.GetDirectories(parent))
+            foreach (var directory in _fileSystem.GetDirectoryPaths(parent))
             {
                 DeleteEmptyFolders(directory);
-                if (!Directory.EnumerateFileSystemEntries(directory).Any())
+                if (!_fileSystem.GetFileSystemEntryPaths(directory).Any())
                 {
-                    Directory.Delete(directory, false);
+					_fileSystem.DeleteDirectory(directory, false);
                 }
             }
         }

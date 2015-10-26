@@ -40,8 +40,25 @@ namespace MediaBrowser.Api
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string UserId { get; set; }
+    }
+
+    [Route("/Playlists/{Id}/Items/{ItemId}/Move/{NewIndex}", "POST", Summary = "Moves a playlist item")]
+    public class MoveItem : IReturnVoid
+    {
+        [ApiMember(Name = "ItemId", Description = "ItemId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ItemId { get; set; }
+
+        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        /// <value>The user id.</value>
+        [ApiMember(Name = "NewIndex", Description = "NewIndex", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public int NewIndex { get; set; }
     }
 
     [Route("/Playlists/{Id}/Items", "DELETE", Summary = "Removes items from a playlist")]
@@ -103,6 +120,13 @@ namespace MediaBrowser.Api
             _playlistManager = playlistManager;
             _userManager = userManager;
             _libraryManager = libraryManager;
+        }
+
+        public void Post(MoveItem request)
+        {
+            var task = _playlistManager.MoveItem(request.Id, request.ItemId, request.NewIndex);
+
+            Task.WaitAll(task);
         }
 
         public async Task<object> Post(CreatePlaylist request)

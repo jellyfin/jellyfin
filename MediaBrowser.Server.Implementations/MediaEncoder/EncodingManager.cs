@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
@@ -134,11 +135,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                         var protocol = MediaProtocol.File;
 
-                        var inputPath = MediaEncoderHelpers.GetInputArgument(video.Path, protocol, null, video.PlayableStreamFileNames);
+                        var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
 
                         try
                         {
-                            Directory.CreateDirectory(Path.GetDirectoryName(path));
+							_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                             using (var stream = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
                             {
@@ -194,7 +195,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
             try
             {
-                return Directory.EnumerateFiles(path)
+                return _fileSystem.GetFilePaths(path)
                     .ToList();
             }
             catch (DirectoryNotFoundException)

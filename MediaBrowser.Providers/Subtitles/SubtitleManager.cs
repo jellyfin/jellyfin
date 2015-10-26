@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -252,7 +253,7 @@ namespace MediaBrowser.Providers.Subtitles
                 _monitor.ReportFileSystemChangeComplete(path, false);
             }
 
-            return _libraryManager.GetItemById(itemId).RefreshMetadata(new MetadataRefreshOptions(new DirectoryService())
+            return _libraryManager.GetItemById(itemId).RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
                 ImageRefreshMode = ImageRefreshMode.ValidationOnly,
                 MetadataRefreshMode = MetadataRefreshMode.ValidationOnly

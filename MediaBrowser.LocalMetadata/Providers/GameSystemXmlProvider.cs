@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
+using CommonIO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -23,7 +24,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             new GameSystemXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
-        protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
             return directoryService.GetFile(Path.Combine(info.Path, "gamesystem.xml"));
         }

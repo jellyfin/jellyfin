@@ -25,6 +25,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         string Version { get; }
 
         /// <summary>
+        /// Supportses the decoder.
+        /// </summary>
+        /// <param name="decoder">The decoder.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool SupportsDecoder(string decoder);
+
+        /// <summary>
         /// Extracts the audio image.
         /// </summary>
         /// <param name="path">The path.</param>

@@ -29,6 +29,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -1276,7 +1277,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 if (!_deviceManager.CanAccessDevice(user.Id.ToString("N"), request.DeviceId))
                 {
-                    throw new UnauthorizedAccessException("User is not allowed access from this device.");
+                    throw new SecurityException("User is not allowed access from this device.");
                 }
             }
 
@@ -1286,7 +1287,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
 
-                throw new UnauthorizedAccessException("Invalid user or password entered.");
+                throw new SecurityException("Invalid user or password entered.");
             }
 
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
@@ -1322,8 +1323,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (existing.Items.Length > 0)
             {
-                _logger.Debug("Reissuing access token");
-                return existing.Items[0].AccessToken;
+                var token = existing.Items[0].AccessToken;
+                _logger.Info("Reissuing access token: " + token);
+                return token;
             }
 
             var newToken = new AuthenticationInfo
@@ -1338,7 +1340,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 AccessToken = Guid.NewGuid().ToString("N")
             };
 
-            _logger.Debug("Creating new access token for user {0}", userId);
+            _logger.Info("Creating new access token for user {0}", userId);
             await _authRepo.Create(newToken, CancellationToken.None).ConfigureAwait(false);
 
             return newToken.AccessToken;
@@ -1350,6 +1352,8 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 throw new ArgumentNullException("accessToken");
             }
+
+            _logger.Info("Logging out access token {0}", accessToken);
 
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {

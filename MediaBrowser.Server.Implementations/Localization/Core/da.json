@@ -172,5 +172,6 @@
     "HeaderProducer": "Producers",
     "HeaderWriter": "Writers",
     "HeaderParentalRatings": "Aldersgr\u00e6nser",
-    "HeaderCommunityRatings": "Community ratings"
+    "HeaderCommunityRatings": "Community ratings",
+    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
 }

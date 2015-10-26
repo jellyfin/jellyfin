@@ -7,6 +7,8 @@ using SharpCompress.Reader;
 using SharpCompress.Reader.Zip;
 using System;
 using System.IO;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Archiving
 {
@@ -15,7 +17,14 @@ namespace MediaBrowser.Common.Implementations.Archiving
     /// </summary>
     public class ZipClient : IZipClient
     {
-        /// <summary>
+		private IFileSystem _fileSystem;
+
+		public ZipClient(IFileSystem fileSystem) 
+		{
+			_fileSystem = fileSystem;
+		}
+
+		/// <summary>
         /// Extracts all.
         /// </summary>
         /// <param name="sourceFile">The source file.</param>
@@ -23,7 +32,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAll(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = File.OpenRead(sourceFile))
+			using (var fileStream = _fileSystem.OpenRead(sourceFile))
             {
                 ExtractAll(fileStream, targetPath, overwriteExistingFiles);
             }
@@ -73,7 +82,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAllFrom7z(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = File.OpenRead(sourceFile))
+			using (var fileStream = _fileSystem.OpenRead(sourceFile))
             {
                 ExtractAllFrom7z(fileStream, targetPath, overwriteExistingFiles);
             }
@@ -112,7 +121,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAllFromTar(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = File.OpenRead(sourceFile))
+			using (var fileStream = _fileSystem.OpenRead(sourceFile))
             {
                 ExtractAllFromTar(fileStream, targetPath, overwriteExistingFiles);
             }
@@ -150,7 +159,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
         /// <param name="overwriteExistingFiles">if set to <c>true</c> [overwrite existing files].</param>
         public void ExtractAllFromRar(string sourceFile, string targetPath, bool overwriteExistingFiles)
         {
-            using (var fileStream = File.OpenRead(sourceFile))
+			using (var fileStream = _fileSystem.OpenRead(sourceFile))
             {
                 ExtractAllFromRar(fileStream, targetPath, overwriteExistingFiles);
             }

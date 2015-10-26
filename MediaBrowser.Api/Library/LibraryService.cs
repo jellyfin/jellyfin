@@ -27,6 +27,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api.Library
 {
@@ -282,12 +284,13 @@ namespace MediaBrowser.Api.Library
         private readonly IChannelManager _channelManager;
         private readonly ITVSeriesManager _tvManager;
         private readonly ILibraryMonitor _libraryMonitor;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -301,6 +304,7 @@ namespace MediaBrowser.Api.Library
             _channelManager = channelManager;
             _tvManager = tvManager;
             _libraryMonitor = libraryMonitor;
+            _fileSystem = fileSystem;
         }
 
         public object Get(GetSimilarItems request)
@@ -557,7 +561,7 @@ namespace MediaBrowser.Api.Library
             {
                 throw new ArgumentException("This command cannot be used for remote or virtual items.");
             }
-            if (Directory.Exists(item.Path))
+			if (_fileSystem.DirectoryExists(item.Path))
             {
                 throw new ArgumentException("This command cannot be used for directories.");
             }
@@ -719,7 +723,7 @@ namespace MediaBrowser.Api.Library
 
             if (!item.CanDelete(user))
             {
-                throw new UnauthorizedAccessException();
+                throw new SecurityException("Unauthorized access");
             }
 
             if (item is ILiveTvRecording)

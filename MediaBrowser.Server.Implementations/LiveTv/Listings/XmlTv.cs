@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             get { return "xmltv"; }
         }
 
-        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

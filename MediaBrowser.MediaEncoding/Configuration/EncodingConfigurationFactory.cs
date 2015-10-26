@@ -2,26 +2,38 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using System.IO;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.MediaEncoding.Configuration
 {
     public class EncodingConfigurationFactory : IConfigurationFactory
     {
+        private readonly IFileSystem _fileSystem;
+
+        public EncodingConfigurationFactory(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem;
+        }
+
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
             return new[]
             {
-                new EncodingConfigurationStore()
+                new EncodingConfigurationStore(_fileSystem)
             };
         }
     }
 
     public class EncodingConfigurationStore : ConfigurationStore, IValidatingConfiguration
     {
-        public EncodingConfigurationStore()
+        private readonly IFileSystem _fileSystem;
+
+        public EncodingConfigurationStore(IFileSystem fileSystem)
         {
             ConfigurationType = typeof(EncodingOptions);
             Key = "encoding";
+            _fileSystem = fileSystem;
         }
 
         public void Validate(object oldConfig, object newConfig)
@@ -35,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Configuration
                 && !string.Equals(oldEncodingConfig.TranscodingTempPath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!Directory.Exists(newPath))
+                if (!_fileSystem.DirectoryExists(newPath))
                 {
                     throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
                 }

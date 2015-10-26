@@ -11,6 +11,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -23,7 +25,6 @@ namespace MediaBrowser.Controller.Entities
         ISupportsPlaceHolders,
         IHasMediaSources,
         IHasShortOverview,
-        IHasPreferredMetadataLanguage,
         IThemeMedia,
         IArchivable
     {
@@ -33,21 +34,20 @@ namespace MediaBrowser.Controller.Entities
         public List<string> LocalAlternateVersions { get; set; }
         public List<LinkedChild> LinkedAlternateVersions { get; set; }
 
-        public bool IsThemeMedia { get; set; }
+        [IgnoreDataMember]
+        public bool IsThemeMedia
+        {
+            get
+            {
+                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeVideo;
+            }
+        }
 
-        public string FormatName { get; set; }
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
         public string ShortOverview { get; set; }
-        public ExtraType ExtraType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preferred metadata country code.
-        /// </summary>
-        /// <value>The preferred metadata country code.</value>
-        public string PreferredMetadataCountryCode { get; set; }
-        public string PreferredMetadataLanguage { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.
@@ -313,7 +313,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>List{System.String}.</returns>
         public List<string> GetPlayableStreamFiles(string rootPath)
         {
-            var allFiles = Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories).ToList();
+            var allFiles = FileSystem.GetFilePaths(rootPath, true).ToList();
 
             return PlayableStreamFileNames.Select(name => allFiles.FirstOrDefault(f => string.Equals(System.IO.Path.GetFileName(f), name, StringComparison.OrdinalIgnoreCase)))
                 .Where(f => !string.IsNullOrEmpty(f))
@@ -330,8 +330,6 @@ namespace MediaBrowser.Controller.Entities
             get { return Video3DFormat.HasValue; }
         }
 
-        public bool IsHD { get; set; }
-
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
@@ -345,7 +343,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var hasChanges = await base.RefreshedOwnedItems(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -498,7 +496,6 @@ namespace MediaBrowser.Controller.Entities
                 VideoType = i.VideoType,
                 Container = i.Container,
                 Size = i.Size,
-                Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                 Timestamp = i.Timestamp,
                 Type = type,
                 PlayableStreamFileNames = i.PlayableStreamFileNames.ToList(),

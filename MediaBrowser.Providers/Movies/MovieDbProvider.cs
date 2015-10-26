@@ -16,8 +16,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -115,7 +118,7 @@ namespace MediaBrowser.Providers.Movies
         public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
-            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager);
+            var movieDb = new GenericMovieDbInfo<T>(_logger, _jsonSerializer, _libraryManager, _fileSystem);
 
             return movieDb.GetMetadata(id, cancellationToken);
         }
@@ -210,7 +213,7 @@ namespace MediaBrowser.Providers.Movies
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -308,25 +311,38 @@ namespace MediaBrowser.Providers.Movies
             var cacheMode = isTmdbId ? CacheMode.None : CacheMode.Unconditional;
             var cacheLength = TimeSpan.FromDays(3);
 
-            using (var json = await GetMovieDbResponse(new HttpRequestOptions
+            try
             {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader,
-                CacheMode = cacheMode,
-                CacheLength = cacheLength
+                using (var json = await GetMovieDbResponse(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = AcceptHeader,
+                    CacheMode = cacheMode,
+                    CacheLength = cacheLength
 
-            }).ConfigureAwait(false))
+                }).ConfigureAwait(false))
+                {
+                    mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                }
+            }
+            catch (HttpException ex)
             {
-                mainResult = _jsonSerializer.DeserializeFromStream<CompleteMovieData>(json);
+                // Return null so that callers know there is no metadata for this id
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                throw;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
             // If the language preference isn't english, then have the overview fallback to english if it's blank
             if (mainResult != null &&
-                string.IsNullOrEmpty(mainResult.overview) && 
-                !string.IsNullOrEmpty(language) && 
+                string.IsNullOrEmpty(mainResult.overview) &&
+                !string.IsNullOrEmpty(language) &&
                 !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
@@ -352,14 +368,27 @@ namespace MediaBrowser.Providers.Movies
             return mainResult;
         }
 
+        private static long _lastRequestTicks;
+
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
+        internal async Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
         {
-            options.ResourcePool = MovieDbResourcePool;
+            var requestIntervalMs = 250;
+            var delayTicks = (requestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
+            var delayMs = Math.Min(delayTicks / 10000, requestIntervalMs);
 
-            return _httpClient.Get(options);
+            if (delayMs > 0)
+            {
+                _logger.Debug("Throttling Tmdb by {0} ms", delayMs);
+                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
+            }
+
+            options.ResourcePool = MovieDbResourcePool;
+            _lastRequestTicks = DateTime.UtcNow.Ticks;
+
+            return await _httpClient.Get(options).ConfigureAwait(false);
         }
 
         public TheMovieDbOptions GetTheMovieDbOptions()
@@ -381,7 +410,7 @@ namespace MediaBrowser.Providers.Movies
                 // Process images
                 var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
 
-                var fileInfo = new FileInfo(dataFilePath);
+                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }

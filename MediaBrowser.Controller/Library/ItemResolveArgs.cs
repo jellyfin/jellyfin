@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -35,7 +37,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
-        public IEnumerable<FileSystemInfo> FileSystemChildren
+        public IEnumerable<FileSystemMetadata> FileSystemChildren
         {
             get
             {
@@ -43,7 +45,7 @@ namespace MediaBrowser.Controller.Library
 
                 if (dict == null)
                 {
-                    return new List<FileSystemInfo>();
+                    return new List<FileSystemMetadata>();
                 }
 
                 return dict.Values;
@@ -54,7 +56,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets or sets the file system dictionary.
         /// </summary>
         /// <value>The file system dictionary.</value>
-        public Dictionary<string, FileSystemInfo> FileSystemDictionary { get; set; }
+        public Dictionary<string, FileSystemMetadata> FileSystemDictionary { get; set; }
 
         /// <summary>
         /// Gets or sets the parent.
@@ -66,7 +68,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets or sets the file info.
         /// </summary>
         /// <value>The file info.</value>
-        public FileSystemInfo FileInfo { get; set; }
+        public FileSystemMetadata FileInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -201,7 +203,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public FileSystemInfo GetFileSystemEntryByName(string name)
+        public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -217,7 +219,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public FileSystemInfo GetFileSystemEntryByPath(string path)
+        public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -226,7 +228,7 @@ namespace MediaBrowser.Controller.Library
 
             if (FileSystemDictionary != null)
             {
-                FileSystemInfo entry;
+                FileSystemMetadata entry;
 
                 if (FileSystemDictionary.TryGetValue(path, out entry))
                 {

@@ -19,6 +19,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.Updates
 {
@@ -553,7 +554,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             if (packageChecksum != Guid.Empty) // support for legacy uploads for now
             {
                 using (var crypto = new MD5CryptoServiceProvider())
-                using (var stream = new BufferedStream(File.OpenRead(tempFile), 100000))
+				using (var stream = new BufferedStream(_fileSystem.OpenRead(tempFile), 100000))
                 {
                     var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
                     if (check != packageChecksum)
@@ -568,12 +569,12 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Success - move it to the real target 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(target));
-                File.Copy(tempFile, target, true);
+				_fileSystem.CreateDirectory(Path.GetDirectoryName(target));
+				_fileSystem.CopyFile(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-                    File.WriteAllText(target + ".ver", package.versionStr);
+					File.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
             catch (IOException e)

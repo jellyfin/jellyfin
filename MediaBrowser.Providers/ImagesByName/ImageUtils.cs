@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 
 namespace MediaBrowser.Providers.ImagesByName
 {
@@ -24,7 +25,7 @@ namespace MediaBrowser.Providers.ImagesByName
         /// <returns>Task.</returns>
         public static async Task EnsureList(string url, string file, IHttpClient httpClient, IFileSystem fileSystem, SemaphoreSlim semaphore, CancellationToken cancellationToken)
         {
-            var fileInfo = new FileInfo(file);
+            var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
@@ -40,9 +41,9 @@ namespace MediaBrowser.Providers.ImagesByName
 
                     }).ConfigureAwait(false);
 
-                    Directory.CreateDirectory(Path.GetDirectoryName(file));
+					fileSystem.CreateDirectory(Path.GetDirectoryName(file));
 
-                    File.Copy(temp, file, true);
+					fileSystem.CopyFile(temp, file, true);
                 }
                 finally
                 {

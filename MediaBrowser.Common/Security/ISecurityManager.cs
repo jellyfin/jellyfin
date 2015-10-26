@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Model.Entities;
 using System.Threading.Tasks;
 
@@ -45,5 +46,11 @@ namespace MediaBrowser.Common.Security
         /// </summary>
         /// <returns>Task&lt;SupporterInfo&gt;.</returns>
         Task<SupporterInfo> GetSupporterInfo();
+
+        /// <summary>
+        /// Register and app store sale with our back-end
+        /// </summary>
+        /// <param name="parameters">Json parameters to pass to admin server</param>
+        Task RegisterAppStoreSale(string parameters);
     }
 }
