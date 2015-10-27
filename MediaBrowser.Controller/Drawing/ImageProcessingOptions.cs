@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public int? MaxHeight { get; set; }
 
-        public int? Quality { get; set; }
+        public int Quality { get; set; }
 
         public List<IImageEnhancer> Enhancers { get; set; }
 
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Drawing
 
         public bool HasDefaultOptionsWithoutSize(string originalImagePath)
         {
-            return (!Quality.HasValue || Quality.Value == 100) &&
+            return (Quality == 100) &&
                 IsOutputFormatDefault(originalImagePath) &&
                 !AddPlayedIndicator &&
                 PercentPlayed.Equals(0) &&

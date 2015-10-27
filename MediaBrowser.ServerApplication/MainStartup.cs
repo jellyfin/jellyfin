@@ -29,6 +29,7 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         private static bool _isRunningAsService = false;
+        private static bool _appHostDisposed;
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -329,7 +330,7 @@ namespace MediaBrowser.ServerApplication
         {
             _logger.Info("Shutting down");
 
-            _appHost.Dispose();
+            DisposeAppHost();
         }
 
         /// <summary>
@@ -500,14 +501,15 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                DisposeAppHost();
+
                 ShutdownWindowsApplication();
             }
         }
 
         public static void Restart()
         {
-            _logger.Info("Disposing app host");
-            _appHost.Dispose();
+            DisposeAppHost();
 
             if (!_isRunningAsService)
             {
@@ -522,10 +524,23 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private static void DisposeAppHost()
+        {
+            if (!_appHostDisposed)
+            {
+                _logger.Info("Disposing app host");
+
+                _appHostDisposed = true;
+                _appHost.Dispose();
+            }
+        }
+
         private static void ShutdownWindowsApplication()
         {
             _logger.Info("Calling Application.Exit");
             Application.Exit();
+
+            Environment.Exit(0);
 
             _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
             ApplicationTaskCompletionSource.SetResult(true);

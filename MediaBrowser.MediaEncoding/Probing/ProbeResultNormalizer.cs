@@ -130,12 +130,17 @@ namespace MediaBrowser.MediaEncoding.Probing
             var stream = new MediaStream
             {
                 Codec = streamInfo.codec_name,
-                CodecTag = streamInfo.codec_tag_string,
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index,
                 PixelFormat = streamInfo.pix_fmt
             };
+
+            // Filter out junk
+            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                stream.CodecTag = streamInfo.codec_tag_string;
+            }
 
             if (streamInfo.tags != null)
             {
