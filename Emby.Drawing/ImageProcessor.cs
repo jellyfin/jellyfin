@@ -225,7 +225,7 @@ namespace Emby.Drawing
                 return originalImagePath;
             }
 
-            var quality = options.Quality ?? 90;
+            var quality = options.Quality;
 
             var outputFormat = GetOutputFormat(options.OutputFormat);
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);

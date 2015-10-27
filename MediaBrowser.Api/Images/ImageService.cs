@@ -623,7 +623,7 @@ namespace MediaBrowser.Api.Images
                 Item = item,
                 MaxHeight = request.MaxHeight,
                 MaxWidth = request.MaxWidth,
-                Quality = request.Quality,
+                Quality = request.Quality ?? 100,
                 Width = request.Width,
                 AddPlayedIndicator = request.AddPlayedIndicator,
                 PercentPlayed = request.PercentPlayed ?? 0,

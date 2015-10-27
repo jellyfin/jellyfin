@@ -63,8 +63,6 @@
 
     function updateOriginalTransactionInfo(transactionId, originalTransactionId) {
 
-        alert('updateOriginalTransactionInfo ' + transactionId + '-' + originalTransactionId);
-
         if (!transactionId) {
             return;
         }
@@ -88,13 +86,11 @@
 
         if (!product.transaction) {
             Logger.log('Transaction info missing. Failing validateProduct');
-            callback(false, product);
             return;
         }
 
         if (!product.transaction.id) {
             Logger.log('Transaction id missing. Failing validateProduct');
-            callback(false, product);
             return;
         }
 
@@ -160,7 +156,6 @@
 
         if (requiresVerification) {
             store.when(id).verified(function (p) {
-                alert('verified');
                 updateProductInfo(p);
                 p.finish();
             });

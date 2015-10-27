@@ -667,6 +667,7 @@
     "MediaInfoLayout": "Layout",
     "MediaInfoLanguage": "Language",
     "MediaInfoCodec": "Codec",
+    "MediaInfoCodecTag":  "Codec tag",
     "MediaInfoProfile": "Profile",
     "MediaInfoLevel": "Level",
     "MediaInfoAspectRatio": "Aspect ratio",

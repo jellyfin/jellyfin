@@ -1402,6 +1402,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoCodec'), stream.Codec.toUpperCase()));
             }
 
+            if (stream.CodecTag) {
+                attributes.push(createAttribute(Globalize.translate('MediaInfoCodecTag'), stream.CodecTag));
+            }
+
             if (stream.Profile) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoProfile'), stream.Profile));
             }
