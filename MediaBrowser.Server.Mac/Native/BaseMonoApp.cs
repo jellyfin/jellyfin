@@ -36,6 +36,14 @@ namespace MediaBrowser.Server.Mac
             }
         }
 
+		public virtual bool SupportsLibraryMonitor
+		{
+			get
+			{
+				return false;
+			}
+		}
+
         /// <summary>
         /// Gets a value indicating whether this instance can self update.
         /// </summary>

@@ -13,10 +13,7 @@ namespace MediaBrowser.Server.Mac
 	{
 		private NSMenuItem browseMenuItem;
 		private NSMenuItem configureMenuItem;
-		private NSMenuItem developerMenuItem;
 		private NSMenuItem quitMenuItem;
-		private NSMenuItem githubMenuItem;
-		private NSMenuItem apiMenuItem;
 		private NSMenuItem communityMenuItem;
 
 		public static MenuBarIcon Instance;
@@ -71,22 +68,6 @@ namespace MediaBrowser.Server.Mac
 			});
 			menu.AddItem (configureMenuItem);
 
-			developerMenuItem = new NSMenuItem ("Developer Resources");
-			menu.AddItem (developerMenuItem);
-
-			var developerMenu = new NSMenu ();
-			developerMenuItem.Submenu = developerMenu;
-
-			apiMenuItem = new NSMenuItem ("Api Documentation", "a", delegate {
-				ApiDocs (NSApplication.SharedApplication);
-			});
-			developerMenu.AddItem (apiMenuItem);
-
-			githubMenuItem = new NSMenuItem ("Github", "g", delegate {
-				Github (NSApplication.SharedApplication);
-			});
-			developerMenu.AddItem (githubMenuItem);
-
 			communityMenuItem = new NSMenuItem ("Visit Community", "v", delegate {
 				Community (NSApplication.SharedApplication);
 			});
@@ -118,16 +99,6 @@ namespace MediaBrowser.Server.Mac
 		private void Browse(NSObject sender)
 		{
 			BrowserLauncher.OpenWebClient(MainClass.AppHost, Logger);
-		}
-
-		private void Github(NSObject sender)
-		{
-			BrowserLauncher.OpenGithub(Logger);
-		}
-
-		private void ApiDocs(NSObject sender)
-		{
-			BrowserLauncher.OpenSwagger(MainClass.AppHost, Logger);
 		}
 
 		public void Terminate() 
@@ -167,9 +138,6 @@ namespace MediaBrowser.Server.Mac
 
 			quitMenuItem.Title = localization.GetLocalizedString("LabelExit");
 			communityMenuItem.Title = localization.GetLocalizedString("LabelVisitCommunity");
-			githubMenuItem.Title = localization.GetLocalizedString("LabelGithub");
-			apiMenuItem.Title = localization.GetLocalizedString("LabelApiDocumentation");
-			developerMenuItem.Title = localization.GetLocalizedString("LabelDeveloperResources");
 			browseMenuItem.Title = localization.GetLocalizedString("LabelBrowseLibrary");
 			configureMenuItem.Title = localization.GetLocalizedString("LabelConfigureMediaBrowser");
 		}
