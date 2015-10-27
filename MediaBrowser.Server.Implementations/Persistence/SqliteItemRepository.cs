@@ -76,7 +76,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteStreamsCommand;
         private IDbCommand _saveStreamCommand;
 
-        private const int LatestSchemaVersion = 13;
+        private const int LatestSchemaVersion = 16;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -198,6 +198,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalEtag", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "DateLastRefreshed", "DATETIME");
 
+            _connection.AddColumn(_logger, "TypedBaseItems", "DateLastSaved", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsInMixedFolder", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "LockedFields", "Text");
+            
             PrepareStatements();
 
             new MediaStreamColumns(_connection, _logger).AddColumns();
@@ -289,7 +293,24 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "PreferredMetadataCountryCode",
             "IsHD",
             "ExternalEtag",
-            "DateLastRefreshed"
+            "DateLastRefreshed",
+            "Name",
+            "Path",
+            "PremiereDate",
+            "Overview",
+            "ParentIndexNumber",
+            "ProductionYear",
+            "OfficialRating",
+            "OfficialRatingDescription",
+            "HomePageUrl",
+            "DisplayMediaType",
+            "ForcedSortName",
+            "RunTimeTicks",
+            "VoteCount",
+            "DateCreated",
+            "DateModified",
+            "guid",
+            "Genres"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -377,7 +398,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "PreferredMetadataCountryCode",
                 "IsHD",
                 "ExternalEtag",
-                "DateLastRefreshed"
+                "DateLastRefreshed",
+                "DateLastSaved",
+                "IsInMixedFolder",
+                "LockedFields"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -606,6 +630,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = item.DateLastRefreshed;
                     }
 
+                    _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
+                    _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
+                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -825,6 +853,88 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(23))
             {
                 item.DateLastRefreshed = reader.GetDateTime(23).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(24))
+            {
+                item.Name = reader.GetString(24);
+            }
+
+            if (!reader.IsDBNull(25))
+            {
+                item.Path = reader.GetString(25);
+            }
+
+            if (!reader.IsDBNull(26))
+            {
+                item.PremiereDate = reader.GetDateTime(26).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(27))
+            {
+                item.Overview = reader.GetString(27);
+            }
+
+            if (!reader.IsDBNull(28))
+            {
+                item.ParentIndexNumber = reader.GetInt32(28);
+            }
+
+            if (!reader.IsDBNull(29))
+            {
+                item.ProductionYear = reader.GetInt32(29);
+            }
+
+            if (!reader.IsDBNull(30))
+            {
+                item.OfficialRating = reader.GetString(30);
+            }
+
+            if (!reader.IsDBNull(31))
+            {
+                item.OfficialRating = reader.GetString(31);
+            }
+
+            if (!reader.IsDBNull(32))
+            {
+                item.HomePageUrl = reader.GetString(32);
+            }
+
+            if (!reader.IsDBNull(33))
+            {
+                item.DisplayMediaType = reader.GetString(33);
+            }
+
+            if (!reader.IsDBNull(34))
+            {
+                item.ForcedSortName = reader.GetString(34);
+            }
+
+            if (!reader.IsDBNull(35))
+            {
+                item.RunTimeTicks = reader.GetInt64(35);
+            }
+
+            if (!reader.IsDBNull(36))
+            {
+                item.VoteCount = reader.GetInt32(36);
+            }
+
+            if (!reader.IsDBNull(37))
+            {
+                item.DateCreated = reader.GetDateTime(37).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(38))
+            {
+                item.DateModified = reader.GetDateTime(38).ToUniversalTime();
+            }
+
+            item.Id = reader.GetGuid(39);
+
+            if (!reader.IsDBNull(40))
+            {
+                item.Genres = reader.GetString(40).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
             }
 
             return item;

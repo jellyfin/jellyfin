@@ -58,6 +58,26 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private string _name;
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public override string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+
+                // lazy load this again
+                SortName = null;
+            }
+        }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself
