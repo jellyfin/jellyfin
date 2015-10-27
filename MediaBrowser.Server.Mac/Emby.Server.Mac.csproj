@@ -78,6 +78,12 @@
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CommonIO">
+      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+    </Reference>
+    <Reference Include="Patterns.Logging">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
@@ -259,9 +265,6 @@
     </BundleResource>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\.DS_Store">
-      <Link>Resources\dashboard-ui\.DS_Store</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
       <Link>Resources\dashboard-ui\about.html</Link>
     </BundleResource>
@@ -334,11 +337,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\encodingsettings.html">
       <Link>Resources\dashboard-ui\encodingsettings.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\episodes.html">
-      <Link>Resources\dashboard-ui\episodes.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\favicon.ico">
       <Link>Resources\dashboard-ui\favicon.ico</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\favorites.html">
+      <Link>Resources\dashboard-ui\favorites.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\forgotpassword.html">
       <Link>Resources\dashboard-ui\forgotpassword.html</Link>
@@ -439,23 +442,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\movies.html">
       <Link>Resources\dashboard-ui\movies.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicalbumartists.html">
-      <Link>Resources\dashboard-ui\musicalbumartists.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicalbums.html">
-      <Link>Resources\dashboard-ui\musicalbums.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicartists.html">
-      <Link>Resources\dashboard-ui\musicartists.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicgenres.html">
-      <Link>Resources\dashboard-ui\musicgenres.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicrecommended.html">
-      <Link>Resources\dashboard-ui\musicrecommended.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\musicvideos.html">
-      <Link>Resources\dashboard-ui\musicvideos.html</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\music.html">
+      <Link>Resources\dashboard-ui\music.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\mypreferencesdisplay.html">
       <Link>Resources\dashboard-ui\mypreferencesdisplay.html</Link>
@@ -517,29 +505,23 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scheduledtasks.html">
       <Link>Resources\dashboard-ui\scheduledtasks.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\search.html">
+      <Link>Resources\dashboard-ui\search.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\secondaryitems.html">
       <Link>Resources\dashboard-ui\secondaryitems.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\selectserver.html">
       <Link>Resources\dashboard-ui\selectserver.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\serversecurity.html">
-      <Link>Resources\dashboard-ui\serversecurity.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\shared.html">
       <Link>Resources\dashboard-ui\shared.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\songs.html">
-      <Link>Resources\dashboard-ui\songs.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\streamingsettings.html">
       <Link>Resources\dashboard-ui\streamingsettings.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\support.html">
       <Link>Resources\dashboard-ui\support.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\supporter.html">
-      <Link>Resources\dashboard-ui\supporter.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\supporterkey.html">
       <Link>Resources\dashboard-ui\supporterkey.html</Link>
@@ -553,26 +535,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncsettings.html">
       <Link>Resources\dashboard-ui\syncsettings.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvgenres.html">
-      <Link>Resources\dashboard-ui\tvgenres.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvlatest.html">
-      <Link>Resources\dashboard-ui\tvlatest.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvpeople.html">
-      <Link>Resources\dashboard-ui\tvpeople.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvrecommended.html">
-      <Link>Resources\dashboard-ui\tvrecommended.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvshows.html">
-      <Link>Resources\dashboard-ui\tvshows.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvstudios.html">
-      <Link>Resources\dashboard-ui\tvstudios.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvupcoming.html">
-      <Link>Resources\dashboard-ui\tvupcoming.html</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tv.html">
+      <Link>Resources\dashboard-ui\tv.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\useredit.html">
       <Link>Resources\dashboard-ui\useredit.html</Link>
@@ -652,6 +616,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\events.js">
       <Link>Resources\dashboard-ui\apiclient\events.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\fileupload.js">
+      <Link>Resources\dashboard-ui\apiclient\fileupload.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\localassetmanager.js">
       <Link>Resources\dashboard-ui\apiclient\localassetmanager.js</Link>
     </BundleResource>
@@ -673,9 +640,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\wakeonlan.js">
       <Link>Resources\dashboard-ui\apiclient\wakeonlan.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\alt\ajax.js">
-      <Link>Resources\dashboard-ui\apiclient\alt\ajax.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\alt\bean.js">
       <Link>Resources\dashboard-ui\apiclient\alt\bean.js</Link>
     </BundleResource>
@@ -684,6 +648,249 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\alt\events.js">
       <Link>Resources\dashboard-ui\apiclient\alt\events.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\sync\contentuploader.js">
+      <Link>Resources\dashboard-ui\apiclient\sync\contentuploader.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\sync\mediasync.js">
+      <Link>Resources\dashboard-ui\apiclient\sync\mediasync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\sync\multiserversync.js">
+      <Link>Resources\dashboard-ui\apiclient\sync\multiserversync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\sync\offlineusersync.js">
+      <Link>Resources\dashboard-ui\apiclient\sync\offlineusersync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\apiclient\sync\serversync.js">
+      <Link>Resources\dashboard-ui\apiclient\sync\serversync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\.editorconfig">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\.editorconfig</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\.gitignore">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\.gitignore</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\.jshintrc">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\.jshintrc</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\CONTRIBUTING.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\Gruntfile.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\Gruntfile.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\README.md">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\Sortable.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\Sortable.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\Sortable.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\Sortable.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\Sortable.min.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\Sortable.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\component.json">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\component.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\index.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\jquery.binding.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\jquery.binding.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\knockout-sortable.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\knockout-sortable.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\ng-sortable.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\ng-sortable.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\package.json">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\package.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\react-sortable-mixin.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\react-sortable-mixin.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\.versions">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\.versions</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\README.md">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\methods-client.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\methods-client.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\methods-server.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\methods-server.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\package.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\package.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\publish.sh">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\publish.sh</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\reactivize.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\reactivize.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\runtests.bat">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\runtests.bat</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\runtests.sh">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\runtests.sh</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\template.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\test.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\test.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\README.md">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\model.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\model.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\run.bat">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\run.bat</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\run.sh">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\run.sh</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.finished-upgraders">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.finished-upgraders</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.gitignore">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.gitignore</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.id">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\.id</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\packages">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\packages</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\platforms">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\platforms</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\release">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\release</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\versions">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\.meteor\versions</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.css">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\client\define-object-type.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\server\fixtures.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\server\fixtures.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\meteor\example\server\sortable-collections.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\meteor\example\server\sortable-collections.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\app.css">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\app.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\app.js">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\app.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-01.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-01.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-02.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-02.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-03.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-03.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-04.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-04.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-05.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-05.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-06.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-06.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-07.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-07.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-08.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-08.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\face-09.jpg">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\face-09.jpg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\logo.png">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\logo.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\og-image.png">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\og-image.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\iframe\frame.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\iframe\frame.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\Sortable\st\iframe\index.html">
+      <Link>Resources\dashboard-ui\bower_components\Sortable\st\iframe\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\doc-ready\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\doc-ready\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\doc-ready\README.md">
+      <Link>Resources\dashboard-ui\bower_components\doc-ready\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\doc-ready\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\doc-ready\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\doc-ready\doc-ready.js">
+      <Link>Resources\dashboard-ui\bower_components\doc-ready\doc-ready.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\EventEmitter.js">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\EventEmitter.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\EventEmitter.min.js">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\EventEmitter.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\README.md">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\UNLICENSE">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\UNLICENSE</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventEmitter\component.json">
+      <Link>Resources\dashboard-ui\bower_components\eventEmitter\component.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventie\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\eventie\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventie\README.md">
+      <Link>Resources\dashboard-ui\bower_components\eventie\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventie\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\eventie\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventie\eventie.js">
+      <Link>Resources\dashboard-ui\bower_components\eventie\eventie.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\eventie\package.json">
+      <Link>Resources\dashboard-ui\bower_components\eventie\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fastclick\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\fastclick\.bower.json</Link>
@@ -700,6 +907,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fastclick\lib\fastclick.js">
       <Link>Resources\dashboard-ui\bower_components\fastclick\lib\fastclick.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fizzy-ui-utils\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\fizzy-ui-utils\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fizzy-ui-utils\README.md">
+      <Link>Resources\dashboard-ui\bower_components\fizzy-ui-utils\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fizzy-ui-utils\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\fizzy-ui-utils\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fizzy-ui-utils\utils.js">
+      <Link>Resources\dashboard-ui\bower_components\fizzy-ui-utils\utils.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\font-roboto\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\font-roboto\.bower.json</Link>
     </BundleResource>
@@ -711,6 +930,39 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\font-roboto\roboto.html">
       <Link>Resources\dashboard-ui\bower_components\font-roboto\roboto.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-size\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\get-size\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-size\README.md">
+      <Link>Resources\dashboard-ui\bower_components\get-size\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-size\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\get-size\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-size\get-size.js">
+      <Link>Resources\dashboard-ui\bower_components\get-size\get-size.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-size\index.html">
+      <Link>Resources\dashboard-ui\bower_components\get-size\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\README.md">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\component.json">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\component.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\get-style-property.js">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\get-style-property.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\get-style-property\package.json">
+      <Link>Resources\dashboard-ui\bower_components\get-style-property\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\.bower.json</Link>
@@ -762,6 +1014,30 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\package.json">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\package.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\CHANGELOG.md">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\CHANGELOG.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\LICENSE.md">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\LICENSE.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\README.md">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\howler.js">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\howler.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\howler.min.js">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\howler.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\howler.js\package.json">
+      <Link>Resources\dashboard-ui\bower_components\howler.js\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-a11y-announcer\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-a11y-announcer\.bower.json</Link>
@@ -928,6 +1204,36 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-checked-element-behavior\test\simple-checkbox.html">
       <Link>Resources\dashboard-ui\bower_components\iron-checked-element-behavior\test\simple-checkbox.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\.gitignore">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\.gitignore</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\README.md">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\hero.svg">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\hero.svg</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\index.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\iron-collapse.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\iron-collapse.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\demo\index.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\demo\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\test\basic.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\test\basic.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\test\horizontal.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\test\horizontal.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-collapse\test\index.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-collapse\test\index.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-dropdown\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-dropdown\.bower.json</Link>
     </BundleResource>
@@ -1012,6 +1318,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\bower.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\index.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\index.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout.html">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout.html</Link>
     </BundleResource>
@@ -1074,6 +1383,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icon\iron-icon.html">
       <Link>Resources\dashboard-ui\bower_components\iron-icon\iron-icon.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icon\demo\async.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-icon\demo\async.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icon\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-icon\demo\index.html</Link>
@@ -1489,6 +1801,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-selector\test\content.html">
       <Link>Resources\dashboard-ui\bower_components\iron-selector\test\content.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-selector\test\excluded-local-names.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-selector\test\excluded-local-names.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-selector\test\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-selector\test\index.html</Link>
     </BundleResource>
@@ -1876,6 +2191,81 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jstree\src\themes\default-dark\throbber.gif">
       <Link>Resources\dashboard-ui\bower_components\jstree\src\themes\default-dark\throbber.gif</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\masonry\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\README.mdown">
+      <Link>Resources\dashboard-ui\bower_components\masonry\README.mdown</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\masonry\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\changelog.md">
+      <Link>Resources\dashboard-ui\bower_components\masonry\changelog.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\masonry.js">
+      <Link>Resources\dashboard-ui\bower_components\masonry\masonry.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\dist\masonry.pkgd.js">
+      <Link>Resources\dashboard-ui\bower_components\masonry\dist\masonry.pkgd.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\dist\masonry.pkgd.min.js">
+      <Link>Resources\dashboard-ui\bower_components\masonry\dist\masonry.pkgd.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\add-items.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\add-items.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\basic.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\basic.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\bottom-up.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\bottom-up.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\element-sizing.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\element-sizing.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\fit-width.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\fit-width.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\fluid.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\fluid.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\jquery.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\jquery.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\right-to-left.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\right-to-left.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\sandbox.css">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\sandbox.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\stamps.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\stamps.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\browserify\index.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\browserify\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\browserify\main.js">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\browserify\main.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\require-js\index.html">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\require-js\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\masonry\sandbox\require-js\main.js">
+      <Link>Resources\dashboard-ui\bower_components\masonry\sandbox\require-js\main.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\matches-selector\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\matches-selector\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\matches-selector\README.md">
+      <Link>Resources\dashboard-ui\bower_components\matches-selector\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\matches-selector\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\matches-selector\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\matches-selector\matches-selector.js">
+      <Link>Resources\dashboard-ui\bower_components\matches-selector\matches-selector.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\neon-animation\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\neon-animation\.bower.json</Link>
     </BundleResource>
@@ -2068,6 +2458,21 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\neon-animation\test\test-resizable-pages.html">
       <Link>Resources\dashboard-ui\bower_components\neon-animation\test\test-resizable-pages.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\outlayer\.bower.json">
+      <Link>Resources\dashboard-ui\bower_components\outlayer\.bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\outlayer\README.md">
+      <Link>Resources\dashboard-ui\bower_components\outlayer\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\outlayer\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\outlayer\bower.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\outlayer\item.js">
+      <Link>Resources\dashboard-ui\bower_components\outlayer\item.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\outlayer\outlayer.js">
+      <Link>Resources\dashboard-ui\bower_components\outlayer\outlayer.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\.bower.json</Link>
     </BundleResource>
@@ -2086,8 +2491,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\paper-button-behavior.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\paper-button-behavior.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\paper-checked-element-behavior.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-behaviors\paper-checked-element-behavior.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\paper-inky-focus-behavior.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\paper-inky-focus-behavior.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\paper-ripple-behavior.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-behaviors\paper-ripple-behavior.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\demo\index.html</Link>
@@ -2104,8 +2515,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\test\paper-button-behavior.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\test\paper-button-behavior.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\test\paper-checked-element-behavior.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-behaviors\test\paper-checked-element-behavior.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\test\paper-radio-button-behavior.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\test\paper-radio-button-behavior.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\test\paper-ripple-behavior.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-behaviors\test\paper-ripple-behavior.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-behaviors\test\test-button.html">
       <Link>Resources\dashboard-ui\bower_components\paper-behaviors\test\test-button.html</Link>
@@ -2479,8 +2896,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-body.html">
       <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-body.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-shared.css">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-shared.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-shared-styles.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-shared-styles.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item.html">
       <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item.html</Link>
@@ -2632,9 +3049,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-radio-button\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-radio-button\index.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-radio-button\paper-radio-button.css">
-      <Link>Resources\dashboard-ui\bower_components\paper-radio-button\paper-radio-button.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-radio-button\paper-radio-button.html">
       <Link>Resources\dashboard-ui\bower_components\paper-radio-button\paper-radio-button.html</Link>
     </BundleResource>
@@ -2725,14 +3139,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-slider\index.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\paper-slider.css">
-      <Link>Resources\dashboard-ui\bower_components\paper-slider\paper-slider.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\paper-slider.html">
       <Link>Resources\dashboard-ui\bower_components\paper-slider\paper-slider.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-slider\demo\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\test\a11y.html">
+      <Link>Resources\dashboard-ui\bower_components\paper-slider\test\a11y.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-slider\test\basic.html">
       <Link>Resources\dashboard-ui\bower_components\paper-slider\test\basic.html</Link>
@@ -3175,6 +3589,81 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js">
       <Link>Resources\dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\paperdialoghelper.js">
+      <Link>Resources\dashboard-ui\components\paperdialoghelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\prompt.js">
+      <Link>Resources\dashboard-ui\components\prompt.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\collectioneditor\collectioneditor.js">
+      <Link>Resources\dashboard-ui\components\collectioneditor\collectioneditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\directorybrowser\directorybrowser.js">
+      <Link>Resources\dashboard-ui\components\directorybrowser\directorybrowser.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imagedownloader\imagedownloader.js">
+      <Link>Resources\dashboard-ui\components\imagedownloader\imagedownloader.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imagedownloader\imagedownloader.template.html">
+      <Link>Resources\dashboard-ui\components\imagedownloader\imagedownloader.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageeditor\imageeditor.js">
+      <Link>Resources\dashboard-ui\components\imageeditor\imageeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageeditor\imageeditor.template.html">
+      <Link>Resources\dashboard-ui\components\imageeditor\imageeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.js">
+      <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.template.html">
+      <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\itemidentifier\itemidentifier.js">
+      <Link>Resources\dashboard-ui\components\itemidentifier\itemidentifier.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\itemidentifier\itemidentifier.template.html">
+      <Link>Resources\dashboard-ui\components\itemidentifier\itemidentifier.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibrarycreator\medialibrarycreator.js">
+      <Link>Resources\dashboard-ui\components\medialibrarycreator\medialibrarycreator.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibrarycreator\medialibrarycreator.template.html">
+      <Link>Resources\dashboard-ui\components\medialibrarycreator\medialibrarycreator.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibraryeditor\medialibraryeditor.js">
+      <Link>Resources\dashboard-ui\components\medialibraryeditor\medialibraryeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html">
+      <Link>Resources\dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\metadataeditor.js">
+      <Link>Resources\dashboard-ui\components\metadataeditor\metadataeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\metadataeditor.template.html">
+      <Link>Resources\dashboard-ui\components\metadataeditor\metadataeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\playlisteditor\playlisteditor.js">
+      <Link>Resources\dashboard-ui\components\playlisteditor\playlisteditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\subtitleeditor\subtitleeditor.js">
+      <Link>Resources\dashboard-ui\components\subtitleeditor\subtitleeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\subtitleeditor\subtitleeditor.template.html">
+      <Link>Resources\dashboard-ui\components\subtitleeditor\subtitleeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvguide\tvguide.js">
+      <Link>Resources\dashboard-ui\components\tvguide\tvguide.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvguide\tvguide.template.html">
+      <Link>Resources\dashboard-ui\components\tvguide\tvguide.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvproviders\schedulesdirect.js">
+      <Link>Resources\dashboard-ui\components\tvproviders\schedulesdirect.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvproviders\schedulesdirect.template.html">
+      <Link>Resources\dashboard-ui\components\tvproviders\schedulesdirect.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\actionsheet.js">
       <Link>Resources\dashboard-ui\cordova\actionsheet.js</Link>
     </BundleResource>
@@ -3190,8 +3679,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\externalplayer.js">
       <Link>Resources\dashboard-ui\cordova\externalplayer.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\filesystem.js">
-      <Link>Resources\dashboard-ui\cordova\filesystem.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\fileupload.js">
+      <Link>Resources\dashboard-ui\cordova\fileupload.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\generaldevice.js">
       <Link>Resources\dashboard-ui\cordova\generaldevice.js</Link>
@@ -3201,6 +3690,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\imagestore.js">
       <Link>Resources\dashboard-ui\cordova\imagestore.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\localassetmanager.js">
+      <Link>Resources\dashboard-ui\cordova\localassetmanager.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\prompt.js">
+      <Link>Resources\dashboard-ui\cordova\prompt.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\registrationservices.js">
       <Link>Resources\dashboard-ui\cordova\registrationservices.js</Link>
@@ -3229,17 +3724,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\appstorage.js">
       <Link>Resources\dashboard-ui\cordova\android\appstorage.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\filesystem.js">
-      <Link>Resources\dashboard-ui\cordova\android\filesystem.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\iap.js">
       <Link>Resources\dashboard-ui\cordova\android\iap.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\immersive.js">
       <Link>Resources\dashboard-ui\cordova\android\immersive.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\localassetmanager.js">
-      <Link>Resources\dashboard-ui\cordova\android\localassetmanager.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\localsync.js">
       <Link>Resources\dashboard-ui\cordova\android\localsync.js</Link>
@@ -3253,14 +3742,23 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\nativedirectorychooser.js">
       <Link>Resources\dashboard-ui\cordova\android\nativedirectorychooser.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\newapp.js">
+      <Link>Resources\dashboard-ui\cordova\android\newapp.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\android\vlcplayer.js">
       <Link>Resources\dashboard-ui\cordova\android\vlcplayer.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\ios\backgroundfetch.js">
+      <Link>Resources\dashboard-ui\cordova\ios\backgroundfetch.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\ios\orientation.js">
       <Link>Resources\dashboard-ui\cordova\ios\orientation.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\.DS_Store">
-      <Link>Resources\dashboard-ui\css\.DS_Store</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\ios\tabbar.js">
+      <Link>Resources\dashboard-ui\cordova\ios\tabbar.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordova\ios\vlcplayer.js">
+      <Link>Resources\dashboard-ui\cordova\ios\vlcplayer.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\card.css">
       <Link>Resources\dashboard-ui\css\card.css</Link>
@@ -3393,6 +3891,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\roboto\ty9dfvLAziwdqQ2dHoyjphTbgVql8nDJpwnrE27mub0.woff2">
       <Link>Resources\dashboard-ui\css\fonts\roboto\ty9dfvLAziwdqQ2dHoyjphTbgVql8nDJpwnrE27mub0.woff2</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\ani_equalizer_black.gif">
+      <Link>Resources\dashboard-ui\css\images\ani_equalizer_black.gif</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\ani_equalizer_white.gif">
+      <Link>Resources\dashboard-ui\css\images\ani_equalizer_white.gif</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\checkmarkblack.png">
       <Link>Resources\dashboard-ui\css\images\checkmarkblack.png</Link>
@@ -3544,9 +4048,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\list\person.png">
       <Link>Resources\dashboard-ui\css\images\items\list\person.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\list\remotesearch.png">
-      <Link>Resources\dashboard-ui\css\images\items\list\remotesearch.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\searchhintsv2\tv.png">
       <Link>Resources\dashboard-ui\css\images\items\searchhintsv2\tv.png</Link>
     </BundleResource>
@@ -3670,6 +4171,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userdata\password.png">
       <Link>Resources\dashboard-ui\css\images\userdata\password.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\android\android.css">
+      <Link>Resources\dashboard-ui\devices\android\android.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ie\ie.css">
+      <Link>Resources\dashboard-ui\devices\ie\ie.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ie\ie.js">
+      <Link>Resources\dashboard-ui\devices\ie\ie.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
+      <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\files\dummy.mp4">
       <Link>Resources\dashboard-ui\files\dummy.mp4</Link>
     </BundleResource>
@@ -3721,9 +4234,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\cinemamodeconfiguration.js">
       <Link>Resources\dashboard-ui\scripts\cinemamodeconfiguration.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\collectioneditor.js">
-      <Link>Resources\dashboard-ui\scripts\collectioneditor.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\connectlogin.js">
       <Link>Resources\dashboard-ui\scripts\connectlogin.js</Link>
     </BundleResource>
@@ -3745,9 +4255,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\devicesupload.js">
       <Link>Resources\dashboard-ui\scripts\devicesupload.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\directorybrowser.js">
-      <Link>Resources\dashboard-ui\scripts\directorybrowser.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\dlnaprofile.js">
       <Link>Resources\dashboard-ui\scripts\dlnaprofile.js</Link>
     </BundleResource>
@@ -3760,17 +4267,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\dlnasettings.js">
       <Link>Resources\dashboard-ui\scripts\dlnasettings.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\editcollectionitems.js">
-      <Link>Resources\dashboard-ui\scripts\editcollectionitems.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\edititemimages.js">
-      <Link>Resources\dashboard-ui\scripts\edititemimages.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\edititemmetadata.js">
       <Link>Resources\dashboard-ui\scripts\edititemmetadata.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\edititemsubtitles.js">
-      <Link>Resources\dashboard-ui\scripts\edititemsubtitles.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\editorsidebar.js">
       <Link>Resources\dashboard-ui\scripts\editorsidebar.js</Link>
@@ -3949,9 +4447,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\moviegenres.js">
       <Link>Resources\dashboard-ui\scripts\moviegenres.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\moviepeople.js">
-      <Link>Resources\dashboard-ui\scripts\moviepeople.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\movies.js">
       <Link>Resources\dashboard-ui\scripts\movies.js</Link>
     </BundleResource>
@@ -3978,9 +4473,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicrecommended.js">
       <Link>Resources\dashboard-ui\scripts\musicrecommended.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicvideos.js">
-      <Link>Resources\dashboard-ui\scripts\musicvideos.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\mypreferencescommon.js">
       <Link>Resources\dashboard-ui\scripts\mypreferencescommon.js</Link>
@@ -4069,6 +4561,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\searchmenu.js">
       <Link>Resources\dashboard-ui\scripts\searchmenu.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\searchpage.js">
+      <Link>Resources\dashboard-ui\scripts\searchpage.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\secondaryitems.js">
       <Link>Resources\dashboard-ui\scripts\secondaryitems.js</Link>
     </BundleResource>
@@ -4077,9 +4572,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\selectserver.js">
       <Link>Resources\dashboard-ui\scripts\selectserver.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\serversecurity.js">
-      <Link>Resources\dashboard-ui\scripts\serversecurity.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\shared.js">
       <Link>Resources\dashboard-ui\scripts\shared.js</Link>
@@ -4105,9 +4597,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\supporterkeypage.js">
       <Link>Resources\dashboard-ui\scripts\supporterkeypage.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\supporterpage.js">
-      <Link>Resources\dashboard-ui\scripts\supporterpage.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\sync.js">
       <Link>Resources\dashboard-ui\scripts\sync.js</Link>
     </BundleResource>
@@ -4131,9 +4620,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\tvlatest.js">
       <Link>Resources\dashboard-ui\scripts\tvlatest.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\tvpeople.js">
-      <Link>Resources\dashboard-ui\scripts\tvpeople.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\tvrecommended.js">
       <Link>Resources\dashboard-ui\scripts\tvrecommended.js</Link>
@@ -4294,6 +4780,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\zh-CN.json">
       <Link>Resources\dashboard-ui\strings\html\zh-CN.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\zh-HK.json">
+      <Link>Resources\dashboard-ui\strings\html\zh-HK.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\zh-TW.json">
       <Link>Resources\dashboard-ui\strings\html\zh-TW.json</Link>
     </BundleResource>
@@ -4408,14 +4897,20 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\zh-CN.json">
       <Link>Resources\dashboard-ui\strings\javascript\zh-CN.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\zh-HK.json">
+      <Link>Resources\dashboard-ui\strings\javascript\zh-HK.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\zh-TW.json">
       <Link>Resources\dashboard-ui\strings\javascript\zh-TW.json</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\android.css">
-      <Link>Resources\dashboard-ui\themes\android.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\bg.jpg">
+      <Link>Resources\dashboard-ui\themes\halloween\bg.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\ios.css">
-      <Link>Resources\dashboard-ui\themes\ios.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\style.css">
+      <Link>Resources\dashboard-ui\themes\halloween\style.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\halloween\theme.js">
+      <Link>Resources\dashboard-ui\themes\halloween\theme.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\browser.js">
       <Link>Resources\dashboard-ui\thirdparty\browser.js</Link>
@@ -4426,9 +4921,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\emby-icons.html">
       <Link>Resources\dashboard-ui\thirdparty\emby-icons.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\filesystem.js">
-      <Link>Resources\dashboard-ui\thirdparty\filesystem.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\headroom.js">
       <Link>Resources\dashboard-ui\thirdparty\headroom.js</Link>
     </BundleResource>
@@ -4437,9 +4929,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\paper-button-style.css">
       <Link>Resources\dashboard-ui\thirdparty\paper-button-style.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\paper-ie10.css">
-      <Link>Resources\dashboard-ui\thirdparty\paper-ie10.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
@@ -4471,6 +4960,36 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\custombuild.txt">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\custombuild.txt</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.checkbox.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.checkbox.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.checkbox.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.checkbox.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.collapsible.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.collapsible.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.collapsible.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.collapsible.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.controlgroup.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.controlgroup.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.controlgroup.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.controlgroup.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.listview.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.panel.css">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.panel.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.panel.js">
+      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.panel.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.css</Link>
     </BundleResource>
@@ -4489,9 +5008,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.js">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map</Link>
     </BundleResource>
@@ -4501,20 +5017,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.js">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.min.js">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.min.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.structure.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.structure.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.structure.min.css">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.structure.min.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.min.css">
-      <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.min.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\images\ajax-loader.gif">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\images\ajax-loader.gif</Link>
@@ -5161,6 +5668,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.min.js">
       <Link>Resources\dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.min.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\viblast\viblast-video-js.swf">
+      <Link>Resources\dashboard-ui\thirdparty\viblast\viblast-video-js.swf</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\viblast\viblast.crypto.js">
       <Link>Resources\dashboard-ui\thirdparty\viblast\viblast.crypto.js</Link>
     </BundleResource>
@@ -5173,11 +5683,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\viblast\worker.html">
       <Link>Resources\dashboard-ui\thirdparty\viblast\worker.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvproviders\schedulesdirect.js">
-      <Link>Resources\dashboard-ui\tvproviders\schedulesdirect.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tvproviders\schedulesdirect.template.html">
-      <Link>Resources\dashboard-ui\tvproviders\schedulesdirect.template.html</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\textprocessor-en-us.js">
+      <Link>Resources\dashboard-ui\voice\textprocessor-en-us.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voice.css">
       <Link>Resources\dashboard-ui\voice\voice.css</Link>
