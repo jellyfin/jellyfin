@@ -18,7 +18,7 @@
                 }
             }
 
-            var url = 'tvproviders/' + type.toLowerCase() + '.js';
+            var url = 'components/tvproviders/' + type.toLowerCase() + '.js';
 
             require([url], function (factory) {
 
@@ -44,7 +44,7 @@
         ApiClient.ajax({
 
             type: 'GET',
-            url: 'tvproviders/' + type + '.template.html'
+            url: 'components/tvproviders/' + type + '.template.html'
 
         }).done(function (html) {
 
