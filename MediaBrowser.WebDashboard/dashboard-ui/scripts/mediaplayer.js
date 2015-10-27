@@ -950,15 +950,14 @@
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
-                            // Reports of stuttering with h264 stream copy in IE
-                            mediaUrl += '&EnableAutoStreamCopy=false';
+                            if (mediaSource.RunTimeTicks) {
+                                // Reports of stuttering with h264 stream copy in IE
+                                mediaUrl += '&EnableAutoStreamCopy=false';
+                            }
 
                             mediaUrl += seekParam;
                             contentType = 'application/x-mpegURL';
                         } else {
-
-                            // Reports of stuttering with h264 stream copy in IE
-                            mediaUrl += '&EnableAutoStreamCopy=false';
 
                             startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;

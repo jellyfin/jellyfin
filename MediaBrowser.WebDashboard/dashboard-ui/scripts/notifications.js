@@ -132,7 +132,7 @@
         if (notification.Level == "Error") {
             itemHtml += '<paper-fab mini class="" style="background:#cc3333;" icon="error" item-icon></paper-fab>';
         } else {
-            itemHtml += '<paper-fabmini  class="blue" icon="dvr" item-icon></paper-fab>';
+            itemHtml += '<paper-fab mini  class="blue" icon="dvr" item-icon></paper-fab>';
         }
 
         itemHtml += '<paper-item-body three-line>';
