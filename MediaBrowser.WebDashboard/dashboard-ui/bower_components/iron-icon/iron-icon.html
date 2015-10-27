@@ -52,10 +52,11 @@ Example of using an icon named `cherry` from a custom iconset with the ID `fruit
 
     <iron-icon icon="fruit:cherry"></iron-icon>
 
-See [iron-iconset](#iron-iconset) and [iron-iconset-svg](#iron-iconset-svg) for more information about
+See [iron-iconset](iron-iconset) and [iron-iconset-svg](iron-iconset-svg) for more information about
 how to create a custom iconset.
 
-See [iron-icons](https://elements.polymer-project.org/elements/iron-icons?view=demo:demo/index.html) for the default set of icons.
+See the [iron-icons demo](iron-icons?view=demo:demo/index.html) to see the icons available
+in the various iconsets.
 
 
 ### Styling
@@ -66,6 +67,8 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--iron-icon-width` | Width of the icon | `24px`
 `--iron-icon-height` | Height of the icon | `24px`
+`--iron-icon-fill-color` | Fill color of the svg icon | `currentcolor`
+`--iron-icon-stroke-color` | Stroke color of the svg icon | none
 
 @group Iron Elements
 @element iron-icon
@@ -84,7 +87,8 @@ Custom property | Description | Default
 
       vertical-align: middle;
 
-      fill: currentcolor;
+      fill: var(--iron-icon-fill-color, currentcolor);
+      stroke: var(--iron-icon-stroke-color, none);
 
       width: var(--iron-icon-width, 24px);
       height: var(--iron-icon-height, 24px);

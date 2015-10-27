@@ -15,6 +15,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="paper-item-shared-styles.html">
 
 <!--
+Material design: [Lists](https://www.google.com/design/spec/components/lists.html)
+
 `<paper-item>` is a non-interactive list item. By default, it is a horizontal flexbox.
 
     <paper-item>Item</paper-item>
@@ -34,10 +36,17 @@ items.
 
 The following custom properties and mixins are available for styling:
 
-Custom property | Description | Default
-----------------|-------------|----------
-`--paper-item-min-height` | Minimum height of the item | `48px`
-`--paper-item`            | Mixin applied to the item  | `{}`
+Custom property               | Description                                    | Default
+------------------------------|------------------------------------------------|----------
+`--paper-item-min-height`     | Minimum height of the item                     | `48px`
+`--paper-item`                | Mixin applied to the item                      | `{}`
+`--paper-item-selected-weight`| The font weight of a selected item             | `bold`
+`--paper-item-selected`       | Mixin applied to selected paper-items                | `{}`
+`--paper-item-disabled-color` | The color for disabled paper-items             | `--disabled-text-color`
+`--paper-item-disabled`       | Mixin applied to disabled paper-items        | `{}`
+`--paper-item-focused`        | Mixin applied to focused paper-items         | `{}`
+`--paper-item-focused-before` | Mixin applied to :before focused paper-items | `{}`
+
 
 ### Accessibility
 

@@ -45,8 +45,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     paper-icon-button {
       color: var(--paper-red-300);
       --paper-icon-button-ink-color: var(--paper-red-a100);
-      --iron-icon-width: 15px;
-      --iron-icon-height: 15px;
+      width: 23px; /* 15px + 2*4px for padding */
+      height: 23px;
       padding: 0px 4px;
     }
   </style>
@@ -58,8 +58,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <h4>Text input</h4>
     <div class="vertical-section">
       <paper-input label="label"></paper-input>
-
-      <paper-input label="search" type="search" placeholder="type='search' should use placeholders instead of labels" autosave="test" results="5"></paper-input>
 
       <paper-input label="password" type="password"></paper-input>
 

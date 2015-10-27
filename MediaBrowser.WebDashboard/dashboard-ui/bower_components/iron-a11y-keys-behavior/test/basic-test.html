@@ -30,6 +30,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="NonPropagatingKeys">
+    <template>
+      <x-a11y-basic-keys stop-keyboard-event-propagation></x-a11y-basic-keys>
+    </template>
+  </test-fixture>
+
   <test-fixture id="ComboKeys">
     <template>
       <x-a11y-combo-keys></x-a11y-combo-keys>
@@ -161,6 +167,15 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       expect(keys.keyCount).to.be.equal(1);
     });
 
+    test('allows propagation beyond the key combo handler', function() {
+      var keySpy = sinon.spy();
+      document.addEventListener('keydown', keySpy);
+
+      MockInteractions.pressEnter(keys);
+
+      expect(keySpy.callCount).to.be.equal(1);
+    });
+
     suite('edge cases', function() {
       test('knows that `spacebar` is the same as `space`', function() {
         var event = new CustomEvent('keydown');
@@ -239,6 +254,22 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       MockInteractions.pressSpace(keys);
 
       expect(keys.keyCount).to.be.equal(2);
+    });
+  });
+
+  suite('stopping propagation automatically', function() {
+    setup(function() {
+      keys = fixture('NonPropagatingKeys');
+    });
+
+    test('does not propagate key events beyond the combo handler', function() {
+      var keySpy = sinon.spy();
+
+      document.addEventListener('keydown', keySpy);
+
+      MockInteractions.pressEnter(keys);
+
+      expect(keySpy.callCount).to.be.equal(0);
     });
   });
 

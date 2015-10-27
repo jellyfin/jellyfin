@@ -179,6 +179,15 @@ suite('<iron-meta>', function () {
       expect(registeredValue).to.be.equal(secondValue);
     });
   });
+
+  suite('singleton', function () {
+
+    test('only one ironmeta created', function () {
+      var first = Polymer.IronMeta.getIronMeta();
+      var second = Polymer.IronMeta.getIronMeta();
+      expect(first).to.be.equal(second);
+    });
+  });
 });
     </script>
 

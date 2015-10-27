@@ -77,8 +77,13 @@ Custom property | Description | Default
         user-select: none;
         cursor: pointer;
         z-index: 0;
+        line-height: 1;
+        
+        width: 40px;
+        height: 40px;
 
-        width: 24px;
+        /* Because of polymer/2558, this style has lower specificity than * */
+        box-sizing: border-box !important;
         @apply(--paper-icon-button);
       }
 

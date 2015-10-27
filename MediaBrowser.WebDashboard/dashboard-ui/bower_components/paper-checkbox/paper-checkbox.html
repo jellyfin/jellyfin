@@ -42,6 +42,7 @@ Custom property | Description | Default
 `--paper-checkbox-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
 `--paper-checkbox-checkmark-color` | Checkmark color | `white`
 `--paper-checkbox-label-color` | Label color | `--primary-text-color`
+`--paper-checkbox-label-spacing` | Spacing between the label and the checkbox | `8px`
 `--paper-checkbox-error-color` | Checkbox color when invalid | `--google-red-500`
 
 @demo demo/index.html
@@ -75,7 +76,7 @@ Custom property | Description | Default
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
       }
 
-      :host #ink {
+      #ink {
         position: absolute;
         top: -15px;
         left: -15px;
@@ -86,11 +87,16 @@ Custom property | Description | Default
         pointer-events: none;
       }
 
-      :host #ink[checked] {
+      :host-context([dir="rtl"]) #ink {
+        right: -15px;
+        left: auto;
+      }
+
+      #ink[checked] {
         color: var(--paper-checkbox-checked-ink-color, --default-primary-color);
       }
 
-      :host #checkbox {
+      #checkbox {
         position: relative;
         box-sizing: border-box;
         height: 100%;
@@ -138,12 +144,12 @@ Custom property | Description | Default
         }
       }
 
-      :host #checkbox.checked {
+      #checkbox.checked {
         background-color: var(--paper-checkbox-checked-color, --default-primary-color);
         border-color: var(--paper-checkbox-checked-color, --default-primary-color);
       }
 
-      :host #checkmark {
+      #checkmark {
         -webkit-transform: rotate(45deg);
         transform: rotate(45deg);
         position: absolute;
@@ -164,10 +170,15 @@ Custom property | Description | Default
         position: relative;
         display: inline-block;
         vertical-align: middle;
-        padding-left: 8px;
+        padding-left: var(--paper-checkbox-label-spacing, 8px);
         white-space: normal;
         pointer-events: none;
         color: var(--paper-checkbox-label-color, --primary-text-color);
+      }
+
+      :host-context([dir="rtl"]) #checkboxLabel {
+        padding-right: var(--paper-checkbox-label-spacing, 8px);
+        padding-left: 0;
       }
 
       #checkboxLabel[hidden] {

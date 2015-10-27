@@ -1,6 +1,6 @@
 {
   "name": "paper-material",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A material design container that looks like a lifted sheet of paper",
   "private": true,
   "authors": [
@@ -24,20 +24,20 @@
   "homepage": "https://github.com/PolymerElements/paper-material",
   "ignore": [],
   "dependencies": {
-    "paper-styles": "polymerelements/paper-styles#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.1.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
   },
-  "_release": "1.0.2",
+  "_release": "1.0.3",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.2",
-    "commit": "3f41d6dd776cf5bb35d29b44d1cce4981b791188"
+    "tag": "v1.0.3",
+    "commit": "2e99c0754edb817518f59313d2533ccc2e1ab82a"
   },
   "_source": "git://github.com/polymerelements/paper-material.git",
   "_target": "^1.0.0",

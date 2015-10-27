@@ -17,8 +17,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 0px 16px;
       }
 
-      :host > ::content > *:not(:first-child):not(:last-child) {
-        margin-right: 16px;
+      :host(.iron-selected) {
+        font-weight: var(--paper-item-selected-weight, bold);
+        @apply(--paper-item-selected);
+      }
+
+      :host([disabled]) {
+        color: var(--paper-item-disabled-color, --disabled-text-color);
+        @apply(--paper-item-disabled);
+      }
+
+      :host(:focus) {
+        position: relative;
+        outline: 0;
+        @apply(--paper-item-focused);
+      }
+
+      :host(:focus):before {
+        @apply(--layout-fit);
+        content: '';
+        background: currentColor;
+        opacity: var(--dark-divider-opacity);
+
+        @apply(--paper-item-focused-before);
       }
     </style>
   </template>

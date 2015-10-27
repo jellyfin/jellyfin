@@ -1,6 +1,6 @@
 {
   "name": "paper-radio-button",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A material design radio button",
   "authors": [
     "The Polymer Authors"
@@ -20,24 +20,24 @@
   "homepage": "https://github.com/PolymerElements/paper-radio-button",
   "ignore": [],
   "dependencies": {
-    "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
-    "paper-styles": "PolymerLabs/paper-styles#^1.0.0",
-    "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
     "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#^1.0.0",
+    "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
+    "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
-    "web-component-tester": "Polymer/web-component-tester#^3.3.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^3.3.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.9",
+  "_release": "1.0.10",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.9",
-    "commit": "708d1e611ad5a7c9600a128545a88e9991fe789e"
+    "tag": "v1.0.10",
+    "commit": "85b9670b23e9fac6f2d728b433d2c1d3f691a656"
   },
   "_source": "git://github.com/PolymerElements/paper-radio-button.git",
   "_target": "~1.0.5",

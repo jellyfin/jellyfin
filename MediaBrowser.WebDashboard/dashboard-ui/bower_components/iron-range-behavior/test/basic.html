@@ -103,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
-      test('odd values', function() {
+      test('odd values', function(done) {
         range.min = 1;
         range.max = 7;
         range.step = 2;
@@ -117,6 +117,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           range.value += range.step;
           assert.equal(range.value, 7);
+          done();
+        });
+      });
+
+      test('negative values should round up', function(done) {
+        range.min = -10;
+        range.max = 10;
+        range.step = 0.1;
+        range.value = -8.4252;
+
+        flush(function() {
+          assert.equal(range.value, -8.4);
+          done();
+        });
+      });
+
+      test('positive values should round up', function(done) {
+        range.min = 10;
+        range.max = 100;
+        range.step = 0.25;
+        range.value = 19.34567;
+
+        flush(function() {
+          assert.equal(range.value, 19.25);
+          done();
         });
       });
 

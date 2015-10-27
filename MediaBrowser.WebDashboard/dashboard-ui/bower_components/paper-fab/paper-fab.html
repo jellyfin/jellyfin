@@ -9,13 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/default-theme.html">
 
 <!--
 Material design: [Floating Action Button](https://www.google.com/design/spec/components/buttons-floating-action-button.html)
@@ -59,7 +59,6 @@ Custom property | Description | Default
 <dom-module id="paper-fab">
   <template strip-whitespace>
     <style include="paper-material">
-
       :host {
         display: inline-block;
         position: relative;
@@ -109,9 +108,11 @@ Custom property | Description | Default
         background: var(--paper-fab-keyboard-focus-background, --paper-pink-900);
       }
     </style>
+
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
   </template>
 </dom-module>
+
 <script>
   Polymer({
     is: 'paper-fab',
@@ -161,6 +162,5 @@ Custom property | Description | Default
         reflectToAttribute: true
       }
     }
-
   });
 </script>

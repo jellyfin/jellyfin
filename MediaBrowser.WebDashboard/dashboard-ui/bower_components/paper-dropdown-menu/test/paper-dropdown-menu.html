@@ -133,6 +133,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           expect(dropdownMenu.selectedItem).to.be.equal(null);
         });
       });
+
+      suite('validation', function() {
+        test('a non required dropdown is valid regardless of its selection', function() {
+          var dropdownMenu = fixture('TrivialDropdownMenu');
+          menu = Polymer.dom(dropdownMenu).querySelector('.dropdown-content');
+
+          // no selection.
+          expect(dropdownMenu.validate()).to.be.true;
+          expect(dropdownMenu.invalid).to.be.false;
+          expect(dropdownMenu.value).to.not.be.ok;
+
+          // some selection.
+          menu.selected = 1;
+          expect(dropdownMenu.validate()).to.be.true;
+          expect(dropdownMenu.invalid).to.be.false;
+          expect(dropdownMenu.value).to.be.equal('Bar');
+        });
+
+        test('a required dropdown is invalid without a selection', function() {
+          var dropdownMenu = fixture('TrivialDropdownMenu');
+          dropdownMenu.required = true;
+
+          // no selection.
+          expect(dropdownMenu.validate()).to.be.false;
+          expect(dropdownMenu.invalid).to.be.true;
+          expect(dropdownMenu.value).to.not.be.ok;
+        });
+
+        test('a required dropdown is valid with a selection', function() {
+          var dropdownMenu = fixture('PreselectedDropdownMenu');
+          dropdownMenu.required = true;
+          
+          expect(dropdownMenu.validate()).to.be.true;
+          expect(dropdownMenu.invalid).to.be.false;
+          expect(dropdownMenu.value).to.be.equal('Bar');
+        });
+      });
     });
   </script>
 

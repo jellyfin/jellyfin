@@ -9,9 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
 
 <!--
 Material design: [Radio button](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-radio-button)
@@ -40,6 +40,7 @@ Custom property | Description | Default
 `--paper-radio-button-checked-color` | Radio button color when the input is checked | `--default-primary-color`
 `--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
 `--paper-radio-button-label-color` | Label color | `--primary-text-color`
+`--paper-radio-button-label-spacing` | Spacing between the label and the button | `10px`
 
 @group Paper Elements
 @element paper-radio-button
@@ -68,7 +69,7 @@ Custom property | Description | Default
         vertical-align: middle;
       }
 
-      :host #ink {
+      #ink {
         position: absolute;
         top: -16px;
         left: -16px;
@@ -79,15 +80,21 @@ Custom property | Description | Default
         pointer-events: none;
       }
 
-      :host #ink[checked] {
+      :host-context([dir="rtl"]) #ink {
+        right: -15px;
+        left: auto;
+      }
+
+      #ink[checked] {
         color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
       }
 
-      :host #offRadio {
+      #offRadio {
         position: absolute;
         box-sizing: content-box;
         top: 0px;
         left: 0px;
+        right: 0px;
         width: 12px;
         height: 12px;
         border-radius: 50%;
@@ -97,11 +104,12 @@ Custom property | Description | Default
         transition: border-color 0.28s;
       }
 
-      :host #onRadio {
+      #onRadio {
         position: absolute;
         box-sizing: content-box;
         top: 4px;
         left: 4px;
+        right: 4px;
         width: 8px;
         height: 8px;
         border-radius: 50%;
@@ -125,10 +133,15 @@ Custom property | Description | Default
         position: relative;
         display: inline-block;
         vertical-align: middle;
-        margin-left: 10px;
+        margin-left: var(--paper-radio-button-label-spacing, 10px);
         white-space: normal;
         pointer-events: none;
         color: var(--paper-radio-button-label-color, --primary-text-color);
+      }
+
+      :host-context([dir="rtl"]) #radioLabel {
+        margin-left: 0px;
+        margin-right: var(--paper-radio-button-label-spacing, 10px);
       }
 
       #radioLabel[hidden] {
@@ -162,7 +175,6 @@ Custom property | Description | Default
     </div>
 
     <div id="radioLabel"><content></content></div>
-
   </template>
 
   <script>
@@ -205,5 +217,4 @@ Custom property | Description | Default
       }
     })
   </script>
-
 </dom-module>

@@ -58,6 +58,7 @@ Or, in a Polymer element, you can include a meta in your template:
     // monostate data
     var metaDatas = {};
     var metaArrays = {};
+    var singleton = null;
 
     Polymer.IronMeta = Polymer({
 
@@ -108,6 +109,10 @@ Or, in a Polymer element, you can include a meta in your template:
           notify: true
         }
 
+      },
+
+      hostAttributes: {
+        hidden: true
       },
 
       /**
@@ -203,6 +208,13 @@ Or, in a Polymer element, you can include a meta in your template:
       }
 
     });
+
+    Polymer.IronMeta.getIronMeta = function getIronMeta() {
+       if (singleton === null) {
+         singleton = new Polymer.IronMeta();
+       }
+       return singleton;
+     };
 
     /**
     `iron-meta-query` can be used to access infomation stored in `iron-meta`.
