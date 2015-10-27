@@ -103,7 +103,8 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name
+        [IgnoreDataMember]
+        public virtual string Name
         {
             get
             {
@@ -122,12 +123,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
+        [IgnoreDataMember]
         public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is hd.
         /// </summary>
         /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool? IsHD { get; set; }
 
         /// <summary>
@@ -149,6 +152,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
+        [IgnoreDataMember]
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
@@ -325,12 +329,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the date created.
         /// </summary>
         /// <value>The date created.</value>
+        [IgnoreDataMember]
         public DateTime DateCreated { get; set; }
 
         /// <summary>
         /// Gets or sets the date modified.
         /// </summary>
         /// <value>The date modified.</value>
+        [IgnoreDataMember]
         public DateTime DateModified { get; set; }
 
         public DateTime DateLastSaved { get; set; }
@@ -407,6 +413,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the name of the forced sort.
         /// </summary>
         /// <value>The name of the forced sort.</value>
+        [IgnoreDataMember]
         public string ForcedSortName
         {
             get { return _forcedSortName; }
@@ -493,6 +500,7 @@ namespace MediaBrowser.Controller.Entities
             return sortable;
         }
 
+        [IgnoreDataMember]
         public Guid ParentId { get; set; }
 
         /// <summary>
@@ -559,6 +567,7 @@ namespace MediaBrowser.Controller.Entities
         /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
         /// </summary>
         /// <value>The premiere date.</value>
+        [IgnoreDataMember]
         public DateTime? PremiereDate { get; set; }
 
         /// <summary>
@@ -572,31 +581,35 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the display type of the media.
         /// </summary>
         /// <value>The display type of the media.</value>
+        [IgnoreDataMember]
         public string DisplayMediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
+        [IgnoreDataMember]
         public string OfficialRating { get; set; }
 
         /// <summary>
         /// Gets or sets the official rating description.
         /// </summary>
         /// <value>The official rating description.</value>
+        [IgnoreDataMember]
         public string OfficialRatingDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the custom rating.
         /// </summary>
         /// <value>The custom rating.</value>
-        //[IgnoreDataMember]
+        [IgnoreDataMember]
         public string CustomRating { get; set; }
 
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>
         /// <value>The overview.</value>
+        [IgnoreDataMember]
         public string Overview { get; set; }
 
         /// <summary>
@@ -609,37 +622,42 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the genres.
         /// </summary>
         /// <value>The genres.</value>
+        [IgnoreDataMember]
         public List<string> Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.
         /// </summary>
         /// <value>The home page URL.</value>
+        [IgnoreDataMember]
         public string HomePageUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
         /// <value>The community rating.</value>
-        //[IgnoreDataMember]
+        [IgnoreDataMember]
         public float? CommunityRating { get; set; }
 
         /// <summary>
         /// Gets or sets the community rating vote count.
         /// </summary>
         /// <value>The community rating vote count.</value>
+        [IgnoreDataMember]
         public int? VoteCount { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
         /// <value>The run time ticks.</value>
+        [IgnoreDataMember]
         public long? RunTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the production year.
         /// </summary>
         /// <value>The production year.</value>
+        [IgnoreDataMember]
         public int? ProductionYear { get; set; }
 
         /// <summary>
@@ -647,13 +665,14 @@ namespace MediaBrowser.Controller.Entities
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
-        //[IgnoreDataMember]
+        [IgnoreDataMember]
         public int? IndexNumber { get; set; }
 
         /// <summary>
         /// For an episode this could be the season number, or for a song this could be the disc number.
         /// </summary>
         /// <value>The parent index number.</value>
+        [IgnoreDataMember]
         public int? ParentIndexNumber { get; set; }
 
         [IgnoreDataMember]
@@ -1305,15 +1324,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Adds a person to the item
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public void AddPerson(PersonInfo person)
-        {
         }
 
         /// <summary>

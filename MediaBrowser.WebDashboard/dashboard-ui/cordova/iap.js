@@ -59,44 +59,12 @@
         store.refresh();
     }
 
-    var transactionIds = {};
-
-    function updateOriginalTransactionInfo(transactionId, originalTransactionId) {
-
-        if (!transactionId) {
-            return;
-        }
-        if (!originalTransactionId) {
-            return;
-        }
-        if (transactionId == 'null') {
-            return;
-        }
-        if (originalTransactionId == 'null') {
-            return;
-        }
-
-        transactionIds[transactionId] = originalTransactionId;
-    }
-
     function validateProduct(product, callback) {
 
         // product attributes:
         // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
 
-        if (!product.transaction) {
-            Logger.log('Transaction info missing. Failing validateProduct');
-            return;
-        }
-
-        if (!product.transaction.id) {
-            Logger.log('Transaction id missing. Failing validateProduct');
-            return;
-        }
-
         var productId = product.id;
-        var transactionId = product.transaction.id;
-        transactionId = transactionIds[transactionId] || transactionId;
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
@@ -107,12 +75,12 @@
             type: "Subscription",
             feature: "MBSClubMonthly",
             storeToken: receipt,
-            amt: price,
-            storeId: transactionId
+            amt: price
         };
 
         if (enteredEmail) {
             postData.email = enteredEmail;
+            postData.storeId = enteredEmail;
         }
 
         ApiClient.ajax({
@@ -229,8 +197,7 @@
         getProductInfo: getProduct,
         beginPurchase: beginPurchase,
         restorePurchase: restorePurchase,
-        getSubscriptionOptions: getSubscriptionOptions,
-        updateOriginalTransactionInfo: updateOriginalTransactionInfo
+        getSubscriptionOptions: getSubscriptionOptions
     };
 
     initializeStore();

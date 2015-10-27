@@ -17,8 +17,7 @@
 }
 
 .mediaButton {
-    height: 40px;
-    width: 40px;
+    box-sizing: content-box !important;
 }
 
     .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
@@ -155,10 +154,6 @@
     vertical-align: middle;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
-}
-
-.mediaButton img {
-    height: 24px;
 }
 
 .nowPlayingBarCurrentTime {

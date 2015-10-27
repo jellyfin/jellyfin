@@ -70,30 +70,17 @@
     border-radius: 5px;
 }
 
-.cardOverlayPlayButton {
+.cardOverlayMoreButton, .cardOverlayPlayButton {
     position: absolute;
     bottom: 0;
     right: 0;
     color: #333;
-    width: 20px;
-    height: 20px;
     background-color: rgba(210,210,210,.9);
     border-radius: 500px;
-    padding: 6px;
-    margin: 0 .5em .5em 0;
-}
-
-.cardOverlayMoreButton {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    color: #333;
-    width: 20px;
-    height: 20px;
-    background-color: rgba(210,210,210,.9);
-    border-radius: 500px;
-    padding: 6px;
-    margin: 0 .5em .5em 0;
+    margin: 0 .3em .3em 0;
+    padding: 5px;
+    width: 36px;
+    height: 36px;
 }
 
 .grayscale {
