@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Logging;
 using System;
 using System.Globalization;
-using System.Text;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -17,17 +16,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="duration">The duration.</param>
         public static void LogResponse(ILogger logger, int statusCode, string url, string endPoint, TimeSpan duration)
         {
-            var log = new StringBuilder();
-
-            log.AppendLine(string.Format("Url: {0}", url));
-
-            //log.AppendLine("Headers: " + string.Join(",", response.Headers.AllKeys.Select(k => k + "=" + response.Headers[k])));
-
-            var responseTime = string.Format(". Response time: {0} ms.", duration.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
-
-            var msg = "HTTP Response " + statusCode + " to " + endPoint + responseTime;
-
-            logger.LogMultiline(msg, LogSeverity.Info, log);
+            logger.Info("HTTP Response {0} to {1}. Time: {2}ms. {3}", statusCode, endPoint, Convert.ToInt32(duration.TotalMilliseconds).ToString(CultureInfo.InvariantCulture), url);
         }
     }
 }
