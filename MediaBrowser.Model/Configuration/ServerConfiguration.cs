@@ -63,6 +63,12 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable high quality image scaling].
+        /// </summary>
+        /// <value><c>true</c> if [enable high quality image scaling]; otherwise, <c>false</c>.</value>
+        public bool EnableHighQualityImageScaling { get; set; }
+        
+        /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
         /// <value>The item by name path.</value>
@@ -93,16 +99,16 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [disable startup scan].
-        /// </summary>
-        /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
-        public bool DisableStartupScan { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable user views].
         /// </summary>
         /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
         public bool EnableUserViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [disable startup scan].
+        /// </summary>
+        /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
+        public bool DisableStartupScan { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].

@@ -573,7 +573,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 try
                 {
-                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient, FileSystemManager);
+                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient, FileSystemManager, ServerConfigurationManager);
                 }
                 catch (Exception ex)
                 {

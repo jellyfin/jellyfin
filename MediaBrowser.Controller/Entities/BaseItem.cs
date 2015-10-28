@@ -34,6 +34,7 @@ namespace MediaBrowser.Controller.Entities
     {
         protected BaseItem()
         {
+            Tags = new List<string>();
             Genres = new List<string>();
             Studios = new List<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -625,6 +626,12 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public List<string> Genres { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tags.
+        /// </summary>
+        /// <value>The tags.</value>
+        public List<string> Tags { get; set; }
+        
         /// <summary>
         /// Gets or sets the home page URL.
         /// </summary>
