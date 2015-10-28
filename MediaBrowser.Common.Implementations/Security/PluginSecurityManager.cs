@@ -219,10 +219,6 @@ namespace MediaBrowser.Common.Implementations.Security
                     {
                         SupporterKey = reg.key;
                     }
-                    else
-                    {
-                        throw new PaymentRequiredException();
-                    }
                 }
 
             }
@@ -231,13 +227,13 @@ namespace MediaBrowser.Common.Implementations.Security
                 SaveAppStoreInfo(parameters);
                 throw;
             }
-            catch (PaymentRequiredException)
-            {
-                SaveAppStoreInfo(parameters);
-                throw;
-            }
             catch (Exception e)
             {
+                //Right here we need to examine the response code returned by the http call to mb3admin
+                // that's the part I'm not sure how to do - maybe it is passed in the exception?
+                //If that response code is a 402 then throw our PaymentRequiredException.  There should be no reason to save the data in this case
+                
+                //If it was any other response code, execute the block below
                 _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
                 SaveAppStoreInfo(parameters);
                 //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
