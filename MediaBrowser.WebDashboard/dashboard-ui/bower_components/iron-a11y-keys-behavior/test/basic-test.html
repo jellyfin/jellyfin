@@ -70,6 +70,9 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       _keyHandler: function(event) {
         this.keyCount++;
         this.lastEvent = event;
+      },
+      _preventDefaultHandler: function(event) {
+        event.preventDefault();
       }
     }];
 
@@ -124,7 +127,8 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       ],
 
       keyBindings: {
-        'space': '_keyHandler'
+        'space': '_keyHandler',
+        'enter': '_preventDefaultHandler'
       }
     });
   });
@@ -270,6 +274,21 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       MockInteractions.pressEnter(keys);
 
       expect(keySpy.callCount).to.be.equal(0);
+    });
+  });
+
+  suite('prevent default behavior of event', function() {
+    setup(function() {
+      keys = fixture('BehaviorKeys');
+    });
+    test('defaultPrevented is correctly set', function() {
+      var keySpy = sinon.spy();
+
+      document.addEventListener('keydown', keySpy);
+
+      MockInteractions.pressEnter(keys);
+
+      expect(keySpy.getCall(0).args[0].defaultPrevented).to.be.equal(true);
     });
   });
 

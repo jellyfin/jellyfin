@@ -159,7 +159,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "StartItemId", Description = "Optional. Skip through the list until a given item is found.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string StartItemId { get; set; }
-        
+
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
@@ -273,21 +273,32 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Episode);
+            var minPremiereDate = DateTime.Now.Date.AddDays(-1).ToUniversalTime();
+
+            IEnumerable<BaseItem> items;
+
+            if (string.IsNullOrWhiteSpace(request.ParentId))
+            {
+                items = _libraryManager.GetItems(new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    SortBy = new[] { "PremiereDate", "SortName" },
+                    SortOrder = SortOrder.Ascending,
+                    MinPremiereDate = minPremiereDate
+
+                }, user);
+            }
+            else
+            {
+                items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Episode && (i.PremiereDate ?? DateTime.MinValue) >= minPremiereDate);
+            }
 
             var itemsList = _libraryManager
                 .Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
                 .Cast<Episode>()
                 .ToList();
 
-            var unairedEpisodes = itemsList.Where(i => i.IsUnaired).ToList();
-
-            var minPremiereDate = DateTime.Now.Date.AddDays(-1).ToUniversalTime();
-            var previousEpisodes = itemsList.Where(i => !i.IsUnaired && (i.PremiereDate ?? DateTime.MinValue) >= minPremiereDate).ToList();
-
-            previousEpisodes.AddRange(unairedEpisodes);
-
-            var pagedItems = ApplyPaging(previousEpisodes, request.StartIndex, request.Limit);
+            var pagedItems = ApplyPaging(itemsList, request.StartIndex, request.Limit);
 
             var options = GetDtoOptions(request);
 
@@ -440,7 +451,7 @@ namespace MediaBrowser.Api
                 }
 
                 episodes = season.GetEpisodes(user);
-            } 
+            }
             else if (request.Season.HasValue)
             {
                 var series = _libraryManager.GetItemById(request.Id) as Series;
@@ -495,7 +506,7 @@ namespace MediaBrowser.Api
                 .ToList();
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
-            
+
             var dtoOptions = GetDtoOptions(request);
 
             var dtos = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user)

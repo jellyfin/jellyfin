@@ -157,12 +157,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             AddIfMissing(excludeItemTypes, typeof(CollectionFolder).Name);
             
-            var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
+            var mediaItems = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 NameContains = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                MaxParentalRating = user == null ? null : user.Policy.MaxParentalRating,
                 Limit = (query.Limit.HasValue ? (int?)(query.Limit.Value * 3) : null),
 
             }).Items;

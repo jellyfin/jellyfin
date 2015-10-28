@@ -16,7 +16,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="duration">The duration.</param>
         public static void LogResponse(ILogger logger, int statusCode, string url, string endPoint, TimeSpan duration)
         {
-            logger.Info("HTTP Response {0} to {1}. Time: {2}ms. {3}", statusCode, endPoint, Convert.ToInt32(duration.TotalMilliseconds).ToString(CultureInfo.InvariantCulture), url);
+            var durationMs = duration.TotalMilliseconds;
+            var logSuffix = durationMs >= 1000 ? "ms (slow)" : "ms";
+
+            logger.Info("HTTP Response {0} to {1}. Time: {2}{3}. {4}", statusCode, endPoint, Convert.ToInt32(durationMs).ToString(CultureInfo.InvariantCulture), logSuffix, url);
         }
     }
 }

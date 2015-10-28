@@ -472,7 +472,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 // These are just far too slow. 
                 // TODO: Disable for CollectionFolder
-                if (!(folder is UserRootFolder) && !(folder is UserView))
+                if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is IChannelItem))
                 {
                     SetSpecialCounts(folder, user, dto, fields, syncProgress);
                 }
@@ -1042,7 +1042,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.IsFolder = item.IsFolder;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
-            dto.IsHD = item.IsHD;
+            if (item.IsHD.HasValue && item.IsHD.Value)
+            {
+                dto.IsHD = item.IsHD;
+            }
+            dto.Audio = item.Audio;
 
             dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;

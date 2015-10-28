@@ -7379,10 +7379,14 @@ this.fire('dom-change');
       _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {
         var detail = Object.create(keyCombo);
         detail.keyboardEvent = keyboardEvent;
-
-        this[handlerName].call(this, new CustomEvent(keyCombo.event, {
-          detail: detail
-        }));
+        var event = new CustomEvent(keyCombo.event, {
+          detail: detail,
+          cancelable: true
+        });
+        this[handlerName].call(this, event);
+        if (event.defaultPrevented) {
+          keyboardEvent.preventDefault();
+        }
       }
     };
   })();
@@ -11833,7 +11837,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
-   * @polymerBehavior Polymer.PaperInkyFocusBehaviorImpl
+   * @polymerBehavior Polymer.PaperInkyFocusBehavior
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
 
@@ -17790,16 +17794,27 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       .input-content.label-is-floating ::content .paper-input-label {
         -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
-        -webkit-transform-origin: left top;
-        transform-origin: left top;
         -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
+
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
 
         /* Since we scale to 75/100 of the size, we actually have 100/75 of the
         original space now available */
         width: 133%;
 
         @apply(--paper-transition-easing);
+      }
+
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
+      :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
+        /* TODO(noms): Figure out why leaving the width at 133% before the animation
+         * actually makes
+         * it wider on the right side, not left side, as you would expect in RTL */
+        width: 100%;
+        -webkit-transform-origin: right top;
+        transform-origin: right top;
       }
 
       .input-content.label-is-highlighted ::content label,
@@ -17832,6 +17847,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
         border: none;
         color: var(--paper-input-container-input-color, --primary-text-color);
         -webkit-appearance: none;
+        text-align: inherit;
 
         @apply(--paper-font-subhead);
         @apply(--paper-input-container-input);
@@ -17856,6 +17872,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
         resize: none;
       }
 
+      .add-on-content {
+        position: relative;
+      }
+
       .add-on-content.is-invalid ::content * {
         color: var(--paper-input-container-invalid-color, --google-red-500);
       }
@@ -17871,7 +17891,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
       <content select="[prefix]" id="prefix"></content>
-      <div class="label-and-input-container">
+
+      <div class="label-and-input-container" id="labelAndInputContainer">
         <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
       </div>
       <content select="[suffix]"></content>
@@ -18034,6 +18055,21 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       } else {
         this._handleValue(this._inputElement);
       }
+
+      this._numberOfPrefixNodes = 0;
+      this._prefixObserver = Polymer.dom(this.$.prefix).observeNodes(
+          function(mutations) {
+            // Keep track whether there's at least one prefix node, since it
+            // affects laying out the floating label.
+            this._numberOfPrefixNodes += mutations.addedNodes.length -
+                mutations.removedNodes.length;
+          }.bind(this));
+    },
+
+    detached: function() {
+      if (this._prefixObserver) {
+        Polymer.dom(this.$.prefix).unobserveNodes(this._prefixObserver);
+      }
     },
 
     _onAddonAttached: function(event) {
@@ -18130,16 +18166,15 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
           } else if (focused) {
             cls += " label-is-highlighted";
           }
-          // The label might have a horizontal offset if a prefix element exists
+          // If a prefix element exists, the label has a horizontal offset
           // which needs to be undone when displayed as a floating label.
-          if (Polymer.dom(this.$.prefix).getDistributedNodes().length > 0 &&
-              label && label.offsetParent) {
-            label.style.left = -label.offsetParent.offsetLeft + 'px';
+          if (this._numberOfPrefixNodes > 0) {
+            this.$.labelAndInputContainer.style.position = 'static';
           }
         } else {
           // When the label is not floating, it should overlap the input element.
           if (label) {
-            label.style.left = 0;
+            this.$.labelAndInputContainer.style.position = 'relative';
           }
         }
       } else {
@@ -18184,6 +18219,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
         @apply(--paper-font-caption);
         @apply(--paper-input-error);
         position: absolute;
+        left:0;
+        right:0;
       }
 
       :host([invalid]) {
@@ -18192,7 +18229,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     </style>
 
     <content></content>
-    
+
   </template>
 </dom-module>
 
@@ -18230,6 +18267,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
         @apply(--paper-font-caption);
         @apply(--paper-input-char-counter);
+      }
+
+      :host-context([dir="rtl"]) {
+        float: left;
       }
     </style>
 
@@ -19089,6 +19130,10 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       word-wrap: break-word;
     }
 
+    .fit {
+      @apply(--layout-fit);
+    }
+
     textarea {
       position: relative;
       outline: none;
@@ -19102,6 +19147,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       font-size: inherit;
       font-family: inherit;
       line-height: inherit;
+      text-align: inherit;
       @apply(--iron-autogrow-textarea);
     }
 
@@ -19111,6 +19157,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
   </style>
   <template>
+    
     
     <div id="mirror" class="mirror-text" aria-hidden="true">&nbsp;</div>
 
@@ -19137,6 +19184,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       /**
        * Use this property instead of `value` for two-way data binding.
+       *
+       * @type {string|number|undefined|null}
        */
       bindValue: {
         observer: '_bindValueChanged',
@@ -19340,7 +19389,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       while (this.rows > 0 && _tokens.length < this.rows) {
         _tokens.push('');
       }
-      return _tokens.join('<br>') + '&nbsp;';
+      // Use &#160; instead &nbsp; of to allow this element to be used in XHTML.
+      return _tokens.join('<br/>') + '&#160;';
     },
 
     _valueForMirror: function() {

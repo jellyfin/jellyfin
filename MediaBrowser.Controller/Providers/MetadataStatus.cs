@@ -40,21 +40,7 @@ namespace MediaBrowser.Controller.Providers
         /// <value>The date last images refresh.</value>
         public DateTime? DateLastImagesRefresh { get; set; }
 
-        /// <summary>
-        /// Gets or sets the last result error message.
-        /// </summary>
-        /// <value>The last result error message.</value>
-        public string LastErrorMessage { get; set; }
-
         public DateTime? ItemDateModified { get; set; }
-
-        public void AddStatus(string errorMessage)
-        {
-            if (string.IsNullOrEmpty(LastErrorMessage))
-            {
-                LastErrorMessage = errorMessage;
-            }
-        }
 
         public bool IsDirty { get; private set; }
 

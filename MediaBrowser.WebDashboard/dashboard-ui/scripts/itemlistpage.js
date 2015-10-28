@@ -75,7 +75,7 @@
                 currentLayout: view,
                 viewIcon: 'filter-list',
                 sortButton: true,
-                layouts: 'Poster,PosterCard'
+                layouts: 'Poster,PosterCard,Thumb'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;

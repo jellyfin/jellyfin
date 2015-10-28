@@ -40,6 +40,10 @@ Custom property | Description | Default
         @apply(--paper-font-caption);
         @apply(--paper-input-char-counter);
       }
+
+      :host-context([dir="rtl"]) {
+        float: left;
+      }
     </style>
 
     <span>[[_charCounterStr]]</span>

@@ -36,7 +36,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsLive { get; set; }
         [IgnoreDataMember]
         public bool IsPremiere { get; set; }
-        public ProgramAudio? Audio { get; set; }
 
         /// <summary>
         /// Gets the user data key.

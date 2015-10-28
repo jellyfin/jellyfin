@@ -99,7 +99,6 @@ namespace MediaBrowser.Providers.Manager
 
             var updateType = ItemUpdateType.None;
             var refreshResult = GetLastResult(item);
-            refreshResult.LastErrorMessage = string.Empty;
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
@@ -119,7 +118,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 localImagesFailed = true;
                 Logger.ErrorException("Error validating images for {0}", ex, item.Path ?? item.Name ?? "Unknown name");
-                refreshResult.AddStatus(ex.Message);
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -150,7 +148,6 @@ namespace MediaBrowser.Providers.Manager
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    refreshResult.AddStatus(result.ErrorMessage);
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
@@ -172,7 +169,6 @@ namespace MediaBrowser.Providers.Manager
                     var result = await itemImageProvider.RefreshImages(itemOfType, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    refreshResult.AddStatus(result.ErrorMessage);
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
@@ -231,22 +227,32 @@ namespace MediaBrowser.Providers.Manager
 
         private DateTime GetLastRefreshDate(IHasMetadata item)
         {
-            if (item.DateLastRefreshed != default(DateTime))
-            {
-                return item.DateLastRefreshed;
-            }
-
-            if (ServerConfigurationManager.Configuration.EnableDateLastRefresh)
-            {
-                return item.DateLastRefreshed;
-            }
-
-            if (item is BoxSet || (item is IItemByName && !(item is MusicArtist)))
+            if (EnableDateLastRefreshed(item))
             {
                 return item.DateLastRefreshed;
             }
 
             return item.DateLastSaved;
+        }
+
+        private bool EnableDateLastRefreshed(IHasMetadata item)
+        {
+            if (ServerConfigurationManager.Configuration.EnableDateLastRefresh)
+            {
+                return true;
+            }
+
+            if (item.DateLastRefreshed != default(DateTime))
+            {
+                return true;
+            }
+
+            if (item is BoxSet || (item is IItemByName && !(item is MusicArtist)))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)

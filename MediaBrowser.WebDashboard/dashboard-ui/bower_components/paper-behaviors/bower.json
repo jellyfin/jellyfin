@@ -1,12 +1,13 @@
 {
   "name": "paper-behaviors",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
   ],
   "main": [
     "paper-button-behavior.html",
+    "paper-checked-element-behavior.html",
     "paper-inky-focus-behavior.html"
   ],
   "keywords": [

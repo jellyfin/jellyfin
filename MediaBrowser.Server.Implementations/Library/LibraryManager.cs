@@ -1280,6 +1280,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
+        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, User user)
+        {
+            return GetItemIds(query).Select(GetItemById).Where(i => i.IsVisibleStandalone(user));
+        }
+
         /// <summary>
         /// Gets the intros.
         /// </summary>
@@ -1811,14 +1816,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            if (!item.UserId.HasValue)
+            if (!item.UserId.HasValue || !string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
                 item.UserId = user.Id;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
-            {
                 item.ViewType = viewType;
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }

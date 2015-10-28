@@ -73,7 +73,6 @@
             application: "com.emby.mobile",
             product: productId,
             type: "Subscription",
-            feature: "MBSClubMonthly",
             storeToken: receipt,
             amt: price
         };
@@ -81,6 +80,7 @@
         if (enteredEmail) {
             postData.email = enteredEmail;
             postData.storeId = enteredEmail;
+            postData.feature = "MBSClubMonthly";
         }
 
         ApiClient.ajax({
@@ -98,7 +98,22 @@
         }).fail(function (e) {
 
             alert('validate fail');
-            callback(false, product);
+
+            if (e.status == 402) {
+                callback(false, {
+                    code: store.PURCHASE_EXPIRED,
+                    error: {
+                        message: "Subscription Expired"
+                    }
+                });
+            } else {
+                callback(false, {
+                    code: store.CONNECTION_FAILED,
+                    error: {
+                        message: "Connection Failure"
+                    }
+                });
+            }
         });
     }
 
@@ -124,6 +139,7 @@
 
         if (requiresVerification) {
             store.when(id).verified(function (p) {
+                alert('verified');
                 updateProductInfo(p);
                 p.finish();
             });
@@ -136,7 +152,7 @@
             if (product.loaded && product.valid && product.state == store.APPROVED) {
                 Logger.log('finishing previously created transaction');
                 if (requiresVerification) {
-                    product.verify();
+                    //product.verify();
                 } else {
                     product.finish();
                 }

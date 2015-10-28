@@ -75,6 +75,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] Tags { get; set; }
         public string[] OfficialRatings { get; set; }
 
+        public DateTime? MinPremiereDate { get; set; }
         public DateTime? MinStartDate { get; set; }
         public DateTime? MaxStartDate { get; set; }
         public DateTime? MinEndDate { get; set; }
@@ -120,6 +121,16 @@ namespace MediaBrowser.Controller.Entities
             PersonIds = new string[] { };
             ChannelIds = new string[] { };
             ItemIds = new string[] { };
+        }
+
+        public InternalItemsQuery(User user)
+            : this()
+        {
+            if (user != null)
+            {
+                var policy = user.Policy;
+                MaxParentalRating = policy.MaxParentalRating;
+            }
         }
     }
 }

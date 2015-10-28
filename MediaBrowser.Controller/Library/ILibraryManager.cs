@@ -543,5 +543,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task.</returns>
         Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex);
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>List&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> GetItems(InternalItemsQuery query, User user);
     }
 }
