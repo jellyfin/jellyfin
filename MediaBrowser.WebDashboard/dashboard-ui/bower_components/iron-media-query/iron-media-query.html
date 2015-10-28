@@ -49,6 +49,15 @@ Example:
         type: String,
         observer: 'queryChanged'
       },
+
+      /**
+       * If true, the query attribute is assumed to be a complete media query
+       * string rather than a single media feature.
+       */
+      full: {
+        type: Boolean,
+        value: false
+      },
       
       /**
        * @type {function(MediaQueryList)}
@@ -94,7 +103,7 @@ Example:
       if (!query) {
         return;
       }
-      if (query[0] !== '(') {
+      if (!this.full && query[0] !== '(') {
         query = '(' + query + ')';
       }
       this._mq = window.matchMedia(query);

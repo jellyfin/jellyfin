@@ -514,13 +514,13 @@ var Dashboard = {
         } else {
 
             // IE renders it incorrectly
-            if (!$.browser.msie && !$.browser.edge) {
+            //if (!$.browser.msie && !$.browser.edge) {
                 elem = document.createElement("paper-spinner");
                 elem.classList.add('docspinner');
 
                 document.body.appendChild(elem);
                 elem.active = true;
-            }
+            //}
         }
     },
 

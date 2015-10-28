@@ -97,9 +97,9 @@
 
         }).fail(function (e) {
 
-            alert('validate fail');
-
             if (e.status == 402) {
+                alert('validate fail - expired');
+
                 callback(false, {
                     code: store.PURCHASE_EXPIRED,
                     error: {
@@ -107,6 +107,8 @@
                     }
                 });
             } else {
+                alert('validate fail - other');
+
                 callback(false, {
                     code: store.CONNECTION_FAILED,
                     error: {

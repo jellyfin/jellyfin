@@ -70,17 +70,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
 
-      test('items', function() {
+      test('items', function(done) {
         test1._excludedLocalNames.span = 1;
         test2._excludedLocalNames.div = 1;
+        test1._updateItems();
+        test2._updateItems();
 
+        Polymer.Base.async(function() {
           var NOT_FOUND = -1;
           var items1 = test1.items.map(function(el) { return el.localName; });
           var items2 = test2.items.map(function(el) { return el.localName; });
 
           assert.equal(items1.indexOf('span'), NOT_FOUND);
           assert.equal(items2.indexOf('div'), NOT_FOUND);
+          done();
         });
+      });
 
     });
 

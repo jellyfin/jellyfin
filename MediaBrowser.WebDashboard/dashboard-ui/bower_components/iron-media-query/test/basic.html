@@ -66,6 +66,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(mq.queryMatches, true);
           });
 
+          suite('`full` attribute', function() {
+            test('media features without wrapping parentheses no longer match', function() {
+              mq.full = true;
+              mq.query = 'min-width: 1px';
+              assert.equal(mq.queryMatches, false);
+            });
+
+            test('media queries with both types and features match', function() {
+              mq.full = true;
+              mq.query = 'all and (min-width: 1px)';
+              assert.equal(mq.queryMatches, true);
+            });
+          });
+
           suite('query does not activate on empty string or null', function() {
 
             test('empty string', function() {

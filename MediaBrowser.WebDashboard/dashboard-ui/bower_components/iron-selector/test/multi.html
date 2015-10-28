@@ -66,6 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       setup(function () {
         s = fixture('test');
+        t = Polymer.dom(s).querySelector('[is="dom-repeat"]');
       });
 
       test('honors the multi attribute', function() {
@@ -161,6 +162,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(s.selectedItems[0].textContent, 'foo');
           done();
         });
+      });
+
+      test('updates selection when dom changes', function(done) {
+        var selectEventCounter = 0;
+
+        s = fixture('test');
+
+        Polymer.Base.async(function() {
+          var firstChild = Polymer.dom(s).querySelector(':first-child');
+          var lastChild = Polymer.dom(s).querySelector(':last-child');
+
+          MockInteractions.tap(firstChild);
+          MockInteractions.tap(lastChild);
+
+          expect(s.selectedItems.length).to.be.equal(2);
+
+          Polymer.dom(s).removeChild(lastChild);
+
+          Polymer.Base.async(function() {
+            expect(s.selectedItems.length).to.be.equal(1);
+            done();
+          });
+        });
+
       });
 
       /* test('toggle multi from true to false', function() {

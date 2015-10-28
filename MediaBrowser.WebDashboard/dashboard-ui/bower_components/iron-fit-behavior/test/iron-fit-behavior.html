@@ -149,6 +149,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="offscreen-container">
+      <template>
+        <div style="position: fixed; top: -1px; left: 0;">
+          <test-fit auto-fit-on-attach class="el sized-x">
+            <div>
+              Sized (x), auto center/center, container is offscreen
+            </div>
+          </test-fit>
+        </div>
+      </template>
+    </test-fixture>
+
     <template id="ipsum">
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </template>
@@ -225,6 +237,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('scrolling element is constrained to viewport height', function() {
           var el = fixture('sized-x');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+        test('scrolling element with offscreen container is constrained to viewport height', function() {
+          var container = fixture('offscreen-container');
+          var el = Polymer.dom(container).querySelector('.el')
           makeScrolling(el);
           el.refit();
           var rect = el.getBoundingClientRect();
