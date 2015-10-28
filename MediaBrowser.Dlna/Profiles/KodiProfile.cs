@@ -90,6 +90,20 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Format = "sub",
                     Method = SubtitleDeliveryMethod.External,
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
                 }
             };
         }
