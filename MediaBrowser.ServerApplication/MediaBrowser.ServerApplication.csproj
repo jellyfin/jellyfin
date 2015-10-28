@@ -64,8 +64,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
     </Reference>
-    <Reference Include="ImageMagickSharp">
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.16\lib\net45\ImageMagickSharp.dll</HintPath>
+    <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ImageMagickSharp.1.0.0.17\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="MediaBrowser.IsoMounter">
       <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>

@@ -17,18 +17,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
         public string SeriesName { get; set; }
-
-        public Book()
-        {
-            Tags = new List<string>();
-        }
 
         public override bool CanDownload()
         {

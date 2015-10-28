@@ -201,7 +201,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "DateLastSaved", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsInMixedFolder", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "LockedFields", "Text");
-            
+            _connection.AddColumn(_logger, "TypedBaseItems", "Studios", "Text");
+  
             PrepareStatements();
 
             new MediaStreamColumns(_connection, _logger).AddColumns();
@@ -401,7 +402,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateLastRefreshed",
                 "DateLastSaved",
                 "IsInMixedFolder",
-                "LockedFields"
+                "LockedFields",
+                "Studios"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -633,7 +635,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
                     _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
-                    
+                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();

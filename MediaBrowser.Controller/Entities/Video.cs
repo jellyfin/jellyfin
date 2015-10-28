@@ -186,12 +186,6 @@ namespace MediaBrowser.Controller.Entities
         public string ShortcutPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
-        /// <summary>
         /// Gets or sets the video bit rate.
         /// </summary>
         /// <value>The video bit rate.</value>

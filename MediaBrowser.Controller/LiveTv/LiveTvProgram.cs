@@ -50,6 +50,12 @@ namespace MediaBrowser.Controller.LiveTv
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        public string ServiceName { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is repeat.
         /// </summary>
         /// <value><c>true</c> if this instance is repeat; otherwise, <c>false</c>.</value>
@@ -62,12 +68,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The episode title.</value>
         [IgnoreDataMember]
         public string EpisodeTitle { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the service.
-        /// </summary>
-        /// <value>The name of the service.</value>
-        public string ServiceName { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is movie.

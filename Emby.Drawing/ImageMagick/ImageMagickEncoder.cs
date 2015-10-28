@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -18,13 +19,15 @@ namespace Emby.Drawing.ImageMagick
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
 
-        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
+        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _config = config;
 
             LogVersion();
         }
@@ -137,11 +140,12 @@ namespace Emby.Drawing.ImageMagick
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {
-                    originalImage.CurrentImage.ResizeImage(width, height);
+                    ScaleImage(originalImage, width, height);
 
                     DrawIndicator(originalImage, width, height, options);
 
                     originalImage.CurrentImage.CompressionQuality = quality;
+                    originalImage.CurrentImage.StripImage();
 
                     originalImage.SaveImage(outputPath);
                 }
@@ -152,18 +156,31 @@ namespace Emby.Drawing.ImageMagick
                 {
                     using (var originalImage = new MagickWand(inputPath))
                     {
-                        originalImage.CurrentImage.ResizeImage(width, height);
+                        ScaleImage(originalImage, width, height);
 
                         wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
                         DrawIndicator(wand, width, height, options);
 
                         wand.CurrentImage.CompressionQuality = quality;
+                        wand.CurrentImage.StripImage();
 
                         wand.SaveImage(outputPath);
                     }
                 }
             }
             SaveDelay();
+        }
+
+        private void ScaleImage(MagickWand wand, int width, int height)
+        {
+            if (_config.Configuration.EnableHighQualityImageScaling)
+            {
+                wand.CurrentImage.ResizeImage(width, height);
+            }
+            else
+            {
+                wand.CurrentImage.ScaleImage(width, height);
+            }
         }
 
         /// <summary>

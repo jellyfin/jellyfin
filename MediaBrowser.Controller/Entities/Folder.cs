@@ -28,7 +28,6 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        public List<string> Tags { get; set; }
 
         public Folder()
         {
@@ -36,7 +35,6 @@ namespace MediaBrowser.Controller.Entities
 
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            Tags = new List<string>();
         }
 
         [IgnoreDataMember]
