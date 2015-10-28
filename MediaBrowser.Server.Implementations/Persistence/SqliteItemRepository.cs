@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -76,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteStreamsCommand;
         private IDbCommand _saveStreamCommand;
 
-        private const int LatestSchemaVersion = 16;
+        private const int LatestSchemaVersion = 17;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -202,7 +203,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsInMixedFolder", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "LockedFields", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "Studios", "Text");
-  
+            _connection.AddColumn(_logger, "TypedBaseItems", "Audio", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalServiceId", "Text");
+
             PrepareStatements();
 
             new MediaStreamColumns(_connection, _logger).AddColumns();
@@ -311,7 +314,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "DateCreated",
             "DateModified",
             "guid",
-            "Genres"
+            "Genres",
+            "ParentId",
+            "Audio",
+            "ExternalServiceId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -403,7 +409,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateLastSaved",
                 "IsInMixedFolder",
                 "LockedFields",
-                "Studios"
+                "Studios",
+                "Audio",
+                "ExternalServiceId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -636,6 +644,25 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
+
+                    if (item.Audio.HasValue)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.Audio.Value.ToString();
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    var tvItem = item as ILiveTvItem;
+                    if (tvItem != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = tvItem.ServiceName;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -938,6 +965,25 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(40))
             {
                 item.Genres = reader.GetString(40).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+
+            if (!reader.IsDBNull(41))
+            {
+                item.ParentId = reader.GetGuid(41);
+            }
+
+            if (!reader.IsDBNull(42))
+            {
+                item.Audio = (ProgramAudio)Enum.Parse(typeof(ProgramAudio), reader.GetString(42), true);
+            }
+
+            if (!reader.IsDBNull(43))
+            {
+                var tvItem = item as ILiveTvItem;
+                if (tvItem != null)
+                {
+                    item.ForcedSortName = reader.GetString(43);
+                }
             }
 
             return item;
@@ -1666,6 +1712,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("StartDate>=@MinStartDate");
                 cmd.Parameters.Add(cmd, "@MinStartDate", DbType.Date).Value = query.MinStartDate.Value;
+            }
+
+            if (query.MinPremiereDate.HasValue)
+            {
+                whereClauses.Add("PremiereDate>=@MinPremiereDate");
+                cmd.Parameters.Add(cmd, "@MinPremiereDate", DbType.Date).Value = query.MinPremiereDate.Value;
             }
 
             if (query.MaxStartDate.HasValue)

@@ -36,8 +36,22 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
-            var items = GetAllLibraryItems(user, parentIds, i => i is Series)
-                .Cast<Series>();
+            IEnumerable<Series> items;
+
+            if (parentIds.Length == 0)
+            {
+                items = _libraryManager.GetItems(new InternalItemsQuery(user)
+               {
+                   IncludeItemTypes = new[] { typeof(Series).Name },
+                   SortOrder = SortOrder.Ascending
+
+               }, user).Cast<Series>();
+            }
+            else
+            {
+                items = GetAllLibraryItems(user, parentIds, i => i is Series)
+                   .Cast<Series>();
+            }
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -64,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds, Func<BaseItem,bool> filter)
+        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds, Func<BaseItem, bool> filter)
         {
             if (parentIds.Length > 0)
             {

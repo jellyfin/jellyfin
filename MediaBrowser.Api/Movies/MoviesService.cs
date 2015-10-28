@@ -379,9 +379,10 @@ namespace MediaBrowser.Api.Movies
         {
             foreach (var name in names)
             {
-                var itemsWithActor = _libraryManager.GetItemIds(new InternalItemsQuery
+                var itemsWithActor = _libraryManager.GetItemIds(new InternalItemsQuery(user)
                 {
                     Person = name
+
                 });
 
                 var items = allMovies

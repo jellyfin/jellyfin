@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -135,6 +136,13 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsHD { get; set; }
 
         /// <summary>
+        /// Gets or sets the audio.
+        /// </summary>
+        /// <value>The audio.</value>
+        [IgnoreDataMember]
+        public ProgramAudio? Audio { get; set; }
+
+        /// <summary>
         /// Return the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
@@ -178,7 +186,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Id of the program.
+        /// If this content came from an external service, the id of the content on that service
         /// </summary>
         [IgnoreDataMember]
         public string ExternalId

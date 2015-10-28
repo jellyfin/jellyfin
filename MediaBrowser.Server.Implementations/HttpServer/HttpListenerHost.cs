@@ -92,7 +92,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (FileNotFoundException), 404},
                 {typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
-                {typeof (UnauthorizedAccessException), 500}
+                {typeof (PaymentRequiredException), 402},
+                {typeof (UnauthorizedAccessException), 500},
+                {typeof (ApplicationException), 500}
             };
 
             HostConfig.Instance.DebugMode = true;

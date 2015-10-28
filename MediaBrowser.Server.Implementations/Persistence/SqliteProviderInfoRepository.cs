@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, ItemType TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, LastErrorMessage TEXT, ItemDateModified DateTimeNull)",
+                                "create table if not exists MetadataStatus (ItemId GUID PRIMARY KEY, ItemName TEXT, ItemType TEXT, SeriesName TEXT, DateLastMetadataRefresh datetime, DateLastImagesRefresh datetime, ItemDateModified DateTimeNull)",
                                 "create index if not exists idx_MetadataStatus on MetadataStatus(ItemId)",
 
                                 //pragmas
@@ -71,7 +71,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeriesName",
             "DateLastMetadataRefresh",
             "DateLastImagesRefresh",
-            "LastErrorMessage",
             "ItemDateModified"
         };
 
@@ -185,12 +184,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(6))
             {
-                result.LastErrorMessage = reader.GetString(6);
-            }
-
-            if (!reader.IsDBNull(7))
-            {
-                result.ItemDateModified = reader.GetDateTime(7).ToUniversalTime();
+                result.ItemDateModified = reader.GetDateTime(6).ToUniversalTime();
             }
 
             return result;
@@ -219,8 +213,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveStatusCommand.GetParameter(3).Value = status.SeriesName;
                 _saveStatusCommand.GetParameter(4).Value = status.DateLastMetadataRefresh;
                 _saveStatusCommand.GetParameter(5).Value = status.DateLastImagesRefresh;
-                _saveStatusCommand.GetParameter(6).Value = status.LastErrorMessage;
-                _saveStatusCommand.GetParameter(7).Value = status.ItemDateModified;
+                _saveStatusCommand.GetParameter(6).Value = status.ItemDateModified;
 
                 _saveStatusCommand.Transaction = transaction;
 

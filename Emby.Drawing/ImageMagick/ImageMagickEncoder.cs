@@ -136,6 +136,9 @@ namespace Emby.Drawing.ImageMagick
 
         public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options)
         {
+            // Even if the caller specified 100, don't use it because it takes forever
+            quality = Math.Min(quality, 99);
+
             if (string.IsNullOrWhiteSpace(options.BackgroundColor) || !HasTransparency(inputPath))
             {
                 using (var originalImage = new MagickWand(inputPath))

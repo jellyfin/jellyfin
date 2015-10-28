@@ -248,6 +248,7 @@
     <Compile Include="Net\IWebSocketConnection.cs" />
     <Compile Include="Net\IWebSocketListener.cs" />
     <Compile Include="Net\LoggedAttribute.cs" />
+    <Compile Include="Net\PaymentRequiredException.cs" />
     <Compile Include="Net\SecurityException.cs" />
     <Compile Include="Net\ServiceStackServiceRequest.cs" />
     <Compile Include="Net\StaticResultOptions.cs" />

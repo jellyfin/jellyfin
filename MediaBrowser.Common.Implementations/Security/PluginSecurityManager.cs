@@ -219,10 +219,19 @@ namespace MediaBrowser.Common.Implementations.Security
                     {
                         SupporterKey = reg.key;
                     }
+                    else
+                    {
+                        throw new PaymentRequiredException();
+                    }
                 }
 
             }
             catch (ApplicationException)
+            {
+                SaveAppStoreInfo(parameters);
+                throw;
+            }
+            catch (PaymentRequiredException)
             {
                 SaveAppStoreInfo(parameters);
                 throw;
