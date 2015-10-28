@@ -214,12 +214,11 @@ namespace Emby.Drawing
                 dateModified = tuple.Item2;
             }
 
-            var originalImageSize = GetImageSize(originalImagePath, dateModified, true);
+            var newSizeInfo = GetNewImageSize(originalImagePath, dateModified, options);
+            var newSize = newSizeInfo.Item1;
+            var isSizeChanged = newSizeInfo.Item2;
 
-            // Determine the output size based on incoming parameters
-            var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
-
-            if (options.HasDefaultOptionsWithoutSize(originalImagePath) && newSize.Equals(originalImageSize) && options.Enhancers.Count == 0)
+            if (options.HasDefaultOptionsWithoutSize(originalImagePath) && !isSizeChanged && options.Enhancers.Count == 0)
             {
                 // Just spit out the original file if the new size equals the old
                 return originalImagePath;
@@ -265,6 +264,71 @@ namespace Emby.Drawing
             }
 
             return cacheFilePath;
+        }
+
+        private Tuple<ImageSize, bool> GetNewImageSize(string originalImagePath, DateTime dateModified, ImageProcessingOptions options)
+        {
+            try
+            {
+                var originalImageSize = GetImageSize(originalImagePath, dateModified, true);
+
+                // Determine the output size based on incoming parameters
+                var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
+
+                return new Tuple<ImageSize, bool>(newSize, !newSize.Equals(originalImageSize));
+            }
+            catch
+            {
+                return new Tuple<ImageSize, bool>(GetSizeEstimage(options), true);
+            }
+        }
+
+        private ImageSize GetSizeEstimage(ImageProcessingOptions options)
+        {
+            if (options.Width.HasValue && options.Height.HasValue)
+            {
+                return new ImageSize(options.Width.Value, options.Height.Value);
+            }
+
+            var aspect = GetEstimatedAspectRatio(options.Image.Type);
+
+            var width = options.Width ?? options.MaxWidth;
+
+            if (width.HasValue)
+            {
+                var heightValue = aspect / width.Value;
+                return new ImageSize(width.Value, Convert.ToInt32(heightValue));
+            }
+
+            var height = options.Height ?? options.MaxHeight ?? 200;
+            var widthValue = aspect * height;
+            return new ImageSize(Convert.ToInt32(widthValue), height);
+        }
+
+        private double GetEstimatedAspectRatio(ImageType type)
+        {
+            switch (type)
+            {
+                case ImageType.Art:
+                case ImageType.Backdrop:
+                case ImageType.Chapter:
+                case ImageType.Screenshot:
+                case ImageType.Thumb:
+                    return 1.78;
+                case ImageType.Banner:
+                    return 5.4;
+                case ImageType.Box:
+                case ImageType.BoxRear:
+                case ImageType.Disc:
+                case ImageType.Menu:
+                    return 1;
+                case ImageType.Logo:
+                    return 2.58;
+                case ImageType.Primary:
+                    return .667;
+                default:
+                    return 1;
+            }
         }
 
         private ImageFormat GetOutputFormat(ImageFormat requestedFormat)
