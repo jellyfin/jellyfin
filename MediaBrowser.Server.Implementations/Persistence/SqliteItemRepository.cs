@@ -225,45 +225,63 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private void MigrateMediaStreams(string file)
         {
-            var backupFile = file + ".bak";
-            File.Copy(file, backupFile, true);
-            SqliteExtensions.Attach(_connection, backupFile, "MediaInfoOld");
+            try
+            {
+                var backupFile = file + ".bak";
+                File.Copy(file, backupFile, true);
+                SqliteExtensions.Attach(_connection, backupFile, "MediaInfoOld");
 
-            var columns = string.Join(",", _mediaStreamSaveColumns);
+                var columns = string.Join(",", _mediaStreamSaveColumns);
 
-            string[] queries = {
+                string[] queries = {
                                 "REPLACE INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
                                };
 
-            try
-            {
                 _connection.RunQueries(queries, _logger);
-                File.Delete(file);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error migrating media info database", ex);
             }
+            finally
+            {
+                TryDeleteFile(file);
+            }
         }
 
         private void MigrateChapters(string file)
         {
-            var backupFile = file + ".bak";
-            File.Copy(file, backupFile, true);
-            SqliteExtensions.Attach(_connection, backupFile, "ChaptersOld");
+            try
+            {
+                var backupFile = file + ".bak";
+                File.Copy(file, backupFile, true);
+                SqliteExtensions.Attach(_connection, backupFile, "ChaptersOld");
 
-            string[] queries = {
+                string[] queries = {
                                 "REPLACE INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
                                };
 
-            try
-            {
                 _connection.RunQueries(queries, _logger);
-                File.Delete(file);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error migrating chapter database", ex);
+            }
+            finally
+            {
+                TryDeleteFile(file);
+            }
+        }
+
+        private void TryDeleteFile(string file)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error deleting file {0}", ex, file);
             }
         }
 
