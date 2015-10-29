@@ -257,11 +257,11 @@
 
     function onProductUpdated(e, product) {
 
-        var deferred = currentDisplayingDeferred;
+        if (product.owned) {
 
-        if (deferred && product.owned) {
+            var deferred = currentDisplayingDeferred;
 
-            if (currentDisplayingProductInfos.filter(function (p) {
+            if (deferred && currentDisplayingProductInfos.filter(function (p) {
 
                 return product.id == p.id;
 

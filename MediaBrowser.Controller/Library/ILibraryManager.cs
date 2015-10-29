@@ -560,6 +560,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="parentIds">The parent ids.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, User user, IEnumerable<string> parentIds);
+        QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds);
     }
 }

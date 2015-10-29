@@ -140,7 +140,7 @@
 
         if (requiresVerification) {
             store.when(id).verified(function (p) {
-                alert('verified');
+                //alert('verified');
                 updateProductInfo(p);
                 p.finish();
             });
@@ -154,6 +154,9 @@
                 Logger.log('finishing previously created transaction');
                 if (requiresVerification) {
                     //product.verify();
+                    if (product.owned) {
+                        alert('sub owned!');
+                    }
                 } else {
                     product.finish();
                 }
@@ -201,6 +204,7 @@
 
         }).map(function (o) {
 
+            o.id = getStoreFeatureId(o.feature);
             o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
             return o;
         });

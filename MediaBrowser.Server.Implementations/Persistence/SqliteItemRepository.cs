@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
-        private const int LatestSchemaVersion = 18;
+        private const int LatestSchemaVersion = 19;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -213,6 +213,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "Audio", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalServiceId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "Tags", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsFolder", "BIT");
 
             PrepareStatements();
 
@@ -438,7 +439,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Studios",
                 "Audio",
                 "ExternalServiceId",
-                "Tags"
+                "Tags",
+                "IsFolder"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -702,7 +704,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Tags.ToArray());
-                    
+                    _saveItemCommand.GetParameter(index++).Value = item.IsFolder;
+           
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1576,7 +1579,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 _logger.Debug(cmd.CommandText);
 
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
                     while (reader.Read())
                     {
@@ -1760,6 +1763,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("IsSports=@IsSports");
                 cmd.Parameters.Add(cmd, "@IsSports", DbType.Boolean).Value = query.IsSports;
             }
+            if (query.IsFolder.HasValue)
+            {
+                whereClauses.Add("IsFolder=@IsFolder");
+                cmd.Parameters.Add(cmd, "@IsFolder", DbType.Boolean).Value = query.IsFolder;
+            }
 
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
             if (includeTypes.Length == 1)
@@ -1911,6 +1919,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
             }
+            if (query.ExcludeLocationTypes.Length == 1)
+            {
+                whereClauses.Add("LocationType<>@LocationType");
+                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+            }
+            if (query.ExcludeLocationTypes.Length > 1)
+            {
+                var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("LocationType not in (" + val + ")");
+            }
 
             if (addPaging)
             {
@@ -1976,6 +1995,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 dict[t.Name] = new[] { t.FullName };
             }
 
+            dict["ChannelItem"] = new[] { typeof(ChannelVideoItem).FullName, typeof(ChannelAudioItem).FullName, typeof(ChannelFolderItem).FullName };
             dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
             dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
             dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };
