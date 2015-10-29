@@ -278,9 +278,11 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task Post(RegisterAppstoreSale request)
+        public void Post(RegisterAppstoreSale request)
         {
-            await _securityManager.RegisterAppStoreSale(request.Parameters);
+            var task = _securityManager.RegisterAppStoreSale(request.Parameters);
+
+            Task.WaitAll(task);
         }
 
         /// <summary>

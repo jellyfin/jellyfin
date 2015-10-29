@@ -36,22 +36,12 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
-            IEnumerable<Series> items;
-
-            if (parentIds.Length == 0)
+            var items = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
-                items = _libraryManager.GetItems(new InternalItemsQuery(user)
-               {
-                   IncludeItemTypes = new[] { typeof(Series).Name },
-                   SortOrder = SortOrder.Ascending
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                SortOrder = SortOrder.Ascending
 
-               }, user).Cast<Series>();
-            }
-            else
-            {
-                items = GetAllLibraryItems(user, parentIds, i => i is Series)
-                   .Cast<Series>();
-            }
+            }, user, parentIds).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -68,35 +58,17 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var items = parentsFolders
-                .SelectMany(i => i.GetRecursiveChildren(user, s => s is Series))
-                .Cast<Series>();
+            var items = _libraryManager.GetItems(new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                SortOrder = SortOrder.Ascending
+
+            }, user, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
 
             return GetResult(episodes, null, request);
-        }
-
-        private IEnumerable<BaseItem> GetAllLibraryItems(User user, string[] parentIds, Func<BaseItem, bool> filter)
-        {
-            if (parentIds.Length > 0)
-            {
-                return parentIds.SelectMany(i =>
-                {
-                    var folder = (Folder)_libraryManager.GetItemById(new Guid(i));
-
-                    return folder.GetRecursiveChildren(user, filter);
-
-                });
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentException("User not found");
-            }
-
-            return user.RootFolder.GetRecursiveChildren(user, filter);
         }
 
         public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<Series> series)

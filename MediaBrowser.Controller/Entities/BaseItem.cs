@@ -639,7 +639,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The tags.</value>
         public List<string> Tags { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the home page URL.
         /// </summary>
@@ -1897,6 +1897,25 @@ namespace MediaBrowser.Controller.Entities
             {
                 DateLastSaved.Ticks.ToString(CultureInfo.InvariantCulture)
             };
+        }
+
+        public virtual IEnumerable<Guid> GetAncestorIds()
+        {
+            return Parents.Select(i => i.Id).Concat(LibraryManager.GetCollectionFolders(this).Select(i => i.Id));
+        }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsAncestors
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public virtual IEnumerable<Guid> GetIdsForAncestorQuery()
+        {
+            return new[] { Id };
         }
     }
 }

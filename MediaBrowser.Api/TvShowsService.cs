@@ -275,38 +275,26 @@ namespace MediaBrowser.Api
 
             var minPremiereDate = DateTime.Now.Date.AddDays(-1).ToUniversalTime();
 
-            IEnumerable<BaseItem> items;
+            var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
 
-            if (string.IsNullOrWhiteSpace(request.ParentId))
+            var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                items = _libraryManager.GetItems(new InternalItemsQuery(user)
-                {
-                    IncludeItemTypes = new[] { typeof(Episode).Name },
-                    SortBy = new[] { "PremiereDate", "SortName" },
-                    SortOrder = SortOrder.Ascending,
-                    MinPremiereDate = minPremiereDate
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { "PremiereDate", "AirTime", "SortName" },
+                SortOrder = SortOrder.Ascending,
+                MinPremiereDate = minPremiereDate,
+                StartIndex = request.StartIndex,
+                Limit = request.Limit
 
-                }, user);
-            }
-            else
-            {
-                items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Episode && (i.PremiereDate ?? DateTime.MinValue) >= minPremiereDate);
-            }
-
-            var itemsList = _libraryManager
-                .Sort(items, user, new[] { "PremiereDate", "AirTime", "SortName" }, SortOrder.Ascending)
-                .Cast<Episode>()
-                .ToList();
-
-            var pagedItems = ApplyPaging(itemsList, request.StartIndex, request.Limit);
+            }, user, parentIds);
 
             var options = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, options, user).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, options, user).ToArray();
 
             var result = new ItemsResult
             {
-                TotalRecordCount = itemsList.Count,
+                TotalRecordCount = itemsResult.TotalRecordCount,
                 Items = returnItems
             };
 

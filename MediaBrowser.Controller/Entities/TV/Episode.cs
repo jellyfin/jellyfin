@@ -265,6 +265,20 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override IEnumerable<Guid> GetAncestorIds()
+        {
+            var list = base.GetAncestorIds().ToList();
+
+            var seasonId = SeasonId;
+
+            if (seasonId.HasValue && !list.Contains(seasonId.Value))
+            {
+                list.Add(seasonId.Value);
+            }
+
+            return list;
+        }
+
         public override IEnumerable<string> GetDeletePaths()
         {
             return new[] { Path };

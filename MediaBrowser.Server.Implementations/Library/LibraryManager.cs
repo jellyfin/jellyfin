@@ -401,12 +401,12 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {
-					if (_fileSystem.DirectoryExists(path))
+                    if (_fileSystem.DirectoryExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteDirectory(path, true);
                     }
-					else if (_fileSystem.FileExists(path))
+                    else if (_fileSystem.FileExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteFile(path);
@@ -697,7 +697,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-			_fileSystem.CreateDirectory(rootFolderPath);
+            _fileSystem.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath));
 
@@ -727,6 +727,13 @@ namespace MediaBrowser.Server.Implementations.Library
                         folder = dbItem;
                     }
 
+                    //if (folder.ParentId != rootFolder.Id)
+                    //{
+                    //    folder.ParentId = rootFolder.Id;
+                    //    var task = folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                    //    Task.WaitAll(task);
+                    //}
+
                     rootFolder.AddVirtualChild(folder);
 
                     RegisterItem(folder);
@@ -748,7 +755,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-						_fileSystem.CreateDirectory(userRootPath);
+                        _fileSystem.CreateDirectory(userRootPath);
 
                         var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
@@ -1000,9 +1007,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetPropertiesFromSongs(MusicArtist artist, IEnumerable<IHasMetadata> items)
         {
-            
+
         }
-        
+
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
@@ -1013,7 +1020,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is available.
-			_fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+            _fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
@@ -1280,9 +1287,29 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
-        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, User user)
+        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, User user, IEnumerable<string> parentIds)
         {
-            return GetItemIds(query).Select(GetItemById).Where(i => i.IsVisibleStandalone(user));
+            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
+
+            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
+
+            var items = GetItemIds(query).Select(GetItemById);
+
+            if (user != null)
+            {
+                items = items.Where(i => i.IsVisibleStandalone(user));
+            }
+
+            return items;
+        }
+
+        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, User user, IEnumerable<string> parentIds)
+        {
+            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
+
+            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
+
+            return GetItems(query);
         }
 
         /// <summary>
@@ -1700,7 +1727,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (item == null ||
                 !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-				_fileSystem.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1719,8 +1746,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
-                item.ViewType = viewType;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                refresh = true;
             }
 
             if (!refresh)
@@ -1793,7 +1819,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-				_fileSystem.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1917,7 +1943,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return item;
         }
-        
+
         public async Task<UserView> GetNamedView(string name,
             string parentId,
             string viewType,
@@ -1946,7 +1972,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-				_fileSystem.CreateDirectory(path);
+                _fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2379,7 +2405,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.UpdatePeople(item.Id, people);
         }
 
-        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1, 1);
         public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
         {
             _logger.Debug("ConvertImageToLocal item {0}", item.Id);

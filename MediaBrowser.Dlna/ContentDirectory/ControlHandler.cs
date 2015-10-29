@@ -481,23 +481,17 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private QueryResult<ServerItem> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
         {
-            var itemsWithPerson = _libraryManager.GetItems(new InternalItemsQuery
+            var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                Person = person.Name
+                Person = person.Name,
+                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(ChannelVideoItem).Name },
+                SortBy = new[] { ItemSortBy.SortName },
+                Limit = limit,
+                StartIndex = startIndex
 
-            }).Items;
+            }, user, new string[] { });
 
-            var items = itemsWithPerson
-                .Where(i => i is Movie || i is Series || i is IChannelItem)
-                .Where(i => i.IsVisibleStandalone(user))
-                .ToList();
-
-            items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
-                .Skip(startIndex ?? 0)
-                .Take(limit ?? int.MaxValue)
-                .ToList();
-
-            var serverItems = items.Select(i => new ServerItem
+            var serverItems = itemsResult.Items.Select(i => new ServerItem
             {
                 Item = i,
                 StubType = null
@@ -506,7 +500,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                TotalRecordCount = serverItems.Length,
+                TotalRecordCount = itemsResult.TotalRecordCount,
                 Items = serverItems
             };
         }

@@ -8,8 +8,10 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Common.Implementations.Security
 {
@@ -219,10 +221,6 @@ namespace MediaBrowser.Common.Implementations.Security
                     {
                         SupporterKey = reg.key;
                     }
-                    else
-                    {
-                        throw new PaymentRequiredException();
-                    }
                 }
 
             }
@@ -231,10 +229,15 @@ namespace MediaBrowser.Common.Implementations.Security
                 SaveAppStoreInfo(parameters);
                 throw;
             }
-            catch (PaymentRequiredException)
+            catch (HttpException e)
             {
-                SaveAppStoreInfo(parameters);
-                throw;
+                _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
+
+                if (e.StatusCode.HasValue && e.StatusCode.Value == HttpStatusCode.PaymentRequired)
+                {
+                    throw new PaymentRequiredException();
+                }
+                throw new ApplicationException("Error registering store sale");
             }
             catch (Exception e)
             {

@@ -163,16 +163,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (person != null)
             {
-                var items = _libraryManager.GetItems(new InternalItemsQuery
+                var items = _libraryManager.GetItems(new InternalItemsQuery(user)
                 {
                     Person = byName.Name
 
-                }).Items;
-
-                if (user != null)
-                {
-                    return items.Where(i => i.IsVisibleStandalone(user)).ToList();
-                }
+                }, user, new string[] { });
 
                 return items.ToList();
             }
@@ -471,8 +466,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.ChildCount = GetChildCount(folder, user);
 
                 // These are just far too slow. 
-                // TODO: Disable for CollectionFolder
-                if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is IChannelItem))
+                if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is IChannelItem) && !(folder is ICollectionFolder))
                 {
                     SetSpecialCounts(folder, user, dto, fields, syncProgress);
                 }
@@ -1524,7 +1518,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.ChannelId = item.ChannelId;
-            
+
             var channelItem = item as IChannelItem;
             if (channelItem != null)
             {

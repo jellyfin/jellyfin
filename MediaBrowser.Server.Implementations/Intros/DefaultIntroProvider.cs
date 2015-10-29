@@ -83,13 +83,11 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (config.EnableIntrosFromMoviesInLibrary)
             {
-                var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+                var inputItems = _libraryManager.GetItems(new InternalItemsQuery(user)
                 {
-                    IncludeItemTypes = new[] { typeof(Movie).Name },
+                    IncludeItemTypes = new[] { typeof(Movie).Name }
 
-                    User = user
-
-                }).Items;
+                }, user, new string[]{});
 
                 var itemsWithTrailers = inputItems
                     .Where(i =>

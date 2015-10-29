@@ -149,7 +149,15 @@ namespace MediaBrowser.Controller.Entities
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-            await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+            if (!EnableNewFolderQuerying())
+            {
+                await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private static bool EnableNewFolderQuerying()
+        {
+            return ConfigurationManager.Configuration.MigrationVersion >= 1;
         }
 
         protected void AddChildrenInternal(IEnumerable<BaseItem> children)
@@ -222,7 +230,12 @@ namespace MediaBrowser.Controller.Entities
 
             item.SetParent(null);
 
-            return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
+            if (!EnableNewFolderQuerying())
+            {
+                return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
+            }
+
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -471,6 +484,7 @@ namespace MediaBrowser.Controller.Entities
                         }
                         else
                         {
+                            child.SetParent(this);
                             newItems.Add(child);
                             validChildren.Add(child);
                         }
@@ -478,6 +492,7 @@ namespace MediaBrowser.Controller.Entities
                     else
                     {
                         // Brand new item - needs to be added
+                        child.SetParent(this);
                         newItems.Add(child);
                         validChildren.Add(child);
                     }
@@ -506,7 +521,6 @@ namespace MediaBrowser.Controller.Entities
                         }
                         else
                         {
-                            await UpdateIsOffline(item, false).ConfigureAwait(false);
                             actualRemovals.Add(item);
                         }
                     }
@@ -517,6 +531,9 @@ namespace MediaBrowser.Controller.Entities
 
                         foreach (var item in actualRemovals)
                         {
+                            item.SetParent(null);
+                            item.IsOffline = false;
+                            await LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }).ConfigureAwait(false);
                             LibraryManager.ReportItemRemoved(item);
                         }
                     }
@@ -525,7 +542,10 @@ namespace MediaBrowser.Controller.Entities
 
                     AddChildrenInternal(newItems);
 
-                    await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+                    if (!EnableNewFolderQuerying())
+                    {
+                        await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -755,19 +775,16 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            if (ConfigurationManager.Configuration.DisableStartupScan)
+            if (EnableNewFolderQuerying())
             {
-                return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
-                //return ItemRepository.GetItems(new InternalItemsQuery
-                //{
-                //    ParentId = Id
+                return ItemRepository.GetItemList(new InternalItemsQuery
+                {
+                    ParentId = Id
 
-                //}).Items.Select(RetrieveChild).Where(i => i != null);
+                }).Select(RetrieveChild).Where(i => i != null);
             }
-            else
-            {
-                return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
-            }
+
+            return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
         }
 
         private BaseItem RetrieveChild(BaseItem child)

@@ -217,5 +217,14 @@ namespace MediaBrowser.Controller.LiveTv
                 return base.SupportsPeople;
             }
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsAncestors
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

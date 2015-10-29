@@ -363,7 +363,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new Release5767(ServerConfigurationManager, TaskManager)
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
