@@ -734,6 +734,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             recording.ExternalId = info.Id;
 
+            var dataChanged = false;
+
             recording.Audio = info.Audio;
             recording.EndDate = info.EndDate;
             recording.EpisodeTitle = info.EpisodeTitle;
@@ -744,10 +746,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.IsNews = info.IsNews;
             recording.IsPremiere = info.IsPremiere;
             recording.IsRepeat = info.IsRepeat;
-            recording.IsSeries = info.IsSeries;
             recording.IsSports = info.IsSports;
             recording.SeriesTimerId = info.SeriesTimerId;
             recording.StartDate = info.StartDate;
+
+            if (!dataChanged)
+            {
+                dataChanged = recording.IsSeries != info.IsSeries;
+            }
+            recording.IsSeries = info.IsSeries;
 
             if (!string.IsNullOrWhiteSpace(info.ImagePath))
             {
@@ -757,18 +764,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
             }
-            
+
             var statusChanged = info.Status != recording.Status;
 
             recording.Status = info.Status;
 
             recording.ServiceName = serviceName;
 
-            var pathChanged = false;
-
             if (!string.IsNullOrEmpty(info.Path))
             {
-                pathChanged = !string.Equals(item.Path, info.Path);
+                if (!dataChanged)
+                {
+                    dataChanged = !string.Equals(item.Path, info.Path);
+                }
                 var fileInfo = _fileSystem.GetFileInfo(info.Path);
 
                 recording.DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo);
@@ -777,7 +785,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             else if (!string.IsNullOrEmpty(info.Url))
             {
-                pathChanged = !string.Equals(item.Path, info.Url);
+                if (!dataChanged)
+                {
+                    dataChanged = !string.Equals(item.Path, info.Url);
+                }
                 item.Path = info.Url;
             }
 
@@ -787,7 +798,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved || statusChanged)
+            else if (dataChanged || info.DateLastUpdated > recording.DateLastSaved || statusChanged)
             {
                 metadataRefreshMode = MetadataRefreshMode.FullRefresh;
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
