@@ -1139,7 +1139,7 @@
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="float:right;"></paper-icon-button>';
+            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="margin-left:auto;"></paper-icon-button>';
 
             selectionCommandsPanel.innerHTML = html;
 

@@ -1,0 +1,141 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-drawer-panel tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-drawer-panel.html">
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  .notransition,
+  .notransition * {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    -ms-transition: none !important;
+    transition: none !important;
+  }
+</style>
+<body>
+
+  <test-fixture id="left-drawer">
+    <template>
+        <paper-drawer-panel class="notransition">
+          <div drawer></div>
+          <div main></div>
+        </paper-drawer-panel>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="right-drawer">
+    <template>
+      <paper-drawer-panel right-drawer class="notransition">
+        <div drawer></div>
+        <div main></div>
+      </paper-drawer-panel>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('on small devices', function() {
+
+      test('drawer is hidden by default', function(done) {
+        var f, panel, drawer, main;
+        f = fixture('left-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        f.set('forceNarrow', true);
+        f._forceNarrowChanged();
+
+        Polymer.Base.async(function() {
+          var drawerBoundingRect = drawer.getBoundingClientRect();
+          var mainStyle = window.getComputedStyle(main);
+          expect(f._isMainSelected()).to.be.equal(true);
+          expect(drawerBoundingRect.left).to.be.equal(-256);
+          expect(drawerBoundingRect.width).to.be.equal(256);
+          done();
+        });
+      });
+
+      test('right-drawer is hidden by default', function(done) {
+        var f, panel, drawer, main;
+        f = fixture('right-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        f.set('forceNarrow', true);
+        f._forceNarrowChanged();
+
+        Polymer.Base.async(function() {
+          var drawerBoundingRect = drawer.getBoundingClientRect();
+          var mainStyle = window.getComputedStyle(main);
+          expect(drawerBoundingRect.right).to.be.equal(f.offsetWidth + 256);
+          expect(drawerBoundingRect.width).to.be.equal(256);
+          done();
+        });
+      });
+
+     test('drawer is can be opened', function(done) {
+        var f, panel, drawer, main;
+        f = fixture('left-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        f.set('forceNarrow', true);
+        f._forceNarrowChanged();
+        f.openDrawer();
+
+        Polymer.Base.async(function() {
+          var drawerBoundingRect = drawer.getBoundingClientRect();
+          var mainStyle = window.getComputedStyle(main);
+          expect(f.selected).to.be.equal('drawer');
+          expect(f._isMainSelected()).to.be.equal(false);
+          expect(drawerBoundingRect.left).to.be.equal(0);
+          expect(drawerBoundingRect.width).to.be.equal(256);
+          done();
+        });
+      });
+
+      test('right-drawer can be closed', function(done) {
+        var f, panel, drawer, main;
+        f = fixture('right-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        f.set('forceNarrow', true);
+        f._forceNarrowChanged();
+        f.openDrawer();
+
+        Polymer.Base.async(function() {
+          var drawerBoundingRect = drawer.getBoundingClientRect();
+          var mainStyle = window.getComputedStyle(main);
+          expect(drawerBoundingRect.right).to.be.equal(f.offsetWidth);
+          expect(drawerBoundingRect.width).to.be.equal(256);
+          done();
+        });
+      });
+      
+    });
+  </script>
+</body>
+</html>

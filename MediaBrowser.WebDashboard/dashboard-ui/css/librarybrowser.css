@@ -1220,6 +1220,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: #43A047;
     z-index: 1000;
     padding: 0 .75em 0 .25em;
+    display: flex;
+    align-items: center;
 }
 
     .selectionCommandsPanel paper-icon-button {
@@ -1233,11 +1235,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     display: inline-block;
     padding-top: 1px;
-}
-
-.selectionCommandsPanel paper-icon-button {
-    height: 32px;
-    width: 32px;
 }
 
 @media all and (min-height: 480px) {

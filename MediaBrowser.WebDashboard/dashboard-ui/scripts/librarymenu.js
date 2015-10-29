@@ -223,14 +223,19 @@
 
         document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
-    function onMainDrawerClosed() {
-
-        document.body.classList.remove('bodyWithPopupOpen');
-        document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
-    }
     function closeMainDrawer() {
 
         document.querySelector('.mainDrawerPanel').closeDrawer();
+    }
+    function onMainDrawerSelect() {
+
+        if (this.selected == 'main') {
+
+            document.body.classList.remove('bodyWithPopupOpen');
+            document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
+        } else {
+            onMainDrawerOpened();
+        }
     }
 
     function ensureDrawerStructure(drawer) {
@@ -994,8 +999,7 @@
         });
 
         var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
-        Events.on(mainDrawerPanel, 'paper-drawer-panel-open', onMainDrawerOpened);
-        Events.on(mainDrawerPanel, 'paper-drawer-panel-close', onMainDrawerClosed);
+        Events.on(mainDrawerPanel, 'iron-select', onMainDrawerSelect);
     });
 
 })(window, document, jQuery, window.devicePixelRatio);

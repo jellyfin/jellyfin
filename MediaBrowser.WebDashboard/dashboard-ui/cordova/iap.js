@@ -77,27 +77,38 @@
             amt: price
         };
 
+        var promise;
+
         if (enteredEmail) {
             postData.email = enteredEmail;
             postData.storeId = enteredEmail;
             postData.feature = "MBSClubMonthly";
+
+            promise = ApiClient.ajax({
+                type: "POST",
+                url: ApiClient.getUrl("Appstore/Register"),
+                data: {
+                    Parameters: JSON.stringify(postData)
+                }
+            });
+
+        } else {
+
+            promise = ApiClient.ajax({
+                type: "POST",
+                url: "http://mb3admin.com/admin/service/appstore/register",
+                data: JSON.stringify(postData),
+                contentType: "application/json"
+            });
         }
 
-        ApiClient.ajax({
-
-            type: "POST",
-            url: ApiClient.getUrl("Appstore/Register"),
-            data: {
-                Parameters: JSON.stringify(postData)
-            }
-        }).done(function () {
+        promise.done(function () {
 
             callback(true, product);
 
         }).fail(function (e) {
 
             if (e.status == 402) {
-                alert('validate fail - expired');
 
                 callback(false, {
                     code: store.PURCHASE_EXPIRED,
@@ -105,6 +116,7 @@
                         message: "Subscription Expired"
                     }
                 });
+
             } else {
                 alert('validate fail - other');
 
@@ -155,7 +167,7 @@
                 if (requiresVerification) {
                     //product.verify();
                     if (product.owned) {
-                        alert('sub owned!');
+                        //alert('sub owned!');
                     }
                 } else {
                     product.finish();

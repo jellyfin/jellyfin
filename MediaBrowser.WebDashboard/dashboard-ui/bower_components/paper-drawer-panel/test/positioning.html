@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-drawer-panel tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-drawer-panel.html">
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+<body>
+
+  <test-fixture id="left-drawer">
+    <template>
+        <paper-drawer-panel>
+          <div drawer></div>
+          <div main></div>
+        </paper-drawer-panel>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="right-drawer">
+    <template>
+      <paper-drawer-panel right-drawer>
+        <div drawer></div>
+        <div main></div>
+      </paper-drawer-panel>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('positioning', function() {
+
+      test('drawer is positioned correctly', function(done) {
+        var f, drawer, main;
+        f = fixture('left-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        Polymer.Base.async(function() {
+          var drawerStyle = window.getComputedStyle(drawer);
+          expect(drawerStyle.left).to.be.equal('0px');
+          try {
+            expect(drawerStyle.right).to.be.equal('auto');
+          } catch(e) {
+            // Firefox
+            expect(drawerStyle.right).to.be.equal(f.offsetWidth - drawer.offsetWidth + 'px');
+          }
+          done();
+        });
+      });
+
+      test('right-drawer is positioned correctly', function(done) {
+        var f, drawer, main;
+        f = fixture('right-drawer');
+        drawer = f.querySelector('#drawer');
+        main = f.querySelector('#main');
+
+        Polymer.Base.async(function() {
+          var drawerStyle = window.getComputedStyle(drawer);
+          expect(drawerStyle.right).to.be.equal('0px');
+          
+          try {
+            expect(drawerStyle.left).to.be.equal('auto');
+          } catch(e) {
+            // Firefox
+            expect(drawerStyle.left).to.be.equal(f.offsetWidth - drawer.offsetWidth + 'px');
+          }
+
+          done();
+        });
+      });
+
+    });
+  </script>
+</body>
+</html>
