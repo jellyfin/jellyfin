@@ -14,11 +14,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -26,20 +29,22 @@ namespace MediaBrowser.Providers.Music
     {
         internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
-        private const string FanArtBaseUrl = "http://api.fanart.tv/webservice/artist/{0}/{1}/xml/all/1/1";
+        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IJsonSerializer _jsonSerializer;
 
         internal static FanartArtistProvider Current;
 
-        public FanartArtistProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public FanartArtistProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _jsonSerializer = jsonSerializer;
 
             Current = this;
         }
@@ -81,13 +86,13 @@ namespace MediaBrowser.Providers.Music
 
             if (!String.IsNullOrEmpty(artistMusicBrainzId))
             {
-                await EnsureArtistXml(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
+                await EnsureArtistJson(artistMusicBrainzId, cancellationToken).ConfigureAwait(false);
 
-                var artistXmlPath = GetArtistXmlPath(_config.CommonApplicationPaths, artistMusicBrainzId);
+                var artistJsonPath = GetArtistJsonPath(_config.CommonApplicationPaths, artistMusicBrainzId);
 
                 try
                 {
-                    AddImages(list, artistXmlPath, cancellationToken);
+                    AddImages(list, artistJsonPath, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -132,230 +137,62 @@ namespace MediaBrowser.Providers.Music
         /// Adds the images.
         /// </summary>
         /// <param name="list">The list.</param>
-        /// <param name="xmlPath">The XML path.</param>
+        /// <param name="path">The path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImages(List<RemoteImageInfo> list, string xmlPath, CancellationToken cancellationToken)
+        private void AddImages(List<RemoteImageInfo> list, string path, CancellationToken cancellationToken)
         {
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
-            {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
-                {
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true,
-                    ValidationType = ValidationType.None
-                }))
-                {
-                    reader.MoveToContent();
+            var obj = _jsonSerializer.DeserializeFromFile<FanartArtistResponse>(path);
 
-                    // Loop through each element
-                    while (reader.Read())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "music":
-                                    {
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            AddImagesFromMusicNode(list, subReader, cancellationToken);
-                                        }
-                                        break;
-                                    }
-
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
+            PopulateImages(list, obj.artistbackground, ImageType.Backdrop, 1920, 1080);
+            PopulateImages(list, obj.artistthumb, ImageType.Thumb, 500, 281);
+            PopulateImages(list, obj.hdmusiclogo, ImageType.Logo, 800, 310);
+            PopulateImages(list, obj.musicbanner, ImageType.Banner, 1000, 185);
+            PopulateImages(list, obj.musiclogo, ImageType.Logo, 400, 155);
+            PopulateImages(list, obj.hdmusicarts, ImageType.Art, 1000, 562);
+            PopulateImages(list, obj.musicarts, ImageType.Art, 500, 281);
         }
 
-        /// <summary>
-        /// Adds the images from music node.
-        /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImagesFromMusicNode(List<RemoteImageInfo> list, XmlReader reader, CancellationToken cancellationToken)
+        private void PopulateImages(List<RemoteImageInfo> list,
+            List<FanartArtistImage> images,
+            ImageType type,
+            int width,
+            int height)
         {
-            reader.MoveToContent();
-
-            while (reader.Read())
+            if (images == null)
             {
-                if (reader.NodeType == XmlNodeType.Element)
+                return;
+            }
+
+            list.AddRange(images.Select(i =>
+            {
+                var url = i.url;
+
+                if (!string.IsNullOrEmpty(url))
                 {
-                    switch (reader.Name)
+                    var likesString = i.likes;
+                    int likes;
+
+                    var info = new RemoteImageInfo
                     {
-                        case "hdmusiclogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Logo, 800, 310, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "musiclogos":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Logo, 400, 155, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "artistbackgrounds":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Backdrop, 1920, 1080, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "hdmusicarts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Art, 1000, 562, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "musicarts":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Art, 500, 281, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "hdmusicbanners":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Banner, 1000, 185, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "musicbanners":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Banner, 1000, 185, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        case "artistthumbs":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    AddImagesFromImageTypeNode(list, ImageType.Primary, 1000, 1000, subReader, cancellationToken);
-                                }
-                                break;
-                            }
-                        default:
-                            {
-                                using (reader.ReadSubtree())
-                                {
-                                }
-                                break;
-                            }
-                    }
-                }
-            }
-        }
+                        RatingType = RatingType.Likes,
+                        Type = type,
+                        Width = width,
+                        Height = height,
+                        ProviderName = Name,
+                        Url = url,
+                        Language = i.lang
+                    };
 
-        /// <summary>
-        /// Adds the images from albums node.
-        /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddImagesFromImageTypeNode(List<RemoteImageInfo> list, ImageType type, int width, int height, XmlReader reader, CancellationToken cancellationToken)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
+                    if (!string.IsNullOrEmpty(likesString) && int.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
                     {
-                        case "hdmusiclogo":
-                        case "musiclogo":
-                        case "artistbackground":
-                        case "hdmusicart":
-                        case "musicart":
-                        case "hdmusicbanner":
-                        case "musicbanner":
-                        case "artistthumb":
-                            {
-                                AddImage(list, reader, type, width, height);
-                                break;
-                            }
-                        default:
-                            {
-                                using (reader.ReadSubtree())
-                                {
-                                }
-                                break;
-                            }
+                        info.CommunityRating = likes;
                     }
+
+                    return info;
                 }
-            }
-        }
 
-        /// <summary>
-        /// Adds the image.
-        /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        private void AddImage(List<RemoteImageInfo> list, XmlReader reader, ImageType type, int width, int height)
-        {
-            var url = reader.GetAttribute("url");
-
-            var size = reader.GetAttribute("size");
-
-            if (!String.IsNullOrEmpty(size))
-            {
-                int sizeNum;
-                if (Int32.TryParse(size, NumberStyles.Any, _usCulture, out sizeNum))
-                {
-                    width = sizeNum;
-                    height = sizeNum;
-                }
-            }
-
-            var likesString = reader.GetAttribute("likes");
-            int likes;
-
-            var info = new RemoteImageInfo
-            {
-                RatingType = RatingType.Likes,
-                Type = type,
-                Width = width,
-                Height = height,
-                ProviderName = Name,
-                Url = url,
-                Language = reader.GetAttribute("lang")
-            };
-
-            if (!String.IsNullOrEmpty(likesString) && Int32.TryParse(likesString, NumberStyles.Any, _usCulture, out likes))
-            {
-                info.CommunityRating = likes;
-            }
-
-            list.Add(info);
+                return null;
+            }).Where(i => i != null));
         }
 
         public int Order
@@ -386,9 +223,9 @@ namespace MediaBrowser.Providers.Music
             if (!String.IsNullOrEmpty(id))
             {
                 // Process images
-                var artistXmlPath = GetArtistXmlPath(_config.CommonApplicationPaths, id);
+                var artistJsonPath = GetArtistJsonPath(_config.CommonApplicationPaths, id);
 
-                var fileInfo = _fileSystem.GetFileInfo(artistXmlPath);
+                var fileInfo = _fileSystem.GetFileInfo(artistJsonPath);
 
                 return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
             }
@@ -397,11 +234,11 @@ namespace MediaBrowser.Providers.Music
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        internal Task EnsureArtistXml(string musicBrainzId, CancellationToken cancellationToken)
+        internal Task EnsureArtistJson(string musicBrainzId, CancellationToken cancellationToken)
         {
-            var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
+            var jsonPath = GetArtistJsonPath(_config.ApplicationPaths, musicBrainzId);
 
-            var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
+            var fileInfo = _fileSystem.GetFileSystemInfo(jsonPath);
 
             if (fileInfo.Exists)
             {
@@ -411,16 +248,16 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            return DownloadArtistXml(musicBrainzId, cancellationToken);
+            return DownloadArtistJson(musicBrainzId, cancellationToken);
         }
 
         /// <summary>
-        /// Downloads the artist XML.
+        /// Downloads the artist data.
         /// </summary>
         /// <param name="musicBrainzId">The music brainz id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        internal async Task DownloadArtistXml(string musicBrainzId, CancellationToken cancellationToken)
+        internal async Task DownloadArtistJson(string musicBrainzId, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -432,21 +269,35 @@ namespace MediaBrowser.Providers.Music
                 url += "&client_key=" + clientKey;
             }
 
-            var xmlPath = GetArtistXmlPath(_config.ApplicationPaths, musicBrainzId);
+            var jsonPath = GetArtistJsonPath(_config.ApplicationPaths, musicBrainzId);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(xmlPath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(jsonPath));
 
-            using (var response = await _httpClient.Get(new HttpRequestOptions
+            try
             {
-                Url = url,
-                ResourcePool = FanArtResourcePool,
-                CancellationToken = cancellationToken
-
-            }).ConfigureAwait(false))
-            {
-                using (var xmlFileStream = _fileSystem.GetFileStream(xmlPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var response = await _httpClient.Get(new HttpRequestOptions
                 {
-                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
+                    Url = url,
+                    ResourcePool = FanArtResourcePool,
+                    CancellationToken = cancellationToken
+
+                }).ConfigureAwait(false))
+                {
+                    using (var saveFileStream = _fileSystem.GetFileStream(jsonPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    {
+                        await response.CopyToAsync(saveFileStream).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                {
+                    _jsonSerializer.SerializeToFile(new FanartArtistResponse(), jsonPath);
+                }
+                else
+                {
+                    throw;
                 }
             }
         }
@@ -476,11 +327,43 @@ namespace MediaBrowser.Providers.Music
             return dataPath;
         }
 
-        internal static string GetArtistXmlPath(IApplicationPaths appPaths, string musicBrainzArtistId)
+        internal static string GetArtistJsonPath(IApplicationPaths appPaths, string musicBrainzArtistId)
         {
             var dataPath = GetArtistDataPath(appPaths, musicBrainzArtistId);
 
-            return Path.Combine(dataPath, "fanart.xml");
+            return Path.Combine(dataPath, "fanart.json");
+        }
+
+
+        public class FanartArtistImage
+        {
+            public string id { get; set; }
+            public string url { get; set; }
+            public string likes { get; set; }
+            public string disc { get; set; }
+            public string size { get; set; }
+            public string lang { get; set; }
+        }
+
+        public class Album
+        {
+            public string release_group_id { get; set; }
+            public List<FanartArtistImage> cdart { get; set; }
+            public List<FanartArtistImage> albumcover { get; set; }
+        }
+
+        public class FanartArtistResponse
+        {
+            public string name { get; set; }
+            public string mbid_id { get; set; }
+            public List<FanartArtistImage> artistthumb { get; set; }
+            public List<FanartArtistImage> artistbackground { get; set; }
+            public List<FanartArtistImage> hdmusiclogo { get; set; }
+            public List<FanartArtistImage> musicbanner { get; set; }
+            public List<FanartArtistImage> musiclogo { get; set; }
+            public List<FanartArtistImage> musicarts { get; set; }
+            public List<FanartArtistImage> hdmusicarts { get; set; }
+            public List<Album> albums { get; set; }
         }
     }
 }
