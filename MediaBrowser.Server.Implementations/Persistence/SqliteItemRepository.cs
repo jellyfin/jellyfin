@@ -77,7 +77,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteStreamsCommand;
         private IDbCommand _saveStreamCommand;
 
-        private const int LatestSchemaVersion = 17;
+        private IDbCommand _deleteAncestorsCommand;
+        private IDbCommand _saveAncestorCommand;
+
+        private const int LatestSchemaVersion = 18;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -126,9 +129,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             string[] queries = {
 
-                                "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB)",
+                                "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID)",
                                 "create index if not exists idx_TypedBaseItems on TypedBaseItems(guid)",
+                                "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
+                                "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, PRIMARY KEY (ItemId, AncestorId))",
+                                "create index if not exists idx_AncestorIds on AncestorIds(ItemId,AncestorId)",
+                                
                                 "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
@@ -205,6 +212,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "Studios", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "Audio", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalServiceId", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Tags", "Text");
 
             PrepareStatements();
 
@@ -429,7 +437,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "LockedFields",
                 "Studios",
                 "Audio",
-                "ExternalServiceId"
+                "ExternalServiceId",
+                "Tags"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -472,6 +481,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@PersonType");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@SortOrder");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@ListOrder");
+            
+            // Ancestors
+            _deleteAncestorsCommand = _connection.CreateCommand();
+            _deleteAncestorsCommand.CommandText = "delete from AncestorIds where ItemId=@Id";
+            _deleteAncestorsCommand.Parameters.Add(_deleteAncestorsCommand, "@Id");
+
+            _saveAncestorCommand = _connection.CreateCommand();
+            _saveAncestorCommand.CommandText = "insert into AncestorIds (ItemId, AncestorId) values (@ItemId, @AncestorId)";
+            _saveAncestorCommand.Parameters.Add(_saveAncestorCommand, "@ItemId");
+            _saveAncestorCommand.Parameters.Add(_saveAncestorCommand, "@AncestorId");
 
             // Chapters
             _deleteChaptersCommand = _connection.CreateCommand();
@@ -682,9 +701,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
+                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Tags.ToArray());
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
+
+                    if (item.SupportsAncestors)
+                    {
+                        UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), transaction);
+                    }
                 }
 
                 transaction.Commit();
@@ -765,22 +791,32 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return null;
             }
 
-            BaseItem item;
+            BaseItem item = null;
 
             using (var stream = reader.GetMemoryStream(1))
             {
                 try
                 {
                     item = _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
-
-                    if (item == null)
-                    {
-                        return null;
-                    }
                 }
                 catch (SerializationException ex)
                 {
                     _logger.ErrorException("Error deserializing item", ex);
+                }
+
+                if (item == null)
+                {
+                    try
+                    {
+                        item = Activator.CreateInstance(type) as BaseItem;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if (item == null)
+                {
                     return null;
                 }
             }
@@ -1328,6 +1364,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
 
+                //_logger.Debug(cmd.CommandText);
+                
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
                     while (reader.Read())
@@ -1364,6 +1402,50 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         var item = GetItem(reader);
 
+                        if (item != null)
+                        {
+                            yield return item;
+                        }
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            CheckDisposed();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems";
+
+                var whereClauses = GetWhereClauses(query, cmd, true);
+
+                var whereText = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                cmd.CommandText += whereText;
+
+                cmd.CommandText += GetOrderByText(query);
+
+                if (query.Limit.HasValue)
+                {
+                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
+                //_logger.Debug(cmd.CommandText);
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var item = GetItem(reader);
                         if (item != null)
                         {
                             yield return item;
@@ -1453,6 +1535,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string MapOrderByField(string name)
         {
+            if (string.Equals(name, "airtime", StringComparison.OrdinalIgnoreCase))
+            {
+                // TODO
+                return "SortName";
+            }
+
             return name;
         }
 
@@ -1813,6 +1901,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (query.AncestorIds.Length == 1)
+            {
+                whereClauses.Add("Guid in (select itemId from AncestorIds where AncestorId=@AncestorId)");
+                cmd.Parameters.Add(cmd, "@AncestorId", DbType.Guid).Value = new Guid(query.AncestorIds[0]);
+            }
+            if (query.AncestorIds.Length > 1)
+            {
+                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+            }
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -1847,6 +1946,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(Movie),
             typeof(BoxSet),
             typeof(Episode),
+            typeof(ChannelVideoItem),
             typeof(Season),
             typeof(Series),
             typeof(Book),
@@ -1933,6 +2033,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteStreamsCommand.GetParameter(0).Value = id;
                 _deleteStreamsCommand.Transaction = transaction;
                 _deleteStreamsCommand.ExecuteNonQuery();
+                
+                // Delete ancestors
+                _deleteAncestorsCommand.GetParameter(0).Value = id;
+                _deleteAncestorsCommand.Transaction = transaction;
+                _deleteAncestorsCommand.ExecuteNonQuery();
 
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
@@ -2165,6 +2270,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             return whereClauses;
+        }
+
+        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, IDbTransaction transaction)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (ancestorIds == null)
+            {
+                throw new ArgumentNullException("ancestorIds");
+            }
+
+            CheckDisposed();
+
+            // First delete 
+            _deleteAncestorsCommand.GetParameter(0).Value = itemId;
+            _deleteAncestorsCommand.Transaction = transaction;
+
+            _deleteAncestorsCommand.ExecuteNonQuery();
+
+            foreach (var ancestorId in ancestorIds)
+            {
+                _saveAncestorCommand.GetParameter(0).Value = itemId;
+                _saveAncestorCommand.GetParameter(1).Value = ancestorId;
+
+                _saveAncestorCommand.Transaction = transaction;
+
+                _saveAncestorCommand.ExecuteNonQuery();
+            }
         }
 
         public async Task UpdatePeople(Guid itemId, List<PersonInfo> people)

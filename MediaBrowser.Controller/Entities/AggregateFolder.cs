@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
+            return base.GetNonCachedChildren(directoryService);
         }
 
         /// <summary>

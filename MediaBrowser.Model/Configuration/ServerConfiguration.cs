@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable high quality image scaling]; otherwise, <c>false</c>.</value>
         public bool EnableHighQualityImageScaling { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
@@ -234,12 +234,14 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] Migrations { get; set; }
 
+        public int MigrationVersion { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
-            Migrations = new string[] {};
+            Migrations = new string[] { };
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
@@ -583,7 +585,8 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Thumb
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheMovieDb" }
                 }
             };
         }

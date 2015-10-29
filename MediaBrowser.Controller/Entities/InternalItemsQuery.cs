@@ -102,7 +102,8 @@ namespace MediaBrowser.Controller.Entities
         public LocationType? LocationType { get; set; }
 
         public Guid? ParentId { get; set; }
-        
+        public string[] AncestorIds { get; set; }
+      
         public InternalItemsQuery()
         {
             Tags = new string[] { };
@@ -121,6 +122,7 @@ namespace MediaBrowser.Controller.Entities
             PersonIds = new string[] { };
             ChannelIds = new string[] { };
             ItemIds = new string[] { };
+            AncestorIds = new string[] { };
         }
 
         public InternalItemsQuery(User user)
@@ -130,6 +132,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 var policy = user.Policy;
                 MaxParentalRating = policy.MaxParentalRating;
+
+                User = user;
             }
         }
     }

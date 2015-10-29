@@ -1357,7 +1357,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
 
-            var internalQuery = new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }
             };
@@ -1367,8 +1367,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery);
-            IEnumerable<ILiveTvRecording> recordings = queryResult.Items.Cast<ILiveTvRecording>();
+            var queryResult = _libraryManager.GetItems(internalQuery, user, new string[]{});
+            IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrEmpty(query.Id))
             {
@@ -1403,12 +1403,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 recordings = recordings
                     .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.ServiceName, i.SeriesTimerId) == guid);
-            }
-
-            if (user != null)
-            {
-                var currentUser = user;
-                recordings = recordings.Where(i => i.IsParentalAllowed(currentUser));
             }
 
             recordings = recordings.OrderByDescending(i => i.StartDate);
@@ -1771,19 +1765,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { id },
                 MaxStartDate = now,
                 MinEndDate = now,
-                Limit = 1
+                Limit = 1,
+                SortBy = new[] { "StartDate"}
 
-            }).Items.Cast<LiveTvProgram>();
+            }, user, new string[]{}).Cast<LiveTvProgram>();
 
-            var currentProgram = programs
-                .OrderBy(i => i.StartDate)
-                .FirstOrDefault();
+            var currentProgram = programs.FirstOrDefault();
 
             var dto = _tvDtoService.GetChannelInfoDto(channel, new DtoOptions(), currentProgram, user);
 
@@ -1796,19 +1789,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { channel.Id.ToString("N") },
                 MaxStartDate = now,
                 MinEndDate = now,
-                Limit = 1
+                Limit = 1,
+                SortBy = new[] { "StartDate" }
 
-            }).Items.Cast<LiveTvProgram>();
+            }, user, new string []{}).Cast<LiveTvProgram>();
 
-            var currentProgram = programs
-                .OrderBy(i => i.StartDate)
-                .FirstOrDefault();
+            var currentProgram = programs.FirstOrDefault();
 
             if (currentProgram != null)
             {

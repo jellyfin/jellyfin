@@ -24,6 +24,21 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
+
+        public override IEnumerable<Guid> GetIdsForAncestorQuery()
+        {
+            var list = new List<Guid>();
+
+            if (DisplayParentId != Guid.Empty)
+            {
+                list.Add(DisplayParentId);
+            }
+            else if (ParentId != Guid.Empty)
+            {
+                list.Add(ParentId);
+            }
+            return list;
+        }
         
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {

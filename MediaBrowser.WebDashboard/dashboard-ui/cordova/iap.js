@@ -92,7 +92,6 @@
             }
         }).done(function () {
 
-            alert('validate ok');
             callback(true, product);
 
         }).fail(function (e) {

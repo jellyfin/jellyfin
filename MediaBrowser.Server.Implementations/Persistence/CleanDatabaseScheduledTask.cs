@@ -24,6 +24,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
+        public const int MigrationVersion = 1;
+
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
@@ -118,6 +120,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!_config.Configuration.DisableStartupScan)
             {
                 _config.Configuration.DisableStartupScan = true;
+                _config.SaveConfiguration();
+            }
+
+            if (_config.Configuration.MigrationVersion < MigrationVersion)
+            {
+                _config.Configuration.MigrationVersion = MigrationVersion;
                 _config.SaveConfiguration();
             }
 
