@@ -666,7 +666,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
             }
-            
+
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
@@ -831,7 +831,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
-            
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
@@ -890,7 +890,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(query.UserId);
-            
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
@@ -1378,7 +1378,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery, user, new string[]{});
+            var queryResult = _libraryManager.GetItems(internalQuery, user, new string[] { });
             IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrEmpty(query.Id))
@@ -1783,9 +1783,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = 1,
-                SortBy = new[] { "StartDate"}
+                SortBy = new[] { "StartDate" }
 
-            }, user, new string[]{}).Cast<LiveTvProgram>();
+            }, user, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 
@@ -1809,7 +1809,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = 1,
                 SortBy = new[] { "StartDate" }
 
-            }, user, new string []{}).Cast<LiveTvProgram>();
+            }, user, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 
