@@ -286,7 +286,7 @@ namespace MediaBrowser.Api
                 StartIndex = request.StartIndex,
                 Limit = request.Limit
 
-            }, user, parentIds);
+            }, parentIds);
 
             var options = GetDtoOptions(request);
 

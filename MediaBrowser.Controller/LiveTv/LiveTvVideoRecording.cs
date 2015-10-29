@@ -149,5 +149,10 @@ namespace MediaBrowser.Controller.LiveTv
 
             return list;
         }
+
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisible(user);
+        }
     }
 }

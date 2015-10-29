@@ -1297,19 +1297,30 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (user != null)
             {
+                AddUserToQuery(query, user);
                 items = items.Where(i => i.IsVisibleStandalone(user));
             }
 
             return items;
         }
 
-        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, User user, IEnumerable<string> parentIds)
+        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
 
             query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
 
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
             return GetItems(query);
+        }
+
+        private void AddUserToQuery(InternalItemsQuery query, User user)
+        {
+            
         }
 
         /// <summary>

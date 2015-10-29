@@ -245,16 +245,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var currentUser = user;
 
-            Func<BaseItem, bool> filter = i =>
+            var libraryItems = GetItemsForLatestItems(user, request.ParentId, includeTypes).Where(i =>
             {
-                if (includeTypes.Length > 0)
-                {
-                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-
                 if (request.IsPlayed.HasValue)
                 {
                     var val = request.IsPlayed.Value;
@@ -264,29 +256,12 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
                 }
 
-                return i.LocationType != LocationType.Virtual && !i.IsFolder;
-            };
-
-            // Avoid implicitly captured closure
-            var libraryItems = string.IsNullOrEmpty(request.ParentId) && user != null ?
-                GetItemsConfiguredForLatest(user, filter) :
-                GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, filter);
-
-            libraryItems = libraryItems.OrderByDescending(i => i.DateCreated);
-
-            if (request.IsPlayed.HasValue)
-            {
-                var takeLimit = (request.Limit ?? 20) * 20;
-                libraryItems = libraryItems.Take(takeLimit);
-            }
-
-            // Avoid implicitly captured closure
-            var items = libraryItems
-                .ToList();
+                return true;
+            });
 
             var list = new List<Tuple<BaseItem, List<BaseItem>>>();
 
-            foreach (var item in items)
+            foreach (var item in libraryItems)
             {
                 // Only grab the index container for media
                 var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
@@ -318,59 +293,23 @@ namespace MediaBrowser.Server.Implementations.Library
             return list;
         }
 
-        protected IList<BaseItem> GetAllLibraryItems(string userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem, bool> filter)
+        private IEnumerable<BaseItem> GetItemsForLatestItems(User user, string parentId, string[] includeItemTypes)
         {
-            if (!string.IsNullOrEmpty(parentId))
+            var parentIds = string.IsNullOrEmpty(parentId)
+              ? new string[] { }
+              : new[] { parentId };
+
+            return _libraryManager.GetItems(new InternalItemsQuery(user)
             {
-                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
+                IncludeItemTypes = includeItemTypes,
+                SortOrder = SortOrder.Descending,
+                SortBy = new[] { ItemSortBy.DateCreated },
+                IsFolder = false,
+                ExcludeItemTypes = new[] { "ChannelItem", "Recording" },
+                ExcludeLocationTypes = new[] { LocationType.Virtual }
 
-                if (!string.IsNullOrWhiteSpace(userId))
-                {
-                    var user = userManager.GetUserById(userId);
+            }, user, parentIds);
 
-                    if (user == null)
-                    {
-                        throw new ArgumentException("User not found");
-                    }
-
-                    return folder
-                        .GetRecursiveChildren(user, filter)
-                        .ToList();
-                }
-
-                return folder
-                    .GetRecursiveChildren(filter);
-            }
-            if (!string.IsNullOrWhiteSpace(userId))
-            {
-                var user = userManager.GetUserById(userId);
-
-                if (user == null)
-                {
-                    throw new ArgumentException("User not found");
-                }
-
-                return user
-                    .RootFolder
-                    .GetRecursiveChildren(user, filter)
-                    .ToList();
-            }
-
-            return libraryManager
-                .RootFolder
-                .GetRecursiveChildren(filter);
-        }
-
-        private IEnumerable<BaseItem> GetItemsConfiguredForLatest(User user, Func<BaseItem, bool> filter)
-        {
-            // Avoid implicitly captured closure
-            var currentUser = user;
-
-            return user.RootFolder.GetChildren(user, true)
-                .OfType<Folder>()
-                .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
-                .SelectMany(i => i.GetRecursiveChildren(currentUser, filter))
-                .DistinctBy(i => i.Id);
         }
     }
 }

@@ -489,7 +489,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex
 
-            }, user, new string[] { });
+            }, new string[] { });
 
             var serverItems = itemsResult.Items.Select(i => new ServerItem
             {
