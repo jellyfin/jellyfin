@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Security;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
