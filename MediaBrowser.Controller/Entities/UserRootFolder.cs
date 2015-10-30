@@ -55,13 +55,18 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        {
+            return base.GetEligibleChildrenForRecursiveChildren(user).Concat(LibraryManager.RootFolder.VirtualChildren);
+        }
+
         /// <summary>
         /// Get the children of this folder from the actual file system
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
-            return base.GetNonCachedChildren(directoryService).Concat(LibraryManager.RootFolder.VirtualChildren);
+            return base.GetNonCachedChildren(directoryService);
         }
 
         public override bool BeforeMetadataRefresh()
