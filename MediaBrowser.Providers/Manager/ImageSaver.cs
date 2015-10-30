@@ -119,13 +119,9 @@ namespace MediaBrowser.Providers.Manager
 
             var index = imageIndex ?? 0;
 
-            var paths = !string.IsNullOrEmpty(internalCacheKey) ?
-                new[] { GetCacheKeyPath(item, type, mimeType, internalCacheKey) } :
-                GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
+            var paths = GetSavePaths(item, type, imageIndex, mimeType, saveLocally);
 
-            var retryPaths = !string.IsNullOrEmpty(internalCacheKey) ?
-                new[] { GetCacheKeyPath(item, type, mimeType, internalCacheKey) } :
-                GetSavePaths(item, type, imageIndex, mimeType, false);
+            var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
 
             // If there are more than one output paths, the stream will need to be seekable
             var memoryStream = new MemoryStream();
@@ -196,7 +192,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (UnauthorizedAccessException)
             {
-                var retry = !string.IsNullOrWhiteSpace(retryPath) && 
+                var retry = !string.IsNullOrWhiteSpace(retryPath) &&
                     !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
 
                 if (retry)
@@ -211,12 +207,6 @@ namespace MediaBrowser.Providers.Manager
 
             source.Position = 0;
             await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
-        }
-
-        private string GetCacheKeyPath(IHasImages item, ImageType type, string mimeType, string key)
-        {
-            var extension = MimeTypes.ToExtension(mimeType);
-            return Path.Combine(item.GetInternalMetadataPath(), type.ToString().ToLower() + "_key_" + key + extension);
         }
 
         /// <summary>

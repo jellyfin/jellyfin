@@ -76,20 +76,13 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
-            var cacheKey = GetConfigurationCacheKey(items, item.Name);
 
-            if (!HasChanged(item, imageType, cacheKey))
-            {
-                return ItemUpdateType.None;
-            }
-
-            return await FetchToFileInternal(item, items, imageType, cacheKey, cancellationToken).ConfigureAwait(false);
+            return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
         }
 
         protected async Task<ItemUpdateType> FetchToFileInternal(IHasImages item,
             List<BaseItem> itemsWithImages,
             ImageType imageType,
-            string cacheKey,
             CancellationToken cancellationToken)
         {
             var outputPathWithoutExtension = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
@@ -101,21 +94,12 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return ItemUpdateType.None;
             }
 
-            await ProviderManager.SaveImage(item, outputPath, "image/png", imageType, null, cacheKey, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.SaveImage(item, outputPath, "image/png", imageType, null, Guid.NewGuid().ToString("N"), cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.ImageUpdate;
         }
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
-
-        private const string Version = "32";
-        protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
-        {
-            var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
-                        string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray());
-
-            return parts.GetMD5().ToString("N");
-        }
 
         protected Task<string> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
@@ -224,7 +208,10 @@ namespace MediaBrowser.Server.Implementations.Photos
             throw new ArgumentException("Unexpected image type");
         }
 
-        private const int MaxImageAgeDays = 7;
+        protected virtual int MaxImageAgeDays
+        {
+            get { return 7; }
+        }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
@@ -235,59 +222,16 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             var supportedImages = GetSupportedImages(item).ToList();
 
-            if (item is UserView || item is ICollectionFolder)
-            {
-                if (supportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary))
-                {
-                    return true;
-                }
-                if (supportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            var items = GetItemsWithImages(item).Result;
-            var cacheKey = GetConfigurationCacheKey(items, item.Name);
-
-            if (supportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary, cacheKey))
+            if (supportedImages.Contains(ImageType.Primary) && HasChanged(item, ImageType.Primary))
             {
                 return true;
             }
-            if (supportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb, cacheKey))
+            if (supportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;
             }
 
             return false;
-        }
-
-        protected bool HasChanged(IHasImages item, ImageType type, string cacheKey)
-        {
-            var image = item.GetImageInfo(type, 0);
-
-            if (image != null)
-            {
-                if (!image.IsLocalFile)
-                {
-                    return false;
-                }
-
-                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
-                {
-                    return false;
-                }
-
-                var currentPathCacheKey = (Path.GetFileNameWithoutExtension(image.Path) ?? string.Empty).Split('_').LastOrDefault();
-                if (string.Equals(cacheKey, currentPathCacheKey, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         protected bool HasChanged(IHasImages item, ImageType type)
