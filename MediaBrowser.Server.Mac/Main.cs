@@ -92,6 +92,7 @@ namespace MediaBrowser.Server.Mac
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
 			var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, true);
+            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
 			var nativeApp = new NativeApp();
 

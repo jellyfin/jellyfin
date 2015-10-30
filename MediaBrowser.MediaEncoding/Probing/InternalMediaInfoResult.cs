@@ -115,6 +115,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         public int width { get; set; }
 
         /// <summary>
+        /// Gets or sets the refs.
+        /// </summary>
+        /// <value>The refs.</value>
+        public int refs { get; set; }
+
+        /// <summary>
         /// Gets or sets the height.
         /// </summary>
         /// <value>The height.</value>
