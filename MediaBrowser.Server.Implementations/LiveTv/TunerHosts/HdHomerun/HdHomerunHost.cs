@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
@@ -23,7 +24,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private readonly IHttpClient _httpClient;
 
-        public HdHomerunHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient) : base(config, logger, jsonSerializer, mediaEncoder)
+        public HdHomerunHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient)
+            : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _httpClient = httpClient;
         }
@@ -232,7 +234,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int? width = null;
             int? height = null;
             bool isInterlaced = true;
-            var videoCodec = "mpeg2video";
+            var videoCodec = !string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareVideoDecoder) ? null : "mpeg2video";
+
             int? videoBitrate = null;
 
             if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
@@ -326,8 +329,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 BitRate = 128000
                             }
                         },
-                RequiresOpening = true,
-                RequiresClosing = true,
+                RequiresOpening = false,
+                RequiresClosing = false,
                 BufferMs = 1000,
                 Container = "ts",
                 Id = profile,
@@ -337,6 +340,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             };
 
             return mediaSource;
+        }
+
+        protected EncodingOptions GetEncodingOptions()
+        {
+            return Config.GetConfiguration<EncodingOptions>("encoding");
         }
 
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
@@ -403,6 +411,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
             }
+        }
+
+        protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        {
+            var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
+
+            return info.Any(i => i.Status == LiveTvTunerStatus.Available);
         }
     }
 }
