@@ -727,12 +727,12 @@ namespace MediaBrowser.Server.Implementations.Library
                         folder = dbItem;
                     }
 
-                    //if (folder.ParentId != rootFolder.Id)
-                    //{
-                    //    folder.ParentId = rootFolder.Id;
-                    //    var task = folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
-                    //    Task.WaitAll(task);
-                    //}
+                    if (folder.ParentId != rootFolder.Id)
+                    {
+                        folder.ParentId = rootFolder.Id;
+                        var task = folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
+                        Task.WaitAll(task);
+                    }
 
                     rootFolder.AddVirtualChild(folder);
 
