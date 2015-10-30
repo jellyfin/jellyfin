@@ -11,11 +11,6 @@ namespace MediaBrowser.Server.Implementations.Collections
             DisplayMediaType = "CollectionFolder";
         }
 
-        public override bool IsVisible(User user)
-        {
-            return base.IsVisible(user) && GetChildren(user, false).Any();
-        }
-
         public override bool IsHidden
         {
             get
