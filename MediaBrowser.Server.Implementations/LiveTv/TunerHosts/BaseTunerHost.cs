@@ -117,8 +117,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 foreach (var host in hostsWithChannel)
                 {
+                    var resourcePool = GetLock(host.Url);
+                    Logger.Debug("GetChannelStreamMediaSources - Waiting on tuner resource pool");
+
+                    await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Logger.Debug("GetChannelStreamMediaSources - Unlocked resource pool");
+
                     try
                     {
+                        // Check to make sure the tuner is available
+                        // If there's only one tuner, don't bother with the check and just let the tuner be the one to throw an error
+                        if (hostsWithChannel.Count > 1 &&
+                            !await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
+                        {
+                            Logger.Error("Tuner is not currently available");
+                            continue;
+                        }
+
                         var mediaSources = await GetChannelStreamMediaSources(host, channelId, cancellationToken).ConfigureAwait(false);
 
                         // Prefix the id with the host Id so that we can easily find it
@@ -132,6 +147,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     catch (Exception ex)
                     {
                         Logger.Error("Error opening tuner", ex);
+                    }
+                    finally
+                    {
+                        resourcePool.Release();
                     }
                 }
             }
@@ -170,23 +189,56 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 foreach (var host in hostsWithChannel)
                 {
+                    var resourcePool = GetLock(host.Url);
+                    Logger.Debug("GetChannelStream - Waiting on tuner resource pool");
+                    await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Logger.Debug("GetChannelStream - Unlocked resource pool");
                     try
                     {
-                        var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
-                        var resourcePool = GetLock(host.Url);
+                        // Check to make sure the tuner is available
+                        // If there's only one tuner, don't bother with the check and just let the tuner be the one to throw an error
+                        // If a streamId is specified then availibility has already been checked in GetChannelStreamMediaSources
+                        if (string.IsNullOrWhiteSpace(streamId) && hostsWithChannel.Count > 1)
+                        {
+                            if (!await IsAvailable(host, channelId, cancellationToken).ConfigureAwait(false))
+                            {
+                                Logger.Error("Tuner is not currently available");
+                                resourcePool.Release();
+                                continue;
+                            }
+                        }
 
-                        await AddMediaInfo(stream, false, resourcePool, cancellationToken).ConfigureAwait(false);
+                        var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+                        //await AddMediaInfo(stream, false, resourcePool, cancellationToken).ConfigureAwait(false);
                         return new Tuple<MediaSourceInfo, SemaphoreSlim>(stream, resourcePool);
                     }
                     catch (Exception ex)
                     {
                         Logger.Error("Error opening tuner", ex);
+
+                        resourcePool.Release();
                     }
                 }
             }
 
             throw new LiveTvConflictException();
         }
+
+        protected async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await IsAvailableInternal(tuner, channelId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error checking tuner availability", ex);
+                return false;
+            }
+        }
+
+        protected abstract Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
 
         /// <summary>
         /// The _semaphoreLocks
@@ -200,25 +252,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private SemaphoreSlim GetLock(string url)
         {
             return _semaphoreLocks.GetOrAdd(url, key => new SemaphoreSlim(1, 1));
-        }
-
-        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
-        {
-            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await AddMediaInfoInternal(mediaSource, isAudio, cancellationToken).ConfigureAwait(false);
-
-                // Leave the resource locked. it will be released upstream
-            }
-            catch (Exception)
-            {
-                // Release the resource if there's some kind of failure.
-                resourcePool.Release();
-
-                throw;
-            }
         }
 
         private async Task AddMediaInfoInternal(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
