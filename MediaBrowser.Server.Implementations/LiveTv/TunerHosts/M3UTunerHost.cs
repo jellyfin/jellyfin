@@ -25,7 +25,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
 
-        public M3UTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient) : base(config, logger, jsonSerializer, mediaEncoder)
+        public M3UTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
+            : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
             _httpClient = httpClient;
@@ -208,6 +209,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 return new List<MediaSourceInfo> { mediaSource };
             }
             return new List<MediaSourceInfo> { };
+        }
+
+        protected override Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
         }
     }
 }
