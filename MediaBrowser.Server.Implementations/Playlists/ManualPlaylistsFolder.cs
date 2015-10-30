@@ -34,11 +34,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }
         }
 
-        public override bool IsHiddenFromUser(User user)
-        {
-            return false;
-        }
-
         public override string CollectionType
         {
             get { return Model.Entities.CollectionType.Playlists; }
