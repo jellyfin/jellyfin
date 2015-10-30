@@ -126,6 +126,11 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                             {
                                 "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.8.0-32bit-static.7z"
                             };
+                        case Architecture.Arm:
+                            return new[]
+                            {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-arm.7z"
+                            };
                     }
                     break;
             }

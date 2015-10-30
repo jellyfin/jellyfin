@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public HttpListenerHost(IApplicationHost applicationHost,
-            ILogManager logManager, 
+            ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
             string defaultRedirectPath, params Assembly[] assembliesWithServices)
@@ -81,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public string GlobalResponse { get; set; }
-        
+
         public override void Configure(Container container)
         {
             HostConfig.Instance.DefaultRedirectPath = DefaultRedirectPath;
