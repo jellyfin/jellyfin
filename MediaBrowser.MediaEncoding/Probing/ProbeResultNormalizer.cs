@@ -130,12 +130,17 @@ namespace MediaBrowser.MediaEncoding.Probing
             var stream = new MediaStream
             {
                 Codec = streamInfo.codec_name,
-                CodecTag = streamInfo.codec_tag_string,
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index,
                 PixelFormat = streamInfo.pix_fmt
             };
+
+            // Filter out junk
+            if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                stream.CodecTag = streamInfo.codec_tag_string;
+            }
 
             if (streamInfo.tags != null)
             {
@@ -184,6 +189,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
                 stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase);
+
+                if (streamInfo.refs > 0)
+                {
+                    stream.RefFrames = streamInfo.refs;
+                }
             }
             else
             {
@@ -922,25 +932,26 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void UpdateFromMediaInfo(MediaSourceInfo video, MediaStream videoStream)
         {
-            if (video.Protocol == MediaProtocol.File)
+            if (video.Protocol == MediaProtocol.File && videoStream != null)
             {
-                if (videoStream != null)
+                try
                 {
-                    try
-                    {
-                        _logger.Debug("Running MediaInfo against {0}", video.Path);
+                    _logger.Debug("Running MediaInfo against {0}", video.Path);
 
-                        var result = new MediaInfoLib().GetVideoInfo(video.Path);
+                    var result = new MediaInfoLib().GetVideoInfo(video.Path);
 
-                        videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
-                        videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
-                        videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
-                        videoStream.RefFrames = result.RefFrames;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error running MediaInfo on {0}", ex, video.Path);
-                    }
+                    videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
+                    videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
+                    videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
+                    videoStream.RefFrames = result.RefFrames ?? videoStream.RefFrames;
+                }
+                catch (TypeLoadException)
+                {
+                    // This is non-essential. Don't spam the log
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error running MediaInfo on {0}", ex, video.Path);
                 }
             }
         }
