@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -97,12 +96,12 @@ namespace MediaBrowser.LocalMetadata.Images
             return list;
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, string path, bool checkForCacheKeyFiles, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, string path, IDirectoryService directoryService)
         {
-            return GetImages(item, new[] { path }, checkForCacheKeyFiles, directoryService);
+            return GetImages(item, new[] { path }, directoryService);
         }
 
-        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, bool checkForCacheKeyFiles, IDirectoryService directoryService)
+        public List<LocalImageInfo> GetImages(IHasImages item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             var files = paths.SelectMany(directoryService.GetFiles)
                 .Where(i =>
@@ -118,12 +117,6 @@ namespace MediaBrowser.LocalMetadata.Images
             var list = new List<LocalImageInfo>();
 
             PopulateImages(item, list, files, false, directoryService);
-
-            if (checkForCacheKeyFiles)
-            {
-                AddCacheKeyImage(files, list, ImageType.Primary);
-                AddCacheKeyImage(files, list, ImageType.Thumb);
-            }
 
             return list;
         }
@@ -381,26 +374,6 @@ namespace MediaBrowser.LocalMetadata.Images
             }
 
             return false;
-        }
-
-        private void AddCacheKeyImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, ImageType type)
-        {
-            var candidates = files
-                .Where(i => _fileSystem.GetFileNameWithoutExtension(i).StartsWith(type.ToString() + "_key_", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            var image = BaseItem.SupportedImageExtensions
-                .Select(i => candidates.FirstOrDefault(c => string.Equals(c.Extension, i, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault(i => i != null);
-
-            if (image != null)
-            {
-                images.Add(new LocalImageInfo
-                {
-                    FileInfo = image,
-                    Type = type
-                });
-            }
         }
 
         private FileSystemMetadata GetImage(IEnumerable<FileSystemMetadata> files, string name)

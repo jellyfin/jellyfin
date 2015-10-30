@@ -47,7 +47,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 return false;
             }
-            
+
             return true;
         }
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             try
             {
-                return new LocalImageProvider(_fileSystem).GetImages(item, path, true, directoryService);
+                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
             }
             catch (DirectoryNotFoundException)
             {
