@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Music
             var obj = _jsonSerializer.DeserializeFromFile<FanartArtistResponse>(path);
 
             PopulateImages(list, obj.artistbackground, ImageType.Backdrop, 1920, 1080);
-            PopulateImages(list, obj.artistthumb, ImageType.Thumb, 500, 281);
+            PopulateImages(list, obj.artistthumb, ImageType.Primary, 500, 281);
             PopulateImages(list, obj.hdmusiclogo, ImageType.Logo, 800, 310);
             PopulateImages(list, obj.musicbanner, ImageType.Banner, 1000, 185);
             PopulateImages(list, obj.musiclogo, ImageType.Logo, 400, 155);
