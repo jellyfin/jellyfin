@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "generic.png";
+                //return urlPrefix + "generic.png";
             }
             if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {

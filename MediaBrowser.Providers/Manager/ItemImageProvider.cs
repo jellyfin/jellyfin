@@ -505,6 +505,11 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
+            if (!item.IsSaveLocalMetadataEnabled())
+            {
+                return true;
+            }
+
             return false;
         }
 

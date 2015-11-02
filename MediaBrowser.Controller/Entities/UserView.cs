@@ -141,7 +141,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool IsEligibleForEnhancedView(string viewType)
         {
-            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music };
+            var types = new[] { CollectionType.Movies, CollectionType.TvShows };
 
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }

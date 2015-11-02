@@ -564,8 +564,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
 
-            var replaceImages = new List<ImageType>();
-
             //if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
             //{
             //    isNew = true;
@@ -577,13 +575,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             //    replaceImages.Add(ImageType.Primary);
             //}
 
-            if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+            if (!item.HasImage(ImageType.Primary))
             {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
-            }
-            else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
-            {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+                {
+                    item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+                }
+                else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
+                {
+                    item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                }
             }
 
             if (string.IsNullOrEmpty(item.Name))
@@ -593,8 +594,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
-                ForceSave = isNew,
-                ReplaceImages = replaceImages.Distinct().ToList()
+                ForceSave = isNew
 
             }, cancellationToken);
 
@@ -658,13 +658,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.IndexNumber = info.EpisodeNumber;
             item.ParentIndexNumber = info.SeasonNumber;
 
-            if (!string.IsNullOrWhiteSpace(info.ImagePath))
+            if (!item.HasImage(ImageType.Primary))
             {
-                item.SetImagePath(ImageType.Primary, info.ImagePath);
-            }
-            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
-            {
-                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(info.ImagePath))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImagePath);
+                }
+                else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                }
             }
 
             if (isNew)
@@ -761,13 +764,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             recording.IsSeries = info.IsSeries;
 
-            if (!string.IsNullOrWhiteSpace(info.ImagePath))
+            if (!item.HasImage(ImageType.Primary))
             {
-                item.SetImagePath(ImageType.Primary, info.ImagePath);
-            }
-            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
-            {
-                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(info.ImagePath))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImagePath);
+                }
+                else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                }
             }
 
             var statusChanged = info.Status != recording.Status;
