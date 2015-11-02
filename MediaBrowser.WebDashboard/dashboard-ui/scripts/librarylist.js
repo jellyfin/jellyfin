@@ -1011,9 +1011,14 @@
             return;
         }
 
+        if (element.classList.contains('hasTapHold')) {
+            return;
+        }
+
         require(['hammer'], function (Hammer) {
 
             var hammertime = new Hammer(element);
+            element.classList.add('hasTapHold');
 
             hammertime.on('press', onTapHold);
             hammertime.on('pressup', onTapHoldUp);

@@ -218,7 +218,7 @@
             html += '</div>';
 
             html += '<div class="detailSectionContent">';
-            html += '<div class="childrenItemsContainer itemsContainer fullWidthItemsContainer" style="text-align: left;">';
+            html += '<div class="childrenItemsContainer itemsContainer" style="text-align: left;">';
             html += '<ul class="itemsListview ui-listview" >';
 
             var l = group.Items.length - 1;

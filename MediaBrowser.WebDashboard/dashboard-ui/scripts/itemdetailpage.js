@@ -922,6 +922,8 @@
                 elem.classList.remove('hiddenScrollX');
             }
 
+            $(elem).createCardMenus();
+
             if (item.Type == "BoxSet") {
 
                 var collectionItemTypes = [

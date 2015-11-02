@@ -164,20 +164,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
             }
 
-            //request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;
-
             return request;
-        }
-
-        private static IPEndPoint BindIPEndPointCallback(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
-        {
-            // Prefer local ipv4
-            if (remoteEndPoint.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                return new IPEndPoint(IPAddress.IPv6Any, 0);
-            }
-
-            return new IPEndPoint(IPAddress.Any, 0);
         }
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
