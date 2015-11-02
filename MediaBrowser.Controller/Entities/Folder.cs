@@ -468,34 +468,25 @@ namespace MediaBrowser.Controller.Entities
                 {
                     BaseItem currentChild;
 
-                    if (currentChildren.TryGetValue(child.Id, out currentChild))
+                    if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
                     {
-                        if (IsValidFromResolver(currentChild, child))
+                        var currentChildLocationType = currentChild.LocationType;
+                        if (currentChildLocationType != LocationType.Remote &&
+                            currentChildLocationType != LocationType.Virtual)
                         {
-                            var currentChildLocationType = currentChild.LocationType;
-                            if (currentChildLocationType != LocationType.Remote &&
-                                currentChildLocationType != LocationType.Virtual)
-                            {
-                                currentChild.DateModified = child.DateModified;
-                            }
+                            currentChild.DateModified = child.DateModified;
+                        }
 
-                            await UpdateIsOffline(currentChild, false).ConfigureAwait(false);
-                            validChildren.Add(currentChild);
-                        }
-                        else
-                        {
-                            child.SetParent(this);
-                            newItems.Add(child);
-                            validChildren.Add(child);
-                        }
+                        await UpdateIsOffline(currentChild, false).ConfigureAwait(false);
+                        validChildren.Add(currentChild);
+
+                        continue;
                     }
-                    else
-                    {
-                        // Brand new item - needs to be added
-                        child.SetParent(this);
-                        newItems.Add(child);
-                        validChildren.Add(child);
-                    }
+
+                    // Brand new item - needs to be added
+                    child.SetParent(this);
+                    newItems.Add(child);
+                    validChildren.Add(child);
                 }
 
                 // If any items were added or removed....
@@ -531,6 +522,8 @@ namespace MediaBrowser.Controller.Entities
 
                         foreach (var item in actualRemovals)
                         {
+                            Logger.Debug("Removed item: " + item.Path);
+
                             item.SetParent(null);
                             item.IsOffline = false;
                             await LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }).ConfigureAwait(false);

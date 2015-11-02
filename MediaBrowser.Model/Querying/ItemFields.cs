@@ -166,11 +166,6 @@
         PrimaryImageAspectRatio,
 
         /// <summary>
-        /// The original primary image aspect ratio
-        /// </summary>
-        OriginalPrimaryImageAspectRatio,
-        
-        /// <summary>
         /// The revenue
         /// </summary>
         Revenue,

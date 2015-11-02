@@ -62,26 +62,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         break;
                     }
 
-                case "NesBox":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.SetProviderId(MetadataProviders.NesBox, val);
-                        }
-                        break;
-                    }
-
-                case "NesBoxRom":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.SetProviderId(MetadataProviders.NesBoxRom, val);
-                        }
-                        break;
-                    }
-
                 case "Players":
                     {
                         var val = reader.ReadElementContentAsString();

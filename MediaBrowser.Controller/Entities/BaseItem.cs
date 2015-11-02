@@ -1154,6 +1154,23 @@ namespace MediaBrowser.Controller.Entities
 
         public int? GetParentalRatingValue()
         {
+            var rating = CustomRating;
+
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                rating = OfficialRating;
+            }
+
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                return null;
+            }
+
+            return LocalizationManager.GetRatingLevel(rating);
+        }
+
+        public int? GetInheritedParentalRatingValue()
+        {
             var rating = CustomRatingForComparison;
 
             if (string.IsNullOrWhiteSpace(rating))

@@ -106,12 +106,6 @@ namespace MediaBrowser.Model.LiveTv
         public double? PrimaryImageAspectRatio { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary image aspect ratio, before image enhancements.
-        /// </summary>
-        /// <value>The original primary image aspect ratio.</value>
-        public double? OriginalPrimaryImageAspectRatio { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>

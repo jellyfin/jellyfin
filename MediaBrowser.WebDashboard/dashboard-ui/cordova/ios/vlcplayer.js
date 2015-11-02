@@ -225,7 +225,14 @@
                 return;
             }
 
-            if (result.state == 4 || result.state == 6) {
+            if (result.type === 'next') {
+                console.log('skip to next audio track'); // typically fired by remote control/lock screen controls
+                MediaPlayer.nextTrack();
+            } else if (result.type === 'previous') {
+                console.log('skip to previous track'); // typically fired by remote/control/lock screen controls
+                MediaPlayer.previousTrack();
+            }
+            else if (result.state == 4 || result.state == 6) {
                 reportEvent('playbackstop', result);
             }
             else {

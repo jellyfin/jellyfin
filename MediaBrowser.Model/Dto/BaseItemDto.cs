@@ -531,12 +531,6 @@ namespace MediaBrowser.Model.Dto
         public double? PrimaryImageAspectRatio { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary image aspect ratio, before image enhancements.
-        /// </summary>
-        /// <value>The original primary image aspect ratio.</value>
-        public double? OriginalPrimaryImageAspectRatio { get; set; }
-
-        /// <summary>
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>

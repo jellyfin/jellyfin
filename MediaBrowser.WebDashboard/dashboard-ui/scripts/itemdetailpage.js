@@ -859,6 +859,8 @@
 
             var html = '';
 
+            var scrollX = false;
+
             if (item.Type == "MusicAlbum") {
 
                 html = LibraryBrowser.getListViewHtml({
@@ -874,9 +876,12 @@
 
             }
             else if (item.Type == "Series") {
+
+                scrollX = enableScrollX();
+
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "detailPagePortrait",
+                    shape: getPortraitShape(),
                     showTitle: false,
                     centerText: true,
                     context: context,
@@ -910,6 +915,12 @@
             var elem = page.querySelector('.childrenItemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
+
+            if (scrollX) {
+                elem.classList.add('hiddenScrollX');
+            } else {
+                elem.classList.remove('hiddenScrollX');
+            }
 
             if (item.Type == "BoxSet") {
 

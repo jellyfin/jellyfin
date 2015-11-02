@@ -36,8 +36,6 @@ namespace MediaBrowser.Model.Entities
         MusicBrainzArtist = 10,
         MusicBrainzReleaseGroup = 11,
         Zap2It = 12,
-        NesBox = 13,
-        NesBoxRom = 14,
         TvRage = 15,
         AudioDbArtist = 16,
         AudioDbAlbum = 17,

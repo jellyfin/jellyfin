@@ -88,7 +88,8 @@
                 items: result.Items,
                 shape: "auto",
                 centerText: true,
-                lazy: true
+                lazy: true,
+                coverImage: item.Type == 'PhotoAlbum'
             };
 
             if (view == "Backdrop") {

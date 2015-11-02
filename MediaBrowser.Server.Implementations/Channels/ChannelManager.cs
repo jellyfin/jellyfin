@@ -408,6 +408,9 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
+            var parentFolder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolderId = parentFolder.Id;
+
             var id = GetInternalChannelId(channelInfo.Name);
 
             var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
@@ -450,6 +453,13 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 isNew = true;
             }
+            item.ChannelId = channelId;
+
+            if (item.ParentId != parentFolderId)
+            {
+                isNew = true;
+            }
+            item.ParentId = parentFolderId;
 
             item.OfficialRating = GetOfficialRating(channelInfo.ParentalRating);
             item.Overview = channelInfo.Description;
@@ -1254,13 +1264,18 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
-
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
             }
 
             var channelItem = (IChannelItem)item;
 
             channelItem.ChannelId = internalChannelId.ToString("N");
+
+            if (item.ParentId != internalChannelId)
+            {
+                isNew = true;
+            }
+            item.ParentId = internalChannelId;
 
             if (!string.Equals(channelItem.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
             {

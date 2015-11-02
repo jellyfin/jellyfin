@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public const int MigrationVersion = 2;
+        public const int MigrationVersion = 4;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {
@@ -66,6 +66,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress.RegisterAction(p => progress.Report(45 + (.55 * p)));
             await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(100);
+
+            await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)

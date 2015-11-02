@@ -14,9 +14,9 @@
 
     function updateProductInfo(product) {
 
-        if (product.id == 'appunlock') {
-            product.owned = false;
-        }
+        //if (product.id == 'appunlock') {
+        //    product.owned = false;
+        //}
 
         updatedProducts = updatedProducts.filter(function (r) {
             return r.id != product.id;
@@ -51,20 +51,42 @@
             enteredEmail = email;
         }
 
+        validationCache = {};
+
         var id = getStoreFeatureId(feature);
         store.order(id);
     }
 
     function restorePurchase(id) {
+        validationCache = {};
         store.refresh();
     }
 
+    var validationCache = {};
+
     function validateProduct(product, callback) {
+
+        var productId = product.id;
+        var cacheKey = productId + (product.transaction.id || '');
+
+        var cachedResult = validationCache[cacheKey];
+        if (cachedResult && (new Date().getTime() - cachedResult.date) < 60000) {
+            if (cachedResult.result) {
+                callback(true, product);
+            } else {
+                callback(false, {
+                    code: cachedResult.errorCode,
+                    error: {
+                        message: cachedResult.errorMessage
+                    }
+                });
+            }
+            return;
+        }
 
         // product attributes:
         // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
 
-        var productId = product.id;
         var receipt = product.transaction.appStoreReceipt;
         var price = product.price;
 
@@ -94,7 +116,7 @@
 
         } else {
 
-            promise = ApiClient.ajax({
+            promise = HttpClient.send({
                 type: "POST",
                 url: "http://mb3admin.com/admin/service/appstore/register",
                 data: JSON.stringify(postData),
@@ -107,11 +129,15 @@
 
         promise.done(function () {
 
+            setCachedResult(cacheKey, true);
+
             callback(true, product);
 
         }).fail(function (e) {
 
             if (e.status == 402) {
+
+                setCachedResult(cacheKey, false, store.PURCHASE_EXPIRED, 'Subscription Expired');
 
                 callback(false, {
                     code: store.PURCHASE_EXPIRED,
@@ -121,7 +147,9 @@
                 });
 
             } else {
-                alert('validate fail - other');
+                //alert('validate fail - other ' + e.status);
+
+                validationCache = {};
 
                 callback(false, {
                     code: store.CONNECTION_FAILED,
@@ -131,6 +159,16 @@
                 });
             }
         });
+    }
+
+    function setCachedResult(key, result, code, message) {
+
+        validationCache[key] = {
+            date: new Date().getTime(),
+            result: result,
+            errorCode: code,
+            errorMessage: message
+        };
     }
 
     function initProduct(id, requiresVerification, type) {
@@ -221,6 +259,7 @@
 
             o.id = getStoreFeatureId(o.feature);
             o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
+            o.owned = getProduct(o.feature).owned;
             return o;
         });
 

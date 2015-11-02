@@ -463,12 +463,15 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var folder = (Folder)item;
 
-                dto.ChildCount = GetChildCount(folder, user);
-
-                // These are just far too slow. 
-                if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is IChannelItem) && !(folder is ICollectionFolder))
+                if (!(folder is IChannelItem) && !(folder is Channel))
                 {
-                    SetSpecialCounts(folder, user, dto, fields, syncProgress);
+                    dto.ChildCount = GetChildCount(folder, user);
+
+                    // These are just far too slow. 
+                    if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is ICollectionFolder))
+                    {
+                        SetSpecialCounts(folder, user, dto, fields, syncProgress);
+                    }
                 }
 
                 dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
@@ -1761,14 +1764,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return;
-            }
-
-            if (fields.Contains(ItemFields.OriginalPrimaryImageAspectRatio))
-            {
-                if (size.Width > 0 && size.Height > 0)
-                {
-                    dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
-                }
             }
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();

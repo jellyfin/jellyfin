@@ -387,7 +387,11 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            $('.categorySyncButton', page).visible(user.Policy.EnableSync);
+            var item = {
+                SupportsSync: true
+            };
+
+            $('.categorySyncButton', page).visible(isAvailable(item));
         });
     }
 

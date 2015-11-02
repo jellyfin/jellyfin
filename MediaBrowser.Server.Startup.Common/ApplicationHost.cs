@@ -640,11 +640,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
+            try
+            {
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
 
-            await repo.Initialize().ConfigureAwait(false);
+                await repo.Initialize().ConfigureAwait(false);
 
-            return repo;
+                return repo;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error opening user db", ex);
+                throw;
+            }
         }
 
         /// <summary>
