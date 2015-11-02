@@ -120,25 +120,21 @@ namespace MediaBrowser.Controller.Entities
                         return await GetLiveTvView(queryParent, user, query).ConfigureAwait(false);
                     }
 
+                case CollectionType.Photos:
                 case CollectionType.Books:
                 case CollectionType.HomeVideos:
+                case CollectionType.Games:
                 case CollectionType.MusicVideos:
                     return GetResult(queryParent.GetChildren(user, true), queryParent, query);
 
                 case CollectionType.Folders:
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
 
-                case CollectionType.Games:
-                    return await GetGameView(user, queryParent, query).ConfigureAwait(false);
-
                 case CollectionType.Playlists:
                     return await GetPlaylistsView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.BoxSets:
                     return await GetBoxsetView(queryParent, user, query).ConfigureAwait(false);
-
-                case CollectionType.Photos:
-                    return await GetPhotosView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.TvShows:
                     return await GetTvView(queryParent, user, query).ConfigureAwait(false);

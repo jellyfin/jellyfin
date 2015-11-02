@@ -1293,13 +1293,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
 
-            var items = GetItemIds(query).Select(GetItemById);
-
             if (user != null)
             {
                 AddUserToQuery(query, user);
-                items = items.Where(i => i.IsVisibleStandalone(user));
             }
+
+            var items = GetItemIds(query).Select(GetItemById);
 
             return items;
         }
@@ -1320,7 +1319,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
         {
-            
+            if (query.AncestorIds.Length == 0)
+            {
+                // Need to filter on user folders
+            }
+
+            query.MaxParentalRating = user.Policy.MaxParentalRating;
+
+            // handle blocking by tags
+
+            // handle unrated filter
         }
 
         /// <summary>

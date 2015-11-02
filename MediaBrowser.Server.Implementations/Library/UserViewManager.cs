@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -74,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     }
-                    else if (plainFolderIds.Contains(folder.Id))
+                    else if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
                     }
@@ -100,7 +101,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     }
-                    else if (plainFolderIds.Contains(folder.Id))
+                    else if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     }
@@ -123,28 +124,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(parents, list, CollectionType.TvShows, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
             }
 
-            parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Music, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.GetViewType(user)))
-                .ToList();
-
-            if (parents.Count > 0)
-            {
-                list.Add(await GetUserView(parents, list, CollectionType.Music, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
-            }
-
             parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Movies, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.GetViewType(user)))
                .ToList();
 
             if (parents.Count > 0)
             {
                 list.Add(await GetUserView(parents, list, CollectionType.Movies, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
-            }
-
-            parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Games, StringComparison.OrdinalIgnoreCase))
-               .ToList();
-
-            if (parents.Count > 0)
-            {
-                list.Add(await GetUserView(parents, list, CollectionType.Games, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayFoldersView)
@@ -245,7 +230,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var currentUser = user;
 
-            var libraryItems = GetItemsForLatestItems(user, request.ParentId, includeTypes).Where(i =>
+            var libraryItems = GetItemsForLatestItems(user, request.ParentId, includeTypes, request.Limit ?? 10).Where(i =>
             {
                 if (request.IsPlayed.HasValue)
                 {
@@ -293,23 +278,34 @@ namespace MediaBrowser.Server.Implementations.Library
             return list;
         }
 
-        private IEnumerable<BaseItem> GetItemsForLatestItems(User user, string parentId, string[] includeItemTypes)
+        private IEnumerable<BaseItem> GetItemsForLatestItems(User user, string parentId, string[] includeItemTypes, int limit)
         {
             var parentIds = string.IsNullOrEmpty(parentId)
               ? new string[] { }
               : new[] { parentId };
+
+            if (parentIds.Length == 0)
+            {
+                parentIds = user.RootFolder.GetChildren(user, true)
+                    .OfType<Folder>()
+                    .Select(i => i.Id.ToString("N"))
+                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i))
+                    .ToArray();
+            }
+
+            var excludeItemTypes = includeItemTypes.Length == 0 ? new[] { "ChannelItem", "LiveTvItem", typeof(Person).Name, typeof(Studio).Name, typeof(Year).Name, typeof(GameGenre).Name, typeof(MusicGenre).Name, typeof(Genre).Name } : new string[] { };
 
             return _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
                 SortOrder = SortOrder.Descending,
                 SortBy = new[] { ItemSortBy.DateCreated },
-                IsFolder = false,
-                ExcludeItemTypes = new[] { "ChannelItem", "Recording" },
-                ExcludeLocationTypes = new[] { LocationType.Virtual }
+                IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
+                ExcludeItemTypes = excludeItemTypes,
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                Limit = limit * 20
 
             }, user, parentIds);
-
         }
     }
 }

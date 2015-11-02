@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -105,7 +106,9 @@ namespace MediaBrowser.Controller.Entities
                 CollectionType.Photos,
                 CollectionType.Playlists,
                 CollectionType.BoxSets,
-                CollectionType.MusicVideos
+                CollectionType.MusicVideos,
+                CollectionType.Games,
+                CollectionType.Music
             };
 
             var collectionFolder = folder as ICollectionFolder;
@@ -134,6 +137,13 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        }
+
+        public static bool IsEligibleForEnhancedView(string viewType)
+        {
+            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music };
+
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         [IgnoreDataMember]

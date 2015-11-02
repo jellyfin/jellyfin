@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
-        private const int LatestSchemaVersion = 19;
+        private const int LatestSchemaVersion = 25;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -133,13 +133,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_TypedBaseItems on TypedBaseItems(guid)",
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
-                                "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, PRIMARY KEY (ItemId, AncestorId))",
+                                "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds on AncestorIds(ItemId,AncestorId)",
                                 
                                 "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+                                "create index if not exists idxPeopleItemId on People(ItemId)",
+                                "create index if not exists idxPeopleName on People(Name)",
 
                                 "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
                                 "create index if not exists idx_"+ChaptersTableName+" on "+ChaptersTableName+"(ItemId, ChapterIndex)",
@@ -155,6 +157,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.RunQueries(queries, _logger);
 
+            _connection.AddColumn(_logger, "AncestorIds", "AncestorIdText", "Text");
+            
             _connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "EndDate", "DATETIME");
@@ -214,6 +218,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ExternalServiceId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "Tags", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsFolder", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
 
             PrepareStatements();
 
@@ -416,6 +421,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ParentId",
                 "Genres",
                 "ParentalRatingValue",
+                "InheritedParentalRatingValue",
                 "SchemaVersion",
                 "SortName",
                 "RunTimeTicks",
@@ -483,16 +489,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@PersonType");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@SortOrder");
             _savePersonCommand.Parameters.Add(_savePersonCommand, "@ListOrder");
-            
+
             // Ancestors
             _deleteAncestorsCommand = _connection.CreateCommand();
             _deleteAncestorsCommand.CommandText = "delete from AncestorIds where ItemId=@Id";
             _deleteAncestorsCommand.Parameters.Add(_deleteAncestorsCommand, "@Id");
 
             _saveAncestorCommand = _connection.CreateCommand();
-            _saveAncestorCommand.CommandText = "insert into AncestorIds (ItemId, AncestorId) values (@ItemId, @AncestorId)";
+            _saveAncestorCommand.CommandText = "insert into AncestorIds (ItemId, AncestorId, AncestorIdText) values (@ItemId, @AncestorId, @AncestorIdText)";
             _saveAncestorCommand.Parameters.Add(_saveAncestorCommand, "@ItemId");
             _saveAncestorCommand.Parameters.Add(_saveAncestorCommand, "@AncestorId");
+            _saveAncestorCommand.Parameters.Add(_saveAncestorCommand, "@AncestorIdText");
 
             // Chapters
             _deleteChaptersCommand = _connection.CreateCommand();
@@ -648,7 +655,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
-                    _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue();
+                    _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue() ?? 0;
+                    _saveItemCommand.GetParameter(index++).Value = item.GetInheritedParentalRatingValue() ?? 0;
 
                     _saveItemCommand.GetParameter(index++).Value = LatestSchemaVersion;
                     _saveItemCommand.GetParameter(index++).Value = item.SortName;
@@ -705,7 +713,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Tags.ToArray());
                     _saveItemCommand.GetParameter(index++).Value = item.IsFolder;
-           
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1368,7 +1376,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
 
                 //_logger.Debug(cmd.CommandText);
-                
+
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
                     while (reader.Read())
@@ -1885,7 +1893,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.MaxParentalRating.HasValue)
             {
-                whereClauses.Add("(ParentalRatingValue is NULL OR ParentalRatingValue<=@MaxParentalRating)");
+                whereClauses.Add("InheritedParentalRatingValue<=@MaxParentalRating");
                 cmd.Parameters.Add(cmd, "@MaxParentalRating", DbType.Int32).Value = query.MaxParentalRating.Value;
             }
 
@@ -1893,11 +1901,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 if (query.HasParentalRating.Value)
                 {
-                    whereClauses.Add("ParentalRatingValue NOT NULL");
+                    whereClauses.Add("InheritedParentalRatingValue > 0");
                 }
                 else
                 {
-                    whereClauses.Add("ParentalRatingValue IS NULL");
+                    whereClauses.Add("InheritedParentalRatingValue = 0");
                 }
             }
 
@@ -1916,8 +1924,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.AncestorIds.Length > 1)
             {
-                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + i + "'").ToArray());
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + new Guid(i).ToString("N") + "'").ToArray());
+                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
             if (query.ExcludeLocationTypes.Length == 1)
             {
@@ -1986,6 +1994,59 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(Channel)
         };
 
+        public async Task UpdateInheritedValues(CancellationToken cancellationToken)
+        {
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                using (var cmd = _connection.CreateCommand())
+                {
+                    cmd.CommandText = "update TypedBaseItems set InheritedParentalRatingValue = (select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems as T where guid in (Select AncestorId from AncestorIds where ItemId=T.guid))))";
+
+                    cmd.Transaction = transaction;
+                    cmd.ExecuteNonQuery();
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Error running query:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
         private static Dictionary<string, string[]> GetTypeMapDictionary()
         {
             var dict = new Dictionary<string, string[]>();
@@ -1996,6 +2057,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             dict["ChannelItem"] = new[] { typeof(ChannelVideoItem).FullName, typeof(ChannelAudioItem).FullName, typeof(ChannelFolderItem).FullName };
+            dict["LiveTvItem"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName, typeof(LiveTvChannel).FullName, typeof(LiveTvProgram).FullName };
             dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
             dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
             dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };
@@ -2053,7 +2115,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteStreamsCommand.GetParameter(0).Value = id;
                 _deleteStreamsCommand.Transaction = transaction;
                 _deleteStreamsCommand.ExecuteNonQuery();
-                
+
                 // Delete ancestors
                 _deleteAncestorsCommand.GetParameter(0).Value = id;
                 _deleteAncestorsCommand.Transaction = transaction;
@@ -2063,7 +2125,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
                 _deleteItemCommand.ExecuteNonQuery();
-                
+
                 transaction.Commit();
             }
             catch (OperationCanceledException)
@@ -2316,6 +2378,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 _saveAncestorCommand.GetParameter(0).Value = itemId;
                 _saveAncestorCommand.GetParameter(1).Value = ancestorId;
+                _saveAncestorCommand.GetParameter(2).Value = ancestorId.ToString("N");
 
                 _saveAncestorCommand.Transaction = transaction;
 
@@ -2550,7 +2613,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveStreamCommand.GetParameter(index++).Value = stream.CodecTag;
-                    
+
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
                 }

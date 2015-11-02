@@ -183,6 +183,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>List&lt;BaseItem&gt;.</returns>
         IEnumerable<BaseItem> GetItemList(InternalItemsQuery query);
+
+        /// <summary>
+        /// Updates the inherited values.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task UpdateInheritedValues(CancellationToken cancellationToken);
     }
 }
 

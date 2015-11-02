@@ -114,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return 10000000;
             }
 
-            return 2000000;
+            return 4000000;
         }
 
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)

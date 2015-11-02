@@ -78,6 +78,7 @@ namespace MediaBrowser.Api.UserLibrary
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(request);
+            dtoOptions.Fields = new List<ItemFields>();
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -141,9 +142,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         private bool IsEligibleForSpecialView(ICollectionFolder view)
         {
-            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Games, CollectionType.Music, CollectionType.Photos };
-
-            return types.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            return UserView.IsEligibleForEnhancedView(view.CollectionType);
         }
     }
 

@@ -162,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 NameContains = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                Limit = (query.Limit.HasValue ? (int?)(query.Limit.Value * 2) : null),
+                Limit = query.Limit,
 
             }, user, new string[] { });
 
