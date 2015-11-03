@@ -3,8 +3,11 @@ using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -46,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             return _hasChildren.Value;
         }
 
-        protected override System.Threading.Tasks.Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Controller.Providers.MetadataRefreshOptions refreshOptions, Controller.Providers.IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             _hasChildren = null;
             return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);

@@ -1,6 +1,6 @@
 {
   "name": "iron-media-query",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Lets you bind to a CSS media query",
   "authors": [
     "The Polymer Authors"

@@ -14974,6 +14974,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         width: 100%;
         height: 100%;
         opacity: 0;
+        white-space: nowrap;
       }
 
       .layer-1 {
@@ -16907,6 +16908,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     :host(:not(.iron-selected)) > .tab-content {
       opacity: 0.8;
+
+      @apply(--paper-tab-content-unselected);
     }
 
     :host(:focus) .tab-content {
@@ -16914,9 +16917,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       font-weight: 700;
     }
 
-    #ink {
+    paper-ripple {
       color: var(--paper-tab-ink, --paper-yellow-a100);
-      pointer-events: none;
     }
 
     .tab-content > ::content > a {
@@ -16937,10 +16939,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <content></content>
     </div>
 
-    <template is="dom-if" if="[[!noink]]">
-      <paper-ripple id="ink" initial-opacity="0.95" opacity-decay-velocity="0.98"></paper-ripple>
-    </template>
-
   </template>
 
 </dom-module>
@@ -16953,22 +16951,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     behaviors: [
       Polymer.IronControlState,
-      Polymer.IronButtonState
+      Polymer.IronButtonState,
+      Polymer.PaperRippleBehavior
     ],
-
-    properties: {
-
-      /**
-       * If true, ink ripple effect is disabled.
-       *
-       * @attribute noink
-       */
-      noink: {
-        type: Boolean,
-        value: false
-      }
-
-    },
 
     hostAttributes: {
       role: 'tab'
@@ -16976,6 +16961,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     listeners: {
       down: '_updateNoink'
+    },
+
+    ready: function() {
+      var ripple = this.getRipple();
+      ripple.initialOpacity = 0.95;
+      ripple.opacityDecayVelocity = 0.98;
     },
 
     attached: function() {
@@ -17012,6 +17003,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       -webkit-tap-highlight-color: rgba(0,0,0,0);
 
       @apply(--paper-tabs);
+    }
+
+    :host-context([dir=rtl]) {
+      @apply(--layout-horizontal-reverse);
     }
 
     #tabsContainer {
@@ -17120,11 +17115,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     properties: {
 
       /**
-       * If true, ink ripple effect is disabled.
+       * If true, ink ripple effect is disabled. When this property is changed,
+       * all descendant `<paper-tab>` elements have their `noink` property
+       * changed to the new value as well.
        */
       noink: {
         type: Boolean,
-        value: false
+        value: false,
+        observer: '_noinkChanged'
       },
 
       /**
@@ -17223,8 +17221,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       'iron-deselect': '_onIronDeselect'
     },
 
+    created: function() {
+      this._holdJob = null;
+    },
+
     ready: function() {
       this.setScrollDirection('y', this.$.tabsContainer);
+    },
+
+    _noinkChanged: function(noink) {
+      var childTabs = Polymer.dom(this).querySelectorAll('paper-tab');
+      childTabs.forEach(noink ? this._setNoinkAttribute : this._removeNoinkAttribute);
+    },
+
+    _setNoinkAttribute: function(element) {
+      element.setAttribute('noink', '');
+    },
+
+    _removeNoinkAttribute: function(element) {
+      element.removeAttribute('noink');
     },
 
     _computeScrollButtonClass: function(hideThisButton, scrollable, hideScrollButtons) {

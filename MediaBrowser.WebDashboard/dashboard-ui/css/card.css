@@ -67,7 +67,7 @@
 }
 
 .homeTopViews .cardImage {
-    border-radius: 5px;
+    border-radius: 2px;
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
@@ -228,7 +228,6 @@
 
 .homeTopViews .cardText {
     font-size: 15px;
-    padding-top: 10px;
 }
 
 .cardButtonContainer {

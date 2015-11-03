@@ -501,7 +501,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .primaryDetailsContainer {
     float: left;
     padding: .75em 0 0 1.5em;
-    width: 68%;
+    width: 66%;
 }
 
 .portraitDetailImageContainer + .primaryDetailsContainer {
@@ -914,9 +914,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 @media all and (max-width: 600px) {
-
-    .primaryDetailsContainer {
-    }
 
     .portraitDetailImageContainer + .primaryDetailsContainer {
         width: 65%;

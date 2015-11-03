@@ -416,7 +416,7 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetMediaFolders request)
         {
-            var items = _libraryManager.GetUserRootFolder().Children.OrderBy(i => i.SortName).ToList();
+            var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
 
             if (request.IsHidden.HasValue)
             {

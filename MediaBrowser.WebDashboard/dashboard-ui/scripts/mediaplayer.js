@@ -37,6 +37,7 @@
         };
 
         var canPlayAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
+        var canPlayMp3 = document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '');
 
         self.getVideoQualityOptions = function (videoWidth, videoHeight) {
 
@@ -143,7 +144,7 @@
                     Container: 'mp4,m4v',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
+                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
@@ -152,7 +153,7 @@
                     Container: 'mkv,mov',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
+                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
@@ -165,10 +166,12 @@
                 });
             }
 
-            profile.DirectPlayProfiles.push({
-                Container: 'mp3',
-                Type: 'Audio'
-            });
+            if (canPlayMp3) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio'
+                });
+            }
 
             if (canPlayAac) {
                 profile.DirectPlayProfiles.push({
