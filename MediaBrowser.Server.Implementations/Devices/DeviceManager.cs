@@ -18,6 +18,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -27,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly IUserManager _userManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _libraryMonitor;
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly INetworkManager _network;
 
@@ -38,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         /// </summary>
         public event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
 
-        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger, INetworkManager network)
+        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IServerConfigurationManager config, ILogger logger, INetworkManager network)
         {
             _repo = repo;
             _userManager = userManager;
@@ -187,11 +190,6 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
         }
 
-        private string GetUploadPath(string deviceId)
-        {
-            return GetUploadPath(GetDevice(deviceId));
-        }
-
         private string GetUploadPath(DeviceInfo device)
         {
             if (!string.IsNullOrWhiteSpace(device.CameraUploadPath))
@@ -205,14 +203,79 @@ namespace MediaBrowser.Server.Implementations.Devices
                 return config.CameraUploadPath;
             }
 
-            var path = Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
+            var path = DefaultCameraUploadsPath;
 
             if (config.EnableCameraUploadSubfolders)
             {
                 path = Path.Combine(path, _fileSystem.GetValidFilename(device.Name));
             }
 
+            EnsureMediaLibrarySetup();
+
             return path;
+        }
+
+        private string DefaultCameraUploadsPath
+        {
+            get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads"); }
+        }
+
+        internal void EnsureMediaLibrarySetup()
+        {
+            //EnsureMediaLibrarySetup(DefaultCameraUploadsPath, false);
+        }
+
+        private void EnsureMediaLibrarySetup(string libraryPath, bool force)
+        {
+            var requiresSetup = false;
+
+            var path = Path.Combine(_config.ApplicationPaths.DefaultUserViewsPath, "Camera Uploads");
+
+            var collectionMarkerFile = Path.Combine(path, CollectionType.Photos + ".collection");
+            if (!_fileSystem.FileExists(collectionMarkerFile))
+            {
+                requiresSetup = true;
+            }
+
+            var shortcutFile = Path.Combine(path, "camerauploads.mblink");
+            try
+            {
+                if (!string.Equals(_fileSystem.ReadAllText(shortcutFile), libraryPath))
+                {
+                    requiresSetup = true;
+                }
+            }
+            catch
+            {
+                requiresSetup = true;
+            }
+
+            if (requiresSetup)
+            {
+                if (!force)
+                {
+                    var extensions = new[] { ".jpg", ".png" };
+                    var hasPhotos = _fileSystem.GetFiles(libraryPath, true).Any(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
+
+                    // Nothing to do
+                    if (!hasPhotos)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            if (requiresSetup)
+            {
+                Directory.CreateDirectory(path);
+
+                using (File.Create(collectionMarkerFile))
+                {
+
+                }
+
+                _fileSystem.CreateShortcut(shortcutFile, libraryPath);
+            }
         }
 
         public async Task UpdateDeviceInfo(string id, DeviceOptions options)
@@ -271,6 +334,25 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             return ListHelper.ContainsIgnoreCase(policy.EnabledDevices, id);
+        }
+    }
+
+    public class DeviceManagerEntryPoint : IServerEntryPoint
+    {
+        private readonly IDeviceManager _deviceManager;
+
+        public DeviceManagerEntryPoint(IDeviceManager deviceManager)
+        {
+            _deviceManager = deviceManager;
+        }
+
+        public void Run()
+        {
+            ((DeviceManager)_deviceManager).EnsureMediaLibrarySetup();
+        }
+
+        public void Dispose()
+        {
         }
     }
 

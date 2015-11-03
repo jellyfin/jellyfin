@@ -57,7 +57,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return base.GetEligibleChildrenForRecursiveChildren(user).Concat(LibraryManager.RootFolder.VirtualChildren);
+            var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
+            list.AddRange(LibraryManager.RootFolder.VirtualChildren);
+
+            return list;
         }
 
         /// <summary>
