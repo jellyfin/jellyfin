@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Configuration
         {
             DownMixAudioBoost = 2;
             EnableThrottling = true;
-            ThrottleThresholdInSeconds = 120;
+            ThrottleThresholdInSeconds = 100;
             EncodingThreadCount = -1;
         }
     }
