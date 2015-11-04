@@ -33,6 +33,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="ButtonWithInput">
+    <template>
+      <test-light-dom><input id="input"></test-light-dom>
+    </template>
+  </test-fixture>
+
   <script>
     suite('active-state', function() {
       var activeTarget;
@@ -192,6 +198,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           MockInteractions.pressEnter(activeTarget);
         });
       });
+
+      suite('nested input inside button', function() {
+        test('space in light child input does not trigger a button click event', function(done) {
+          var item = fixture('ButtonWithInput');
+          var input = item.querySelector('#input');
+
+          var itemClickHandler = sinon.spy();
+          item.addEventListener('click', itemClickHandler);
+
+          input.focus();
+          MockInteractions.pressSpace(input);
+          setTimeout(function(){
+            expect(itemClickHandler.callCount).to.be.equal(0);
+            done();
+          }, 100);
+        });
+
+        test('space in button triggers a button click event', function(done) {
+          var item = fixture('ButtonWithInput');
+          var input = item.querySelector('#input');
+
+          var itemClickHandler = sinon.spy();
+          item.addEventListener('click', itemClickHandler);
+
+          MockInteractions.pressSpace(item);
+
+          setTimeout(function(){
+            expect(itemClickHandler.callCount).to.be.equal(1);
+            done();
+          }, 100);
+        });
+      });
+
     });
   </script>
 </body>

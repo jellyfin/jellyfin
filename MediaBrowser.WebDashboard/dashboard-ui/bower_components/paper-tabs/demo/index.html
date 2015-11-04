@@ -25,43 +25,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <link rel="import" href="../paper-tabs.html">
     <link rel="import" href="../paper-tab.html">
-    <style is="custom-style">
-      :root {
-        --paper-toolbar-background: #00bcd4;
-      }
 
-      body {
-        font-family: sans-serif;
-        margin: 0;
-        padding: 24px;
-        color: #333;
-      }
+    <link rel="import" href="tabs-with-content-example.html">
+    <link rel="import" href="paper-tabs-demo-styles.html">
 
-      paper-tabs, paper-toolbar {
-        background-color: #00bcd4;
-        color: #fff;
-        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-      }
-
-      paper-toolbar paper-tabs {
-        box-shadow: none;
-      }
-
-      paper-tabs[noink][no-bar] paper-tab.iron-selected {
-        color: #ffff8d;
-      }
-
-      paper-tabs[align-bottom] {
-        box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
-      }
-
-      h3 {
-        font-size: 16px;
-        font-weight: 400;
-        padding-top: 20px;
-      }
-
-    </style>
+    <style is="custom-style" include="paper-tabs-demo-styles"></style>
 
   </head>
   <body unresolved>
@@ -193,6 +161,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </paper-tabs>
     </template>
+
+    <h3>J. Controlling content</h3>
+
+    <tabs-with-content-example></tabs-with-content-example>
 
   </body>
 </html>

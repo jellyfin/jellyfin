@@ -557,9 +557,16 @@ namespace MediaBrowser.Controller.Library
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="user">The user.</param>
         /// <param name="parentIds">The parent ids.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds);
+
+        /// <summary>
+        /// Ignores the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="parent">The parent.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
     }
 }

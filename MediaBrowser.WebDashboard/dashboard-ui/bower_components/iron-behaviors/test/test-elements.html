@@ -64,3 +64,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   });
 
 </script>
+
+<dom-module id="test-light-dom">
+
+  <template>
+    <content select="*"></content>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'test-light-dom',
+
+    behaviors: [
+      Polymer.IronControlState,
+      Polymer.IronButtonState
+    ]
+
+  });
+
+</script>

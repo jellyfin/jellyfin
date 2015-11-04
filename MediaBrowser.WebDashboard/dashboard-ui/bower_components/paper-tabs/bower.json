@@ -1,6 +1,6 @@
 {
   "name": "paper-tabs",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Material design tabs",
   "private": true,
@@ -36,6 +36,7 @@
     "paper-toolbar": "polymerelements/paper-toolbar#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "web-component-tester": "*"
+    "web-component-tester": "*",
+    "iron-pages": "PolymerElements/iron-pages#^1.0.0"
   }
 }

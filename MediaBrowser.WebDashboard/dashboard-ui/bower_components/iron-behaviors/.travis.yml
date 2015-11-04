@@ -1,0 +1,30 @@
+language: node_js
+sudo: false
+cache:
+  directories:
+  - node_modules
+matrix:
+  include:
+  - node_js: stable
+    script: xvfb-run -a wct --simpleOutput -l firefox -l chrome
+    addons:
+      firefox: latest
+      apt:
+        sources:
+        - google-chrome
+        packages:
+        - google-chrome-stable
+  - node_js: node
+    script:
+    - |
+      if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+        wct --simpleOutput -s 'Windows 10/microsoftedge' -s 'Windows 8.1/internet explorer@11' -s 'Windows 7/internet explorer@10' -s 'OS X 10.10/safari@8' -s 'OS X 10.9/safari@7'
+      fi
+before_script:
+- npm install bower web-component-tester
+- export PATH=$PWD/node_modules/.bin:$PATH
+- bower install
+env:
+  global:
+  - secure: ZOqj2XVNVwfT74rHxg/ljcAsS6FnmDpRSsXbsy1Icv9DcLHrMlmyQ10gWBjE/YXYF0Uv4akQ1qqn0TJaKOtp9HZeH+P6OPAYk2vJbWD7qp52pPtIqEFomcsUyflt4IjfaXKuN4FMod7PSWVSGJ+DxSguJvZKILkrs5d/rJdFv3c=
+  - secure: clkqemGQG16TXyAPkv9LBv6x3SbT3ZM0eo8LETx4uNKi3WzlwgXxZA9b5Sr5wYzxyxFFpnhDXW7CL4+UjYu1atGNeTW2TuSaYUPHtgu67OFDr8Jbw047p1XQb5enPSt9+YxrHKfjHBiJvWulJ8rCSQshU9Rhe0DC6NrFRPFgk0A=

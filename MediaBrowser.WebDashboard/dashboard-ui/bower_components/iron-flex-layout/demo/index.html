@@ -12,31 +12,378 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
 
-  <title>iron-flex-layout</title>
+  <title>iron-flex-layout demo</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-  <link rel="import" href="../../paper-styles/paper-styles.html">
-  <link rel="import" href="x-app.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="demo-snippet.html">
+  <link rel="import" href="../iron-flex-layout.html">
 
   <style>
-
-    html, body, x-app {
-      height: 100%;
-    }
-
-    body {
+    .container {
+      background-color: #ccc;
+      padding: 5px;
       margin: 0;
     }
+    .container > div {
+      padding: 15px;
+      margin: 5px;
+      background-color: white;
+      min-height: 20px;
+    }
 
+    demo-snippet {
+      width: 100%;
+    }
+
+    .vertical-section {
+      padding: 0 !important;
+    }
   </style>
 
 </head>
-<body class="fullbleed">
+<body unresolved class="fullbleed">
 
-  <x-app></x-app>
+  <h4>Horizontal and vertical layout</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo1 {
+            @apply(--layout-horizontal);
+          }
+        </style>
 
+        <div class="container" id="demo1">
+          <div>one</div>
+          <div>two</div>
+          <div>three</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Flexible children</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo2 {
+            @apply(--layout-horizontal);
+          }
+          .flexchild {
+            @apply(--layout-flex);
+          }
+        </style>
+
+        <div class="container" id="demo2">
+          <div>one</div>
+          <div class="flexchild">two (flex)</div>
+          <div>three</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Flexible children in vertical layouts</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo3 {
+            @apply(--layout-vertical);
+          }
+          .flexchild {
+            @apply(--layout-flex);
+          }
+        </style>
+
+        <div class="container" id="demo3">
+          <div>one</div>
+          <div class="flexchild">two (flex)</div>
+          <div>three</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Flex ratios</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo4 {
+            @apply(--layout-horizontal);
+          }
+          .flexchild {
+            @apply(--layout-flex);
+          }
+          .flex2child {
+            @apply(--layout-flex-2);
+          }
+          .flex3child {
+            @apply(--layout-flex-3);
+          }
+        </style>
+
+        <div class="container" id="demo4">
+          <div class="flex3child">one</div>
+          <div class="flexchild">two</div>
+          <div class="flex2child">three</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Cross-axis center alignment</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo5 {
+            @apply(--layout-horizontal);
+            @apply(--layout-center);
+            height: 120px;
+          }
+        </style>
+
+        <div class="container" id="demo5">
+          <div>center</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Cross-axis start alignment</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo6 {
+            @apply(--layout-horizontal);
+            @apply(--layout-start);
+            height: 120px;
+          }
+        </style>
+
+        <div class="container" id="demo6">
+          <div>start</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Cross-axis end alignment</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo7 {
+            @apply(--layout-horizontal);
+            @apply(--layout-end);
+            height: 120px;
+          }
+        </style>
+
+        <div class="container" id="demo7">
+          <div>end</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Justification, start justified</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo8 {
+            @apply(--layout-horizontal);
+            @apply(--layout-start-justified);
+          }
+        </style>
+
+        <div class="container" id="demo8">
+          <div>start-justified</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Justification, start justified</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo9 {
+            @apply(--layout-horizontal);
+            @apply(--layout-center-justified);
+          }
+        </style>
+
+        <div class="container" id="demo9">
+          <div>center-justified</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Justification, end justified</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo10 {
+            @apply(--layout-horizontal);
+            @apply(--layout-end-justified);
+          }
+        </style>
+
+        <div class="container" id="demo10">
+          <div>end-justified</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Justification, equal space between elements</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo10 {
+            @apply(--layout-horizontal);
+            @apply(--layout-justified);
+          }
+        </style>
+
+        <div class="container" id="demo10">
+          <div>justified</div>
+          <div>justified</div>
+          <div>justified</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Justification, equal space around each element</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo11 {
+            @apply(--layout-horizontal);
+            @apply(--layout-around-justified);
+          }
+        </style>
+
+        <div class="container" id="demo11">
+          <div>around-justified</div>
+          <div>around-justified</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Self alignment</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo12 {
+            @apply(--layout-horizontal);
+            @apply(--layout-justified);
+            height: 120px;
+          }
+          #demo12 div {
+            @apply(--layout-flex);
+          }
+          .child1 {
+            @apply(--layout-self-start);
+          }
+          .child2 {
+            @apply(--layout-self-center);
+          }
+          .child3 {
+            @apply(--layout-self-end);
+          }
+          .child4 {
+            @apply(--layout-self-stretch);
+          }
+        </style>
+
+        <div class="container" id="demo12">
+          <div class="child1">one</div>
+          <div class="child2">two</div>
+          <div class="child3">three</div>
+          <div class="child4">four</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>Wrapping</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo13 {
+            @apply(--layout-horizontal);
+            @apply(--layout-wrap);
+            width: 200px;
+          }
+        </style>
+
+        <div class="container" id="demo13">
+          <div>one</div>
+          <div>two</div>
+          <div>three</div>
+          <div>four</div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
+
+  <h4>General purpose ruls</h4>
+  <div class="vertical-section">
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo14 {
+            width: 100%;
+          }
+          #demo14 > div {
+            background-color: #ccc;
+            padding: 4px;
+            margin: 12px;
+          }
+          .block {
+            @apply(--layout-block);
+          }
+          .invisible {
+            @apply(--layout-invisible);
+          }
+          .relative {
+            @apply(--layout-relative);
+          }
+          .fit {
+            @apply(--layout-fit);
+          }
+        </style>
+
+        <div id="demo14">
+          <div>Before <span>[A Span]</span> After</div>
+          <div>Before <span class="block">[A Block Span]</span> After</div>
+          <div>Before invisible span <span class="invisible">Not displayed</span> After invisible span</div>
+          <div class="relative" style="height: 100px;">
+            <div class="fit" style="background-color: #000;color: white">Fit</div>
+          </div>
+        </div>
+      </template>
+    </demo-snippet>
+  </div>
 </body>
 </html>

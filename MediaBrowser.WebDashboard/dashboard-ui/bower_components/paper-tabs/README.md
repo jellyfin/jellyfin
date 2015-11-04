@@ -102,5 +102,6 @@ Custom property | Description | Default
 `--paper-tab-ink` | Ink color | `--paper-yellow-a100`
 `--paper-tab` | Mixin applied to the tab | `{}`
 `--paper-tab-content` | Mixin applied to the tab content | `{}`
+`--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`
 
 

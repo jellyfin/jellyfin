@@ -410,7 +410,7 @@
 
         var seasonOnBottom = screen.availHeight < 800 || screen.availWidth < 600;
 
-        if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom) || (item.Type == 'Series' && seasonOnBottom)) {
+        if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom)) {
             LibraryBrowser.renderOverview([bottomOverview], item);
             topOverview.classList.add('hide');
             bottomOverview.classList.remove('hide');
@@ -1311,7 +1311,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card '+getThumbShape()+'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card ' + getThumbShape() + 'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';

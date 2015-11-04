@@ -1,0 +1,94 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../prism-element/prism-highlighter.html">
+<link rel="import" href="../../marked-element/marked-element.html">
+
+<!--
+Quick element that can display the source of a code snippet and a rendered demo.
+
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          #demo6 {
+            @apply(--layout-horizontal);
+            @apply(--layout-start);
+            height: 120px;
+          }
+        </style>
+
+        <div class="container" id="demo6">
+          <div>start</div>
+        </div>
+      </template>
+    </demo-snippet>
+-->
+
+<dom-module id="demo-snippet">
+  <style>
+    :host {
+      display:inline-block;
+    }
+
+    .demo {
+      border-bottom: 1px solid #e5e5e5;
+      margin: 0;
+    }
+
+    .code {
+      padding: 0;
+      margin: 0;
+      background-color: #fafafa;
+      font-size: 13px;
+      word-wrap: break-word;
+    }
+
+    .code > pre {
+      margin: 0;
+      padding: 0 0 10px 0;
+    }
+  </style>
+  <template>
+    <prism-highlighter></prism-highlighter>
+
+    <div class="demo">
+      <content id="content"></content>
+    </div>
+
+    <marked-element markdown=[[_markdown]]>
+      <div class="markdown-html code"></div>
+    </marked-element>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'demo-snippet',
+
+      properties: {
+        _markdown: {
+          type: String,
+          value: ''
+        }
+      },
+
+      attached: function() {
+        var template = Polymer.dom(this).queryDistributedElements('template')[0];
+
+        var snippet = Polymer.domInnerHTML.getInnerHTML(template);
+        this._markdown = '```\n' + snippet + '\n' + '```';
+
+        // Stamp the template.
+        Polymer.dom(this).appendChild(document.importNode(template.content, true));
+      }
+    });
+  </script>
+
+</dom-module>

@@ -2,15 +2,6 @@
 
     var updatedProducts = [];
 
-    function getStoreFeatureId(feature) {
-
-        if (feature == 'embypremieremonthly') {
-            return "emby.supporter.monthly";
-        }
-
-        return "com.mb.android.unlock";
-    }
-
     function updateProductInfo(id, owned, price) {
 
         updatedProducts = updatedProducts.filter(function (r) {
@@ -30,7 +21,12 @@
 
     function getProduct(feature) {
 
-        var id = getStoreFeatureId(feature);
+        var id;
+        if (feature == 'embypremieremonthly') {
+            id = "emby.premiere.monthly";
+        } else {
+            id = "com.emby.mobile.unlock";
+        }
 
         var products = updatedProducts.filter(function (r) {
             return r.id == id;
@@ -45,7 +41,7 @@
         refreshPurchases();
     }
 
-    function isPurchaseAvailable(feature) {
+    function isPurchaseAvailable() {
 
         return storeReady;
     }
@@ -69,8 +65,7 @@
     }
 
     function refreshPurchases() {
-        NativeIapManager.isPurchased(getStoreFeatureId("") + "|" + getStoreFeatureId("embypremieremonthly"), "window.IapManager.updateProduct");
-        //NativeIapManager.isPurchased(getStoreFeatureId("embypremieremonthly"), "window.IapManager.updateProduct");
+        NativeIapManager.getPurchaseInfos("window.IapManager.updateProduct");
     }
 
     function getSubscriptionOptions() {

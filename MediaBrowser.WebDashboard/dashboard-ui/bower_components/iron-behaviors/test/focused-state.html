@@ -34,6 +34,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+   <test-fixture id="LightDOM">
+    <template>
+      <test-light-dom>
+        <input id="input">
+      </test-light-dom>
+    </template>
+  </test-fixture>
+
   <script>
     suite('focused-state', function() {
       var focusTarget;
@@ -110,6 +118,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         expect(nFocusEvents).to.be.greaterThan(0);
       });
 
+    });
+
+
+    suite('elements in the light dom', function() {
+      var lightDOM, input;
+
+      setup(function() {
+        lightDOM = fixture('LightDOM');
+        input = document.querySelector('#input');
+      });
+
+      test('should not fire the focus event', function() {
+        var nFocusEvents = 0;
+
+        lightDOM.addEventListener('focus', function() {
+          nFocusEvents += 1;
+        });
+        
+        MockInteractions.focus(input);
+
+        expect(nFocusEvents).to.be.equal(0);
+      });
+      
     });
 
   </script>

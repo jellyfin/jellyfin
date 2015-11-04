@@ -30,6 +30,6 @@
     "commit": "14d2ca3df97da64c820829a8310f9198fbafbcfa"
   },
   "_source": "git://github.com/desandro/eventie.git",
-  "_target": "^1",
+  "_target": "~1.0.3",
   "_originalSource": "eventie"
 }

@@ -2380,9 +2380,6 @@ var AppInfo = {};
 
             deps.push('cordova/ios/tabbar');
         }
-        if (AppInfo.isNativeApp && $.browser.android) {
-            deps.push('cordova/android/newapp');
-        }
 
         require(deps, function () {
 

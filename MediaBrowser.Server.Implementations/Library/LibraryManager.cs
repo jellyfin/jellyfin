@@ -580,7 +580,7 @@ namespace MediaBrowser.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(args)))
+            if (IgnoreFile(args.FileInfo, args.Parent))
             {
                 return null;
             }
@@ -616,6 +616,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return ResolveItem(args);
         }
 
+        public bool IgnoreFile(FileSystemMetadata file, BaseItem parent)
+        {
+            return EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent));
+        }
+
         public IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths)
         {
             var list = paths.Select(_fileSystem.NormalizePath)
@@ -646,7 +651,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, string collectionType)
         {
-            var fileList = files.ToList();
+            var fileList = files.Where(i => !IgnoreFile(i, parent)).ToList();
 
             if (parent != null)
             {

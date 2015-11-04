@@ -1235,6 +1235,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             BaseItem item;
             bool isNew;
+            bool forceUpdate = false;
 
             if (info.Type == ChannelItemType.Folder)
             {
@@ -1265,6 +1266,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
+                item.Tags = info.Tags;
             }
 
             var channelItem = (IChannelItem)item;
@@ -1273,7 +1275,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (item.ParentId != internalChannelId)
             {
-                isNew = true;
+                forceUpdate = true;
             }
             item.ParentId = internalChannelId;
 
@@ -1282,11 +1284,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 isNew = true;
             }
             channelItem.ExternalId = info.Id;
-
-            if (isNew)
-            {
-                channelItem.Tags = info.Tags;
-            }
 
             var channelMediaItem = item as IChannelMediaItem;
 
@@ -1314,6 +1311,10 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
                 }
+            }
+            else if (forceUpdate)
+            {
+                await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             return item;

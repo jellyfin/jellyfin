@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using CommonIO;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Resolvers
 {
@@ -7,6 +8,6 @@ namespace MediaBrowser.Controller.Resolvers
     /// </summary>
     public interface IResolverIgnoreRule
     {
-        bool ShouldIgnore(ItemResolveArgs args);
+        bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent);
     }
 }

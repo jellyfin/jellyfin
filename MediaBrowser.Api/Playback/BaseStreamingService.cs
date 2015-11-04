@@ -1662,7 +1662,6 @@ namespace MediaBrowser.Api.Playback
             state.InputContainer = mediaSource.Container;
             state.InputFileSize = mediaSource.Size;
             state.InputBitrate = mediaSource.Bitrate;
-            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
 
