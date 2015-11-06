@@ -65,6 +65,11 @@ namespace MediaBrowser.Controller.Entities.Movies
             return config.BlockUnratedItems.Contains(UnratedItem.Movie);
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Movie;
+        }
+
         [IgnoreDataMember]
         public override bool IsPreSorted
         {

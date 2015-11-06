@@ -98,9 +98,9 @@ namespace MediaBrowser.Controller.Entities
             return base.GetDeletePaths();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Game);
+            return UnratedItem.Game;
         }
 
         public GameInfo GetLookupInfo()

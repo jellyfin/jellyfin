@@ -134,11 +134,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task RefreshSeriesTimers(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var timers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+            var seriesTimers = await GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
 
             List<ChannelInfo> channels = null;
 
-            foreach (var timer in timers)
+            foreach (var timer in seriesTimers)
             {
                 List<ProgramInfo> epgData;
 
@@ -156,6 +156,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     epgData = GetEpgDataForChannel(timer.ChannelId);
                 }
                 await UpdateTimersForSeriesTimer(epgData, timer).ConfigureAwait(false);
+            }
+
+            var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
+
+            foreach (var timer in timers.ToList())
+            {
+                if (DateTime.UtcNow > timer.EndDate && !_activeRecordings.ContainsKey(timer.Id))
+                {
+                    _timerProvider.Delete(timer);
+                }
             }
         }
 
@@ -828,12 +838,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer)
         {
+            var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
+
             var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
 
             if (registration.IsValid)
             {
-                var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
-
                 foreach (var timer in newTimers)
                 {
                     _timerProvider.AddOrUpdate(timer);

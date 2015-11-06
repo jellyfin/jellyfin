@@ -243,6 +243,8 @@ namespace MediaBrowser.Server.Implementations.Localization
             _allParentalRatings.TryAdd(countryCode, dict);
         }
 
+        private readonly string[] _unratedValues = {"n/a", "unrated", "not rated"};
+
         /// <summary>
         /// Gets the rating level.
         /// </summary>
@@ -251,6 +253,11 @@ namespace MediaBrowser.Server.Implementations.Localization
             if (string.IsNullOrEmpty(rating))
             {
                 throw new ArgumentNullException("rating");
+            }
+
+            if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
+            {
+                return null;
             }
 
             // Fairly common for some users to have "Rated R" in their rating field

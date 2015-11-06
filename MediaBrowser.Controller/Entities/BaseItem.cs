@@ -690,10 +690,25 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public int? ParentIndexNumber { get; set; }
 
-        [IgnoreDataMember]
-        public virtual string OfficialRatingForComparison
+        public virtual string GetOfficialRatingForComparison(bool inherit)
         {
-            get { return OfficialRating; }
+            if (inherit)
+            {
+                if (!string.IsNullOrWhiteSpace(OfficialRating))
+                {
+                    return OfficialRating;
+                }
+
+                var parent = DisplayParent;
+                if (parent != null)
+                {
+                    return parent.GetOfficialRatingForComparison(inherit);
+                }
+
+                return null;
+            }
+
+            return OfficialRating;
         }
 
         [IgnoreDataMember]
@@ -1126,7 +1141,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                rating = OfficialRatingForComparison;
+                rating = GetOfficialRatingForComparison(true);
             }
 
             if (string.IsNullOrWhiteSpace(rating))
@@ -1175,7 +1190,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                rating = OfficialRatingForComparison;
+                rating = GetOfficialRatingForComparison(true);
             }
 
             if (string.IsNullOrWhiteSpace(rating))
@@ -1207,6 +1222,11 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
+        public virtual UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Other;
+        }
+
         /// <summary>
         /// Gets the block unrated value.
         /// </summary>
@@ -1225,7 +1245,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return config.BlockUnratedItems.Contains(UnratedItem.Other);
+            return config.BlockUnratedItems.Contains(GetBlockUnratedType());
         }
 
         /// <summary>

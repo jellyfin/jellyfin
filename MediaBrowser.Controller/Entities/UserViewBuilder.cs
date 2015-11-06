@@ -1057,6 +1057,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.GenreIds.Length > 0)
+            {
+                return false;
+            }
+
             if (request.VideoTypes.Length > 0)
             {
                 return false;
@@ -1648,6 +1653,16 @@ namespace MediaBrowser.Controller.Entities
             {
                 var studioItem = libraryManager.GetItemById(id);
                 return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
+            }))
+            {
+                return false;
+            }
+
+            // Apply genre filter
+            if (query.GenreIds.Length > 0 && !query.GenreIds.Any(id =>
+            {
+                var genreItem = libraryManager.GetItemById(id);
+                return genreItem != null && item.Genres.Contains(genreItem.Name, StringComparer.OrdinalIgnoreCase);
             }))
             {
                 return false;

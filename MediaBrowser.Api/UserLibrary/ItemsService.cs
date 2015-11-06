@@ -210,6 +210,7 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
+                GenreIds = request.GetGenreIds(),
                 Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,

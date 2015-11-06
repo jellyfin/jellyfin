@@ -202,21 +202,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
-        public override string OfficialRatingForComparison
-        {
-            get
-            {
-                // Never want folders to be blocked by "BlockNotRated"
-                if (this is Series)
-                {
-                    return base.OfficialRatingForComparison;
-                }
-
-                return !string.IsNullOrWhiteSpace(base.OfficialRatingForComparison) ? base.OfficialRatingForComparison : "None";
-            }
-        }
-
         /// <summary>
         /// Removes the child.
         /// </summary>
@@ -1190,7 +1175,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 User = user,
                 Recursive = true,
-                IsFolder = false
+                IsFolder = false,
+                IsMissing = false
 
             }).ConfigureAwait(false);
 

@@ -97,9 +97,9 @@ namespace MediaBrowser.Controller.Entities
             return base.CreateUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Trailer);
+            return UnratedItem.Trailer;
         }
 
         public TrailerInfo GetLookupInfo()

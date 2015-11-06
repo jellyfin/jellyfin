@@ -171,9 +171,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.CreateUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return UnratedItem.Music;
         }
 
         public SongInfo GetLookupInfo()

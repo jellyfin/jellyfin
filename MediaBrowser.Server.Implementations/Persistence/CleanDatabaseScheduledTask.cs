@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -180,7 +181,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 //Limit = limit,
 
                 // These have their own cleanup routines
-                ExcludeItemTypes = new[] { typeof(Person).Name, typeof(Genre).Name, typeof(MusicGenre).Name, typeof(GameGenre).Name, typeof(Studio).Name, typeof(Year).Name }
+                ExcludeItemTypes = new[] { typeof(Person).Name, typeof(Genre).Name, typeof(MusicGenre).Name, typeof(GameGenre).Name, typeof(Studio).Name, typeof(Year).Name, typeof(Channel).Name }
             });
 
             var numComplete = 0;
