@@ -107,14 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private int GetMaxAllowedBitrateForExternalSubtitleStream()
         {
-            // This is abitrary but at some point it becomes too slow to extract subtitles on the fly
-            // We need to learn more about when this is the case vs. when it isn't
-            if (Environment.ProcessorCount >= 8)
-            {
-                return 10000000;
-            }
-
-            return 2000000;
+            return 20000000;
         }
 
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
