@@ -1102,10 +1102,15 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.MinIndexNumber.HasValue)
+            {
+                return false;
+            }
+
             return true;
         }
 
-        public static IEnumerable<BaseItem> FilterVirtualEpisodes(
+        private static IEnumerable<BaseItem> FilterVirtualEpisodes(
             IEnumerable<BaseItem> items,
             bool? isMissing,
             bool? isVirtualUnaired,
@@ -1785,6 +1790,16 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
                 else
+                {
+                    return false;
+                }
+            }
+
+            if (query.MinIndexNumber.HasValue)
+            {
+                var val = query.MinIndexNumber.Value;
+
+                if (!(item.IndexNumber.HasValue && item.IndexNumber.Value >= val))
                 {
                     return false;
                 }

@@ -91,6 +91,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinPlayers { get; set; }
         public int? MaxPlayers { get; set; }
+        public int? MinIndexNumber { get; set; }
         public double? MinCriticRating { get; set; }
         public double? MinCommunityRating { get; set; }
        

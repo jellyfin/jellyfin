@@ -423,15 +423,6 @@ namespace MediaBrowser.Api.UserLibrary
                 return false;
             }
 
-            // Min index number
-            if (request.MinIndexNumber.HasValue)
-            {
-                if (!(i.IndexNumber.HasValue && i.IndexNumber.Value >= request.MinIndexNumber.Value))
-                {
-                    return false;
-                }
-            }
-
             // Min official rating
             if (!string.IsNullOrEmpty(request.MinOfficialRating))
             {
