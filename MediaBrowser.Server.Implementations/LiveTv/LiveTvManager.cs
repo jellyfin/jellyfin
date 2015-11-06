@@ -1664,7 +1664,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             }
 
-            await _libraryManager.DeleteItem((BaseItem)recording).ConfigureAwait(false);
+            // This is the responsibility of the live tv service
+            await _libraryManager.DeleteItem((BaseItem)recording, new DeleteOptions
+            {
+                DeleteFileLocation = false
+
+            }).ConfigureAwait(false);
 
             _lastRecordingRefreshTime = DateTime.MinValue;
         }
