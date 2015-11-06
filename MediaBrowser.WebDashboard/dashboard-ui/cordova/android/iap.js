@@ -92,6 +92,80 @@
         return deferred.promise();
     }
 
+    function isUnlockedOverride(feature) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        if (feature == 'playback') {
+            isPlaybackUnlockedViaOldApp(deferred);
+        } else if (feature == 'livetv') {
+            isLiveTvUnlockedViaOldApp(deferred);
+        } else {
+            deferred.resolveWith(null, [false]);
+        }
+
+        return deferred.promise();
+    }
+
+    function isPlaybackUnlockedViaOldApp(deferred) {
+
+        testDeviceId(ConnectionManager.deviceId()).done(function (isUnlocked) {
+
+            if (isUnlocked) {
+                deferred.resolveWith(null, [true]);
+                return;
+            }
+
+            testDeviceId(device.uuid).done(function (isUnlocked) {
+
+                if (isUnlocked) {
+                    deferred.resolveWith(null, [true]);
+                    return;
+                }
+
+                deferred.resolveWith(null, [false]);
+            });
+        });
+    }
+
+    function testDeviceId(deviceId) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        var cacheKey = 'oldapp-' + deviceId;
+        var cacheValue = appStorage.getItem(cacheKey);
+        if (cacheValue) {
+
+            deferred.resolveWith(null, [cacheValue == 'true']);
+
+        } else {
+            HttpClient.send({
+
+                type: 'GET',
+                url: 'https://mb3admin.com/admin/service/statistics/appAccess?application=AndroidV1&deviceId=' + deviceId
+
+            }).done(function () {
+
+                appStorage.setItem(cacheKey, 'true');
+                deferred.resolveWith(null, [true]);
+
+            }).fail(function (e) {
+
+                if (e.status == 404) {
+                    appStorage.setItem(cacheKey, 'false');
+                }
+                deferred.resolveWith(null, [false]);
+            });
+        }
+
+        return deferred.promise();
+    }
+
+    function isLiveTvUnlockedViaOldApp(deferred) {
+
+        isPlaybackUnlockedViaOldApp(deferred);
+    }
+
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         getProductInfo: getProduct,
@@ -99,7 +173,8 @@
         beginPurchase: beginPurchase,
         onPurchaseComplete: onPurchaseComplete,
         getSubscriptionOptions: getSubscriptionOptions,
-        onStoreReady: onStoreReady
+        onStoreReady: onStoreReady,
+        isUnlockedOverride: isUnlockedOverride
     };
 
     NativeIapManager.initStore();

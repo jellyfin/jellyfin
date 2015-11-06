@@ -267,12 +267,20 @@
         return deferred.promise();
     }
 
+    function isUnlockedOverride(feature) {
+        
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolveWith(null, [false]);
+        return deferred.promise();
+    }
+
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         getProductInfo: getProduct,
         beginPurchase: beginPurchase,
         restorePurchase: restorePurchase,
-        getSubscriptionOptions: getSubscriptionOptions
+        getSubscriptionOptions: getSubscriptionOptions,
+        isUnlockedOverride: isUnlockedOverride
     };
 
     initializeStore();

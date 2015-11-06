@@ -1,6 +1,6 @@
 {
   "name": "paper-radio-button",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A material design radio button",
   "authors": [
     "The Polymer Authors"
@@ -32,5 +32,6 @@
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "web-component-tester": "Polymer/web-component-tester#^3.3.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
-  }
+  },
+  "main": "paper-radio-button.html"
 }

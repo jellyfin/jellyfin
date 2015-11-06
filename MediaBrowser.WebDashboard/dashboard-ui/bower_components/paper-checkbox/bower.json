@@ -1,6 +1,6 @@
 {
   "name": "paper-checkbox",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "A material design checkbox",
   "authors": [
     "The Polymer Authors"
@@ -34,5 +34,6 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0"
-  }
+  },
+  "main": "paper-checkbox.html"
 }

@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.15
+// @version 0.7.16
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -1118,6 +1118,23 @@ window.ShadowDOMPolyfill = {};
       stopImmediatePropagationTable.set(this, true);
     }
   };
+  var supportsDefaultPrevented = function() {
+    var e = document.createEvent("Event");
+    e.initEvent("test", true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  }();
+  if (!supportsDefaultPrevented) {
+    Event.prototype.preventDefault = function() {
+      if (!this.cancelable) return;
+      unsafeUnwrap(this).preventDefault();
+      Object.defineProperty(this, "defaultPrevented", {
+        get: function() {
+          return true;
+        }
+      });
+    };
+  }
   registerWrapper(OriginalEvent, Event, document.createEvent("Event"));
   function unwrapOptions(options) {
     if (!options || !options.relatedTarget) return options;
@@ -3378,6 +3395,9 @@ window.ShadowDOMPolyfill = {};
     },
     elementFromPoint: function(x, y) {
       return elementFromPoint(this, this.ownerDocument, x, y);
+    },
+    getSelection: function() {
+      return document.getSelection();
     }
   });
   scope.wrappers.ShadowRoot = ShadowRoot;
@@ -3969,7 +3989,7 @@ window.ShadowDOMPolyfill = {};
       unsafeUnwrap(this).removeRange(unwrap(range));
     },
     selectAllChildren: function(node) {
-      unsafeUnwrap(this).selectAllChildren(unwrapIfNeeded(node));
+      unsafeUnwrap(this).selectAllChildren(node instanceof ShadowRoot ? unsafeUnwrap(node.host) : unwrapIfNeeded(node));
     },
     toString: function() {
       return unsafeUnwrap(this).toString();

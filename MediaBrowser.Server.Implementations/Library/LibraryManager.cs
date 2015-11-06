@@ -1272,6 +1272,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
             var result = ItemRepository.GetItemIdsList(query);
 
             var items = result.Select(GetItemById).Where(i => i != null).ToArray();
@@ -1284,11 +1289,21 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
             return ItemRepository.GetItems(query);
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
         {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
             return ItemRepository.GetItemIdsList(query);
         }
 
@@ -1298,14 +1313,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
 
-            if (user != null)
-            {
-                AddUserToQuery(query, user);
-            }
-
-            var items = GetItemIds(query).Select(GetItemById);
-
-            return items;
+            return GetItemIds(query).Select(GetItemById);
         }
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
@@ -1314,26 +1322,24 @@ namespace MediaBrowser.Server.Implementations.Library
 
             query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
 
-            if (query.User != null)
-            {
-                AddUserToQuery(query, query.User);
-            }
-
             return GetItems(query);
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
         {
-            if (query.AncestorIds.Length == 0)
+            if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0)
             {
-                // Need to filter on user folders
+                // TODO: Need to filter on user folders
             }
+
+            // TODO: handle blocking by tags
 
             query.MaxParentalRating = user.Policy.MaxParentalRating;
 
-            // handle blocking by tags
-
-            // handle unrated filter
+            if (user.Policy.MaxParentalRating.HasValue)
+            {
+                query.BlockUnratedItems = user.Policy.BlockUnratedItems;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -69,8 +70,10 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] Studios { get; set; }
         public string[] StudioIds { get; set; }
+        public string[] GenreIds { get; set; }
         public ImageType[] ImageTypes { get; set; }
         public VideoType[] VideoTypes { get; set; }
+        public UnratedItem[] BlockUnratedItems { get; set; }
         public int[] Years { get; set; }
         public string[] Tags { get; set; }
         public string[] OfficialRatings { get; set; }
@@ -108,6 +111,7 @@ namespace MediaBrowser.Controller.Entities
         
         public InternalItemsQuery()
         {
+            BlockUnratedItems = new UnratedItem[] { };
             Tags = new string[] { };
             OfficialRatings = new string[] { };
             SortBy = new string[] { };
@@ -117,6 +121,7 @@ namespace MediaBrowser.Controller.Entities
             Genres = new string[] { };
             Studios = new string[] { };
             StudioIds = new string[] { };
+            GenreIds = new string[] { };
             ImageTypes = new ImageType[] { };
             VideoTypes = new VideoType[] { };
             Years = new int[] { };

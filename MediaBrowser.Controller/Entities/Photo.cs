@@ -68,10 +68,5 @@ namespace MediaBrowser.Controller.Entities
         public double? Longitude { get; set; }
         public double? Altitude { get; set; }
         public int? IsoSpeedRating { get; set; }
-
-        protected override bool GetBlockUnratedValue(UserPolicy config)
-        {
-            return config.BlockUnratedItems.Contains(UnratedItem.Other);
-        }
     }
 }

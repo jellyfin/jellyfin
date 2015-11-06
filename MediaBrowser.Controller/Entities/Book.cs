@@ -26,9 +26,9 @@ namespace MediaBrowser.Controller.Entities
                    locationType != LocationType.Virtual;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Book);
+            return UnratedItem.Book;
         }
 
         public BookInfo GetLookupInfo()

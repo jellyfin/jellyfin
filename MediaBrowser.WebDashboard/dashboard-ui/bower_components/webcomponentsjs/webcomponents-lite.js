@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.15
+// @version 0.7.16
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}
@@ -912,6 +912,159 @@ if (typeof WeakMap === "undefined") {
   }
 })(self);
 
+if (typeof HTMLTemplateElement === "undefined") {
+  (function() {
+    var TEMPLATE_TAG = "template";
+    var contentDoc = document.implementation.createHTMLDocument("template");
+    var canDecorate = true;
+    HTMLTemplateElement = function() {};
+    HTMLTemplateElement.prototype = Object.create(HTMLElement.prototype);
+    HTMLTemplateElement.decorate = function(template) {
+      if (!template.content) {
+        template.content = contentDoc.createDocumentFragment();
+      }
+      var child;
+      while (child = template.firstChild) {
+        template.content.appendChild(child);
+      }
+      if (canDecorate) {
+        try {
+          Object.defineProperty(template, "innerHTML", {
+            get: function() {
+              var o = "";
+              for (var e = this.content.firstChild; e; e = e.nextSibling) {
+                o += e.outerHTML || escapeData(e.data);
+              }
+              return o;
+            },
+            set: function(text) {
+              contentDoc.body.innerHTML = text;
+              HTMLTemplateElement.bootstrap(contentDoc);
+              while (this.content.firstChild) {
+                this.content.removeChild(this.content.firstChild);
+              }
+              while (contentDoc.body.firstChild) {
+                this.content.appendChild(contentDoc.body.firstChild);
+              }
+            },
+            configurable: true
+          });
+        } catch (err) {
+          canDecorate = false;
+        }
+      }
+    };
+    HTMLTemplateElement.bootstrap = function(doc) {
+      var templates = doc.querySelectorAll(TEMPLATE_TAG);
+      for (var i = 0, l = templates.length, t; i < l && (t = templates[i]); i++) {
+        HTMLTemplateElement.decorate(t);
+      }
+    };
+    document.addEventListener("DOMContentLoaded", function() {
+      HTMLTemplateElement.bootstrap(document);
+    });
+    var createElement = document.createElement;
+    document.createElement = function() {
+      "use strict";
+      var el = createElement.apply(document, arguments);
+      if (el.localName == "template") {
+        HTMLTemplateElement.decorate(el);
+      }
+      return el;
+    };
+    var escapeDataRegExp = /[&\u00A0<>]/g;
+    function escapeReplace(c) {
+      switch (c) {
+       case "&":
+        return "&amp;";
+
+       case "<":
+        return "&lt;";
+
+       case ">":
+        return "&gt;";
+
+       case " ":
+        return "&nbsp;";
+      }
+    }
+    function escapeData(s) {
+      return s.replace(escapeDataRegExp, escapeReplace);
+    }
+  })();
+}
+
+(function(scope) {
+  "use strict";
+  if (!window.performance) {
+    var start = Date.now();
+    window.performance = {
+      now: function() {
+        return Date.now() - start;
+      }
+    };
+  }
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function() {
+      var nativeRaf = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+      return nativeRaf ? function(callback) {
+        return nativeRaf(function() {
+          callback(performance.now());
+        });
+      } : function(callback) {
+        return window.setTimeout(callback, 1e3 / 60);
+      };
+    }();
+  }
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function() {
+      return window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || function(id) {
+        clearTimeout(id);
+      };
+    }();
+  }
+  var workingDefaultPrevented = function() {
+    var e = document.createEvent("Event");
+    e.initEvent("foo", true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  }();
+  if (!workingDefaultPrevented) {
+    var origPreventDefault = Event.prototype.preventDefault;
+    Event.prototype.preventDefault = function() {
+      if (!this.cancelable) {
+        return;
+      }
+      origPreventDefault.call(this);
+      Object.defineProperty(this, "defaultPrevented", {
+        get: function() {
+          return true;
+        }
+      });
+    };
+  }
+  var isIE = /Trident/.test(navigator.userAgent);
+  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
+    window.CustomEvent = function(inType, params) {
+      params = params || {};
+      var e = document.createEvent("CustomEvent");
+      e.initCustomEvent(inType, Boolean(params.bubbles), Boolean(params.cancelable), params.detail);
+      return e;
+    };
+    window.CustomEvent.prototype = window.Event.prototype;
+  }
+  if (!window.Event || isIE && typeof window.Event !== "function") {
+    var origEvent = window.Event;
+    window.Event = function(inType, params) {
+      params = params || {};
+      var e = document.createEvent("Event");
+      e.initEvent(inType, Boolean(params.bubbles), Boolean(params.cancelable));
+      return e;
+    };
+    window.Event.prototype = origEvent.prototype;
+  }
+})(window.WebComponents);
+
 window.HTMLImports = window.HTMLImports || {
   flags: {}
 };
@@ -1113,10 +1266,14 @@ window.HTMLImports.addModule(function(scope) {
       request.open("GET", url, xhr.async);
       request.addEventListener("readystatechange", function(e) {
         if (request.readyState === 4) {
-          var locationHeader = request.getResponseHeader("Location");
           var redirectedUrl = null;
-          if (locationHeader) {
-            var redirectedUrl = locationHeader.substr(0, 1) === "/" ? location.origin + locationHeader : locationHeader;
+          try {
+            var locationHeader = request.getResponseHeader("Location");
+            if (locationHeader) {
+              redirectedUrl = locationHeader.substr(0, 1) === "/" ? location.origin + locationHeader : locationHeader;
+            }
+          } catch (e) {
+            console.error(e.message);
           }
           next.call(nextContext, !xhr.ok(request) && request, request.response || request.responseText, redirectedUrl);
         }
@@ -1629,22 +1786,6 @@ window.HTMLImports.addModule(function(scope) {
   var isIE = scope.isIE;
   if (scope.useNative) {
     return;
-  }
-  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
-    window.CustomEvent = function(inType, params) {
-      params = params || {};
-      var e = document.createEvent("CustomEvent");
-      e.initCustomEvent(inType, Boolean(params.bubbles), Boolean(params.cancelable), params.detail);
-      e.preventDefault = function() {
-        Object.defineProperty(this, "defaultPrevented", {
-          get: function() {
-            return true;
-          }
-        });
-      };
-      return e;
-    };
-    window.CustomEvent.prototype = window.Event.prototype;
   }
   initializeModules();
   var rootDocument = scope.rootDocument;
@@ -2262,22 +2403,6 @@ window.CustomElements.addModule(function(scope) {
       });
     });
   }
-  if (!window.CustomEvent || isIE && typeof window.CustomEvent !== "function") {
-    window.CustomEvent = function(inType, params) {
-      params = params || {};
-      var e = document.createEvent("CustomEvent");
-      e.initCustomEvent(inType, Boolean(params.bubbles), Boolean(params.cancelable), params.detail);
-      e.preventDefault = function() {
-        Object.defineProperty(this, "defaultPrevented", {
-          get: function() {
-            return true;
-          }
-        });
-      };
-      return e;
-    };
-    window.CustomEvent.prototype = window.Event.prototype;
-  }
   if (document.readyState === "complete" || scope.flags.eager) {
     bootstrap();
   } else if (document.readyState === "interactive" && !window.attachEvent && (!window.HTMLImports || window.HTMLImports.ready)) {
@@ -2287,119 +2412,6 @@ window.CustomElements.addModule(function(scope) {
     window.addEventListener(loadEvent, bootstrap);
   }
 })(window.CustomElements);
-
-if (typeof HTMLTemplateElement === "undefined") {
-  (function() {
-    var TEMPLATE_TAG = "template";
-    var contentDoc = document.implementation.createHTMLDocument("template");
-    var canDecorate = true;
-    HTMLTemplateElement = function() {};
-    HTMLTemplateElement.prototype = Object.create(HTMLElement.prototype);
-    HTMLTemplateElement.decorate = function(template) {
-      if (!template.content) {
-        template.content = contentDoc.createDocumentFragment();
-      }
-      var child;
-      while (child = template.firstChild) {
-        template.content.appendChild(child);
-      }
-      if (canDecorate) {
-        try {
-          Object.defineProperty(template, "innerHTML", {
-            get: function() {
-              var o = "";
-              for (var e = this.content.firstChild; e; e = e.nextSibling) {
-                o += e.outerHTML || escapeData(e.data);
-              }
-              return o;
-            },
-            set: function(text) {
-              contentDoc.body.innerHTML = text;
-              HTMLTemplateElement.bootstrap(contentDoc);
-              while (this.content.firstChild) {
-                this.content.removeChild(this.content.firstChild);
-              }
-              while (contentDoc.body.firstChild) {
-                this.content.appendChild(contentDoc.body.firstChild);
-              }
-            },
-            configurable: true
-          });
-        } catch (err) {
-          canDecorate = false;
-        }
-      }
-    };
-    HTMLTemplateElement.bootstrap = function(doc) {
-      var templates = doc.querySelectorAll(TEMPLATE_TAG);
-      for (var i = 0, l = templates.length, t; i < l && (t = templates[i]); i++) {
-        HTMLTemplateElement.decorate(t);
-      }
-    };
-    window.addEventListener("DOMContentLoaded", function() {
-      HTMLTemplateElement.bootstrap(document);
-    });
-    var createElement = document.createElement;
-    document.createElement = function() {
-      "use strict";
-      var el = createElement.apply(document, arguments);
-      if (el.localName == "template") {
-        HTMLTemplateElement.decorate(el);
-      }
-      return el;
-    };
-    var escapeDataRegExp = /[&\u00A0<>]/g;
-    function escapeReplace(c) {
-      switch (c) {
-       case "&":
-        return "&amp;";
-
-       case "<":
-        return "&lt;";
-
-       case ">":
-        return "&gt;";
-
-       case " ":
-        return "&nbsp;";
-      }
-    }
-    function escapeData(s) {
-      return s.replace(escapeDataRegExp, escapeReplace);
-    }
-  })();
-}
-
-(function(scope) {
-  "use strict";
-  if (!window.performance) {
-    var start = Date.now();
-    window.performance = {
-      now: function() {
-        return Date.now() - start;
-      }
-    };
-  }
-  if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = function() {
-      var nativeRaf = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
-      return nativeRaf ? function(callback) {
-        return nativeRaf(function() {
-          callback(performance.now());
-        });
-      } : function(callback) {
-        return window.setTimeout(callback, 1e3 / 60);
-      };
-    }();
-  }
-  if (!window.cancelAnimationFrame) {
-    window.cancelAnimationFrame = function() {
-      return window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || function(id) {
-        clearTimeout(id);
-      };
-    }();
-  }
-})(window.WebComponents);
 
 (function(scope) {
   var style = document.createElement("style");

@@ -2397,7 +2397,7 @@ var AppInfo = {};
         cordova.getAppVersion.getVersionNumber(function (appVersion) {
             var capablities = Dashboard.capabilities();
 
-            var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+            var name = $.browser.android ? "Emby for Android Mobile" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
 
             // Remove special characters
             var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');

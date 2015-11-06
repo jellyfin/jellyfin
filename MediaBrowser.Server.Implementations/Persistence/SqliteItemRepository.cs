@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
-        private const int LatestSchemaVersion = 25;
+        private const int LatestSchemaVersion = 29;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -219,6 +219,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "Tags", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsFolder", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "UnratedType", "Text");
 
             PrepareStatements();
 
@@ -446,7 +447,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Audio",
                 "ExternalServiceId",
                 "Tags",
-                "IsFolder"
+                "IsFolder",
+                "UnratedType"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -714,6 +716,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Tags.ToArray());
                     _saveItemCommand.GetParameter(index++).Value = item.IsFolder;
 
+                    _saveItemCommand.GetParameter(index++).Value = item.GetBlockUnratedType().ToString();
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1916,17 +1920,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
                 }
             }
-
-            if (query.AncestorIds.Length == 1)
-            {
-                whereClauses.Add("Guid in (select itemId from AncestorIds where AncestorId=@AncestorId)");
-                cmd.Parameters.Add(cmd, "@AncestorId", DbType.Guid).Value = new Guid(query.AncestorIds[0]);
-            }
-            if (query.AncestorIds.Length > 1)
-            {
-                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + new Guid(i).ToString("N") + "'").ToArray());
-                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
-            }
             if (query.ExcludeLocationTypes.Length == 1)
             {
                 whereClauses.Add("LocationType<>@LocationType");
@@ -1939,6 +1932,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("LocationType not in (" + val + ")");
             }
 
+            if (query.AncestorIds.Length == 1)
+            {
+                whereClauses.Add("Guid in (select itemId from AncestorIds where AncestorId=@AncestorId)");
+                cmd.Parameters.Add(cmd, "@AncestorId", DbType.Guid).Value = new Guid(query.AncestorIds[0]);
+            }
+            if (query.AncestorIds.Length > 1)
+            {
+                var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + new Guid(i).ToString("N") + "'").ToArray());
+                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
+            }
+
+            if (query.BlockUnratedItems.Length == 1)
+            {
+                whereClauses.Add("(InheritedParentalRatingValue > 0 or UnratedType <> @UnratedType)");
+                cmd.Parameters.Add(cmd, "@UnratedType", DbType.String).Value = query.BlockUnratedItems[0].ToString();
+            }
+            if (query.BlockUnratedItems.Length > 1)
+            {
+                var inClause = string.Join(",", query.BlockUnratedItems.Select(i => "'" + i.ToString() + "'").ToArray());
+                whereClauses.Add(string.Format("(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))", inClause));
+            }
+            
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -1996,55 +2011,55 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public async Task UpdateInheritedValues(CancellationToken cancellationToken)
         {
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            //await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            IDbTransaction transaction = null;
+            //IDbTransaction transaction = null;
 
-            try
-            {
-                transaction = _connection.BeginTransaction();
+            //try
+            //{
+            //    transaction = _connection.BeginTransaction();
 
-                using (var cmd = _connection.CreateCommand())
-                {
-                    cmd.CommandText = "update TypedBaseItems set InheritedParentalRatingValue = (select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems as T where guid in (Select AncestorId from AncestorIds where ItemId=T.guid))))";
+            //    using (var cmd = _connection.CreateCommand())
+            //    {
+            //        cmd.CommandText = "update TypedBaseItems set InheritedParentalRatingValue = (select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems as T where guid in (Select AncestorId from AncestorIds where ItemId=T.guid))))";
 
-                    cmd.Transaction = transaction;
-                    cmd.ExecuteNonQuery();
+            //        cmd.Transaction = transaction;
+            //        cmd.ExecuteNonQuery();
 
-                    cmd.ExecuteNonQuery();
-                }
+            //        cmd.ExecuteNonQuery();
+            //    }
 
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
+            //    transaction.Commit();
+            //}
+            //catch (OperationCanceledException)
+            //{
+            //    if (transaction != null)
+            //    {
+            //        transaction.Rollback();
+            //    }
 
-                throw;
-            }
-            catch (Exception e)
-            {
-                _logger.ErrorException("Error running query:", e);
+            //    throw;
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.ErrorException("Error running query:", e);
 
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
+            //    if (transaction != null)
+            //    {
+            //        transaction.Rollback();
+            //    }
 
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
+            //    throw;
+            //}
+            //finally
+            //{
+            //    if (transaction != null)
+            //    {
+            //        transaction.Dispose();
+            //    }
 
-                _writeLock.Release();
-            }
+            //    _writeLock.Release();
+            //}
         }
 
         private static Dictionary<string, string[]> GetTypeMapDictionary()

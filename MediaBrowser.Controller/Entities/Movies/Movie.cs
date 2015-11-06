@@ -159,9 +159,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
+            return UnratedItem.Movie;
         }
 
         public MovieInfo GetLookupInfo()

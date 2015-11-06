@@ -271,7 +271,7 @@
 
                     // Sometimes this fails
                     try {
-                        //hlsPlayer.destroy();
+                        hlsPlayer.destroy();
                     }
                     catch (err) {
                         Logger.log(err);
@@ -348,7 +348,7 @@
             else {
 
                 if (hlsPlayer) {
-                    //hlsPlayer.destroy();
+                    hlsPlayer.destroy();
                     hlsPlayer = null;
                 }
 

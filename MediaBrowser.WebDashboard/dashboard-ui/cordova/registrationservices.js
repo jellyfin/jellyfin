@@ -24,32 +24,40 @@
 
         var prefix = $.browser.android ? 'android' : 'ios';
 
-        // Get supporter status
-        getRegistrationInfo(prefix + 'appunlock').done(function (registrationInfo) {
+        IapManager.isUnlockedOverride(feature).done(function (isUnlocked) {
 
-            if (registrationInfo.IsRegistered) {
+            if (isUnlocked) {
                 deferred.resolve();
                 return;
             }
 
-            IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
+            // Get supporter status
+            getRegistrationInfo(prefix + 'appunlock').done(function (registrationInfo) {
 
-                if (subscriptionOptions.filter(function (p) {
-                    return p.owned;
-                }).length > 0) {
+                if (registrationInfo.IsRegistered) {
                     deferred.resolve();
                     return;
                 }
 
-                var dialogOptions = {
-                    title: Globalize.translate('HeaderUnlockApp')
-                };
+                IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
 
-                showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, registrationInfo, dialogOptions, deferred);
+                    if (subscriptionOptions.filter(function (p) {
+                        return p.owned;
+                    }).length > 0) {
+                        deferred.resolve();
+                        return;
+                    }
+
+                    var dialogOptions = {
+                        title: Globalize.translate('HeaderUnlockApp')
+                    };
+
+                    showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, registrationInfo, dialogOptions, deferred);
+                });
+
+            }).fail(function () {
+                deferred.reject();
             });
-
-        }).fail(function () {
-            deferred.reject();
         });
     }
 

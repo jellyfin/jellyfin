@@ -170,9 +170,9 @@ namespace MediaBrowser.Controller.LiveTv
             return "Program";
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
+            return UnratedItem.LiveTvProgram;
         }
 
         protected override string GetInternalMetadataPath(string basePath)

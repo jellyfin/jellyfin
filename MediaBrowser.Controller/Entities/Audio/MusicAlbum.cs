@@ -110,6 +110,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
+        }
+
         public AlbumInfo GetLookupInfo()
         {
             var id = GetItemLookupInfo<AlbumInfo>();

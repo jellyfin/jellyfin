@@ -54,6 +54,7 @@ Custom property | Description | Default
       :host {
         display: inline-block;
         white-space: nowrap;
+        cursor: pointer;
       }
 
       :host(:focus) {
@@ -69,9 +70,6 @@ Custom property | Description | Default
         position: relative;
         width: 18px;
         height: 18px;
-        cursor: pointer;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
         vertical-align: middle;
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
       }

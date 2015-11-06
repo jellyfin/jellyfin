@@ -42,13 +42,12 @@
 
         html += '<div style="margin-bottom:1em;">';
         var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
-        var maxLogoWidth = isPortrait ? 100 : 200;
         var imgUrl;
 
         if (parentName && item.ParentLogoItemId) {
 
             imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
-                height: logoHeight,
+                maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ParentLogoImageTag
             });
@@ -59,7 +58,7 @@
         else if (item.ImageTags.Logo) {
 
             imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                height: logoHeight,
+                maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ImageTags.Logo
             });
@@ -769,7 +768,7 @@
                     logoUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Logo",
                         index: 0,
-                        height: logoHeight,
+                        maxHeight: logoHeight,
                         tag: item.ImageTags.Logo
                     });
                 }
