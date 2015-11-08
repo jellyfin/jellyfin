@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
         public Guid DisplayParentId { get; set; }
 
         public Guid? UserId { get; set; }
-        
+
         public static ITVSeriesManager TVSeriesManager;
         public static IPlaylistManager PlaylistManager;
 
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Entities
             }
             return list;
         }
-        
+
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             var parent = this as Folder;
@@ -144,6 +144,11 @@ namespace MediaBrowser.Controller.Entities
             var types = new[] { CollectionType.Movies, CollectionType.TvShows };
 
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
+        {
+            return Task.FromResult(true);
         }
 
         [IgnoreDataMember]

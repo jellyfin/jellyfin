@@ -93,12 +93,53 @@
             {
                 Condition: 'LessThanEqual',
                 Property: 'VideoLevel',
-                Value: '41'
+                Value: '50'
             }]
         });
 
         // Subtitle profiles
         profile.SubtitleProfiles = [];
+        profile.SubtitleProfiles.push({
+            Format: 'srt',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'subrip',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'ass',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'ssa',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'pgs',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'pgssub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'dvdsub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'vtt',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'sub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'idx',
+            Method: 'Embed'
+        });
+
         profile.ResponseProfiles = [];
 
         return profile;

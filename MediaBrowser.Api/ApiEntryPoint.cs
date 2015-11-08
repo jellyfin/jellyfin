@@ -709,7 +709,10 @@ namespace MediaBrowser.Api
 
         public void StartKillTimer(TimerCallback callback, int intervalMs)
         {
-            CheckHasExited();
+            if (HasExited)
+            {
+                return;
+            }
 
             lock (_timerLock)
             {
@@ -728,7 +731,10 @@ namespace MediaBrowser.Api
 
         public void ChangeKillTimerIfStarted()
         {
-            CheckHasExited();
+            if (HasExited)
+            {
+                return;
+            }
 
             lock (_timerLock)
             {
@@ -739,14 +745,6 @@ namespace MediaBrowser.Api
                     Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
-            }
-        }
-
-        private void CheckHasExited()
-        {
-            if (HasExited)
-            {
-                throw new ObjectDisposedException("Job");
             }
         }
     }

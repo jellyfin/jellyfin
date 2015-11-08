@@ -476,12 +476,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailImageContainer img {
-    max-width: 280px;
-    max-height: 300px;
+    width: 280px;
+    /* This is just to make sure it always takes up some space */
+    min-height: 140px;
 }
 
 .portraitDetailImageContainer img {
-    max-width: 220px;
+    width: 220px;
 }
 
 .squareDetailImageContainer {
@@ -547,11 +548,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailImageContainer img {
-        max-width: 240px;
+        width: 240px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 120px;
     }
 
     .portraitDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
     }
 }
 
@@ -893,7 +896,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailImageContainer img {
-        max-width: 140px;
+        width: 140px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 140px;
     }
 
     .inlineItemName {
@@ -909,7 +914,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .thumbDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 }
 
@@ -923,11 +930,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 500px) {
 
     .detailImageContainer img {
-        max-width: 80px;
+        width: 80px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 
     .thumbDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 }
 
