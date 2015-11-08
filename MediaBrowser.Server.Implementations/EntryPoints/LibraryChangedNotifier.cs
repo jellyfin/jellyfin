@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -260,12 +262,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private bool FilterItem(BaseItem item)
         {
-            if (item.LocationType == LocationType.Virtual)
+            if (!item.IsFolder && item.LocationType == LocationType.Virtual)
             {
                 return false;
             }
-            
-            return !(item is IChannelItem);
+
+            if (item is IItemByName && !(item is MusicArtist))
+            {
+                return false;
+            }
+
+            return !(item is IChannelItem) && !(item is ILiveTvItem);
         }
 
         /// <summary>

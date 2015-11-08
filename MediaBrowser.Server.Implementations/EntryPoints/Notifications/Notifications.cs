@@ -22,6 +22,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
@@ -77,9 +79,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
             _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
             _appHost.ApplicationUpdated += _appHost_ApplicationUpdated;
-            _deviceManager.CameraImageUploaded +=_deviceManager_CameraImageUploaded;
+            _deviceManager.CameraImageUploaded += _deviceManager_CameraImageUploaded;
 
-            _userManager.UserLockedOut += _userManager_UserLockedOut;    
+            _userManager.UserLockedOut += _userManager_UserLockedOut;
         }
 
         async void _userManager_UserLockedOut(object sender, GenericEventArgs<User> e)
@@ -311,23 +313,40 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.LocationType == LocationType.FileSystem && !e.Item.IsFolder)
+            if (!FilterItem(e.Item))
             {
-                lock (_libraryChangedSyncLock)
-                {
-                    if (LibraryUpdateTimer == null)
-                    {
-                        LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
-                                                       Timeout.Infinite);
-                    }
-                    else
-                    {
-                        LibraryUpdateTimer.Change(5000, Timeout.Infinite);
-                    }
-
-                    _itemsAdded.Add(e.Item);
-                }
+                return;
             }
+
+            lock (_libraryChangedSyncLock)
+            {
+                if (LibraryUpdateTimer == null)
+                {
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
+                                                   Timeout.Infinite);
+                }
+                else
+                {
+                    LibraryUpdateTimer.Change(5000, Timeout.Infinite);
+                }
+
+                _itemsAdded.Add(e.Item);
+            }
+        }
+
+        private bool FilterItem(BaseItem item)
+        {
+            if (!item.IsFolder && item.LocationType == LocationType.Virtual)
+            {
+                return false;
+            }
+
+            if (item is IItemByName && !(item is MusicArtist))
+            {
+                return false;
+            }
+
+            return !(item is IChannelItem) && !(item is ILiveTvItem);
         }
 
         private async void LibraryUpdateTimerCallback(object state)
