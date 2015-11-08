@@ -17,6 +17,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
@@ -508,6 +509,15 @@ namespace MediaBrowser.Providers.Manager
             if (!item.IsSaveLocalMetadataEnabled())
             {
                 return true;
+            }
+
+            if (item is IItemByName && !(item is MusicArtist))
+            {
+                var hasDualAccess = item as IHasDualAccess;
+                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
+                {
+                    return !_config.Configuration.EnableImagePreDownloading;
+                }
             }
 
             return false;

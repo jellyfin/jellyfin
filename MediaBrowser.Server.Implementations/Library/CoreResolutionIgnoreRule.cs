@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Ignore hidden files and folders
             if (isHidden)
             {
-                if (parent != null)
+                if (parent == null)
                 {
                     var parentFolderName = Path.GetFileName(Path.GetDirectoryName(path));
 

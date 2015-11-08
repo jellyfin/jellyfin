@@ -235,6 +235,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] Migrations { get; set; }
 
         public int MigrationVersion { get; set; }
+        public bool EnableImagePreDownloading { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
