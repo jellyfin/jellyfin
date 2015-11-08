@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 // The data can be large so give it some extra time
-                TimeoutMs = 60000,
+                TimeoutMs = 120000,
                 LogErrorResponseBody = true
             };
 
