@@ -527,6 +527,11 @@ namespace MediaBrowser.Providers.Manager
         {
             var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
 
+            SaveImageStub(item, imageType, url, newIndex);
+        }
+
+        private void SaveImageStub(IHasImages item, ImageType imageType, string url, int newIndex)
+        {
             item.SetImage(new ItemImageInfo
             {
                 Path = url,
@@ -555,7 +560,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     SaveImageStub(item, imageType, url);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
-                    return;
+                    continue;
                 }
 
                 try

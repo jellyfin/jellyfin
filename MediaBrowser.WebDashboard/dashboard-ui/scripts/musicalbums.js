@@ -8,7 +8,7 @@
         if (!pageData) {
             pageData = data[key] = {
                 query: {
-                    SortBy: "AlbumArtist,SortName",
+                    SortBy: "SortName",
                     SortOrder: "Ascending",
                     IncludeItemTypes: "MusicAlbum",
                     Recursive: true,
