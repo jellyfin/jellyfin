@@ -23,11 +23,13 @@
             { name: 'HeaderFavoriteShows', types: "Series", id: "favoriteShows", shape: getPosterShape(), showTitle: false },
             { name: 'HeaderFavoriteEpisodes', types: "Episode", id: "favoriteEpisode", shape: getThumbShape(), preferThumb: false, showTitle: true, showParentTitle: true },
             { name: 'HeaderFavoriteGames', types: "Game", id: "favoriteGames", shape: getSquareShape(), preferThumb: false, showTitle: true },
-            { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true }
+            { name: 'HeaderFavoriteArtists', types: "MusicArtist", id: "favoriteArtists", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
+            { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
+            { name: 'HeaderFavoriteSongs', types: "Audio", id: "favoriteSongs", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true }
         ];
     }
 
-    function loadSection(elem, userId, section, isSingleSection) {
+    function loadSection(elem, userId, topParentId, section, isSingleSection) {
 
         var screenWidth = $(window).width();
 
@@ -35,7 +37,6 @@
 
             SortBy: "SortName",
             SortOrder: "Ascending",
-            IncludeItemTypes: section.types,
             Filters: "IsFavorite",
             Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
@@ -44,11 +45,24 @@
             ExcludeLocationTypes: "Virtual"
         };
 
+        if (topParentId) {
+            options.ParentId = topParentId;
+        }
+
         if (isSingleSection) {
             options.Limit = null;
         }
 
-        return ApiClient.getItems(userId, options).done(function (result) {
+        var promise;
+        if (section.types == 'MusicArtist') {
+            promise = ApiClient.getArtists(userId, options);
+        } else {
+
+            options.IncludeItemTypes = section.types;
+            promise = ApiClient.getItems(userId, options);
+        }
+
+        return promise.done(function (result) {
 
             var html = '';
 
@@ -94,7 +108,7 @@
         });
     }
 
-    function loadSections(page, userId) {
+    function loadSections(page, userId, topParentId, types) {
 
         Dashboard.showLoadingMsg();
 
@@ -109,9 +123,16 @@
             });
         }
 
+        if (types) {
+            sections = sections.filter(function (s) {
+
+                return types.indexOf(s.id) != -1;
+            });
+        }
+
         var i, length;
 
-        var elem = page.querySelector('.sections');
+        var elem = page.querySelector('.favoriteSections');
 
         if (!elem.innerHTML) {
             var html = '';
@@ -131,7 +152,7 @@
 
             elem = page.querySelector('.section' + section.id);
 
-            promises.push(loadSection(elem, userId, section, sections.length == 1));
+            promises.push(loadSection(elem, userId, topParentId, section, sections.length == 1));
         }
 
         $.when(promises).done(function () {
@@ -143,14 +164,18 @@
 
     function initHomePage() {
 
-        window.HomePage.renderFavorites = function (page, tabContent) {
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                loadSections(tabContent, Dashboard.getCurrentUserId());
-            }
-        };
+        if (window.HomePage) {
+            window.HomePage.renderFavorites = function (page, tabContent) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    loadSections(tabContent, Dashboard.getCurrentUserId());
+                }
+            };
+        }
     }
 
     initHomePage();
+
+    pageIdOn('pageinit', "indexPage", initHomePage);
 
     pageIdOn('pageshow', "favoritesPage", function () {
 
@@ -160,5 +185,9 @@
             loadSections(page, Dashboard.getCurrentUserId());
         }
     });
+
+    window.FavoriteItems = {
+        render: loadSections
+    };
 
 })(jQuery, document);

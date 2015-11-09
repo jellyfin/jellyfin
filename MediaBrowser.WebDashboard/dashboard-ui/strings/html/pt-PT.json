@@ -375,7 +375,7 @@
     "LabelMetadataDownloadLanguage": "Preferred download language:",
     "ButtonAutoScroll": "Scroll autom\u00e1tico",
     "LabelImageSavingConvention": "Conven\u00e7\u00e3o para guardar imagens:",
-    "LabelImageSavingConventionHelp": "Emby recognizes images from most major media applications. Choosing your downloading convention is useful if you also use other products.",
+    "LabelImageSavingConventionHelp": "O Emby reconhece as imagens da maioria das aplica\u00e7\u00f5es multim\u00e9dia. Escolher a conven\u00e7\u00e3o de download \u00e9 \u00fatil se tamb\u00e9m usa outros produtos.",
     "OptionImageSavingCompatible": "Compat\u00edvel - Emby\/Kodi\/Plex",
     "OptionImageSavingStandard": "Padr\u00e3o - MB2",
     "ButtonSignIn": "Iniciar Sess\u00e3o",

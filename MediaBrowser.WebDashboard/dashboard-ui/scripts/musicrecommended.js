@@ -208,6 +208,12 @@
             loadPlaylists(tabContent, parentId);
             loadRecentlyPlayed(tabContent, parentId);
             loadFrequentlyPlayed(tabContent, parentId);
+
+            require(['scripts/favorites'], function() {
+
+                FavoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
+
+            });
         }
     }
 

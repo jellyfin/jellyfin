@@ -274,7 +274,7 @@
         var vals = val.split(':');
 
         var hours = vals[0];
-        var minutes = vals[1];
+        var minutes = vals[1].split(' ')[0];
 
         // Add hours
         var ticks = hours * 60 * 60 * 1000 * 10000;
