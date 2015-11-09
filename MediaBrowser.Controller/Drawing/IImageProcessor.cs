@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -83,7 +84,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<string> ProcessImage(ImageProcessingOptions options);
+        Task<Tuple<string,string>> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the enhanced image.

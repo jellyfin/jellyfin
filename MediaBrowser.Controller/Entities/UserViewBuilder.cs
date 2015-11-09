@@ -125,7 +125,14 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.HomeVideos:
                 case CollectionType.Games:
                 case CollectionType.MusicVideos:
+                case CollectionType.Music:
+                {
+                    if (query.Recursive)
+                    {
+                        return GetResult(queryParent.GetRecursiveChildren(user, true), queryParent, query);
+                    }
                     return GetResult(queryParent.GetChildren(user, true), queryParent, query);
+                }
 
                 case CollectionType.Folders:
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
@@ -139,35 +146,8 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.TvShows:
                     return await GetTvView(queryParent, user, query).ConfigureAwait(false);
 
-                case CollectionType.Music:
-                    return await GetMusicFolders(queryParent, user, query).ConfigureAwait(false);
-
                 case CollectionType.Movies:
                     return await GetMovieFolders(queryParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.MusicGenres:
-                    return await GetMusicGenres(queryParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.MusicGenre:
-                    return await GetMusicGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.GameGenres:
-                    return await GetGameGenres(queryParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.GameGenre:
-                    return await GetGameGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.GameSystems:
-                    return GetGameSystems(queryParent, user, query);
-
-                case SpecialFolder.LatestGames:
-                    return GetLatestGames(queryParent, user, query);
-
-                case SpecialFolder.RecentlyPlayedGames:
-                    return GetRecentlyPlayedGames(queryParent, user, query);
-
-                case SpecialFolder.GameFavorites:
-                    return GetFavoriteGames(queryParent, user, query);
 
                 case SpecialFolder.TvShowSeries:
                     return GetTvSeries(queryParent, user, query);
@@ -208,41 +188,11 @@ namespace MediaBrowser.Controller.Entities
                 case SpecialFolder.MovieCollections:
                     return GetMovieCollections(queryParent, user, query);
 
-                case SpecialFolder.MusicLatest:
-                    return GetMusicLatest(queryParent, user, query);
-
-                case SpecialFolder.MusicPlaylists:
-                    return await GetMusicPlaylists(queryParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.MusicAlbums:
-                    return GetMusicAlbums(queryParent, user, query);
-
-                case SpecialFolder.MusicAlbumArtists:
-                    return GetMusicAlbumArtists(queryParent, user, query);
-
-                case SpecialFolder.MusicArtists:
-                    return GetMusicArtists(queryParent, user, query);
-
-                case SpecialFolder.MusicSongs:
-                    return GetMusicSongs(queryParent, user, query);
-
                 case SpecialFolder.TvFavoriteEpisodes:
                     return GetFavoriteEpisodes(queryParent, user, query);
 
                 case SpecialFolder.TvFavoriteSeries:
                     return GetFavoriteSeries(queryParent, user, query);
-
-                case SpecialFolder.MusicFavorites:
-                    return await GetMusicFavorites(queryParent, user, query).ConfigureAwait(false);
-
-                case SpecialFolder.MusicFavoriteAlbums:
-                    return GetFavoriteAlbums(queryParent, user, query);
-
-                case SpecialFolder.MusicFavoriteArtists:
-                    return GetFavoriteArtists(queryParent, user, query);
-
-                case SpecialFolder.MusicFavoriteSongs:
-                    return GetFavoriteSongs(queryParent, user, query);
 
                 default:
                     {
@@ -268,154 +218,6 @@ namespace MediaBrowser.Controller.Entities
         private int GetSpecialItemsLimit()
         {
             return 50;
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicFolders(Folder parent, User user, InternalItemsQuery query)
-        {
-            if (query.Recursive)
-            {
-                var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => FilterItem(i, query));
-
-                return PostFilterAndSort(items, parent, null, query);
-            }
-
-            var list = new List<BaseItem>();
-
-            list.Add(await GetUserView(SpecialFolder.MusicLatest, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicPlaylists, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbums, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicSongs, "5", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicGenres, "6", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavorites, "7", parent).ConfigureAwait(false));
-
-            return GetResult(list, parent, query);
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicFavorites(Folder parent, User user, InternalItemsQuery query)
-        {
-            var list = new List<BaseItem>();
-
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteAlbums, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteArtists, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteSongs, "2", parent).ConfigureAwait(false));
-
-            return GetResult(list, parent, query);
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicGenres(Folder parent, User user, InternalItemsQuery query)
-        {
-            var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetMusicGenre(i);
-                    }
-                    catch
-                    {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
-                        return null;
-                    }
-
-                })
-                .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MusicGenre, i.SortName, parent));
-
-            var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return GetResult(genres, parent, query);
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .Where(i => i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase))
-                .OfType<IHasAlbumArtist>();
-
-            var artists = _libraryManager.GetAlbumArtists(items);
-
-            return GetResult(artists, queryParent, query);
-        }
-
-        private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>();
-
-            var artists = _libraryManager.GetAlbumArtists(items);
-
-            return GetResult(artists, parent, query);
-        }
-
-        private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasArtist>();
-
-            var artists = _libraryManager.GetArtists(items);
-
-            return GetResult(artists, parent, query);
-        }
-
-        private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>();
-
-            var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
-
-            return GetResult(artists, parent, query);
-        }
-
-        private Task<QueryResult<BaseItem>> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.IncludeItemTypes = new[] { "Playlist" };
-            query.Recursive = true;
-
-            return parent.GetItems(query);
-        }
-
-        private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => (i is MusicAlbum) && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
-        private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => (i is Audio.Audio) && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
-        private QueryResult<BaseItem> GetMusicLatest(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id.ToString("N"),
-                Limit = GetSpecialItemsLimit(),
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
-                ParentId = (parent == null ? null : parent.Id.ToString("N")),
-                GroupItems = true
-
-            }).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
-
-            query.SortBy = new string[] { };
-
-            //var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is MusicVideo || i is Audio.Audio && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetMovieFolders(Folder parent, User user, InternalItemsQuery query)
@@ -472,24 +274,6 @@ namespace MediaBrowser.Controller.Entities
             query.IsFavorite = true;
 
             var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => (i is Episode) && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
-        private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.IsFavorite = true;
-
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => (i is Audio.Audio) && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
-        private QueryResult<BaseItem> GetFavoriteAlbums(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.IsFavorite = true;
-
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => (i is MusicAlbum) && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -613,54 +397,6 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetGameView(User user, Folder parent, InternalItemsQuery query)
-        {
-            if (query.Recursive)
-            {
-                var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Games }, i => FilterItem(i, query));
-                return PostFilterAndSort(items, parent, null, query);
-            }
-
-            var list = new List<BaseItem>();
-
-            list.Add(await GetUserView(SpecialFolder.LatestGames, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.RecentlyPlayedGames, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameFavorites, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameSystems, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameGenres, "4", parent).ConfigureAwait(false));
-
-            return GetResult(list, parent, query);
-        }
-
-        private QueryResult<BaseItem> GetLatestGames(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
-
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Games }, i => i is Game && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, GetSpecialItemsLimit(), query);
-        }
-
-        private QueryResult<BaseItem> GetRecentlyPlayedGames(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.IsPlayed = true;
-            query.SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName };
-            query.SortOrder = SortOrder.Descending;
-
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Games }, i => i is Game && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, GetSpecialItemsLimit(), query);
-        }
-
-        private QueryResult<BaseItem> GetFavoriteGames(Folder parent, User user, InternalItemsQuery query)
-        {
-            query.IsFavorite = true;
-
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Games }, i => i is Game && FilterItem(i, query));
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
         private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.SortBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName };
@@ -739,49 +475,6 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase));
 
             return GetResult(items, queryParent, query);
-        }
-
-        private QueryResult<BaseItem> GetGameSystems(Folder parent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Games }, i => i is GameSystem && FilterItem(i, query));
-
-            return PostFilterAndSort(items, parent, null, query);
-        }
-
-        private async Task<QueryResult<BaseItem>> GetGameGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
-        {
-            var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Games },
-                i => i is Game && i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase));
-
-            return GetResult(items, queryParent, query);
-        }
-
-        private async Task<QueryResult<BaseItem>> GetGameGenres(Folder parent, User user, InternalItemsQuery query)
-        {
-            var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Games })
-                .OfType<Game>()
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetGameGenre(i);
-                    }
-                    catch
-                    {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting game genre");
-                        return null;
-                    }
-
-                })
-                .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.GameGenre, i.SortName, parent));
-
-            var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return GetResult(genres, parent, query);
         }
 
         private QueryResult<BaseItem> GetResult<T>(QueryResult<T> result)

@@ -690,9 +690,10 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public int? ParentIndexNumber { get; set; }
 
-        public virtual string GetOfficialRatingForComparison(bool inherit)
+        [IgnoreDataMember]
+        public string OfficialRatingForComparison
         {
-            if (inherit)
+            get
             {
                 if (!string.IsNullOrWhiteSpace(OfficialRating))
                 {
@@ -702,13 +703,11 @@ namespace MediaBrowser.Controller.Entities
                 var parent = DisplayParent;
                 if (parent != null)
                 {
-                    return parent.GetOfficialRatingForComparison(inherit);
+                    return parent.OfficialRatingForComparison;
                 }
 
                 return null;
             }
-
-            return OfficialRating;
         }
 
         [IgnoreDataMember]
@@ -1141,7 +1140,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                rating = GetOfficialRatingForComparison(true);
+                rating = OfficialRatingForComparison;
             }
 
             if (string.IsNullOrWhiteSpace(rating))
@@ -1190,7 +1189,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(rating))
             {
-                rating = GetOfficialRatingForComparison(true);
+                rating = OfficialRatingForComparison;
             }
 
             if (string.IsNullOrWhiteSpace(rating))
