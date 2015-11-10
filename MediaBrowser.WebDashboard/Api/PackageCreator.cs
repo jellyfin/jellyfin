@@ -333,9 +333,6 @@ namespace MediaBrowser.WebDashboard.Api
 
         private string ModifyForCordova(string html)
         {
-            // Strip everything between CORDOVA_EXCLUDE_START and CORDOVA_EXCLUDE_END
-            html = ReplaceBetween(html, "<!--CORDOVA_EXCLUDE_START-->", "<!--CORDOVA_EXCLUDE_END-->", string.Empty);
-
             // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
             html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonPurchase}</span>");
 
