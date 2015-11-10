@@ -1208,6 +1208,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var guideDays = GetGuideDays(list.Count);
 
+            _logger.Info("Refreshing guide with {0} days of guide data", guideDays);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             foreach (var currentChannel in list)
@@ -1291,13 +1293,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
+        private const int MaxGuideDays = 14;
         private double GetGuideDays(int channelCount)
         {
             var config = GetConfiguration();
 
             if (config.GuideDays.HasValue)
             {
-                return config.GuideDays.Value;
+                return Math.Max(1, Math.Min(config.GuideDays.Value, MaxGuideDays));
             }
 
             var programsPerDay = channelCount * 48;
@@ -1306,7 +1309,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var days = Math.Round(((double)maxPrograms) / programsPerDay);
 
-            return Math.Max(3, Math.Min(days, 14));
+            return Math.Max(3, Math.Min(days, MaxGuideDays));
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)

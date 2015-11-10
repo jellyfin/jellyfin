@@ -233,12 +233,37 @@
 
     });
 
-    function performInstallation(packageName, guid, updateClass, version) {
+    function performInstallation(page, packageName, guid, updateClass, version) {
 
-        ApiClient.installPlugin(packageName, guid, updateClass, version).done(function () {
+        var developer = $('#developer', page).html().toLowerCase();
+
+        var alertCallback = function (confirmed) {
+
+            if (confirmed) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.installPlugin(packageName, guid, updateClass, version).done(function () {
+
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+        };
+
+        if (developer != 'luke' && developer != 'ebr') {
 
             Dashboard.hideLoadingMsg();
-        });
+
+            var msg = Globalize.translate('MessagePluginInstallDisclaimer');
+            msg += '<br/>';
+            msg += '<br/>';
+            msg += Globalize.translate('PleaseConfirmPluginInstallation');
+
+            Dashboard.confirm(msg, Globalize.translate('HeaderConfirmPluginInstallation'), alertCallback);
+
+        } else {
+            alertCallback(true);
+        }
     }
 
     function addPluginpage() {
@@ -275,7 +300,7 @@
                         title: Globalize.translate('HeaderPluginInstallation')
                     });
                 } else {
-                    performInstallation(name, guid, vals[1], version);
+                    performInstallation(page, name, guid, vals[1], version);
                 }
             });
 

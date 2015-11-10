@@ -175,7 +175,7 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0 0;">';
+                html += '<div>';
 
                 if (i > 0) {
                     html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
@@ -299,7 +299,7 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0 0;">';
+                html += '<div>';
 
                 if (i > 0) {
                     html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';

@@ -1642,7 +1642,7 @@
             if (cast.PrimaryImageTag) {
 
                 imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    width: 100,
+                    maxWidth: 100,
                     tag: cast.PrimaryImageTag,
                     type: "primary",
                     minScale: 2
@@ -1727,7 +1727,7 @@
             if (cast.PrimaryImageTag) {
 
                 imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    width: 100,
+                    maxWidth: 100,
                     tag: cast.PrimaryImageTag,
                     type: "primary",
                     minScale: 2
@@ -1745,7 +1745,7 @@
             if (lazy) {
                 html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '"></div>';
             } else {
-                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                html += '<div class="cardImage coveredCardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
             }
 
             //cardFooter
