@@ -677,6 +677,50 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedSerializedResultUsingCache(counts);
         }
 
+        private IList<BaseItem> GetAllLibraryItems(string userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem, bool> filter)
+        {
+            if (!string.IsNullOrEmpty(parentId))
+            {
+                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
+
+                if (!string.IsNullOrWhiteSpace(userId))
+                {
+                    var user = userManager.GetUserById(userId);
+
+                    if (user == null)
+                    {
+                        throw new ArgumentException("User not found");
+                    }
+
+                    return folder
+                        .GetRecursiveChildren(user, filter)
+                        .ToList();
+                }
+
+                return folder
+                    .GetRecursiveChildren(filter);
+            }
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var user = userManager.GetUserById(userId);
+
+                if (user == null)
+                {
+                    throw new ArgumentException("User not found");
+                }
+
+                return userManager
+                    .GetUserById(userId)
+                    .RootFolder
+                    .GetRecursiveChildren(user, filter)
+                    .ToList();
+            }
+
+            return libraryManager
+                .RootFolder
+                .GetRecursiveChildren(filter);
+        }
+
         private bool FilterItem(BaseItem item, GetItemCounts request, string userId)
         {
             if (!string.IsNullOrWhiteSpace(userId))

@@ -23,9 +23,9 @@
 
         var id;
         if (feature == 'embypremieremonthly') {
-            id = "emby.premiere.monthly";
+            id = NativeIapManager.getPremiereMonthlySku();
         } else {
-            id = "com.emby.mobile.unlock";
+            id = NativeIapManager.getUnlockProductSku();
         }
 
         var products = updatedProducts.filter(function (r) {
@@ -83,8 +83,9 @@
 
         }).map(function (o) {
 
-            o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
-            o.owned = getProduct(o.feature).owned;
+            var prod = getProduct(o.feature);
+            o.buttonText = Globalize.translate(o.buttonText, prod.price);
+            o.owned = prod.owned;
             return o;
         });
 

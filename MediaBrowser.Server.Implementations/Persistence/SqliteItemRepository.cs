@@ -80,6 +80,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
+        private IDbCommand _updateInheritedRatingCommand;
+        
         private const int LatestSchemaVersion = 29;
 
         /// <summary>
@@ -532,6 +534,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 _saveStreamCommand.Parameters.Add(_saveStreamCommand, "@" + col);
             }
+
+            _updateInheritedRatingCommand = _connection.CreateCommand();
+            _updateInheritedRatingCommand.CommandText = "Update TypedBaseItems set InheritedParentalRatingValue=@InheritedParentalRatingValue where Guid=@Guid";
+            _updateInheritedRatingCommand.Parameters.Add(_updateInheritedRatingCommand, "@InheritedParentalRatingValue");
+            _updateInheritedRatingCommand.Parameters.Add(_updateInheritedRatingCommand, "@Guid");
         }
 
         /// <summary>
@@ -2011,55 +2018,79 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public async Task UpdateInheritedValues(CancellationToken cancellationToken)
         {
-            //await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            var newValues = new List<Tuple<Guid, int>>();
 
-            //IDbTransaction transaction = null;
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select Guid,InheritedParentalRatingValue,(select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems where guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid)))) as NewInheritedParentalRatingValue from typedbaseitems as Outer where InheritedParentalRatingValue <> NewInheritedParentalRatingValue";
 
-            //try
-            //{
-            //    transaction = _connection.BeginTransaction();
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var id = reader.GetGuid(0);
+                        var newValue = reader.GetInt32(2);
 
-            //    using (var cmd = _connection.CreateCommand())
-            //    {
-            //        cmd.CommandText = "update TypedBaseItems set InheritedParentalRatingValue = (select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems as T where guid in (Select AncestorId from AncestorIds where ItemId=T.guid))))";
+                        newValues.Add(new Tuple<Guid, int>(id, newValue));
+                    }
+                }
+            }
 
-            //        cmd.Transaction = transaction;
-            //        cmd.ExecuteNonQuery();
+            if (newValues.Count == 0)
+            {
+                return;
+            }
+            
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            //        cmd.ExecuteNonQuery();
-            //    }
+            IDbTransaction transaction = null;
 
-            //    transaction.Commit();
-            //}
-            //catch (OperationCanceledException)
-            //{
-            //    if (transaction != null)
-            //    {
-            //        transaction.Rollback();
-            //    }
+            try
+            {
+                transaction = _connection.BeginTransaction();
 
-            //    throw;
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.ErrorException("Error running query:", e);
+                foreach (var item in newValues)
+                {
+                    _updateInheritedRatingCommand.GetParameter(0).Value = item.Item1;
+                    _updateInheritedRatingCommand.GetParameter(1).Value = item.Item2;
 
-            //    if (transaction != null)
-            //    {
-            //        transaction.Rollback();
-            //    }
+                    _updateInheritedRatingCommand.Transaction = transaction;
+                    _updateInheritedRatingCommand.ExecuteNonQuery();
 
-            //    throw;
-            //}
-            //finally
-            //{
-            //    if (transaction != null)
-            //    {
-            //        transaction.Dispose();
-            //    }
+                    _updateInheritedRatingCommand.ExecuteNonQuery();
+                }
 
-            //    _writeLock.Release();
-            //}
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Error running query:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
         }
 
         private static Dictionary<string, string[]> GetTypeMapDictionary()
