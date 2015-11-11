@@ -962,6 +962,9 @@
                             contentType = 'application/x-mpegURL';
                         } else {
 
+                            // Reports of stuttering with h264 stream copy in IE
+                            mediaUrl += '&EnableAutoStreamCopy=false';
+
                             startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;
                         }

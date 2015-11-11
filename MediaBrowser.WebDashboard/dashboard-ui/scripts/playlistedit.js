@@ -101,6 +101,7 @@
             }
 
             ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
 
             $(elem).off('needsrefresh').on('needsrefresh', function () {
 
