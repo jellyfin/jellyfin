@@ -120,12 +120,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 progress.Report(percent * 100);
             }
 
-            if (!_config.Configuration.DisableStartupScan)
-            {
-                _config.Configuration.DisableStartupScan = true;
-                _config.SaveConfiguration();
-            }
-
             if (_config.Configuration.MigrationVersion < MigrationVersion)
             {
                 _config.Configuration.MigrationVersion = MigrationVersion;
@@ -181,7 +175,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 //Limit = limit,
 
                 // These have their own cleanup routines
-                ExcludeItemTypes = new[] { typeof(Person).Name, typeof(Genre).Name, typeof(MusicGenre).Name, typeof(GameGenre).Name, typeof(Studio).Name, typeof(Year).Name, typeof(Channel).Name }
+                ExcludeItemTypes = new[]
+                {
+                    typeof(Person).Name, 
+                    typeof(Genre).Name, 
+                    typeof(MusicGenre).Name, 
+                    typeof(GameGenre).Name, 
+                    typeof(Studio).Name, 
+                    typeof(Year).Name, 
+                    typeof(Channel).Name, 
+                    typeof(AggregateFolder).Name, 
+                    typeof(CollectionFolder).Name
+                }
             });
 
             var numComplete = 0;

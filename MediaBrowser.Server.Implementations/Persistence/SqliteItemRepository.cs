@@ -2014,7 +2014,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(UserView),
             typeof(Video),
             typeof(Year),
-            typeof(Channel)
+            typeof(Channel),
+            typeof(AggregateFolder)
         };
 
         public async Task UpdateInheritedValues(CancellationToken cancellationToken)
