@@ -49,7 +49,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (!string.IsNullOrEmpty(data.format.bit_rate))
                 {
-                    info.Bitrate = int.Parse(data.format.bit_rate, _usCulture);
+                    int value;
+                    if (int.TryParse(data.format.bit_rate, NumberStyles.Any, _usCulture, out value))
+                    {
+                        info.Bitrate = value;
+                    }
                 }
             }
 
