@@ -291,10 +291,10 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "h264_qsv";
-                }
+                //if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return "h264_qsv";
+                //}
                 
                 return "libx264";
             }
