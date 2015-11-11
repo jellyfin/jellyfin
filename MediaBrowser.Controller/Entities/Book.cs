@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(SeriesName))
             {
-                info.SeriesName = Parents.Select(i => i.Name).FirstOrDefault();
+                info.SeriesName = GetParents().Select(i => i.Name).FirstOrDefault();
             }
             else
             {

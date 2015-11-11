@@ -225,7 +225,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public bool DisableXmlSavers { get; set; }
         public bool EnableWindowsShortcuts { get; set; }
 
         public bool EnableVideoFrameByFrameAnalysis { get; set; }
@@ -236,6 +235,7 @@ namespace MediaBrowser.Model.Configuration
 
         public int MigrationVersion { get; set; }
         public bool EnableImagePreDownloading { get; set; }
+        public bool EnableSharedCollectionViewImage { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

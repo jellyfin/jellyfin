@@ -108,7 +108,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = new[] { typeof(GameSystem).Name }
             };
             var parentIds = new string[] { } ;
-            var gameSystems = _libraryManager.GetItems(query, user, parentIds)
+            var gameSystems = _libraryManager.GetItems(query, parentIds)
                 .Cast<GameSystem>()
                 .ToList();
 
@@ -129,7 +129,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = new[] { typeof(Game).Name }
             };
             var parentIds = new string[] { };
-            var games = _libraryManager.GetItems(query, user, parentIds)
+            var games = _libraryManager.GetItems(query, parentIds)
                 .Cast<Game>()
                 .ToList();
 

@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return ResolveVideos<Video>(parent, files, directoryService, false);
                 }
 
-                if (parent is Series || parent.Parents.OfType<Series>().Any())
+                if (parent is Series || parent.GetParents().OfType<Series>().Any())
                 {
                     return null;
                 }

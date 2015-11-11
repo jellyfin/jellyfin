@@ -86,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 Genres = genreList.ToArray()
 
-            }, user, new string[] { });
+            }, new string[] { });
 
             var genresDictionary = genreList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 

@@ -259,6 +259,16 @@ namespace Emby.Drawing
 
                     _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options, outputFormat);
                 }
+
+                return new Tuple<string, string>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath));
+            }
+            catch (Exception ex)
+            {
+                // If it fails for whatever reason, return the original image
+                _logger.ErrorException("Error encoding image", ex);
+
+                // Just spit out the original file if all the options are default
+                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
             }
             finally
             {
@@ -269,8 +279,6 @@ namespace Emby.Drawing
 
                 semaphore.Release();
             }
-
-            return new Tuple<string, string>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath));
         }
 
         private string GetMimeType(ImageFormat format, string path)

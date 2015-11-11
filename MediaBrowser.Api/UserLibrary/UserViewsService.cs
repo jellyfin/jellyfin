@@ -80,6 +80,7 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoOptions = GetDtoOptions(request);
             dtoOptions.Fields = new List<ItemFields>();
             dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
+            dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
 
             var user = _userManager.GetUserById(request.UserId);
 

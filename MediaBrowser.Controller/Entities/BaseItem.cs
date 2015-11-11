@@ -214,11 +214,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public virtual bool IsHiddenFromUser(User user)
-        {
-            return false;
-        }
-
         [IgnoreDataMember]
         public virtual bool IsOwnedItem
         {
@@ -519,15 +514,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public Folder Parent
         {
-            get
-            {
-                if (ParentId != Guid.Empty)
-                {
-                    return LibraryManager.GetItemById(ParentId) as Folder;
-                }
-
-                return null;
-            }
+            get { return GetParent() as Folder; }
             set
             {
 
@@ -542,16 +529,28 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public IEnumerable<Folder> Parents
         {
-            get
+            get { return GetParents().OfType<Folder>(); }
+        }
+
+        public BaseItem GetParent()
+        {
+            if (ParentId != Guid.Empty)
             {
-                var parent = Parent;
+                return LibraryManager.GetItemById(ParentId);
+            }
 
-                while (parent != null)
-                {
-                    yield return parent;
+            return null;
+        }
 
-                    parent = parent.Parent;
-                }
+        public IEnumerable<BaseItem> GetParents()
+        {
+            var parent = GetParent();
+
+            while (parent != null)
+            {
+                yield return parent;
+
+                parent = parent.GetParent();
             }
         }
 
@@ -563,13 +562,13 @@ namespace MediaBrowser.Controller.Entities
         public T FindParent<T>()
             where T : Folder
         {
-            return Parents.OfType<T>().FirstOrDefault();
+            return GetParents().OfType<T>().FirstOrDefault();
         }
 
         [IgnoreDataMember]
         public virtual BaseItem DisplayParent
         {
-            get { return Parent; }
+            get { return GetParent(); }
         }
 
         /// <summary>
@@ -869,7 +868,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         protected virtual bool SupportsOwnedItems
         {
-            get { return IsFolder || Parent != null; }
+            get { return IsFolder || GetParent() != null; }
         }
 
         [IgnoreDataMember]
@@ -894,7 +893,7 @@ namespace MediaBrowser.Controller.Entities
 
             var localTrailersChanged = false;
 
-            if (LocationType == LocationType.FileSystem && Parent != null)
+            if (LocationType == LocationType.FileSystem && GetParent() != null)
             {
                 var hasThemeMedia = this as IHasThemeMedia;
                 if (hasThemeMedia != null)
@@ -1056,7 +1055,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents
+                lang = GetParents()
                     .Select(i => i.PreferredMetadataLanguage)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
@@ -1086,7 +1085,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrWhiteSpace(lang))
             {
-                lang = Parents
+                lang = GetParents()
                     .Select(i => i.PreferredMetadataCountryCode)
                     .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
             }
@@ -1276,14 +1275,14 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (Parents.Any(i => !i.IsVisible(user)))
+            if (GetParents().Any(i => !i.IsVisible(user)))
             {
                 return false;
             }
 
             if (checkFolders)
             {
-                var topParent = Parents.LastOrDefault() ?? this;
+                var topParent = GetParents().LastOrDefault() ?? this;
 
                 if (string.IsNullOrWhiteSpace(topParent.Path))
                 {
@@ -1937,7 +1936,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<Guid> GetAncestorIds()
         {
-            return Parents.Select(i => i.Id).Concat(LibraryManager.GetCollectionFolders(this).Select(i => i.Id));
+            return GetParents().Select(i => i.Id).Concat(LibraryManager.GetCollectionFolders(this).Select(i => i.Id));
         }
 
         [IgnoreDataMember]

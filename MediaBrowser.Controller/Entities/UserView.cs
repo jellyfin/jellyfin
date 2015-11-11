@@ -38,6 +38,10 @@ namespace MediaBrowser.Controller.Entities
             {
                 list.Add(ParentId);
             }
+            else
+            {
+                list.Add(Id);
+            }
             return list;
         }
 
@@ -125,9 +129,13 @@ namespace MediaBrowser.Controller.Entities
         {
             var standaloneTypes = new List<string>
             {
-                CollectionType.Playlists,
-                CollectionType.BoxSets
+                CollectionType.Playlists
             };
+
+            if (!ConfigurationManager.Configuration.EnableSharedCollectionViewImage)
+            {
+                standaloneTypes.Add(CollectionType.BoxSets);
+            }
 
             var collectionFolder = folder as ICollectionFolder;
 

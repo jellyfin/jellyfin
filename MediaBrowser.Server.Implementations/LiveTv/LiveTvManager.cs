@@ -1170,7 +1170,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var list = new List<LiveTvChannel>();
 
             var numComplete = 0;
-            var folder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolderId = parentFolder.Id;
 
             foreach (var channelInfo in allChannelsList)
             {
@@ -1178,7 +1179,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 try
                 {
-                    var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, folder.Id, cancellationToken).ConfigureAwait(false);
+                    var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolderId, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
 
@@ -1390,7 +1391,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery, user, new string[] { });
+            var queryResult = _libraryManager.GetItems(internalQuery, new string[] { });
             IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrEmpty(query.Id))
@@ -1802,7 +1803,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = 1,
                 SortBy = new[] { "StartDate" }
 
-            }, user, new string[] { }).Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 
@@ -1826,7 +1827,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = 1,
                 SortBy = new[] { "StartDate" }
 
-            }, user, new string[] { }).Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 

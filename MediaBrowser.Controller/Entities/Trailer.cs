@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // Local trailers are not part of children
-                return Parent == null;
+                return GetParent() == null;
             }
         }
 

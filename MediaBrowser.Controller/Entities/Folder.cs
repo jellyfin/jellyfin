@@ -825,19 +825,7 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager);
         }
 
-        /// <summary>
-        /// Gets allowed children of an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
         public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
-        {
-            return GetChildren(user, includeLinkedChildren, false);
-        }
-
-        internal IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren, bool includeHidden)
         {
             if (user == null)
             {
@@ -849,7 +837,7 @@ namespace MediaBrowser.Controller.Entities
 
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildren(user, includeLinkedChildren, result, includeHidden, false, null);
+            AddChildren(user, includeLinkedChildren, result, false, null);
 
             return result.Values;
         }
@@ -865,29 +853,25 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <param name="result">The result.</param>
-        /// <param name="includeHidden">if set to <c>true</c> [include hidden].</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="filter">The filter.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool includeHidden, bool recursive, Func<BaseItem, bool> filter)
+        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, Func<BaseItem, bool> filter)
         {
             foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
             {
                 if (child.IsVisible(user))
                 {
-                    if (includeHidden || !child.IsHiddenFromUser(user))
+                    if (filter == null || filter(child))
                     {
-                        if (filter == null || filter(child))
-                        {
-                            result[child.Id] = child;
-                        }
+                        result[child.Id] = child;
                     }
 
                     if (recursive && child.IsFolder)
                     {
                         var folder = (Folder)child;
 
-                        folder.AddChildren(user, includeLinkedChildren, result, includeHidden, true, filter);
+                        folder.AddChildren(user, includeLinkedChildren, result, true, filter);
                     }
                 }
             }
@@ -928,7 +912,7 @@ namespace MediaBrowser.Controller.Entities
 
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildren(user, true, result, false, true, filter);
+            AddChildren(user, true, result, true, filter);
 
             return result.Values;
         }

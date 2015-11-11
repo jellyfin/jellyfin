@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.Collections
                         return subItem;
                     }
 
-                    var parent = subItem.Parent;
+                    var parent = subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {
