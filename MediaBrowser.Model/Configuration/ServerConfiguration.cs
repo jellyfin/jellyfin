@@ -105,12 +105,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableUserViews { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [disable startup scan].
-        /// </summary>
-        /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
-        public bool DisableStartupScan { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].
         /// </summary>
         /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
