@@ -49,6 +49,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<Folder>()
                 .ToList();
 
+            if (!query.IncludeHidden)
+            {
+                folders = folders.Where(i =>
+                {
+                    var hidden = i as IHiddenFromDisplay;
+                    return hidden == null || !hidden.IsHiddenFromUser(user);
+                }).ToList();
+            }
+
             var plainFolderIds = user.Configuration.PlainFolderViews.Select(i => new Guid(i)).ToList();
 
             var standaloneFolders = folders
@@ -121,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, list, CollectionType.TvShows, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(parents, CollectionType.TvShows, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
             }
 
             parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Movies, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.GetViewType(user)))
@@ -129,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, list, CollectionType.Movies, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(parents, CollectionType.Movies, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayFoldersView)
@@ -194,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetUserSubView(name, parentId, type, sortName, cancellationToken);
         }
 
-        private async Task<UserView> GetUserView(List<ICollectionFolder> parents, List<Folder> currentViews, string viewType, string sortName, User user, bool enableUserViews, CancellationToken cancellationToken)
+        private async Task<UserView> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, bool enableUserViews, CancellationToken cancellationToken)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals((enableUserViews ? i.GetViewType(user) : i.CollectionType), viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -305,7 +314,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
                 Limit = limit * 20
 
-            }, user, parentIds);
+            }, parentIds);
         }
     }
 }

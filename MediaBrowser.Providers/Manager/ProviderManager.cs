@@ -1035,7 +1035,7 @@ namespace MediaBrowser.Providers.Manager
                                         .ToList();
 
             var musicArtists = albums
-                .Select(i => i.Parent)
+                .Select(i => i.GetParent())
                 .OfType<MusicArtist>()
                 .ToList();
 

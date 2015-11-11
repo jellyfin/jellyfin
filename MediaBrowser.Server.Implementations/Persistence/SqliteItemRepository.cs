@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
         
-        private const int LatestSchemaVersion = 29;
+        private const int LatestSchemaVersion = 32;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -136,7 +136,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
-                                "create index if not exists idx_AncestorIds on AncestorIds(ItemId,AncestorId)",
+                                "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
+                                "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
                                 
                                 "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",

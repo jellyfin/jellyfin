@@ -167,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     Person = byName.Name
 
-                }, user, new string[] { });
+                }, new string[] { });
 
                 return items.ToList();
             }
@@ -812,7 +812,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>BaseItem.</returns>
         private BaseItem GetParentBackdropItem(BaseItem item, BaseItem owner)
         {
-            var parent = item.Parent ?? owner;
+            var parent = item.GetParent() ?? owner;
 
             while (parent != null)
             {
@@ -821,7 +821,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     return parent;
                 }
 
-                parent = parent.Parent;
+                parent = parent.GetParent();
             }
 
             return null;
@@ -836,7 +836,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>BaseItem.</returns>
         private BaseItem GetParentImageItem(BaseItem item, ImageType type, BaseItem owner)
         {
-            var parent = item.Parent ?? owner;
+            var parent = item.GetParent() ?? owner;
 
             while (parent != null)
             {
@@ -845,7 +845,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     return parent;
                 }
 
-                parent = parent.Parent;
+                parent = parent.GetParent();
             }
 
             return null;
@@ -1210,15 +1210,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VoteCount = item.VoteCount;
             }
 
-            if (item.IsFolder)
-            {
-                var folder = (Folder)item;
+            //if (item.IsFolder)
+            //{
+            //    var folder = (Folder)item;
 
-                if (fields.Contains(ItemFields.IndexOptions))
-                {
-                    dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
-                }
-            }
+            //    if (fields.Contains(ItemFields.IndexOptions))
+            //    {
+            //        dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
+            //    }
+            //}
 
             var supportsPlaceHolders = item as ISupportsPlaceHolders;
             if (supportsPlaceHolders != null)

@@ -1073,7 +1073,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.IsInBoxSet.HasValue)
             {
                 var val = query.IsInBoxSet.Value;
-                if (item.Parents.OfType<BoxSet>().Any() != val)
+                if (item.GetParents().OfType<BoxSet>().Any() != val)
                 {
                     return false;
                 }
@@ -1511,7 +1511,7 @@ namespace MediaBrowser.Controller.Entities
                     .Where(i => !UserView.IsExcludedFromGrouping(i));
             }
             return user.RootFolder
-                .GetChildren(user, true, true)
+                .GetChildren(user, true)
                 .OfType<Folder>()
                 .Where(i => user.IsFolderGrouped(i.Id) && !UserView.IsExcludedFromGrouping(i));
         }

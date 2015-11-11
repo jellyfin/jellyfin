@@ -27,6 +27,7 @@ using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,6 +37,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Library;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
@@ -140,6 +142,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Func<IProviderManager> _providerManagerFactory;
+        private readonly Func<IUserViewManager> _userviewManager;
 
         /// <summary>
         /// The _library items cache
@@ -167,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory, Func<IUserViewManager> userviewManager)
         {
             _logger = logger;
             _taskManager = taskManager;
@@ -177,6 +180,7 @@ namespace MediaBrowser.Server.Implementations.Library
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
+            _userviewManager = userviewManager;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -1307,7 +1311,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
-        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, User user, IEnumerable<string> parentIds)
+        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
 
@@ -1329,7 +1333,14 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0)
             {
-                // TODO: Need to filter on user folders
+                //var userViews = _userviewManager().GetUserViews(new UserViewQuery
+                //{
+                //    UserId = user.Id.ToString("N"),
+                //    IncludeHidden = true
+
+                //}, CancellationToken.None).Result.ToList();
+
+                //query.AncestorIds = userViews.SelectMany(i => i.GetIdsForAncestorQuery()).Distinct().Select(i => i.ToString("N")).ToArray();
             }
 
             // TODO: handle blocking by tags
@@ -1634,9 +1645,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<Folder> GetCollectionFolders(BaseItem item)
         {
-            while (!(item.Parent is AggregateFolder) && item.Parent != null)
+            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
             {
-                item = item.Parent;
+                item = item.GetParent();
             }
 
             if (item == null)
@@ -1673,7 +1684,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return type;
             }
 
-            return item.Parents
+            return item.GetParents()
                 .Select(GetConfiguredContentType)
                 .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
@@ -1710,9 +1721,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetTopFolderContentType(BaseItem item)
         {
-            while (!(item.Parent is AggregateFolder) && item.Parent != null)
+            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
             {
-                item = item.Parent;
+                item = item.GetParent();
             }
 
             if (item == null)

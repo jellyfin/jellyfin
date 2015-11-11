@@ -87,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 {
                     IncludeItemTypes = new[] { typeof(Movie).Name }
 
-                }, user, new string[]{});
+                }, new string[]{});
 
                 var itemsWithTrailers = inputItems
                     .Where(i =>

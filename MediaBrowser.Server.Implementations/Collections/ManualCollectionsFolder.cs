@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
-    public class ManualCollectionsFolder : BasePluginFolder
+    public class ManualCollectionsFolder : BasePluginFolder, IHiddenFromDisplay
     {
         public ManualCollectionsFolder()
         {
@@ -19,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.Collections
             }
         }
 
-        public override bool IsHiddenFromUser(User user)
+        public bool IsHiddenFromUser(User user)
         {
             return !user.Configuration.DisplayCollectionsView;
         }
@@ -31,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Collections
 
         public override string GetClientTypeName()
         {
-            return typeof (CollectionFolder).Name;
+            return typeof(CollectionFolder).Name;
         }
     }
 }

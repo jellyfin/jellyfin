@@ -70,10 +70,10 @@ namespace MediaBrowser.Api
             _config.Configuration.EnableStandaloneMetadata = true;
             _config.Configuration.EnableLibraryMetadataSubFolder = true;
             _config.Configuration.EnableCustomPathSubFolders = true;
-            _config.Configuration.DisableXmlSavers = true;
             _config.Configuration.DisableStartupScan = true;
             _config.Configuration.EnableUserViews = true;
             _config.Configuration.EnableDateLastRefresh = true;
+            _config.Configuration.EnableSharedCollectionViewImage = true;
             _config.SaveConfiguration();
         }
 

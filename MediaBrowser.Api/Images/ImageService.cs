@@ -698,7 +698,7 @@ namespace MediaBrowser.Api.Images
 
             var userAgent = Request.UserAgent ?? string.Empty;
 
-            if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
+            if (userAgent.IndexOf("dalvik", StringComparison.OrdinalIgnoreCase) != -1 &&
                 userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 supportsWebP = true;

@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parents.OfType<MusicArtist>().FirstOrDefault();
+                return GetParents().OfType<MusicArtist>().FirstOrDefault();
             }
         }
 
@@ -121,7 +121,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             id.AlbumArtists = AlbumArtists;
 
-            var artist = Parents.OfType<MusicArtist>().FirstOrDefault();
+            var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
 
             if (artist != null)
             {

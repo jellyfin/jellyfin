@@ -341,7 +341,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 if (primaryImage == null)
                 {
-                    var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+                    var parentWithImage = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
                     if (parentWithImage != null)
                     {
@@ -380,7 +380,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (primaryImage == null)
             {
-                var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+                var parentWithImage = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
                 if (parentWithImage != null)
                 {

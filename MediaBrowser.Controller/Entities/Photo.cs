@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return Parents.OfType<PhotoAlbum>().FirstOrDefault();
+                return GetParents().OfType<PhotoAlbum>().FirstOrDefault();
             }
         }
 

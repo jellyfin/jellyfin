@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
 
-            }, user, new string[] { });
+            }, new string[] { });
 
             // Add search hints based on item name
             hints.AddRange(mediaItems.Where(IncludeInSearch).Select(item =>

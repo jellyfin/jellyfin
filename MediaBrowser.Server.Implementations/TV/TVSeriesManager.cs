@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending
 
-            }, user, parentIds).Cast<Series>();
+            }, parentIds).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -63,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending
 
-            }, user, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
+            }, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);

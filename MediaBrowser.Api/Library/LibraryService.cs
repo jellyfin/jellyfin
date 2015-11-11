@@ -610,7 +610,7 @@ namespace MediaBrowser.Api.Library
 
             var dtoOptions = GetDtoOptions(request);
 
-            BaseItem parent = item.Parent;
+            BaseItem parent = item.GetParent();
 
             while (parent != null)
             {
@@ -621,7 +621,7 @@ namespace MediaBrowser.Api.Library
 
                 baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
-                parent = parent.Parent;
+                parent = parent.GetParent();
             }
 
             return baseItemDtos.ToList();
@@ -629,7 +629,7 @@ namespace MediaBrowser.Api.Library
 
         private BaseItem TranslateParentItem(BaseItem item, User user)
         {
-            if (item.Parent is AggregateFolder)
+            if (item.GetParent() is AggregateFolder)
             {
                 return user.RootFolder.GetChildren(user, true).FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path));
             }
@@ -861,9 +861,9 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            while (GetThemeSongIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
+            while (GetThemeSongIds(item).Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {
-                item = item.Parent;
+                item = item.GetParent();
             }
 
             var dtoOptions = GetDtoOptions(request);
@@ -904,9 +904,9 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            while (GetThemeVideoIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
+            while (GetThemeVideoIds(item).Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {
-                item = item.Parent;
+                item = item.GetParent();
             }
 
             var dtoOptions = GetDtoOptions(request);

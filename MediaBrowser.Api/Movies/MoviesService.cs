@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
-            var movies = _libraryManager.GetItems(query, user, parentIds);
+            var movies = _libraryManager.GetItems(query, parentIds);
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
             var listEligibleForCategories = new List<BaseItem>();
@@ -195,7 +195,7 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
             var parentIds = new string[] { };
-            var list = _libraryManager.GetItems(query, user, parentIds)
+            var list = _libraryManager.GetItems(query, parentIds)
                 .Where(i =>
                 {
                     // Strip out secondary versions
