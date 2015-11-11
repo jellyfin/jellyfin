@@ -532,9 +532,16 @@ namespace MediaBrowser.Server.Implementations.IO
                 return false;
             }
 
+            // In order to determine if the file is being written to, we have to request write access
+            // But if the server only has readonly access, this is going to cause this entire algorithm to fail
+            // So we'll take a best guess about our access level
+            var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
+                ? FileAccess.ReadWrite
+                : FileAccess.Read;
+
             try
             {
-                using (_fileSystem.GetFileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (_fileSystem.GetFileStream(path, FileMode.Open, requestedFileAccess, FileShare.ReadWrite))
                 {
                     if (_updateTimer != null)
                     {
