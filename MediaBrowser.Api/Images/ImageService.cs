@@ -698,10 +698,21 @@ namespace MediaBrowser.Api.Images
 
             var userAgent = Request.UserAgent ?? string.Empty;
 
-            if (userAgent.IndexOf("dalvik", StringComparison.OrdinalIgnoreCase) != -1 &&
-                userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+            if (!supportsWebP)
             {
-                supportsWebP = true;
+                if (string.Equals(Request.QueryString["accept"], "webp", StringComparison.OrdinalIgnoreCase))
+                {
+                    supportsWebP = true;
+                }
+            }
+
+            if (!supportsWebP)
+            {
+                if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
+                    userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    supportsWebP = true;
+                }
             }
 
             if (supportsWebP)
