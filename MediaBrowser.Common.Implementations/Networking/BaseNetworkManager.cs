@@ -84,7 +84,15 @@ namespace MediaBrowser.Common.Implementations.Networking
             return true;
         }
 
-        private bool IsInPrivateAddressSpace(string endpoint)
+        private bool IsInPrivateAddressSpaceIpv6(string endpoint)
+        {
+            return
+
+                // If url was requested with computer name, we may see this
+                string.Equals(endpoint, "::1", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsInPrivateAddressSpaceIpv4(string endpoint)
         {
             // Private address space:
             // http://en.wikipedia.org/wiki/Private_network
@@ -95,9 +103,6 @@ namespace MediaBrowser.Common.Implementations.Networking
             }
 
             return
-
-                // If url was requested with computer name, we may see this
-                endpoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
 
                 endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
                 endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
@@ -131,25 +136,40 @@ namespace MediaBrowser.Common.Implementations.Networking
                 throw new ArgumentNullException("endpoint");
             }
 
-            if (IsInPrivateAddressSpace(endpoint))
+            IPAddress address;
+            if (IPAddress.TryParse(endpoint, out address))
             {
-                return true;
-            }
-
-            const int lengthMatch = 4;
-
-            if (endpoint.Length >= lengthMatch)
-            {
-                var prefix = endpoint.Substring(0, lengthMatch);
-
-                if (GetLocalIpAddresses()
-                    .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                int lengthMatch = 100;
+                if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    return true;
+                    lengthMatch = 4;
+                    if (IsInPrivateAddressSpaceIpv4(endpoint))
+                    {
+                        return true;
+                    }
+                }
+                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    lengthMatch = 10;
+                    if (IsInPrivateAddressSpaceIpv6(endpoint))
+                    {
+                        return true;
+                    }
+                }
+
+                // Should be even be doing this with ipv6?
+                if (endpoint.Length >= lengthMatch)
+                {
+                    var prefix = endpoint.Substring(0, lengthMatch);
+
+                    if (GetLocalIpAddresses()
+                        .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return true;
+                    }
                 }
             }
 
-            IPAddress address;
             if (resolveHost && !IPAddress.TryParse(endpoint, out address))
             {
                 Uri uri;
