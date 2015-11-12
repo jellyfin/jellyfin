@@ -43,7 +43,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value><c>true</c> if [supports library monitor]; otherwise, <c>false</c>.</value>
         public bool SupportsLibraryMonitor { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is network deployed.
         /// </summary>
@@ -85,6 +85,12 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The failed assembly loads.</value>
         public List<string> FailedPluginAssemblies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image enhancers.
+        /// </summary>
+        /// <value>The image enhancers.</value>
+        public List<string> ImageEnhancers { get; set; }
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -162,6 +168,7 @@ namespace MediaBrowser.Model.System
             CompletedInstallations = new List<InstallationInfo>();
 
             FailedPluginAssemblies = new List<string>();
+            ImageEnhancers = new List<string>();
         }
     }
 }
