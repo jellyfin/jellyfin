@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.Providers
 
         public IEnumerable<FileSystemMetadata> GetFiles(string path, bool clearCache)
         {
-            return GetFileSystemEntries(path, clearCache).Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory);
+            return GetFileSystemEntries(path, clearCache).Where(i => !i.IsDirectory);
         }
 
         public FileSystemMetadata GetFile(string path)
@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.Providers
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path)
         {
-            return GetFileSystemEntries(path, false).Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+            return GetFileSystemEntries(path, false).Where(i => i.IsDirectory);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.IO
 
             foreach (var entry in entries)
             {
-                var isDirectory = (entry.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+                var isDirectory = entry.IsDirectory;
 
                 var fullName = entry.FullName;
 
