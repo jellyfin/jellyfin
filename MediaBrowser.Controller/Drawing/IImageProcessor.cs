@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value>The supported input formats.</value>
         string[] SupportedInputFormats { get; }
-        
+
         /// <summary>
         /// Gets the image enhancers.
         /// </summary>
@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="path">The path.</param>
         /// <returns>ImageSize.</returns>
         ImageSize GetImageSize(string path);
-        
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -78,13 +78,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="toStream">To stream.</param>
         /// <returns>Task.</returns>
         Task ProcessImage(ImageProcessingOptions options, Stream toStream);
-        
+
         /// <summary>
         /// Processes the image.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<Tuple<string,string>> ProcessImage(ImageProcessingOptions options);
+        Task<Tuple<string, string>> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the enhanced image.
