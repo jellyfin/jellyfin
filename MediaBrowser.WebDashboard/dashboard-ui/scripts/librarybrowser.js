@@ -1712,6 +1712,8 @@
 
             var dateText;
 
+            var allowImageStretching = !(Dashboard.lastSystemInfo && Dashboard.lastSystemInfo.ImageEnhancers && Dashboard.lastSystemInfo.ImageEnhancers.length);
+
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
@@ -1748,13 +1750,13 @@
                     }
                 }
 
-                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth);
+                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, allowImageStretching);
             }
 
             return html;
         },
 
-        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth) {
+        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, allowImageStretching) {
 
             var html = '';
             var imgUrl = null;
@@ -2013,6 +2015,11 @@
             if (icon) {
                 imageCssClass += " iconCardImage";
             }
+
+            if (coverImage && !options.coverImage && !allowImageStretching) {
+                coverImage = false;
+            }
+
             if (coverImage) {
                 imageCssClass += " coveredCardImage";
             }
