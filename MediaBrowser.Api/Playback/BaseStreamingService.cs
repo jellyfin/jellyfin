@@ -291,10 +291,10 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                //if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    return "h264_qsv";
-                //}
+                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "h264_qsv";
+                }
                 
                 return "libx264";
             }
@@ -331,7 +331,7 @@ namespace MediaBrowser.Api.Playback
             // h264 (h264_qsv)
             else if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset 7";
+                param = "-preset 7 -look_ahead 0";
 
             }
 
