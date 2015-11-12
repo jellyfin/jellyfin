@@ -68,7 +68,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return parentPathFiles
               .Where(i =>
               {
-                  if ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                  if (i.IsDirectory)
                   {
                       return false;
                   }
