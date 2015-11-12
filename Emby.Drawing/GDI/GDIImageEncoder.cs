@@ -32,7 +32,7 @@ namespace Emby.Drawing.GDI
             {
                 using (var img = Image.FromStream(stream))
                 {
-                    
+
                 }
             }
             _logger.Info("GDIImageEncoder started");
@@ -79,13 +79,13 @@ namespace Emby.Drawing.GDI
             {
                 using (var croppedImage = image.CropWhitespace())
                 {
-					_fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                     using (var outputStream = _fileSystem.GetFileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                     {
                         croppedImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
                     }
-                } 
+                }
             }
         }
 
@@ -131,7 +131,7 @@ namespace Emby.Drawing.GDI
 
                         var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
-						_fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                        _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                         // Save to the cache location
                         using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
