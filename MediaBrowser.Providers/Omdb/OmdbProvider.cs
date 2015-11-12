@@ -43,9 +43,7 @@ namespace MediaBrowser.Providers.Omdb
             {
                 Url = url,
                 ResourcePool = ResourcePool,
-                CancellationToken = cancellationToken,
-                CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromDays(7)
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {

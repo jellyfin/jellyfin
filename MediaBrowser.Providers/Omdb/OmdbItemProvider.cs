@@ -99,9 +99,7 @@ namespace MediaBrowser.Providers.Omdb
             {
                 Url = url,
                 ResourcePool = OmdbProvider.ResourcePool,
-                CancellationToken = cancellationToken,
-                CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromDays(2)
+                CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
@@ -133,7 +131,7 @@ namespace MediaBrowser.Providers.Omdb
                     item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
 
                     int parsedYear;
-                    if (result.Year.Length > 0 
+                    if (result.Year.Length > 0
                         && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
                     {
                         item.ProductionYear = parsedYear;

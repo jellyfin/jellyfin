@@ -297,12 +297,6 @@ namespace MediaBrowser.Providers.Music
                 ResourcePool = _musicBrainzResourcePool
             };
 
-            if (!isSearch)
-            {
-                options.CacheMode = CacheMode.Unconditional;
-                options.CacheLength = TimeSpan.FromDays(3);
-            }
-
             using (var xml = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 using (var oReader = new StreamReader(xml, Encoding.UTF8))
