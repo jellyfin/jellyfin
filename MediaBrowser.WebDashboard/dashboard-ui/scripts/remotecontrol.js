@@ -220,7 +220,7 @@
                 clearInterval(pollInterval);
                 pollInterval = null;
             }
-            pollInterval = setInterval(onPollIntervalFired, 1500);
+            pollInterval = setInterval(onPollIntervalFired, 5000);
         };
 
         function unsubscribeFromPlayerUpdates() {

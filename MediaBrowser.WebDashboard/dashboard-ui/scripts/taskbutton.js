@@ -132,7 +132,7 @@ $.fn.taskButton = function (options) {
         if (pollInterval) {
             clearInterval(pollInterval);
         }
-        pollInterval = setInterval(onPollIntervalFired, 1500);
+        pollInterval = setInterval(onPollIntervalFired, 5000);
     }
 
     function stopInterval() {
