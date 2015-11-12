@@ -74,8 +74,7 @@ namespace MediaBrowser.LocalMetadata.Images
             if (includeDirectories)
             {
                 return directoryService.GetFileSystemEntries(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) ||
-                (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) || i.IsDirectory)
 
                 .OrderBy(i => BaseItem.SupportedImageExtensionsList.IndexOf(i.Extension ?? string.Empty));
             }
@@ -378,7 +377,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private FileSystemMetadata GetImage(IEnumerable<FileSystemMetadata> files, string name)
         {
-            return files.FirstOrDefault(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase));
+            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase));
         }
     }
 }

@@ -231,7 +231,7 @@ namespace MediaBrowser.Api
                     return false;
                 }
 
-                var isDirectory = i.Attributes.HasFlag(FileAttributes.Directory);
+                var isDirectory = i.IsDirectory;
 
                 if (!request.IncludeFiles && !isDirectory)
                 {
@@ -250,7 +250,7 @@ namespace MediaBrowser.Api
             {
                 Name = f.Name,
                 Path = f.FullName,
-                Type = f.Attributes.HasFlag(FileAttributes.Directory) ? FileSystemEntryType.Directory : FileSystemEntryType.File
+                Type = f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File
 
             }).ToList();
         }
