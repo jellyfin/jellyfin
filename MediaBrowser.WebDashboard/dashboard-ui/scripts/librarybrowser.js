@@ -1259,7 +1259,7 @@
                 if (item.ImageTags.Primary) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        width: downloadWidth,
+                        maxWidth: downloadWidth,
                         tag: item.ImageTags.Primary,
                         type: "Primary",
                         index: 0,
@@ -1271,7 +1271,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
                         type: "Primary",
-                        width: downloadWidth,
+                        maxWidth: downloadWidth,
                         tag: item.AlbumPrimaryImageTag,
                         minScale: minScale
                     });
@@ -1281,7 +1281,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Primary",
-                        width: downloadWidth,
+                        maxWidth: downloadWidth,
                         tag: item.SeriesPrimaryImageTag,
                         minScale: minScale
                     });
@@ -1291,7 +1291,7 @@
 
                     imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
                         type: "Primary",
-                        width: downloadWidth,
+                        maxWidth: downloadWidth,
                         tag: item.ParentPrimaryImageTag,
                         minScale: minScale
                     });
@@ -1467,7 +1467,7 @@
 
         supportsAddingToCollection: function (item) {
 
-            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program'];
+            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum'];
 
             return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
         },
@@ -1712,6 +1712,8 @@
 
             var dateText;
 
+            var allowImageStretching = !(Dashboard.lastSystemInfo && Dashboard.lastSystemInfo.ImageEnhancers && Dashboard.lastSystemInfo.ImageEnhancers.length);
+
             for (var i = 0, length = items.length; i < length; i++) {
 
                 var item = items[i];
@@ -1748,13 +1750,13 @@
                     }
                 }
 
-                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth);
+                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, allowImageStretching);
             }
 
             return html;
         },
 
-        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth) {
+        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, allowImageStretching) {
 
             var html = '';
             var imgUrl = null;
@@ -1773,6 +1775,7 @@
             }
 
             var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
+            var coverImage = options.coverImage;
 
             if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
 
@@ -1781,11 +1784,14 @@
 
                 imgUrl = ApiClient.getImageUrl(item.Id, {
                     type: "Primary",
-                    height: height,
-                    width: width,
+                    maxHeight: height,
+                    maxWidth: width,
                     tag: item.ImageTags.Primary,
                     enableImageEnhancers: enableImageEnhancers
                 });
+                if (height != null) {
+                    coverImage = true;
+                }
 
             } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
 
@@ -1858,18 +1864,20 @@
 
                 imgUrl = ApiClient.getImageUrl(item.Id, {
                     type: "Primary",
-                    height: height,
-                    width: width,
+                    maxHeight: height,
+                    maxWidth: width,
                     tag: item.ImageTags.Primary,
                     enableImageEnhancers: enableImageEnhancers
                 });
-
+                if (height != null) {
+                    coverImage = true;
+                }
             }
             else if (item.ParentPrimaryImageTag) {
 
                 imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
                     type: "Primary",
-                    width: posterWidth,
+                    maxWidth: posterWidth,
                     tag: item.ParentPrimaryImageTag,
                     enableImageEnhancers: enableImageEnhancers
                 });
@@ -1881,12 +1889,14 @@
 
                 imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
                     type: "Primary",
-                    height: height,
-                    width: width,
+                    maxHeight: height,
+                    maxWidth: width,
                     tag: item.AlbumPrimaryImageTag,
                     enableImageEnhancers: enableImageEnhancers
                 });
-
+                if (width != null) {
+                    coverImage = true;
+                }
             }
             else if (item.Type == 'Season' && item.ImageTags && item.ImageTags.Thumb) {
 
@@ -2005,7 +2015,12 @@
             if (icon) {
                 imageCssClass += " iconCardImage";
             }
-            if (options.coverImage) {
+
+            if (coverImage && !options.coverImage && !allowImageStretching) {
+                coverImage = false;
+            }
+
+            if (coverImage) {
                 imageCssClass += " coveredCardImage";
             }
             if (options.centerImage) {
@@ -3043,7 +3058,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Thumb
                 });
                 shape = 'thumb';
@@ -3052,7 +3067,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Primary
                 });
                 detectRatio = true;
@@ -3061,7 +3076,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Backdrop",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.BackdropImageTags[0]
                 });
                 shape = 'thumb';
@@ -3070,7 +3085,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Thumb
                 });
                 shape = 'thumb';
@@ -3079,7 +3094,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Disc",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.ImageTags.Disc
                 });
                 shape = 'square';
@@ -3088,7 +3103,7 @@
 
                 url = ApiClient.getScaledImageUrl(item.AlbumId, {
                     type: "Primary",
-                    height: imageHeight,
+                    maxHeight: imageHeight,
                     tag: item.AlbumPrimaryImageTag
                 });
                 shape = 'square';
