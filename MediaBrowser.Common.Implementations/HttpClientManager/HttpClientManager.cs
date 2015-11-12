@@ -187,20 +187,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         }
 
         /// <summary>
-        /// The _semaphoreLocks
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
-        /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="url">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string url)
-        {
-            return _semaphoreLocks.GetOrAdd(url, key => new SemaphoreSlim(1, 1));
-        }
-
-        /// <summary>
         /// Gets the response internal.
         /// </summary>
         /// <param name="options">The options.</param>
@@ -270,7 +256,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var url = options.Url;
             var urlHash = url.ToLower().GetMD5().ToString("N");
-            
+
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
             response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
@@ -279,31 +265,14 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 return response;
             }
 
-            var semaphore = GetLock(url);
+            response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
 
-            await semaphore.WaitAsync(options.CancellationToken).ConfigureAwait(false);
-
-            try
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
-                if (response != null)
-                {
-                    return response;
-                }
-
-                response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    await CacheResponse(response, responseCachePath).ConfigureAwait(false);
-                }
-
-                return response;
+                await CacheResponse(response, responseCachePath).ConfigureAwait(false);
             }
-            finally
-            {
-                semaphore.Release();
-            }
+
+            return response;
         }
 
         private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
@@ -348,13 +317,12 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             using (var responseStream = response.Content)
             {
-                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                var memoryStream = new MemoryStream();
+                await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                memoryStream.Position = 0;
+
+                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileMode.Create, FileAccess.Write, FileShare.None, true))
                 {
-                    var memoryStream = new MemoryStream();
-
-                    await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    memoryStream.Position = 0;
                     await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
 
                     memoryStream.Position = 0;
