@@ -160,9 +160,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader,
-                CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromDays(1)
+                AcceptHeader = AcceptHeader
 
             }).ConfigureAwait(false))
             {
@@ -368,27 +366,14 @@ namespace MediaBrowser.Providers.Movies
             return mainResult;
         }
 
-        private static long _lastRequestTicks;
-
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal async Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
+        internal Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
         {
-            var requestIntervalMs = 250;
-            var delayTicks = (requestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
-            var delayMs = Math.Min(delayTicks / 10000, requestIntervalMs);
-
-            if (delayMs > 0)
-            {
-                _logger.Debug("Throttling Tmdb by {0} ms", delayMs);
-                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
-            }
-
             options.ResourcePool = MovieDbResourcePool;
-            _lastRequestTicks = DateTime.UtcNow.Ticks;
 
-            return await _httpClient.Get(options).ConfigureAwait(false);
+            return _httpClient.Get(options);
         }
 
         public TheMovieDbOptions GetTheMovieDbOptions()
