@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // If the subclass didn't supply a name, add it here
             if (string.IsNullOrEmpty(item.Name) && !string.IsNullOrEmpty(item.Path))
             {
-                item.Name = GetDisplayName(fileInfo.Name, (fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory);
+                item.Name = GetDisplayName(fileInfo.Name, fileInfo.IsDirectory);
             }
         }
 

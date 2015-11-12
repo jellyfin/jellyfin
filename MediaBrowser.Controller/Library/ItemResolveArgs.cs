@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return (FileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+                return FileInfo.IsDirectory;
             }
         }
 
