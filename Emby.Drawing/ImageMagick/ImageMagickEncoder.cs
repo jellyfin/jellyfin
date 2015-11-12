@@ -148,7 +148,7 @@ namespace Emby.Drawing.ImageMagick
                     DrawIndicator(originalImage, width, height, options);
 
                     originalImage.CurrentImage.CompressionQuality = quality;
-                    //originalImage.CurrentImage.StripImage();
+                    originalImage.CurrentImage.StripImage();
 
                     originalImage.SaveImage(outputPath);
                 }
@@ -165,7 +165,7 @@ namespace Emby.Drawing.ImageMagick
                         DrawIndicator(wand, width, height, options);
 
                         wand.CurrentImage.CompressionQuality = quality;
-                        //wand.CurrentImage.StripImage();
+                        wand.CurrentImage.StripImage();
 
                         wand.SaveImage(outputPath);
                     }
@@ -176,15 +176,14 @@ namespace Emby.Drawing.ImageMagick
 
         private void ScaleImage(MagickWand wand, int width, int height)
         {
-            wand.CurrentImage.ResizeImage(width, height);
-            //if (_config.Configuration.EnableHighQualityImageScaling)
-            //{
-            //    wand.CurrentImage.ResizeImage(width, height);
-            //}
-            //else
-            //{
-            //    wand.CurrentImage.ScaleImage(width, height);
-            //}
+            if (_config.Configuration.EnableHighQualityImageScaling)
+            {
+                wand.CurrentImage.ResizeImage(width, height);
+            }
+            else
+            {
+                wand.CurrentImage.ScaleImage(width, height);
+            }
         }
 
         /// <summary>
