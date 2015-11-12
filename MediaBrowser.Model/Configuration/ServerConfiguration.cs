@@ -577,7 +577,29 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Thumb
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheMovieDb" }
+                },
+
+                new MetadataOptions(0, 1280)
+                {
+                    ItemType = "Episode",
+                    ImageOptions = new []
+                    {
+                        new ImageOption
+                        {
+                            Limit = 0,
+                            MinWidth = 1280,
+                            Type = ImageType.Backdrop
+                        },
+
+                        new ImageOption
+                        {
+                            Limit = 1,
+                            Type = ImageType.Primary
+                        }
+                    },
+                    DisabledImageFetchers = new []{ "TheMovieDb" }
                 }
             };
         }
