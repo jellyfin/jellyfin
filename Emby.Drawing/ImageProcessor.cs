@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using Emby.Drawing.Common;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Drawing
 {
@@ -152,7 +153,7 @@ namespace Emby.Drawing
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
 
-            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(file.Item1, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }
@@ -163,7 +164,7 @@ namespace Emby.Drawing
             return _imageEncoder.SupportedOutputFormats;
         }
 
-        public async Task<string> ProcessImage(ImageProcessingOptions options)
+        public async Task<Tuple<string, string>> ProcessImage(ImageProcessingOptions options)
         {
             if (options == null)
             {
@@ -181,13 +182,7 @@ namespace Emby.Drawing
 
             if (!_imageEncoder.SupportsImageEncoding)
             {
-                return originalImagePath;
-            }
-
-            if (options.HasDefaultOptions(originalImagePath) && options.Enhancers.Count == 0 && !options.CropWhiteSpace)
-            {
-                // Just spit out the original file if all the options are default
-                return originalImagePath;
+                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
             }
 
             var dateModified = originalImage.DateModified;
@@ -214,19 +209,31 @@ namespace Emby.Drawing
                 dateModified = tuple.Item2;
             }
 
-            var newSizeInfo = GetNewImageSize(originalImagePath, dateModified, options);
-            var newSize = newSizeInfo.Item1;
-            var isSizeChanged = newSizeInfo.Item2;
-
-            if (options.HasDefaultOptionsWithoutSize(originalImagePath) && !isSizeChanged && options.Enhancers.Count == 0)
+            if (options.HasDefaultOptions(originalImagePath))
             {
-                // Just spit out the original file if the new size equals the old
-                return originalImagePath;
+                // Just spit out the original file if all the options are default
+                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
             }
 
-            var quality = options.Quality ?? 90;
+            ImageSize? originalImageSize;
+            try
+            {
+                originalImageSize = GetImageSize(originalImagePath, dateModified, true);
+                if (options.HasDefaultOptions(originalImagePath, originalImageSize.Value))
+                {
+                    // Just spit out the original file if all the options are default
+                    return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
+                }
+            }
+            catch
+            {
+                originalImageSize = null;
+            }
 
-            var outputFormat = GetOutputFormat(options.OutputFormat);
+            var newSize = GetNewImageSize(options, originalImageSize);
+            var quality = options.Quality;
+
+            var outputFormat = GetOutputFormat(options.SupportedOutputFormats[0]);
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
 
             var semaphore = GetLock(cacheFilePath);
@@ -250,8 +257,18 @@ namespace Emby.Drawing
 
                     imageProcessingLockTaken = true;
 
-                    _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options);
+                    _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options, outputFormat);
                 }
+
+                return new Tuple<string, string>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath));
+            }
+            catch (Exception ex)
+            {
+                // If it fails for whatever reason, return the original image
+                _logger.ErrorException("Error encoding image", ex);
+
+                // Just spit out the original file if all the options are default
+                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
             }
             finally
             {
@@ -262,28 +279,47 @@ namespace Emby.Drawing
 
                 semaphore.Release();
             }
-
-            return cacheFilePath;
         }
 
-        private Tuple<ImageSize, bool> GetNewImageSize(string originalImagePath, DateTime dateModified, ImageProcessingOptions options)
+        private string GetMimeType(ImageFormat format, string path)
         {
-            try
+            if (format == ImageFormat.Bmp)
             {
-                var originalImageSize = GetImageSize(originalImagePath, dateModified, true);
-
-                // Determine the output size based on incoming parameters
-                var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
-
-                return new Tuple<ImageSize, bool>(newSize, !newSize.Equals(originalImageSize));
+                return MimeTypes.GetMimeType("i.bmp");
             }
-            catch
+            if (format == ImageFormat.Gif)
             {
-                return new Tuple<ImageSize, bool>(GetSizeEstimage(options), true);
+                return MimeTypes.GetMimeType("i.gif");
             }
+            if (format == ImageFormat.Jpg)
+            {
+                return MimeTypes.GetMimeType("i.jpg");
+            }
+            if (format == ImageFormat.Png)
+            {
+                return MimeTypes.GetMimeType("i.png");
+            }
+            if (format == ImageFormat.Webp)
+            {
+                return MimeTypes.GetMimeType("i.webp");
+            }
+
+            return MimeTypes.GetMimeType(path);
         }
 
-        private ImageSize GetSizeEstimage(ImageProcessingOptions options)
+        private ImageSize GetNewImageSize(ImageProcessingOptions options, ImageSize? originalImageSize)
+        {
+            if (originalImageSize.HasValue)
+            {
+                // Determine the output size based on incoming parameters
+                var newSize = DrawingUtils.Resize(originalImageSize.Value, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
+
+                return newSize;
+            }
+            return GetSizeEstimate(options);
+        }
+
+        private ImageSize GetSizeEstimate(ImageProcessingOptions options)
         {
             if (options.Width.HasValue && options.Height.HasValue)
             {

@@ -32,7 +32,7 @@ namespace Emby.Drawing.GDI
             {
                 using (var img = Image.FromStream(stream))
                 {
-                    
+
                 }
             }
             _logger.Info("GDIImageEncoder started");
@@ -79,17 +79,17 @@ namespace Emby.Drawing.GDI
             {
                 using (var croppedImage = image.CropWhitespace())
                 {
-					_fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                     using (var outputStream = _fileSystem.GetFileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
                     {
                         croppedImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
                     }
-                } 
+                }
             }
         }
 
-        public void EncodeImage(string inputPath, string cacheFilePath, int width, int height, int quality, ImageProcessingOptions options)
+        public void EncodeImage(string inputPath, string cacheFilePath, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
 
@@ -97,8 +97,6 @@ namespace Emby.Drawing.GDI
             {
                 var newWidth = Convert.ToInt32(width);
                 var newHeight = Convert.ToInt32(height);
-
-                var selectedOutputFormat = options.OutputFormat;
 
                 // Graphics.FromImage will throw an exception if the PixelFormat is Indexed, so we need to handle that here
                 // Also, Webp only supports Format32bppArgb and Format32bppRgb
@@ -133,7 +131,7 @@ namespace Emby.Drawing.GDI
 
                         var outputFormat = GetOutputFormat(originalImage, selectedOutputFormat);
 
-						_fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                        _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                         // Save to the cache location
                         using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))

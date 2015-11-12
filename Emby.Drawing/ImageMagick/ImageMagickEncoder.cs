@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -18,13 +19,15 @@ namespace Emby.Drawing.ImageMagick
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _config;
 
-        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem)
+        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _config = config;
 
             LogVersion();
         }
@@ -87,7 +90,7 @@ namespace Emby.Drawing.ImageMagick
                     wand.SaveImage(tmpPath);
                 }
             }
-            catch 
+            catch
             {
                 //_logger.ErrorException("Error loading webp: ", ex);
                 _webpAvailable = false;
@@ -131,17 +134,21 @@ namespace Emby.Drawing.ImageMagick
                 string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase);
         }
 
-        public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options)
+        public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
+            // Even if the caller specified 100, don't use it because it takes forever
+            quality = Math.Min(quality, 99);
+
             if (string.IsNullOrWhiteSpace(options.BackgroundColor) || !HasTransparency(inputPath))
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {
-                    originalImage.CurrentImage.ResizeImage(width, height);
+                    ScaleImage(originalImage, width, height);
 
                     DrawIndicator(originalImage, width, height, options);
 
                     originalImage.CurrentImage.CompressionQuality = quality;
+                    //originalImage.CurrentImage.StripImage();
 
                     originalImage.SaveImage(outputPath);
                 }
@@ -152,18 +159,32 @@ namespace Emby.Drawing.ImageMagick
                 {
                     using (var originalImage = new MagickWand(inputPath))
                     {
-                        originalImage.CurrentImage.ResizeImage(width, height);
+                        ScaleImage(originalImage, width, height);
 
                         wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
                         DrawIndicator(wand, width, height, options);
 
                         wand.CurrentImage.CompressionQuality = quality;
+                        //wand.CurrentImage.StripImage();
 
                         wand.SaveImage(outputPath);
                     }
                 }
             }
             SaveDelay();
+        }
+
+        private void ScaleImage(MagickWand wand, int width, int height)
+        {
+            wand.CurrentImage.ResizeImage(width, height);
+            //if (_config.Configuration.EnableHighQualityImageScaling)
+            //{
+            //    wand.CurrentImage.ResizeImage(width, height);
+            //}
+            //else
+            //{
+            //    wand.CurrentImage.ScaleImage(width, height);
+            //}
         }
 
         /// <summary>
@@ -231,8 +252,8 @@ namespace Emby.Drawing.ImageMagick
         private void SaveDelay()
         {
             // For some reason the images are not always getting released right away
-            var task = Task.Delay(300);
-            Task.WaitAll(task);
+            //var task = Task.Delay(300);
+            //Task.WaitAll(task);
         }
 
         public string Name

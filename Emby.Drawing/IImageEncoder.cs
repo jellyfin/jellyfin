@@ -31,7 +31,8 @@ namespace Emby.Drawing
         /// <param name="height">The height.</param>
         /// <param name="quality">The quality.</param>
         /// <param name="options">The options.</param>
-        void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options);
+        /// <param name="outputFormat">The output format.</param>
+        void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
 
         /// <summary>
         /// Creates the image collage.
