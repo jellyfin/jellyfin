@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Entities
 {
     public class PhotoAlbum : Folder, IMetadataContainer
     {
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get
