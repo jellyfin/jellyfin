@@ -717,7 +717,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            return ContainsPath(LibraryManager.GetVirtualFolders(), originalPath);
+            return false;
         }
 
         /// <summary>
