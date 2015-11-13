@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -23,6 +24,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+
+        public const int MigrationVersion = 4;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {
@@ -64,6 +67,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress.RegisterAction(p => progress.Report(45 + (.55 * p)));
             await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(100);
+
+            await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
@@ -115,9 +120,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 progress.Report(percent * 100);
             }
 
-            if (!_config.Configuration.DisableStartupScan)
+            if (_config.Configuration.MigrationVersion < MigrationVersion)
             {
-                _config.Configuration.DisableStartupScan = true;
+                _config.Configuration.MigrationVersion = MigrationVersion;
                 _config.SaveConfiguration();
             }
 
@@ -144,7 +149,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (item != null)
                 {
-                    _logger.Info("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
+                    _logger.Debug("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
                     await _libraryManager.DeleteItem(item, new DeleteOptions
                     {
@@ -170,7 +175,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 //Limit = limit,
 
                 // These have their own cleanup routines
-                ExcludeItemTypes = new[] { typeof(Person).Name, typeof(Genre).Name, typeof(MusicGenre).Name, typeof(GameGenre).Name, typeof(Studio).Name, typeof(Year).Name }
+                ExcludeItemTypes = new[]
+                {
+                    typeof(Person).Name, 
+                    typeof(Genre).Name, 
+                    typeof(MusicGenre).Name, 
+                    typeof(GameGenre).Name, 
+                    typeof(Studio).Name, 
+                    typeof(Year).Name, 
+                    typeof(Channel).Name, 
+                    typeof(AggregateFolder).Name, 
+                    typeof(CollectionFolder).Name
+                }
             });
 
             var numComplete = 0;
@@ -197,8 +213,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         await libraryItem.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
-
-                    _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItem.Path ?? string.Empty);
 
                     await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
                     {
