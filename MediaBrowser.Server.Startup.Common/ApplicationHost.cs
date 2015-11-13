@@ -1092,8 +1092,7 @@ namespace MediaBrowser.Server.Startup.Common
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = LocalApiUrl,
-                SupportsLibraryMonitor = SupportsLibraryMonitor,
-                ImageEnhancers = ImageProcessor.ImageEnhancers.Select(i => i.GetType().Name).ToList()
+                SupportsLibraryMonitor = SupportsLibraryMonitor
             };
         }
 
