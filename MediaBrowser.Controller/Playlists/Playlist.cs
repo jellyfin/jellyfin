@@ -144,6 +144,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public string PlaylistMediaType { get; set; }
 
+        [IgnoreDataMember]
         public override string MediaType
         {
             get
