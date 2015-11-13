@@ -27,7 +27,6 @@ using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -37,7 +36,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Library;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
@@ -142,7 +140,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Func<IProviderManager> _providerManagerFactory;
-        private readonly Func<IUserViewManager> _userviewManager;
 
         /// <summary>
         /// The _library items cache
@@ -170,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory, Func<IUserViewManager> userviewManager)
+        public LibraryManager(ILogger logger, ITaskManager taskManager, IUserManager userManager, IServerConfigurationManager configurationManager, IUserDataManager userDataRepository, Func<ILibraryMonitor> libraryMonitorFactory, IFileSystem fileSystem, Func<IProviderManager> providerManagerFactory)
         {
             _logger = logger;
             _taskManager = taskManager;
@@ -180,7 +177,6 @@ namespace MediaBrowser.Server.Implementations.Library
             _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
-            _userviewManager = userviewManager;
             ByReferenceItems = new ConcurrentDictionary<Guid, BaseItem>();
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -405,12 +401,12 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 foreach (var path in item.GetDeletePaths().ToList())
                 {
-                    if (_fileSystem.DirectoryExists(path))
+					if (_fileSystem.DirectoryExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteDirectory(path, true);
                     }
-                    else if (_fileSystem.FileExists(path))
+					else if (_fileSystem.FileExists(path))
                     {
                         _logger.Debug("Deleting path {0}", path);
                         _fileSystem.DeleteFile(path);
@@ -584,7 +580,7 @@ namespace MediaBrowser.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (IgnoreFile(args.FileInfo, args.Parent))
+            if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(args)))
             {
                 return null;
             }
@@ -603,9 +599,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
                 {
-                    var paths = NormalizeRootPathList(fileSystemDictionary.Keys);
+                    var paths = NormalizeRootPathList(fileSystemDictionary.Values);
 
-                    fileSystemDictionary = paths.Select(_fileSystem.GetDirectoryInfo).ToDictionary(i => i.FullName);
+                    fileSystemDictionary = paths.ToDictionary(i => i.FullName);
                 }
 
                 args.FileSystemDictionary = fileSystemDictionary;
@@ -620,14 +616,12 @@ namespace MediaBrowser.Server.Implementations.Library
             return ResolveItem(args);
         }
 
-        public bool IgnoreFile(FileSystemMetadata file, BaseItem parent)
+        public IEnumerable<FileSystemMetadata> NormalizeRootPathList(IEnumerable<FileSystemMetadata> paths)
         {
-            return EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent));
-        }
+            var originalList = paths.ToList();
 
-        public IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths)
-        {
-            var list = paths.Select(_fileSystem.NormalizePath)
+            var list = originalList.Where(i => i.IsDirectory)
+                .Select(i => _fileSystem.NormalizePath(i.FullName))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -639,7 +633,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 _logger.Info("Found duplicate path: {0}", dupe);
             }
 
-            return list.Except(dupes, StringComparer.OrdinalIgnoreCase);
+            var newList = list.Except(dupes, StringComparer.OrdinalIgnoreCase).Select(_fileSystem.GetDirectoryInfo).ToList();
+            newList.AddRange(originalList.Where(i => !i.IsDirectory));
+            return newList;
         }
 
         /// <summary>
@@ -655,7 +651,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, string collectionType)
         {
-            var fileList = files.Where(i => !IgnoreFile(i, parent)).ToList();
+            var fileList = files.ToList();
 
             if (parent != null)
             {
@@ -706,7 +702,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
 
-            _fileSystem.CreateDirectory(rootFolderPath);
+			_fileSystem.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? (AggregateFolder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath));
 
@@ -736,13 +732,6 @@ namespace MediaBrowser.Server.Implementations.Library
                         folder = dbItem;
                     }
 
-                    if (folder.ParentId != rootFolder.Id)
-                    {
-                        folder.ParentId = rootFolder.Id;
-                        var task = folder.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None);
-                        Task.WaitAll(task);
-                    }
-
                     rootFolder.AddVirtualChild(folder);
 
                     RegisterItem(folder);
@@ -764,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         var userRootPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                        _fileSystem.CreateDirectory(userRootPath);
+						_fileSystem.CreateDirectory(userRootPath);
 
                         var tmpItem = GetItemById(GetNewItemId(userRootPath, typeof(UserRootFolder))) as UserRootFolder;
 
@@ -1016,9 +1005,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetPropertiesFromSongs(MusicArtist artist, IEnumerable<IHasMetadata> items)
         {
-
+            
         }
-
+        
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
@@ -1029,7 +1018,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
         {
             // Ensure the location is available.
-            _fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
+			_fileSystem.CreateDirectory(ConfigurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, ConfigurationManager, _fileSystem).ValidatePeople(cancellationToken, progress);
         }
@@ -1276,11 +1265,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
-            if (query.User != null)
-            {
-                AddUserToQuery(query, query.User);
-            }
-
             var result = ItemRepository.GetItemIdsList(query);
 
             var items = result.Select(GetItemById).Where(i => i != null).ToArray();
@@ -1293,64 +1277,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
-            if (query.User != null)
-            {
-                AddUserToQuery(query, query.User);
-            }
-
             return ItemRepository.GetItems(query);
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
         {
-            if (query.User != null)
-            {
-                AddUserToQuery(query, query.User);
-            }
-
             return ItemRepository.GetItemIdsList(query);
-        }
-
-        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds)
-        {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
-
-            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
-
-            return GetItemIds(query).Select(GetItemById);
-        }
-
-        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
-        {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
-
-            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
-
-            return GetItems(query);
-        }
-
-        private void AddUserToQuery(InternalItemsQuery query, User user)
-        {
-            if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0)
-            {
-                //var userViews = _userviewManager().GetUserViews(new UserViewQuery
-                //{
-                //    UserId = user.Id.ToString("N"),
-                //    IncludeHidden = true
-
-                //}, CancellationToken.None).Result.ToList();
-
-                //query.AncestorIds = userViews.SelectMany(i => i.GetIdsForAncestorQuery()).Distinct().Select(i => i.ToString("N")).ToArray();
-            }
-
-            // TODO: handle blocking by tags
-
-            query.MaxParentalRating = user.Policy.MaxParentalRating;
-
-            if (user.Policy.MaxParentalRating.HasValue)
-            {
-                query.BlockUnratedItems = user.Policy.BlockUnratedItems;
-            }
         }
 
         /// <summary>
@@ -1645,9 +1577,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<Folder> GetCollectionFolders(BaseItem item)
         {
-            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
+            while (!(item.Parent is AggregateFolder) && item.Parent != null)
             {
-                item = item.GetParent();
+                item = item.Parent;
             }
 
             if (item == null)
@@ -1684,7 +1616,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 return type;
             }
 
-            return item.GetParents()
+            return item.Parents
                 .Select(GetConfiguredContentType)
                 .LastOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
@@ -1721,9 +1653,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetTopFolderContentType(BaseItem item)
         {
-            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
+            while (!(item.Parent is AggregateFolder) && item.Parent != null)
             {
-                item = item.GetParent();
+                item = item.Parent;
             }
 
             if (item == null)
@@ -1768,7 +1700,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (item == null ||
                 !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
-                _fileSystem.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1787,7 +1719,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
             {
-                refresh = true;
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
             if (!refresh)
@@ -1860,7 +1793,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -1883,9 +1816,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            if (!item.UserId.HasValue || !string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            if (!item.UserId.HasValue)
             {
                 item.UserId = user.Id;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
                 item.ViewType = viewType;
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
@@ -1984,7 +1922,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return item;
         }
-
+        
         public async Task<UserView> GetNamedView(string name,
             string parentId,
             string viewType,
@@ -2013,7 +1951,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item == null)
             {
-                _fileSystem.CreateDirectory(path);
+				_fileSystem.CreateDirectory(path);
 
                 item = new UserView
                 {
@@ -2446,7 +2384,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.UpdatePeople(item.Id, people);
         }
 
-        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1,1);
         public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
         {
             _logger.Debug("ConvertImageToLocal item {0}", item.Id);
