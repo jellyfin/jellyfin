@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (item != null)
                 {
-                    _logger.Debug("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
+                    _logger.Info("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
                     await _libraryManager.DeleteItem(item, new DeleteOptions
                     {
@@ -197,6 +197,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         await libraryItem.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
+
+                    _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItem.Path ?? string.Empty);
 
                     await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
                     {
