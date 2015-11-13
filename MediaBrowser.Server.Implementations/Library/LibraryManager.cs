@@ -603,9 +603,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
                 {
-                    var paths = NormalizeRootPathList(fileSystemDictionary.Keys);
+                    var paths = NormalizeRootPathList(fileSystemDictionary.Values);
 
-                    fileSystemDictionary = paths.Select(_fileSystem.GetDirectoryInfo).ToDictionary(i => i.FullName);
+                    fileSystemDictionary = paths.ToDictionary(i => i.FullName);
                 }
 
                 args.FileSystemDictionary = fileSystemDictionary;
@@ -625,9 +625,12 @@ namespace MediaBrowser.Server.Implementations.Library
             return EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent));
         }
 
-        public IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths)
+        public IEnumerable<FileSystemMetadata> NormalizeRootPathList(IEnumerable<FileSystemMetadata> paths)
         {
-            var list = paths.Select(_fileSystem.NormalizePath)
+            var originalList = paths.ToList();
+
+            var list = originalList.Where(i => i.IsDirectory)
+                .Select(i => _fileSystem.NormalizePath(i.FullName))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -639,7 +642,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 _logger.Info("Found duplicate path: {0}", dupe);
             }
 
-            return list.Except(dupes, StringComparer.OrdinalIgnoreCase);
+            var newList = list.Except(dupes, StringComparer.OrdinalIgnoreCase).Select(_fileSystem.GetDirectoryInfo).ToList();
+            newList.AddRange(originalList.Where(i => !i.IsDirectory));
+            return newList;
         }
 
         /// <summary>
