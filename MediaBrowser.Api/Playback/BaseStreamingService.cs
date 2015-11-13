@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.Playback
             {
                 param = "-preset superfast";
 
-                param += " -crf 23";
+                param += " -crf 23 -rc-lookahead 0 -muxdelay 0 -refs 1";
             }
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
@@ -566,7 +566,10 @@ namespace MediaBrowser.Api.Playback
 
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                filters[filters.Count - 1] += ":flags=fast_bilinear";
+                if (filters.Count > 0)
+                {
+                    filters[filters.Count - 1] += ":flags=fast_bilinear";
+                }
             }
 
             var output = string.Empty;
