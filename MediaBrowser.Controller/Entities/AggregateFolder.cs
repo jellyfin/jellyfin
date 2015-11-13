@@ -94,9 +94,9 @@ namespace MediaBrowser.Controller.Entities
                 // Example: if \\server\movies exists, then strip out \\server\movies\action
                 if (isPhysicalRoot)
                 {
-                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Keys);
+                    var paths = LibraryManager.NormalizeRootPathList(fileSystemDictionary.Values);
 
-                    fileSystemDictionary = paths.Select(FileSystem.GetDirectoryInfo).ToDictionary(i => i.FullName);
+                    fileSystemDictionary = paths.ToDictionary(i => i.FullName);
                 }
 
                 args.FileSystemDictionary = fileSystemDictionary;
