@@ -298,7 +298,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="paths">The paths.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> NormalizeRootPathList(IEnumerable<string> paths);
+        IEnumerable<FileSystemMetadata> NormalizeRootPathList(IEnumerable<FileSystemMetadata> paths);
 
         /// <summary>
         /// Registers the item.
