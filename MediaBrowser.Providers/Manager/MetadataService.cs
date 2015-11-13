@@ -674,7 +674,14 @@ namespace MediaBrowser.Providers.Manager
         {
             try
             {
-                return changeMonitor.HasChanged(item, status, directoryService);
+                var hasChanged = changeMonitor.HasChanged(item, status, directoryService);
+
+                //if (hasChanged)
+                //{
+                //    Logger.Debug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
+                //}
+
+                return hasChanged;
             }
             catch (Exception ex)
             {
@@ -687,7 +694,15 @@ namespace MediaBrowser.Providers.Manager
         {
             try
             {
-                return changeMonitor.HasChanged(item, directoryService, date);
+                var hasChanged = changeMonitor.HasChanged(item, directoryService, date);
+
+                //if (hasChanged)
+                //{
+                //    Logger.Debug("{0} reports change to {1} since {2}", changeMonitor.GetType().Name,
+                //        item.Path ?? item.Name, date);
+                //}
+
+                return hasChanged;
             }
             catch (Exception ex)
             {
