@@ -87,12 +87,6 @@ namespace MediaBrowser.Model.System
         public List<string> FailedPluginAssemblies { get; set; }
 
         /// <summary>
-        /// Gets or sets the image enhancers.
-        /// </summary>
-        /// <value>The image enhancers.</value>
-        public List<string> ImageEnhancers { get; set; }
-
-        /// <summary>
         /// Gets or sets the program data path.
         /// </summary>
         /// <value>The program data path.</value>
@@ -168,7 +162,6 @@ namespace MediaBrowser.Model.System
             CompletedInstallations = new List<InstallationInfo>();
 
             FailedPluginAssemblies = new List<string>();
-            ImageEnhancers = new List<string>();
         }
     }
 }
