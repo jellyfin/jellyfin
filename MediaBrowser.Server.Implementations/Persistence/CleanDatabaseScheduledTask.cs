@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public const int MigrationVersion = 4;
+        public const int MigrationVersion = 6;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {

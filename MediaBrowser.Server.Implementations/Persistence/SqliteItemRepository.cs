@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
         
-        private const int LatestSchemaVersion = 32;
+        private const int LatestSchemaVersion = 37;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -223,6 +223,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsFolder", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
             _connection.AddColumn(_logger, "TypedBaseItems", "UnratedType", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "TopParentId", "Text");
 
             PrepareStatements();
 
@@ -451,7 +452,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ExternalServiceId",
                 "Tags",
                 "IsFolder",
-                "UnratedType"
+                "UnratedType",
+                "TopParentId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -725,7 +727,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.IsFolder;
 
                     _saveItemCommand.GetParameter(index++).Value = item.GetBlockUnratedType().ToString();
-                    
+
+                    var topParent = item.GetTopParent();
+                    if (topParent != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = topParent.Id.ToString("N");
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1938,6 +1950,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("LocationType not in (" + val + ")");
+            }
+
+            if (query.TopParentIds.Length == 1)
+            {
+                whereClauses.Add("(TopParentId is null or TopParentId=@TopParentId)");
+                cmd.Parameters.Add(cmd, "@TopParentId", DbType.String).Value = query.TopParentIds[0];
+            }
+            if (query.TopParentIds.Length > 1)
+            {
+                var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("(TopParentId is null or TopParentId in (" + val + "))");
             }
 
             if (query.AncestorIds.Length == 1)

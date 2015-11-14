@@ -1939,6 +1939,36 @@ namespace MediaBrowser.Controller.Entities
             return GetParents().Select(i => i.Id).Concat(LibraryManager.GetCollectionFolders(this).Select(i => i.Id));
         }
 
+        public BaseItem GetTopParent()
+        {
+            if (IsTopParent)
+            {
+                return this;
+            }
+
+            return GetParents().FirstOrDefault(i => i.IsTopParent);
+        }
+
+        [IgnoreDataMember]
+        public virtual bool IsTopParent
+        {
+            get
+            {
+                if (GetParent() is AggregateFolder || this is Channel || this is BasePluginFolder)
+                {
+                    return true;
+                }
+
+                var view = this as UserView;
+                if (view != null && string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         [IgnoreDataMember]
         public virtual bool SupportsAncestors
         {
