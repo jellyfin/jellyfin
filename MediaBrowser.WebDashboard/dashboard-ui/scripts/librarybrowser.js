@@ -1775,7 +1775,7 @@
             var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
             var coverImage = options.coverImage;
 
-            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
+            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
 
                 width = posterWidth;
                 height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;

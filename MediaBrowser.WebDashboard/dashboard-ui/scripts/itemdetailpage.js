@@ -391,7 +391,12 @@
         }
 
         renderThemeMedia(page, item, user);
-        renderCriticReviews(page, item, 1);
+
+        if (enableScrollX()) {
+            renderCriticReviews(page, item);
+        } else {
+            renderCriticReviews(page, item, 1);
+        }
     }
 
     function renderDetails(page, item, context, isStatic) {
@@ -1127,14 +1132,11 @@
 
         var reviews = result.Items;
 
-        if (reviews.length) {
-            html += '<div class="paperList">';
-        }
-
         for (var i = 0, length = reviews.length; i < length; i++) {
 
             var review = reviews[i];
 
+            html += '<div class="paperList">';
             html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
 
             if (review.Score != null) {
@@ -1185,8 +1187,6 @@
             html += '</paper-item-body>';
 
             html += '</paper-icon-item>';
-        }
-        if (reviews.length) {
             html += '</div>';
         }
 
@@ -1196,6 +1196,12 @@
 
         var criticReviewsContent = page.querySelector('#criticReviewsContent');
         criticReviewsContent.innerHTML = html;
+
+        if (enableScrollX()) {
+            criticReviewsContent.classList.add('hiddenScrollX');
+        } else {
+            criticReviewsContent.classList.remove('hiddenScrollX');
+        }
     }
 
     function renderThemeMedia(page, item) {
@@ -1710,6 +1716,10 @@
 
             return c.PrimaryImageTag;
         });
+
+        if (!casts.length) {
+            casts = item.People || [];
+        }
 
         for (var i = 0, length = casts.length; i < length; i++) {
 

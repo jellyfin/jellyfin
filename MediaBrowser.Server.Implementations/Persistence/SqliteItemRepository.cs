@@ -1059,7 +1059,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var tvItem = item as ILiveTvItem;
                 if (tvItem != null)
                 {
-                    item.ForcedSortName = reader.GetString(43);
+                    tvItem.ServiceName = reader.GetString(43);
                 }
             }
 

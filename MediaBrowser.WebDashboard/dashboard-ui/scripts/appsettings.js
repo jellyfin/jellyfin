@@ -95,7 +95,7 @@
                 update('displayLanguage', val);
             }
 
-            return appStorage.getItem('displayLanguage') || 'en-US';
+            return appStorage.getItem('displayLanguage') || navigator.language || navigator.userLanguage || 'en-US';
         },
 
         cameraUploadServers: function (val) {

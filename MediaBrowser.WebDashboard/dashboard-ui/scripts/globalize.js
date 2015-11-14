@@ -76,38 +76,36 @@
     function getDeviceCulture() {
         var deferred = DeferredBuilder.Deferred();
 
-        var culture;
+        if (navigator.globalization && navigator.globalization.getPreferredLanguage) {
 
-        if (navigator.globalization && navigator.globalization.getLocaleName) {
+            Logger.log('Calling navigator.globalization.getPreferredLanguage');
 
-            Logger.log('Calling navigator.globalization.getLocaleName');
+            navigator.globalization.getPreferredLanguage(function (locale) {
 
-            navigator.globalization.getLocaleName(function (locale) {
-
-                culture = normalizeLocaleName(locale.value || '');
+                var culture = locale.value || '';
+                //if ($.browser.safari) {
+                    culture = navigator.language || navigator.userLanguage || culture;
+                //}
                 Logger.log('Device culture is ' + culture);
                 deferred.resolveWith(null, [culture]);
 
             }, function () {
 
-                Logger.log('navigator.globalization.getLocaleName failed');
+                Logger.log('navigator.globalization.getPreferredLanguage failed');
 
-                deferred.resolveWith(null, [null]);
+                deferred.resolveWith(null, [navigator.language || navigator.userLanguage]);
             });
 
         } else if (AppInfo.supportsUserDisplayLanguageSetting) {
 
             Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
 
-            culture = AppSettings.displayLanguage();
-            deferred.resolveWith(null, [culture]);
+            deferred.resolveWith(null, [AppSettings.displayLanguage()]);
 
         } else {
 
             Logger.log('Getting culture from document');
-
-            culture = document.documentElement.getAttribute('data-culture');
-            deferred.resolveWith(null, [culture]);
+            deferred.resolveWith(null, [document.documentElement.getAttribute('data-culture')]);
         }
 
         return deferred.promise();
@@ -122,9 +120,7 @@
 
         getDeviceCulture().done(function (culture) {
 
-            if (!culture) {
-                culture = 'en-US';
-            }
+            culture = normalizeLocaleName(culture || 'en-US');
 
             setCulture(culture).done(function () {
                 deferred.resolve();

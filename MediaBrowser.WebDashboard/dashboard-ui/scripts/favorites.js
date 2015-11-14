@@ -38,7 +38,6 @@
             SortBy: "SortName",
             SortOrder: "Ascending",
             Filters: "IsFavorite",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
@@ -49,8 +48,12 @@
             options.ParentId = topParentId;
         }
 
-        if (isSingleSection) {
-            options.Limit = null;
+        if (!isSingleSection) {
+            options.Limit = screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6);
+
+            if (enableScrollX()) {
+                options.Limit = 12;
+            }
         }
 
         var promise;

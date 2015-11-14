@@ -1811,3 +1811,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         -ms-transform: rotateZ(360deg);
     }
 }
+
+#criticReviewsContent.hiddenScrollX {
+    white-space: nowrap;
+}
+
+    #criticReviewsContent.hiddenScrollX .paperList {
+        min-width: 240px;
+        max-width: 90%;
+        display: inline-block;
+        vertical-align: top;
+        margin: 0 4px 0 0;
+    }

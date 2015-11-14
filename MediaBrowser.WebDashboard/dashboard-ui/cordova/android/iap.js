@@ -51,10 +51,7 @@
         if (feature == 'embypremieremonthly') {
             return MainActivity.purchasePremiereMonthly(email);
         }
-        if (feature == 'embypremiereweekly') {
-            return MainActivity.purchasePremiereWeekly(email);
-        }
-        return MainActivity.purchaseUnlock(email);
+        return MainActivity.purchaseUnlock();
     }
 
     function onPurchaseComplete(result) {
@@ -97,10 +94,9 @@
 
         var deferred = DeferredBuilder.Deferred();
 
-        if (feature == 'playback') {
-            isPlaybackUnlockedViaOldApp(deferred);
-        } else if (feature == 'livetv') {
-            isLiveTvUnlockedViaOldApp(deferred);
+        if (feature == 'playback' || feature == 'livetv') {
+            deferred.resolveWith(null, [false]);
+            //isPlaybackUnlockedViaOldApp(deferred);
         } else {
             deferred.resolveWith(null, [false]);
         }
@@ -131,16 +127,17 @@
 
     function testDeviceId(deviceId) {
 
-        var deferred = DeferredBuilder.Deferred();
 
         var cacheKey = 'oldapp-' + deviceId;
         var cacheValue = appStorage.getItem(cacheKey);
         if (cacheValue) {
 
+            var deferred = DeferredBuilder.Deferred();
             deferred.resolveWith(null, [cacheValue == 'true']);
+            return deferred.promise();
 
         } else {
-            HttpClient.send({
+            return HttpClient.send({
 
                 type: 'GET',
                 url: 'https://mb3admin.com/admin/service/statistics/appAccess?application=AndroidV1&deviceId=' + deviceId
@@ -148,23 +145,14 @@
             }).done(function () {
 
                 appStorage.setItem(cacheKey, 'true');
-                deferred.resolveWith(null, [true]);
 
             }).fail(function (e) {
 
                 if (e.status == 404) {
                     appStorage.setItem(cacheKey, 'false');
                 }
-                deferred.resolveWith(null, [false]);
             });
         }
-
-        return deferred.promise();
-    }
-
-    function isLiveTvUnlockedViaOldApp(deferred) {
-
-        isPlaybackUnlockedViaOldApp(deferred);
     }
 
     window.IapManager = {

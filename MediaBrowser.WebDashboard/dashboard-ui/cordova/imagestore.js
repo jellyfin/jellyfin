@@ -111,12 +111,43 @@
                 setImageIntoElement(elem, url);
             }
 
+            //if ($.browser.safari) {
+            //    setImageWithSdWebImage(elem, url);
+            //    return;
+            //}
+
             self.getImageUrl(url).done(function (localUrl) {
 
                 setImageIntoElement(elem, localUrl);
 
             }).fail(onFail);
         };
+
+        var imageIdIndex = 1;
+
+        function setImageWithSdWebImage(elem, url) {
+
+            var rect = elem.getBoundingClientRect();
+
+            var options = {
+                data: url,
+                index: imageIdIndex,
+                quality: 0,
+                scale: Math.round(rect.width) + 'x' + Math.round(rect.height),
+                downloadOptions: window.CollectionRepeatImageOptions.SDWebImageRetryFailed | window.CollectionRepeatImageOptions.SDWebImageLowPriority | window.CollectionRepeatImageOptions.SDWebImageAllowInvalidSSLCertificates
+            };
+
+            if (elem.classList.contains('coveredCardImage')) {
+                options.scale += '!';
+            }
+
+            imageIdIndex++;
+
+            window.CollectionRepeatImage.getImage(options, function (data) {
+                var dataUrl = 'data:image/jpeg;base64,' + data;
+                elem.style.backgroundImage = "url('" + dataUrl + "')";
+            });
+        }
 
         window.ImageStore = self;
     }

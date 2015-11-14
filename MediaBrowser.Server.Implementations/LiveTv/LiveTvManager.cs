@@ -565,7 +565,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 isNew = true;
             }
             item.ParentId = parentFolderId;
-            
+
             item.ChannelType = channelInfo.ChannelType;
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
@@ -633,7 +633,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 forceUpdate = true;
             }
             item.ParentId = channel.Id;
-            
+
             //item.ChannelType = channelType;
             if (!string.Equals(item.ServiceName, serviceName, StringComparison.Ordinal))
             {
@@ -781,7 +781,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dataChanged = true;
             }
             item.ParentId = parentFolderId;
-            
+
             if (!item.HasImage(ImageType.Primary))
             {
                 if (!string.IsNullOrWhiteSpace(info.ImagePath))
@@ -847,7 +847,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
-            await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
+            var list = new List<Tuple<BaseItemDto, string, string>>();
+            list.Add(new Tuple<BaseItemDto, string, string>(dto, program.ServiceName, program.ExternalId));
+
+            await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
 
             return dto;
         }
@@ -889,14 +892,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
             var returnArray = queryResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
+                .Cast<LiveTvProgram>()
+                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray,
+                Items = returnArray.Select(i => i.Item1).ToArray(),
                 TotalRecordCount = queryResult.TotalRecordCount
             };
 
@@ -968,14 +972,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var user = _userManager.GetUserById(query.UserId);
 
             var returnArray = internalResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
+                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray,
+                Items = returnArray.Select(i => i.Item1).ToArray(),
                 TotalRecordCount = internalResult.TotalRecordCount
             };
 
@@ -1051,44 +1055,46 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }).Sum();
         }
 
-        private async Task AddRecordingInfo(IEnumerable<BaseItemDto> programs, CancellationToken cancellationToken)
+        private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string>> programs, CancellationToken cancellationToken)
         {
             var timers = new Dictionary<string, List<TimerInfo>>();
 
-            foreach (var program in programs)
+            foreach (var programTuple in programs)
             {
-                var internalProgram = GetInternalProgram(program.Id);
+                var program = programTuple.Item1;
+                var serviceName = programTuple.Item2;
+                var externalProgramId = programTuple.Item3;
 
-                if (string.IsNullOrWhiteSpace(internalProgram.ServiceName))
+                if (string.IsNullOrWhiteSpace(serviceName))
                 {
                     continue;
                 }
 
                 List<TimerInfo> timerList;
-                if (!timers.TryGetValue(internalProgram.ServiceName, out timerList))
+                if (!timers.TryGetValue(serviceName, out timerList))
                 {
                     try
                     {
-                        var tempTimers = await GetService(internalProgram.ServiceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
-                        timers[internalProgram.ServiceName] = timerList = tempTimers.ToList();
+                        var tempTimers = await GetService(serviceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                        timers[serviceName] = timerList = tempTimers.ToList();
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error getting timer infos", ex);
-                        timers[internalProgram.ServiceName] = timerList = new List<TimerInfo>();
+                        timers[serviceName] = timerList = new List<TimerInfo>();
                     }
                 }
 
-                var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, internalProgram.ExternalId, StringComparison.OrdinalIgnoreCase));
+                var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
 
                 if (timer != null)
                 {
-                    program.TimerId = _tvDtoService.GetInternalTimerId(internalProgram.ServiceName, timer.Id)
+                    program.TimerId = _tvDtoService.GetInternalTimerId(serviceName, timer.Id)
                         .ToString("N");
 
                     if (!string.IsNullOrEmpty(timer.SeriesTimerId))
                     {
-                        program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(internalProgram.ServiceName, timer.SeriesTimerId)
+                        program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(serviceName, timer.SeriesTimerId)
                             .ToString("N");
                     }
                 }
