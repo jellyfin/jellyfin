@@ -170,8 +170,9 @@ namespace MediaBrowser.Controller.Entities
             { 
                 CollectionType.Games, 
                 CollectionType.Books, 
-                CollectionType.MusicVideos , 
-                CollectionType.HomeVideos 
+                CollectionType.MusicVideos, 
+                CollectionType.HomeVideos, 
+                CollectionType.Photos
             };
 
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
