@@ -206,6 +206,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     var libraryItem = _libraryManager.GetItemById(item.Item1);
 
+                    if (libraryItem.IsTopParent)
+                    {
+                        continue;
+                    }
+
                     if (Folder.IsPathOffline(path))
                     {
                         libraryItem.IsOffline = true;

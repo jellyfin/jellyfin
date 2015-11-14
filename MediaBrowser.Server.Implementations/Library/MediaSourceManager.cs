@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private int GetMaxAllowedBitrateForExternalSubtitleStream()
         {
-            return 20000000;
+            return 30000000;
         }
 
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
