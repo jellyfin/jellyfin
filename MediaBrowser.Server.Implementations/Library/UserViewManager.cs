@@ -90,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         list.Add(await GetUserView(folder, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
                     }
-                    else if (_config.Configuration.EnableSharedCollectionViewImage)
+                    else if (_config.Configuration.EnableSharedCollectionViewImage || UserView.EnableOriginalFolder(folderViewType))
                     {
                         list.Add(folder);
                     }
@@ -109,6 +109,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                    }
+                    else if (_config.Configuration.EnableSharedCollectionViewImage || UserView.EnableOriginalFolder(folderViewType))
+                    {
+                        list.Add(folder);
                     }
                     else if (!string.IsNullOrWhiteSpace(folderViewType))
                     {
