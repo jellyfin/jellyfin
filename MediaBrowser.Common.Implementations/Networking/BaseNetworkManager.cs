@@ -139,11 +139,13 @@ namespace MediaBrowser.Common.Implementations.Networking
             IPAddress address;
             if (IPAddress.TryParse(endpoint, out address))
             {
+                var addressString = address.ToString();
+
                 int lengthMatch = 100;
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
                     lengthMatch = 4;
-                    if (IsInPrivateAddressSpaceIpv4(endpoint))
+                    if (IsInPrivateAddressSpaceIpv4(addressString))
                     {
                         return true;
                     }
@@ -158,9 +160,9 @@ namespace MediaBrowser.Common.Implementations.Networking
                 }
 
                 // Should be even be doing this with ipv6?
-                if (endpoint.Length >= lengthMatch)
+                if (addressString.Length >= lengthMatch)
                 {
-                    var prefix = endpoint.Substring(0, lengthMatch);
+                    var prefix = addressString.Substring(0, lengthMatch);
 
                     if (GetLocalIpAddresses()
                         .Any(i => i.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
@@ -168,9 +170,8 @@ namespace MediaBrowser.Common.Implementations.Networking
                         return true;
                     }
                 }
-            }
-
-            if (resolveHost && !IPAddress.TryParse(endpoint, out address))
+            } 
+            else if (resolveHost)
             {
                 Uri uri;
                 if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out uri))
