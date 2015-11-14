@@ -131,7 +131,7 @@
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
 
                 if (layout == 'Timeline') {
-                    getQuery().SortBy = 'PremiereDate,SortName';
+                    getQuery().SortBy = 'ProductionYear,PremiereDate,SortName';
                     getQuery().SortOrder = 'Descending';
                 }
 

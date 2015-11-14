@@ -3,15 +3,15 @@ using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
-    public class CameraUploadsFolder : BasePluginFolder
+    public class CameraUploadsFolder : BasePluginFolder, ISupportsUserSpecificView
     {
         public CameraUploadsFolder()
         {
@@ -53,6 +53,12 @@ namespace MediaBrowser.Server.Implementations.Devices
         {
             _hasChildren = null;
             return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
+        }
+
+        [IgnoreDataMember]
+        public bool EnableUserSpecificView
+        {
+            get { return true; }
         }
     }
 

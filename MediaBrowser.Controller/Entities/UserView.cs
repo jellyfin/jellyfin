@@ -144,12 +144,22 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var supportsUserSpecific = folder as ISupportsUserSpecificView;
+            if (supportsUserSpecific != null && supportsUserSpecific.EnableUserSpecificView)
+            {
+                return true;
+            }
+
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
         }
 
         public static bool IsEligibleForEnhancedView(string viewType)
         {
-            var types = new[] { CollectionType.Movies, CollectionType.TvShows };
+            var types = new[] 
+            { 
+                CollectionType.Movies, 
+                CollectionType.TvShows 
+            };
 
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }

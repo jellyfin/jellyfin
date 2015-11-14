@@ -26,24 +26,9 @@ namespace MediaBrowser.Server.Implementations.Photos
             return Task.FromResult(items);
         }
 
-        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        protected override Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
-            var image = itemsWithImages
-                .Where(i => i.HasImage(ImageType.Primary) && i.GetImageInfo(ImageType.Primary, 0).IsLocalFile && Path.HasExtension(i.GetImagePath(ImageType.Primary)))
-                .Select(i => i.GetImagePath(ImageType.Primary))
-                .FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(image))
-            {
-                return null;
-            }
-
-            var ext = Path.GetExtension(image);
-
-            var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ext);
-            File.Copy(image, outputPath);
-
-            return outputPath;
+            return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
         }
     }
 }
