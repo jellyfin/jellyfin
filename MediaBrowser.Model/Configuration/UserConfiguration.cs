@@ -63,9 +63,9 @@ namespace MediaBrowser.Model.Configuration
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
+            DisplayChannelsInline = true;
 
             PlainFolderViews = new string[] { };
-            DisplayCollectionsView = true;
 
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
