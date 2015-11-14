@@ -73,20 +73,26 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var enableUserViews = _config.Configuration.EnableUserViews || user.EnableUserViews;
 
-            if (enableUserViews)
+            foreach (var folder in standaloneFolders)
             {
-                foreach (var folder in standaloneFolders)
-                {
-                    var collectionFolder = folder as ICollectionFolder;
-                    var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                var collectionFolder = folder as ICollectionFolder;
+                var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
 
-                    if (UserView.IsUserSpecific(folder))
-                    {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
-                    }
-                    else if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
+                if (UserView.IsUserSpecific(folder))
+                {
+                    list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                    continue;
+                } 
+                
+                if (enableUserViews)
+                {
+                    if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
+                    }
+                    else if (_config.Configuration.EnableSharedCollectionViewImage)
+                    {
+                        list.Add(folder);
                     }
                     else if (!string.IsNullOrWhiteSpace(folderViewType))
                     {
@@ -97,20 +103,10 @@ namespace MediaBrowser.Server.Implementations.Library
                         list.Add(folder);
                     }
                 }
-            }
-            else
-            {
-                // TODO: Deprecate this whole block
-                foreach (var folder in standaloneFolders)
+                else
                 {
-                    var collectionFolder = folder as ICollectionFolder;
-                    var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
-
-                    if (UserView.IsUserSpecific(folder))
-                    {
-                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
-                    }
-                    else if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
+                    // TODO: Deprecate this whole block
+                    if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     }
@@ -203,10 +199,15 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetUserSubView(name, parentId, type, sortName, cancellationToken);
         }
 
-        private async Task<UserView> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, bool enableUserViews, CancellationToken cancellationToken)
+        private async Task<Folder> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, bool enableUserViews, CancellationToken cancellationToken)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals((enableUserViews ? i.GetViewType(user) : i.CollectionType), viewType, StringComparison.OrdinalIgnoreCase)))
             {
+                if (enableUserViews || _config.Configuration.EnableSharedCollectionViewImage)
+                {
+                    return (Folder)parents[0];
+                }
+
                 var parentId = parents[0].Id;
 
                 var enableRichView = !user.Configuration.PlainFolderViews.Contains(parentId.ToString("N"), StringComparer.OrdinalIgnoreCase);
