@@ -164,6 +164,18 @@ namespace MediaBrowser.Controller.Entities
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
+        public static bool EnableOriginalFolder(string viewType)
+        {
+            var types = new[] 
+            { 
+                CollectionType.Games, 
+                CollectionType.Books, 
+                CollectionType.MusicVideos 
+            };
+
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
         protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
         {
             return Task.FromResult(true);
