@@ -330,6 +330,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.RedirectToUrl("emby/" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
+            if (string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl(DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+            if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl("../" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
             if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
