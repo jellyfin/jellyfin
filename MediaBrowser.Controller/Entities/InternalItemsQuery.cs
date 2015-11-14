@@ -107,6 +107,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid? ParentId { get; set; }
         public string[] AncestorIds { get; set; }
+        public string[] TopParentIds { get; set; }
 
         public LocationType[] ExcludeLocationTypes { get; set; }
         
@@ -131,6 +132,7 @@ namespace MediaBrowser.Controller.Entities
             ChannelIds = new string[] { };
             ItemIds = new string[] { };
             AncestorIds = new string[] { };
+            TopParentIds = new string[] { };
             ExcludeLocationTypes = new LocationType[] { };
         }
 

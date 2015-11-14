@@ -1336,16 +1336,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
         {
-            if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0)
+            if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0 && query.TopParentIds.Length == 0)
             {
-                //var userViews = _userviewManager().GetUserViews(new UserViewQuery
-                //{
-                //    UserId = user.Id.ToString("N"),
-                //    IncludeHidden = true
+                var userViews = _userviewManager().GetUserViews(new UserViewQuery
+                {
+                    UserId = user.Id.ToString("N"),
+                    IncludeHidden = true
 
-                //}, CancellationToken.None).Result.ToList();
+                }, CancellationToken.None).Result.ToList();
 
-                //query.AncestorIds = userViews.SelectMany(i => i.GetIdsForAncestorQuery()).Distinct().Select(i => i.ToString("N")).ToArray();
+                query.TopParentIds = userViews.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
             }
 
             // TODO: handle blocking by tags
@@ -1356,6 +1356,60 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 query.BlockUnratedItems = user.Policy.BlockUnratedItems;
             }
+        }
+
+        private IEnumerable<BaseItem> GetTopParentsForQuery(BaseItem item)
+        {
+            var view = item as UserView;
+
+            if (view != null)
+            {
+                if (string.Equals(view.ViewType, CollectionType.LiveTv))
+                {
+                    return new[] { view };
+                }
+                if (string.Equals(view.ViewType, CollectionType.Channels))
+                {
+                    // TODO: Return channels
+                    return new[] { view };
+                }
+
+                // Translate view into folders
+                if (view.DisplayParentId != Guid.Empty)
+                {
+                    var displayParent = GetItemById(view.DisplayParentId);
+                    if (displayParent != null)
+                    {
+                        return GetTopParentsForQuery(displayParent);
+                    }
+                    return new BaseItem[] { };
+                }
+                if (view.ParentId != Guid.Empty)
+                {
+                    var displayParent = GetItemById(view.ParentId);
+                    if (displayParent != null)
+                    {
+                        return GetTopParentsForQuery(displayParent);
+                    }
+                    return new BaseItem[] { };
+                }
+
+                // Handle grouping
+                return new BaseItem[] { };
+            }
+
+            var collectionFolder = item as CollectionFolder;
+            if (collectionFolder != null)
+            {
+                return collectionFolder.GetPhysicalParents();
+            }
+
+            var topParent = item.GetTopParent();
+            if (topParent != null)
+            {
+                return new[] { topParent };
+            }
+            return new BaseItem[] { };
         }
 
         /// <summary>
@@ -1726,14 +1780,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetTopFolderContentType(BaseItem item)
         {
-            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
-            {
-                item = item.GetParent();
-            }
-
             if (item == null)
             {
                 return null;
+            }
+
+            while (!(item.GetParent() is AggregateFolder) && item.GetParent() != null)
+            {
+                item = item.GetParent();
             }
 
             return GetUserRootFolder().Children
