@@ -348,3 +348,15 @@
         opacity: 0;
     }
 }
+
+video::-webkit-media-text-track-container {
+}
+
+video::-webkit-media-text-track-background {
+    /*Style the text background*/
+}
+
+#videoPlayer:not(.idlePlayer) video:not([controls])::-webkit-media-text-track-display {
+    /*Style the text itself*/
+    margin-top: -2.5em;
+}
