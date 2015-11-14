@@ -1681,6 +1681,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(Movie),
             typeof(BoxSet),
             typeof(Episode),
+            typeof(ChannelVideoItem),
             typeof(Season),
             typeof(Series),
             typeof(Book),
@@ -1698,7 +1699,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(UserView),
             typeof(Video),
             typeof(Year),
-            typeof(Channel)
+            typeof(Channel),
+            typeof(AggregateFolder)
         };
 
         private static Dictionary<string, string[]> GetTypeMapDictionary()
