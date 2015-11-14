@@ -15,6 +15,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
@@ -121,6 +122,15 @@ namespace MediaBrowser.Dlna.Ssdp
             RestartSocketListener();
 
             ReloadAliveNotifier();
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+        }
+
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                NotifyAll();
+            }
         }
 
         public void SendSearchMessage(EndPoint localIp)
@@ -433,6 +443,7 @@ namespace MediaBrowser.Dlna.Ssdp
         public void Dispose()
         {
             _config.NamedConfigurationUpdated -= _config_ConfigurationUpdated;
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
 
             _isDisposed = true;
             while (_messageQueue.Count != 0)
