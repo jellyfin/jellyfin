@@ -112,6 +112,11 @@ namespace MediaBrowser.Api.UserLibrary
                 user == null ? _libraryManager.RootFolder : user.RootFolder :
                 parentItem;
 
+            if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
+            {
+                item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+            }
+
             // Default list type = children
 
             if (!string.IsNullOrEmpty(request.Ids))
