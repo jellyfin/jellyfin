@@ -14,6 +14,10 @@
 
                 var view = items[i];
 
+                if (AppInfo.isNativeApp && $.browser.safari && view.CollectionType == 'livetv') {
+                    continue;
+                }
+
                 list.push(view);
 
                 if (view.CollectionType == 'livetv') {

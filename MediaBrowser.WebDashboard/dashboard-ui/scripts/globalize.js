@@ -76,25 +76,9 @@
     function getDeviceCulture() {
         var deferred = DeferredBuilder.Deferred();
 
-        if (navigator.globalization && navigator.globalization.getPreferredLanguage) {
+        if (AppInfo.isNativeApp) {
 
-            Logger.log('Calling navigator.globalization.getPreferredLanguage');
-
-            navigator.globalization.getPreferredLanguage(function (locale) {
-
-                var culture = locale.value || '';
-                //if ($.browser.safari) {
-                    culture = navigator.language || navigator.userLanguage || culture;
-                //}
-                Logger.log('Device culture is ' + culture);
-                deferred.resolveWith(null, [culture]);
-
-            }, function () {
-
-                Logger.log('navigator.globalization.getPreferredLanguage failed');
-
-                deferred.resolveWith(null, [navigator.language || navigator.userLanguage]);
-            });
+            deferred.resolveWith(null, [navigator.language || navigator.userLanguage]);
 
         } else if (AppInfo.supportsUserDisplayLanguageSetting) {
 

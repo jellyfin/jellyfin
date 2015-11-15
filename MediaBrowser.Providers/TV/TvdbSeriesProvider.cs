@@ -175,6 +175,11 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         internal async Task DownloadSeriesZip(string seriesId, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(seriesId))
+            {
+                throw new ArgumentNullException("seriesId");
+            }
+            
             try
             {
                 await DownloadSeriesZip(seriesId, seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
@@ -196,6 +201,11 @@ namespace MediaBrowser.Providers.TV
 
         private async Task DownloadSeriesZip(string seriesId, string seriesDataPath, long? lastTvDbUpdateTime, string preferredMetadataLanguage, string saveAsMetadataLanguage, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(seriesId))
+            {
+                throw new ArgumentNullException("seriesId");
+            }
+
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
 
             using (var zipStream = await _httpClient.Get(new HttpRequestOptions
@@ -247,7 +257,11 @@ namespace MediaBrowser.Providers.TV
             string id;
             if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
             {
-                return true;
+                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return true;
+                }
             }
             //if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id))
             //{

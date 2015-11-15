@@ -1345,16 +1345,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 }, CancellationToken.None).Result.ToList();
 
-                query.TopParentIds = userViews.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
-            }
-
-            // TODO: handle blocking by tags
-
-            query.MaxParentalRating = user.Policy.MaxParentalRating;
-
-            if (user.Policy.MaxParentalRating.HasValue)
-            {
-                query.BlockUnratedItems = user.Policy.BlockUnratedItems;
+                //query.TopParentIds = userViews.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
             }
         }
 

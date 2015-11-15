@@ -1818,7 +1818,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     #criticReviewsContent.hiddenScrollX .paperList {
         min-width: 240px;
-        max-width: 90%;
+        width: 90%;
+        max-width: 500px;
         display: inline-block;
         vertical-align: top;
         margin: 0 4px 0 0;

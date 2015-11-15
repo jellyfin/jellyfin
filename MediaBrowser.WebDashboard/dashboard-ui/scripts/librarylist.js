@@ -289,7 +289,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
+                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers()) {
                     items.push({
                         name: Globalize.translate('ButtonPlayExternalPlayer'),
                         id: 'externalplayer',

@@ -147,7 +147,13 @@
 
         var page = this;
 
-        if (AppInfo.hasKnownExternalPlayerSupport) {
+        if (AppInfo.supportsExternalPlayers) {
+            $('.fldExternalPlayer', page).show();
+        } else {
+            $('.fldExternalPlayer', page).hide();
+        }
+
+        if (AppInfo.supportsExternalPlayerMenu) {
             $('.labelNativeExternalPlayers', page).show();
             $('.labelGenericExternalPlayers', page).hide();
         } else {

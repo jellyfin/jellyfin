@@ -1136,7 +1136,7 @@
 
             var review = reviews[i];
 
-            html += '<div class="paperList">';
+            html += '<div class="paperList criticReviewPaperList">';
             html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
 
             if (review.Score != null) {

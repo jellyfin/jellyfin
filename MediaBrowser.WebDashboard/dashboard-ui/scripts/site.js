@@ -1801,10 +1801,16 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
+        AppInfo.supportsExternalPlayers = true;
+
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
-            AppInfo.hasKnownExternalPlayerSupport = true;
+            AppInfo.supportsExternalPlayerMenu = true;
             AppInfo.isNativeApp = true;
+
+            if (isIOS) {
+                AppInfo.supportsExternalPlayers = false;
+            }
         }
         else {
             AppInfo.enableFooterNotifications = true;
@@ -1823,6 +1829,8 @@ var AppInfo = {};
                 AppInfo.enableHeadRoom = true;
             }
         }
+
+        AppInfo.supportsDownloading = !AppInfo.isNativeApp || !$.browser.safari;
 
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;

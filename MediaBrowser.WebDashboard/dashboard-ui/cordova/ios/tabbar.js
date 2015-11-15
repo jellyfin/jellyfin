@@ -26,6 +26,9 @@
             case 'Sync':
                 Dashboard.navigate('mysync.html');
                 break;
+            case 'LiveTv':
+                Dashboard.navigate('livetv.html');
+                break;
             case 'Settings':
                 Dashboard.navigate('mypreferencesmenu.html?userId=' + Dashboard.getCurrentUserId());
                 break;
@@ -69,6 +72,7 @@
 
         var items = [
           { name: 'Library', label: Globalize.translate('ButtonLibrary'), image: 'tabbar/tab-library.png', options: {} },
+          { name: 'LiveTv', label: Globalize.translate('HeaderLiveTV'), image: 'tabbar/tab-livetv.png', options: {} },
           { name: 'Favorites', label: Globalize.translate('ButtonFavorites'), image: 'tabButton:Favorites', options: {} },
           { name: 'Search', label: Globalize.translate('ButtonSearch'), image: 'tabButton:Search', options: {} },
           { name: 'NowPlaying', label: Globalize.translate('ButtonNowPlaying'), image: 'tabbar/tab-nowplaying.png', options: {} },
@@ -99,7 +103,37 @@
 
     function showUserTabs(user) {
 
-        var tabs = ['Library', 'Favorites', 'Search', 'NowPlaying'];
+        if (!window.ApiClient) {
+            onUserViewResponse(user, []);
+            return;
+        }
+
+        ApiClient.getUserViews({}, user.Id).done(function (result) {
+
+            onUserViewResponse(user, result.Items);
+
+        }).fail(function (result) {
+
+            onUserViewResponse(user, []);
+        });
+
+    }
+
+    function onUserViewResponse(user, views) {
+
+        var tabs = ['Library'];
+
+        if (views.filter(function (v) {
+
+            return v.CollectionType == 'livetv';
+
+        }).length) {
+            tabs.push('LiveTv');
+        }
+
+        tabs.push('Favorites');
+        tabs.push('Search');
+        tabs.push('NowPlaying');
 
         if (user.Policy.EnableSync && Dashboard.capabilities().SupportsSync) {
 

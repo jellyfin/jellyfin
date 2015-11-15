@@ -583,7 +583,7 @@
 
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
-            var externalPlayers = AppSettings.enableExternalPlayers();
+            var externalPlayers = AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers();
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
@@ -727,7 +727,9 @@
             }
 
             if (item.CanDownload) {
-                commands.push('download');
+                if (AppInfo.supportsDownloading) {
+                    commands.push('download');
+                }
             }
 
             if (LibraryBrowser.canShare(item, user)) {

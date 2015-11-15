@@ -1985,6 +1985,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var inClause = string.Join(",", query.BlockUnratedItems.Select(i => "'" + i.ToString() + "'").ToArray());
                 whereClauses.Add(string.Format("(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))", inClause));
             }
+
+            //var excludeTagIndex = 0;
+            //foreach (var excludeTag in query.ExcludeTags)
+            //{
+            //    whereClauses.Add("Tags not like @excludeTag" + excludeTagIndex);
+            //    cmd.Parameters.Add(cmd, "@excludeTag" + excludeTagIndex, DbType.String).Value = "%" + excludeTag + "%";
+            //    excludeTagIndex++;
+            //}
             
             if (addPaging)
             {
