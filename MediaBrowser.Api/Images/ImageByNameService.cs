@@ -131,7 +131,7 @@ namespace MediaBrowser.Api.Images
         {
             try
             {
-				return _fileSystem.GetFiles(path)
+				return _fileSystem.GetFiles(path, true)
                     .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.Ordinal))
                     .Select(i => new ImageByNameInfo
                     {
