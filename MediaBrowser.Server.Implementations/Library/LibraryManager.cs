@@ -1320,7 +1320,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
 
-            query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
+            query.TopParentIds = parents.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
 
             return GetItemIds(query).Select(GetItemById);
         }
