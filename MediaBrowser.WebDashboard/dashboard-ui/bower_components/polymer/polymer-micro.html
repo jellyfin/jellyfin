@@ -23,10 +23,11 @@ addEventListener('DOMContentLoaded', resolve);
 window.Polymer = {
 Settings: function () {
 var user = window.Polymer || {};
-location.search.slice(1).split('&').forEach(function (o) {
+var parts = location.search.slice(1).split('&');
+for (var i = 0, o; i < parts.length && (o = parts[i]); i++) {
 o = o.split('=');
 o[0] && (user[o[0]] = o[1] || true);
-});
+}
 var wantShadow = user.dom === 'shadow';
 var hasShadow = Boolean(Element.prototype.createShadowRoot);
 var nativeShadow = hasShadow && !window.ShadowDOMPolyfill;
@@ -113,15 +114,43 @@ this._callbacks.push(cb);
 },
 _makeReady: function () {
 this._ready = true;
-this._callbacks.forEach(function (cb) {
-cb();
-});
+for (var i = 0; i < this._callbacks.length; i++) {
+this._callbacks[i]();
+}
 this._callbacks = [];
 },
 _catchFirstRender: function () {
 requestAnimationFrame(function () {
 Polymer.RenderStatus._makeReady();
 });
+},
+_afterNextRenderQueue: [],
+_waitingNextRender: false,
+afterNextRender: function (element, fn, args) {
+if (!this._waitingNextRender) {
+this._waitingNextRender = true;
+this.whenReady(this._flushAfterNextRender);
+}
+this._afterNextRenderQueue.push([
+element,
+fn,
+args
+]);
+},
+_flushAfterNextRender: function () {
+requestAnimationFrame(function () {
+setTimeout(Polymer.RenderStatus.__flushAfterNextRender);
+});
+},
+__flushAfterNextRender: function () {
+var self = Polymer.RenderStatus;
+self._waitingNextRender = false;
+for (var i = 0, h; i < self._afterNextRenderQueue.length; i++) {
+h = self._afterNextRenderQueue[i];
+h[1].apply(h[0], h[2] || Polymer.nar);
+}
+;
+self._afterNextRenderQueue = [];
 }
 };
 if (window.HTMLImports) {
@@ -151,27 +180,33 @@ this._doBehavior('created');
 this._initFeatures();
 },
 attachedCallback: function () {
+var self = this;
 Polymer.RenderStatus.whenReady(function () {
-this.isAttached = true;
-this._doBehavior('attached');
-}.bind(this));
+self.isAttached = true;
+self._doBehavior('attached');
+});
 },
 detachedCallback: function () {
 this.isAttached = false;
 this._doBehavior('detached');
 },
-attributeChangedCallback: function (name) {
+attributeChangedCallback: function (name, oldValue, newValue) {
 this._attributeChangedImpl(name);
-this._doBehavior('attributeChanged', arguments);
+this._doBehavior('attributeChanged', [
+name,
+oldValue,
+newValue
+]);
 },
 _attributeChangedImpl: function (name) {
 this._setAttributeToProperty(this, name);
 },
 extend: function (prototype, api) {
 if (prototype && api) {
-Object.getOwnPropertyNames(api).forEach(function (n) {
+var n$ = Object.getOwnPropertyNames(api);
+for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
 this.copyOwnProperty(n, api, prototype);
-}, this);
+}
 }
 return prototype || api;
 },
@@ -301,7 +336,8 @@ return behaviors;
 },
 _flattenBehaviorsList: function (behaviors) {
 var flat = [];
-behaviors.forEach(function (b) {
+for (var i = 0; i < behaviors.length; i++) {
+var b = behaviors[i];
 if (b instanceof Array) {
 flat = flat.concat(this._flattenBehaviorsList(b));
 } else if (b) {
@@ -309,31 +345,16 @@ flat.push(b);
 } else {
 this._warn(this._logf('_flattenBehaviorsList', 'behavior is null, check for missing or 404 import'));
 }
-}, this);
+}
 return flat;
 },
 _mixinBehavior: function (b) {
-Object.getOwnPropertyNames(b).forEach(function (n) {
-switch (n) {
-case 'hostAttributes':
-case 'registered':
-case 'properties':
-case 'observers':
-case 'listeners':
-case 'created':
-case 'attached':
-case 'detached':
-case 'attributeChanged':
-case 'configure':
-case 'ready':
-break;
-default:
-if (!this.hasOwnProperty(n)) {
+var n$ = Object.getOwnPropertyNames(b);
+for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
+if (!Polymer.Base._behaviorProperties[n] && !this.hasOwnProperty(n)) {
 this.copyOwnProperty(n, b, this);
 }
-break;
 }
-}, this);
 },
 _prepBehaviors: function () {
 this._prepFlattenedBehaviors(this.behaviors);
@@ -345,9 +366,9 @@ this._prepBehavior(behaviors[i]);
 this._prepBehavior(this);
 },
 _doBehavior: function (name, args) {
-this.behaviors.forEach(function (b) {
-this._invokeBehavior(b, name, args);
-}, this);
+for (var i = 0; i < this.behaviors.length; i++) {
+this._invokeBehavior(this.behaviors[i], name, args);
+}
 this._invokeBehavior(this, name, args);
 },
 _invokeBehavior: function (b, name, args) {
@@ -357,12 +378,24 @@ fn.apply(this, args || Polymer.nar);
 }
 },
 _marshalBehaviors: function () {
-this.behaviors.forEach(function (b) {
-this._marshalBehavior(b);
-}, this);
+for (var i = 0; i < this.behaviors.length; i++) {
+this._marshalBehavior(this.behaviors[i]);
+}
 this._marshalBehavior(this);
 }
 });
+Polymer.Base._behaviorProperties = {
+hostAttributes: true,
+registered: true,
+properties: true,
+observers: true,
+listeners: true,
+created: true,
+attached: true,
+detached: true,
+attributeChanged: true,
+ready: true
+};
 Polymer.Base._addFeature({
 _getExtendedPrototype: function (tag) {
 return this._getExtendedNativePrototype(tag);
@@ -414,9 +447,13 @@ properties: {},
 getPropertyInfo: function (property) {
 var info = this._getPropertyInfo(property, this.properties);
 if (!info) {
-this.behaviors.some(function (b) {
-return info = this._getPropertyInfo(property, b.properties);
-}, this);
+for (var i = 0; i < this.behaviors.length; i++) {
+info = this._getPropertyInfo(property, this.behaviors[i].properties);
+if (info) {
+return info;
+}
+}
+;
 }
 return info || Polymer.nob;
 },
@@ -429,6 +466,40 @@ if (p) {
 p.defined = true;
 }
 return p;
+},
+_prepPropertyInfo: function () {
+this._propertyInfo = {};
+for (var i = 0, p; i < this.behaviors.length; i++) {
+this._addPropertyInfo(this._propertyInfo, this.behaviors[i].properties);
+}
+this._addPropertyInfo(this._propertyInfo, this.properties);
+this._addPropertyInfo(this._propertyInfo, this._propertyEffects);
+},
+_addPropertyInfo: function (target, source) {
+if (source) {
+var t, s;
+for (var i in source) {
+t = target[i];
+s = source[i];
+if (i[0] === '_' && !s.readOnly) {
+continue;
+}
+if (!target[i]) {
+target[i] = {
+type: typeof s === 'function' ? s : s.type,
+readOnly: s.readOnly,
+attribute: Polymer.CaseMap.camelToDashCase(i)
+};
+} else {
+if (!t.type) {
+t.type = s.type;
+}
+if (!t.readOnly) {
+t.readOnly = s.readOnly;
+}
+}
+}
+}
 }
 });
 Polymer.CaseMap = {
@@ -456,21 +527,24 @@ return g[0] + '-' + g[1].toLowerCase();
 }
 };
 Polymer.Base._addFeature({
-_prepAttributes: function () {
-this._aggregatedAttributes = {};
-},
 _addHostAttributes: function (attributes) {
+if (!this._aggregatedAttributes) {
+this._aggregatedAttributes = {};
+}
 if (attributes) {
 this.mixin(this._aggregatedAttributes, attributes);
 }
 },
 _marshalHostAttributes: function () {
+if (this._aggregatedAttributes) {
 this._applyAttributes(this, this._aggregatedAttributes);
+}
 },
 _applyAttributes: function (node, attr$) {
 for (var n in attr$) {
 if (!this.hasAttribute(n) && n !== 'class') {
-this.serializeValueToAttribute(attr$[n], n, this);
+var v = attr$[n];
+this.serializeValueToAttribute(v, n, this);
 }
 }
 },
@@ -478,29 +552,40 @@ _marshalAttributes: function () {
 this._takeAttributesToModel(this);
 },
 _takeAttributesToModel: function (model) {
-for (var i = 0, l = this.attributes.length; i < l; i++) {
-this._setAttributeToProperty(model, this.attributes[i].name);
+if (this.hasAttributes()) {
+for (var i in this._propertyInfo) {
+var info = this._propertyInfo[i];
+if (this.hasAttribute(info.attribute)) {
+this._setAttributeToProperty(model, info.attribute, i, info);
+}
+}
 }
 },
-_setAttributeToProperty: function (model, attrName) {
+_setAttributeToProperty: function (model, attribute, property, info) {
 if (!this._serializing) {
-var propName = Polymer.CaseMap.dashToCamelCase(attrName);
-var info = this.getPropertyInfo(propName);
-if (info.defined || this._propertyEffects && this._propertyEffects[propName]) {
-var val = this.getAttribute(attrName);
-model[propName] = this.deserialize(val, info.type);
+var property = property || Polymer.CaseMap.dashToCamelCase(attribute);
+info = info || this._propertyInfo && this._propertyInfo[property];
+if (info && !info.readOnly) {
+var v = this.getAttribute(attribute);
+model[property] = this.deserialize(v, info.type);
 }
 }
 },
 _serializing: false,
-reflectPropertyToAttribute: function (name) {
+reflectPropertyToAttribute: function (property, attribute, value) {
 this._serializing = true;
-this.serializeValueToAttribute(this[name], Polymer.CaseMap.camelToDashCase(name));
+value = value === undefined ? this[property] : value;
+this.serializeValueToAttribute(value, attribute || Polymer.CaseMap.camelToDashCase(property));
 this._serializing = false;
 },
 serializeValueToAttribute: function (value, attribute, node) {
 var str = this.serialize(value);
-(node || this)[str === undefined ? 'removeAttribute' : 'setAttribute'](attribute, str);
+node = node || this;
+if (str === undefined) {
+node.removeAttribute(attribute);
+} else {
+node.setAttribute(attribute, str);
+}
 },
 deserialize: function (value, type) {
 switch (type) {
@@ -576,13 +661,13 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.2.1';
+Polymer.version = '1.2.2';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
-this._prepAttributes();
 this._prepBehaviors();
 this._prepConstructor();
+this._prepPropertyInfo();
 },
 _prepBehavior: function (b) {
 this._addHostAttributes(b.hostAttributes);

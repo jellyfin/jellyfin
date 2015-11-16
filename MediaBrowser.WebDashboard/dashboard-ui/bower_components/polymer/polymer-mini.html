@@ -10,7 +10,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script>Polymer.Base._addFeature({
 _prepTemplate: function () {
-this._template = this._template || Polymer.DomModule.import(this.is, 'template');
+if (this._template === undefined) {
+this._template = Polymer.DomModule.import(this.is, 'template');
+}
 if (this._template && this._template.hasAttribute('is')) {
 this._warn(this._logf('_prepTemplate', 'top-level Polymer template ' + 'must not be a type-extension, found', this._template, 'Move inside simple <template>.'));
 }
@@ -35,20 +37,19 @@ Polymer.Base._addFeature({
 _hostStack: [],
 ready: function () {
 },
-_pushHost: function (host) {
+_registerHost: function (host) {
 this.dataHost = host = host || Polymer.Base._hostStack[Polymer.Base._hostStack.length - 1];
 if (host && host._clients) {
 host._clients.push(this);
 }
-this._beginHost();
 },
-_beginHost: function () {
+_beginHosting: function () {
 Polymer.Base._hostStack.push(this);
 if (!this._clients) {
 this._clients = [];
 }
 },
-_popHost: function () {
+_endHosting: function () {
 Polymer.Base._hostStack.pop();
 },
 _tryReady: function () {
@@ -61,20 +62,24 @@ return !this.dataHost || this.dataHost._clientsReadied;
 },
 _ready: function () {
 this._beforeClientsReady();
+if (this._template) {
 this._setupRoot();
 this._readyClients();
+}
+this._clientsReadied = true;
+this._clients = null;
 this._afterClientsReady();
 this._readySelf();
 },
 _readyClients: function () {
 this._beginDistribute();
 var c$ = this._clients;
+if (c$) {
 for (var i = 0, l = c$.length, c; i < l && (c = c$[i]); i++) {
 c._ready();
 }
+}
 this._finishDistribute();
-this._clientsReadied = true;
-this._clients = null;
 },
 _readySelf: function () {
 this._doBehavior('ready');
@@ -377,20 +382,16 @@ var nativeRemoveChild = Element.prototype.removeChild;
 var nativeAppendChild = Element.prototype.appendChild;
 var nativeCloneNode = Element.prototype.cloneNode;
 var nativeImportNode = Document.prototype.importNode;
+var needsToWrap = Settings.hasShadow && !Settings.nativeShadow;
+var wrap = window.wrap ? window.wrap : function (node) {
+return node;
+};
 var DomApi = function (node) {
-this.node = node;
+this.node = needsToWrap ? wrap(node) : node;
 if (this.patch) {
 this.patch();
 }
 };
-if (window.wrap && Settings.useShadow && !Settings.useNativeShadow) {
-DomApi = function (node) {
-this.node = wrap(node);
-if (this.patch) {
-this.patch();
-}
-};
-}
 DomApi.prototype = {
 flush: function () {
 Polymer.dom.flush();
@@ -625,7 +626,7 @@ _addLogicalInfo: function (node, container, index) {
 var children = factory(container).childNodes;
 index = index === undefined ? children.length : index;
 if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-var c$ = Array.prototype.slice.call(node.childNodes);
+var c$ = arrayCopyChildNodes(node);
 for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
 children.splice(index++, 0, n);
 n._lightParent = container;
@@ -787,7 +788,7 @@ Object.defineProperties(DomApi.prototype, {
 childNodes: {
 get: function () {
 var c$ = getLightChildren(this.node);
-return Array.isArray(c$) ? c$ : Array.prototype.slice.call(c$);
+return Array.isArray(c$) ? c$ : arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
@@ -910,7 +911,7 @@ if (nt !== Node.TEXT_NODE || nt !== Node.COMMENT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-var c$ = Array.prototype.slice.call(d.childNodes);
+var c$ = arrayCopyChildNodes(d);
 for (var i = 0; i < c$.length; i++) {
 this.appendChild(c$[i]);
 }
@@ -923,20 +924,25 @@ DomApi.prototype._getComposedInnerHTML = function () {
 return getInnerHTML(this.node, true);
 };
 } else {
-var forwardMethods = [
+var forwardMethods = function (m$) {
+for (var i = 0; i < m$.length; i++) {
+forwardMethod(m$[i]);
+}
+};
+var forwardMethod = function (method) {
+DomApi.prototype[method] = function () {
+return this.node[method].apply(this.node, arguments);
+};
+};
+forwardMethods([
 'cloneNode',
 'appendChild',
 'insertBefore',
 'removeChild',
 'replaceChild'
-];
-forwardMethods.forEach(function (name) {
-DomApi.prototype[name] = function () {
-return this.node[name].apply(this.node, arguments);
-};
-});
+]);
 DomApi.prototype.querySelectorAll = function (selector) {
-return Array.prototype.slice.call(this.node.querySelectorAll(selector));
+return arrayCopy(this.node.querySelectorAll(selector));
 };
 DomApi.prototype.getOwnerRoot = function () {
 var n = this.node;
@@ -953,35 +959,24 @@ return doc.importNode(externalNode, deep);
 };
 DomApi.prototype.getDestinationInsertionPoints = function () {
 var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
-return n$ ? Array.prototype.slice.call(n$) : [];
+return n$ ? arrayCopy(n$) : [];
 };
 DomApi.prototype.getDistributedNodes = function () {
 var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
-return n$ ? Array.prototype.slice.call(n$) : [];
+return n$ ? arrayCopy(n$) : [];
 };
 DomApi.prototype._distributeParent = function () {
 };
-var nativeForwards = [
-'appendChild',
-'insertBefore',
-'removeChild',
-'replaceChild'
-];
-nativeForwards.forEach(function (forward) {
-DomApi.prototype[forward] = function () {
-return this.node[forward].apply(this.node, arguments);
-};
-});
 Object.defineProperties(DomApi.prototype, {
 childNodes: {
 get: function () {
-return Array.prototype.slice.call(this.node.childNodes);
+return arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
 children: {
 get: function () {
-return Array.prototype.slice.call(this.node.children);
+return arrayCopyChildren(this.node);
 },
 configurable: true
 },
@@ -1004,7 +999,20 @@ return this.node.innerHTML = value;
 configurable: true
 }
 });
-var forwardProperties = [
+var forwardProperties = function (f$) {
+for (var i = 0; i < f$.length; i++) {
+forwardProperty(f$[i]);
+}
+};
+var forwardProperty = function (name) {
+Object.defineProperty(DomApi.prototype, name, {
+get: function () {
+return this.node[name];
+},
+configurable: true
+});
+};
+forwardProperties([
 'parentNode',
 'firstChild',
 'lastChild',
@@ -1014,15 +1022,7 @@ var forwardProperties = [
 'lastElementChild',
 'nextElementSibling',
 'previousElementSibling'
-];
-forwardProperties.forEach(function (name) {
-Object.defineProperty(DomApi.prototype, name, {
-get: function () {
-return this.node[name];
-},
-configurable: true
-});
-});
+]);
 }
 var CONTENT = 'content';
 function factory(node, patch) {
@@ -1036,6 +1036,7 @@ return node.__domApi;
 function hasDomApi(node) {
 return Boolean(node.__domApi);
 }
+;
 Polymer.dom = function (obj, patch) {
 if (obj instanceof Event) {
 return Polymer.EventApi.factory(obj);
@@ -1049,7 +1050,7 @@ return children ? children : node.childNodes;
 }
 function getComposedChildren(node) {
 if (!node._composedChildren) {
-node._composedChildren = Array.prototype.slice.call(node.childNodes);
+node._composedChildren = arrayCopyChildNodes(node);
 }
 return node._composedChildren;
 }
@@ -1085,12 +1086,34 @@ children.splice(i, 1);
 }
 function saveLightChildrenIfNeeded(node) {
 if (!node._lightChildren) {
-var c$ = Array.prototype.slice.call(node.childNodes);
+var c$ = arrayCopyChildNodes(node);
 for (var i = 0, l = c$.length, child; i < l && (child = c$[i]); i++) {
 child._lightParent = child._lightParent || node;
 }
 node._lightChildren = c$;
 }
+}
+function arrayCopyChildNodes(parent) {
+var copy = [], i = 0;
+for (var n = parent.firstChild; n; n = n.nextSibling) {
+copy[i++] = n;
+}
+return copy;
+}
+function arrayCopyChildren(parent) {
+var copy = [], i = 0;
+for (var n = parent.firstElementChild; n; n = n.nextElementSibling) {
+copy[i++] = n;
+}
+return copy;
+}
+function arrayCopy(a$) {
+var l = a$.length;
+var copy = new Array(l);
+for (var i = 0; i < l; i++) {
+copy[i] = a$[i];
+}
+return copy;
 }
 function hasInsertionPoint(root) {
 return Boolean(root && root._insertionPoints.length);
@@ -1107,7 +1130,11 @@ matchesSelector: matchesSelector,
 hasInsertionPoint: hasInsertionPoint,
 ctor: DomApi,
 factory: factory,
-hasDomApi: hasDomApi
+hasDomApi: hasDomApi,
+arrayCopy: arrayCopy,
+arrayCopyChildNodes: arrayCopyChildNodes,
+arrayCopyChildren: arrayCopyChildren,
+wrap: wrap
 };
 }();
 Polymer.Base.extend(Polymer.dom, {
@@ -1328,7 +1355,10 @@ n.__observeNodesMap.set(this, this._observeContent(n));
 }
 },
 _observeContent: function (content) {
-var h = Polymer.dom(content).observeNodes(this._scheduleNotify.bind(this));
+var self = this;
+var h = Polymer.dom(content).observeNodes(function () {
+self._scheduleNotify();
+});
 h._avoidChangeCalculation = true;
 return h;
 },
@@ -1405,7 +1435,9 @@ self._scheduleNotify();
 }
 };
 this._observer = new MutationObserver(this._mutationHandler);
-this._boundFlush = this._flush.bind(this);
+this._boundFlush = function () {
+self._flush();
+};
 Polymer.dom.addStaticFlush(this._boundFlush);
 this._observer.observe(this.node, { childList: true });
 }
@@ -1474,7 +1506,10 @@ if (!this._observer) {
 var root = this.domApi.getOwnerRoot();
 var host = root && root.host;
 if (host) {
-this._observer = Polymer.dom(host).observeNodes(this._scheduleNotify.bind(this));
+var self = this;
+this._observer = Polymer.dom(host).observeNodes(function () {
+self._scheduleNotify();
+});
 this._observer._isContentListener = true;
 if (this._hasAttrSelect()) {
 Polymer.dom(host).observer.enableShadowAttributeTracking();
@@ -1519,6 +1554,7 @@ upgradeLightChildren(this._lightChildren);
 _createLocalRoot: function () {
 this.shadyRoot = this.root;
 this.shadyRoot._distributionClean = false;
+this.shadyRoot._hasDistributed = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
 var i$ = this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
@@ -1845,20 +1881,23 @@ Polymer.DomModule = document.createElement('dom-module');
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
-this._prepAttributes();
 this._prepBehaviors();
 this._prepConstructor();
 this._prepTemplate();
 this._prepShady();
+this._prepPropertyInfo();
 },
 _prepBehavior: function (b) {
 this._addHostAttributes(b.hostAttributes);
 },
 _initFeatures: function () {
+this._registerHost();
+if (this._template) {
 this._poolContent();
-this._pushHost();
+this._beginHosting();
 this._stampTemplate();
-this._popHost();
+this._endHosting();
+}
 this._marshalHostAttributes();
 this._setupDebouncers();
 this._marshalBehaviors();
