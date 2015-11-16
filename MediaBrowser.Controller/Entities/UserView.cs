@@ -132,11 +132,6 @@ namespace MediaBrowser.Controller.Entities
                 CollectionType.Playlists
             };
 
-            if (!ConfigurationManager.Configuration.EnableSharedCollectionViewImage)
-            {
-                standaloneTypes.Add(CollectionType.BoxSets);
-            }
-
             var collectionFolder = folder as ICollectionFolder;
 
             if (collectionFolder == null)
@@ -172,7 +167,9 @@ namespace MediaBrowser.Controller.Entities
                 CollectionType.Books, 
                 CollectionType.MusicVideos, 
                 CollectionType.HomeVideos, 
-                CollectionType.Photos
+                CollectionType.Photos, 
+                CollectionType.Music, 
+                CollectionType.BoxSets
             };
 
             return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);

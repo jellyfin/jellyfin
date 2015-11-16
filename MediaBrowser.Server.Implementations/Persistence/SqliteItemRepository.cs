@@ -1954,14 +1954,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.TopParentIds.Length == 1)
             {
-                whereClauses.Add("(TopParentId is null or TopParentId=@TopParentId)");
+                whereClauses.Add("(TopParentId=@TopParentId)");
                 cmd.Parameters.Add(cmd, "@TopParentId", DbType.String).Value = query.TopParentIds[0];
             }
             if (query.TopParentIds.Length > 1)
             {
                 var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
 
-                whereClauses.Add("(TopParentId is null or TopParentId in (" + val + "))");
+                whereClauses.Add("(TopParentId in (" + val + "))");
             }
 
             if (query.AncestorIds.Length == 1)
