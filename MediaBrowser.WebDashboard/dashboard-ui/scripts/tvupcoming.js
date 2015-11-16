@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var limit = AppInfo.hasLowImageBandwidth ?
+        var limit = AppInfo.hasLowImageBandwidth && !enableScrollX() ?
            24 :
            40;
 
