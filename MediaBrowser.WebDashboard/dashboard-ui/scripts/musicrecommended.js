@@ -209,7 +209,7 @@
             loadRecentlyPlayed(tabContent, parentId);
             loadFrequentlyPlayed(tabContent, parentId);
 
-            require(['scripts/favorites'], function() {
+            require(['scripts/favorites'], function () {
 
                 FavoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
 
@@ -258,6 +258,11 @@
             case 5:
                 depends.push('scripts/musicgenres');
                 renderMethod = 'renderGenresTab';
+                break;
+            case 6:
+                depends.push('scripts/musicfolders');
+                renderMethod = 'renderFoldersTab';
+                initMethod = 'initFoldersTab';
                 break;
             default:
                 break;

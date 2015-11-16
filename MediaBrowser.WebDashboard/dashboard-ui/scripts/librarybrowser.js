@@ -108,7 +108,7 @@
             } else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
             } else {
-                cacheDuration = 60000;
+                cacheDuration = 30000;
             }
 
             if ((now - last) < cacheDuration) {
@@ -221,7 +221,7 @@
             return !LibraryBrowser.enableFullPaperTabs();
         },
 
-        configurePaperLibraryTabs: function (ownerpage, tabs, pages, baseUrl) {
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
 
             // Causing iron-select to not fire in IE and safari
             if ($.browser.chrome) {

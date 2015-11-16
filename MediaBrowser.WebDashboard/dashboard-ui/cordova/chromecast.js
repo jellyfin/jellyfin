@@ -662,6 +662,12 @@
 
         self.endSession = function () {
 
+            var session = currentWebAppSession;
+
+            if (session) {
+                session.close();
+            }
+
             if (currentDevice) {
                 currentDevice.disconnect();
             }

@@ -67,6 +67,13 @@
     function validateProduct(product, callback) {
 
         var productId = product.id;
+
+        // We should never get in here with the unlock, but in case we do
+        if ((productId || '').toLowerCase().indexOf('appunlock') != -1) {
+            callback(true, product);
+            return;
+        }
+
         var cacheKey = productId + (product.transaction.id || '');
 
         var cachedResult = validationCache[cacheKey];
@@ -268,7 +275,7 @@
     }
 
     function isUnlockedOverride(feature) {
-        
+
         var deferred = DeferredBuilder.Deferred();
         deferred.resolveWith(null, [false]);
         return deferred.promise();

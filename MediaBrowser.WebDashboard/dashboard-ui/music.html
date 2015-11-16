@@ -13,6 +13,7 @@
                 <paper-tab>${TabArtists}</paper-tab>
                 <paper-tab>${TabSongs}</paper-tab>
                 <paper-tab>${TabGenres}</paper-tab>
+                <paper-tab>${TabFolders}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
                 <a href="music.html">${TabSuggestions}</a>
@@ -21,6 +22,7 @@
                 <a href="music.html?tab=3">${TabArtists}</a>
                 <a href="music.html?tab=4">${TabSongs}</a>
                 <a href="music.html?tab=5">${TabGenres}</a>
+                <a href="music.html?tab=6">${TabFolders}</a>
             </div>
         </div>
 
@@ -104,6 +106,15 @@
                 </neon-animatable>
                 <neon-animatable>
                     <div class="pageTabContent" data-index="5">
+                        <div class="viewSettings">
+                            <div class="listTopPaging">
+                            </div>
+                        </div>
+                        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent" data-index="6">
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
