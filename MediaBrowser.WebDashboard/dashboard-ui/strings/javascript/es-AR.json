@@ -35,6 +35,8 @@
     "HeaderConfirmation": "Confirmation",
     "MessageKeyUpdated": "Thank you. Your Emby Premiere key has been updated.",
     "MessageKeyRemoved": "Thank you. Your Emby Premiere key has been removed.",
+    "LabelSeasonNumber": "Season number:",
+    "LabelEpisodeNumber": "Episode number:",
     "HeaderSupportTheTeam": "Support the Emby Team",
     "TextEnjoyBonusFeatures": "Disfrute los extras",
     "TitleLiveTV": "Live TV",
@@ -493,10 +495,8 @@
     "LabelTitleDisplayOrder": "Title display order:",
     "OptionSortName": "Sort name",
     "OptionReleaseDate": "Release date",
-    "LabelSeasonNumber": "Season number:",
     "LabelDiscNumber": "Disc number",
     "LabelParentNumber": "Parent number",
-    "LabelEpisodeNumber": "Episode number:",
     "LabelTrackNumber": "Track number:",
     "LabelNumber": "Number:",
     "LabelReleaseDate": "Release date:",
@@ -901,7 +901,7 @@
     "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
     "HeaderEmailAddress": "E-Mail Address",
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
-    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
+    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. The use of any Emby software constitutes acceptance of these terms.",
     "TermsOfUse": "Terms of use",
     "HeaderTryMultiSelect": "Try Multi-Select",
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
@@ -918,5 +918,8 @@
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
     "ErrorAddingEmbyConnectAccount": "There was an error adding the Emby Connect account. Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If this email was not received please send an email to apps@emby.media from the email address used with the Emby account.",
     "HeaderFavoriteArtists": "Favorite Artists",
-    "HeaderFavoriteSongs": "Favorite Songs"
+    "HeaderFavoriteSongs": "Favorite Songs",
+    "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
+    "PleaseConfirmPluginInstallation": "Please click OK to confirm you've read the above and wish to proceed with the plugin installation.",
+    "MessagePluginInstallDisclaimer": "Plugins built by Emby community members are a great way to enhance your Emby experience with additional features and benefits. Before installing, please be aware of the effects they may have on your Emby Server, such as longer library scans, additional background processing, and decreased system stability."
 }

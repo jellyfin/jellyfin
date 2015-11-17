@@ -35,6 +35,8 @@
     "HeaderConfirmation": "Bevestiging",
     "MessageKeyUpdated": "Dank u wel. Uw Emby Premiere sleutel is bijgewerkt.",
     "MessageKeyRemoved": "Dank u wel. Uw Emby Premiere sleutel is verwijderd.",
+    "LabelSeasonNumber": "Seizoennummer:",
+    "LabelEpisodeNumber": "Afleveringsnummer:",
     "HeaderSupportTheTeam": "Ondersteun het Emby Team",
     "TextEnjoyBonusFeatures": "Profiteer van extra mogelijkheden",
     "TitleLiveTV": "Live TV",
@@ -493,10 +495,8 @@
     "LabelTitleDisplayOrder": "Titel weergave volgorde:",
     "OptionSortName": "Sorteerbaar",
     "OptionReleaseDate": "Uitgave datum",
-    "LabelSeasonNumber": "Seizoennummer:",
     "LabelDiscNumber": "Disc nummer",
     "LabelParentNumber": "Bovenliggend nummer",
-    "LabelEpisodeNumber": "Afleveringsnummer:",
     "LabelTrackNumber": "Tracknummer:",
     "LabelNumber": "Nummer:",
     "LabelReleaseDate": "Uitgave datum:",
@@ -917,6 +917,9 @@
     "ErrorAddingMediaPathToVirtualFolder": "Er ging iets mis bij het toevoegen van het media pad. Controleer of het pad klopt en of het Emby server process toegang heeft tot het pad.",
     "ErrorRemovingEmbyConnectAccount": "Er ging iets mis bij het verwijderen van het Emby Connect account. Controleer de internet verbinding en probeer het opnieuw.",
     "ErrorAddingEmbyConnectAccount": "Er ging iets mis bij het toevoegen van het Emby Connect account. Controleer of het account volgens de intructies in het activatie emailbericht geactiveerd is. Als je geen emailbericht ontvangen hebt, mail dan met het email adres waar mee je het Emby Connect account aangevraagd hebt naar apps@emby.media.",
-    "HeaderFavoriteArtists": "Favorite Artists",
-    "HeaderFavoriteSongs": "Favorite Songs"
+    "HeaderFavoriteArtists": "Favoriete Artiest",
+    "HeaderFavoriteSongs": "Favoriete Liedjes",
+    "HeaderConfirmPluginInstallation": "Bevestig Plugin Installatie",
+    "PleaseConfirmPluginInstallation": "Klik op OK om te bevestigen dat u bovenstaande heeft gelezen en door  wenst te gaan met het installeren van de plugin.",
+    "MessagePluginInstallDisclaimer": "Plugins ontwikkeld door leden van de Emby gemeenschap zijn een geweldige manier om je Emby ervaring met extra functies en voordelen te verbeteren. Alvorens het installeren, dient u zich bewust te zijn van de gevolgen die zij kunnen hebben op uw Emby Server, zoals langere bibliotheek scans, extra achtergrondinformatie verwerking, en een verminderde stabiliteit van het systeem."
 }

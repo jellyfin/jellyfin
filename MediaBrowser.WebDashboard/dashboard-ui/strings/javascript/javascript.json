@@ -911,7 +911,7 @@
     "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
     "HeaderEmailAddress": "E-Mail Address",
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
-    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. Downloading any Emby software constitutes acceptance of these terms.",
+    "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. The use of any Emby software constitutes acceptance of these terms.",
     "TermsOfUse": "Terms of use",
     "HeaderTryMultiSelect": "Try Multi-Select",
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
