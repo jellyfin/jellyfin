@@ -24,7 +24,6 @@
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
             html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
             html += '</form>';
             html += '</div>';
