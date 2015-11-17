@@ -33,30 +33,31 @@ Quick element that can display the source of a code snippet and a rendered demo.
 -->
 
 <dom-module id="demo-snippet">
-  <style>
-    :host {
-      display:inline-block;
-    }
-
-    .demo {
-      border-bottom: 1px solid #e5e5e5;
-      margin: 0;
-    }
-
-    .code {
-      padding: 0;
-      margin: 0;
-      background-color: #fafafa;
-      font-size: 13px;
-      word-wrap: break-word;
-    }
-
-    .code > pre {
-      margin: 0;
-      padding: 0 0 10px 0;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display:inline-block;
+      }
+
+      .demo {
+        border-bottom: 1px solid #e5e5e5;
+        margin: 0;
+      }
+
+      .code {
+        padding: 0;
+        margin: 0;
+        background-color: #fafafa;
+        font-size: 13px;
+        word-wrap: break-word;
+      }
+
+      .code > pre {
+        margin: 0;
+        padding: 0 0 10px 0;
+      }
+    </style>
+    
     <prism-highlighter></prism-highlighter>
 
     <div class="demo">

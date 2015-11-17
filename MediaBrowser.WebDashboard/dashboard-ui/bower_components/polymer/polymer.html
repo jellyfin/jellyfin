@@ -741,7 +741,7 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-//ev.preventDefault();
+ev.preventDefault();
 } else {
 Gestures.prevent('track');
 }
@@ -3527,19 +3527,19 @@ this._appliesToDocument = true;
 var e = this.__appliedElement || this;
 styleDefaults.addStyle(e);
 if (e.textContent || this.include) {
-this._apply();
+this._apply(true);
 } else {
 var self = this;
 var observer = new MutationObserver(function () {
 observer.disconnect();
-self._apply();
+self._apply(true);
 });
 observer.observe(e, { childList: true });
 }
 }
 }
 },
-_apply: function () {
+_apply: function (deferProperties) {
 var e = this.__appliedElement || this;
 if (this.include) {
 e.textContent = styleUtil.cssFromModules(this.include, true) + e.textContent;
@@ -3548,7 +3548,19 @@ if (e.textContent) {
 styleUtil.forEachStyleRule(styleUtil.rulesForStyle(e), function (rule) {
 styleTransformer.documentRule(rule);
 });
-this._applyCustomProperties(e);
+var self = this;
+function fn() {
+self._applyCustomProperties(e);
+}
+if (this._pendingApplyProperties) {
+cancelAnimationFrame(this._pendingApplyProperties);
+this._pendingApplyProperties = null;
+}
+if (deferProperties) {
+this._pendingApplyProperties = requestAnimationFrame(fn);
+} else {
+fn();
+}
 }
 },
 _applyCustomProperties: function (element) {

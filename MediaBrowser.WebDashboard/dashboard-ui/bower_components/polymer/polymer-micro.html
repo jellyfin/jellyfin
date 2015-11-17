@@ -127,30 +127,40 @@ Polymer.RenderStatus._makeReady();
 _afterNextRenderQueue: [],
 _waitingNextRender: false,
 afterNextRender: function (element, fn, args) {
-if (!this._waitingNextRender) {
-this._waitingNextRender = true;
-this.whenReady(this._flushAfterNextRender);
-}
+this._watchNextRender();
 this._afterNextRenderQueue.push([
 element,
 fn,
 args
 ]);
 },
-_flushAfterNextRender: function () {
-requestAnimationFrame(function () {
-setTimeout(Polymer.RenderStatus.__flushAfterNextRender);
+_watchNextRender: function () {
+if (!this._waitingNextRender) {
+this._waitingNextRender = true;
+var fn = function () {
+Polymer.RenderStatus._flushNextRender();
+};
+if (!this._ready) {
+this.whenReady(fn);
+} else {
+requestAnimationFrame(fn);
+}
+}
+},
+_flushNextRender: function () {
+var self = this;
+setTimeout(function () {
+self._flushRenderCallbacks(self._afterNextRenderQueue);
+self._afterNextRenderQueue = [];
+self._waitingNextRender = false;
 });
 },
-__flushAfterNextRender: function () {
-var self = Polymer.RenderStatus;
-self._waitingNextRender = false;
-for (var i = 0, h; i < self._afterNextRenderQueue.length; i++) {
-h = self._afterNextRenderQueue[i];
+_flushRenderCallbacks: function (callbacks) {
+for (var i = 0, h; i < callbacks.length; i++) {
+h = callbacks[i];
 h[1].apply(h[0], h[2] || Polymer.nar);
 }
 ;
-self._afterNextRenderQueue = [];
 }
 };
 if (window.HTMLImports) {
@@ -284,7 +294,7 @@ import: function (id, selector) {
 if (id) {
 var m = findModule(id);
 if (!m) {
-forceDocumentUpgrade();
+forceDomModulesUpgrade();
 m = findModule(id);
 }
 if (m && selector) {
@@ -296,12 +306,17 @@ return m;
 });
 var cePolyfill = window.CustomElements && !CustomElements.useNative;
 document.registerElement('dom-module', DomModule);
-function forceDocumentUpgrade() {
+function forceDomModulesUpgrade() {
 if (cePolyfill) {
 var script = document._currentScript || document.currentScript;
 var doc = script && script.ownerDocument || document;
-if (doc) {
-CustomElements.upgradeAll(doc);
+var modules = doc.querySelectorAll('dom-module');
+for (var i = modules.length - 1, m; i >= 0 && (m = modules[i]); i--) {
+if (m.__upgraded__) {
+return;
+} else {
+CustomElements.upgrade(m);
+}
 }
 }
 }
@@ -661,7 +676,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.2.2';
+Polymer.version = '1.2.3';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

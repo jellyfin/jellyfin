@@ -9,7 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
 <!--
 `<paper-input-container>` is a container for a `<label>`, an `<input is="iron-input">` or
@@ -120,6 +123,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .focused-line {
         height: 2px;
+        @apply(--layout-fit);
 
         -webkit-transform-origin: center center;
         transform-origin: center center;
@@ -153,6 +157,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .unfocused-line {
         height: 1px;
+        @apply(--layout-fit);
         background: var(--paper-input-container-color, --secondary-text-color);
 
         @apply(--paper-input-container-underline);
@@ -300,8 +305,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
     </div>
 
     <div class$="[[_computeUnderlineClass(focused,invalid)]]">
-      <div class="unfocused-line fit"></div>
-      <div class="focused-line fit"></div>
+      <div class="unfocused-line"></div>
+      <div class="focused-line"></div>
     </div>
 
     <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
