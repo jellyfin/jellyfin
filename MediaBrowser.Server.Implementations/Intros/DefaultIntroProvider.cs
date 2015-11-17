@@ -245,9 +245,9 @@ namespace MediaBrowser.Server.Implementations.Intros
                     .Where(_libraryManager.IsVideoFile));
             }
 
-            if (!string.IsNullOrWhiteSpace(options.CodecIntroPath))
+            if (!string.IsNullOrWhiteSpace(options.MediaInfoIntroPath))
             {
-                list.AddRange(_fileSystem.GetFilePaths(options.CodecIntroPath, true)
+                list.AddRange(_fileSystem.GetFilePaths(options.MediaInfoIntroPath, true)
                     .Where(_libraryManager.IsVideoFile));
             }
             
