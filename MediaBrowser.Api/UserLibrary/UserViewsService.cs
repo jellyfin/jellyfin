@@ -26,6 +26,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool? IncludeExternalContent { get; set; }
+
+        public string PresetViews { get; set; }
     }
 
     [Route("/Users/{UserId}/SpecialViewOptions", "GET")]
@@ -74,6 +76,18 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.IncludeExternalContent = request.IncludeExternalContent.Value;
             }
+
+            if (!string.IsNullOrWhiteSpace(request.PresetViews))
+            {
+                query.PresetViews = request.PresetViews.Split(',');
+            }
+
+            var app = AuthorizationContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
+            if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
+            }
+            //query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
 
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
