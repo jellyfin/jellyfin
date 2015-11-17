@@ -82,13 +82,17 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, true, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     continue;
-                } 
-                
+                }
+
                 if (enableUserViews)
                 {
                     if (plainFolderIds.Contains(folder.Id) && UserView.IsEligibleForEnhancedView(folderViewType))
                     {
                         list.Add(await GetUserView(folder, folderViewType, false, string.Empty, cancellationToken).ConfigureAwait(false));
+                    }
+                    else if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        list.Add(await GetUserView(folder, folderViewType, true, string.Empty, cancellationToken).ConfigureAwait(false));
                     }
                     else if (_config.Configuration.EnableSharedCollectionViewImage || UserView.EnableOriginalFolder(folderViewType))
                     {
@@ -110,6 +114,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, false, string.Empty, user, cancellationToken).ConfigureAwait(false));
                     }
+                    else if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        list.Add(await GetUserView(folder, folderViewType, true, string.Empty, cancellationToken).ConfigureAwait(false));
+                    }
                     else if (_config.Configuration.EnableSharedCollectionViewImage || UserView.EnableOriginalFolder(folderViewType))
                     {
                         list.Add(folder);
@@ -130,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, CollectionType.TvShows, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(parents, CollectionType.TvShows, string.Empty, user, query.PresetViews, cancellationToken).ConfigureAwait(false));
             }
 
             parents = foldersWithViewTypes.Where(i => string.Equals(i.GetViewType(user), CollectionType.Movies, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.GetViewType(user)))
@@ -138,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, CollectionType.Movies, string.Empty, user, enableUserViews, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(parents, CollectionType.Movies, string.Empty, user, query.PresetViews, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayFoldersView)
@@ -183,6 +191,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     var index = orders.IndexOf(i.Id.ToString("N"));
 
+                    if (index == -1)
+                    {
+                        var view = i as UserView;
+                        if (view != null)
+                        {
+                            if (view.DisplayParentId != Guid.Empty)
+                            {
+                                index = orders.IndexOf(view.DisplayParentId.ToString("N"));
+                            }
+                        }
+                    }
+
                     return index == -1 ? int.MaxValue : index;
                 })
                 .ThenBy(sorted.IndexOf)
@@ -203,11 +223,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetUserSubView(name, parentId, type, sortName, cancellationToken);
         }
 
-        private async Task<Folder> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, bool enableUserViews, CancellationToken cancellationToken)
+        private async Task<Folder> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, string[] presetViews, CancellationToken cancellationToken)
         {
-            if (parents.Count == 1 && parents.All(i => string.Equals((enableUserViews ? i.GetViewType(user) : i.CollectionType), viewType, StringComparison.OrdinalIgnoreCase)))
+            if (parents.Count == 1 && parents.All(i => string.Equals(i.GetViewType(user), viewType, StringComparison.OrdinalIgnoreCase)))
             {
-                if (enableUserViews || _config.Configuration.EnableSharedCollectionViewImage)
+                if (!presetViews.Contains(viewType, StringComparer.OrdinalIgnoreCase))
                 {
                     return (Folder)parents[0];
                 }

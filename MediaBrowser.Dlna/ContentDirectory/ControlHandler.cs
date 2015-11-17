@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {
@@ -34,6 +35,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
+        private readonly IUserViewManager _userViewManager;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
@@ -47,7 +49,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -55,6 +57,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _user = user;
             _systemUpdateId = systemUpdateId;
             _channelManager = channelManager;
+            _userViewManager = userViewManager;
             _profile = profile;
             _config = config;
 
@@ -450,16 +453,32 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            var queryResult = await folder.GetItems(new InternalItemsQuery
-            {
-                Limit = limit,
-                StartIndex = startIndex,
-                SortBy = sortOrders.ToArray(),
-                SortOrder = sort.SortOrder,
-                User = user,
-                Filter = FilterUnsupportedContent
+            QueryResult<BaseItem> queryResult;
 
-            }).ConfigureAwait(false);
+            if (folder is UserRootFolder)
+            {
+                var views = await _userViewManager.GetUserViews(new UserViewQuery { UserId = user.Id.ToString("N"), PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music } }, CancellationToken.None)
+                            .ConfigureAwait(false);
+
+                queryResult = new QueryResult<BaseItem>
+                {
+                    Items = views.Cast<BaseItem>().ToArray()
+                };
+                queryResult.TotalRecordCount = queryResult.Items.Length;
+            }
+            else
+            {
+                queryResult = await folder.GetItems(new InternalItemsQuery
+               {
+                   Limit = limit,
+                   StartIndex = startIndex,
+                   SortBy = sortOrders.ToArray(),
+                   SortOrder = sort.SortOrder,
+                   User = user,
+                   Filter = FilterUnsupportedContent
+
+               }).ConfigureAwait(false);
+            }
 
             var options = _config.GetDlnaConfiguration();
 

@@ -21,9 +21,12 @@ namespace MediaBrowser.Model.Library
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
         public bool IncludeHidden { get; set; }
 
+        public string[] PresetViews { get; set; }
+
         public UserViewQuery()
         {
             IncludeExternalContent = true;
+            PresetViews = new string[] { };
         }
     }
 }
