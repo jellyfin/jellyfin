@@ -237,13 +237,21 @@ namespace MediaBrowser.Server.Implementations.Intros
         {
             options = options ?? GetOptions();
 
-            if (string.IsNullOrWhiteSpace(options.CustomIntroPath))
+            var list = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(options.CustomIntroPath))
             {
-                return new List<string>();
+                list.AddRange(_fileSystem.GetFilePaths(options.CustomIntroPath, true)
+                    .Where(_libraryManager.IsVideoFile));
             }
 
-            return _fileSystem.GetFilePaths(options.CustomIntroPath, true)
-                .Where(_libraryManager.IsVideoFile);
+            if (!string.IsNullOrWhiteSpace(options.CodecIntroPath))
+            {
+                list.AddRange(_fileSystem.GetFilePaths(options.CodecIntroPath, true)
+                    .Where(_libraryManager.IsVideoFile));
+            }
+            
+            return list.Distinct(StringComparer.OrdinalIgnoreCase);
         }
 
         private bool FilterByParentalRating(int? ratingLevel, BaseItem item)
