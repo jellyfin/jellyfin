@@ -143,30 +143,40 @@ Polymer.RenderStatus._makeReady();
 _afterNextRenderQueue: [],
 _waitingNextRender: false,
 afterNextRender: function (element, fn, args) {
-if (!this._waitingNextRender) {
-this._waitingNextRender = true;
-this.whenReady(this._flushAfterNextRender);
-}
+this._watchNextRender();
 this._afterNextRenderQueue.push([
 element,
 fn,
 args
 ]);
 },
-_flushAfterNextRender: function () {
-requestAnimationFrame(function () {
-setTimeout(Polymer.RenderStatus.__flushAfterNextRender);
+_watchNextRender: function () {
+if (!this._waitingNextRender) {
+this._waitingNextRender = true;
+var fn = function () {
+Polymer.RenderStatus._flushNextRender();
+};
+if (!this._ready) {
+this.whenReady(fn);
+} else {
+requestAnimationFrame(fn);
+}
+}
+},
+_flushNextRender: function () {
+var self = this;
+setTimeout(function () {
+self._flushRenderCallbacks(self._afterNextRenderQueue);
+self._afterNextRenderQueue = [];
+self._waitingNextRender = false;
 });
 },
-__flushAfterNextRender: function () {
-var self = Polymer.RenderStatus;
-self._waitingNextRender = false;
-for (var i = 0, h; i < self._afterNextRenderQueue.length; i++) {
-h = self._afterNextRenderQueue[i];
+_flushRenderCallbacks: function (callbacks) {
+for (var i = 0, h; i < callbacks.length; i++) {
+h = callbacks[i];
 h[1].apply(h[0], h[2] || Polymer.nar);
 }
 ;
-self._afterNextRenderQueue = [];
 }
 };
 if (window.HTMLImports) {
@@ -300,7 +310,7 @@ import: function (id, selector) {
 if (id) {
 var m = findModule(id);
 if (!m) {
-forceDocumentUpgrade();
+forceDomModulesUpgrade();
 m = findModule(id);
 }
 if (m && selector) {
@@ -312,12 +322,17 @@ return m;
 });
 var cePolyfill = window.CustomElements && !CustomElements.useNative;
 document.registerElement('dom-module', DomModule);
-function forceDocumentUpgrade() {
+function forceDomModulesUpgrade() {
 if (cePolyfill) {
 var script = document._currentScript || document.currentScript;
 var doc = script && script.ownerDocument || document;
-if (doc) {
-CustomElements.upgradeAll(doc);
+var modules = doc.querySelectorAll('dom-module');
+for (var i = modules.length - 1, m; i >= 0 && (m = modules[i]); i--) {
+if (m.__upgraded__) {
+return;
+} else {
+CustomElements.upgrade(m);
+}
 }
 }
 }
@@ -677,7 +692,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.2.2';
+Polymer.version = '1.2.3';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -705,9 +720,8 @@ this._template = Polymer.DomModule.import(this.is, 'template');
 if (this._template && this._template.hasAttribute('is')) {
 this._warn(this._logf('_prepTemplate', 'top-level Polymer template ' + 'must not be a type-extension, found', this._template, 'Move inside simple <template>.'));
 }
-if (this._template && !this._template.content && HTMLTemplateElement.bootstrap) {
+if (this._template && !this._template.content && window.HTMLTemplateElement && HTMLTemplateElement.decorate) {
 HTMLTemplateElement.decorate(this._template);
-HTMLTemplateElement.bootstrap(this._template.content);
 }
 },
 _stampTemplate: function () {
@@ -6107,19 +6121,19 @@ this._appliesToDocument = true;
 var e = this.__appliedElement || this;
 styleDefaults.addStyle(e);
 if (e.textContent || this.include) {
-this._apply();
+this._apply(true);
 } else {
 var self = this;
 var observer = new MutationObserver(function () {
 observer.disconnect();
-self._apply();
+self._apply(true);
 });
 observer.observe(e, { childList: true });
 }
 }
 }
 },
-_apply: function () {
+_apply: function (deferProperties) {
 var e = this.__appliedElement || this;
 if (this.include) {
 e.textContent = styleUtil.cssFromModules(this.include, true) + e.textContent;
@@ -6128,7 +6142,19 @@ if (e.textContent) {
 styleUtil.forEachStyleRule(styleUtil.rulesForStyle(e), function (rule) {
 styleTransformer.documentRule(rule);
 });
-this._applyCustomProperties(e);
+var self = this;
+function fn() {
+self._applyCustomProperties(e);
+}
+if (this._pendingApplyProperties) {
+cancelAnimationFrame(this._pendingApplyProperties);
+this._pendingApplyProperties = null;
+}
+if (deferProperties) {
+this._pendingApplyProperties = requestAnimationFrame(fn);
+} else {
+fn();
+}
 }
 },
 _applyCustomProperties: function (element) {
@@ -7961,14 +7987,6 @@ this.fire('dom-change');
       this._setPressed(false);
     },
 
-    __isFocusedLightDescendant: function(target) {
-      var root = Polymer.dom(this).getOwnerRoot() || document;
-      var focusedElement = root.activeElement;
-
-      // TODO(noms): remove the `this !== target` check once polymer#2610 is fixed.
-      return this !== target && this.isLightDescendant(target) && target == focusedElement;
-    },
-
     /**
      * @param {!KeyboardEvent} event .
      */
@@ -7978,7 +7996,7 @@ this.fire('dom-change');
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.__isFocusedLightDescendant(target))
+      if (this.isLightDescendant(target))
         return;
 
       keyboardEvent.preventDefault();
@@ -7995,7 +8013,7 @@ this.fire('dom-change');
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.__isFocusedLightDescendant(target))
+      if (this.isLightDescendant(target))
         return;
 
       if (this.pressed) {
@@ -8534,6 +8552,11 @@ this.fire('dom-change');
       -webkit-overflow-scrolling: touch;
       overflow: auto;
     };
+
+    --layout-fullbleed: {
+      margin: 0;
+      height: 100vh;
+    }
 
     /* fixed position */
 
@@ -9389,7 +9412,7 @@ this.fire('dom-change');
   html /deep/ .fixed-right {
     top: 0;
     right: 0;
-    botttom: 0;
+    bottom: 0;
   }
 
   html /deep/ .fixed-bottom {
@@ -9400,7 +9423,7 @@ this.fire('dom-change');
 
   html /deep/ .fixed-left {
     top: 0;
-    botttom: 0;
+    bottom: 0;
     left: 0;
   }
 
@@ -11343,12 +11366,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
 
 </script>
-
-
 <script>
 
 /**
-Use `Polymer.PaperDialogBehavior` and `paper-dialog-common.css` to implement a Material Design
+Use `Polymer.PaperDialogBehavior` and `paper-dialog-shared-styles.html` to implement a Material Design
 dialog.
 
 For example, if `<paper-dialog-impl>` implements this behavior:
@@ -11362,7 +11383,7 @@ For example, if `<paper-dialog-impl>` implements this behavior:
         </div>
     </paper-dialog-impl>
 
-`paper-dialog-common.css` provide styles for a header, content area, and an action area for buttons.
+`paper-dialog-shared-styles.html` provide styles for a header, content area, and an action area for buttons.
 Use the `<h2>` tag for the header and the `buttons` class for the action area. You can use the
 `paper-dialog-scrollable` element (in its own repository) if you need a scrolling content area.
 
@@ -11570,6 +11591,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   Polymer.PaperDialogBehavior = [Polymer.IronOverlayBehavior, Polymer.PaperDialogBehaviorImpl];
 
 </script>
+
+
 
 
 
@@ -13154,6 +13177,80 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 <script>
+  /**
+  Polymer.IronFormElementBehavior enables a custom element to be included
+  in an `iron-form`.
+
+  @demo demo/index.html
+  @polymerBehavior
+  */
+  Polymer.IronFormElementBehavior = {
+
+    properties: {
+      /**
+       * Fired when the element is added to an `iron-form`.
+       *
+       * @event iron-form-element-register
+       */
+
+      /**
+       * Fired when the element is removed from an `iron-form`.
+       *
+       * @event iron-form-element-unregister
+       */
+
+      /**
+       * The name of this element.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * The value for this element.
+       */
+      value: {
+        notify: true,
+        type: String
+      },
+
+      /**
+       * Set to true to mark the input as required. If used in a form, a
+       * custom element that uses this behavior should also use
+       * Polymer.IronValidatableBehavior and define a custom validation method.
+       * Otherwise, a `required` element will always be considered valid.
+       * It's also strongly recommended to provide a visual style for the element
+       * when its value is invalid.
+       */
+      required: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * The form that the element is registered to.
+       */
+      _parentForm: {
+        type: Object
+      }
+    },
+
+    attached: function() {
+      // Note: the iron-form that this element belongs to will set this
+      // element's _parentForm property when handling this event.
+      this.fire('iron-form-element-register');
+    },
+
+    detached: function() {
+      if (this._parentForm) {
+        this._parentForm.fire('iron-form-element-unregister', {target: this});
+      }
+    }
+
+  };
+
+</script>
+<script>
 
   /**
    * `Use Polymer.IronValidatableBehavior` to implement an element that validates user input.
@@ -13508,80 +13605,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 </script>
 <script>
-  /**
-  Polymer.IronFormElementBehavior enables a custom element to be included
-  in an `iron-form`.
-
-  @demo demo/index.html
-  @polymerBehavior
-  */
-  Polymer.IronFormElementBehavior = {
-
-    properties: {
-      /**
-       * Fired when the element is added to an `iron-form`.
-       *
-       * @event iron-form-element-register
-       */
-
-      /**
-       * Fired when the element is removed from an `iron-form`.
-       *
-       * @event iron-form-element-unregister
-       */
-
-      /**
-       * The name of this element.
-       */
-      name: {
-        type: String
-      },
-
-      /**
-       * The value for this element.
-       */
-      value: {
-        notify: true,
-        type: String
-      },
-
-      /**
-       * Set to true to mark the input as required. If used in a form, a
-       * custom element that uses this behavior should also use
-       * Polymer.IronValidatableBehavior and define a custom validation method.
-       * Otherwise, a `required` element will always be considered valid.
-       * It's also strongly recommended to provide a visual style for the element
-       * when its value is invalid.
-       */
-      required: {
-        type: Boolean,
-        value: false
-      },
-
-      /**
-       * The form that the element is registered to.
-       */
-      _parentForm: {
-        type: Object
-      }
-    },
-
-    attached: function() {
-      // Note: the iron-form that this element belongs to will set this
-      // element's _parentForm property when handling this event.
-      this.fire('iron-form-element-register');
-    },
-
-    detached: function() {
-      if (this._parentForm) {
-        this._parentForm.fire('iron-form-element-unregister', {target: this});
-      }
-    }
-
-  };
-
-</script>
-<script>
 
   /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
@@ -13881,6 +13904,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       _ariaDescribedBy: {
         type: String,
         value: ''
+      },
+
+      _ariaLabelledBy: {
+        type: String,
+        value: ''
       }
 
     },
@@ -14020,7 +14048,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
 
 </script>
-
 <script>
 
   /**
@@ -14056,6 +14083,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   };
 
 </script>
+
 
 
 
@@ -14112,13 +14140,21 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       /* Overriden from Polymer.IronFormElementBehavior */
       value: {
         type: String,
-        value: ''
+        value: 'on',
+        observer: '_valueChanged'
       }
     },
 
     observers: [
       '_requiredChanged(required)'
     ],
+
+    created: function() {
+      // Used by `iron-form` to handle the case that an element with this behavior
+      // doesn't have a role of 'checkbox' or 'radio', but should still only be
+      // included when the form is serialized if `this.checked === true`.
+      this._hasIronCheckedElementBehavior = true;
+    },
 
     /**
      * Returns false if the element is required and not checked, and true otherwise.
@@ -14140,15 +14176,20 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     /**
-     * Update the element's value when checked.
+     * Fire `iron-changed` when the checked state changes.
      */
     _checkedChanged: function() {
       this.active = this.checked;
-      // Unless the user has specified a value, a checked element has the
-      // default value "on" when checked.
-      if (this.value === '')
-        this.value = this.checked ? 'on' : '';
       this.fire('iron-change');
+    },
+
+    /**
+     * Reset value to 'on' if it is set to `undefined`.
+     */
+    _valueChanged: function() {
+      if (this.value === undefined || this.value === null) {
+        this.value = 'on';
+      }
     }
   };
 
@@ -18066,6 +18107,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   });
 
 </script>
+<dom-module id="paper-input-char-counter" assetpath="bower_components/paper-input/">
+  <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        float: right;
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-char-counter);
+      }
+
+      :host-context([dir="rtl"]) {
+        float: left;
+      }
+    </style>
+
+    <span>[[_charCounterStr]]</span>
+
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'paper-input-char-counter',
+
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
+
+    properties: {
+      _charCounterStr: {
+        type: String,
+        value: '0'
+      }
+    },
+
+    update: function(state) {
+      if (!state.inputElement) {
+        return;
+      }
+
+      state.value = state.value || '';
+
+      // Account for the textarea's new lines.
+      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
+
+      if (state.inputElement.hasAttribute('maxlength')) {
+        str += '/' + state.inputElement.getAttribute('maxlength');
+      }
+      this._charCounterStr = str;
+    }
+  });
+</script>
 <dom-module id="paper-input-container" assetpath="bower_components/paper-input/">
   <template>
 
@@ -18098,6 +18193,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .focused-line {
         height: 2px;
+        @apply(--layout-fit);
 
         -webkit-transform-origin: center center;
         transform-origin: center center;
@@ -18131,6 +18227,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .unfocused-line {
         height: 1px;
+        @apply(--layout-fit);
         background: var(--paper-input-container-color, --secondary-text-color);
 
         @apply(--paper-input-container-underline);
@@ -18278,8 +18375,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
 
     <div class$="[[_computeUnderlineClass(focused,invalid)]]">
-      <div class="unfocused-line fit"></div>
-      <div class="focused-line fit"></div>
+      <div class="unfocused-line"></div>
+      <div class="focused-line"></div>
     </div>
 
     <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
@@ -18633,60 +18730,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     update: function(state) {
       this._setInvalid(state.invalid);
-    }
-  });
-</script>
-<dom-module id="paper-input-char-counter" assetpath="bower_components/paper-input/">
-  <template>
-
-    <style>
-      :host {
-        display: inline-block;
-        float: right;
-
-        @apply(--paper-font-caption);
-        @apply(--paper-input-char-counter);
-      }
-
-      :host-context([dir="rtl"]) {
-        float: left;
-      }
-    </style>
-
-    <span>[[_charCounterStr]]</span>
-
-  </template>
-</dom-module>
-
-<script>
-  Polymer({
-    is: 'paper-input-char-counter',
-
-    behaviors: [
-      Polymer.PaperInputAddonBehavior
-    ],
-
-    properties: {
-      _charCounterStr: {
-        type: String,
-        value: '0'
-      }
-    },
-
-    update: function(state) {
-      if (!state.inputElement) {
-        return;
-      }
-
-      state.value = state.value || '';
-
-      // Account for the textarea's new lines.
-      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
-
-      if (state.inputElement.hasAttribute('maxlength')) {
-        str += '/' + state.inputElement.getAttribute('maxlength');
-      }
-      this._charCounterStr = str;
     }
   });
 </script>
