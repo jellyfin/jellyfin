@@ -76,20 +76,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             AddTimer(item);
         }
 
-        public void AddOrUpdate(TimerInfo item)
-        {
-            var list = GetAll().ToList();
-
-            if (!list.Any(i => EqualityComparer(i, item)))
-            {
-                Add(item);
-            }
-            else
-            {
-                Update(item);
-            }
-        }
-
         private void AddTimer(TimerInfo item)
         {
             var startDate = RecordingHelper.GetStartTime(item);

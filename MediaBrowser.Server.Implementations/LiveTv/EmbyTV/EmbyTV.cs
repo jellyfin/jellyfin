@@ -694,7 +694,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     TimerId = timer.Id,
                     ShowId = info.ShowId
                 };
-                _recordingProvider.Add(recording);
+                _recordingProvider.AddOrUpdate(recording);
             }
 
             try
@@ -719,7 +719,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recording.Path = recordPath;
                     recording.Status = RecordingStatus.InProgress;
                     recording.DateLastUpdated = DateTime.UtcNow;
-                    _recordingProvider.Update(recording);
+                    _recordingProvider.AddOrUpdate(recording);
 
                     _logger.Info("Beginning recording.");
 
@@ -767,7 +767,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             recording.DateLastUpdated = DateTime.UtcNow;
-            _recordingProvider.Update(recording);
+            _recordingProvider.AddOrUpdate(recording);
 
             if (recording.Status == RecordingStatus.Completed)
             {

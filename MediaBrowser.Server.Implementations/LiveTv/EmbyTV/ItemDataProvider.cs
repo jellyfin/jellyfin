@@ -112,6 +112,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             UpdateList(list);
         }
 
+        public void AddOrUpdate(T item)
+        {
+            var list = GetAll().ToList();
+
+            if (!list.Any(i => EqualityComparer(i, item)))
+            {
+                Add(item);
+            }
+            else
+            {
+                Update(item);
+            }
+        }
+        
         public virtual void Delete(T item)
         {
             var list = GetAll().Where(i => !EqualityComparer(i, item)).ToList();
