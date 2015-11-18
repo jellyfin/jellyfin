@@ -52,7 +52,7 @@
         html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
         html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
 
-        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;"></paper-slider>';
+        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
 
         html += '<paper-icon-button icon="repeat" class="mediaButton toggleRepeatButton"></paper-icon-button>';
 

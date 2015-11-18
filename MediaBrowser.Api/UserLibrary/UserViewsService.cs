@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.UserLibrary
             var views = user.RootFolder
                 .GetChildren(user, true)
                 .OfType<Folder>()
-                .Where(i => !UserView.IsExcludedFromGrouping(i))
+                .Where(UserView.IsEligibleForGrouping)
                 .ToList();
 
             var list = views

@@ -126,7 +126,7 @@
 }
 
 .nowPlayingBarPositionSlider #sliderBar {
-    top: 0;
+    padding-top: 0;
 }
 
 .nowPlayingBarPositionSlider #sliderContainer {
@@ -167,6 +167,7 @@
 
 .nowPlayingBarVolumeSlider {
     margin-left: -1em;
+    margin-right: 2em;
 }
 
 .nowPlayingBarUserDataButtons {

@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public const int MigrationVersion = 6;
+        public const int MigrationVersion = 7;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
         {
@@ -75,10 +75,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
-                IsCurrentSchema = false,
-
-                // These are constantly getting regenerated so don't bother with them here
-                ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
+                IsCurrentSchema = false
             });
 
             var numComplete = 0;

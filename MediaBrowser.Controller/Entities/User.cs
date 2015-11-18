@@ -20,7 +20,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public static IUserManager UserManager { get; set; }
         public static IXmlSerializer XmlSerializer { get; set; }
-        public bool EnableUserViews { get; set; }
 
         /// <summary>
         /// From now on all user paths will be Id-based. 

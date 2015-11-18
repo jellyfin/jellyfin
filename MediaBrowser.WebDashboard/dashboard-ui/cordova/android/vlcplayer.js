@@ -169,6 +169,8 @@
 
                 var deviceProfile = MediaPlayer.getDeviceProfile();
 
+                var timeLimitMs = MediaController.playbackTimeLimitMs || 0;
+
                 AndroidVlcPlayer.playVideoVlc(val,
                     startPosMs,
                     item.Name,
@@ -184,7 +186,8 @@
                     ApiClient.getCurrentUserId(),
                     ApiClient.accessToken(),
                     JSON.stringify(deviceProfile),
-                    JSON.stringify(videoQualityOptions));
+                    JSON.stringify(videoQualityOptions),
+                    timeLimitMs);
 
                 playerState.currentSrc = val;
                 self.report('playing', null, startPosMs, false, 100);

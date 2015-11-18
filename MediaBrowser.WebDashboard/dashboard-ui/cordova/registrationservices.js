@@ -31,8 +31,7 @@
                 return;
             }
 
-            // Get supporter status
-            getRegistrationInfo(prefix + 'appunlock').done(function (registrationInfo) {
+            function onRegistrationInfoResponse(registrationInfo) {
 
                 if (registrationInfo.IsRegistered) {
                     deferred.resolve();
@@ -49,14 +48,18 @@
                     }
 
                     var dialogOptions = {
-                        title: Globalize.translate('HeaderUnlockApp')
+                        title: Globalize.translate('HeaderUnlockApp'),
+                        enablePlayMinute: feature == 'playback',
+                        feature: feature
                     };
 
-                    showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, registrationInfo, dialogOptions, deferred);
+                    showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, dialogOptions, deferred);
                 });
+            }
 
-            }).fail(function () {
-                deferred.reject();
+            // Get supporter status
+            getRegistrationInfo(prefix + 'appunlock').done(onRegistrationInfoResponse).fail(function () {
+                onRegistrationInfoResponse({});
             });
         });
     }
@@ -144,13 +147,19 @@
             html += '</p>';
         }
 
+        if (dialogOptions.enablePlayMinute) {
+            html += '<p>';
+            html += '<paper-button raised class="secondary block btnCloseDialog subdued"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlayTwoMinutes') + '</span></paper-button>';
+            html += '</p>';
+        }
+
         html += '</form>';
         html += '</div>';
 
         dlg.innerHTML = html;
         document.body.appendChild(dlg);
 
-        initInAppPurchaseElementEvents(dlg, deferred);
+        initInAppPurchaseElementEvents(dlg, dialogOptions.feature, deferred);
 
         PaperDialogHelper.openWithHash(dlg, 'iap');
 
@@ -169,7 +178,7 @@
         dlg.classList.add('inAppPurchaseOverlay');
     }
 
-    function initInAppPurchaseElementEvents(elem, deferred) {
+    function initInAppPurchaseElementEvents(elem, feature, deferred) {
 
         isCancelled = true;
 
@@ -194,15 +203,31 @@
 
             clearCurrentDisplayingInfo();
 
-            if (isCancelled) {
-                deferred.reject();
-            }
+            var overlay = this;
 
-            $(this).remove();
+            if (isCancelled) {
+
+                if (feature == 'playback') {
+                    Dashboard.alert({
+                        message: Globalize.translate('ThankYouForTryingEnjoyOneMinute'),
+                        title: Globalize.translate('HeaderTryPlayback'),
+                        callback: function () {
+                            deferred.reject();
+                            $(overlay).remove();
+                        }
+                    });
+                } else {
+                    deferred.reject();
+                    $(overlay).remove();
+                }
+
+            } else {
+                $(this).remove();
+            }
         });
     }
 
-    function showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, serverRegistrationInfo, dialogOptions, deferred) {
+    function showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, dialogOptions, deferred) {
 
         require(['components/paperdialoghelper'], function () {
 
@@ -262,9 +287,7 @@
                 return;
             }
 
-            // Get supporter status
-            getRegistrationInfo('Sync').done(function (registrationInfo) {
-
+            function onRegistrationInfoResponse(registrationInfo) {
                 if (registrationInfo.IsRegistered) {
                     deferred.resolve();
                     return;
@@ -273,14 +296,17 @@
                 IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
 
                     var dialogOptions = {
-                        title: Globalize.translate('HeaderUnlockSync')
+                        title: Globalize.translate('HeaderUnlockSync'),
+                        feature: 'sync'
                     };
 
-                    showInAppPurchaseInfo(subscriptionOptions, null, registrationInfo, dialogOptions, deferred);
+                    showInAppPurchaseInfo(subscriptionOptions, null, dialogOptions, deferred);
                 });
+            }
 
-            }).fail(function () {
-                deferred.reject();
+            // Get supporter status
+            getRegistrationInfo('Sync').done(onRegistrationInfoResponse).fail(function () {
+                onRegistrationInfoResponse({});
             });
         });
     }

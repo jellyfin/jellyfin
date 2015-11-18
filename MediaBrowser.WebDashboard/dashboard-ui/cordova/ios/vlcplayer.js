@@ -193,8 +193,6 @@
             var duration = result.duration || 0;
             var position = result.progress || 0;
 
-            Logger.log('eventName: ' + eventName + '. position: ' + position);
-
             var state = AudioRenderer.Current.playerState;
 
             state.duration = duration;
@@ -202,11 +200,15 @@
             state.paused = result.state == 3 || eventName == 'paused';
             state.volume = 0;
 
+            if (eventName == 'positionchange') {
+                onTimeUpdate();
+                return;
+            }
+
+            Logger.log('eventName: ' + eventName + '. position: ' + position);
+
             if (eventName == 'playbackstop') {
                 onEnded();
-            }
-            else if (eventName == 'positionchange') {
-                onTimeUpdate();
             }
             else if (eventName == 'paused') {
                 onPause();

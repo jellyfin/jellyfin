@@ -931,5 +931,8 @@
     "HeaderFavoriteSongs": "Favorite Songs",
     "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
     "PleaseConfirmPluginInstallation": "Please click OK to confirm you've read the above and wish to proceed with the plugin installation.",
-    "MessagePluginInstallDisclaimer": "Plugins built by Emby community members are a great way to enhance your Emby experience with additional features and benefits. Before installing, please be aware of the effects they may have on your Emby Server, such as longer library scans, additional background processing, and decreased system stability."
+    "MessagePluginInstallDisclaimer": "Plugins built by Emby community members are a great way to enhance your Emby experience with additional features and benefits. Before installing, please be aware of the effects they may have on your Emby Server, such as longer library scans, additional background processing, and decreased system stability.",
+    "ButtonPlayTwoMinutes": "Play two minutes",
+    "ThankYouForTryingEnjoyOneMinute": "Please enjoy two minutes of playback. Thank you for trying Emby.",
+    "HeaderTryPlayback": "Try Playback"
 }

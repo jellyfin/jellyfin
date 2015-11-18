@@ -256,10 +256,6 @@
             $(self).trigger('beforeplaybackstart', [state, this]);
         }
 
-        function onPlaybackStart(e, state) {
-            $(self).trigger('playbackstart', [state, this]);
-        }
-
         function onPlaybackStop(e, state) {
             $(self).trigger('playbackstop', [state, this]);
         }
@@ -462,8 +458,37 @@
             }
 
             requirejs(["scripts/registrationservices"], function () {
-                RegistrationServices.validateFeature('playback').done(fn);
+
+                self.playbackTimeLimitMs = null;
+
+                RegistrationServices.validateFeature('playback').done(fn).fail(function () {
+
+                    self.playbackTimeLimitMs = lockedTimeLimitMs;
+                    startAutoStopTimer();
+                    fn();
+                });
             });
+        }
+
+        var autoStopTimeout;
+        var lockedTimeLimitMs = 120000;
+        function startAutoStopTimer() {
+            stopAutoStopTimer();
+            autoStopTimeout = setTimeout(onAutoStopTimeout, lockedTimeLimitMs);
+        }
+
+        function onAutoStopTimeout() {
+            stopAutoStopTimer();
+            MediaController.stop();
+        }
+
+        function stopAutoStopTimer() {
+
+            var timeout = autoStopTimeout;
+            if (timeout) {
+                clearTimeout(timeout);
+                autoStopTimeout = null;
+            }
         }
 
         self.toggleDisplayMirroring = function () {

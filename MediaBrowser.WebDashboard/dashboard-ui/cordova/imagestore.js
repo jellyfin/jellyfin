@@ -90,13 +90,13 @@
 
                 }, function () {
 
-                    Logger.log('downloading: ' + originalUrl);
+                    //Logger.log('downloading: ' + originalUrl);
                     var ft = new FileTransfer();
                     ft.download(originalUrl, path, function (entry) {
 
                         var localUrl = normalizeReturnUrl(entry.toURL());
 
-                        Logger.log(localUrl);
+                        //Logger.log(localUrl);
                         deferred.resolveWith(null, [localUrl]);
                     });
                 });

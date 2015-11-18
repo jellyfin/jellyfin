@@ -101,30 +101,6 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, false);
         }
 
-        public static bool IsExcludedFromGrouping(Folder folder)
-        {
-            var standaloneTypes = new List<string>
-            {
-                CollectionType.Books,
-                CollectionType.HomeVideos,
-                CollectionType.Photos,
-                CollectionType.Playlists,
-                CollectionType.BoxSets,
-                CollectionType.MusicVideos,
-                CollectionType.Games,
-                CollectionType.Music
-            };
-
-            var collectionFolder = folder as ICollectionFolder;
-
-            if (collectionFolder == null)
-            {
-                return false;
-            }
-
-            return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
-        }
-
         public static bool IsUserSpecific(Folder folder)
         {
             var standaloneTypes = new List<string>
@@ -146,6 +122,24 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        }
+
+        public static bool IsEligibleForGrouping(Folder folder)
+        {
+            var collectionFolder = folder as ICollectionFolder;
+            return collectionFolder != null && IsEligibleForGrouping(collectionFolder.CollectionType);
+        }
+
+        public static bool IsEligibleForGrouping(string viewType)
+        {
+            var types = new[] 
+            { 
+                CollectionType.Movies, 
+                CollectionType.TvShows,
+                string.Empty
+            };
+
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         public static bool IsEligibleForEnhancedView(string viewType)

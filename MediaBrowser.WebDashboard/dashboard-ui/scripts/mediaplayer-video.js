@@ -722,14 +722,14 @@
 
             html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
-            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider"></paper-slider>';
+            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="display:inline-block;margin-right:2em;"></paper-slider>';
 
             html += '<div class="currentTime">--:--</div>';
 
             html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton" onclick="MediaPlayer.mute();"></paper-icon-button>';
             html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton" onclick="MediaPlayer.unMute();"></paper-icon-button>';
 
-            html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
+            html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;margin-right:2em;display:inline-block;"></paper-slider>';
 
             html += '<paper-icon-button icon="fullscreen" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"></paper-icon-button>';
             html += '<paper-icon-button icon="info" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"></paper-icon-button>';

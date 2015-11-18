@@ -13,7 +13,6 @@
         },
 
         trigger: function (obj, eventName, params) {
-            Logger.log('event.trigger ' + eventName);
             jQuery(obj).trigger(eventName, params);
         }
     };
