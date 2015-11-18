@@ -16,11 +16,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../paper-slider.html">
-  <link rel="import" href="../../test-fixture/test-fixture.html">
 </head>
 <body>
 
@@ -45,9 +43,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(slider.getAttribute('aria-valuenow'), slider.value);
       });
 
-      test('interacting without keyboard causes no ripple', function() {
+      test('ripple is added after keyboard event on knob', function() {
+        assert.isFalse(slider.hasRipple());
         MockInteractions.down(slider.$.sliderKnob);
         assert.isTrue(slider.hasRipple());
+      });
+
+      test('interacting without keyboard causes no ripple', function() {
+        MockInteractions.focus(slider);
+        MockInteractions.down(slider.$.sliderKnob);
         var ripple = slider.getRipple();
         assert.equal(ripple.offsetHeight, 0);
         assert.equal(ripple.offsetWidth, 0);
@@ -56,7 +60,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('interacting with keyboard causes ripple', function() {
         MockInteractions.focus(slider);
         MockInteractions.pressSpace(slider.$.sliderKnob);
-        assert.isTrue(slider.hasRipple());
         var ripple = slider.getRipple();
         assert.isAbove(ripple.offsetHeight, 0);
         assert.isAbove(ripple.offsetWidth, 0);

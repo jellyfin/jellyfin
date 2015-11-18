@@ -16,11 +16,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../paper-slider.html">
-  <link rel="import" href="../../test-fixture/test-fixture.html">
 </head>
 <body>
 
@@ -181,14 +179,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('value should notify', function(done) {
         var targetValue = 10;
 
-        slider.addEventListener('value-changed', function(e) {
-          assert.equal(e.detail.value, targetValue);
-          done();
-        });
-        
+        slider.addEventListener('value-changed', onValueChanged);
+
         slider.min = 0;
         slider.max = 100;
         slider.value = targetValue;
+
+        function onValueChanged(e) {
+          assert.equal(e.detail.value, targetValue);
+          done();
+          slider.removeEventListener('value-changed', onValueChanged);
+        }
       });
 
       test('immediateValue should notify', function(done) {
@@ -199,13 +200,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(slider.immediateValue, targetValue);
           done();
         });
-        
+
         var cursor = MockInteractions.topLeftOfNode(slider.$.sliderBar);
         cursor.x += slider.$.sliderBar.getBoundingClientRect().width * targetValue/100;
 
         slider.min = 0;
         slider.max = 100;
         MockInteractions.down(slider.$.sliderBar, cursor);
+      });
+
+      test('max markers', function(done) {
+        slider.min = 0;
+        slider.max = 100;
+        slider.snap = true;
+        slider.step = 4;
+        slider.maxMarkers = 10;
+        flush(function() {
+          assert.equal(slider.markers.length, 10);
+          done();
+        });
       });
 
     });
