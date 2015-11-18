@@ -1320,7 +1320,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
 
-            query.TopParentIds = parents.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
+            SetTopParentIdsOrAncestors(query, parents);
 
             return GetItemIds(query).Select(GetItemById);
         }
@@ -1329,9 +1329,33 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
 
-            query.TopParentIds = parents.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
+            SetTopParentIdsOrAncestors(query, parents);
 
             return GetItems(query);
+        }
+
+        private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)
+        {
+            if (parents.All(i =>
+            {
+                if ((i is ICollectionFolder) || (i is UserView))
+                {
+                    return true;
+                }
+
+                _logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
+                return false;
+
+            }))
+            {
+                // Optimize by querying against top level views
+                query.TopParentIds = parents.SelectMany(i => GetTopParentsForQuery(i, query.User)).Select(i => i.Id.ToString("N")).ToArray();
+            }
+            else
+            {
+                // We need to be able to query from any arbitrary ancestor up the tree
+                query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
+            }
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
@@ -1345,11 +1369,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 }, CancellationToken.None).Result.ToList();
 
-                query.TopParentIds = userViews.SelectMany(GetTopParentsForQuery).Select(i => i.Id.ToString("N")).ToArray();
+                query.TopParentIds = userViews.SelectMany(i => GetTopParentsForQuery(i, user)).Select(i => i.Id.ToString("N")).ToArray();
             }
         }
 
-        private IEnumerable<BaseItem> GetTopParentsForQuery(BaseItem item)
+        private IEnumerable<BaseItem> GetTopParentsForQuery(BaseItem item, User user)
         {
             var view = item as UserView;
 
@@ -1371,7 +1395,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     var displayParent = GetItemById(view.DisplayParentId);
                     if (displayParent != null)
                     {
-                        return GetTopParentsForQuery(displayParent);
+                        return GetTopParentsForQuery(displayParent, user);
                     }
                     return new BaseItem[] { };
                 }
@@ -1380,12 +1404,17 @@ namespace MediaBrowser.Server.Implementations.Library
                     var displayParent = GetItemById(view.ParentId);
                     if (displayParent != null)
                     {
-                        return GetTopParentsForQuery(displayParent);
+                        return GetTopParentsForQuery(displayParent, user);
                     }
                     return new BaseItem[] { };
                 }
 
                 // Handle grouping
+                if (user != null && !string.IsNullOrWhiteSpace(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType))
+                {
+                    var collectionFolders = user.RootFolder.GetChildren(user, true).OfType<CollectionFolder>().Where(i => string.IsNullOrWhiteSpace(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase));
+                    return collectionFolders.SelectMany(i => GetTopParentsForQuery(i, user));
+                }
                 return new BaseItem[] { };
             }
 
@@ -1797,7 +1826,7 @@ namespace MediaBrowser.Server.Implementations.Library
             string sortName,
             CancellationToken cancellationToken)
         {
-            return GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken);
+            return GetNamedView(user, name, null, viewType, sortName, cancellationToken);
         }
 
         public async Task<UserView> GetNamedView(string name,
@@ -1815,8 +1844,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var refresh = false;
 
-            if (item == null ||
-                !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
+            if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 _fileSystem.CreateDirectory(path);
 
@@ -1832,11 +1860,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-                refresh = true;
-            }
-
-            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
-            {
                 refresh = true;
             }
 
@@ -1865,40 +1888,14 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public Task<UserView> GetNamedView(User user,
+        public async Task<UserView> GetNamedView(User user,
             string name,
             string parentId,
             string viewType,
             string sortName,
-            string uniqueId,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(parentId))
-            {
-                throw new ArgumentNullException("parentId");
-            }
-
-            return GetNamedViewInternal(user, name, parentId, viewType, sortName, uniqueId, cancellationToken);
-        }
-
-        private async Task<UserView> GetNamedViewInternal(User user,
-            string name,
-            string parentId,
-            string viewType,
-            string sortName,
-            string uniqueId,
-            CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-
-            var idValues = "37_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty);
-            if (!string.IsNullOrWhiteSpace(uniqueId))
-            {
-                idValues += uniqueId;
-            }
+            var idValues = "38_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty) + (viewType ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
@@ -1933,13 +1930,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            if (!item.UserId.HasValue || !string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
-            {
-                item.UserId = user.Id;
-                item.ViewType = viewType;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
-            }
-
             var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
 
             if (!refresh && item.DisplayParentId != Guid.Empty)
@@ -1963,7 +1953,6 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task<UserView> GetShadowView(BaseItem parent,
         string viewType,
         string sortName,
-        string uniqueId,
         CancellationToken cancellationToken)
         {
             if (parent == null)
@@ -1974,11 +1963,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var name = parent.Name;
             var parentId = parent.Id;
 
-            var idValues = "37_namedview_" + name + parentId + (viewType ?? string.Empty);
-            if (!string.IsNullOrWhiteSpace(uniqueId))
-            {
-                idValues += uniqueId;
-            }
+            var idValues = "38_namedview_" + name + parentId + (viewType ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
 
@@ -2007,12 +1992,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
                 isNew = true;
-            }
-
-            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
-            {
-                item.ViewType = viewType;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
             var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;

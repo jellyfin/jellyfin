@@ -1712,12 +1712,12 @@ namespace MediaBrowser.Controller.Entities
                 return _libraryManager.RootFolder
                     .Children
                     .OfType<Folder>()
-                    .Where(i => !UserView.IsExcludedFromGrouping(i));
+                    .Where(UserView.IsEligibleForGrouping);
             }
             return user.RootFolder
                 .GetChildren(user, true)
                 .OfType<Folder>()
-                .Where(i => user.IsFolderGrouped(i.Id) && !UserView.IsExcludedFromGrouping(i));
+                .Where(i => user.IsFolderGrouped(i.Id) && UserView.IsEligibleForGrouping(i));
         }
 
         private IEnumerable<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)

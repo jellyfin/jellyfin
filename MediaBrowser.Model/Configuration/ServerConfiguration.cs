@@ -99,12 +99,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable user views].
-        /// </summary>
-        /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
-        public bool EnableUserViews { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enable library metadata sub folder].
         /// </summary>
         /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
@@ -229,7 +223,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int MigrationVersion { get; set; }
         public bool EnableImagePreDownloading { get; set; }
-        public bool EnableSharedCollectionViewImage { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
