@@ -461,21 +461,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
       } else {
         this._handleValue(this._inputElement);
       }
-
-      this._numberOfPrefixNodes = 0;
-      this._prefixObserver = Polymer.dom(this.$.prefix).observeNodes(
-          function(mutations) {
-            // Keep track whether there's at least one prefix node, since it
-            // affects laying out the floating label.
-            this._numberOfPrefixNodes += mutations.addedNodes.length -
-                mutations.removedNodes.length;
-          }.bind(this));
-    },
-
-    detached: function() {
-      if (this._prefixObserver) {
-        Polymer.dom(this.$.prefix).unobserveNodes(this._prefixObserver);
-      }
     },
 
     _onAddonAttached: function(event) {
@@ -567,15 +552,14 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
         if (alwaysFloatLabel || _inputHasContent) {
           cls += ' label-is-floating';
+          // If the label is floating, ignore any offsets that may have been
+          // applied from a prefix element.
+          this.$.labelAndInputContainer.style.position = 'static';
+
           if (invalid) {
             cls += ' is-invalid';
           } else if (focused) {
             cls += " label-is-highlighted";
-          }
-          // If a prefix element exists, the label has a horizontal offset
-          // which needs to be undone when displayed as a floating label.
-          if (this._numberOfPrefixNodes > 0) {
-            this.$.labelAndInputContainer.style.position = 'static';
           }
         } else {
           // When the label is not floating, it should overlap the input element.

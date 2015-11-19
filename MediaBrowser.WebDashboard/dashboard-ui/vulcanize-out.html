@@ -18528,21 +18528,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       } else {
         this._handleValue(this._inputElement);
       }
-
-      this._numberOfPrefixNodes = 0;
-      this._prefixObserver = Polymer.dom(this.$.prefix).observeNodes(
-          function(mutations) {
-            // Keep track whether there's at least one prefix node, since it
-            // affects laying out the floating label.
-            this._numberOfPrefixNodes += mutations.addedNodes.length -
-                mutations.removedNodes.length;
-          }.bind(this));
-    },
-
-    detached: function() {
-      if (this._prefixObserver) {
-        Polymer.dom(this.$.prefix).unobserveNodes(this._prefixObserver);
-      }
     },
 
     _onAddonAttached: function(event) {
@@ -18634,15 +18619,14 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         if (alwaysFloatLabel || _inputHasContent) {
           cls += ' label-is-floating';
+          // If the label is floating, ignore any offsets that may have been
+          // applied from a prefix element.
+          this.$.labelAndInputContainer.style.position = 'static';
+
           if (invalid) {
             cls += ' is-invalid';
           } else if (focused) {
             cls += " label-is-highlighted";
-          }
-          // If a prefix element exists, the label has a horizontal offset
-          // which needs to be undone when displayed as a floating label.
-          if (this._numberOfPrefixNodes > 0) {
-            this.$.labelAndInputContainer.style.position = 'static';
           }
         } else {
           // When the label is not floating, it should overlap the input element.
@@ -19940,6 +19924,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         position: relative;
         width: 18px;
         height: 18px;
+        min-width: 18px;
         vertical-align: middle;
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
       }
@@ -19984,31 +19969,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       @-webkit-keyframes checkmark-expand {
         0% {
-          top: 9px;
-          left: 6px;
-          width: 0px;
-          height: 0px;
+          -webkit-transform: scale(0, 0) rotate(45deg);
         }
         100% {
-          top: -1px;
-          left: 4px;
-          width: 5px;
-          height: 10px;
+          -webkit-transform: scale(1, 1) rotate(45deg);
         }
       }
 
       @keyframes checkmark-expand {
         0% {
-          top: 9px;
-          left: 6px;
-          width: 0px;
-          height: 0px;
+          transform: scale(0, 0) rotate(45deg);
         }
         100% {
-          top: -1px;
-          left: 4px;
-          width: 5px;
-          height: 10px;
+          transform: scale(1, 1) rotate(45deg);
         }
       }
 
@@ -20018,11 +19991,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       }
 
       #checkmark {
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
         position: absolute;
-        top: -1px;
-        left: 4px;
         width: 5px;
         height: 10px;
         border-style: solid;
@@ -20031,6 +20000,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         border-right-width: 2px;
         border-bottom-width: 2px;
         border-color: var(--paper-checkbox-checkmark-color, white);
+        transform-origin: 97% 86%;
+        -webkit-transform-origin: 97% 86%;
       }
 
       /* label */

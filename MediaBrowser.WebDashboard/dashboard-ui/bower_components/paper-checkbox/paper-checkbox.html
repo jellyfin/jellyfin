@@ -70,6 +70,7 @@ Custom property | Description | Default
         position: relative;
         width: 18px;
         height: 18px;
+        min-width: 18px;
         vertical-align: middle;
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
       }
@@ -114,31 +115,19 @@ Custom property | Description | Default
 
       @-webkit-keyframes checkmark-expand {
         0% {
-          top: 9px;
-          left: 6px;
-          width: 0px;
-          height: 0px;
+          -webkit-transform: scale(0, 0) rotate(45deg);
         }
         100% {
-          top: -1px;
-          left: 4px;
-          width: 5px;
-          height: 10px;
+          -webkit-transform: scale(1, 1) rotate(45deg);
         }
       }
 
       @keyframes checkmark-expand {
         0% {
-          top: 9px;
-          left: 6px;
-          width: 0px;
-          height: 0px;
+          transform: scale(0, 0) rotate(45deg);
         }
         100% {
-          top: -1px;
-          left: 4px;
-          width: 5px;
-          height: 10px;
+          transform: scale(1, 1) rotate(45deg);
         }
       }
 
@@ -148,11 +137,7 @@ Custom property | Description | Default
       }
 
       #checkmark {
-        -webkit-transform: rotate(45deg);
-        transform: rotate(45deg);
         position: absolute;
-        top: -1px;
-        left: 4px;
         width: 5px;
         height: 10px;
         border-style: solid;
@@ -161,6 +146,8 @@ Custom property | Description | Default
         border-right-width: 2px;
         border-bottom-width: 2px;
         border-color: var(--paper-checkbox-checkmark-color, white);
+        transform-origin: 97% 86%;
+        -webkit-transform-origin: 97% 86%;
       }
 
       /* label */

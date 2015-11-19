@@ -40,6 +40,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="prefix">
+    <template>
+      <paper-input-container>
+        <div prefix>$</div>
+        <label id="l">label</label>
+        <input is="iron-input" id="i">
+      </paper-input-container>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prefix-has-value">
+    <template>
+      <paper-input-container>
+        <div prefix>$</div>
+        <label id="l">label</label>
+        <input is="iron-input" id="i" value="foo">
+      </paper-input-container>
+    </template>
+  </test-fixture>
+
   <test-fixture id="has-value">
     <template>
       <paper-input-container>
@@ -119,9 +139,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(getComputedStyle(container.querySelector('#l')).visibility, 'visible', 'label has visibility:visible');
       });
 
-      test('label is floated if value is initialized to not null', function() {
+      test('label is floated if value is initialized to not null', function(done) {
         var container = fixture('has-value');
-        assert.notEqual(getTransform(container.querySelector('#l')), 'none', 'label has transform');
+        requestAnimationFrame(function() {
+          assert.notEqual(getTransform(container.querySelector('#l')), 'none', 'label has transform');
+          done();
+        });
       });
 
       test('label is invisible if no-label-float and value is initialized to not null', function() {
@@ -132,7 +155,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('label is floated if always-float-label is true', function() {
         var container = fixture('always-float');
         assert.notEqual(getTransform(container.querySelector('#l')), 'none', 'label has transform');
-      })
+      });
+
+      test('label is floated correctly with a prefix', function(done) {
+        var container = fixture('prefix');
+        var label = Polymer.dom(container).querySelector('#l');
+        var input = Polymer.dom(container).querySelector('#i');
+
+        // Label is initially visible.
+        assert.equal(getComputedStyle(label).visibility, 'visible', 'label has visibility:visible');
+
+        // After entering text, the label floats, and it is not indented.
+        input.bindValue = 'foobar';
+        requestAnimationFrame(function() {
+          assert.notEqual(getTransform(label), 'none', 'label has transform');
+          assert.equal(label.getBoundingClientRect().left, container.getBoundingClientRect().left);
+          done();
+        });
+      });
+
+      test('label is floated correctly with a prefix and prefilled value', function(done) {
+        var container = fixture('prefix-has-value');
+        var label = Polymer.dom(container).querySelector('#l');
+
+        // The label floats, and it is not indented.
+        requestAnimationFrame(function() {
+          assert.notEqual(getTransform(label), 'none', 'label has transform');
+          assert.equal(label.getBoundingClientRect().left, container.getBoundingClientRect().left);
+          done();
+        });
+      });
 
     });
 
