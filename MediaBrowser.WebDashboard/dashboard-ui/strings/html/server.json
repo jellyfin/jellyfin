@@ -1308,7 +1308,7 @@
     "OptionUpcomingStreamingMovies": "Include trailers from new and upcoming movies on Netflix",
     "LabelDisplayTrailersWithinMovieSuggestions": "Display trailers within movie suggestions",
     "LabelDisplayTrailersWithinMovieSuggestionsHelp": "Requires installation of the Trailer channel.",
-    "CinemaModeConfigurationHelp2": "Individual users will have the ability to disable cinema mode within their own preferences.",
+    "CinemaModeConfigurationHelp2": "Emby apps will have a setting to enable or disable cinema mode. TV apps enable cinema mode by default.",
     "LabelEnableCinemaMode": "Enable cinema mode",
     "HeaderCinemaMode": "Cinema Mode",
     "LabelDateAddedBehavior": "Date added behavior for new content:",
