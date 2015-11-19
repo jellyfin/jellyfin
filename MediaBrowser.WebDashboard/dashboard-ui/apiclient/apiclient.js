@@ -411,7 +411,8 @@
                 throw new Error("Cannot open web socket without access token.");
             }
 
-            var url = self.getUrl("socket").replace("/socket", "").replace('http', 'ws');
+            var url = self.getUrl("socket").replace("emby/socket", "embywebsocket").replace('http', 'ws');
+
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;
 

@@ -555,6 +555,12 @@ namespace MediaBrowser.Model.Dto
         public string CollectionType { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the original collection.
+        /// </summary>
+        /// <value>The type of the original collection.</value>
+        public string OriginalCollectionType { get; set; }
+        
+        /// <summary>
         /// Gets or sets the display order.
         /// </summary>
         /// <value>The display order.</value>

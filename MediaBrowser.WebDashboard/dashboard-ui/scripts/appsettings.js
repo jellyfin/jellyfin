@@ -56,6 +56,24 @@
 
             return appStorage.getItem('externalplayers') == 'true';
         },
+        enableCinemaMode: function (val) {
+
+            if (val != null) {
+                update('enableCinemaMode', val.toString());
+            }
+
+            val = appStorage.getItem('enableCinemaMode');
+
+            if (val) {
+                return val != 'false';
+            }
+
+            if ($.browser.mobile) {
+                return false;
+            }
+
+            return true;
+        },
         enableFullScreen: function (val) {
 
             if (val != null) {

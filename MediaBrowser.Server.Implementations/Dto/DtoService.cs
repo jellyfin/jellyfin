@@ -356,6 +356,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
+                dto.OriginalCollectionType = collectionFolder.CollectionType;
+
                 dto.CollectionType = user == null ?
                     collectionFolder.CollectionType :
                     collectionFolder.GetViewType(user);

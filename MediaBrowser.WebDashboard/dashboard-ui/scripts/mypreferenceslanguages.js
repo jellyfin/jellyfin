@@ -30,7 +30,7 @@
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
-        page.querySelector('.chkEnableCinemaMode').checked = user.Configuration.EnableCinemaMode || false;
+        page.querySelector('.chkEnableCinemaMode').checked = AppSettings.enableCinemaMode();
         page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
         page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
@@ -90,7 +90,8 @@
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
-        user.Configuration.EnableCinemaMode = page.querySelector('.chkEnableCinemaMode').checked;
+
+        AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
