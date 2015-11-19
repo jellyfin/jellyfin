@@ -149,7 +149,7 @@
 
         if (dialogOptions.enablePlayMinute) {
             html += '<p>';
-            html += '<paper-button raised class="secondary block btnCloseDialog subdued"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlayTwoMinutes') + '</span></paper-button>';
+            html += '<paper-button raised class="secondary block btnCloseDialog subdued"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlayOneMinute') + '</span></paper-button>';
             html += '</p>';
         }
 

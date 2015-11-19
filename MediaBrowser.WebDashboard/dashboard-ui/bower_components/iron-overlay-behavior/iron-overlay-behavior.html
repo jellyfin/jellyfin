@@ -434,6 +434,12 @@ context. You should place this element as a child of `<body>` whenever possible.
  */
 
 /**
+ * Fired when the `iron-overlay` is canceled, but before it is closed.
+ * Cancel the event to prevent the `iron-overlay` from closing.
+ * @event iron-overlay-canceled
+ */
+
+/**
  * Fired after the `iron-overlay` closes.
  * @event iron-overlay-closed
  * @param {{canceled: (boolean|undefined)}} set to the `closingReason` attribute

@@ -471,7 +471,7 @@
         }
 
         var autoStopTimeout;
-        var lockedTimeLimitMs = 120000;
+        var lockedTimeLimitMs = 60000;
         function startAutoStopTimer() {
             stopAutoStopTimer();
             autoStopTimeout = setTimeout(onAutoStopTimeout, lockedTimeLimitMs);

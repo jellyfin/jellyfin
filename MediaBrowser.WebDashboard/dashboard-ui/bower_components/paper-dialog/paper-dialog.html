@@ -11,12 +11,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
-
+<link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html">
 <!--
+Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
+
 `<paper-dialog>` is a dialog with Material Design styling and optional animations when it is
 opened or closed. It provides styles for a header, content area, and an action area for buttons.
-You can use the `<paper-dialog-scrollable` element (in its own repository) if you need a scrolling
+You can use the `<paper-dialog-scrollable>` element (in its own repository) if you need a scrolling
 content area. See `Polymer.PaperDialogBehavior` for specifics.
 
 For example, the following code implements a dialog with a header, scrolling content area and
@@ -67,13 +68,10 @@ element.
 -->
 
 <dom-module id="paper-dialog">
-
-  <link rel="import" type="css" href="../paper-dialog-behavior/paper-dialog-common.css">
-
   <template>
+    <style include="paper-dialog-shared-styles"></style>
     <content></content>
   </template>
-
 </dom-module>
 
 <script>

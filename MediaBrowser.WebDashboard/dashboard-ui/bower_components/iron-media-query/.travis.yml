@@ -1,28 +1,22 @@
 language: node_js
 sudo: false
-matrix:
-  include:
-  - node_js: stable
-    script: xvfb-run wct
-    addons:
-      firefox: latest
-      apt:
-        sources:
-        - google-chrome
-        packages:
-        - google-chrome-stable
-  - node_js: node
-    script:
-    - |
-      if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
-        wct -s 'default'
-      fi
 before_script:
-- npm install web-component-tester
-- npm install bower
-- export PATH=$PWD/node_modules/.bin:$PATH
-- bower install
+  - npm install web-component-tester
+  - npm install bower
+  - 'export PATH=$PWD/node_modules/.bin:$PATH'
+  - bower install
 env:
   global:
-  - secure: My9uxlkp4fZwSHKqo1RUv4yBhNl46XfbaiOsOStqJdI9l7hBfudSl7V2OZeLuV2pEDJC1z1ZqVU6C/K0/iTf7i66cd9g0iH5N+1qex8p2AcuP1evPWbwLw8moHH+M5E14MMXD8sPX4KauS8azmgRm61pppD5ZgKfCaeGZg7Tczs=
-  - secure: LgnZP4BNGBkTZhf8Vr7r9LdrOwq2/58TqqYkFFloEGBRT6HmumNSRwNbIwOh1U9jSTVkqjC2rn4G27u4XlEIs+QTD2PVSSEKy7Vbn0KxSNCvCGaOB1ZaxWTwZa7nkg09ZFRCHGh+WIbuV+BxyzsjOqlN82GSzFNSb3rxhqDM6dU=
+    - secure: My9uxlkp4fZwSHKqo1RUv4yBhNl46XfbaiOsOStqJdI9l7hBfudSl7V2OZeLuV2pEDJC1z1ZqVU6C/K0/iTf7i66cd9g0iH5N+1qex8p2AcuP1evPWbwLw8moHH+M5E14MMXD8sPX4KauS8azmgRm61pppD5ZgKfCaeGZg7Tczs=
+    - secure: LgnZP4BNGBkTZhf8Vr7r9LdrOwq2/58TqqYkFFloEGBRT6HmumNSRwNbIwOh1U9jSTVkqjC2rn4G27u4XlEIs+QTD2PVSSEKy7Vbn0KxSNCvCGaOB1ZaxWTwZa7nkg09ZFRCHGh+WIbuV+BxyzsjOqlN82GSzFNSb3rxhqDM6dU=
+node_js: 4
+addons:
+  firefox: '42.0'
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+script:
+  - xvfb-run wct
+  - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"

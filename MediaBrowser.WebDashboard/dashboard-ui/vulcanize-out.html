@@ -9120,14 +9120,14 @@ this.fire('dom-change');
 
     /* opacity for dark text on a light background */
     --dark-divider-opacity: 0.12;
-    --dark-disabled-opacity: 0.26; /* or hint text */
-    --dark-secondary-opacity: 0.54; /* or icon */
+    --dark-disabled-opacity: 0.38; /* or hint text or icon */
+    --dark-secondary-opacity: 0.54;
     --dark-primary-opacity: 0.87;
 
     /* opacity for light text on a dark background */
     --light-divider-opacity: 0.12;
-    --light-disabled-opacity: 0.3; /* or hint text */
-    --light-secondary-opacity: 0.7; /* or icon */
+    --light-disabled-opacity: 0.3; /* or hint text or icon */
+    --light-secondary-opacity: 0.7;
     --light-primary-opacity: 1.0;
 
   }
@@ -10836,60 +10836,74 @@ CSS properties               | Action
 
 <script>
 
-  Polymer.IronOverlayManager = (function() {
+  Polymer.IronOverlayManager = {
 
-    var overlays = [];
-    var DEFAULT_Z = 10;
-    var backdrops = [];
+    _overlays: [],
+
+    // iframes have a default z-index of 100, so this default should be at least
+    // that.
+    _minimumZ: 101,
+
+    _backdrops: [],
+
+    _applyOverlayZ: function(overlay, aboveZ) {
+      this._setZ(overlay, aboveZ + 2);
+    },
+
+    _setZ: function(element, z) {
+      element.style.zIndex = z;
+    },
 
     // track overlays for z-index and focus managemant
-    function addOverlay(overlay) {
-      var z0 = currentOverlayZ();
-      overlays.push(overlay);
-      var z1 = currentOverlayZ();
-      if (z1 <= z0) {
-        applyOverlayZ(overlay, z0);
+    addOverlay: function(overlay) {
+      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
+      this._overlays.push(overlay);
+      var newZ = this.currentOverlayZ();
+      if (newZ <= minimumZ) {
+        this._applyOverlayZ(overlay, minimumZ);
       }
-    }
+    },
 
-    function removeOverlay(overlay) {
-      var i = overlays.indexOf(overlay);
+    removeOverlay: function(overlay) {
+      var i = this._overlays.indexOf(overlay);
       if (i >= 0) {
-        overlays.splice(i, 1);
-        setZ(overlay, '');
+        this._overlays.splice(i, 1);
+        this._setZ(overlay, '');
       }
-    }
+    },
 
-    function applyOverlayZ(overlay, aboveZ) {
-      setZ(overlay, aboveZ + 2);
-    }
-
-    function setZ(element, z) {
-      element.style.zIndex = z;
-    }
-
-    function currentOverlay() {
-      var i = overlays.length - 1;
-      while (overlays[i] && !overlays[i].opened) {
+    currentOverlay: function() {
+      var i = this._overlays.length - 1;
+      while (this._overlays[i] && !this._overlays[i].opened) {
         --i;
       }
-      return overlays[i];
-    }
+      return this._overlays[i];
+    },
 
-    function currentOverlayZ() {
-      var z;
-      var current = currentOverlay();
+    currentOverlayZ: function() {
+      var z = this._minimumZ;
+      var current = this.currentOverlay();
       if (current) {
         var z1 = window.getComputedStyle(current).zIndex;
         if (!isNaN(z1)) {
           z = Number(z1);
         }
       }
-      return z || DEFAULT_Z;
-    }
+      return z;
+    },
 
-    function focusOverlay() {
-      var current = currentOverlay();
+    /**
+     * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
+     * This does not effect the z-index of any existing overlays.
+     *
+     * @param {number} minimumZ
+     */
+    ensureMinimumZ: function(minimumZ) {
+      this._minimumZ = Math.max(this._minimumZ, minimumZ);
+    },
+
+    focusOverlay: function() {
+      var current = this.currentOverlay();
       // We have to be careful to focus the next overlay _after_ any current
       // transitions are complete (due to the state being toggled prior to the
       // transition). Otherwise, we risk infinite recursion when a transitioning
@@ -10901,36 +10915,26 @@ CSS properties               | Action
       if (current && !current.transitioning) {
         current._applyFocus();
       }
-    }
+    },
 
-    function trackBackdrop(element) {
+    trackBackdrop: function(element) {
       // backdrops contains the overlays with a backdrop that are currently
       // visible
       if (element.opened) {
-        backdrops.push(element);
+        this._backdrops.push(element);
       } else {
-        var index = backdrops.indexOf(element);
+        var index = this._backdrops.indexOf(element);
         if (index >= 0) {
-          backdrops.splice(index, 1);
+          this._backdrops.splice(index, 1);
         }
       }
+    },
+
+    getBackdrops: function() {
+      return this._backdrops;
     }
 
-    function getBackdrops() {
-      return backdrops;
-    }
-
-    return {
-      addOverlay: addOverlay,
-      removeOverlay: removeOverlay,
-      currentOverlay: currentOverlay,
-      currentOverlayZ: currentOverlayZ,
-      focusOverlay: focusOverlay,
-      trackBackdrop: trackBackdrop,
-      getBackdrops: getBackdrops
-    };
-
-  })();
+  };
 
 </script>
 
@@ -11352,6 +11356,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 /**
  * Fired after the `iron-overlay` opens.
  * @event iron-overlay-opened
+ */
+
+/**
+ * Fired when the `iron-overlay` is canceled, but before it is closed.
+ * Cancel the event to prevent the `iron-overlay` from closing.
+ * @event iron-overlay-canceled
  */
 
 /**
@@ -13440,7 +13450,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
        * Regular expression to match valid input characters.
        */
       allowedPattern: {
-        type: String
+        type: String,
+        observer: "_allowedPatternChanged"
       },
 
       _previousValidInput: {
@@ -13489,6 +13500,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _allowedPatternChanged: function() {
+      // Force to prevent invalid input when an `allowed-pattern` is set
+      this.preventInvalidInput = this.allowedPattern ? true : false;
     },
 
     _onInput: function() {
@@ -14367,10 +14383,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         transform: translate3d(0, 0, 0);
       }
 
-      :host([noink]) {
-        pointer-events: none;
-      }
-
       #background,
       #waves,
       .wave-container,
@@ -14814,10 +14826,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      observers: [
-        '_noinkChanged(noink, isAttached)'
-      ],
-
       get target () {
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
         var target;
@@ -14838,6 +14846,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       attached: function() {
+        // Set up a11yKeysBehavior to listen to key events on the target,
+        // so that space and enter activate the ripple even if the target doesn't
+        // handle key events. The key handlers deal with `noink` themselves.
+        this.keyEventTarget = this.target;
         this.listen(this.target, 'up', 'uiUpAction');
         this.listen(this.target, 'down', 'uiDownAction');
       },
@@ -15006,12 +15018,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           this.downAction();
         } else {
           this.upAction();
-        }
-      },
-
-      _noinkChanged: function(noink, attached) {
-        if (attached) {
-          this.keyEventTarget = noink ? this : this.target;
         }
       }
     });
@@ -16116,74 +16122,65 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 })();
 
 </script>
-<dom-module id="paper-dialog" assetpath="bower_components/paper-dialog/">
-
-  <style>
-/*
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
-:host {
-  display: block;
-  margin: 24px 40px;
-  -webkit-overflow-scrolling: touch;
-
-  background: var(--paper-dialog-background-color, --primary-background-color);
-  color: var(--paper-dialog-color, --primary-text-color);
-
-  @apply(--paper-font-body1);
-  @apply(--shadow-elevation-16dp);
-  @apply(--paper-dialog);
-}
-
-:host > ::content > * {
-  margin-top: 20px;
-  padding: 0 24px;
-}
-
-:host > ::content > .no-padding {
-  padding: 0;
-}
-
-:host > ::content > *:first-child {
-  margin-top: 24px;
-}
-
-:host > ::content > *:last-child {
-  margin-bottom: 24px;
-}
-
-:host > ::content h2 {
-  position: relative;
-  margin: 0;
-  @apply(--paper-font-title);
-
-  @apply(--paper-dialog-title);
-}
-
-:host > ::content .buttons {
-  position: relative;
-  padding: 8px 8px 8px 24px;
-  margin: 0;
-
-  color: var(--paper-dialog-button-color, --default-primary-color);
-
-  @apply(--layout-horizontal);
-  @apply(--layout-end-justified);
-}
-
-</style>
-
+<dom-module id="paper-dialog-shared-styles" assetpath="bower_components/paper-dialog-behavior/">
   <template>
+    <style>
+      :host {
+        display: block;
+        margin: 24px 40px;
+        -webkit-overflow-scrolling: touch;
+
+        background: var(--paper-dialog-background-color, --primary-background-color);
+        color: var(--paper-dialog-color, --primary-text-color);
+
+        @apply(--paper-font-body1);
+        @apply(--shadow-elevation-16dp);
+        @apply(--paper-dialog);
+      }
+
+      :host > ::content > * {
+        margin-top: 20px;
+        padding: 0 24px;
+      }
+
+      :host > ::content > .no-padding {
+        padding: 0;
+      }
+
+      :host > ::content > *:first-child {
+        margin-top: 24px;
+      }
+
+      :host > ::content > *:last-child {
+        margin-bottom: 24px;
+      }
+
+      :host > ::content h2 {
+        position: relative;
+        margin: 0;
+        @apply(--paper-font-title);
+
+        @apply(--paper-dialog-title);
+      }
+
+      :host > ::content .buttons {
+        position: relative;
+        padding: 8px 8px 8px 24px;
+        margin: 0;
+
+        color: var(--paper-dialog-button-color, --default-primary-color);
+
+        @apply(--layout-horizontal);
+        @apply(--layout-end-justified);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-dialog" assetpath="bower_components/paper-dialog/">
+  <template>
+    <style include="paper-dialog-shared-styles"></style>
     <content></content>
   </template>
-
 </dom-module>
 
 <script>

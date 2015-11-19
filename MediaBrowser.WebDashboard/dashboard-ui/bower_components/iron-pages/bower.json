@@ -1,6 +1,6 @@
 {
   "name": "iron-pages",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Organizes a set of pages and shows one at a time",
   "main": "iron-pages.html",
@@ -26,7 +26,8 @@
     "paper-styles": "polymerelements/paper-styles#^1.0.2",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
-  }
+  },
+  "ignore": []
 }

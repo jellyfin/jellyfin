@@ -1,6 +1,6 @@
 {
   "name": "iron-media-query",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Lets you bind to a CSS media query",
   "authors": [
     "The Polymer Authors"
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "paper-styles": "polymerelements/paper-styles#^1.0.2",
-    "web-component-tester": "*",
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"

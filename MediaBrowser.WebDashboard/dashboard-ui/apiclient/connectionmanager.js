@@ -188,6 +188,9 @@
             var existingServer = existingServers.length ? existingServers[0] : {};
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            if (existingServer.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                existingServer.DateLastLocalConnection = new Date().getTime();
+            }
             existingServer.ManualAddress = apiClient.serverAddress();
             apiClient.serverInfo(existingServer);
 
@@ -289,6 +292,10 @@
 
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
+
+                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                    server.DateLastLocalConnection = new Date().getTime();
+                }
             }
             server.Id = result.ServerId;
 
@@ -1003,10 +1010,15 @@
 
             updateServerInfo(server, systemInfo);
 
+            server.LastConnectionMode = connectionMode;
+
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
+
+                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                    server.DateLastLocalConnection = new Date().getTime();
+                }
             }
-            server.LastConnectionMode = connectionMode;
             credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);
 
@@ -1371,19 +1383,27 @@
 
                 var match = matchedServers[0];
 
-                // 31 days
-                if ((new Date().getTime() - (match.DateLastLocalConnection || 0)) > 2678400000) {
-                    deferred.resolveWith(null, [{}]);
+                if (!match.DateLastLocalConnection) {
+
+                    ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).done(function (info) {
+
+                        if (info.IsInNetwork) {
+
+                            updateDateLastLocalConnection(match.Id);
+                            onLocalCheckSuccess(feature, apiClient, deferred);
+                        } else {
+                            deferred.resolveWith(null, [{}]);
+                        }
+
+                    }).fail(function () {
+
+                        deferred.resolveWith(null, [{}]);
+                    });
+
                     return;
                 }
 
-                apiClient.getRegistrationInfo(feature).done(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-                }).fail(function () {
-
-                    deferred.reject();
-                });
+                onLocalCheckSuccess(feature, apiClient, deferred);
 
             }).fail(function () {
 
@@ -1393,6 +1413,32 @@
             return deferred.promise();
         };
 
+        function updateDateLastLocalConnection(serverId) {
+
+            var credentials = credentialProvider.credentials();
+            var servers = credentials.Servers.filter(function (s) {
+                return s.Id == serverId;
+            });
+
+            var server = servers.length ? servers[0] : null;
+
+            if (server) {
+                server.DateLastLocalConnection = new Date().getTime();
+                credentialProvider.addOrUpdateServer(credentials.Servers, server);
+                credentialProvider.credentials(credentials);
+            }
+        }
+
+        function onLocalCheckSuccess(feature, apiClient, deferred) {
+
+            apiClient.getRegistrationInfo(feature).done(function (result) {
+
+                deferred.resolveWith(null, [result]);
+            }).fail(function () {
+
+                deferred.reject();
+            });
+        }
 
         return self;
     };

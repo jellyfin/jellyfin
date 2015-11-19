@@ -140,7 +140,7 @@ namespace MediaBrowser.ServerApplication
                 if (!duplicate.WaitForExit(10000))
                 {
                     _logger.Info("The duplicate process did not exit.");
-                    //return true;
+                    return true;
                 }
             }
 
