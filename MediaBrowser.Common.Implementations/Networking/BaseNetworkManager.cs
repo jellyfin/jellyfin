@@ -84,16 +84,16 @@ namespace MediaBrowser.Common.Implementations.Networking
             return true;
         }
 
-        private bool IsInPrivateAddressSpaceIpv6(string endpoint)
+        private bool IsInPrivateAddressSpace(string endpoint)
         {
-            return
+            if (string.Equals(endpoint, "::1", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
 
-                // If url was requested with computer name, we may see this
-                string.Equals(endpoint, "::1", StringComparison.OrdinalIgnoreCase);
-        }
+            // Handle ipv4 mapped to ipv6
+            endpoint = endpoint.Replace("::ffff:", string.Empty);
 
-        private bool IsInPrivateAddressSpaceIpv4(string endpoint)
-        {
             // Private address space:
             // http://en.wikipedia.org/wiki/Private_network
 
@@ -145,7 +145,7 @@ namespace MediaBrowser.Common.Implementations.Networking
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
                     lengthMatch = 4;
-                    if (IsInPrivateAddressSpaceIpv4(addressString))
+                    if (IsInPrivateAddressSpace(addressString))
                     {
                         return true;
                     }
@@ -153,7 +153,7 @@ namespace MediaBrowser.Common.Implementations.Networking
                 else if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     lengthMatch = 10;
-                    if (IsInPrivateAddressSpaceIpv6(endpoint))
+                    if (IsInPrivateAddressSpace(endpoint))
                     {
                         return true;
                     }
