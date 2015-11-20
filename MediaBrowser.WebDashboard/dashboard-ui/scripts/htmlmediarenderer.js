@@ -1,7 +1,7 @@
 ﻿(function () {
 
     var supportsTextTracks;
-    var isViblastStarted;
+    var hlsPlayer;
     var requiresSettingStartTimeOnStart;
 
     function htmlMediaRenderer(options) {
@@ -31,20 +31,20 @@
 
         function onTimeUpdate() {
 
-            if (isViblastStarted) {
+            //if (isViblastStarted) {
 
-                // This is a workaround for viblast not stopping playback at the end
-                var time = this.currentTime;
-                var duration = this.duration;
+            //    // This is a workaround for viblast not stopping playback at the end
+            //    var time = this.currentTime;
+            //    var duration = this.duration;
 
-                if (duration) {
-                    if (time >= (duration - 1)) {
+            //    if (duration) {
+            //        if (time >= (duration - 1)) {
 
-                        //onEnded();
-                        return;
-                    }
-                }
-            }
+            //            //onEnded();
+            //            return;
+            //        }
+            //    }
+            //}
 
             $(self).trigger('timeupdate');
         }
@@ -88,54 +88,16 @@
 
         function onLoadedMetadata() {
 
-            if (!isViblastStarted) {
+            if (!hlsPlayer) {
                 this.play();
             }
         }
 
-        function requireViblast(callback) {
-            require(['thirdparty/viblast/viblast.js'], function () {
-
-                if (htmlMediaRenderer.customViblastKey) {
-                    callback();
-                } else {
-                    downloadViblastKey(callback);
-                }
-            });
-        }
-
-        function downloadViblastKey(callback) {
-
-            var savedKeyPropertyName = 'vbk';
-            var savedKey = appStorage.getItem(savedKeyPropertyName);
-
-            if (savedKey) {
-                htmlMediaRenderer.customViblastKey = savedKey;
-                callback();
-                return;
-            }
-
-            var headers = {};
-            headers['X-Emby-Token'] = 'EMBY_SERVER';
-
-            HttpClient.send({
-                type: 'GET',
-                url: 'https://mb3admin.com/admin/service/registration/getViBlastKey',
-                headers: headers
-
-            }).done(function (key) {
-
-                appStorage.setItem(savedKeyPropertyName, key);
-                htmlMediaRenderer.customViblastKey = key;
-                callback();
-            }).fail(function () {
+        function requireHlsPlayer(callback) {
+            require(['thirdparty/hls.min.js'], function (hls) {
+                window.Hls = hls;
                 callback();
             });
-        }
-
-        function getViblastKey() {
-
-            return htmlMediaRenderer.customViblastKey || 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
         }
 
         function getStartTime(url) {
@@ -174,10 +136,16 @@
 
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
                 if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
+
+                    var delay = $.browser.safari ? 2500 : 0;
                     var element = this;
-                    setTimeout(function () {
+                    if (delay) {
+                        setTimeout(function () {
+                            element.currentTime = startPositionInSeekParam;
+                        }, delay);
+                    } else {
                         element.currentTime = startPositionInSeekParam;
-                    }, 2500);
+                    }
                 }
             }
         }
@@ -216,7 +184,7 @@
 	            .on('error', onError)[0];
         }
 
-        function enableViblast(src) {
+        function enableHlsPlayer(src) {
 
             if (src) {
                 if (src.indexOf('.m3u8') == -1) {
@@ -298,18 +266,18 @@
             if (mediaElement) {
                 mediaElement.pause();
 
-                if (isViblastStarted) {
+                if (hlsPlayer) {
                     _currentTime = mediaElement.currentTime;
 
                     // Sometimes this fails
                     try {
-                        viblast('#' + mediaElement.id).stop();
+                        hlsPlayer.destroy();
                     }
                     catch (err) {
                         Logger.log(err);
                     }
 
-                    isViblastStarted = false;
+                    hlsPlayer = null;
                 }
             }
         };
@@ -379,33 +347,35 @@
             }
             else {
 
-                if (isViblastStarted) {
-                    viblast('#' + elem.id).stop();
-                    isViblastStarted = false;
+                if (hlsPlayer) {
+                    hlsPlayer.destroy();
+                    hlsPlayer = null;
                 }
 
                 if (startTime) {
 
-                    try {
-                        elem.currentTime = startTime;
-                    } catch (err) {
-                        // IE will throw an invalid state exception when trying to set currentTime before starting playback
-                    }
-                    requiresSettingStartTimeOnStart = elem.currentTime == 0;
+                    //try {
+                    //    elem.currentTime = startTime;
+                    //} catch (err) {
+                    //    // IE will throw an invalid state exception when trying to set currentTime before starting playback
+                    //}
+                    //requiresSettingStartTimeOnStart = elem.currentTime == 0;
+                    requiresSettingStartTimeOnStart = true;
                 }
 
                 tracks = tracks || [];
 
-                if (enableViblast(val)) {
+                if (enableHlsPlayer(val)) {
 
                     setTracks(elem, tracks);
 
-                    viblast('#' + elem.id).setup({
-                        key: getViblastKey(),
-                        stream: val
+                    var hls = new Hls();
+                    hls.loadSource(val);
+                    hls.attachVideo(elem);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                        elem.play();
                     });
-
-                    isViblastStarted = true;
+                    hlsPlayer = hls;
 
                 } else {
 
@@ -618,9 +588,9 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            if (options.type == 'video' && enableViblast()) {
+            if (options.type == 'video' && enableHlsPlayer()) {
 
-                requireViblast(function () {
+                requireHlsPlayer(function () {
 
                     deferred.resolve();
                 });
