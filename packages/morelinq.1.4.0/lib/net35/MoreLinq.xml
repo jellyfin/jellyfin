@@ -476,30 +476,6 @@
             </returns>
             <remarks>This operator uses immediate execution.</remarks>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>
-            Creates a delimited string from a sequence of values. The 
-            delimiter used depends on the current culture of the executing thread.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-        </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.String},System.String)">
-            <summary>
-            Creates a delimited string from a sequence of values and
-            a given delimiter.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
-            the executing thread's current culture's list separator is used.</param>
-        </member>
         <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Boolean})">
             <summary>
             Creates a delimited string from a sequence of values. The 
@@ -512,30 +488,6 @@
             simple ToString() conversion.</param>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Boolean},System.String)">
-            <summary>
-            Creates a delimited string from a sequence of values and
-            a given delimiter.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
-            the executing thread's current culture's list separator is used.</param>
-        </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.SByte})">
-            <summary>
-            Creates a delimited string from a sequence of values. The 
-            delimiter used depends on the current culture of the executing thread.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-        </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.SByte},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -596,7 +548,7 @@
             <param name="delimiter">The delimiter to inject between elements. May be null, in which case
             the executing thread's current culture's list separator is used.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Int16})">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Decimal})">
             <summary>
             Creates a delimited string from a sequence of values. The 
             delimiter used depends on the current culture of the executing thread.
@@ -607,7 +559,55 @@
             <param name="source">The sequence of items to delimit. Each is converted to a string using the
             simple ToString() conversion.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Int16},System.String)">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Decimal},System.String)">
+            <summary>
+            Creates a delimited string from a sequence of values and
+            a given delimiter.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
+            the executing thread's current culture's list separator is used.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            Creates a delimited string from a sequence of values. The 
+            delimiter used depends on the current culture of the executing thread.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Double},System.String)">
+            <summary>
+            Creates a delimited string from a sequence of values and
+            a given delimiter.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
+            the executing thread's current culture's list separator is used.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Single})">
+            <summary>
+            Creates a delimited string from a sequence of values. The 
+            delimiter used depends on the current culture of the executing thread.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Single},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -668,7 +668,7 @@
             <param name="delimiter">The delimiter to inject between elements. May be null, in which case
             the executing thread's current culture's list separator is used.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Single})">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.SByte})">
             <summary>
             Creates a delimited string from a sequence of values. The 
             delimiter used depends on the current culture of the executing thread.
@@ -679,7 +679,7 @@
             <param name="source">The sequence of items to delimit. Each is converted to a string using the
             simple ToString() conversion.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Single},System.String)">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.SByte},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -692,7 +692,7 @@
             <param name="delimiter">The delimiter to inject between elements. May be null, in which case
             the executing thread's current culture's list separator is used.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Double})">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Int16})">
             <summary>
             Creates a delimited string from a sequence of values. The 
             delimiter used depends on the current culture of the executing thread.
@@ -703,7 +703,7 @@
             <param name="source">The sequence of items to delimit. Each is converted to a string using the
             simple ToString() conversion.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Double},System.String)">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Int16},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -716,7 +716,7 @@
             <param name="delimiter">The delimiter to inject between elements. May be null, in which case
             the executing thread's current culture's list separator is used.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Decimal})">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Creates a delimited string from a sequence of values. The 
             delimiter used depends on the current culture of the executing thread.
@@ -727,31 +727,7 @@
             <param name="source">The sequence of items to delimit. Each is converted to a string using the
             simple ToString() conversion.</param>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.Decimal},System.String)">
-            <summary>
-            Creates a delimited string from a sequence of values and
-            a given delimiter.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
-            the executing thread's current culture's list separator is used.</param>
-        </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.UInt16})">
-            <summary>
-            Creates a delimited string from a sequence of values. The 
-            delimiter used depends on the current culture of the executing thread.
-            </summary>
-            <remarks>
-            This operator uses immediate execution and effectively buffers the sequence.
-            </remarks>
-            <param name="source">The sequence of items to delimit. Each is converted to a string using the
-            simple ToString() conversion.</param>
-        </member>
-        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.UInt16},System.String)">
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.String},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -800,6 +776,30 @@
             simple ToString() conversion.</param>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.UInt64},System.String)">
+            <summary>
+            Creates a delimited string from a sequence of values and
+            a given delimiter.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+            <param name="delimiter">The delimiter to inject between elements. May be null, in which case
+            the executing thread's current culture's list separator is used.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.UInt16})">
+            <summary>
+            Creates a delimited string from a sequence of values. The 
+            delimiter used depends on the current culture of the executing thread.
+            </summary>
+            <remarks>
+            This operator uses immediate execution and effectively buffers the sequence.
+            </remarks>
+            <param name="source">The sequence of items to delimit. Each is converted to a string using the
+            simple ToString() conversion.</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ToDelimitedString(System.Collections.Generic.IEnumerable{System.UInt16},System.String)">
             <summary>
             Creates a delimited string from a sequence of values and
             a given delimiter.
@@ -909,6 +909,16 @@
             <typeparam name="T">The type of the elements in the sequence</typeparam>
             <param name="source">The sequence of elements</param>
             <param name="action">The action to execute on each element</param>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0,System.Int32})">
+            <summary>
+            Immediately executes the given action on each element in the source sequence.
+            Each element's index is used in the logic of the action.
+            </summary>
+            <typeparam name="T">The type of the elements in the sequence</typeparam>
+            <param name="source">The sequence of elements</param>
+            <param name="action">The action to execute on each element; the second parameter
+            of the action represents the index of the source element.</param>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.DistinctBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
             <summary>
@@ -1482,8 +1492,7 @@
             </summary>
             <remarks>
             If more than one element has the minimal projected value, the first
-            one encountered will be returned. This overload uses the default comparer
-            for the projected type. This operator uses immediate execution, but
+            one encountered will be returned. This operator uses immediate execution, but
             only buffers a single result (the current minimal element).
             </remarks>
             <typeparam name="TSource">Type of the source sequence</typeparam>
@@ -1522,8 +1531,7 @@
             </summary>
             <remarks>
             If more than one element has the maximal projected value, the first
-            one encountered will be returned. This overload uses the default comparer
-            for the projected type. This operator uses immediate execution, but
+            one encountered will be returned. This operator uses immediate execution, but
             only buffers a single result (the current maximal element).
             </remarks>
             <typeparam name="TSource">Type of the source sequence</typeparam>

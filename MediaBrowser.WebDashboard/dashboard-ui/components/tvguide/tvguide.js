@@ -316,7 +316,7 @@
                 if (hasChannelImage) {
 
                     var url = ApiClient.getScaledImageUrl(channel.Id, {
-                        maxHeight: 35,
+                        maxHeight: 40,
                         maxWidth: 60,
                         tag: channel.ImageTags.Primary,
                         type: "Primary"
