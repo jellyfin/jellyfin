@@ -365,6 +365,13 @@
 
         isSupported: function () {
 
+            if (AppInfo.isNativeApp) {
+                // Crashes on some amazon devices
+                if (window.device && (device.platform || '').toLowerCase().indexOf('amazon') != -1) {
+                    return false;
+                }
+            }
+
             return window.SpeechRecognition || window.webkitSpeechRecognition;
         },
 

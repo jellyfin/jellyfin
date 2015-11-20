@@ -128,7 +128,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
                 DeleteEmptyFolders(directory);
                 if (!_fileSystem.GetFileSystemEntryPaths(directory).Any())
                 {
-					_fileSystem.DeleteDirectory(directory, false);
+                    try
+                    {
+                        _fileSystem.DeleteDirectory(directory, false);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.ErrorException("Error deleting directory {0}", ex, directory);
+                    }
                 }
             }
         }

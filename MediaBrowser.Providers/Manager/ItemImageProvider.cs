@@ -516,11 +516,25 @@ namespace MediaBrowser.Providers.Manager
                 var hasDualAccess = item as IHasDualAccess;
                 if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
                 {
-                    return !_config.Configuration.EnableImagePreDownloading;
+                    return true;
                 }
             }
 
-            return false;
+            switch (type)
+            {
+                case ImageType.Primary:
+                    return false;
+                case ImageType.Thumb:
+                    return false;
+                case ImageType.Logo:
+                    return false;
+                case ImageType.Backdrop:
+                    return false;
+                case ImageType.Screenshot:
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         private void SaveImageStub(IHasImages item, ImageType imageType, string url)
