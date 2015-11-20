@@ -17,6 +17,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
@@ -505,13 +506,46 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            return false;
+            if (!item.IsSaveLocalMetadataEnabled())
+            {
+                return true;
+            }
+
+            if (item is IItemByName && !(item is MusicArtist))
+            {
+                var hasDualAccess = item as IHasDualAccess;
+                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
+                {
+                    return true;
+                }
+            }
+
+            switch (type)
+            {
+                case ImageType.Primary:
+                    return false;
+                case ImageType.Thumb:
+                    return false;
+                case ImageType.Logo:
+                    return false;
+                case ImageType.Backdrop:
+                    return false;
+                case ImageType.Screenshot:
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         private void SaveImageStub(IHasImages item, ImageType imageType, string url)
         {
             var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
 
+            SaveImageStub(item, imageType, url, newIndex);
+        }
+
+        private void SaveImageStub(IHasImages item, ImageType imageType, string url, int newIndex)
+        {
             item.SetImage(new ItemImageInfo
             {
                 Path = url,
@@ -540,7 +574,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     SaveImageStub(item, imageType, url);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
-                    return;
+                    continue;
                 }
 
                 try
