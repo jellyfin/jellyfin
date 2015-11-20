@@ -126,7 +126,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     Url = ApiUrl + "/programs",
                     UserAgent = UserAgent,
                     CancellationToken = cancellationToken,
-                    LogErrorResponseBody = true
+                    LogErrorResponseBody = true,
+                    // The data can be large so give it some extra time
+                    TimeoutMs = 60000
                 };
 
                 httpOptions.RequestHeaders["token"] = token;
@@ -463,7 +465,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 RequestContent = imageIdString,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                // The data can be large so give it some extra time
+                TimeoutMs = 60000
             };
             List<ScheduleDirect.ShowImages> images;
             using (var innerResponse2 = await _httpClient.Post(httpOptions))
