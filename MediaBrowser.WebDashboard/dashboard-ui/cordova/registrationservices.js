@@ -147,6 +147,15 @@
             html += '</p>';
         }
 
+        if (subscriptionOptions.length) {
+            html += '<br/>';
+            html += '<h1>' + Globalize.translate('HeaderBenefitsEmbyPremiere') + '</h1>';
+
+            html += '<div class="paperList" style="margin-bottom:1em;">';
+            html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join('');
+            html += '</div>';
+        }
+
         if (dialogOptions.enablePlayMinute) {
             html += '<p>';
             html += '<paper-button raised class="secondary block btnCloseDialog subdued"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlayOneMinute') + '</span></paper-button>';
@@ -178,6 +187,73 @@
         dlg.classList.add('inAppPurchaseOverlay');
     }
 
+    function getSubscriptionBenefits() {
+
+        var list = [];
+
+        list.push({
+            name: Globalize.translate('CoverArt'),
+            icon: 'photo',
+            text: Globalize.translate('CoverArtFeatureDescription')
+        });
+
+        list.push({
+            name: Globalize.translate('HeaderFreeApps'),
+            icon: 'check',
+            text: Globalize.translate('FreeAppsFeatureDescription')
+        });
+
+        if (Dashboard.capabilities().SupportsSync) {
+            list.push({
+                name: Globalize.translate('HeaderMobileSync'),
+                icon: 'sync',
+                text: Globalize.translate('MobileSyncFeatureDescription')
+            });
+        }
+        else if (AppInfo.isNativeApp) {
+            list.push({
+                name: Globalize.translate('HeaderCloudSync'),
+                icon: 'sync',
+                text: Globalize.translate('CloudSyncFeatureDescription')
+            });
+        }
+        else {
+            list.push({
+                name: Globalize.translate('HeaderCinemaMode'),
+                icon: 'movie',
+                text: Globalize.translate('CinemaModeFeatureDescription')
+            });
+        }
+
+        return list;
+    }
+
+    function getSubscriptionBenefitHtml(item) {
+
+        var html = '';
+        html += '<paper-icon-item>';
+
+        html += '<paper-fab mini style="background-color:#52B54B;" icon="' + item.icon + '" item-icon></paper-fab>';
+
+        html += '<paper-item-body three-line>';
+        html += '<a class="clearLink" href="https://emby.media/premiere" target="_blank">';
+
+        html += '<div>';
+        html += item.name;
+        html += '</div>';
+
+        html += '<div secondary style="white-space:normal;">';
+        html += item.text;
+        html += '</div>';
+
+        html += '</a>';
+        html += '</paper-item-body>';
+
+        html += '</paper-icon-item>';
+
+        return html;
+    }
+
     function initInAppPurchaseElementEvents(elem, feature, deferred) {
 
         isCancelled = true;
@@ -187,7 +263,7 @@
             isCancelled = false;
 
             if (this.getAttribute('data-email') == 'true') {
-                promptForEmail(this.getAttribute('data-feature'));
+                acquireEmail(this.getAttribute('data-feature'));
             } else {
                 IapManager.beginPurchase(this.getAttribute('data-feature'));
             }
@@ -239,6 +315,21 @@
 
             currentDisplayingDeferred = deferred;
         });
+    }
+
+    function acquireEmail(feature) {
+
+        if (ConnectionManager.isLoggedIntoConnect()) {
+
+            var connectUser = ConnectionManager.connectUser();
+
+            if (connectUser && connectUser.Email) {
+                IapManager.beginPurchase(feature, connectUser.Email);
+                return;
+            }
+        }
+
+        promptForEmail(feature);
     }
 
     function promptForEmail(feature) {

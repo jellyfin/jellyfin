@@ -828,7 +828,7 @@
     "ErrorGettingTvLineups": "Do\u0161lo k chyb\u011b p\u0159i stahov\u00e1n\u00ed tv lineups. Ujist\u011bte se pros\u00edm, \u017ee zadan\u00e9 informace jsou spr\u00e1vn\u00e9, a zkuste to znovu.",
     "MessageCreateAccountAt": "Vytvo\u0159it \u00fa\u010det v {0}",
     "ErrorPleaseSelectLineup": "Vyberte seskupen\u00ed a zkuste to znovu. Pokud nejsou k dispozici \u017e\u00e1dn\u00e9 seskupen\u00ed, pak pros\u00edm zkontrolujte, zda va\u0161e u\u017eivatelsk\u00e9 jm\u00e9no, heslo a po\u0161tovn\u00ed sm\u011brovac\u00ed \u010d\u00edslo je spr\u00e1vn\u00e9.s",
-    "HeaderTryCinemaMode": "Zkusit Cinema M\u00f3d",
+    "HeaderEmbyPremiere": "Try Emby Premiere",
     "ButtonBecomeSupporter": "Z\u00edskat Emby Premiere",
     "ButtonClosePlayVideo": "Zav\u0159\u00edt a p\u0159ehr\u00e1t m\u00e1 m\u00e9dia",
     "MessageDidYouKnowCinemaMode": "Vyberte za\u0159azen\u00ed a zkuste to znovu. Pokud nejsou k dispozici \u017e\u00e1dn\u00e1 za\u0159azen\u00ed, pak pros\u00edm zkontrolujte, zda va\u0161e u\u017eivatelsk\u00e9 jm\u00e9no, heslo a po\u0161tovn\u00ed sm\u011brovac\u00ed \u010d\u00edslo je spr\u00e1vn\u00e9.",
@@ -924,5 +924,16 @@
     "MessagePluginInstallDisclaimer": "Plugins built by Emby community members are a great way to enhance your Emby experience with additional features and benefits. Before installing, please be aware of the effects they may have on your Emby Server, such as longer library scans, additional background processing, and decreased system stability.",
     "ButtonPlayOneMinute": "Play one minute",
     "ThankYouForTryingEnjoyOneMinute": "Please enjoy one minute of playback. Thank you for trying Emby.",
-    "HeaderTryPlayback": "Try Playback"
+    "HeaderTryPlayback": "Try Playback",
+    "HeaderBenefitsEmbyPremiere": "Benefits of Emby Premiere",
+    "MobileSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
+    "HeaderMobileSync": "Mobile Sync",
+    "HeaderCloudSync": "Cloud Sync",
+    "CloudSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "HeaderFreeApps": "Free Emby Apps",
+    "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
+    "HeaderCinemaMode": "Cinema M\u00f3d",
+    "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
+    "CoverArt": "Cover Art"
 }

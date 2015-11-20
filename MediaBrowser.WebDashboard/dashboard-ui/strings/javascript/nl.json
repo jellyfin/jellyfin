@@ -828,7 +828,7 @@
     "ErrorGettingTvLineups": "Er was een fout bij het downloaden van de TV lineup. Controleer of uw gegevens correct zijn en probeer het opnieuw.",
     "MessageCreateAccountAt": "Maak een account bij {0}",
     "ErrorPleaseSelectLineup": "Selecteer een lineup en probeer het opnieuw. Als er geen lineups beschibaar zijn, controleer dan of uw gebruikersnaam, wachtwoord en postcode correct zijn.",
-    "HeaderTryCinemaMode": "Probeer Cinema Mode",
+    "HeaderEmbyPremiere": "Try Emby Premiere",
     "ButtonBecomeSupporter": "Verkrijg Emby Premiere",
     "ButtonClosePlayVideo": "Sluit af en speel mijn media",
     "MessageDidYouKnowCinemaMode": "Wist u dat u met Emby Premiere, u uw ervaring met functies zoals Cinema Mode kunt verbeteren?",
@@ -924,5 +924,16 @@
     "MessagePluginInstallDisclaimer": "Plugins ontwikkeld door leden van de Emby gemeenschap zijn een geweldige manier om je Emby ervaring met extra functies en voordelen te verbeteren. Alvorens het installeren, dient u zich bewust te zijn van de gevolgen die zij kunnen hebben op uw Emby Server, zoals langere bibliotheek scans, extra achtergrondinformatie verwerking, en een verminderde stabiliteit van het systeem.",
     "ButtonPlayOneMinute": "Play one minute",
     "ThankYouForTryingEnjoyOneMinute": "Please enjoy one minute of playback. Thank you for trying Emby.",
-    "HeaderTryPlayback": "Try Playback"
+    "HeaderTryPlayback": "Try Playback",
+    "HeaderBenefitsEmbyPremiere": "Benefits of Emby Premiere",
+    "MobileSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
+    "HeaderMobileSync": "Mobile Sync",
+    "HeaderCloudSync": "Cloud Sync",
+    "CloudSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "HeaderFreeApps": "Free Emby Apps",
+    "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
+    "HeaderCinemaMode": "Cinema Mode",
+    "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
+    "CoverArt": "Cover Art"
 }

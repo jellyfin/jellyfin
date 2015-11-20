@@ -828,7 +828,7 @@
     "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your information is correct and try again.",
     "MessageCreateAccountAt": "Create an account at {0}",
     "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct.",
-    "HeaderTryCinemaMode": "Try Cinema Mode",
+    "HeaderEmbyPremiere": "Try Emby Premiere",
     "ButtonBecomeSupporter": "Get Emby Premiere",
     "ButtonClosePlayVideo": "Close and play my media",
     "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
@@ -924,5 +924,16 @@
     "MessagePluginInstallDisclaimer": "Plugins built by Emby community members are a great way to enhance your Emby experience with additional features and benefits. Before installing, please be aware of the effects they may have on your Emby Server, such as longer library scans, additional background processing, and decreased system stability.",
     "ButtonPlayOneMinute": "Play one minute",
     "ThankYouForTryingEnjoyOneMinute": "Please enjoy one minute of playback. Thank you for trying Emby.",
-    "HeaderTryPlayback": "Try Playback"
+    "HeaderTryPlayback": "Try Playback",
+    "HeaderBenefitsEmbyPremiere": "Benefits of Emby Premiere",
+    "MobileSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
+    "HeaderMobileSync": "Mobile Sync",
+    "HeaderCloudSync": "Cloud Sync",
+    "CloudSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "HeaderFreeApps": "Free Emby Apps",
+    "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
+    "HeaderCinemaMode": "Kino Modus",
+    "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
+    "CoverArt": "Cover Art"
 }

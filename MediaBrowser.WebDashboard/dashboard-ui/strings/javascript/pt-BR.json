@@ -828,7 +828,7 @@
     "ErrorGettingTvLineups": "Ocorreu um erro ao fazer download da programa\u00e7\u00e3o da tv. Por favor, certifique-se que sua informa\u00e7\u00e3o esteja correta e tente novamente.",
     "MessageCreateAccountAt": "Criar uma conta em {0}",
     "ErrorPleaseSelectLineup": "Por favor selecione a programa\u00e7\u00e3o e tente novamente. Se n\u00e3o houver programa\u00e7\u00f5es dispon\u00edveis, verifique se o seu nome de usu\u00e1rio, senha e c\u00f3digo postal est\u00e3o corretos.",
-    "HeaderTryCinemaMode": "Experimente o Cinema Mode",
+    "HeaderEmbyPremiere": "Try Emby Premiere",
     "ButtonBecomeSupporter": "Obter Emby Premiere",
     "ButtonClosePlayVideo": "Fechar e reproduzir minha m\u00eddia",
     "MessageDidYouKnowCinemaMode": "Voc\u00ea sabia que com o Emby Premiere voc\u00ea pode enriquecer sua experi\u00eancia com recursos como o CInema Mode?",
@@ -924,5 +924,16 @@
     "MessagePluginInstallDisclaimer": "Plugins feitos por membros da comunidade Emby s\u00e3o uma grande forma de melhorar sua experi\u00eancia Emby com funcionalidades e benef\u00edcios adicionais. Antes de instalar, por favor certifique-se de conhecer os efeitos que podem causar no seu Servidor Emby, tais como, rastreamentos da biblioreca mais longos, processamento adicional e diminui\u00e7\u00e3o na estabilidade do sistema.",
     "ButtonPlayOneMinute": "Play one minute",
     "ThankYouForTryingEnjoyOneMinute": "Please enjoy one minute of playback. Thank you for trying Emby.",
-    "HeaderTryPlayback": "Try Playback"
+    "HeaderTryPlayback": "Try Playback",
+    "HeaderBenefitsEmbyPremiere": "Benefits of Emby Premiere",
+    "MobileSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "CoverArtFeatureDescription": "Cover Art creates fun covers and other treatments to help you personalize your media images.",
+    "HeaderMobileSync": "Mobile Sync",
+    "HeaderCloudSync": "Cloud Sync",
+    "CloudSyncFeatureDescription": "Sync your media to your smart phones and tablets for easy offline access.",
+    "HeaderFreeApps": "Free Emby Apps",
+    "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
+    "HeaderCinemaMode": "Modo Cinema",
+    "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
+    "CoverArt": "Cover Art"
 }
