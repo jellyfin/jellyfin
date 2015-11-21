@@ -60,46 +60,61 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _fileSystem.GetValidFilename(filename);
         }
 
+        private async Task<List<LocalItem>> RetrieveItems(CancellationToken cancellationToken)
+        {
+            _logger.Debug("Getting {0} from {1}", string.Join(MediaSync.PathSeparatorString, GetRemotePath().ToArray()), _provider.Name);
+
+            var fileResult = await _provider.GetFiles(new FileQuery
+            {
+                FullPath = GetRemotePath().ToArray()
+
+            }, _target, cancellationToken).ConfigureAwait(false);
+
+            if (fileResult.Items.Length > 0)
+            {
+                using (var stream = await _provider.GetFile(fileResult.Items[0].Id, _target, new Progress<double>(), cancellationToken))
+                {
+                    return _json.DeserializeFromStream<List<LocalItem>>(stream);
+                }
+            }
+
+            return new List<LocalItem>();
+        }
+
         private async Task EnsureData(CancellationToken cancellationToken)
         {
             if (_items == null)
             {
-                _logger.Debug("Getting {0} from {1}", string.Join(MediaSync.PathSeparatorString, GetRemotePath().ToArray()), _provider.Name);
-
-                var fileResult = await _provider.GetFiles(new FileQuery
-                {
-                    FullPath = GetRemotePath().ToArray()
-
-                }, _target, cancellationToken).ConfigureAwait(false);
-
-                if (fileResult.Items.Length > 0)
-                {
-                    using (var stream = await _provider.GetFile(fileResult.Items[0].Id, _target, new Progress<double>(), cancellationToken))
-                    {
-                        _items = _json.DeserializeFromStream<List<LocalItem>>(stream);
-                    }
-                }
-                else
-                {
-                    _items = new List<LocalItem>();
-                }
+                _items = await RetrieveItems(cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task SaveData(CancellationToken cancellationToken)
+        private async Task SaveData(List<LocalItem> items, CancellationToken cancellationToken)
         {
             using (var stream = new MemoryStream())
             {
-                _json.SerializeToStream(_items, stream);
+                _json.SerializeToStream(items, stream);
 
                 // Save to sync provider
                 stream.Position = 0;
-                await _provider.SendFile(stream, GetRemotePath(), _target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                var remotePath = GetRemotePath();
+                _logger.Debug("Saving data.json to {0}. Remote path: {1}", _provider.Name, string.Join("/", remotePath));
+
+                await _provider.SendFile(stream, remotePath, _target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task<T> GetData<T>(Func<List<LocalItem>, T> dataFactory)
+        private async Task<T> GetData<T>(bool enableCache, Func<List<LocalItem>, T> dataFactory)
         {
+            if (!enableCache)
+            {
+                var items = await RetrieveItems(CancellationToken.None).ConfigureAwait(false);
+                var newCache = items.ToList();
+                var result = dataFactory(items);
+                await UpdateCache(newCache).ConfigureAwait(false);
+                return result;
+            }
+
             await _dataLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -116,15 +131,20 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task UpdateData(Func<List<LocalItem>, List<LocalItem>> action)
         {
+            var items = await RetrieveItems(CancellationToken.None).ConfigureAwait(false);
+            items = action(items);
+            await SaveData(items.ToList(), CancellationToken.None).ConfigureAwait(false);
+
+            await UpdateCache(null).ConfigureAwait(false);
+        }
+
+        private async Task UpdateCache(List<LocalItem> list)
+        {
             await _dataLock.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                await EnsureData(CancellationToken.None).ConfigureAwait(false);
-
-                _items = action(_items);
-
-                await SaveData(CancellationToken.None).ConfigureAwait(false);
+                _items = list;
             }
             finally
             {
@@ -134,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task<List<LocalItem>> GetLocalItems(SyncTarget target, string serverId)
         {
-            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).ToList());
+            return GetData(false, items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).ToList());
         }
 
         public Task AddOrUpdate(SyncTarget target, LocalItem item)
@@ -157,17 +177,17 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task<LocalItem> Get(SyncTarget target, string id)
         {
-            return GetData(items => items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase)));
+            return GetData(true, items => items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase)));
         }
 
         public Task<List<LocalItem>> GetItems(SyncTarget target, string serverId, string itemId)
         {
-            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase)).ToList());
+            return GetData(true, items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase)).ToList());
         }
 
         public Task<List<LocalItem>> GetItemsBySyncJobItemId(SyncTarget target, string serverId, string syncJobItemId)
         {
-            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.SyncJobItemId, syncJobItemId, StringComparison.OrdinalIgnoreCase)).ToList());
+            return GetData(false, items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.SyncJobItemId, syncJobItemId, StringComparison.OrdinalIgnoreCase)).ToList());
         }
     }
 }
