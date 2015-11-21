@@ -122,7 +122,7 @@
     "SubtitleDownloadFailureForItem": "Napisy niepobrane dla {0}",
     "HeaderUnidentified": "Niezidentyfikowane",
     "HeaderImagePrimary": "Priorytetowy",
-    "HeaderImageBackdrop": "Backdrop",
+    "HeaderImageBackdrop": "Obraz t\u0142a",
     "HeaderImageLogo": "Logo",
     "HeaderUserPrimaryImage": "Avatar u\u017cytkownika",
     "HeaderOverview": "Opis",
@@ -171,7 +171,7 @@
     "HeaderGuestStar": "Go\u015b\u0107 specjalny",
     "HeaderProducer": "Producenci",
     "HeaderWriter": "Scenarzy\u015bci",
-    "HeaderParentalRatings": "Parental Ratings",
+    "HeaderParentalRatings": "Ocena rodzicielska",
     "HeaderCommunityRatings": "Ocena spo\u0142eczno\u015bci",
     "StartupEmbyServerIsLoading": "Serwer Emby si\u0119 \u0142aduje. Prosz\u0119 spr\u00f3bowa\u0107 za chwil\u0119."
 }
