@@ -1,6 +1,6 @@
 {
   "name": "requirejs",
-  "version": "2.1.21",
+  "version": "2.1.22",
   "ignore": [],
   "homepage": "http://requirejs.org",
   "authors": [
@@ -15,11 +15,11 @@
     "BSD-3-Clause",
     "MIT"
   ],
-  "_release": "2.1.21",
+  "_release": "2.1.22",
   "_resolution": {
     "type": "version",
-    "tag": "2.1.21",
-    "commit": "3c1c4d7d6fd882e58828ab561d2a80f744167cd9"
+    "tag": "2.1.22",
+    "commit": "9cd0b99417eac61e890d11c5119f2e45e752c999"
   },
   "_source": "git://github.com/jrburke/requirejs-bower.git",
   "_target": "~2.1.19",

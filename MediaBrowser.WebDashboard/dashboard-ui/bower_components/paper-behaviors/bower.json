@@ -1,6 +1,6 @@
 {
   "name": "paper-behaviors",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
@@ -27,7 +27,7 @@
   "dependencies": {
     "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
     "iron-checked-element-behavior": "PolymerElements/iron-checked-element-behavior#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.2.1"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
@@ -35,7 +35,8 @@
     "paper-material": "PolymerElements/paper-material#^1.0.0",
     "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
+    "web-component-tester": "^3.4.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
-  }
+  },
+  "ignore": []
 }
