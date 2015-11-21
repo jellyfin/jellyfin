@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is placeholder; otherwise, <c>false</c>.</value>
         public bool IsPlaceholder { get; set; }
-        
+
         [IgnoreDataMember]
         public bool IsLocalFile
         {
