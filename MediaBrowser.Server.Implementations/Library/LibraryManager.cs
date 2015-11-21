@@ -2391,6 +2391,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
             await _providerManagerFactory().SaveImage(item, image.Path, _dynamicImageResourcePool, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
 
+            var newImage = item.GetImageInfo(image.Type, imageIndex);
+
+            if (newImage != null)
+            {
+                newImage.IsPlaceholder = image.IsPlaceholder;
+            }
+
             await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return item.GetImageInfo(image.Type, imageIndex);
