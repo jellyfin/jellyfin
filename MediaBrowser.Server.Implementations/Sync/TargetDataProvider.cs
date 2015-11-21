@@ -134,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var items = await RetrieveItems(CancellationToken.None).ConfigureAwait(false);
             items = action(items);
             await SaveData(items.ToList(), CancellationToken.None).ConfigureAwait(false);
-            
+
             await UpdateCache(null).ConfigureAwait(false);
         }
 
