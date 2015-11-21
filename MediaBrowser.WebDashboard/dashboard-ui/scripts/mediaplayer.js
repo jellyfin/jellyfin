@@ -850,7 +850,7 @@
                 Dashboard.showModalLoadingMsg();
             }
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !AppSettings.enableCinemaMode()) {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);

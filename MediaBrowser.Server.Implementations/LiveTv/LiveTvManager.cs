@@ -534,7 +534,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, CancellationToken cancellationToken)
+        private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, Guid parentFolderId, CancellationToken cancellationToken)
         {
             var isNew = false;
 
@@ -560,11 +560,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             item.ExternalId = channelInfo.Id;
 
+            if (!item.ParentId.Equals(parentFolderId))
+            {
+                isNew = true;
+            }
+            item.ParentId = parentFolderId;
+
             item.ChannelType = channelInfo.ChannelType;
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
-
-            var replaceImages = new List<ImageType>();
 
             //if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
             //{
@@ -577,13 +581,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             //    replaceImages.Add(ImageType.Primary);
             //}
 
-            if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+            if (!item.HasImage(ImageType.Primary))
             {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
-            }
-            else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
-            {
-                item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
+                {
+                    item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+                }
+                else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
+                {
+                    item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                }
             }
 
             if (string.IsNullOrEmpty(item.Name))
@@ -593,20 +600,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
-                ForceSave = isNew,
-                ReplaceImages = replaceImages.Distinct().ToList()
+                ForceSave = isNew
 
             }, cancellationToken);
 
             return item;
         }
 
-        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, string channelId, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
             var id = _tvDtoService.GetInternalProgramId(serviceName, info.Id);
 
             var item = _libraryManager.GetItemById(id) as LiveTvProgram;
             var isNew = false;
+            var forceUpdate = false;
 
             if (item == null)
             {
@@ -621,11 +628,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 };
             }
 
-            item.ChannelType = channelType;
+            if (!item.ParentId.Equals(channel.Id))
+            {
+                forceUpdate = true;
+            }
+            item.ParentId = channel.Id;
+
+            //item.ChannelType = channelType;
+            if (!string.Equals(item.ServiceName, serviceName, StringComparison.Ordinal))
+            {
+                forceUpdate = true;
+            }
             item.ServiceName = serviceName;
 
             item.Audio = info.Audio;
-            item.ChannelId = channelId;
+            item.ChannelId = channel.Id.ToString("N");
             item.CommunityRating = item.CommunityRating ?? info.CommunityRating;
             item.EndDate = info.EndDate;
             item.EpisodeTitle = info.EpisodeTitle;
@@ -674,12 +691,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     }, 0);
                 }
             }
-            
+
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (string.IsNullOrWhiteSpace(info.Etag))
+            else if (forceUpdate || string.IsNullOrWhiteSpace(info.Etag))
             {
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
@@ -700,7 +717,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private async Task<Guid> CreateRecordingRecord(RecordingInfo info, string serviceName, CancellationToken cancellationToken)
+        private async Task<Guid> CreateRecordingRecord(RecordingInfo info, string serviceName, Guid parentFolderId, CancellationToken cancellationToken)
         {
             var isNew = false;
 
@@ -769,13 +786,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             recording.IsSeries = info.IsSeries;
 
-            if (!string.IsNullOrWhiteSpace(info.ImagePath))
+            if (!item.ParentId.Equals(parentFolderId))
             {
-                item.SetImagePath(ImageType.Primary, info.ImagePath);
+                dataChanged = true;
             }
-            else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+            item.ParentId = parentFolderId;
+
+            if (!item.HasImage(ImageType.Primary))
             {
-                item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                if (!string.IsNullOrWhiteSpace(info.ImagePath))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImagePath);
+                }
+                else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+                {
+                    item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                }
             }
 
             var statusChanged = info.Status != recording.Status;
@@ -831,14 +857,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
-            await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
+            var list = new List<Tuple<BaseItemDto, string, string>>();
+            list.Add(new Tuple<BaseItemDto, string, string>(dto, program.ServiceName, program.ExternalId));
+
+            await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
 
             return dto;
         }
 
         public async Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
-            var internalQuery = new InternalItemsQuery
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
+
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 MinEndDate = query.MinEndDate,
@@ -856,17 +887,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortOrder = query.SortOrder ?? SortOrder.Ascending
             };
 
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
-            if (user != null)
-            {
-                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
-
-                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
-                {
-                    internalQuery.HasParentalRating = true;
-                }
-            }
-
             if (query.HasAired.HasValue)
             {
                 if (query.HasAired.Value)
@@ -882,14 +902,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
             var returnArray = queryResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
+                .Cast<LiveTvProgram>()
+                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray,
+                Items = returnArray.Select(i => i.Item1).ToArray(),
                 TotalRecordCount = queryResult.TotalRecordCount
             };
 
@@ -898,7 +919,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken)
         {
-            var internalQuery = new InternalItemsQuery
+            var user = _userManager.GetUserById(query.UserId);
+
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 IsAiring = query.IsAiring,
@@ -916,17 +939,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 else
                 {
                     internalQuery.MinEndDate = DateTime.UtcNow;
-                }
-            }
-
-            var user = _userManager.GetUserById(query.UserId);
-            if (user != null)
-            {
-                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
-
-                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
-                {
-                    internalQuery.HasParentalRating = true;
                 }
             }
 
@@ -970,14 +982,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var user = _userManager.GetUserById(query.UserId);
 
             var returnArray = internalResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
+                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray,
+                Items = returnArray.Select(i => i.Item1).ToArray(),
                 TotalRecordCount = internalResult.TotalRecordCount
             };
 
@@ -1053,40 +1065,46 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }).Sum();
         }
 
-        private async Task AddRecordingInfo(IEnumerable<BaseItemDto> programs, CancellationToken cancellationToken)
+        private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string>> programs, CancellationToken cancellationToken)
         {
             var timers = new Dictionary<string, List<TimerInfo>>();
 
-            foreach (var program in programs)
+            foreach (var programTuple in programs)
             {
-                var internalProgram = GetInternalProgram(program.Id);
+                var program = programTuple.Item1;
+                var serviceName = programTuple.Item2;
+                var externalProgramId = programTuple.Item3;
+
+                if (string.IsNullOrWhiteSpace(serviceName))
+                {
+                    continue;
+                }
 
                 List<TimerInfo> timerList;
-                if (!timers.TryGetValue(internalProgram.ServiceName, out timerList))
+                if (!timers.TryGetValue(serviceName, out timerList))
                 {
                     try
                     {
-                        var tempTimers = await GetService(internalProgram.ServiceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
-                        timers[internalProgram.ServiceName] = timerList = tempTimers.ToList();
+                        var tempTimers = await GetService(serviceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                        timers[serviceName] = timerList = tempTimers.ToList();
                     }
                     catch (Exception ex)
                     {
                         _logger.ErrorException("Error getting timer infos", ex);
-                        timers[internalProgram.ServiceName] = timerList = new List<TimerInfo>();
+                        timers[serviceName] = timerList = new List<TimerInfo>();
                     }
                 }
 
-
-                var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, internalProgram.ExternalId, StringComparison.OrdinalIgnoreCase));
+                var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
 
                 if (timer != null)
                 {
-                    program.TimerId = _tvDtoService.GetInternalTimerId(internalProgram.ServiceName, timer.Id)
+                    program.TimerId = _tvDtoService.GetInternalTimerId(serviceName, timer.Id)
                         .ToString("N");
 
                     if (!string.IsNullOrEmpty(timer.SeriesTimerId))
                     {
-                        program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(internalProgram.ServiceName, timer.SeriesTimerId)
+                        program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(serviceName, timer.SeriesTimerId)
                             .ToString("N");
                     }
                 }
@@ -1168,6 +1186,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var list = new List<LiveTvChannel>();
 
             var numComplete = 0;
+            var parentFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolderId = parentFolder.Id;
 
             foreach (var channelInfo in allChannelsList)
             {
@@ -1175,7 +1195,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 try
                 {
-                    var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, cancellationToken).ConfigureAwait(false);
+                    var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolderId, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
 
@@ -1205,6 +1225,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var guideDays = GetGuideDays(list.Count);
 
+            _logger.Info("Refreshing guide with {0} days of guide data", guideDays);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             foreach (var currentChannel in list)
@@ -1219,11 +1241,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     var channelPrograms = await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false);
 
-                    var channelId = currentChannel.Id.ToString("N");
-
                     foreach (var program in channelPrograms)
                     {
-                        var programItem = await GetProgram(program, channelId, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
+                        var programItem = await GetProgram(program, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
 
                         programs.Add(programItem.Id);
                     }
@@ -1290,13 +1310,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
+        private const int MaxGuideDays = 14;
         private double GetGuideDays(int channelCount)
         {
             var config = GetConfiguration();
 
             if (config.GuideDays.HasValue)
             {
-                return config.GuideDays.Value;
+                return Math.Max(1, Math.Min(config.GuideDays.Value, MaxGuideDays));
             }
 
             var programsPerDay = channelCount * 48;
@@ -1305,7 +1326,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var days = Math.Round(((double)maxPrograms) / programsPerDay);
 
-            return Math.Max(3, Math.Min(days, 14));
+            return Math.Max(3, Math.Min(days, MaxGuideDays));
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)
@@ -1349,8 +1370,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 });
 
                 var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+                var folder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+                var parentFolderId = folder.Id;
 
-                var recordingTasks = results.SelectMany(i => i.ToList()).Select(i => CreateRecordingRecord(i.Item1, i.Item2.Name, cancellationToken));
+                var recordingTasks = results.SelectMany(i => i.ToList()).Select(i => CreateRecordingRecord(i.Item1, i.Item2.Name, parentFolderId, cancellationToken));
 
                 var idList = await Task.WhenAll(recordingTasks).ConfigureAwait(false);
 
@@ -1374,7 +1397,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
 
-            var internalQuery = new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }
             };
@@ -1384,8 +1407,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery);
-            IEnumerable<ILiveTvRecording> recordings = queryResult.Items.Cast<ILiveTvRecording>();
+            var queryResult = _libraryManager.GetItems(internalQuery, new string[] { });
+            IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrEmpty(query.Id))
             {
@@ -1422,12 +1445,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.ServiceName, i.SeriesTimerId) == guid);
             }
 
-            if (user != null)
-            {
-                var currentUser = user;
-                recordings = recordings.Where(i => i.IsParentalAllowed(currentUser));
-            }
-
             recordings = recordings.OrderByDescending(i => i.StartDate);
 
             var entityList = recordings.ToList();
@@ -1453,18 +1470,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, bool addChannelInfo, User user = null)
         {
             var program = (LiveTvProgram)item;
-            var service = GetService(program);
-
-            dto.Id = _tvDtoService.GetInternalProgramId(service.Name, program.ExternalId).ToString("N");
 
             dto.StartDate = program.StartDate;
             dto.EpisodeTitle = program.EpisodeTitle;
-            dto.Audio = program.Audio;
 
-            if (program.IsHD.HasValue && program.IsHD.Value)
-            {
-                dto.IsHD = program.IsHD;
-            }
             if (program.IsRepeat)
             {
                 dto.IsRepeat = program.IsRepeat;
@@ -1523,7 +1532,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var info = recording;
 
-            dto.Id = item.Id.ToString("N");
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
                 : _tvDtoService.GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N");
@@ -1532,8 +1540,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.RecordingStatus = info.Status;
             dto.IsRepeat = info.IsRepeat;
             dto.EpisodeTitle = info.EpisodeTitle;
-            dto.Audio = info.Audio;
-            dto.IsHD = info.IsHD;
             dto.IsMovie = info.IsMovie;
             dto.IsSeries = info.IsSeries;
             dto.IsSports = info.IsSports;
@@ -1804,19 +1810,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { id },
                 MaxStartDate = now,
                 MinEndDate = now,
-                Limit = 1
+                Limit = 1,
+                SortBy = new[] { "StartDate" }
 
-            }).Items.Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
-            var currentProgram = programs
-                .OrderBy(i => i.StartDate)
-                .FirstOrDefault();
+            var currentProgram = programs.FirstOrDefault();
 
             var dto = _tvDtoService.GetChannelInfoDto(channel, new DtoOptions(), currentProgram, user);
 
@@ -1829,19 +1834,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { channel.Id.ToString("N") },
                 MaxStartDate = now,
                 MinEndDate = now,
-                Limit = 1
+                Limit = 1,
+                SortBy = new[] { "StartDate" }
 
-            }).Items.Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
-            var currentProgram = programs
-                .OrderBy(i => i.StartDate)
-                .FirstOrDefault();
+            var currentProgram = programs.FirstOrDefault();
 
             if (currentProgram != null)
             {
@@ -2302,7 +2306,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<Folder> GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeLiveTV");
-            return await _libraryManager.GetNamedView(name, "livetv", name, cancellationToken).ConfigureAwait(false);
+            return await _libraryManager.GetNamedView(name, CollectionType.LiveTv, name, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)
