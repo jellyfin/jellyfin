@@ -317,7 +317,6 @@ namespace MediaBrowser.WebDashboard.Api
 				_fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
 
 				_fileSystem.DeleteDirectory(Path.Combine(path, "bower_components"), true);
-				_fileSystem.DeleteDirectory(Path.Combine(path, "thirdparty", "viblast"), true);
 
                 // But we do need this
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.js"));

@@ -458,10 +458,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var idString = Id.ToString("N");
 
-            if (ConfigurationManager.Configuration.EnableLibraryMetadataSubFolder)
-            {
-                basePath = System.IO.Path.Combine(basePath, "library");
-            }
+            basePath = System.IO.Path.Combine(basePath, "library");
 
             return System.IO.Path.Combine(basePath, idString.Substring(0, 2), idString);
         }

@@ -69,11 +69,6 @@
         padding-left: .5em !important;
         padding-right: .5em !important;
     }
-
-    .pageWithAbsoluteTabs .pageTabContent {
-        padding-left: .25em !important;
-        padding-right: .25em !important;
-    }
 }
 
 .libraryPage .currentUsername {
@@ -87,9 +82,16 @@
     line-height: initial;
 }
 
-    .listHeader + paper-button {
-        margin-left: 2em;
+@media all and (max-width: 500px) {
+
+    .listHeader {
+        padding-left: 5px;
     }
+}
+
+.listHeader + paper-button {
+    margin-left: 2em;
+}
 
 .ehsContent, .ehsContent .pageTabContent {
     margin: 0 auto;
@@ -128,14 +130,6 @@
     }
 }
 
-@media all and (min-width: 500px) {
-
-    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 98%;
-        margin: 0 auto;
-    }
-}
-
 @media all and (min-width: 1200px) {
 
     .paddedItemsContainer {
@@ -144,13 +138,6 @@
 }
 
 @media all and (min-width: 1200px) {
-
-    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 95%;
-    }
-}
-
-@media all and (min-width: 1920px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 95%;
