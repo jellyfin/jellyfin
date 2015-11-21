@@ -94,7 +94,7 @@
         }
 
         function requireHlsPlayer(callback) {
-            require(['thirdparty/hls.min.js'], function(hls) {
+            require(['thirdparty/hls.min.js'], function (hls) {
                 window.Hls = hls;
                 callback();
             });
