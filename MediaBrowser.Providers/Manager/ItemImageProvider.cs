@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!IsEnabled(savedOptions, imageType, item)) continue;
 
-                    if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
+                    if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         _logger.Debug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
@@ -199,6 +199,14 @@ namespace MediaBrowser.Providers.Manager
             ImageType.Thumb
         };
 
+        private bool HasImage(IHasImages item, ImageType type)
+        {
+            var image = item.GetImageInfo(type, 0);
+
+            // if it's a placeholder image then pretend like it's not there so that we can replace it
+            return image != null && !image.IsPlaceholder;
+        }
+
         /// <summary>
         /// Determines if an item already contains the given images
         /// </summary>
@@ -210,7 +218,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
         private bool ContainsImages(IHasImages item, List<ImageType> images, MetadataOptions savedOptions, int backdropLimit, int screenshotLimit)
         {
-            if (_singularImages.Any(i => images.Contains(i) && !item.HasImage(i) && savedOptions.GetLimit(i) > 0))
+            if (_singularImages.Any(i => images.Contains(i) && !HasImage(item, i) && savedOptions.GetLimit(i) > 0))
             {
                 return false;
             }
@@ -282,7 +290,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!IsEnabled(savedOptions, imageType, item)) continue;
 
-                    if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
+                    if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
                         var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);

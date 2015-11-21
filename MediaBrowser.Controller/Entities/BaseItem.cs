@@ -1536,6 +1536,7 @@ namespace MediaBrowser.Controller.Entities
 
                 image.Path = file.FullName;
                 image.DateModified = imageInfo.DateModified;
+                image.IsPlaceholder = false;
             }
         }
 
