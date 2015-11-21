@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public void StartTimer(TimerInfo item, TimeSpan length)
         {
             StopTimer(item);
-            
+
             var timer = new Timer(TimerCallback, item.Id, length, TimeSpan.Zero);
 
             if (!_timers.TryAdd(item.Id, timer))
