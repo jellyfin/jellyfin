@@ -1286,7 +1286,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.ImageUrl))
+            if (!string.IsNullOrWhiteSpace(info.ImageUrl) && !item.HasImage(ImageType.Primary))
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
             }
