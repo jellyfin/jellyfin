@@ -36,8 +36,6 @@
             return targets;
         };
 
-        var canPlayAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
-
         self.getVideoQualityOptions = function (videoWidth, videoHeight) {
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
@@ -129,6 +127,8 @@
 
             var canPlayWebm = supportedFormats.indexOf('webm') != -1;
             var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
+            var canPlayAac = supportedFormats.indexOf('aac') != -1;
+            var canPlayMp3 = supportedFormats.indexOf('mp3') != -1;
 
             var profile = {};
 
@@ -143,7 +143,7 @@
                     Container: 'mp4,m4v',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
+                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
@@ -152,7 +152,7 @@
                     Container: 'mkv,mov',
                     Type: 'Video',
                     VideoCodec: 'h264',
-                    AudioCodec: 'aac,mp3' + (canPlayAc3 ? ',ac3' : '')
+                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
                 });
             }
 
@@ -165,10 +165,12 @@
                 });
             }
 
-            profile.DirectPlayProfiles.push({
-                Container: 'mp3',
-                Type: 'Audio'
-            });
+            if (canPlayMp3) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio'
+                });
+            }
 
             if (canPlayAac) {
                 profile.DirectPlayProfiles.push({
@@ -958,6 +960,9 @@
                             mediaUrl += seekParam;
                             contentType = 'application/x-mpegURL';
                         } else {
+
+                            // Reports of stuttering with h264 stream copy in IE
+                            mediaUrl += '&EnableAutoStreamCopy=false';
 
                             startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;
@@ -1862,6 +1867,14 @@
             if (canPlayH264) {
                 list.push('h264');
             }
+
+            if (document.createElement('audio').canPlayType('audio/aac').replace(/no/, '')) {
+                list.push('aac');
+            }
+            if (document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '')) {
+                list.push('mp3');
+            }
+
             supportedFormats = list;
             return list;
         }
