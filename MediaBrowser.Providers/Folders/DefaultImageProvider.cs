@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Folders
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                    list.AddRange(new List<RemoteImageInfo>{
+                list.AddRange(new List<RemoteImageInfo>{
                      new RemoteImageInfo
                      {
                           ProviderName = Name,
@@ -77,15 +77,15 @@ namespace MediaBrowser.Providers.Folders
 
             if (string.Equals(viewType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "books.png";
+                return urlPrefix + "books.jpg";
             }
             if (string.Equals(viewType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "games.png";
+                return urlPrefix + "games.jpg";
             }
             if (string.Equals(viewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "music.png";
+                return urlPrefix + "music.jpg";
             }
             if (string.Equals(viewType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
@@ -93,11 +93,11 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "tv.png";
+                //return urlPrefix + "tv.jpg";
             }
             if (string.Equals(viewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "generic.png";
+                return urlPrefix + "channels.jpg";
             }
             if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
@@ -105,27 +105,27 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "movies.png";
+                //return urlPrefix + "movies.jpg";
             }
             if (string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "playlists.png";
+                return urlPrefix + "playlists.jpg";
             }
             if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "homevideos.png";
+                return urlPrefix + "homevideos.jpg";
             }
             if (string.Equals(viewType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "musicvideos.png";
+                return urlPrefix + "musicvideos.jpg";
             }
             if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
-                //return urlPrefix + "generic.png";
+                return urlPrefix + "collections.jpg";
             }
             if (string.IsNullOrWhiteSpace(viewType))
             {
-                //return urlPrefix + "generic.png";
+                return urlPrefix + "generic.jpg";
             }
 
             return null;
