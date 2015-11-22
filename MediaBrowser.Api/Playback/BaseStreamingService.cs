@@ -568,7 +568,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (filters.Count > 1)
                 {
-                    filters[filters.Count - 1] += ":flags=fast_bilinear";
+                    //filters[filters.Count - 1] += ":flags=fast_bilinear";
                 }
             }
 

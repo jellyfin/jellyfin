@@ -29,34 +29,32 @@
             var url = getUrl(name, culture);
             var requestUrl = url + "?v=" + window.dashboardVersion;
 
-            fetch(requestUrl, { mode: 'no-cors' }).then(function (response) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', requestUrl, true);
 
-                if (response.status < 400) {
+            xhr.onload = function (e) {
 
-                    return response.json();
+                if (this.status < 400) {
+
+                    dictionaries[url] = JSON.parse(this.response);
+                    resolve();
 
                 } else {
 
                     // Grab the english version
-                    fetch(getUrl(name, 'en-US'), { mode: 'no-cors' }).then(function (response) {
+                    var xhr2 = new XMLHttpRequest();
+                    xhr2.open('GET', getUrl(name, 'en-US'), true);
 
-                        return response.json();
-
-                    }).then(function (json) {
-
-                        dictionaries[url] = json;
+                    xhr2.onload = function (e) {
+                        dictionaries[url] = JSON.parse(this.response);
                         resolve();
-                    });
+                    };
+
+                    xhr2.send();
                 }
+            };
 
-            }).then(function (json) {
-
-                if (json) {
-                    dictionaries[url] = json;
-                    resolve();
-                }
-            });
-
+            xhr.send();
         });
     }
 

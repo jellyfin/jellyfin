@@ -3123,13 +3123,14 @@
                 //    success: successFn,
                 //    error: this._loadError(absUrl, triggerData, settings, deferred)
                 //});
-                fetch(fileUrl, {
-                    mode: 'no-cors'
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', fileUrl, true);
 
-                }).then(function (response) {
+                xhr.onload = function(e) {
+                    successFn(this.response);
+                };
 
-                    return response.text();
-                }).then(successFn);
+                xhr.send();
 
                 return deferred.promise();
             },

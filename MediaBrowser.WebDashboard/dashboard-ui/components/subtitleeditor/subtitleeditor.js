@@ -11,7 +11,12 @@
 
         var url = 'Videos/' + currentItem.Id + '/Subtitles/' + index;
 
-        $.get(ApiClient.getUrl(url)).done(function (result) {
+        ApiClient.ajax({
+            
+            type: 'GET',
+            url: url
+
+        }).then(function (result) {
 
             $('.subtitleContent', page).html(result);
 
