@@ -379,6 +379,7 @@ namespace MediaBrowser.WebDashboard.Api
                 //sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
             }
 
+            sb.Append("<link rel=\"manifest\" href=\"manifest.json\">");
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");

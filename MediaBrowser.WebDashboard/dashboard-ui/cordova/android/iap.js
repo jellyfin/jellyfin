@@ -56,8 +56,26 @@
 
     function onPurchaseComplete(result) {
 
-        if (result) {
+        if (result === true) {
+
             refreshPurchases();
+        }
+        else if (result) {
+
+            ApiClient.ajax({
+                type: "POST",
+                url: ApiClient.getUrl("Appstore/Register"),
+                data: {
+                    Parameters: JSON.stringify(result)
+                }
+            }).done(function () {
+
+                refreshPurchases();
+
+            }).fail(function (e) {
+
+                refreshPurchases();
+            });
         }
     }
 

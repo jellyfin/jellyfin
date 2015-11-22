@@ -94,30 +94,7 @@ var WebNotifications = {
 
     show: function (data) {
 
-        // Seeing crashes in android
-        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
-
-            if (!WebNotifications.lastId) {
-                // Cordova plugin will crash on android with long. need an int
-                WebNotifications.lastId = new Date().getDate() + new Date().getMilliseconds();
-            }
-
-            WebNotifications.lastId++;
-
-            window.cordova.plugins.notification.local.schedule({
-
-                id: WebNotifications.lastId,
-
-                title: data.title,
-                text: data.body,
-                //firstAt: monday_9_am,
-                //every: "week",
-                //sound: "file://sounds/reminder.mp3",
-                //data: { meetingId: "123#fg8" },
-                icon: data.icon
-            });
-        }
-        else if (window.Notification) {
+        if (window.Notification) {
 
             var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
 

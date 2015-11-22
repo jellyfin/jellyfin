@@ -99,7 +99,7 @@
             return;
         }
 
-        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).done(function (images) {
+        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).then(function (images) {
 
             if (images.length) {
 

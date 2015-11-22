@@ -1,0 +1,31 @@
+{
+	"name": "native-promise-only",
+	"version": "0.8.0-a",
+	"description": "Native Promise Only: A polyfill for native ES6 Promises **only**, nothing else.",
+	"main": "./npo.js",
+	"scripts": {
+		"test": "promises-aplus-tests test_adapter.js",
+		"build": "./build.js"
+	},
+	"devDependencies": {
+		"promises-aplus-tests": "*",
+		"uglify-js": "~2.4.8"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/getify/native-promise-only.git"
+	},
+	"keywords": [
+		"ES6",
+		"Promise",
+		"async",
+		"promises-aplus"
+	],
+	"bugs": {
+		"url": "https://github.com/getify/native-promise-only/issues",
+		"email": "getify@gmail.com"
+	},
+	"homepage": "http://github.com/getify/native-promise-only",
+	"author": "Kyle Simpson <getify@gmail.com>",
+	"license": "MIT"
+}

@@ -2261,7 +2261,13 @@ var AppInfo = {};
             deps.push('cryptojs-sha1');
         }
 
+        if (!window.Promise) {
+            deps.push('bower_components/native-promise-only/lib/npo.src');
+        }
+
         require(deps, function () {
+
+            loadImageCache();
             $.extend(AppInfo, Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName));
 
             initAfterDependencies(deferred, capabilities);
@@ -2395,9 +2401,17 @@ var AppInfo = {};
         //require(['localsync']);
     }
 
-    function initCordovaWithDeviceId(deferred, deviceId) {
+    function loadImageCache() {
 
-        require(['cordova/imagestore']);
+        if (navigator.webkitPersistentStorage) {
+            require(['components/imagestore']);
+        }
+        else if (Dashboard.isRunningInCordova()) {
+            require(['cordova/imagestore']);
+        }
+    }
+
+    function initCordovaWithDeviceId(deferred, deviceId) {
 
         cordova.getAppVersion.getVersionNumber(function (appVersion) {
             var capablities = Dashboard.capabilities();
@@ -2434,6 +2448,7 @@ var AppInfo = {};
     setDocumentClasses();
 
     $(document).on('WebComponentsReady', function () {
+
         if (Dashboard.isRunningInCordova()) {
             initCordova(initDeferred);
         } else {
