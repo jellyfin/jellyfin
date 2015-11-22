@@ -258,7 +258,7 @@ namespace MediaBrowser.Providers.TV
             if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
-                if (string.IsNullOrWhiteSpace(id))
+                if (!string.IsNullOrWhiteSpace(id))
                 {
                     return true;
                 }
