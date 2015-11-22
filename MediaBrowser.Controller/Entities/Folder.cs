@@ -1178,13 +1178,20 @@ namespace MediaBrowser.Controller.Entities
             DateTime? datePlayed,
             bool resetPosition)
         {
-            var itemsResult = await GetItems(new InternalItemsQuery
+            var query = new InternalItemsQuery
             {
                 User = user,
                 Recursive = true,
-                IsFolder = false
+                IsFolder = false,
+                IsUnaired = false
+            };
 
-            }).ConfigureAwait(false);
+            if (!user.Configuration.DisplayMissingEpisodes)
+            {
+                query.IsMissing = false;
+            }
+
+            var itemsResult = await GetItems(query).ConfigureAwait(false);
 
             // Sweep through recursively and update status
             var tasks = itemsResult.Items.Select(c => c.MarkPlayed(user, datePlayed, resetPosition));
