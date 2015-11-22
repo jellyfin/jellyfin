@@ -1990,7 +1990,7 @@ var AppInfo = {};
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp) {
             if ($.browser.android) {
-                Dashboard.importCss('devices/android.css');
+                Dashboard.importCss('devices/android/android.css');
             } else if ($.browser.safari) {
                 Dashboard.importCss('devices/ios/ios.css');
             }

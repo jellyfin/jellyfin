@@ -1455,6 +1455,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding-right: .7em;
     }
 
+    .itemsListview.paperList {
+        text-align: left;
+    }
+
     .itemsListview paper-item-body {
         min-height: 0 !important;
     }
