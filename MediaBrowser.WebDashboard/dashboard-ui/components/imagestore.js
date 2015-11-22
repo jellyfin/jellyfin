@@ -87,7 +87,7 @@
                 if (this.status == 200) {
                     writeData(dir, filename, this.getResponseHeader('Content-Type'), this.response, callback, errorCallback);
                 } else {
-                    errorCallback();
+                    errorCallback('');
                 }
             }
 

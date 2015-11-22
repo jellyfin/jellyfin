@@ -144,6 +144,13 @@
     }
 }
 
+@media all and (min-width: 2560px) {
+
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
+        width: 96%;
+    }
+}
+
 .detailPageContent, .detailPageContent > table {
     margin: 0 auto;
     padding: 0;

@@ -2265,6 +2265,10 @@ var AppInfo = {};
             deps.push('bower_components/native-promise-only/lib/npo.src');
         }
 
+        if (!window.fetch) {
+            deps.push('bower_components/fetch/fetch');
+        }
+
         require(deps, function () {
 
             loadImageCache();
@@ -2330,7 +2334,7 @@ var AppInfo = {};
 
     function onConnectionManagerCreated(deferred) {
 
-        Globalize.ensure().done(function () {
+        Globalize.ensure().then(function () {
             document.title = Globalize.translateDocument(document.title, 'html');
 
             $(function () {

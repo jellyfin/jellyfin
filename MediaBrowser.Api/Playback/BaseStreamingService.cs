@@ -566,7 +566,7 @@ namespace MediaBrowser.Api.Playback
 
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                if (filters.Count > 0)
+                if (filters.Count > 1)
                 {
                     filters[filters.Count - 1] += ":flags=fast_bilinear";
                 }

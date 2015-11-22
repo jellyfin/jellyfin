@@ -19,33 +19,45 @@
 
     function loadDictionary(name, culture) {
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        if (getDictionary(name, culture)) {
-            deferred.resolve();
-        } else {
+            if (getDictionary(name, culture)) {
+                resolve();
+                return;
+            }
 
             var url = getUrl(name, culture);
             var requestUrl = url + "?v=" + window.dashboardVersion;
 
-            $.getJSON(requestUrl).done(function (dictionary) {
+            fetch(requestUrl, { mode: 'no-cors' }).then(function (response) {
 
-                dictionaries[url] = dictionary;
-                deferred.resolve();
+                if (response.status < 400) {
 
-            }).fail(function () {
+                    return response.json();
 
-                // If there's no dictionary for that language, grab English
-                $.getJSON(getUrl(name, 'en-US')).done(function (dictionary) {
+                } else {
 
-                    dictionaries[url] = dictionary;
-                    deferred.resolve();
+                    // Grab the english version
+                    fetch(getUrl(name, 'en-US'), { mode: 'no-cors' }).then(function (response) {
 
-                });
+                        return response.json();
+
+                    }).then(function (json) {
+
+                        dictionaries[url] = json;
+                        resolve();
+                    });
+                }
+
+            }).then(function (json) {
+
+                if (json) {
+                    dictionaries[url] = json;
+                    resolve();
+                }
             });
-        }
 
-        return deferred.promise();
+        });
     }
 
     var currentCulture = 'en-US';
@@ -55,7 +67,7 @@
 
         currentCulture = value;
 
-        return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
+        return Promise.all([loadDictionary('html', value), loadDictionary('javascript', value)]);
     }
 
     function normalizeLocaleName(culture) {
@@ -74,25 +86,25 @@
     }
 
     function getDeviceCulture() {
-        var deferred = DeferredBuilder.Deferred();
 
-        if (AppInfo.isNativeApp) {
+        return new Promise(function (resolve, reject) {
 
-            deferred.resolveWith(null, [navigator.language || navigator.userLanguage]);
+            if (AppInfo.isNativeApp) {
 
-        } else if (AppInfo.supportsUserDisplayLanguageSetting) {
+                resolve(navigator.language || navigator.userLanguage);
 
-            Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
+            } else if (AppInfo.supportsUserDisplayLanguageSetting) {
 
-            deferred.resolveWith(null, [AppSettings.displayLanguage()]);
+                Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
 
-        } else {
+                resolve(AppSettings.displayLanguage());
 
-            Logger.log('Getting culture from document');
-            deferred.resolveWith(null, [document.documentElement.getAttribute('data-culture')]);
-        }
+            } else {
 
-        return deferred.promise();
+                Logger.log('Getting culture from document');
+                resolve(document.documentElement.getAttribute('data-culture'));
+            }
+        });
     }
 
 
@@ -100,18 +112,15 @@
 
         Logger.log('Entering Globalize.ensure');
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        getDeviceCulture().done(function (culture) {
+            getDeviceCulture().then(function (culture) {
 
-            culture = normalizeLocaleName(culture || 'en-US');
+                culture = normalizeLocaleName(culture || 'en-US');
 
-            setCulture(culture).done(function () {
-                deferred.resolve();
+                setCulture(culture).then(resolve);
             });
         });
-
-        return deferred.promise();
     }
 
     function translateDocument(html, dictionaryName) {

@@ -3113,16 +3113,23 @@
                     return deferred.promise();
                 }
 
-                // Load the new content.
-                $.ajax({
-                    url: fileUrl,
-                    type: settings.type,
-                    data: settings.data,
-                    contentType: settings.contentType,
-                    dataType: "html",
-                    success: successFn,
-                    error: this._loadError(absUrl, triggerData, settings, deferred)
-                });
+                //// Load the new content.
+                //$.ajax({
+                //    url: fileUrl,
+                //    type: settings.type,
+                //    data: settings.data,
+                //    contentType: settings.contentType,
+                //    dataType: "html",
+                //    success: successFn,
+                //    error: this._loadError(absUrl, triggerData, settings, deferred)
+                //});
+                fetch(fileUrl, {
+                    mode: 'no-cors'
+
+                }).then(function (response) {
+
+                    return response.text();
+                }).then(successFn);
 
                 return deferred.promise();
             },
