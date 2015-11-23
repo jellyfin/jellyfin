@@ -50,12 +50,6 @@ namespace MediaBrowser.Providers.Manager
         protected Task SaveProviderResult(TItemType item, MetadataStatus result, IDirectoryService directoryService)
         {
             result.ItemId = item.Id;
-            result.ItemName = item.Name;
-            result.ItemType = item.GetType().Name;
-
-            var series = item as IHasSeries;
-
-            result.SeriesName = series == null ? null : series.SeriesName;
 
             //var locationType = item.LocationType;
 
