@@ -759,7 +759,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.000000", UsCulture) + ",");
+                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", UsCulture) + ",");
 
                 builder.AppendLine(string.Format("hlsdynamic/{0}/{1}{2}{3}",
 
