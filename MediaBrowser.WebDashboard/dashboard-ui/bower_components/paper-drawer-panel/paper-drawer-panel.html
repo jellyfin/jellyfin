@@ -285,7 +285,7 @@ Custom property | Description | Default
 
     <iron-selector
         attr-for-selected="id"
-        class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer, peeking)]]"
+        class$="[[_computeIronSelectorClass(narrow, _transition, dragging, rightDrawer, peeking)]]"
         activate-event=""
         selected="[[selected]]">
 
@@ -495,7 +495,7 @@ Custom property | Description | Default
           /**
            * Whether the transition is enabled.
            */
-          transition: {
+          _transition: {
             type: Boolean,
             value: false
           },
@@ -547,7 +547,7 @@ Custom property | Description | Default
         ready: function() {
           // Avoid transition at the beginning e.g. page loads and enable
           // transitions only after the element is rendered and ready.
-          this.transition = true;
+          this._transition = true;
         },
 
         _onMainTransitionEnd: function (e) {
@@ -698,7 +698,7 @@ Custom property | Description | Default
 
             if (this.dragging) {
               this.width = this.$.drawer.offsetWidth;
-              this.transition = false;
+              this._transition = false;
             }
           }
         },
@@ -725,12 +725,6 @@ Custom property | Description | Default
               this._setPeeking(false);
             }
 
-            var dy = event.detail.dy;
-            var absDy = Math.abs(dy);
-            if (absDy >= 70) {
-                // Ignore trackx until we move past the edge peek.
-                return;
-            }
             this._moveDrawer(this._translateXForDeltaX(dx));
           }
         },
@@ -740,17 +734,14 @@ Custom property | Description | Default
             var xDirection = event.detail.dx > 0;
 
             this._setDragging(false);
-            this.transition = true;
+            this._transition = true;
             sharedPanel = null;
             this._moveDrawer(null);
 
-            var dx = event.detail.dx;
-            var dy = event.detail.dy;
-            var absDy = Math.abs(dy);
             if (this.rightDrawer) {
-                this[xDirection ? 'closeDrawer' : 'openDrawer']();
+              this[xDirection ? 'closeDrawer' : 'openDrawer']();
             } else {
-                this[xDirection || dx > -80 || absDy >= 70 ? 'openDrawer' : 'closeDrawer']();
+              this[xDirection ? 'openDrawer' : 'closeDrawer']();
             }
           }
         },

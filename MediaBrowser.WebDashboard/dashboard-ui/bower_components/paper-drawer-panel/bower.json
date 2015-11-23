@@ -1,6 +1,6 @@
 {
   "name": "paper-drawer-panel",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A responsive drawer panel",
   "authors": [
     "The Polymer Authors"
@@ -32,5 +32,6 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "main": "paper-drawer-panel.html"
+  "main": "paper-drawer-panel.html",
+  "ignore": []
 }
