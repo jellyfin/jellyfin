@@ -113,8 +113,7 @@
         var deferred = DeferredBuilder.Deferred();
 
         if (feature == 'playback' || feature == 'livetv') {
-            deferred.resolveWith(null, [false]);
-            //isPlaybackUnlockedViaOldApp(deferred);
+            isPlaybackUnlockedViaOldApp(deferred);
         } else {
             deferred.resolveWith(null, [false]);
         }

@@ -1988,15 +1988,15 @@ var AppInfo = {};
         }
 
         // Do these now to prevent a flash of content
-        if (AppInfo.isNativeApp) {
-            if ($.browser.android) {
-                Dashboard.importCss('devices/android/android.css');
-            } else if ($.browser.safari) {
-                Dashboard.importCss('devices/ios/ios.css');
-            }
-        } else {
-            loadTheme();
+        if (AppInfo.isNativeApp && $.browser.android) {
+            Dashboard.importCss('devices/android/android.css');
+        } else if (AppInfo.isNativeApp && $.browser.safari) {
+            Dashboard.importCss('devices/ios/ios.css');
+        } else if (!$.browser.android) {
+            Dashboard.importCss('devices/android/android.css');
         }
+
+        loadTheme();
 
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();

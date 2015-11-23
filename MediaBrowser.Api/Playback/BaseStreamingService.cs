@@ -287,17 +287,18 @@ namespace MediaBrowser.Api.Playback
             return threads;
         }
 
-        protected string H264Encoder
+        protected string GetH264Encoder(StreamState state)
         {
-            get
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareVideoDecoder, "qsv", StringComparison.OrdinalIgnoreCase))
+                // It's currently failing on live tv
+                if (state.RunTimeTicks.HasValue)
                 {
                     return "h264_qsv";
                 }
-                
-                return "libx264";
             }
+
+            return "libx264";
         }
 
         /// <summary>
@@ -405,8 +406,10 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
+                var h264Encoder = GetH264Encoder(state);
+
                 // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
-                if (String.Equals(H264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(H264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                if (String.Equals(h264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(h264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.VideoRequest.Level)
                     {
@@ -790,7 +793,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    return H264Encoder;
+                    return GetH264Encoder(state);
                 }
                 if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {

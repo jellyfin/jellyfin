@@ -495,11 +495,7 @@
 
             var url = self.getUrl("News/Product", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDownloadSpeed = function (byteSize) {
@@ -573,11 +569,7 @@
                 self.getUrl("Users/" + userId + "/Items/" + itemId) :
                 self.getUrl("Items/" + itemId);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -591,11 +583,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/Root");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNotificationSummary = function (userId) {
@@ -606,11 +594,7 @@
 
             var url = self.getUrl("Notifications/" + userId + "/Summary");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNotifications = function (userId, options) {
@@ -621,11 +605,7 @@
 
             var url = self.getUrl("Notifications/" + userId, options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.markNotificationsRead = function (userId, idList, isRead) {
@@ -716,11 +696,7 @@
 
             var url = self.getUrl(urlPrefix + "/RemoteImages/Providers", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getAvailableRemoteImages = function (options) {
@@ -733,11 +709,7 @@
 
             var url = self.getUrl(urlPrefix + "/RemoteImages", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.downloadRemoteImage = function (options) {
@@ -760,22 +732,14 @@
 
             var url = self.getUrl("LiveTv/Info", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvGuideInfo = function (options) {
 
             var url = self.getUrl("LiveTv/GuideInfo", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvChannel = function (id, userId) {
@@ -794,22 +758,14 @@
 
             var url = self.getUrl("LiveTv/Channels/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvChannels = function (options) {
 
             var url = self.getUrl("LiveTv/Channels", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvPrograms = function (options) {
@@ -851,22 +807,14 @@
 
             var url = self.getUrl("LiveTv/Recordings", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecordingGroups = function (options) {
 
             var url = self.getUrl("LiveTv/Recordings/Groups", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecordingGroup = function (id) {
@@ -877,11 +825,7 @@
 
             var url = self.getUrl("LiveTv/Recordings/Groups/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecording = function (id, userId) {
@@ -900,11 +844,7 @@
 
             var url = self.getUrl("LiveTv/Recordings/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvProgram = function (id, userId) {
@@ -923,11 +863,7 @@
 
             var url = self.getUrl("LiveTv/Programs/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.deleteLiveTvRecording = function (id) {
@@ -962,11 +898,7 @@
 
             var url = self.getUrl("LiveTv/Timers", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvTimer = function (id) {
@@ -977,11 +909,7 @@
 
             var url = self.getUrl("LiveTv/Timers/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNewLiveTvTimerDefaults = function (options) {
@@ -990,11 +918,7 @@
 
             var url = self.getUrl("LiveTv/Timers/Defaults", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.createLiveTvTimer = function (item) {
@@ -1047,22 +971,14 @@
 
             var url = self.getUrl("LiveTv/SeriesTimers", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getFileOrganizationResults = function (options) {
 
             var url = self.getUrl("Library/FileOrganization", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.deleteOriginalFileFromOrganizationResult = function (id) {
@@ -1113,11 +1029,7 @@
 
             var url = self.getUrl("LiveTv/SeriesTimers/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.cancelLiveTvSeriesTimer = function (id) {
@@ -1170,11 +1082,7 @@
 
             var url = self.getUrl("Registrations/" + feature);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1184,11 +1092,7 @@
 
             var url = self.getUrl("System/Info");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1210,22 +1114,14 @@
 
             var url = self.getUrl("Items/" + itemId + "/InstantMix", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getEpisodes = function (itemId, options) {
 
             var url = self.getUrl("Shows/" + itemId + "/Episodes", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDisplayPreferences = function (id, userId, app) {
@@ -1235,11 +1131,7 @@
                 client: app
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.updateDisplayPreferences = function (id, obj, userId, app) {
@@ -1261,22 +1153,14 @@
 
             var url = self.getUrl("Shows/" + itemId + "/Seasons", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSimilarItems = function (itemId, options) {
 
             var url = self.getUrl("Items/" + itemId + "/Similar", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1286,11 +1170,7 @@
 
             var url = self.getUrl("Localization/cultures");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1300,11 +1180,7 @@
 
             var url = self.getUrl("Localization/countries");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1314,11 +1190,7 @@
 
             var url = self.getUrl("Plugins/SecurityInfo");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1336,11 +1208,7 @@
 
             var url = self.getUrl("Environment/DirectoryContents", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1357,11 +1225,7 @@
 
             var url = self.getUrl("Environment/NetworkShares", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1391,11 +1255,7 @@
 
             var url = self.getUrl("Environment/Drives");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1405,11 +1265,7 @@
 
             var url = self.getUrl("Environment/NetworkDevices");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1517,11 +1373,7 @@
 
             var url = self.getUrl("Packages/" + name, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1531,11 +1383,7 @@
 
             var url = self.getUrl("Packages/Updates", { PackageType: "System" });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1545,11 +1393,7 @@
 
             var url = self.getUrl("Packages/Updates", { PackageType: "UserInstalled" });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1561,11 +1405,7 @@
 
             url = self.getUrl(url);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1575,11 +1415,7 @@
 
             var url = self.getUrl("Library/PhysicalPaths");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1589,11 +1425,7 @@
 
             var url = self.getUrl("System/Configuration");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1603,11 +1435,7 @@
 
             var url = self.getUrl("System/Configuration/devices");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1619,22 +1447,14 @@
                 DeviceId: self.deviceId()
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNamedConfiguration = function (name) {
 
             var url = self.getUrl("System/Configuration/" + name);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1646,11 +1466,7 @@
 
             var url = self.getUrl("ScheduledTasks", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1681,22 +1497,14 @@
 
             var url = self.getUrl("ScheduledTasks/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNextUpEpisodes = function (options) {
 
             var url = self.getUrl("Shows/NextUp", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1728,11 +1536,7 @@
 
             var url = self.getUrl("Plugins/" + id + "/Configuration");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1749,11 +1553,7 @@
 
             var url = self.getUrl("Packages", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2039,11 +1839,7 @@
 
             var url = self.getUrl("Items/" + itemId + "/Images");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getCriticReviews = function (itemId, options) {
@@ -2054,22 +1850,14 @@
 
             var url = self.getUrl("Items/" + itemId + "/CriticReviews", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSessions = function (options) {
 
             var url = self.getUrl("Sessions", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2209,11 +1997,7 @@
 
             var url = self.getUrl("Plugins", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2228,11 +2012,7 @@
 
             var url = self.getUrl("Users/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2247,11 +2027,7 @@
 
             var url = self.getUrl("Users/" + id + "/Offline");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2271,11 +2047,7 @@
 
             var url = self.getUrl("Studios/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2295,11 +2067,7 @@
 
             var url = self.getUrl("Genres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getMusicGenre = function (name, userId) {
@@ -2316,11 +2084,7 @@
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getGameGenre = function (name, userId) {
@@ -2337,11 +2101,7 @@
 
             var url = self.getUrl("GameGenres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2361,11 +2121,7 @@
 
             var url = self.getUrl("Artists/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2385,11 +2141,7 @@
 
             var url = self.getUrl("Persons/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getPublicUsers = function () {
@@ -2411,11 +2163,7 @@
 
             var url = self.getUrl("users", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2425,11 +2173,7 @@
 
             var url = self.getUrl("Localization/ParentalRatings");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDefaultImageQuality = function (imageType) {
@@ -2969,11 +2713,7 @@
 
             var url = self.getUrl("Items/" + itemId + "/Ancestors", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3004,11 +2744,7 @@
                 url = self.getUrl("Items", options);
             }
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getChannels = function (query) {
@@ -3022,11 +2758,7 @@
 
             var url = self.getUrl("Users/" + (userId || self.getCurrentUserId()) + "/Views", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3043,11 +2775,7 @@
 
             var url = self.getUrl("Artists", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3064,11 +2792,7 @@
 
             var url = self.getUrl("Artists/AlbumArtists", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3085,11 +2809,7 @@
 
             var url = self.getUrl("Genres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getMusicGenres = function (userId, options) {
@@ -3103,11 +2823,7 @@
 
             var url = self.getUrl("MusicGenres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getGameGenres = function (userId, options) {
@@ -3121,11 +2837,7 @@
 
             var url = self.getUrl("GameGenres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3142,11 +2854,7 @@
 
             var url = self.getUrl("Persons", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3163,11 +2871,7 @@
 
             var url = self.getUrl("Studios", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3184,11 +2888,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/LocalTrailers");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getAdditionalVideoParts = function (userId, itemId) {
@@ -3205,11 +2905,7 @@
 
             var url = self.getUrl("Videos/" + itemId + "/AdditionalParts", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getThemeMedia = function (userId, itemId, inherit) {
@@ -3228,22 +2924,14 @@
 
             var url = self.getUrl("Items/" + itemId + "/ThemeMedia", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSearchHints = function (options) {
 
             var url = self.getUrl("Search/Hints", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3260,11 +2948,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/SpecialFeatures");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDateParamValue = function (date) {
@@ -3386,11 +3070,7 @@
 
             var url = self.getUrl("Items/Counts", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3514,11 +3194,7 @@
                 TargetId: deviceId
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.reportSyncJobItemTransferred = function (syncJobItemId) {
@@ -3663,14 +3339,8 @@
 
             var url = self.getUrl("Packages/" + packageId + "/Reviews", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
-
-
     };
 
 })(window, window.JSON, window.WebSocket, window.setTimeout, window.devicePixelRatio, window.FileReader);
