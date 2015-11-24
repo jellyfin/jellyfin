@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.People
                 Person = itemName
 
             }).Items.Cast<Series>()
-                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
+                .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();
 
             var infos = seriesWithPerson.Select(i => GetImageFromSeriesData(i, item.Name, cancellationToken))
@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.People
 
         private RemoteImageInfo GetImageFromSeriesData(Series series, string personName, CancellationToken cancellationToken)
         {
-            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
 
             var actorXmlPath = Path.Combine(tvdbPath, "actors.xml");
 

@@ -66,7 +66,11 @@ namespace MediaBrowser.Providers.TV
         {
             var tvdbId = group.Key;
 
-            var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId);
+            // Todo: Support series by imdb id
+            var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            seriesProviderIds[MetadataProviders.Tvdb.ToString()] = tvdbId;
+
+            var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
             var episodeFiles = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileNameWithoutExtension)
