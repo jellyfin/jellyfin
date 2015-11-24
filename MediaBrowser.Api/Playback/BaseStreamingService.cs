@@ -1427,49 +1427,45 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 16)
                 {
-                    request.ClientTime = val;
-                }
-                else if (i == 17)
-                {
                     if (videoRequest != null)
                     {
                         videoRequest.MaxRefFrames = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 18)
+                else if (i == 17)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.MaxVideoBitDepth = int.Parse(val, UsCulture);
                     }
                 }
-                else if (i == 19)
+                else if (i == 18)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Profile = val;
                     }
                 }
-                else if (i == 20)
+                else if (i == 19)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
-                else if (i == 21)
+                else if (i == 20)
                 {
                     request.PlaySessionId = val;
                 }
-                else if (i == 22)
+                else if (i == 21)
                 {
                     // api_key
                 }
-                else if (i == 23)
+                else if (i == 22)
                 {
                     request.LiveStreamId = val;
                 }
-                else if (i == 24)
+                else if (i == 23)
                 {
                     // Duplicating ItemId because of MediaMonkey
                 }
