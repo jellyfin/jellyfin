@@ -305,28 +305,28 @@
 
                 html += '<div class="channelHeaderCellContainer">';
 
-                html += '<div class="channelHeaderCell">';
-                html += '<a class="channelHeaderCellInner" href="itemdetails.html?id=' + channel.Id + '">';
+                html += '<a class="channelHeaderCell" href="itemdetails.html?id=' + channel.Id + '">';
 
                 var hasChannelImage = channel.ImageTags.Primary;
                 var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';
 
-                html += '<div class="' + cssClass + '">' + channel.Name + '<br/>' + channel.Number + '</div>';
+                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
 
                 if (hasChannelImage) {
 
                     var url = ApiClient.getScaledImageUrl(channel.Id, {
-                        maxHeight: 40,
-                        maxWidth: 60,
+                        maxHeight: 44,
+                        maxWidth: 70,
                         tag: channel.ImageTags.Primary,
                         type: "Primary"
                     });
 
                     html += '<div class="guideChannelImage lazy" data-src="' + url + '"></div>';
+                } else {
+                    html += '<div class="guideChannelName">' + channel.Name + '</div>';
                 }
 
                 html += '</a>';
-                html += '</div>';
 
                 html += '</div>';
             }
