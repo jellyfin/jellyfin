@@ -504,7 +504,15 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         private string GetEpisodeFileName(string sourcePath, string seriesName, int seasonNumber, int episodeNumber, int? endingEpisodeNumber, string episodeTitle, TvFileOrganizationOptions options, int? maxLength)
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
-            episodeTitle = _fileSystem.GetValidFilename(episodeTitle).Trim();
+
+            if (episodeTitle == null)
+            {
+                episodeTitle = string.Empty;
+            }
+            else
+            {
+                episodeTitle = _fileSystem.GetValidFilename(episodeTitle).Trim();
+            }
 
             var sourceExtension = (Path.GetExtension(sourcePath) ?? string.Empty).TrimStart('.');
 
