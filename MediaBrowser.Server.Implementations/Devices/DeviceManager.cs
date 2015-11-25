@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -19,8 +18,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -210,72 +207,12 @@ namespace MediaBrowser.Server.Implementations.Devices
                 path = Path.Combine(path, _fileSystem.GetValidFilename(device.Name));
             }
 
-            EnsureMediaLibrarySetup();
-
             return path;
         }
 
         private string DefaultCameraUploadsPath
         {
             get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads"); }
-        }
-
-        internal void EnsureMediaLibrarySetup()
-        {
-            //EnsureMediaLibrarySetup(DefaultCameraUploadsPath, false);
-        }
-
-        private void EnsureMediaLibrarySetup(string libraryPath, bool force)
-        {
-            var requiresSetup = false;
-
-            var path = Path.Combine(_config.ApplicationPaths.DefaultUserViewsPath, "Camera Uploads");
-
-            var collectionMarkerFile = Path.Combine(path, CollectionType.Photos + ".collection");
-            if (!_fileSystem.FileExists(collectionMarkerFile))
-            {
-                requiresSetup = true;
-            }
-
-            var shortcutFile = Path.Combine(path, "camerauploads.mblink");
-            try
-            {
-                if (!string.Equals(_fileSystem.ReadAllText(shortcutFile), libraryPath))
-                {
-                    requiresSetup = true;
-                }
-            }
-            catch
-            {
-                requiresSetup = true;
-            }
-
-            if (requiresSetup)
-            {
-                if (!force)
-                {
-                    var extensions = new[] { ".jpg", ".png" };
-                    var hasPhotos = _fileSystem.GetFiles(libraryPath, true).Any(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase));
-
-                    // Nothing to do
-                    if (!hasPhotos)
-                    {
-                        return;
-                    }
-                }
-            }
-
-            if (requiresSetup)
-            {
-                Directory.CreateDirectory(path);
-
-                using (File.Create(collectionMarkerFile))
-                {
-
-                }
-
-                _fileSystem.CreateShortcut(shortcutFile, libraryPath);
-            }
         }
 
         public async Task UpdateDeviceInfo(string id, DeviceOptions options)
@@ -334,25 +271,6 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             return ListHelper.ContainsIgnoreCase(policy.EnabledDevices, id);
-        }
-    }
-
-    public class DeviceManagerEntryPoint : IServerEntryPoint
-    {
-        private readonly IDeviceManager _deviceManager;
-
-        public DeviceManagerEntryPoint(IDeviceManager deviceManager)
-        {
-            _deviceManager = deviceManager;
-        }
-
-        public void Run()
-        {
-            ((DeviceManager)_deviceManager).EnsureMediaLibrarySetup();
-        }
-
-        public void Dispose()
-        {
         }
     }
 

@@ -130,7 +130,6 @@ namespace MediaBrowser.Api.Playback
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
             data += "-" + (state.Request.PlaySessionId ?? string.Empty);
-            data += "-" + (state.Request.ClientTime ?? string.Empty);
 
             var dataHash = data.GetMD5().ToString("N");
 

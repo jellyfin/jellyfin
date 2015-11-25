@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -474,41 +473,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
-
-            // if a different file is encoding, it's done
-            //var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath);
-            //if (currentTranscodingIndex > segmentIndex)
-            //{
-            //return GetSegmentResult(segmentPath, segmentIndex);
-            //}
-
-            //// Wait for the file to stop being written to, then stream it
-            //var length = new FileInfo(segmentPath).Length;
-            //var eofCount = 0;
-
-            //while (eofCount < 10)
-            //{
-            //    var info = new FileInfo(segmentPath);
-
-            //    if (!info.Exists)
-            //    {
-            //        break;
-            //    }
-
-            //    var newLength = info.Length;
-
-            //    if (newLength == length)
-            //    {
-            //        eofCount++;
-            //    }
-            //    else
-            //    {
-            //        eofCount = 0;
-            //    }
-
-            //    length = newLength;
-            //    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            //}
 
             cancellationToken.ThrowIfCancellationRequested();
             return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
