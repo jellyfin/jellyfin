@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Subtitles
         public async Task<IEnumerable<NameIdPair>> GetSupportedLanguages(CancellationToken cancellationToken)
         {
             await Login(cancellationToken).ConfigureAwait(false);
-            
+
             var result = OpenSubtitles.GetSubLanguages("en");
             if (!(result is MethodResponseGetSubLanguages))
             {
@@ -321,7 +321,8 @@ namespace MediaBrowser.Providers.Subtitles
                         Name = i.SubFileName,
                         DateCreated = DateTime.Parse(i.SubAddDate, _usCulture),
                         IsHashMatch = i.MovieHash == hasCopy
-                    });
+
+                    }).Where(i => !string.Equals(i.Format, "sub", StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Format, "idx", StringComparison.OrdinalIgnoreCase));
         }
 
         public void Dispose()
