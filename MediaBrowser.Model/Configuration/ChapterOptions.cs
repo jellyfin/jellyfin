@@ -13,11 +13,10 @@
         public string[] DisabledFetchers { get; set; }
 
         public bool ExtractDuringLibraryScan { get; set; }
-        
+      
         public ChapterOptions()
         {
             DownloadMovieChapters = true;
-            ExtractDuringLibraryScan = true;
 
             DisabledFetchers = new string[] { };
             FetcherOrder = new string[] { };

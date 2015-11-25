@@ -525,6 +525,15 @@ namespace MediaBrowser.Model.Dlna
             bool isEligibleForDirectPlay,
             bool isEligibleForDirectStream)
         {
+            if (videoStream == null)
+            {
+                _logger.Info("Profile: {0}, Cannot direct stream with no known video stream. Path: {1}",
+                    profile.Name ?? "Unknown Profile",
+                    mediaSource.Path ?? "Unknown path");
+
+                return null;
+            }
+
             // See if it can be direct played
             DirectPlayProfile directPlay = null;
             foreach (DirectPlayProfile i in profile.DirectPlayProfiles)
