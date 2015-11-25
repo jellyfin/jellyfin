@@ -1,6 +1,6 @@
 {
   "name": "iron-flex-layout",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Provide flexbox-based layouts",
   "keywords": [
     "web-components",
@@ -26,5 +26,6 @@
     "prism-element": "PolymerElements/prism-element#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0"
-  }
+  },
+  "ignore": []
 }

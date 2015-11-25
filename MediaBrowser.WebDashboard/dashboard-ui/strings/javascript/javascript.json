@@ -922,6 +922,8 @@
     "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
     "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
     "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser.",
+    "HeaderTryModernBrowser": "Try a Modern Web Browser",
+    "MessageTryModernBrowser": "For a better experience on Windows, try a modern web browser such as Google Chrome, Firefox, or Opera.",
     "ErrorAddingListingsToSchedulesDirect": "There was an error adding the lineup to your Schedules Direct account. Schedules Direct only allows a limited number of lineups per account. You may need to log into the Schedules Direct website and remove others listings from your account before proceeeding.",
     "PleaseAddAtLeastOneFolder": "Please add at least one folder to this library by clicking the Add button.",
     "ErrorAddingMediaPathToVirtualFolder": "There was an error adding the media path. Please ensure the path is valid and the Emby Server process has access to that location.",

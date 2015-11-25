@@ -37,6 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
   <template>
     <h4>Press any of these keys</h4>
+    <input type="checkbox" checked="{{preventDefault::change}}"> prevent default = {{preventDefault}}
     <p class="keys">
       <template is="dom-repeat" items="[[boundKeys]]">
         <span>{{item}}</span>
@@ -68,6 +69,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
+      preventDefault: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+
       keyEventTarget: {
         type: Object,
         value: function() {
@@ -77,12 +84,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     keyBindings: {
-      '* pageup pagedown left right down up shift+a alt+a home end space enter': '_updatePressed'
+      '* pageup pagedown left right down up home end space enter @ ~ " $ ? ! \\ + : # backspace': '_updatePressed',
+      'a': '_updatePressed',
+      'shift+a alt+a': '_updatePressed'
     },
 
     _updatePressed: function(event) {
       console.log(event.detail);
 
+      if (this.preventDefault) {
+        event.preventDefault();
+      }
       this._setPressed(
         this.pressed + event.detail.combo + ' pressed!\n'
       );
