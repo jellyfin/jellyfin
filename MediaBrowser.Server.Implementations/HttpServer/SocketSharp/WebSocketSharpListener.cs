@@ -183,15 +183,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         /// <param name="request">The request.</param>
         private static void LogRequest(ILogger logger, HttpListenerRequest request)
         {
-            var log = new StringBuilder();
-
-            var headers = string.Join(",", request.Headers.AllKeys.Where(i => !string.Equals(i, "cookie", StringComparison.OrdinalIgnoreCase) && !string.Equals(i, "Referer", StringComparison.OrdinalIgnoreCase)).Select(k => k + "=" + request.Headers[k]));
-
-            log.AppendLine("Ip: " + request.RemoteEndPoint + ". Headers: " + headers);
-
-            var type = request.IsWebSocketRequest ? "Web Socket" : "HTTP " + request.HttpMethod;
-
-            logger.LogMultiline(type + " " + request.Url, LogSeverity.Info, log);
+            logger.Info("{0} {1}. UserAgent: {2}", (request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod), request.Url, request.UserAgent ?? string.Empty);
         }
 
         private void HandleError(Exception ex, HttpListenerContext context)
