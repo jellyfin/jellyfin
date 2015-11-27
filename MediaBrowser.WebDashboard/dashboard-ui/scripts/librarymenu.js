@@ -229,8 +229,8 @@
     function onMainDrawerSelect(e) {
 
         var drawer = e.target;
-        if (drawer.selected == 'main') {
 
+        if (drawer.selected != 'drawer') {
             document.body.classList.remove('bodyWithPopupOpen');
             document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
         } else {
@@ -1061,9 +1061,8 @@ $.fn.createHoverTouch = function () {
 
     var isCurrentNavBack = false;
 
-    window.addEventListener("navigate", function (e) {
-
-        var data = e.detail.state || {};
+    $(window).on("navigate", function (e, data) {
+        data = data.state || {};
         isCurrentNavBack = data.direction == 'back';
     });
 

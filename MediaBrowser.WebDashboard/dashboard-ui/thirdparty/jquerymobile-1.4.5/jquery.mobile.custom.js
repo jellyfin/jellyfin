@@ -1457,39 +1457,6 @@
                 element.unbind(eventName).undelegate(eventName);
             },
 
-            _delay: function (handler, delay) {
-                function handlerProxy() {
-                    return (typeof handler === "string" ? instance[handler] : handler)
-                        .apply(instance, arguments);
-                }
-                var instance = this;
-                return setTimeout(handlerProxy, delay || 0);
-            },
-
-            _hoverable: function (element) {
-                this.hoverable = this.hoverable.add(element);
-                this._on(element, {
-                    mouseenter: function (event) {
-                        $(event.currentTarget).addClass("ui-state-hover");
-                    },
-                    mouseleave: function (event) {
-                        $(event.currentTarget).removeClass("ui-state-hover");
-                    }
-                });
-            },
-
-            _focusable: function (element) {
-                this.focusable = this.focusable.add(element);
-                this._on(element, {
-                    focusin: function (event) {
-                        $(event.currentTarget).addClass("ui-state-focus");
-                    },
-                    focusout: function (event) {
-                        $(event.currentTarget).removeClass("ui-state-focus");
-                    }
-                });
-            },
-
             _trigger: function (type, event, data) {
                 var prop, orig,
                     callback = this.options[type];

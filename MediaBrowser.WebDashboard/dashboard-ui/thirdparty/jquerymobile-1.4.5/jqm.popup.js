@@ -113,6 +113,15 @@
 			this._on(this.document, { "focusin": "_handleDocumentFocusIn" });
 		},
 
+		_delay: function (handler, delay) {
+		    function handlerProxy() {
+		        return (typeof handler === "string" ? instance[handler] : handler)
+                    .apply(instance, arguments);
+		    }
+		    var instance = this;
+		    return setTimeout(handlerProxy, delay || 0);
+		},
+
 		_enhance: function (theElement, myId) {
 			var currentOptions = this.options,
 				wrapperClass = currentOptions.wrapperClass,
