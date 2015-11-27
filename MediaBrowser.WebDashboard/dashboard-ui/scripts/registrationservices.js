@@ -104,7 +104,7 @@
         html += '<div style="background:rgba(0,0,0,.90);top: 0;left: 0;right: 0;bottom: 0;position: fixed;z-index:1098;font-size:14px;">';
         html += '<div class="readOnlyContent" style="margin:20px auto 0;color:#fff;padding:1em;">';
 
-        html += '<h1>' + Globalize.translate('HeaderEmbyPremiere') + '</h1>';
+        html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 
         html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode') + '</p>';
         html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode2') + '</p>';
@@ -224,12 +224,7 @@
 
                         var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
 
-                        fetch(url, { mode: 'no-cors' }).then(function (response) {
-
-                            return response.json();
-
-                        }).then(function (dev) {
-
+                        $.getJSON(url).done(function (dev) {
                             if (dev.payPalEmail) {
                                 $('#payPalEmail', page).val(dev.payPalEmail);
 
