@@ -838,7 +838,7 @@
     "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your information is correct and try again.",
     "MessageCreateAccountAt": "Create an account at {0}",
     "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct.",
-    "HeaderEmbyPremiere": "Try Emby Premiere",
+    "HeaderTryEmbyPremiere": "Try Emby Premiere",
     "ButtonBecomeSupporter": "Get Emby Premiere",
     "ButtonClosePlayVideo": "Close and play my media",
     "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
