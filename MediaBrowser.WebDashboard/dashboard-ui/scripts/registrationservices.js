@@ -224,7 +224,12 @@
 
                         var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
 
-                        $.getJSON(url).done(function (dev) {
+                        fetch(url, { mode: 'no-cors' }).then(function (response) {
+
+                            return response.json();
+
+                        }).then(function (dev) {
+
                             if (dev.payPalEmail) {
                                 $('#payPalEmail', page).val(dev.payPalEmail);
 
