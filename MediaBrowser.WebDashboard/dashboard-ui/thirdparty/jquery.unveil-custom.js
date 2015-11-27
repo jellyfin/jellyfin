@@ -103,7 +103,6 @@
         var images = elems;
 
         unveilId++;
-        var eventNamespace = 'unveil' + unveilId;
 
         var parents = [];
         if (parent) {
