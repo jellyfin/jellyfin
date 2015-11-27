@@ -2065,7 +2065,7 @@ var AppInfo = {};
         }
     }
 
-    function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
+    function initRequire() {
 
         var urlArgs = "v=" + window.dashboardVersion;
 
@@ -2082,7 +2082,8 @@ var AppInfo = {};
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
             howler: 'bower_components/howler.js/howler.min',
-            sortable: 'bower_components/Sortable/Sortable.min'
+            sortable: 'bower_components/Sortable/Sortable.min',
+            masonry: 'bower_components/masonry/dist/masonry.pkgd.min'
         };
 
         if (Dashboard.isRunningInCordova()) {
@@ -2091,13 +2092,15 @@ var AppInfo = {};
             paths.prompt = "components/prompt";
         }
 
-        paths.masonry = "bower_components/masonry/dist/masonry.pkgd.min";
-
         requirejs.config({
             urlArgs: urlArgs,
 
             paths: paths
         });
+
+    }
+
+    function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
 
         // Required since jQuery is loaded before requireJs
         define('jquery', [], function () {
@@ -2451,14 +2454,26 @@ var AppInfo = {};
     setAppInfo();
     setDocumentClasses();
 
-    $(document).on('WebComponentsReady', function () {
-
+    function onWebComponentsReady() {
         if (Dashboard.isRunningInCordova()) {
             initCordova(initDeferred);
         } else {
             init(initDeferred, Dashboard.capabilities());
         }
-    });
+    }
+
+    initRequire();
+
+    if ('registerElement' in document && 'content' in document.createElement('template')) {
+        onWebComponentsReady();
+    } else {
+
+        $(document).on('WebComponentsReady', function() {
+
+            setTimeout(onWebComponentsReady, 200);
+        });
+        require(['bower_components/webcomponentsjs/webcomponents-lite.js']);
+    }
 
 })();
 
