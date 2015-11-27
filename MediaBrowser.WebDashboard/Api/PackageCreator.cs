@@ -315,7 +315,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     "vulcanize-out.html" + versionString
                 };
-                var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
+                var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\" async>").ToArray());
 
                 // It would be better to make polymer completely dynamic and loaded on demand, but seeing issues with that
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
@@ -323,7 +323,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
 
-                html = html.Replace("</body>", GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion) + "</body>");
+                html = html.Replace("</body>", importsHtml + GetCommonJavascript(mode, appVersion) + "</body>");
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -437,30 +437,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetInitialJavascript(string mode, string version)
-        {
-            var builder = new StringBuilder();
-
-            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
-
-            var files = new List<string>
-            {
-                "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString
-            };
-
-            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
-
-            builder.Append(string.Join(string.Empty, tags));
-
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// Gets the common javascript.
-        /// </summary>
-        /// <param name="mode">The mode.</param>
-        /// <param name="version">The version.</param>
-        /// <returns>System.String.</returns>
         private string GetCommonJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
@@ -477,7 +453,7 @@ namespace MediaBrowser.WebDashboard.Api
                 files.Insert(0, "cordova.js");
             }
 
-            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
+            var tags = files.Select(s => string.Format("<script src=\"{0}\" async></script>", s)).ToArray();
 
             builder.Append(string.Join(string.Empty, tags));
 
@@ -663,7 +639,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "css/remotecontrol.css",
                                       "css/userimage.css",
                                       "css/nowplaying.css",
-                                      "css/materialize.css",
                                       "thirdparty/paper-button-style.css"
                                   };
 
