@@ -7,11 +7,7 @@
     }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background: #202020;
-}
-
-.backdropContainer .pageBackground {
-    background-color: rgba(20, 20,20, .94) !important;
+    background-color: #202020;
 }
 
 .defaultBackground .cardImage {
