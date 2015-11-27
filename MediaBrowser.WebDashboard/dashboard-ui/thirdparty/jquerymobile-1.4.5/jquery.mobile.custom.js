@@ -298,7 +298,7 @@
                 if (hash !== last_hash) {
                     history_set(last_hash = hash, history_hash);
 
-                    $(window).trigger(str_hashchange);
+                    window.dispatchEvent(new CustomEvent(str_hashchange, {}));
 
                 } else if (history_hash !== last_hash) {
                     location.href = location.href.replace(/#.*/, '') + history_hash;
@@ -907,22 +907,19 @@
             },
 
             hashchange: function (event /*, data */) {
-                var newEvent = new $.Event("navigate");
-
-                // Make sure the original event is tracked for the end
-                // user to inspect incase they want to do something special
-                newEvent.originalEvent = event;
 
                 // Trigger the hashchange with state provided by the user
                 // that altered the hash
-                $win.trigger(newEvent, {
-                    // Users that want to fully normalize the two events
-                    // will need to do history management down the stack and
-                    // add the state to the event before this binding is fired
-                    // TODO consider allowing for the explicit addition of callbacks
-                    //      to be fired before this value is set to avoid event timing issues
-                    state: event.hashchangeState || {}
-                });
+                window.dispatchEvent(new CustomEvent("navigate", {
+                    detail: {
+                        // Users that want to fully normalize the two events
+                        // will need to do history management down the stack and
+                        // add the state to the event before this binding is fired
+                        // TODO consider allowing for the explicit addition of callbacks
+                        //      to be fired before this value is set to avoid event timing issues
+                        state: event.hashchangeState || {}
+                    }
+                }));
             },
 
             // TODO We really only want to set this up once
@@ -1516,7 +1513,15 @@
                     }
                 }
 
-                this.element.trigger(event, data);
+                this.element[0].dispatchEvent(new CustomEvent(event.type, {
+                    bubbles: true,
+                    detail: {
+                        data: data,
+                        originalEvent: event
+                    }
+                }));
+
+                //this.element.trigger(event, data);
                 return !($.isFunction(callback) &&
                     callback.apply(this.element[0], [event].concat(data)) === false ||
                     event.isDefaultPrevented());
@@ -2913,11 +2918,19 @@
                     newEvent = $.Event(this.widgetName + name);
 
                 // DEPRECATED
+
                 // trigger the old deprecated event on the page if it's provided
-                (page || this.element).trigger(deprecatedEvent, data);
+                //(page || this.element).trigger(deprecatedEvent, data);
+
+                (page || this.element)[0].dispatchEvent(new CustomEvent("page" + name, {
+                    bubbles: true,
+                    detail: {
+                        data: data
+                    }
+                }));
 
                 // use the widget trigger method for the new content* event
-                this._trigger(name, newEvent, data);
+                //this._trigger(name, newEvent, data);
 
                 return {
                     deprecatedEvent: deprecatedEvent,
@@ -3126,7 +3139,7 @@
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', fileUrl, true);
 
-                xhr.onload = function(e) {
+                xhr.onload = function (e) {
                     successFn(this.response);
                 };
 
@@ -3589,8 +3602,8 @@
         $.mobile._registerInternalEvents = function () {
 
             // click routing - direct to HTTP or Ajax, accordingly
-            $.mobile.document.bind("click", function (event) {
-                if (!$.mobile.linkBindingEnabled || event.isDefaultPrevented()) {
+            document.addEventListener("click", function (event) {
+                if (!$.mobile.linkBindingEnabled) {
                     return;
                 }
 
@@ -3703,8 +3716,9 @@
             }
 
             //set page min-heights to be device specific
-            $.mobile.document.bind("pagehide", function (e, data) {
+            document.addEventListener("pagehide", function (e) {
 
+                var data = e.detail.data;
                 var toPage = data.toPage ? data.toPage[0] : null;
 
                 if (toPage) {

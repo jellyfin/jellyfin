@@ -2472,10 +2472,9 @@ var AppInfo = {};
 
 function pageClassOn(eventName, className, fn) {
 
-    $(document).on(eventName, function (e) {
+    document.addEventListener(eventName, function (e) {
 
         var target = e.target;
-
         if (target.classList.contains(className)) {
             fn.call(target, e);
         }
@@ -2484,10 +2483,9 @@ function pageClassOn(eventName, className, fn) {
 
 function pageIdOn(eventName, id, fn) {
 
-    $(document).on(eventName, function (e) {
+    document.addEventListener(eventName, function (e) {
 
         var target = e.target;
-
         if (target.id == id) {
             fn.call(target, e);
         }

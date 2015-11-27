@@ -1061,8 +1061,9 @@ $.fn.createHoverTouch = function () {
 
     var isCurrentNavBack = false;
 
-    $(window).on("navigate", function (e, data) {
-        data = data.state || {};
+    window.addEventListener("navigate", function (e) {
+
+        var data = e.detail.state || {};
         isCurrentNavBack = data.direction == 'back';
     });
 
