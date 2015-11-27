@@ -78,10 +78,6 @@
         nowPlayingTextElement = $('.nowPlayingBarText', elem);
         nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
 
-        $(elem).on('swipeup', function () {
-            Dashboard.navigate('nowplaying.html');
-        });
-
         unmuteButton = $('.unmuteButton', elem).on('click', function () {
 
             if (currentPlayer) {
