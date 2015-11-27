@@ -129,23 +129,27 @@
             images = remaining;
 
             if (!images.length) {
-                Events.off(document, 'scroll.' + eventNamespace);
-                Events.off(window, 'resize.' + eventNamespace);
-
-                if (parents.length) {
-                    Events.off($(parents), 'scroll.' + eventNamespace, unveil);
-                }
+                document.removeEventListener('scroll', unveil);
+                window.removeEventListener('resize', unveil);
+                bindEvent(parents, 'removeEventListener', 'scroll', unveil);
             }
         }
 
-        Events.on(document, 'scroll.' + eventNamespace, unveil);
-        Events.on(window, 'resize.' + eventNamespace, unveil);
+        document.addEventListener('scroll', unveil);
+        window.addEventListener('resize', unveil);
 
         if (parents.length) {
-            Events.on($(parents), 'scroll.' + eventNamespace, unveil);
+            bindEvent(parents, 'addEventListener', 'scroll', unveil);
         }
 
         unveil();
+    }
+
+    function bindEvent(elems, method, name, fn) {
+        
+        for (var i = 0, length = elems.length; i < length; i++) {
+            elems[i][method](name, fn);
+        }
     }
 
     function fillImages(elems) {

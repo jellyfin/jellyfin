@@ -426,7 +426,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "css/all.css" + versionString
                             };
 
-            var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
+            var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" async />", s)).ToArray();
 
             return string.Join(string.Empty, tags);
         }

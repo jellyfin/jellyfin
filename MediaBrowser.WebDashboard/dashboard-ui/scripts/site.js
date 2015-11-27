@@ -2483,9 +2483,10 @@ var AppInfo = {};
 
         document.addEventListener('WebComponentsReady', function () {
 
-            setTimeout(onWebComponentsReady, 300);
+            var delay = $.browser.mobile ? 500 : 300;
+            setTimeout(onWebComponentsReady, delay);
         });
-        require(['bower_components/webcomponentsjs/webcomponents-lite.js']);
+        require(['bower_components/webcomponentsjs/webcomponents-lite.min.js']);
     }
 
 })();

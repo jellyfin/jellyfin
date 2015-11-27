@@ -586,6 +586,8 @@
                 }, 50);
             }
 
+            event.stopPropagation();
+            event.preventDefault();
             return false;
         },
 
