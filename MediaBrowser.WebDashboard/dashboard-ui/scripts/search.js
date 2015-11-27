@@ -215,7 +215,7 @@
         });
     }
 
-    $(document).on('pagecontainerbeforehide', closeSearchResults);
+    document.addEventListener('pagebeforehide', closeSearchResults);
 
     document.addEventListener('headercreated', function () {
 

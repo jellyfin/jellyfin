@@ -1872,7 +1872,6 @@
 
                 // trigger the old deprecated event on the page if it's provided
                 //(page || this.element).trigger(deprecatedEvent, data);
-
                 (page || this.element)[0].dispatchEvent(new CustomEvent("page" + name, {
                     bubbles: true,
                     detail: {
