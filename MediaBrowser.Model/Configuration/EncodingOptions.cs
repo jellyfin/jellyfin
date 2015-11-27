@@ -9,13 +9,13 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDebugLogging { get; set; }
         public bool EnableThrottling { get; set; }
         public int ThrottleThresholdSeconds { get; set; }
-        public string HardwareVideoDecoder { get; set; }
+        public string HardwareAccelerationType { get; set; }
 
         public EncodingOptions()
         {
             DownMixAudioBoost = 2;
             EnableThrottling = true;
-            ThrottleThresholdSeconds = 100;
+            ThrottleThresholdSeconds = 110;
             EncodingThreadCount = -1;
         }
     }
