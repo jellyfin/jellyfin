@@ -234,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int? width = null;
             int? height = null;
             bool isInterlaced = true;
-            var videoCodec = !string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareVideoDecoder) ? null : "mpeg2video";
+            var videoCodec = !string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType) ? null : "mpeg2video";
 
             int? videoBitrate = null;
 

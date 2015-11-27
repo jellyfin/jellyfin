@@ -430,7 +430,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-            args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
+            args += " " + GetVideoQualityParam(state, GetH264Encoder(state), true) + keyFrameArg;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)

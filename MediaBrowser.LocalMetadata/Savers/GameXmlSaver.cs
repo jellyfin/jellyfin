@@ -79,20 +79,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<GameSystem>" + SecurityElement.Escape(game.GameSystem) + "</GameSystem>");
             }
 
-            var val = game.GetProviderId(MetadataProviders.NesBox);
-
-            if (!string.IsNullOrEmpty(val))
-            {
-                builder.Append("<NesBox>" + SecurityElement.Escape(val) + "</NesBox>");
-            }
-
-            val = game.GetProviderId(MetadataProviders.NesBoxRom);
-
-            if (!string.IsNullOrEmpty(val))
-            {
-                builder.Append("<NesBoxRom>" + SecurityElement.Escape(val) + "</NesBoxRom>");
-            }
-
             XmlSaverHelpers.AddCommonNodes(game, _libraryManager, builder);
 
             builder.Append("</Item>");
