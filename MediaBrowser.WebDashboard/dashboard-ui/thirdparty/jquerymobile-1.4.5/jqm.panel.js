@@ -82,27 +82,13 @@
 
     $.widget("mobile.panel", {
         options: {
-            classes: {
-                panel: "ui-panel",
-                panelOpen: "ui-panel-open",
-                panelClosed: "ui-panel-closed",
-                panelFixed: "ui-panel-fixed",
-                panelInner: "ui-panel-inner",
-                modal: "ui-panel-dismiss",
-                modalOpen: "ui-panel-dismiss-open",
-                pageContainer: "ui-panel-page-container",
-                pageWrapper: "ui-panel-wrapper",
-                pageFixedToolbar: "ui-panel-fixed-toolbar",
-                pageContentPrefix: "ui-panel-page-content", /* Used for wrapper and fixed toolbars position, display and open classes. */
-                animate: "ui-panel-animate"
-            },
             animate: true,
             theme: null,
             position: "left",
             dismissible: true,
-            display: "reveal", //accepts reveal, push, overlay
+            display: "overlay", //accepts reveal, push, overlay
             swipeClose: true,
-            positionFixed: false
+            positionFixed: true
         },
 
         _parentPage: null,
@@ -129,7 +115,7 @@
 
             // if animating, add the class to do so
             if (!!this.options.animate) {
-                this.element.addClass(this.options.classes.animate);
+                this.element.addClass("ui-panel-animate");
             }
 
             this._bindUpdateLayout();
@@ -145,9 +131,9 @@
         },
 
         _getPanelInner: function () {
-            var panelInner = this.element[0].querySelector("." + this.options.classes.panelInner);
+            var panelInner = this.element[0].querySelector("." + "ui-panel-inner");
             if (!panelInner) {
-                panelInner = this.element.children().wrapAll("<div class='" + this.options.classes.panelInner + "' />").parent();
+                panelInner = this.element.children().wrapAll("<div class='" + "ui-panel-inner" + "' />").parent();
             } else {
                 panelInner = $(panelInner);
             }
@@ -159,7 +145,7 @@
             var self = this,
                 target = self._parentPage ? self._parentPage.parent() : self.element.parent();
 
-            self._modal = $("<div class='" + self.options.classes.modal + "'></div>")
+            self._modal = $("<div class='" + "ui-panel-dismiss" + "'></div>")
                 .on("mousedown", function () {
                     self.close();
                 })
@@ -167,16 +153,16 @@
         },
 
         _getPage: function () {
-            var page = this._openedPage || this._parentPage || $("." + $.mobile.activePageClass);
+            var page = this._openedPage || this._parentPage || $(".ui-page-active");
 
             return page;
         },
 
         _getWrapper: function () {
-            var wrapper = this._page().find("." + this.options.classes.pageWrapper);
+            var wrapper = this._page().find("." + "ui-panel-wrapper");
             if (wrapper.length === 0) {
                 wrapper = this._page().children(".ui-header:not(.ui-header-fixed), .ui-content:not(.ui-popup), .ui-footer:not(.ui-footer-fixed)")
-                    .wrapAll("<div class='" + this.options.classes.pageWrapper + "'></div>")
+                    .wrapAll("<div class='" + "ui-panel-wrapper" + "'></div>")
                     .parent();
             }
 
@@ -184,17 +170,17 @@
         },
 
         _getPosDisplayClasses: function (prefix) {
-            return prefix + "-position-" + this.options.position + " " + prefix + "-display-" + this.options.display;
+            return prefix + "-position-right " + prefix + "-display-" + this.options.display;
         },
 
         _getPanelClasses: function () {
-            var panelClasses = this.options.classes.panel +
-                " " + this._getPosDisplayClasses(this.options.classes.panel) +
-                " " + this.options.classes.panelClosed +
+            var panelClasses = "ui-panel" +
+                " " + this._getPosDisplayClasses("ui-panel") +
+                " " + "ui-panel-closed" +
                 " " + "ui-body-" + (this.options.theme ? this.options.theme : "inherit");
 
             if (!!this.options.positionFixed) {
-                panelClasses += " " + this.options.classes.panelFixed;
+                panelClasses += " " + "ui-panel-fixed";
             }
 
             return panelClasses;
@@ -239,14 +225,14 @@
         },
 
         _unfixPanel: function () {
-            if (!!this.options.positionFixed && $.support.fixedPosition) {
-                this.element.removeClass(this.options.classes.panelFixed);
+            if (!!this.options.positionFixed) {
+                this.element.removeClass("ui-panel-fixed");
             }
         },
 
         _fixPanel: function () {
-            if (!!this.options.positionFixed && $.support.fixedPosition) {
-                this.element.addClass(this.options.classes.panelFixed);
+            if (!!this.options.positionFixed) {
+                this.element.addClass("ui-panel-fixed");
             }
         },
 
@@ -355,10 +341,10 @@
 
                     _openPanel = function () {
                         self._off(self.document, "panelclose");
-                        self._page().jqmData("panel", "open");
+                        self._page().data("panel", "open");
 
                         if (!!o.animate && o.display !== "overlay") {
-                            self._wrapper.addClass(o.classes.animate);
+                            self._wrapper.addClass("ui-panel-animate");
                         }
 
                         if (!immediate && !!o.animate) {
@@ -370,23 +356,23 @@
 
                         if (o.theme && o.display !== "overlay") {
                             self._page().parent()
-                                .addClass(o.classes.pageContainer + "-themed " + o.classes.pageContainer + "-" + o.theme);
+                                .addClass("ui-panel-page-container" + "-themed " + "ui-panel-page-container" + "-" + o.theme);
                         }
 
                         self.element
-                            .removeClass(o.classes.panelClosed)
-                            .addClass(o.classes.panelOpen);
+                            .removeClass("ui-panel-closed")
+                            .addClass("ui-panel-open");
 
                         self._positionPanel(true);
 
-                        self._pageContentOpenClasses = self._getPosDisplayClasses(o.classes.pageContentPrefix);
+                        self._pageContentOpenClasses = self._getPosDisplayClasses("ui-panel-page-content");
 
                         if (o.display !== "overlay") {
-                            self._page().parent().addClass(o.classes.pageContainer);
+                            self._page().parent().addClass("ui-panel-page-container");
                             self._wrapper.addClass(self._pageContentOpenClasses);
                         }
 
-                        self._modalOpenClasses = self._getPosDisplayClasses(o.classes.modal) + " " + o.classes.modalOpen;
+                        self._modalOpenClasses = self._getPosDisplayClasses("ui-panel-dismiss") + " " + "ui-panel-dismiss-open";
                         if (self._modal) {
                             self._modal
                                 .addClass(self._modalOpenClasses)
@@ -401,7 +387,7 @@
                         }
 
                         if (o.display !== "overlay") {
-                            self._wrapper.addClass(o.classes.pageContentPrefix + "-open");
+                            self._wrapper.addClass("ui-panel-page-content" + "-open");
                         }
 
                         self._bindFixListener();
@@ -413,7 +399,7 @@
 
                 self._trigger("beforeopen");
 
-                if (self._page().jqmData("panel") === "open") {
+                if (self._page().data("panel") === "open") {
                     self._on(self.document, {
                         "panelclose": _openPanel
                     });
@@ -432,7 +418,7 @@
 
                     _closePanel = function () {
 
-                        self.element.removeClass(o.classes.panelOpen);
+                        self.element.removeClass("ui-panel-open");
 
                         if (o.display !== "overlay") {
                             self._wrapper.removeClass(self._pageContentOpenClasses);
@@ -453,24 +439,24 @@
                     },
                     complete = function () {
                         if (o.theme && o.display !== "overlay") {
-                            self._page().parent().removeClass(o.classes.pageContainer + "-themed " + o.classes.pageContainer + "-" + o.theme);
+                            self._page().parent().removeClass("ui-panel-page-container" + "-themed " + "ui-panel-page-container" + "-" + o.theme);
                         }
 
-                        self.element.addClass(o.classes.panelClosed);
+                        self.element.addClass("ui-panel-closed");
 
                         if (o.display !== "overlay") {
-                            self._page().parent().removeClass(o.classes.pageContainer);
-                            self._wrapper.removeClass(o.classes.pageContentPrefix + "-open");
+                            self._page().parent().removeClass("ui-panel-page-container");
+                            self._wrapper.removeClass("ui-panel-page-content" + "-open");
                         }
 
                         if (!!o.animate && o.display !== "overlay") {
-                            self._wrapper.removeClass(o.classes.animate);
+                            self._wrapper.removeClass("ui-panel-animate");
                         }
 
                         self._fixPanel();
                         self._unbindFixListener();
 
-                        self._page().jqmRemoveData("panel");
+                        self._page().removeData("panel");
 
                         self._trigger("close");
 
@@ -504,10 +490,10 @@
 
                 if (this._open) {
 
-                    this._page().parent().removeClass(o.classes.pageContainer);
+                    this._page().parent().removeClass("ui-panel-page-container");
 
                     if (o.theme) {
-                        this._page().parent().removeClass(o.classes.pageContainer + "-themed " + o.classes.pageContainer + "-" + o.theme);
+                        this._page().parent().removeClass("ui-panel-page-container" + "-themed " + "ui-panel-page-container" + "-" + o.theme);
                     }
                 }
             }
@@ -519,13 +505,13 @@
             }
 
             if (this._open) {
-                this._page().jqmRemoveData("panel");
+                this._page().removeData("panel");
             }
 
             this._panelInner.children().unwrap();
 
             this.element
-                .removeClass([this._getPanelClasses(), o.classes.panelOpen, o.classes.animate].join(" "))
+                .removeClass([this._getPanelClasses(), "ui-panel-open", "ui-panel-animate"].join(" "))
                 .off("swipeleft.panel swiperight.panel")
                 .off("panelbeforeopen")
                 .off("panelhide")

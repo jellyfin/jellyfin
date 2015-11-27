@@ -264,7 +264,7 @@
                 var delay = LibraryBrowser.animatePaperTabs() || !tabs.noSlide ? 500 : 0;
 
                 setTimeout(function () {
-                    $(pgs).trigger('tabchange');
+                    pgs.dispatchEvent(new CustomEvent("tabchange", {}));
                 }, delay);
             });
 
@@ -361,7 +361,7 @@
                         return;
                     }
                 }
-                Events.trigger(pages, 'tabchange');
+                pages.dispatchEvent(new CustomEvent("tabchange", {}));
             }
         },
 

@@ -236,7 +236,7 @@
         }
     }
 
-    $(document).on('pageinit', "#itemListPage", function () {
+    pageIdOn('pageinit', "itemListPage", function () {
 
         var page = this;
 
@@ -276,7 +276,9 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pagebeforeshow', "#itemListPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "itemListPage", function () {
 
         var page = this;
 
@@ -284,7 +286,9 @@
         updateFilterControls(page);
         LibraryMenu.setBackButtonVisible(getParameterByName('context'));
 
-    }).on('pagebeforehide', "#itemListPage", function () {
+    });
+
+    pageIdOn('pagebeforehide', "itemListPage", function () {
 
         currentItem = null;
 

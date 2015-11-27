@@ -85,7 +85,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvItemsPage", function () {
+    pageIdOn('pagebeforeshow', "liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

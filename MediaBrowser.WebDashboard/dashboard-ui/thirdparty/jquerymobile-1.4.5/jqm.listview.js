@@ -1,4 +1,41 @@
-﻿(function ($, undefined) {
+﻿(function ($, window, undefined) {
+    var rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/;
+
+    $.extend($.mobile, {
+
+        // Namespace used framework-wide for data-attrs. Default is no namespace
+
+        // Retrieve an attribute from an element and perform some massaging of the value
+
+        getAttribute: function (element, key) {
+            var data;
+
+            element = element.jquery ? element[0] : element;
+
+            if (element && element.getAttribute) {
+                data = element.getAttribute("data-" + key);
+            }
+
+            // Copied from core's src/data.js:dataAttr()
+            // Convert from a string to a proper data type
+            try {
+                data = data === "true" ? true :
+                    data === "false" ? false :
+                    data === "null" ? null :
+                    // Only convert to a number if it doesn't change the string
+                    +data + "" === data ? +data :
+                    rbrace.test(data) ? JSON.parse(data) :
+                    data;
+            } catch (err) { }
+
+            return data;
+        }
+
+    });
+
+})(jQuery, this);
+
+(function ($, undefined) {
 
     var uiScreenHiddenRegex = /\bui-screen-hidden\b/;
     function noHiddenClass(elements) {

@@ -12,11 +12,16 @@
             cache: false
         });
     }
+
+    $.support.cors = true;
+
+    function onOneDocumentClick() {
+        document.removeEventListener('click', onOneDocumentClick);
+        WebNotifications.requestPermission();
+    }
+    document.addEventListener('click', onOneDocumentClick);
+
 })();
-
-$.support.cors = true;
-
-$(document).one('click', WebNotifications.requestPermission);
 
 var Dashboard = {
     jQueryMobileInit: function () {
@@ -2226,8 +2231,6 @@ var AppInfo = {};
         });
 
         define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel"], function () {
-            $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
-            $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.panel.css');
             return {};

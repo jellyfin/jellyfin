@@ -340,8 +340,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
     });
 
@@ -383,7 +383,7 @@
             var page = $($.mobile.activePage)[0];
             var pages = page.querySelector('neon-animated-pages');
 
-            $(pages).trigger('tabchange');
+            pages.dispatchEvent(new CustomEvent("tabchange", {}));
         }
     }
 

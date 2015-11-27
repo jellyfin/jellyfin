@@ -70,7 +70,7 @@
         }
     }
 
-    $(document).on('pageinit', "#channelsPage", function () {
+    pageIdOn.on('pageinit', "channelsPage", function () {
 
         var page = this;
 
@@ -79,8 +79,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'channels.html');
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
     });

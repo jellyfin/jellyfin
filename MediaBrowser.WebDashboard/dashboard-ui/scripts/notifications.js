@@ -178,7 +178,7 @@
         $(apiClient).off("websocketmessage", onWebSocketMessage).on("websocketmessage", onWebSocketMessage);
     }
 
-    $(document).on('headercreated', function (e, apiClient) {
+    document.addEventListener('headercreated', function () {
         $('.btnNotifications').on('click', function () {
             Dashboard.navigate('notificationlist.html');
         });

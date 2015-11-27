@@ -191,7 +191,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvSuggestedPage", function () {
+    pageIdOn('pageinit', "liveTvSuggestedPage", function () {
 
         var page = this;
 
@@ -200,8 +200,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'livetv.html');
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
     });

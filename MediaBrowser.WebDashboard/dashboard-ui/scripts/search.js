@@ -217,7 +217,7 @@
 
     $(document).on('pagecontainerbeforehide', closeSearchResults);
 
-    $(document).on('headercreated', function () {
+    document.addEventListener('headercreated', function () {
 
         bindSearchEvents();
     });

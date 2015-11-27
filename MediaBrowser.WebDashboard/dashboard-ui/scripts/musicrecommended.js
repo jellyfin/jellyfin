@@ -302,8 +302,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
     }).on('pageshow', "#musicRecommendedPage", function () {

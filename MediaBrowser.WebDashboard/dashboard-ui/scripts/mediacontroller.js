@@ -1012,17 +1012,21 @@
         showPlayerSelection();
     }
 
-    $(document).on('headercreated', function () {
+    document.addEventListener('headercreated', function () {
 
         $('.btnCast').off('click', onCastButtonClicked).on('click', onCastButtonClicked);
 
-    }).on('pagebeforeshow', ".page", function () {
+    });
+
+    pageClassOn('pagebeforeshow', "page", function () {
 
         var page = this;
 
         currentDisplayInfo = null;
 
-    }).on('displayingitem', ".libraryPage", function (e, info) {
+    });
+
+    pageClassOn('displayingitem', "libraryPage", function (e, info) {
 
         currentDisplayInfo = info;
 

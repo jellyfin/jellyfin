@@ -21,13 +21,13 @@
         }
     }
 
-    $(document).on('pageinit', "#channelsPage", function () {
+    pageIdOn('pageinit', "channelsPage", function () {
 
         var page = this;
         var pages = page.querySelector('neon-animated-pages');
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
     });

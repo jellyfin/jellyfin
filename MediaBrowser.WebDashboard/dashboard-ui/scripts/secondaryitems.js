@@ -161,13 +161,15 @@
         });
     }
 
-    $(document).on('pageinit', "#secondaryItemsPage", function () {
+    pageIdOn('pageinit', "secondaryItemsPage", function () {
 
         var page = this;
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pagebeforeshow', "#secondaryItemsPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "secondaryItemsPage", function () {
 
         var page = this;
 

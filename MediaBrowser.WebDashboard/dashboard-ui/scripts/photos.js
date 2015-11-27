@@ -201,7 +201,7 @@
         }
     }
 
-    $(document).on('pageinit', "#photosPage", function () {
+    pageIdOn('pageinit', "photosPage", function () {
 
         var page = this;
 
@@ -215,8 +215,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'), baseUrl);
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        page.querySelector('neon-animated-pages').addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
         $(page).on('click', '.mediaItem', onListItemClick);

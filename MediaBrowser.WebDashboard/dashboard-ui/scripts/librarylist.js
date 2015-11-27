@@ -1208,6 +1208,7 @@
             MediaController.instantMix(itemId);
         }
 
+        e.stopPropagation();
         e.preventDefault();
         return false;
     }

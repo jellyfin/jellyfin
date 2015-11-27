@@ -894,7 +894,7 @@
 				if (typeof data.toPage === "string") {
 					parsedDst = data.toPage;
 				} else {
-					parsedDst = data.toPage.jqmData("url");
+					parsedDst = data.toPage.data("url");
 				}
 				parsedDst = $.mobile.path.parseUrl(parsedDst);
 				toUrl = parsedDst.pathname + parsedDst.search + parsedDst.hash;
@@ -1030,8 +1030,8 @@
 			popup.popup("open", {
 				x: offset.left + $link.outerWidth() / 2,
 				y: offset.top + $link.outerHeight() / 2,
-				transition: $link.jqmData("transition"),
-				positionTo: $link.jqmData("position-to")
+				transition: $link.data("transition"),
+				positionTo: $link.data("position-to")
 			});
 		}
 
@@ -1042,7 +1042,7 @@
 	};
 
 	// TODO move inside _create
-	$.mobile.document.on("pagebeforechange", function (theEvent, data) {
+	$(document).on("pagebeforechange", function (theEvent, data) {
 		if (data.options.role === "popup") {
 			$.mobile.popup.handleLink(data.options.link);
 			theEvent.preventDefault();

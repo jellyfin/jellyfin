@@ -52,7 +52,7 @@
 
         ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
-        Events.trigger(document, 'headercreated');
+        document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
     }
 

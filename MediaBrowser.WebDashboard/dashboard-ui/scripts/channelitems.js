@@ -223,7 +223,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
-    $(document).on('pageinit', "#channelItemsPage", function () {
+    pageIdOn.on('pageinit', "channelItemsPage", function () {
 
         var page = this;
 
@@ -261,7 +261,9 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#channelItemsPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "channelItemsPage", function () {
 
         var page = this;
         reloadFeatures(page);

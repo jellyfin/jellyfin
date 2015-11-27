@@ -880,9 +880,9 @@
                 var itemVideo = document.querySelector('.itemVideo');
                 if (itemVideo) {
                     //Events.on(itemVideo, 'mousemove', onMouseMove);
-                    Events.on(itemVideo, 'keydown', idleHandler);
-                    Events.on(itemVideo, 'scroll', idleHandler);
-                    Events.on(itemVideo, 'mousedown', idleHandler);
+                    itemVideo.addEventListener('keydown', idleHandler);
+                    itemVideo.addEventListener('scroll', idleHandler);
+                    itemVideo.addEventListener('mousedown', idleHandler);
                     idleHandler();
                 }
             }
@@ -914,9 +914,9 @@
             var itemVideo = document.querySelector('.itemVideo');
             if (itemVideo) {
                 //Events.off(itemVideo, 'mousemove', onMouseMove);
-                Events.off(itemVideo, 'keydown', idleHandler);
-                Events.off(itemVideo, 'scroll', idleHandler);
-                Events.off(itemVideo, 'mousedown', idleHandler);
+                itemVideo.removeEventListener('keydown', idleHandler);
+                itemVideo.removeEventListener('scroll', idleHandler);
+                itemVideo.removeEventListener('mousedown', idleHandler);
             }
         }
 

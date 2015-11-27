@@ -22,8 +22,8 @@
             var input = this.element,
                 o = this.options,
                 inheritAttr = function (input, dataAttr) {
-                    return input.jqmData(dataAttr) ||
-                        input.closest("form, fieldset").jqmData(dataAttr);
+                    return input.data(dataAttr) ||
+                        input.closest("form, fieldset").data(dataAttr);
                 },
                 label = this.options.enhanced ?
 				{
@@ -44,7 +44,7 @@
             }
 
             o.iconpos = inheritAttr(input, "iconpos") ||
-                label.element.attr("data-" + $.mobile.ns + "iconpos") || o.iconpos,
+                label.element.attr("data-iconpos") || o.iconpos,
 
             // Establish options
             o.mini = inheritAttr(input, "mini") || o.mini;
@@ -183,7 +183,7 @@
 
         _cacheVals: function () {
             this._getInputSet().each(function () {
-                $(this).attr("data-" + $.mobile.ns + "cacheVal", this.checked);
+                $(this).attr("data-cacheVal", this.checked);
             });
         },
 
@@ -272,7 +272,7 @@
                     return ((controlgroupWidget ? controlgroupWidget.options.type :
 
                         // ... otherwise decide based on the "type" data attribute.
-                        controlgroup.attr("data-" + $.mobile.ns + "type")) !== "horizontal");
+                        controlgroup.attr("data-type")) !== "horizontal");
                 }
             }
 

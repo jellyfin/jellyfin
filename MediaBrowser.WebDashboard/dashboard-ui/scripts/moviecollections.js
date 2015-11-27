@@ -202,21 +202,23 @@
         });
     }
 
-    $(document).on('pageinit', "#boxsetsPage", function () {
-
+    pageIdOn('pageinit', 'boxsetsPage', function () {
+        
         var page = this;
 
         var content = page;
 
         initPage(content);
 
-    }).on('pagebeforeshow', "#boxsetsPage", function () {
+    });
+    pageIdOn('pagebeforeshow', 'boxsetsPage', function () {
 
         var page = this;
 
         var content = page;
 
         reloadItems(content);
+
     });
 
     window.MoviesPage = window.MoviesPage || {};

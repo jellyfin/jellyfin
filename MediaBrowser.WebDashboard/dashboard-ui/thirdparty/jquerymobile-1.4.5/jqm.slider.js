@@ -1,4 +1,41 @@
-﻿(function ($, undefined) {
+﻿(function ($, window, undefined) {
+    var rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/;
+
+    $.extend($.mobile, {
+
+        // Namespace used framework-wide for data-attrs. Default is no namespace
+
+        // Retrieve an attribute from an element and perform some massaging of the value
+
+        getAttribute: function (element, key) {
+            var data;
+
+            element = element.jquery ? element[0] : element;
+
+            if (element && element.getAttribute) {
+                data = element.getAttribute("data-" + key);
+            }
+
+            // Copied from core's src/data.js:dataAttr()
+            // Convert from a string to a proper data type
+            try {
+                data = data === "true" ? true :
+                    data === "false" ? false :
+                    data === "null" ? null :
+                    // Only convert to a number if it doesn't change the string
+                    +data + "" === data ? +data :
+                    rbrace.test(data) ? JSON.parse(data) :
+                    data;
+            } catch (err) { }
+
+            return data;
+        }
+
+    });
+
+})(jQuery, this);
+
+(function ($, undefined) {
 
     /*!
      * jQuery UI Core c0ab71056b936627e8a7821f03c044aec6280a40
@@ -63,8 +100,8 @@
                 control = this.element,
                 trackTheme = this.options.trackTheme || $.mobile.getAttribute(control[0], "theme"),
                 trackThemeClass = trackTheme ? " ui-bar-" + trackTheme : " ui-bar-inherit",
-                cornerClass = (this.options.corners || control.jqmData("corners")) ? " ui-corner-all" : "",
-                miniClass = (this.options.mini || control.jqmData("mini")) ? " ui-mini" : "",
+                cornerClass = (this.options.corners || control.data("corners")) ? " ui-corner-all" : "",
+                miniClass = (this.options.mini || control.data("mini")) ? " ui-mini" : "",
                 cType = control[0].nodeName.toLowerCase(),
                 isToggleSwitch = (cType === "select"),
                 isRangeslider = control.parent().is(":jqmData(role='rangeslider')"),

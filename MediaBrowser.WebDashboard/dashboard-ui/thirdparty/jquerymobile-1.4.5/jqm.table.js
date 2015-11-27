@@ -1,16 +1,50 @@
-﻿(function ($, undefined) {
+﻿(function ($, window, undefined) {
+    var rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/;
+
+    $.extend($.mobile, {
+
+        // Namespace used framework-wide for data-attrs. Default is no namespace
+
+        // Retrieve an attribute from an element and perform some massaging of the value
+
+        getAttribute: function (element, key) {
+            var data;
+
+            element = element.jquery ? element[0] : element;
+
+            if (element && element.getAttribute) {
+                data = element.getAttribute("data-" + key);
+            }
+
+            // Copied from core's src/data.js:dataAttr()
+            // Convert from a string to a proper data type
+            try {
+                data = data === "true" ? true :
+                    data === "false" ? false :
+                    data === "null" ? null :
+                    // Only convert to a number if it doesn't change the string
+                    +data + "" === data ? +data :
+                    rbrace.test(data) ? JSON.parse(data) :
+                    data;
+            } catch (err) { }
+
+            return data;
+        }
+
+    });
+
+})(jQuery, this);
+
+(function ($, undefined) {
 
 	$.widget("mobile.table", {
 		options: {
-			classes: {
-				table: "ui-table"
-			},
 			enhanced: false
 		},
 
 		_create: function () {
 			if (!this.options.enhanced) {
-				this.element.addClass(this.options.classes.table);
+			    this.element.addClass("ui-table");
 			}
 
 			// extend here, assign on refresh > _setHeaders
@@ -58,7 +92,7 @@
 						selector = ":nth-child(" + (columnCount + 1) + ")",
 						j;
 
-					this.setAttribute("data-" + $.mobile.ns + "colstart", columnCount + 1);
+					this.setAttribute("data-colstart", columnCount + 1);
 
 					if (span) {
 						for (j = 0; j < span - 1; j++) {
@@ -69,7 +103,7 @@
 
 					// Store "cells" data on header as a reference to all cells in the
 					// same column as this TH
-					$(this).jqmData("cells", table.find("tr").not(trs.eq(0)).not(this).children(selector));
+					$(this).data("cells", table.find("tr").not(trs.eq(0)).not(this).children(selector));
 
 					columnCount++;
 				});
@@ -84,11 +118,7 @@
 
 	$.widget("mobile.table", $.mobile.table, {
 		options: {
-			mode: "reflow",
-			classes: $.extend($.mobile.table.prototype.options.classes, {
-				reflowTable: "ui-table-reflow",
-				cellLabels: "ui-table-cell-label"
-			})
+			mode: "reflow"
 		},
 
 		_create: function () {
@@ -100,7 +130,7 @@
 			}
 
 			if (!this.options.enhanced) {
-				this.element.addClass(this.options.classes.reflowTable);
+			    this.element.addClass("ui-table-reflow");
 
 				this._updateReflow();
 			}
@@ -127,7 +157,7 @@
 
 			// get headers in reverse order so that top-level headers are appended last
 			$(table.allHeaders.get().reverse()).each(function () {
-				var cells = $(this).jqmData("cells"),
+				var cells = $(this).data("cells"),
 					colstart = $.mobile.getAttribute(this, "colstart"),
 					hierarchyClass = cells.not(this).filter("thead th").length && " ui-table-cell-label-top",
 					contents = $(this).clone().contents(),
@@ -144,9 +174,9 @@
 						}
 
 						table._addLabels(cells.filter(filter),
-							opts.classes.cellLabels + hierarchyClass, contents);
+							"ui-table-cell-label" + hierarchyClass, contents);
 					} else {
-						table._addLabels(cells, opts.classes.cellLabels, contents);
+					    table._addLabels(cells, "ui-table-cell-label", contents);
 					}
 
 				}

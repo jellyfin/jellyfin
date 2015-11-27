@@ -20,84 +20,6 @@
  * http://benalman.com/about/license/
  */
 
-    // Script: jQuery hashchange event
-    //
-    // *Version: 1.3, Last updated: 7/21/2010*
-    // 
-    // Project Home - http://benalman.com/projects/jquery-hashchange-plugin/
-    // GitHub       - http://github.com/cowboy/jquery-hashchange/
-    // Source       - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.js
-    // (Minified)   - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.min.js (0.8kb gzipped)
-    // 
-    // About: License
-    // 
-    // Copyright (c) 2010 "Cowboy" Ben Alman,
-    // Dual licensed under the MIT and GPL licenses.
-    // http://benalman.com/about/license/
-    // 
-    // About: Examples
-    // 
-    // These working examples, complete with fully commented code, illustrate a few
-    // ways in which this plugin can be used.
-    // 
-    // hashchange event - http://benalman.com/code/projects/jquery-hashchange/examples/hashchange/
-    // document.domain - http://benalman.com/code/projects/jquery-hashchange/examples/document_domain/
-    // 
-    // About: Support and Testing
-    // 
-    // Information about what version or versions of jQuery this plugin has been
-    // tested with, what browsers it has been tested in, and where the unit tests
-    // reside (so you can test it yourself).
-    // 
-    // jQuery Versions - 1.2.6, 1.3.2, 1.4.1, 1.4.2
-    // Browsers Tested - Internet Explorer 6-8, Firefox 2-4, Chrome 5-6, Safari 3.2-5,
-    //                   Opera 9.6-10.60, iPhone 3.1, Android 1.6-2.2, BlackBerry 4.6-5.
-    // Unit Tests      - http://benalman.com/code/projects/jquery-hashchange/unit/
-    // 
-    // About: Known issues
-    // 
-    // While this jQuery hashchange event implementation is quite stable and
-    // robust, there are a few unfortunate browser bugs surrounding expected
-    // hashchange event-based behaviors, independent of any JavaScript
-    // window.onhashchange abstraction. See the following examples for more
-    // information:
-    // 
-    // Chrome: Back Button - http://benalman.com/code/projects/jquery-hashchange/examples/bug-chrome-back-button/
-    // Firefox: Remote XMLHttpRequest - http://benalman.com/code/projects/jquery-hashchange/examples/bug-firefox-remote-xhr/
-    // WebKit: Back Button in an Iframe - http://benalman.com/code/projects/jquery-hashchange/examples/bug-webkit-hash-iframe/
-    // Safari: Back Button from a different domain - http://benalman.com/code/projects/jquery-hashchange/examples/bug-safari-back-from-diff-domain/
-    // 
-    // Also note that should a browser natively support the window.onhashchange 
-    // event, but not report that it does, the fallback polling loop will be used.
-    // 
-    // About: Release History
-    // 
-    // 1.3   - (7/21/2010) Reorganized IE6/7 Iframe code to make it more
-    //         "removable" for mobile-only development. Added IE6/7 document.title
-    //         support. Attempted to make Iframe as hidden as possible by using
-    //         techniques from http://www.paciellogroup.com/blog/?p=604. Added 
-    //         support for the "shortcut" format $(window).hashchange( fn ) and
-    //         $(window).hashchange() like jQuery provides for built-in events.
-    //         Renamed jQuery.hashchangeDelay to <jQuery.fn.hashchange.delay> and
-    //         lowered its default value to 50. Added <jQuery.fn.hashchange.domain>
-    //         and <jQuery.fn.hashchange.src> properties plus document-domain.html
-    //         file to address access denied issues when setting document.domain in
-    //         IE6/7.
-    // 1.2   - (2/11/2010) Fixed a bug where coming back to a page using this plugin
-    //         from a page on another domain would cause an error in Safari 4. Also,
-    //         IE6/7 Iframe is now inserted after the body (this actually works),
-    //         which prevents the page from scrolling when the event is first bound.
-    //         Event can also now be bound before DOM ready, but it won't be usable
-    //         before then in IE6/7.
-    // 1.1   - (1/21/2010) Incorporated document.documentMode test to fix IE8 bug
-    //         where browser version is incorrectly reported as 8.0, despite
-    //         inclusion of the X-UA-Compatible IE=EmulateIE7 meta tag.
-    // 1.0   - (1/9/2010) Initial Release. Broke out the jQuery BBQ event.special
-    //         window.onhashchange functionality into a separate plugin for users
-    //         who want just the basic event & back button support, without all the
-    //         extra awesomeness that BBQ provides. This plugin will be included as
-    //         part of jQuery BBQ, but also be available separately.
-
     (function ($, window, undefined) {
 
         // Reused string.
@@ -138,119 +60,16 @@
 
     })(jQuery, this);
 
-    (function ($, window, undefined) {
-        $.extend($.mobile, {
-
-            // Version of the jQuery Mobile Framework
-            version: "1.4.5",
-
-            hideUrlBar: true,
-
-            // Deprecated in 1.4 remove in 1.5
-            // Class assigned to page currently in view, and during transitions
-            activePageClass: "ui-page-active",
-
-            // disable the alteration of the dynamic base tag or links in the case
-            // that a dynamic base tag isn't supported
-            dynamicBaseEnabled: true,
-
-            // default the property to remove dependency on assignment in init module
-            pageContainer: $(),
-
-            dialogHashKey: "&ui-state=dialog"
-        });
-    })(jQuery, this);
+    // default the property to remove dependency on assignment in init module
+    jQuery.mobile.pageContainer = $();
 
     (function ($, window, undefined) {
-        var nsNormalizeDict = {},
-            oldFind = $.find,
-            rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/,
+        var oldFind = $.find,
             jqmDataRE = /:jqmData\(([^)]*)\)/g;
-
-        $.extend($.mobile, {
-
-            // Namespace used framework-wide for data-attrs. Default is no namespace
-
-            ns: "",
-
-            // Retrieve an attribute from an element and perform some massaging of the value
-
-            getAttribute: function (element, key) {
-                var data;
-
-                element = element.jquery ? element[0] : element;
-
-                if (element && element.getAttribute) {
-                    data = element.getAttribute("data-" + $.mobile.ns + key);
-                }
-
-                // Copied from core's src/data.js:dataAttr()
-                // Convert from a string to a proper data type
-                try {
-                    data = data === "true" ? true :
-                        data === "false" ? false :
-                        data === "null" ? null :
-                        // Only convert to a number if it doesn't change the string
-                        +data + "" === data ? +data :
-                        rbrace.test(data) ? JSON.parse(data) :
-                        data;
-                } catch (err) { }
-
-                return data;
-            },
-
-            // Expose our cache for testing purposes.
-            nsNormalizeDict: nsNormalizeDict,
-
-            // Take a data attribute property, prepend the namespace
-            // and then camel case the attribute string. Add the result
-            // to our nsNormalizeDict so we don't have to do this again.
-            nsNormalize: function (prop) {
-                return nsNormalizeDict[prop] ||
-                    (nsNormalizeDict[prop] = $.camelCase($.mobile.ns + prop));
-            }
-
-        });
-
-        // Mobile version of data and removeData and hasData methods
-        // ensures all data is set and retrieved using jQuery Mobile's data namespace
-        $.fn.jqmData = function (prop, value) {
-            var result;
-            if (typeof prop !== "undefined") {
-                if (prop) {
-                    prop = $.mobile.nsNormalize(prop);
-                }
-
-                // undefined is permitted as an explicit input for the second param
-                // in this case it returns the value and does not set it to undefined
-                if (arguments.length < 2 || value === undefined) {
-                    result = this.data(prop);
-                } else {
-                    result = this.data(prop, value);
-                }
-            }
-            return result;
-        };
-
-        $.jqmData = function (elem, prop, value) {
-            var result;
-            if (typeof prop !== "undefined") {
-                result = $.data(elem, prop ? $.mobile.nsNormalize(prop) : prop, value);
-            }
-            return result;
-        };
-
-        $.fn.jqmRemoveData = function (prop) {
-            return this.removeData($.mobile.nsNormalize(prop));
-        };
-
-        $.jqmRemoveData = function (elem, prop) {
-            return $.removeData(elem, $.mobile.nsNormalize(prop));
-        };
 
         $.find = function (selector, context, ret, extra) {
             if (selector.indexOf(":jqmData") > -1) {
-                selector = selector.replace(jqmDataRE, "[data-" + ($.mobile.ns || "") + "$1]");
+                selector = selector.replace(jqmDataRE, "[data-$1]");
             }
 
             return oldFind.call(this, selector, context, ret, extra);
@@ -276,9 +95,6 @@
         }
 
         $.extend($.mobile, {
-            // define the window and the document objects
-            window: $(window),
-            document: $(document),
 
             // Place to store various widget extensions
             behaviors: {},
@@ -291,7 +107,7 @@
                 var url = (page ? page.getAttribute("data-url") : null),
                     base = $.mobile.path.documentBase.hrefNoHash;
 
-                if (!$.mobile.dynamicBaseEnabled || !url || !$.mobile.path.isPath(url)) {
+                if (!url || !$.mobile.path.isPath(url)) {
                     url = base;
                 }
 
@@ -342,68 +158,7 @@
     })(jQuery, this);
 
     (function ($, undefined) {
-
-        // thx Modernizr
-        function propExists(prop) {
-            var uc_prop = prop.charAt(0).toUpperCase() + prop.substr(1),
-                props = (prop + " " + vendors.join(uc_prop + " ") + uc_prop).split(" "),
-                v;
-
-            for (v in props) {
-                if (fbCSS[props[v]] !== undefined) {
-                    return true;
-                }
-            }
-        }
-
-        var fakeBody = $("<body>").prependTo("html"),
-            fbCSS = fakeBody[0].style,
-            vendors = ["Webkit", "Moz", "O"],
-            webos = "palmGetResource" in window, //only used to rule out scrollTop
-            operamini = window.operamini && ({}).toString.call(window.operamini) === "[object OperaMini]";
-
-        // Test for dynamic-updating base tag support ( allows us to avoid href,src attr rewriting )
-        function baseTagTest() {
-            var fauxBase = location.protocol + "//" + location.host + location.pathname + "ui-dir/",
-                base = $("head base"),
-                fauxEle = null,
-                href = "",
-                link, rebase;
-
-            if (!base.length) {
-                base = fauxEle = $("<base>", { "href": fauxBase }).appendTo("head");
-            } else {
-                href = base.attr("href");
-            }
-
-            link = $("<a href='testurl' />").prependTo(fakeBody);
-            rebase = link[0].href;
-            base[0].href = href || location.pathname;
-
-            if (fauxEle) {
-                fauxEle.remove();
-            }
-            return rebase.indexOf(fauxBase) === 0;
-        }
-
-        $.extend($.support, {
-            cssPseudoElement: !!propExists("content"),
-            touchOverflow: !!propExists("overflowScrolling"),
-            fixedPosition: true,
-            scrollTop: ("pageXOffset" in window ||
-                "scrollTop" in document.documentElement ||
-                "scrollTop" in fakeBody[0]) && !webos && !operamini,
-
-            dynamicBaseTag: baseTagTest()
-        });
-
-        fakeBody.remove();
-
-    })(jQuery);
-
-
-    (function ($, undefined) {
-        var $win = $.mobile.window, self;
+        var $win = $(window), self;
 
         $.event.special.navigate = self = {
             bound: false,
@@ -944,9 +699,10 @@
                     options = {};
 
                 //
-                if (!$.mobile.getAttribute(elem, "defaults")) {
+                if (!this.element.data("defaults")) {
                     for (option in this.options) {
-                        value = $.mobile.getAttribute(elem, option.replace(rcapitals, replaceFunction));
+
+                        value = this.element.data(option);
 
                         if (value != null) {
                             options[option] = value;
@@ -983,7 +739,7 @@
         $.extend($.widget, originalWidget);
 
         // For backcompat remove in 1.5
-        $.mobile.document.on("create", function (event) {
+        $(document).on("create", function (event) {
             $(event.target).enhanceWithin();
         });
 
@@ -1020,13 +776,13 @@
             },
 
             _enhance: function () {
-                var attrPrefix = "data-" + $.mobile.ns,
+                var attrPrefix = "data-",
                     self = this;
 
                 var element = this.element[0];
 
                 if (this.options.role) {
-                    element.setAttribute("data-" + $.mobile.ns + "role", this.options.role);
+                    element.setAttribute("data-role", this.options.role);
                 }
 
                 element.setAttribute("tabindex", "0");
@@ -1038,7 +794,7 @@
                 for (var i = 0, length = contents.length; i < length; i++) {
                     var content = contents[i];
                     var theme = content.getAttribute(attrPrefix + "theme") || undefined;
-                    self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.jqmData("role") === "dialog" && self.options.theme);
+                    self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.data("role") === "dialog" && self.options.theme);
                     content.classList.add("ui-content");
                     if (self.options.contentTheme) {
                         content.classList.add("ui-body-" + (self.options.contentTheme));
@@ -1058,7 +814,7 @@
                 }
 
                 if (o.contentTheme !== undefined) {
-                    var elems = elem.querySelectorAll("*[data-" + $.mobile.ns + "='content']");
+                    var elems = elem.querySelectorAll("*[data-" + "" + "='content']");
                     for (var i = 0, length = elems.length; i < length; i++) {
                         var el = elems[i];
                         el.classList.remove("ui-body-" + this.options.contentTheme);
@@ -1084,7 +840,7 @@
 
 
     (function ($, undefined) {
-        var path, $base, dialogHashKey = "&ui-state=dialog";
+        var path, $base;
 
         $.mobile.path = path = {
             uiStateKey: "&ui-state",
@@ -1285,11 +1041,10 @@
                     // For embedded pages, remove the dialog hash key as in getFilePath(),
                     // and remove otherwise the Data Url won't match the id of the embedded Page.
                     result = u.hash
-						.split(dialogHashKey)[0]
 						.replace(/^#/, "")
 						.replace(/\?.*$/, "");
                 } else if (path.isSameDomain(u, this.documentBase)) {
-                    result = u.hrefNoHash.replace(this.documentBase.domain, "").split(dialogHashKey)[0];
+                    result = u.hrefNoHash.replace(this.documentBase.domain, "");
                 }
 
                 return window.decodeURIComponent(result);
@@ -1330,7 +1085,7 @@
 
             //remove the preceding hash, any query params, and dialog notations
             cleanHash: function (hash) {
-                return path.stripHash(hash.replace(/\?.*$/, "").replace(dialogHashKey, ""));
+                return path.stripHash(hash.replace(/\?.*$/, ""));
             },
 
             isHashValid: function (hash) {
@@ -1450,12 +1205,6 @@
                     hash = hash.substring(1);
                 }
                 return (hasHash ? "#" : "") + hash.replace(/([!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "\\$1");
-            },
-
-            // return the substring of a filepath before the dialogHashKey, for making a server
-            // request
-            getFilePath: function (path) {
-                return path && path.split(dialogHashKey)[0];
             },
 
             // check if the specified url refers to the first page in the main
@@ -1641,7 +1390,7 @@
             this.history = history;
             this.ignoreInitialHashChange = true;
 
-            $.mobile.window.bind({
+            $(window).bind({
                 "popstate.history": $.proxy(this.popstate, this)
             });
         };
@@ -1756,7 +1505,7 @@
                 // caught that was triggered by the hash setting above.
                 if (!noEvents) {
                     this.ignorePopState = true;
-                    $.mobile.window.trigger(popstateEvent);
+                    $(window).window.trigger(popstateEvent);
                 }
 
                 // record the history entry so that the information can be included
@@ -1867,56 +1616,6 @@
 
         var loc = $.mobile.path.parseLocation();
         $.mobile.navigate.history.add(loc.href, { hash: loc.hash });
-    })(jQuery);
-
-
-
-    (function ($, undefined) {
-
-        // existing base tag?
-        var baseElement = document.querySelector('head base');
-
-        if (!baseElement) {
-            baseElement = $("<base>", { href: $.mobile.path.documentBase.hrefNoHash }).prependTo($("head"));
-            baseElement = baseElement[0];
-        }
-        // base element management, defined depending on dynamic base tag support
-        // TODO move to external widget
-        var base = {
-
-            // define base element, for use in routing asset urls that are referenced
-            // in Ajax-requested markup
-            element: baseElement,
-
-            linkSelector: "*[src], link[href], a[rel='external'], *[data-ajax='false'], a[target]",
-
-            // set the generated BASE element's href to a new page's base path
-            set: function (href) {
-
-                // we should do nothing if the user wants to manage their url base
-                // manually
-                if (!$.mobile.dynamicBaseEnabled) {
-                    return;
-                }
-
-                // we should use the base tag if we can manipulate it dynamically
-                if ($.support.dynamicBaseTag) {
-                    base.element.setAttribute("href",
-                        $.mobile.path.makeUrlAbsolute(href, $.mobile.path.documentBase));
-                }
-            },
-
-            rewrite: function (href, page) {
-            },
-
-            // set the generated BASE element's href to a new page's base path
-            reset: function (/* href */) {
-                base.element.setAttribute("href", $.mobile.path.documentBase.hrefNoSearch);
-            }
-        };
-
-        $.mobile.base = base;
-
     })(jQuery);
 
     (function ($, undefined) {
@@ -2037,45 +1736,6 @@
                 return (entry && entry.transition) || defaultTransition;
             },
 
-            _handleDialog: function (changePageOptions, data) {
-                var to, active, activeContent = this.getActivePage();
-
-                // If current active page is not a dialog skip the dialog and continue
-                // in the same direction
-                // Note: The dialog widget is deprecated as of 1.4.0 and will be removed in 1.5.0.
-                // Thus, as of 1.5.0 activeContent.data( "mobile-dialog" ) will always evaluate to
-                // falsy, so the second condition in the if-statement below can be removed altogether.
-                if (activeContent && !activeContent.data("mobile-dialog")) {
-                    // determine if we're heading forward or backward and continue
-                    // accordingly past the current dialog
-                    if (data.direction === "back") {
-                        this.back();
-                    } else {
-                        this.forward();
-                    }
-
-                    // prevent changePage call
-                    return false;
-                } else {
-                    // if the current active page is a dialog and we're navigating
-                    // to a dialog use the dialog objected saved in the stack
-                    to = data.pageUrl;
-                    active = this._getActiveHistory();
-
-                    // make sure to set the role, transition and reversal
-                    // as most of this is lost by the domCache cleaning
-                    $.extend(changePageOptions, {
-                        role: active.role,
-                        transition: this._transitionFromHistory(
-                            data.direction,
-                            changePageOptions.transition),
-                        reverse: data.direction === "back"
-                    });
-                }
-
-                return to;
-            },
-
             _handleNavigate: function (url, data) {
                 //find first page via hash
                 // TODO stripping the hash twice with handleUrl
@@ -2099,29 +1759,11 @@
                     transition: transition
                 });
 
-                // TODO move to _handleDestination ?
-                // If this isn't the first page, if the current url is a dialog hash
-                // key, and the initial destination isn't equal to the current target
-                // page, use the special dialog handling
-                if (history.activeIndex > 0 &&
-                    to.indexOf($.mobile.dialogHashKey) > -1) {
-
-                    to = this._handleDialog(changePageOptions, data);
-
-                    if (to === false) {
-                        return;
-                    }
-                }
-
                 this._changeContent(this._handleDestination(to), changePageOptions);
             },
 
             _changeContent: function (to, opts) {
                 $.mobile.changePage(to, opts);
-            },
-
-            _getBase: function () {
-                return $.mobile.base;
             },
 
             _enhance: function (content, role) {
@@ -2143,24 +1785,26 @@
 
             _find: function (absUrl) {
                 // TODO consider supporting a custom callback
-                var fileUrl = this._createFileUrl(absUrl),
+                var fileUrl = absUrl,
                     dataUrl = this._createDataUrl(absUrl),
                     page, initialContent = this._getInitialContent();
 
                 // Check to see if the page already exists in the DOM.
                 // NOTE do _not_ use the :jqmData pseudo selector because parenthesis
                 //      are a valid url char and it breaks on the first occurence
-                page = this.element
-                    .children("[data-url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
+                page = this.element[0].querySelector("[data-url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
 
                 // If we failed to find the page, check to see if the url is a
                 // reference to an embedded page. If so, it may have been dynamically
                 // injected by a developer, in which case it would be lacking a
                 // data-url attribute and in need of enhancement.
-                if (page.length === 0 && dataUrl && !$.mobile.path.isPath(dataUrl)) {
-                    page = this.element.children($.mobile.path.hashToSelector("#" + dataUrl))
-                        .attr("data-url", dataUrl)
-                        .jqmData("url", dataUrl);
+                if (!page && dataUrl && !$.mobile.path.isPath(dataUrl)) {
+                    page = this.element[0].querySelector($.mobile.path.hashToSelector("#" + dataUrl));
+
+                    if (page) {
+                        $(page).attr("data-url", dataUrl)
+                        .data("url", dataUrl);
+                    }
                 }
 
                 // If we failed to find a page in the DOM, check the URL to see if it
@@ -2169,14 +1813,14 @@
                 // apps are pruning the first page from the DOM for various reasons.
                 // We check for this case here because we don't want a first-page with
                 // an id falling through to the non-existent embedded page error case.
-                if (page.length === 0 &&
+                if (!page &&
                     $.mobile.path.isFirstPageUrl(fileUrl) &&
                     initialContent &&
                     initialContent.parent().length) {
-                    page = $(initialContent);
+                    page = initialContent;
                 }
 
-                return page;
+                return page ? $(page) : $();
             },
 
             _parse: function (html, fileUrl) {
@@ -2206,26 +1850,18 @@
 
             _setLoadedTitle: function (page, html) {
                 //page title regexp
-                if (!page.jqmData("title")) {
+                if (!page.data("title")) {
 
                     var newPageTitle = html.match(/<title[^>]*>([^<]*)/) && RegExp.$1;
 
                     if (newPageTitle) {
-                        page.jqmData("title", newPageTitle);
+                        page.data("title", newPageTitle);
                     }
                 }
             },
 
-            _isRewritableBaseTag: function () {
-                return $.mobile.dynamicBaseEnabled && !$.support.dynamicBaseTag;
-            },
-
             _createDataUrl: function (absoluteUrl) {
                 return $.mobile.path.convertUrlToDataUrl(absoluteUrl);
-            },
-
-            _createFileUrl: function (absoluteUrl) {
-                return $.mobile.path.getFilePath(absoluteUrl);
             },
 
             _triggerWithDeprecated: function (name, data, page) {
@@ -2258,7 +1894,7 @@
             //      could be abstracted out as a group
             _loadSuccess: function (absUrl, triggerData, settings, deferred) {
 
-                var fileUrl = this._createFileUrl(absUrl);
+                var fileUrl = absUrl;
                 var currentSelf = this;
 
                 return function (html, wasCached) {
@@ -2272,11 +1908,6 @@
                         }
                     }
 
-                    //dont update the base tag if we are prefetching
-                    if (settings.prefetch === undefined) {
-                        currentSelf._getBase().set(fileUrl);
-                    }
-
                     var contentElem = currentSelf._parse(html, fileUrl);
                     var content = $(contentElem);
 
@@ -2288,11 +1919,6 @@
                     triggerData.content = content;
 
                     triggerData.toPage = content;
-
-                    // rewrite src and href attrs to use a base url if the base tag won't work
-                    if (currentSelf._isRewritableBaseTag() && content) {
-                        currentSelf._getBase().rewrite(fileUrl, content);
-                    }
 
                     var dependencies = contentElem.getAttribute('data-require');
                     dependencies = dependencies ? dependencies.split(',') : null;
@@ -2365,7 +1991,7 @@
 
                 // The absolute version of the URL minus any dialog/subcontent params.
                 // In otherwords the real URL of the content to be loaded.
-                fileUrl = this._createFileUrl(absUrl);
+                fileUrl = absUrl;
 
                 // The version of the Url actually stored in the data-url attribute of
                 // the content. For embedded content, it is just the id of the page. For
@@ -2385,10 +2011,6 @@
                     return deferred.promise();
                 }
 
-                // Reset base to the default document base
-                // TODO figure out why we doe this
-                this._getBase().reset();
-
                 // If the content we are interested in is already in the DOM,
                 // and the caller did not indicate that we should force a
                 // reload of the file, we are done. Resolve the deferrred so that
@@ -2396,12 +2018,6 @@
                 if (content.length && !settings.reload) {
                     this._enhance(content, settings.role);
                     deferred.resolve(absUrl, settings, content);
-
-                    //if we are reloading the content make sure we update
-                    // the base if its not a prefetch
-                    if (!settings.prefetch) {
-                        this._getBase().set(url);
-                    }
 
                     return deferred.promise();
                 }
@@ -2415,12 +2031,6 @@
                     deferred: deferred,
                     options: settings
                 };
-
-                // Reset base to the default document base.
-                // only reset if we are not prefetching
-                if (settings.prefetch === undefined) {
-                    this._getBase().reset();
-                }
 
                 var successFn = this._loadSuccess(absUrl, triggerData, settings, deferred);
                 var cachedResult = pageCache[absUrl.split('?')[0]];
@@ -2572,7 +2182,7 @@
             transition: function (toPage, triggerData, settings) {
                 var fromPage, url, pageUrl, fileUrl,
                     active, activeIsInitialPage,
-                    historyDir, pageTitle, isDialog,
+                    historyDir, pageTitle,
                     alreadyThere, newPageTitle,
                     params;
 
@@ -2590,19 +2200,16 @@
                 // internal state and then trigger a transition to the page.
                 fromPage = settings.fromPage;
                 url = (settings.dataUrl && $.mobile.path.convertUrlToDataUrl(settings.dataUrl)) ||
-                    toPage.jqmData("url");
+                    toPage.data("url");
 
                 // The pageUrl var is usually the same as url, except when url is obscured
                 // as a dialog url. pageUrl always contains the file path
                 pageUrl = url;
-                fileUrl = $.mobile.path.getFilePath(url);
+                fileUrl = url;
                 active = $.mobile.navigate.history.getActive();
                 activeIsInitialPage = $.mobile.navigate.history.activeIndex === 0;
                 historyDir = 0;
                 pageTitle = document.title;
-                isDialog = (settings.role === "dialog" ||
-                    toPage.jqmData("role") === "dialog") &&
-                    toPage.jqmData("dialog") !== true;
 
                 // By default, we prevent changePage requests when the fromPage and toPage
                 // are the same element, but folks that generate content
@@ -2644,52 +2251,15 @@
                 // if so, do not add a new history entry and do not change the hash either
                 alreadyThere = false;
 
-                // If we're displaying the page as a dialog, we don't want the url
-                // for the dialog content to be used in the hash. Instead, we want
-                // to append the dialogHashKey to the url of the current page.
-                if (isDialog && active) {
-                    // on the initial page load active.url is undefined and in that case
-                    // should be an empty string. Moving the undefined -> empty string back
-                    // into urlHistory.addNew seemed imprudent given undefined better
-                    // represents the url state
-
-                    // If we are at a place in history that once belonged to a dialog, reuse
-                    // this state without adding to urlHistory and without modifying the
-                    // hash. However, if a dialog is already displayed at this point, and
-                    // we're about to display another dialog, then we must add another hash
-                    // and history entry on top so that one may navigate back to the
-                    // original dialog
-                    if (active.url &&
-                        active.url.indexOf($.mobile.dialogHashKey) > -1 &&
-                        this.activePage &&
-                        !this.activePage.hasClass("ui-dialog") &&
-                        $.mobile.navigate.history.activeIndex > 0) {
-
-                        settings.changeHash = false;
-                        alreadyThere = true;
-                    }
-
-                    // Normally, we tack on a dialog hash key, but if this is the location
-                    // of a stale dialog, we reuse the URL from the entry
-                    url = (active.url || "");
-
-                    // account for absolute urls instead of just relative urls use as hashes
-                    if (!alreadyThere && url.indexOf("#") > -1) {
-                        url += $.mobile.dialogHashKey;
-                    } else {
-                        url += "#" + $.mobile.dialogHashKey;
-                    }
-                }
-
                 // if title element wasn't found, try the page div data attr too
                 // If this is a deep-link or a reload ( active === undefined ) then just
                 // use pageTitle
-                newPageTitle = (!active) ? pageTitle : toPage.jqmData("title");
+                newPageTitle = (!active) ? pageTitle : toPage.data("title");
                 if (!!newPageTitle && pageTitle === document.title) {
                     pageTitle = newPageTitle;
                 }
-                if (!toPage.jqmData("title")) {
-                    toPage.jqmData("title", pageTitle);
+                if (!toPage.data("title")) {
+                    toPage.data("title", pageTitle);
                 }
 
                 //add page to history stack if it's not back or forward
@@ -2861,12 +2431,12 @@
                 }
 
                 //use ajax
-                reverse = $link.jqmData("direction") === "reverse" ||
+                reverse = $link.data("direction") === "reverse" ||
                             // deprecated - remove by 1.0
-                            $link.jqmData("back");
+                            $link.data("back");
 
                 //this may need to be more specific as we use data-rel more
-                role = link.getAttribute("data-" + $.mobile.ns + "rel") || undefined;
+                role = link.getAttribute("data-rel") || undefined;
 
                 $.mobile.changePage(href, { reverse: reverse, role: role, link: $link });
                 event.preventDefault();
@@ -2934,8 +2504,8 @@
                     var $this = $(this);
 
                     // unless the data url is already set set it to the pathname
-                    if (!$this[0].getAttribute("data-" + $.mobile.ns + "url")) {
-                        $this.attr("data-" + $.mobile.ns + "url", $this.attr("id") ||
+                    if (!$this[0].getAttribute("data-url")) {
+                        $this.attr("data-url", $this.attr("id") ||
                             path.convertUrlToDataUrl(theLocation.pathname + theLocation.search));
                     }
                 });
@@ -2957,8 +2527,7 @@
                 // Remember, however, that the hash can also be a path!
                 if (!($.mobile.path.isHashValid(location.hash) &&
                     ($(hashPage).is("[data-role='page']") ||
-                        $.mobile.path.isPath(hash) ||
-                        hash === $.mobile.dialogHashKey))) {
+                        $.mobile.path.isPath(hash)))) {
 
                     // make sure to set initial popstate state if it exists
                     // so that navigation back to the initial page works properly

@@ -162,7 +162,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#playlistsPage", function () {
+    pageIdOn('pagebeforeshow', "playlistsPage", function () {
 
         var page = this;
         reloadItems(page);

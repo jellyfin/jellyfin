@@ -266,11 +266,11 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'index.html');
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
-        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
+        page.querySelector('.btnTakeTour').addEventListener('click', function () {
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
@@ -301,7 +301,7 @@
             var page = $($.mobile.activePage)[0];
             var pages = page.querySelector('neon-animated-pages');
 
-            $(pages).trigger('tabchange');
+            pages.dispatchEvent(new CustomEvent("tabchange", {}));
         }
     }
 
