@@ -135,7 +135,7 @@
         if (mainDrawerButton) {
             if (AppInfo.isTouchPreferred || $.browser.mobile) {
 
-                Events.on(mainDrawerButton, 'click', openMainDrawer);
+                mainDrawerButton.addEventListener('click', openMainDrawer);
 
             } else {
                 $(mainDrawerButton).createHoverTouch().on('hovertouch', openMainDrawer);
@@ -144,7 +144,7 @@
 
         var headerBackButton = document.querySelector('.headerBackButton');
         if (headerBackButton) {
-            Events.on(headerBackButton, 'click', onBackClick);
+            headerBackButton.addEventListener('click', onBackClick);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
@@ -226,9 +226,10 @@
 
         document.querySelector('.mainDrawerPanel').closeDrawer();
     }
-    function onMainDrawerSelect() {
+    function onMainDrawerSelect(e) {
 
-        if (this.selected == 'main') {
+        var drawer = e.target;
+        if (drawer.selected == 'main') {
 
             document.body.classList.remove('bodyWithPopupOpen');
             document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
@@ -385,7 +386,7 @@
 
         drawer.querySelector('.userFooter').innerHTML = html;
 
-        Events.on(drawer.querySelector('.lnkManageServer'), 'click', onManageServerClicked);
+        drawer.querySelector('.lnkManageServer').addEventListener('click', onManageServerClicked);
     }
 
     function onSidebarLinkClick() {
@@ -998,7 +999,7 @@
         });
 
         var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
-        Events.on(mainDrawerPanel, 'iron-select', onMainDrawerSelect);
+        mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
     });
 
 })(window, document, jQuery, window.devicePixelRatio);

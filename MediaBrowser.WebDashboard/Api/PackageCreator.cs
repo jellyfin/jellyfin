@@ -636,7 +636,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "css/card.css",
                                       "css/notifications.css",
                                       "css/search.css",
-                                      "css/remotecontrol.css",
                                       "css/userimage.css",
                                       "css/nowplaying.css",
                                       "thirdparty/paper-button-style.css"

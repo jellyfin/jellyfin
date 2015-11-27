@@ -2,14 +2,35 @@
 
     var showOverlayTimeout;
 
-    function onHoverOut() {
+    function getCardHoverElement(e) {
+
+        var elem = parentWithClass(e.target, 'card');
+
+        if (!elem) {
+            return null;
+        }
+
+        if (elem.classList.contains('bannerCard')) {
+            return null;
+        }
+
+        return elem;
+    }
+
+    function onHoverOut(e) {
+
+        var elem = getCardHoverElement(e);
+
+        if (!elem) {
+            return;
+        }
 
         if (showOverlayTimeout) {
             clearTimeout(showOverlayTimeout);
             showOverlayTimeout = null;
         }
 
-        var elem = this.querySelector('.cardOverlayTarget');
+        elem = elem.querySelector('.cardOverlayTarget');
 
         if ($(elem).is(':visible')) {
             require(["jquery", "velocity"], function ($, Velocity) {
@@ -637,233 +658,11 @@
                 url += '&context=' + context;
             }
             Dashboard.navigate(url);
-            return;
 
-            var ids = items.map(function (i) {
-                return i.Id;
-            });
-
-            showItemsOverlay({
-                ids: ids,
-                context: context
-            });
         });
 
         e.preventDefault();
         return false;
-    }
-
-    function getItemsOverlay(ids, context) {
-
-        $('.detailsMenu').remove();
-
-        var html = '<div data-role="popup" class="detailsMenu" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
-
-        html += '<div style="padding:1em 1em;background:rgba(20,20,20,1);margin:0;text-align:center;" class="detailsMenuHeader">';
-        html += '<paper-icon-button icon="keyboard-arrow-left" class="detailsMenuLeftButton"></paper-icon-button>';
-        html += '<h3 style="font-weight:400;margin:.5em 0;"></h3>';
-        html += '<paper-icon-button icon="keyboard-arrow-right" class="detailsMenuRightButton"></paper-icon-button>';
-        html += '</div>';
-
-        html += '<div class="detailsMenuContent" style="background-position:center center;background-repeat:no-repeat;background-size:cover;">';
-        html += '<div style="padding:.5em 1em 1em;background:rgba(10,10,10,.80);" class="detailsMenuContentInner">';
-        html += '</div>';
-        html += '</div>';
-
-        html += '</div>';
-
-        $($.mobile.activePage).append(html);
-
-        var elem = $('.detailsMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-        })[0];
-
-        $('.detailsMenuLeftButton', elem).on('click', function () {
-
-            var overlay = $(this).parents('.detailsMenu')[0];
-            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') - 1, context);
-        });
-
-        $('.detailsMenuRightButton', elem).on('click', function () {
-
-            var overlay = $(this).parents('.detailsMenu')[0];
-            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') + 1, context);
-        });
-
-        return elem;
-    }
-
-    function setItemIntoOverlay(elem, index) {
-
-        var ids = elem.getAttribute('data-ids').split(',');
-        var itemId = ids[index];
-        var userId = Dashboard.getCurrentUserId();
-        var context = elem.getAttribute('data-context');
-
-        elem.setAttribute('data-index', index);
-
-        if (index > 0) {
-            $('.detailsMenuLeftButton', elem).show();
-        } else {
-            $('.detailsMenuLeftButton', elem).hide();
-        }
-
-        if (index < ids.length - 1) {
-            $('.detailsMenuRightButton', elem).show();
-        } else {
-            $('.detailsMenuRightButton', elem).hide();
-        }
-
-        var promise1 = ApiClient.getItem(userId, itemId);
-        var promise2 = Dashboard.getCurrentUser();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var item = response1[0];
-            var user = response2[0];
-
-            var background = 'none';
-
-            if (AppInfo.enableDetailsMenuImages) {
-                var backdropUrl;
-                var screenWidth = $(window).width();
-                var backdropWidth = Math.min(screenWidth, 800);
-
-                if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                    backdropUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        type: "Backdrop",
-                        index: 0,
-                        maxWidth: backdropWidth,
-                        tag: item.BackdropImageTags[0]
-                    });
-                }
-                else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-
-                    backdropUrl = ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
-                        type: 'Backdrop',
-                        index: 0,
-                        tag: item.ParentBackdropImageTags[0],
-                        maxWidth: backdropWidth
-                    });
-                }
-
-                if (backdropUrl) {
-                    background = 'url(' + backdropUrl + ')';
-                }
-            }
-
-            $('.detailsMenuContent', elem).css('backgroundImage', background);
-
-            var headerHtml = LibraryBrowser.getPosterViewDisplayName(item);
-            $('.detailsMenuHeader', elem).removeClass('detailsMenuHeaderWithLogo');
-            if (AppInfo.enableDetailsMenuImages) {
-
-                var logoUrl;
-
-                var logoHeight = 30;
-                if (item.ImageTags && item.ImageTags.Logo) {
-
-                    logoUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        type: "Logo",
-                        index: 0,
-                        maxHeight: logoHeight,
-                        tag: item.ImageTags.Logo
-                    });
-                }
-
-                if (logoUrl) {
-                    headerHtml = '<img src="' + logoUrl + '" style="height:' + logoHeight + 'px;" />';
-                    $('.detailsMenuHeader', elem).addClass('detailsMenuHeaderWithLogo');
-                }
-            }
-
-            $('h3', elem).html(headerHtml);
-
-            var contentHtml = '';
-
-            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
-            if (miscInfo) {
-
-                contentHtml += '<p>' + miscInfo + '</p>';
-            }
-
-            var userData = LibraryBrowser.getUserDataIconsHtml(item);
-            if (userData) {
-
-                contentHtml += '<p class="detailsMenuUserData">' + userData + '</p>';
-            }
-
-            var ratingHtml = LibraryBrowser.getRatingHtml(item);
-            if (ratingHtml) {
-
-                contentHtml += '<p>' + ratingHtml + '</p>';
-            }
-
-            if (item.Overview) {
-                contentHtml += '<p class="detailsMenuOverview">' + item.Overview + '</p>';
-            }
-
-            contentHtml += '<div class="detailsMenuButtons">';
-
-            if (MediaController.canPlay(item)) {
-                if (item.MediaType == 'Video' && !item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
-                    contentHtml += '<paper-button raised class="secondary btnResume" style="background-color:#ff8f00;"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonResume') + '</span></paper-button>';
-                }
-
-                contentHtml += '<paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlay') + '</span></paper-button>';
-            }
-
-            contentHtml += '<paper-button data-href="' + LibraryBrowser.getHref(item, context) + '" raised class="submit" style="background-color: #673AB7;" onclick="Dashboard.navigate(this.getAttribute(\'data-href\'));"><iron-icon icon="folder-open"></iron-icon><span>' + Globalize.translate('ButtonOpen') + '</span></paper-button>';
-
-            if (SyncManager.isAvailable(item, user)) {
-                contentHtml += '<paper-button raised class="submit btnSync"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button>';
-            }
-
-            contentHtml += '</div>';
-
-            $('.detailsMenuContentInner', elem).html(contentHtml).trigger('create');
-
-            $('.btnSync', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                SyncManager.showMenu({
-                    items: [item]
-                });
-            });
-
-            $('.btnPlay', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                MediaController.play({
-                    items: [item]
-                });
-            });
-
-            $('.btnResume', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                MediaController.play({
-                    items: [item],
-                    startPositionTicks: item.UserData.PlaybackPositionTicks
-                });
-            });
-        });
-    }
-
-    function showItemsOverlay(options) {
-
-        var context = options.context;
-
-        require(['jqmpopup'], function () {
-            var elem = getItemsOverlay(options.ids, context);
-
-            setItemIntoOverlay(elem, 0);
-        });
     }
 
     function parentWithClass(elem, className) {
@@ -933,6 +732,12 @@
 
         function onHoverIn(e) {
 
+            var elem = getCardHoverElement(e);
+
+            if (!elem) {
+                return;
+            }
+
             if (preventHover === true) {
                 preventHover = false;
                 return;
@@ -943,14 +748,11 @@
                 showOverlayTimeout = null;
             }
 
-            var elem = this;
-
             while (!elem.classList.contains('card')) {
                 elem = elem.parentNode;
             }
 
             showOverlayTimeout = setTimeout(function () {
-
                 onShowTimerExpired(elem);
 
             }, 1000);
@@ -960,31 +762,33 @@
             preventHover = true;
         }
 
-        this.off('click', onCardClick);
-        this.on('click', onCardClick);
-
-        if (AppInfo.isTouchPreferred) {
-            this.off('contextmenu', disableEvent);
-            this.on('contextmenu', disableEvent);
-            //this.off('contextmenu', onContextMenu);
-            //this.on('contextmenu', onContextMenu);
-        }
-        else {
-            this.off('contextmenu', onContextMenu);
-            this.on('contextmenu', onContextMenu);
-
-            this.off('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
-            this.on('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
-
-            this.off('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
-            this.on('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
-
-            this.off("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
-            this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
-        }
-
         for (var i = 0, length = this.length; i < length; i++) {
-            initTapHoldMenus(this[i]);
+
+            var curr = this[i];
+            curr.removeEventListener('click', onCardClick);
+            curr.addEventListener('click', onCardClick);
+
+            if (AppInfo.isTouchPreferred) {
+                curr.removeEventListener('contextmenu', disableEvent);
+                curr.addEventListener('contextmenu', disableEvent);
+                //this.off('contextmenu', onContextMenu);
+                //this.on('contextmenu', onContextMenu);
+            }
+            else {
+                curr.removeEventListener('contextmenu', onContextMenu);
+                curr.addEventListener('contextmenu', onContextMenu);
+
+                curr.removeEventListener('mouseenter', onHoverIn);
+                curr.addEventListener('mouseenter', onHoverIn, true);
+
+                curr.removeEventListener('mouseleave', onHoverOut);
+                curr.addEventListener('mouseleave', onHoverOut, true);
+
+                curr.removeEventListener("touchstart", preventTouchHover);
+                curr.addEventListener("touchstart", preventTouchHover);
+            }
+
+            initTapHoldMenus(curr);
         }
 
         return this;
@@ -1368,7 +1172,11 @@
 
     function onItemWithActionClick(e) {
 
-        var elem = this;
+        var elem = parentWithClass(e.target, 'itemWithAction');
+
+        if (!elem) {
+            return;
+        }
 
         var action = elem.getAttribute('data-action');
         var elemWithAttributes = elem;
@@ -1400,6 +1208,7 @@
             MediaController.instantMix(itemId);
         }
 
+        e.preventDefault();
         return false;
     }
 
@@ -1436,7 +1245,7 @@
 
         var page = this;
 
-        $(page).on('click', '.itemWithAction', onItemWithActionClick);
+        page.addEventListener('click', onItemWithActionClick);
 
         var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {

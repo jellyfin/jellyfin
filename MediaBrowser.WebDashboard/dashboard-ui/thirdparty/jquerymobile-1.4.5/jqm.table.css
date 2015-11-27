@@ -1,4 +1,59 @@
-﻿.ui-table {
+﻿.ui-block-a,
+.ui-block-b,
+.ui-block-c,
+.ui-block-d,
+.ui-block-e {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	float: left;
+	min-height: 1px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+/* force new row */
+.ui-block-a {
+	clear: left;
+}
+li.ui-block-a,
+li.ui-block-b,
+li.ui-block-c,
+li.ui-block-d,
+li.ui-block-e {
+	margin-left: 0;
+	margin-right: 0;
+	padding: 0;
+	list-style: none;
+}
+/* No margin in grids for 100% width button elements until we can use max-width: fill-available; */
+[class*="ui-block-"] > button.ui-btn {
+	margin-right: 0;
+	margin-left: 0;
+}
+[class*="ui-block-"] > .ui-btn,
+[class*="ui-block-"] > .ui-select,
+[class*="ui-block-"] > .ui-checkbox,
+[class*="ui-block-"] > .ui-radio,
+[class*="ui-block-"] > button.ui-btn-inline,
+[class*="ui-block-"] > button.ui-btn-icon-notext {
+	margin-right: .3125em;
+	margin-left: .3125em;
+}
+
+/* preset breakpoint to switch to stacked grid styles below 35em (560px) */
+@media (max-width: 35em) {
+	.ui-responsive > .ui-block-a,
+	.ui-responsive > .ui-block-b,
+	.ui-responsive > .ui-block-c,
+	.ui-responsive > .ui-block-d,
+	.ui-responsive > .ui-block-e {
+		width: 100%; 
+		float: none; 
+	}
+}
+
+.ui-table {
 	border: 0;
 	border-collapse: collapse;
 	padding: 0;

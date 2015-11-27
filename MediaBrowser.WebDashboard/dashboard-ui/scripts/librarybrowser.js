@@ -246,9 +246,9 @@
 
                 var legacyTabs = $('.legacyTabs', ownerpage);
 
-                $(pages).on('iron-select', function (e) {
+                pages.addEventListener('iron-select', function (e) {
 
-                    var selected = this.selected;
+                    var selected = pages.selected;
                     $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
                 });
 
@@ -2816,8 +2816,8 @@
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
 
-            $(dlg).on('iron-overlay-closed', function () {
-                $(this).remove();
+            dlg.addEventListener('iron-overlay-closed', function () {
+                $(dlg).remove();
             });
 
             require(['components/paperdialoghelper'], function () {

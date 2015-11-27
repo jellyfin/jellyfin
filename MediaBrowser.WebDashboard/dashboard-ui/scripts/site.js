@@ -674,9 +674,9 @@ var Dashboard = {
             });
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', function (e) {
+            dlg.addEventListener('iron-overlay-closed', function (e) {
 
-                this.parentNode.removeChild(this);
+                dlg.parentNode.removeChild(dlg);
             });
 
             dlg.open();
@@ -729,9 +729,10 @@ var Dashboard = {
             var dlg = document.getElementById(id);
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', function (e) {
-                var confirmed = this.closingReason.confirmed;
-                this.parentNode.removeChild(this);
+            dlg.addEventListener('iron-overlay-closed', function (e) {
+
+                var confirmed = dlg.closingReason.confirmed;
+                dlg.parentNode.removeChild(dlg);
 
                 if (callback) {
                     callback(confirmed);
@@ -2009,7 +2010,7 @@ var AppInfo = {};
 
         $(document.body).append(footerHtml);
 
-        $(window).on("beforeunload", function () {
+        window.addEventListener("beforeunload", function () {
 
             var apiClient = window.ApiClient;
 
@@ -2026,14 +2027,6 @@ var AppInfo = {};
                     apiClient.closeWebSocket();
                 }
             }
-        });
-
-        $(document).on('contextmenu', '.ui-popup-screen', function (e) {
-
-            $('.ui-popup').popup('close');
-
-            e.preventDefault();
-            return false;
         });
 
         if (Dashboard.isRunningInCordova()) {
@@ -2468,9 +2461,9 @@ var AppInfo = {};
         onWebComponentsReady();
     } else {
 
-        $(document).on('WebComponentsReady', function() {
+        document.addEventListener('WebComponentsReady', function () {
 
-            setTimeout(onWebComponentsReady, 200);
+            setTimeout(onWebComponentsReady, 300);
         });
         require(['bower_components/webcomponentsjs/webcomponents-lite.js']);
     }
