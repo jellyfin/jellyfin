@@ -53,10 +53,15 @@ namespace MediaBrowser.Controller.LiveTv
                     return key;
                 }
             }
-            
-            var name = GetClientTypeName();
 
-            return name + "-" + Name + (EpisodeTitle ?? string.Empty);
+            if (IsSeries && !string.IsNullOrWhiteSpace(EpisodeTitle))
+            {
+                var name = GetClientTypeName();
+
+                return name + "-" + Name + (EpisodeTitle ?? string.Empty);
+            }
+
+            return base.CreateUserDataKey();
         }
 
         public string ServiceName { get; set; }
