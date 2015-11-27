@@ -1,5 +1,48 @@
 ﻿(function ($, undefined) {
 
+    /*!
+     * jQuery UI Core c0ab71056b936627e8a7821f03c044aec6280a40
+     * http://jqueryui.com
+     *
+     * Copyright 2013 jQuery Foundation and other contributors
+     * Released under the MIT license.
+     * http://jquery.org/license
+     *
+     * http://api.jqueryui.com/category/ui-core/
+     */
+    (function ($, undefined) {
+
+        // $.ui might exist from components with no dependencies, e.g., $.ui.position
+        $.ui = $.ui || {};
+
+        $.extend($.ui, {
+            version: "c0ab71056b936627e8a7821f03c044aec6280a40",
+
+            keyCode: {
+                BACKSPACE: 8,
+                COMMA: 188,
+                DELETE: 46,
+                DOWN: 40,
+                END: 35,
+                ENTER: 13,
+                ESCAPE: 27,
+                HOME: 36,
+                LEFT: 37,
+                PAGE_DOWN: 34,
+                PAGE_UP: 33,
+                PERIOD: 190,
+                RIGHT: 39,
+                SPACE: 32,
+                TAB: 9,
+                UP: 38
+            }
+        });
+
+        // deprecated
+        $.ui.ie = !!/msie [\w.]+/.exec(navigator.userAgent.toLowerCase());
+
+    })(jQuery);
+
     $.widget("mobile.slider", $.extend({
         initSelector: "input[type='range']:not([data-role='none'])",
 
@@ -230,14 +273,14 @@
 
             // In all cases prevent the default and mark the handle as active
             switch (event.keyCode) {
-                case $.mobile.keyCode.HOME:
-                case $.mobile.keyCode.END:
-                case $.mobile.keyCode.PAGE_UP:
-                case $.mobile.keyCode.PAGE_DOWN:
-                case $.mobile.keyCode.UP:
-                case $.mobile.keyCode.RIGHT:
-                case $.mobile.keyCode.DOWN:
-                case $.mobile.keyCode.LEFT:
+                case $.ui.keyCode.HOME:
+                case $.ui.keyCode.END:
+                case $.ui.keyCode.PAGE_UP:
+                case $.ui.keyCode.PAGE_DOWN:
+                case $.ui.keyCode.UP:
+                case $.ui.keyCode.RIGHT:
+                case $.ui.keyCode.DOWN:
+                case $.ui.keyCode.LEFT:
                     event.preventDefault();
 
                     if (!this._keySliding) {
@@ -250,20 +293,20 @@
 
             // move the slider according to the keypress
             switch (event.keyCode) {
-                case $.mobile.keyCode.HOME:
+                case $.ui.keyCode.HOME:
                     this.refresh(this.min);
                     break;
-                case $.mobile.keyCode.END:
+                case $.ui.keyCode.END:
                     this.refresh(this.max);
                     break;
-                case $.mobile.keyCode.PAGE_UP:
-                case $.mobile.keyCode.UP:
-                case $.mobile.keyCode.RIGHT:
+                case $.ui.keyCode.PAGE_UP:
+                case $.ui.keyCode.UP:
+                case $.ui.keyCode.RIGHT:
                     this.refresh(index + this.step);
                     break;
-                case $.mobile.keyCode.PAGE_DOWN:
-                case $.mobile.keyCode.DOWN:
-                case $.mobile.keyCode.LEFT:
+                case $.ui.keyCode.PAGE_DOWN:
+                case $.ui.keyCode.DOWN:
+                case $.ui.keyCode.LEFT:
                     this.refresh(index - this.step);
                     break;
             }
@@ -475,9 +518,9 @@
 
             this.handle[0].setAttribute("aria-valuenow", isInput ? newval : optionElements.eq(newval).attr("value"));
 
-            this.handle[0].setAttribute("aria-valuetext", isInput ? newval : optionElements.eq(newval).getEncodedText());
+            this.handle[0].setAttribute("aria-valuetext", isInput ? newval : optionElements.eq(newval).text());
 
-            this.handle[0].setAttribute("title", isInput ? newval : optionElements.eq(newval).getEncodedText());
+            this.handle[0].setAttribute("title", isInput ? newval : optionElements.eq(newval).text());
 
             if (this.valuebg) {
                 this.valuebg.css("width", percent + "%");

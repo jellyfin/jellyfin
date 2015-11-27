@@ -1,4 +1,84 @@
 ﻿(function ($, undefined) {
+    var props = {
+        "animation": {},
+        "transition": {}
+    },
+        testElement = document.createElement("a"),
+        vendorPrefixes = ["", "webkit-", "moz-", "o-"];
+
+    $.each(["animation", "transition"], function (i, test) {
+
+        // Get correct name for test
+        var testName = (i === 0) ? test + "-" + "name" : test;
+
+        $.each(vendorPrefixes, function (j, prefix) {
+            if (testElement.style[$.camelCase(prefix + testName)] !== undefined) {
+                props[test]["prefix"] = prefix;
+                return false;
+            }
+        });
+
+        // Set event and duration names for later use
+        props[test]["duration"] =
+            $.camelCase(props[test]["prefix"] + test + "-" + "duration");
+        props[test]["event"] =
+            $.camelCase(props[test]["prefix"] + test + "-" + "end");
+
+        // All lower case if not a vendor prop
+        if (props[test]["prefix"] === "") {
+            props[test]["event"] = props[test]["event"].toLowerCase();
+        }
+    });
+
+    // Remove the testElement
+    $(testElement).remove();
+
+    // Animation complete callback
+    $.fn.animationComplete = function (callback, type, fallbackTime) {
+        var timer, duration,
+            that = this,
+            eventBinding = function () {
+
+                // Clear the timer so we don't call callback twice
+                clearTimeout(timer);
+                callback.apply(this, arguments);
+            },
+            animationType = (!type || type === "animation") ? "animation" : "transition";
+
+        // If a fallback time was not passed set one
+        if (fallbackTime === undefined) {
+
+            // Make sure the was not bound to document before checking .css
+            if ($(this).context !== document) {
+
+                // Parse the durration since its in second multiple by 1000 for milliseconds
+                // Multiply by 3 to make sure we give the animation plenty of time.
+                duration = parseFloat(
+                    $(this).css(props[animationType].duration)
+                ) * 3000;
+            }
+
+            // If we could not read a duration use the default
+            if (duration === 0 || duration === undefined || isNaN(duration)) {
+                duration = $.fn.animationComplete.defaultDuration;
+            }
+        }
+
+        // Sets up the fallback if event never comes
+        timer = setTimeout(function () {
+            $(that).off(props[animationType].event, eventBinding);
+            callback.apply(that);
+        }, duration);
+
+        // Bind the event
+        return $(this).one(props[animationType].event, eventBinding);
+    };
+
+    // Allow default callback to be configured on mobileInit
+    $.fn.animationComplete.defaultDuration = 1000;
+})(jQuery);
+
+(function ($, undefined) {
 
 	function fitSegmentInsideSegment(windowSize, segmentSize, offset, desired) {
 		var returnValue = desired;
@@ -22,6 +102,21 @@
 			cy: (theWindow[0].innerHeight || theWindow.height())
 		};
 	}
+
+    // non-UA-based IE version check by James Padolsey, modified by jdalton - from http://gist.github.com/527683
+    // allows for inclusion of IE 6+, including Windows Mobile 7
+	$.extend($.mobile, { browser: {} });
+	$.mobile.browser.oldIE = (function () {
+	    var v = 3,
+            div = document.createElement("div"),
+            a = div.all || [];
+
+	    do {
+	        div.innerHTML = "<!--[if gt IE " + (++v) + "]><br><![endif]-->";
+	    } while (a[0]);
+
+	    return v > 4 ? v : !v;
+	})();
 
 	$.widget("mobile.popup", {
 		options: {
@@ -107,8 +202,7 @@
 			this._on(this._ui.screen, { "click": "_eatEventAndClose" });
 			this._on(this.window, {
 				orientationchange: $.proxy(this, "_handleWindowOrientationchange"),
-				resize: $.proxy(this, "_handleWindowResize"),
-				keyup: $.proxy(this, "_handleWindowKeyUp")
+				resize: $.proxy(this, "_handleWindowResize")
 			});
 			this._on(this.document, { "focusin": "_handleDocumentFocusIn" });
 		},
@@ -184,12 +278,6 @@
 				screen.height(documentHeight);
 			} else if (popupHeight > screenHeight) {
 				screen.height(popupHeight);
-			}
-		},
-
-		_handleWindowKeyUp: function (theEvent) {
-			if (this._isOpen && theEvent.keyCode === $.mobile.keyCode.ESCAPE) {
-				return this._eatEventAndClose(theEvent);
 			}
 		},
 
@@ -917,7 +1005,7 @@
 			this._scrollTop = this.window.scrollTop();
 
 			if (this.options.history && this.urlAltered) {
-				$.mobile.back();
+			    $.mobile.pageContainer.pagecontainer("back");
 				this.urlAltered = false;
 			} else {
 				// simulate the nav bindings having fired

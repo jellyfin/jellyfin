@@ -48,6 +48,26 @@
 
 (function ($, undefined) {
 
+    function keepNativeSelector() {
+        var keepNative = $.trim("[data-role='none']"),
+    globalValue = $.trim($.mobile.keepNative),
+    optionValue = $.trim("[data-role='none']"),
+
+    // Check if $.mobile.keepNative has changed from the factory default
+    newDefault = "",
+
+    // If $.mobile.keepNative has not changed, use options.keepNativeDefault
+    oldDefault = (newDefault === "" ? optionValue : "");
+
+        // Concatenate keepNative selectors from all sources where the value has
+        // changed or, if nothing has changed, return the default
+        return ((keepNative ? [keepNative] : [])
+            .concat(newDefault ? [newDefault] : [])
+            .concat(oldDefault ? [oldDefault] : [])
+            .join(", "));
+
+    }
+
     $.widget("mobile.controlgroup", $.extend({
         options: {
             enhanced: false,
@@ -62,7 +82,7 @@
         _create: function () {
             var elem = this.element,
                 opts = this.options,
-                keepNative = $.mobile.page.prototype.keepNativeSelector();
+                keepNative = keepNativeSelector();
 
             // Run buttonmarkup
             if ($.fn.buttonMarkup) {

@@ -99,28 +99,9 @@
     //         part of jQuery BBQ, but also be available separately.
 
     (function ($, window, undefined) {
-        '$:nomunge'; // Used by YUI compressor.
 
         // Reused string.
-        var str_hashchange = 'hashchange',
-
-          // Method / object references.
-          doc = document,
-          fake_onhashchange,
-          special = $.event.special,
-
-          // Does the browser support window.onhashchange? Note that IE8 running in
-          // IE7 compatibility mode reports true for 'onhashchange' in window, even
-          // though the event isn't supported, so also test document.documentMode.
-          doc_mode = doc.documentMode,
-          supports_onhashchange = 'on' + str_hashchange in window && (doc_mode === undefined || doc_mode > 7);
-
-        // Get location.hash (or what you'd expect location.hash to be) sans any
-        // leading #. Thanks for making this necessary, Firefox!
-        function get_fragment(url) {
-            url = url || location.href;
-            return '#' + url.replace(/^[^#]*#?(.*)$/, '$1');
-        };
+        var str_hashchange = 'hashchange';
 
         // Method: jQuery.fn.hashchange
         // 
@@ -152,169 +133,10 @@
             return fn ? this.bind(str_hashchange, fn) : this.trigger(str_hashchange);
         };
 
-        // Property: jQuery.fn.hashchange.delay
-        // 
-        // The numeric interval (in milliseconds) at which the <hashchange event>
-        // polling loop executes. Defaults to 50.
-
-        // Property: jQuery.fn.hashchange.domain
-        // 
-        // If you're setting document.domain in your JavaScript, and you want hash
-        // history to work in IE6/7, not only must this property be set, but you must
-        // also set document.domain BEFORE jQuery is loaded into the page. This
-        // property is only applicable if you are supporting IE6/7 (or IE8 operating
-        // in "IE7 compatibility" mode).
-        // 
-        // In addition, the <jQuery.fn.hashchange.src> property must be set to the
-        // path of the included "document-domain.html" file, which can be renamed or
-        // modified if necessary (note that the document.domain specified must be the
-        // same in both your main JavaScript as well as in this file).
-        // 
-        // Usage:
-        // 
-        // jQuery.fn.hashchange.domain = document.domain;
-
-        // Property: jQuery.fn.hashchange.src
-        // 
-        // If, for some reason, you need to specify an Iframe src file (for example,
-        // when setting document.domain as in <jQuery.fn.hashchange.domain>), you can
-        // do so using this property. Note that when using this property, history
-        // won't be recorded in IE6/7 until the Iframe src file loads. This property
-        // is only applicable if you are supporting IE6/7 (or IE8 operating in "IE7
-        // compatibility" mode).
-        // 
-        // Usage:
-        // 
-        // jQuery.fn.hashchange.src = 'path/to/file.html';
-
         $.fn[str_hashchange].delay = 50;
-        /*
-        $.fn[ str_hashchange ].domain = null;
-        $.fn[ str_hashchange ].src = null;
-        */
-
-        // Event: hashchange event
-        // 
-        // Fired when location.hash changes. In browsers that support it, the native
-        // HTML5 window.onhashchange event is used, otherwise a polling loop is
-        // initialized, running every <jQuery.fn.hashchange.delay> milliseconds to
-        // see if the hash has changed. In IE6/7 (and IE8 operating in "IE7
-        // compatibility" mode), a hidden Iframe is created to allow the back button
-        // and hash-based history to work.
-        // 
-        // Usage as described in <jQuery.fn.hashchange>:
-        // 
-        // > // Bind an event handler.
-        // > jQuery(window).hashchange( function(e) {
-        // >   var hash = location.hash;
-        // >   ...
-        // > });
-        // > 
-        // > // Manually trigger the event handler.
-        // > jQuery(window).hashchange();
-        // 
-        // A more verbose usage that allows for event namespacing:
-        // 
-        // > // Bind an event handler.
-        // > jQuery(window).bind( 'hashchange', function(e) {
-        // >   var hash = location.hash;
-        // >   ...
-        // > });
-        // > 
-        // > // Manually trigger the event handler.
-        // > jQuery(window).trigger( 'hashchange' );
-        // 
-        // Additional Notes:
-        // 
-        // * The polling loop and Iframe are not created until at least one handler
-        //   is actually bound to the 'hashchange' event.
-        // * If you need the bound handler(s) to execute immediately, in cases where
-        //   a location.hash exists on page load, via bookmark or page refresh for
-        //   example, use jQuery(window).hashchange() or the more verbose 
-        //   jQuery(window).trigger( 'hashchange' ).
-        // * The event can be bound before DOM ready, but since it won't be usable
-        //   before then in IE6/7 (due to the necessary Iframe), recommended usage is
-        //   to bind it inside a DOM ready handler.
-
-        // Override existing $.event.special.hashchange methods (allowing this plugin
-        // to be defined after jQuery BBQ in BBQ's source code).
-        special[str_hashchange] = $.extend(special[str_hashchange], {
-
-            // Called only when the first 'hashchange' event is bound to window.
-            setup: function () {
-                // If window.onhashchange is supported natively, there's nothing to do..
-                if (supports_onhashchange) { return false; }
-
-                // Otherwise, we need to create our own. And we don't want to call this
-                // until the user binds to the event, just in case they never do, since it
-                // will create a polling loop and possibly even a hidden Iframe.
-                $(fake_onhashchange.start);
-            },
-
-            // Called only when the last 'hashchange' event is unbound from window.
-            teardown: function () {
-                // If window.onhashchange is supported natively, there's nothing to do..
-                if (supports_onhashchange) { return false; }
-
-                // Otherwise, we need to stop ours (if possible).
-                $(fake_onhashchange.stop);
-            }
-
-        });
-
-        // fake_onhashchange does all the work of triggering the window.onhashchange
-        // event for browsers that don't natively support it, including creating a
-        // polling loop to watch for hash changes and in IE 6/7 creating a hidden
-        // Iframe to enable back and forward.
-        fake_onhashchange = (function () {
-            var self = {},
-              timeout_id,
-
-              // Remember the initial hash so it doesn't get triggered immediately.
-              last_hash = get_fragment(),
-
-              fn_retval = function (val) { return val; },
-              history_set = fn_retval,
-              history_get = fn_retval;
-
-            // Start the polling loop.
-            self.start = function () {
-                timeout_id || poll();
-            };
-
-            // Stop the polling loop.
-            self.stop = function () {
-                timeout_id && clearTimeout(timeout_id);
-                timeout_id = undefined;
-            };
-
-            // This polling loop checks every $.fn.hashchange.delay milliseconds to see
-            // if location.hash has changed, and triggers the 'hashchange' event on
-            // window when necessary.
-            function poll() {
-                var hash = get_fragment(),
-                  history_hash = history_get(last_hash);
-
-                if (hash !== last_hash) {
-                    history_set(last_hash = hash, history_hash);
-
-                    window.dispatchEvent(new CustomEvent(str_hashchange, {}));
-
-                } else if (history_hash !== last_hash) {
-                    location.href = location.href.replace(/#.*/, '') + history_hash;
-                }
-
-                timeout_id = setTimeout(poll, $.fn[str_hashchange].delay);
-            };
-
-            return self;
-        })();
+        $.mobile = {};
 
     })(jQuery, this);
-
-    (function ($) {
-        $.mobile = {};
-    }(jQuery));
 
     (function ($, window, undefined) {
         $.extend($.mobile, {
@@ -322,58 +144,11 @@
             // Version of the jQuery Mobile Framework
             version: "1.4.5",
 
-            // Deprecated and no longer used in 1.4 remove in 1.5
-            // Define the url parameter used for referencing widget-generated sub-pages.
-            // Translates to example.html&ui-page=subpageIdentifier
-            // hash segment before &ui-page= is used to make Ajax request
-            subPageUrlKey: "ui-page",
-
             hideUrlBar: true,
-
-            // Keepnative Selector
-            keepNative: "[data-role='none']",
 
             // Deprecated in 1.4 remove in 1.5
             // Class assigned to page currently in view, and during transitions
             activePageClass: "ui-page-active",
-
-            // Deprecated in 1.4 remove in 1.5
-            // Class used for "active" button state, from CSS framework
-            activeBtnClass: "ui-btn-active",
-
-            // Deprecated in 1.4 remove in 1.5
-            // Class used for "focus" form element state, from CSS framework
-            focusClass: "ui-focus",
-
-            // Automatically handle clicks and form submissions through Ajax, when same-domain
-            ajaxEnabled: true,
-
-            // disable to prevent jquery from bothering with links
-            linkBindingEnabled: true,
-
-            // Set default page transition - 'none' for no transitions
-            defaultPageTransition: "fade",
-
-            // Set maximum window width for transitions to apply - 'false' for no limit
-            maxTransitionWidth: false,
-
-            // Minimum scroll distance that will be remembered when returning to a page
-            // Deprecated remove in 1.5
-            minScrollBack: 0,
-
-            // Set default dialog transition - 'none' for no transitions
-            defaultDialogTransition: "pop",
-
-            // For error messages, which theme does the box use?
-            pageLoadErrorMessageTheme: "a",
-
-            // replace calls to window.history.back with phonegaps navigation helper
-            // where it is provided on the window object
-            phonegapNavigationEnabled: false,
-
-            // allows users to opt in to ignoring content by marking a parent element as
-            // data-ignored
-            ignoreContentEnabled: false,
 
             // disable the alteration of the dynamic base tag or links in the case
             // that a dynamic base tag isn't supported
@@ -381,9 +156,6 @@
 
             // default the property to remove dependency on assignment in init module
             pageContainer: $(),
-
-            //enable cross-domain page support
-            allowCrossDomainPages: false,
 
             dialogHashKey: "&ui-state=dialog"
         });
@@ -488,49 +260,6 @@
 
     })(jQuery, this);
 
-    /*!
-     * jQuery UI Core c0ab71056b936627e8a7821f03c044aec6280a40
-     * http://jqueryui.com
-     *
-     * Copyright 2013 jQuery Foundation and other contributors
-     * Released under the MIT license.
-     * http://jquery.org/license
-     *
-     * http://api.jqueryui.com/category/ui-core/
-     */
-    (function ($, undefined) {
-
-        // $.ui might exist from components with no dependencies, e.g., $.ui.position
-        $.ui = $.ui || {};
-
-        $.extend($.ui, {
-            version: "c0ab71056b936627e8a7821f03c044aec6280a40",
-
-            keyCode: {
-                BACKSPACE: 8,
-                COMMA: 188,
-                DELETE: 46,
-                DOWN: 40,
-                END: 35,
-                ENTER: 13,
-                ESCAPE: 27,
-                HOME: 36,
-                LEFT: 37,
-                PAGE_DOWN: 34,
-                PAGE_UP: 33,
-                PERIOD: 190,
-                RIGHT: 39,
-                SPACE: 32,
-                TAB: 9,
-                UP: 38
-            }
-        });
-
-        // deprecated
-        $.ui.ie = !!/msie [\w.]+/.exec(navigator.userAgent.toLowerCase());
-
-    })(jQuery);
-
     (function ($, window, undefined) {
 
         function parentWithClass(elem, className) {
@@ -551,20 +280,8 @@
             window: $(window),
             document: $(document),
 
-            // TODO: Remove and use $.ui.keyCode directly
-            keyCode: $.ui.keyCode,
-
             // Place to store various widget extensions
             behaviors: {},
-
-            // Scroll page vertically: scroll to 0 to hide iOS address bar, or pass a Y value
-            silentScroll: function (ypos) {
-                if ($.type(ypos) !== "number") {
-                    ypos = $.mobile.defaultHomeScroll;
-                }
-
-                window.scrollTo(0, ypos);
-            },
 
             getClosestBaseUrl: function (ele) {
 
@@ -579,19 +296,6 @@
                 }
 
                 return $.mobile.path.makeUrlAbsolute(url, base);
-            },
-            removeActiveLinkClass: function (forceRemoval) {
-            },
-
-            getScreenHeight: function () {
-                // Native innerHeight returns more accurate value for this across platforms,
-                // jQuery version is here as a normalized fallback for platforms like Symbian
-                return window.innerHeight || $.mobile.window.height();
-            },
-
-            //simply set the active page's minimum height to screen height, depending on orientation
-            resetActivePageHeight: function (height) {
-
             }
         });
 
@@ -624,13 +328,6 @@
                 }
 
                 return this;
-            },
-
-            // note that this helper doesn't attempt to handle the callback
-            // or setting of an html element's text, its only purpose is
-            // to return the html encoded version of the text in all cases. (thus the name)
-            getEncodedText: function () {
-                return $("<a>").text(this.text()).html();
             }
         });
 
@@ -643,64 +340,6 @@
         };
 
     })(jQuery, this);
-
-
-    (function ($, undefined) {
-
-        /*! matchMedia() polyfill - Test a CSS media type/query in JS. Authors & copyright (c) 2012: Scott Jehl, Paul Irish, Nicholas Zakas. Dual MIT/BSD license */
-        window.matchMedia = window.matchMedia || (function (doc, undefined) {
-
-            var bool,
-                docElem = doc.documentElement,
-                refNode = docElem.firstElementChild || docElem.firstChild,
-                // fakeBody required for <FF4 when executed in <head>
-                fakeBody = doc.createElement("body"),
-                div = doc.createElement("div");
-
-            div.id = "mq-test-1";
-            div.style.cssText = "position:absolute;top:-100em";
-            fakeBody.style.background = "none";
-            fakeBody.appendChild(div);
-
-            return function (q) {
-
-                div.innerHTML = "&shy;<style media=\"" + q + "\"> #mq-test-1 { width: 42px; }</style>";
-
-                docElem.insertBefore(fakeBody, refNode);
-                bool = div.offsetWidth === 42;
-                docElem.removeChild(fakeBody);
-
-                return {
-                    matches: bool,
-                    media: q
-                };
-
-            };
-
-        }(document));
-
-        // $.mobile.media uses matchMedia to return a boolean.
-        $.mobile.media = function (q) {
-            return window.matchMedia(q).matches;
-        };
-
-    })(jQuery);
-
-    (function ($, undefined) {
-        var support = {
-            touch: "ontouchend" in document
-        };
-
-        $.mobile.support = $.mobile.support || {};
-        $.extend($.support, support);
-        $.extend($.mobile.support, support);
-    }(jQuery));
-
-    (function ($, undefined) {
-        $.extend($.support, {
-            orientation: "orientation" in window && "onorientationchange" in window
-        });
-    }(jQuery));
 
     (function ($, undefined) {
 
@@ -721,58 +360,7 @@
             fbCSS = fakeBody[0].style,
             vendors = ["Webkit", "Moz", "O"],
             webos = "palmGetResource" in window, //only used to rule out scrollTop
-            operamini = window.operamini && ({}).toString.call(window.operamini) === "[object OperaMini]",
-            bb = window.blackberry && !propExists("-webkit-transform"), //only used to rule out box shadow, as it's filled opaque on BB 5 and lower
-            nokiaLTE7_3;
-
-        // inline SVG support test
-        function inlineSVG() {
-            // Thanks Modernizr & Erik Dahlstrom
-            var w = window,
-                svg = !!w.document.createElementNS && !!w.document.createElementNS("http://www.w3.org/2000/svg", "svg").createSVGRect && !(w.opera && navigator.userAgent.indexOf("Chrome") === -1),
-                support = function (data) {
-                    if (!(data && svg)) {
-                        $("html").addClass("ui-nosvg");
-                    }
-                },
-                img = new w.Image();
-
-            img.onerror = function () {
-                support(false);
-            };
-            img.onload = function () {
-                support(img.width === 1 && img.height === 1);
-            };
-            img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-        }
-
-        function transform3dTest() {
-            var mqProp = "transform-3d",
-                // Because the `translate3d` test below throws false positives in Android:
-                ret = $.mobile.media("(-" + vendors.join("-" + mqProp + "),(-") + "-" + mqProp + "),(" + mqProp + ")"),
-                el, transforms, t;
-
-            if (ret) {
-                return !!ret;
-            }
-
-            el = document.createElement("div");
-            transforms = {
-                // We’re omitting Opera for the time being; MS uses unprefixed.
-                "MozTransform": "-moz-transform",
-                "transform": "transform"
-            };
-
-            fakeBody.append(el);
-
-            for (t in transforms) {
-                if (el.style[t] !== undefined) {
-                    el.style[t] = "translate3d( 100px, 1px, 1px )";
-                    ret = window.getComputedStyle(el).getPropertyValue(transforms[t]);
-                }
-            }
-            return (!!ret && ret !== "none");
-        }
+            operamini = window.operamini && ({}).toString.call(window.operamini) === "[object OperaMini]";
 
         // Test for dynamic-updating base tag support ( allows us to avoid href,src attr rewriting )
         function baseTagTest() {
@@ -798,84 +386,24 @@
             return rebase.indexOf(fauxBase) === 0;
         }
 
-        // Thanks Modernizr
-        function cssPointerEventsTest() {
-            var element = document.createElement("x"),
-                documentElement = document.documentElement,
-                getComputedStyle = window.getComputedStyle,
-                supports;
-
-            if (!("pointerEvents" in element.style)) {
-                return false;
-            }
-
-            element.style.pointerEvents = "auto";
-            element.style.pointerEvents = "x";
-            documentElement.appendChild(element);
-            supports = getComputedStyle &&
-            getComputedStyle(element, "").pointerEvents === "auto";
-            documentElement.removeChild(element);
-            return !!supports;
-        }
-
-        function boundingRect() {
-            var div = document.createElement("div");
-            return typeof div.getBoundingClientRect !== "undefined";
-        }
-
-        // non-UA-based IE version check by James Padolsey, modified by jdalton - from http://gist.github.com/527683
-        // allows for inclusion of IE 6+, including Windows Mobile 7
-        $.extend($.mobile, { browser: {} });
-        $.mobile.browser.oldIE = (function () {
-            var v = 3,
-                div = document.createElement("div"),
-                a = div.all || [];
-
-            do {
-                div.innerHTML = "<!--[if gt IE " + (++v) + "]><br><![endif]-->";
-            } while (a[0]);
-
-            return v > 4 ? v : !v;
-        })();
-
         $.extend($.support, {
-            mediaquery: $.mobile.media("only all"),
             cssPseudoElement: !!propExists("content"),
             touchOverflow: !!propExists("overflowScrolling"),
-            cssTransform3d: transform3dTest(),
             fixedPosition: true,
             scrollTop: ("pageXOffset" in window ||
                 "scrollTop" in document.documentElement ||
                 "scrollTop" in fakeBody[0]) && !webos && !operamini,
 
-            dynamicBaseTag: baseTagTest(),
-            cssPointerEvents: cssPointerEventsTest(),
-            boundingRect: boundingRect(),
-            inlineSVG: inlineSVG
+            dynamicBaseTag: baseTagTest()
         });
 
         fakeBody.remove();
-
-        // Support conditions that must be met in order to proceed
-        // default enhanced qualifications are media query support OR IE 7+
-
-        $.mobile.gradeA = function () {
-            return (($.support.mediaquery && $.support.cssPseudoElement) || $.mobile.browser.oldIE && $.mobile.browser.oldIE >= 8) && ($.support.boundingRect || $.fn.jquery.match(/1\.[0-7+]\.[0-9+]?/) !== null);
-        };
-
-        $.mobile.ajaxBlacklist =
-                    // BlackBerry browsers, pre-webkit
-                    window.blackberry && !window.WebKitPoint ||
-                    // Opera Mini
-                    operamini;
 
     })(jQuery);
 
 
     (function ($, undefined) {
-        var $win = $.mobile.window, self,
-            dummyFnToInitNavigate = function () {
-            };
+        var $win = $.mobile.window, self;
 
         $.event.special.navigate = self = {
             bound: false,
@@ -936,101 +464,6 @@
                 $win.bind("popstate.navigate", self.popstate);
             }
         };
-    })(jQuery);
-
-    (function ($, undefined) {
-        var props = {
-            "animation": {},
-            "transition": {}
-        },
-            testElement = document.createElement("a"),
-            vendorPrefixes = ["", "webkit-", "moz-", "o-"];
-
-        $.each(["animation", "transition"], function (i, test) {
-
-            // Get correct name for test
-            var testName = (i === 0) ? test + "-" + "name" : test;
-
-            $.each(vendorPrefixes, function (j, prefix) {
-                if (testElement.style[$.camelCase(prefix + testName)] !== undefined) {
-                    props[test]["prefix"] = prefix;
-                    return false;
-                }
-            });
-
-            // Set event and duration names for later use
-            props[test]["duration"] =
-                $.camelCase(props[test]["prefix"] + test + "-" + "duration");
-            props[test]["event"] =
-                $.camelCase(props[test]["prefix"] + test + "-" + "end");
-
-            // All lower case if not a vendor prop
-            if (props[test]["prefix"] === "") {
-                props[test]["event"] = props[test]["event"].toLowerCase();
-            }
-        });
-
-        // If a valid prefix was found then the it is supported by the browser
-        $.support.cssTransitions = (props["transition"]["prefix"] !== undefined);
-        $.support.cssAnimations = (props["animation"]["prefix"] !== undefined);
-
-        // Remove the testElement
-        $(testElement).remove();
-
-        // Animation complete callback
-        $.fn.animationComplete = function (callback, type, fallbackTime) {
-            var timer, duration,
-                that = this,
-                eventBinding = function () {
-
-                    // Clear the timer so we don't call callback twice
-                    clearTimeout(timer);
-                    callback.apply(this, arguments);
-                },
-                animationType = (!type || type === "animation") ? "animation" : "transition";
-
-            // Make sure selected type is supported by browser
-            if (($.support.cssTransitions && animationType === "transition") ||
-                ($.support.cssAnimations && animationType === "animation")) {
-
-                // If a fallback time was not passed set one
-                if (fallbackTime === undefined) {
-
-                    // Make sure the was not bound to document before checking .css
-                    if ($(this).context !== document) {
-
-                        // Parse the durration since its in second multiple by 1000 for milliseconds
-                        // Multiply by 3 to make sure we give the animation plenty of time.
-                        duration = parseFloat(
-                            $(this).css(props[animationType].duration)
-                        ) * 3000;
-                    }
-
-                    // If we could not read a duration use the default
-                    if (duration === 0 || duration === undefined || isNaN(duration)) {
-                        duration = $.fn.animationComplete.defaultDuration;
-                    }
-                }
-
-                // Sets up the fallback if event never comes
-                timer = setTimeout(function () {
-                    $(that).off(props[animationType].event, eventBinding);
-                    callback.apply(that);
-                }, duration);
-
-                // Bind the event
-                return $(this).one(props[animationType].event, eventBinding);
-            } else {
-
-                // CSS animation / transitions not supported
-                // Defer execution for consistency between webkit/non webkit
-                setTimeout($.proxy(callback, this), 0);
-                return $(this);
-            }
-        };
-
-        // Allow default callback to be configured on mobileInit
-        $.fn.animationComplete.defaultDuration = 1000;
     })(jQuery);
 
     /*!
@@ -1495,42 +928,6 @@
             }
         };
 
-        $.each({ show: "fadeIn", hide: "fadeOut" }, function (method, defaultEffect) {
-            $.Widget.prototype["_" + method] = function (element, options, callback) {
-                if (typeof options === "string") {
-                    options = { effect: options };
-                }
-                var hasOptions,
-                    effectName = !options ?
-                    method :
-                        options === true || typeof options === "number" ?
-                    defaultEffect :
-                            options.effect || defaultEffect;
-                options = options || {};
-                if (typeof options === "number") {
-                    options = { duration: options };
-                }
-                hasOptions = !$.isEmptyObject(options);
-                options.complete = callback;
-                if (options.delay) {
-                    element.delay(options.delay);
-                }
-                if (hasOptions && $.effects && $.effects.effect[effectName]) {
-                    element[method](options);
-                } else if (effectName !== method && element[effectName]) {
-                    element[effectName](options.duration, options.easing, callback);
-                } else {
-                    element.queue(function (next) {
-                        $(this)[method]();
-                        if (callback) {
-                            callback.call(element[0]);
-                        }
-                        next();
-                    });
-                }
-            };
-        });
-
     })(jQuery);
 
     (function ($, undefined) {
@@ -1561,19 +958,12 @@
             }
         });
 
-        //TODO: Remove in 1.5 for backcompat only
-        $.mobile.widget = $.Widget;
-
     })(jQuery);
 
     (function ($, undefined) {
         $.mobile.widgets = {};
 
-        var originalWidget = $.widget,
-
-            // Record the original, non-mobileinit-modified version of $.mobile.keepNative
-            // so we can later determine whether someone has modified $.mobile.keepNative
-            keepNativeFactoryDefault = $.mobile.keepNative;
+        var originalWidget = $.widget
 
         $.widget = (function (orig) {
             return function () {
@@ -1601,9 +991,6 @@
             options: {
                 theme: "a",
                 domCache: false,
-
-                // Deprecated in 1.4 remove in 1.5
-                keepNativeDefault: $.mobile.keepNative,
 
                 // Deprecated in 1.4 remove in 1.5
                 contentTheme: null,
@@ -1691,27 +1078,6 @@
             // set the page container background to the page theme
             setContainerBackground: function (theme) {
                 $(this.element[0].parentNode).pagecontainer({ "theme": theme || this.options.theme });
-            },
-            // Deprecated in 1.4 remove in 1.5
-            keepNativeSelector: function () {
-                var options = this.options,
-                    keepNative = $.trim(options.keepNative || ""),
-                    globalValue = $.trim($.mobile.keepNative),
-                    optionValue = $.trim(options.keepNativeDefault),
-
-                    // Check if $.mobile.keepNative has changed from the factory default
-                    newDefault = (keepNativeFactoryDefault === globalValue ?
-                        "" : globalValue),
-
-                    // If $.mobile.keepNative has not changed, use options.keepNativeDefault
-                    oldDefault = (newDefault === "" ? optionValue : "");
-
-                // Concatenate keepNative selectors from all sources where the value has
-                // changed or, if nothing has changed, return the default
-                return ((keepNative ? [keepNative] : [])
-                    .concat(newDefault ? [newDefault] : [])
-                    .concat(oldDefault ? [oldDefault] : [])
-                    .join(", "));
             }
         });
     })(jQuery);
@@ -2116,19 +1482,6 @@
 					(!u.hash ||
 						u.hash === "#" ||
 						(fpId && u.hash.replace(/^#/, "") === fpId));
-            },
-
-            // Some embedded browsers, like the web view in Phone Gap, allow
-            // cross-domain XHR requests if the document doing the request was loaded
-            // via the file:// protocol. This is usually to allow the application to
-            // "phone home" and fetch app specific data. We normally let the browser
-            // handle external/cross-domain urls, but if the allowCrossDomainPages
-            // option is true, we will allow cross-domain http/https requests to go
-            // through our page loading logic.
-            isPermittedCrossDomainRequest: function (docUrl, reqUrl) {
-                return $.mobile.allowCrossDomainPages &&
-					(docUrl.protocol === "file:" || docUrl.protocol === "content:") &&
-					reqUrl.search(/^https?:/) !== -1;
             }
         };
 
@@ -2771,10 +2124,6 @@
                 return $.mobile.base;
             },
 
-            _getNs: function () {
-                return $.mobile.ns;
-            },
-
             _enhance: function (content, role) {
                 // TODO consider supporting a custom callback, and passing in
                 // the settings which includes the role
@@ -2802,8 +2151,7 @@
                 // NOTE do _not_ use the :jqmData pseudo selector because parenthesis
                 //      are a valid url char and it breaks on the first occurence
                 page = this.element
-                    .children("[data-" + this._getNs() +
-                        "url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
+                    .children("[data-url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
 
                 // If we failed to find the page, check to see if the url is a
                 // reference to an embedded page. If so, it may have been dynamically
@@ -2811,7 +2159,7 @@
                 // data-url attribute and in need of enhancement.
                 if (page.length === 0 && dataUrl && !$.mobile.path.isPath(dataUrl)) {
                     page = this.element.children($.mobile.path.hashToSelector("#" + dataUrl))
-                        .attr("data-" + this._getNs() + "url", dataUrl)
+                        .attr("data-url", dataUrl)
                         .jqmData("url", dataUrl);
                 }
 
@@ -2842,7 +2190,7 @@
 
                 //if page elem couldn't be found, create one and insert the body element's contents
                 if (!page) {
-                    page = $("<div data-" + this._getNs() + "role='page'>" +
+                    page = $("<div data-role='page'>" +
                         (html.split(/<\/?body[^>]*>/gmi)[1] || "") +
                         "</div>")[0];
                 }
@@ -2850,8 +2198,8 @@
                 // TODO tagging a page with external to make sure that embedded pages aren't
                 // removed by the various page handling code is bad. Having page handling code
                 // in many places is bad. Solutions post 1.0
-                page.setAttribute("data-" + this._getNs() + "url", this._createDataUrl(fileUrl));
-                page.setAttribute("data-" + this._getNs() + "external-page", true);
+                page.setAttribute("data-url", this._createDataUrl(fileUrl));
+                page.setAttribute("data-external-page", true);
 
                 return page;
             },
@@ -2909,10 +2257,12 @@
             //      or require ordering such that other bits are sprinkled in between parts that
             //      could be abstracted out as a group
             _loadSuccess: function (absUrl, triggerData, settings, deferred) {
+
                 var fileUrl = this._createFileUrl(absUrl);
+                var currentSelf = this;
 
-                return $.proxy(function (html, wasCached) {
-
+                return function (html, wasCached) {
+                    
                     if (!wasCached || typeof (wasCached) != 'boolean') {
                         if ($.mobile.filterHtml) {
                             html = $.mobile.filterHtml(html);
@@ -2924,13 +2274,13 @@
 
                     //dont update the base tag if we are prefetching
                     if (settings.prefetch === undefined) {
-                        this._getBase().set(fileUrl);
+                        currentSelf._getBase().set(fileUrl);
                     }
 
-                    var contentElem = this._parse(html, fileUrl);
+                    var contentElem = currentSelf._parse(html, fileUrl);
                     var content = $(contentElem);
 
-                    this._setLoadedTitle(content, html);
+                    currentSelf._setLoadedTitle(content, html);
 
                     // DEPRECATED
                     triggerData.page = content;
@@ -2940,8 +2290,8 @@
                     triggerData.toPage = content;
 
                     // rewrite src and href attrs to use a base url if the base tag won't work
-                    if (this._isRewritableBaseTag() && content) {
-                        this._getBase().rewrite(fileUrl, content);
+                    if (currentSelf._isRewritableBaseTag() && content) {
+                        currentSelf._getBase().rewrite(fileUrl, content);
                     }
 
                     var dependencies = contentElem.getAttribute('data-require');
@@ -2956,14 +2306,12 @@
                         dependencies.push('jqmcheckbox');
                     }
 
-                    var currentSelf = this;
-
                     require(dependencies, function () {
                         currentSelf._include(contentElem, content, settings);
                         deferred.resolve(absUrl, settings, content);
                     });
 
-                }, this);
+                };
             },
 
             _loadDefaults: {
@@ -2976,13 +2324,7 @@
                 reload: false,
 
                 // By default we rely on the role defined by the @data-role attribute.
-                role: undefined,
-
-                showLoadMsg: false,
-
-                // This delay allows loads that pull from browser cache to
-                // occur without showing the loading message.
-                loadMsgDelay: 50
+                role: undefined
             },
 
             load: function (url, options) {
@@ -3007,7 +2349,7 @@
                     // The absolute version of the URL passed into the function. This
                     // version of the URL may contain dialog/subcontent params in it.
                     absUrl = $.mobile.path.makeUrlAbsolute(url, this._findBaseWithDefault()),
-                    fileUrl, dataUrl, pblEvent, triggerData;
+                    fileUrl, dataUrl, triggerData;
 
                 // If the caller provided data, and we're using "get" request,
                 // append the data to the URL.
@@ -3080,12 +2422,6 @@
                     this._getBase().reset();
                 }
 
-                if (!($.mobile.allowCrossDomainPages ||
-                    $.mobile.path.isSameDomain($.mobile.path.documentUrl, absUrl))) {
-                    deferred.reject(absUrl, settings);
-                    return deferred.promise();
-                }
-
                 var successFn = this._loadSuccess(absUrl, triggerData, settings, deferred);
                 var cachedResult = pageCache[absUrl.split('?')[0]];
                 if (cachedResult) {
@@ -3115,45 +2451,13 @@
                 return deferred.promise();
             },
 
-            _loadError: function (absUrl, triggerData, settings, deferred) {
-                return $.proxy(function (xhr, textStatus, errorThrown) {
-                    //set base back to current path
-                    this._getBase().set($.mobile.path.get());
-
-                    // Add error info to our triggerData.
-                    triggerData.xhr = xhr;
-                    triggerData.textStatus = textStatus;
-                    triggerData.errorThrown = errorThrown;
-
-                    // Let listeners know the page load failed.
-                    var plfEvent = this._triggerWithDeprecated("loadfailed", triggerData);
-
-                    // If the default behavior is prevented, stop here!
-                    // Note that it is the responsibility of the listener/handler
-                    // that called preventDefault(), to resolve/reject the
-                    // deferred object within the triggerData.
-                    if (plfEvent.deprecatedEvent.isDefaultPrevented() ||
-                        plfEvent.event.isDefaultPrevented()) {
-                        return;
-                    }
-
-                    deferred.reject(absUrl, settings);
-                }, this);
-            },
-
             // TODO move into transition handlers?
             _triggerCssTransitionEvents: function (to, from, prefix) {
-                var samePage = false;
 
                 prefix = prefix || "";
 
                 // TODO decide if these events should in fact be triggered on the container
                 if (from) {
-
-                    //Check if this is a same page transition and tell the handler in page
-                    if (to[0] === from[0]) {
-                        samePage = true;
-                    }
 
                     //trigger before show/hide events
                     // TODO deprecate nextPage in favor of next
@@ -3163,7 +2467,7 @@
                         nextPage: to,
                         toPage: to,
                         prevPage: from,
-                        samePage: samePage
+                        samePage: to[0] === from[0]
                     }, from);
                 }
 
@@ -3215,37 +2519,6 @@
                 this._triggerCssTransitionEvents(to, from);
             },
 
-            _removeActiveLinkClass: function (force) {
-                //clear out the active button state
-                $.mobile.removeActiveLinkClass(force);
-            },
-
-            _loadUrl: function (to, triggerData, settings) {
-                // preserve the original target as the dataUrl value will be
-                // simplified eg, removing ui-state, and removing query params
-                // from the hash this is so that users who want to use query
-                // params have access to them in the event bindings for the page
-                // life cycle See issue #5085
-                settings.target = to;
-                settings.deferred = $.Deferred();
-
-                this.load(to, settings);
-
-                settings.deferred.done($.proxy(function (url, options, content) {
-
-                    // store the original absolute url so that it can be provided
-                    // to events in the triggerData of the subsequent changePage call
-                    options.absUrl = triggerData.absUrl;
-
-                    this.transition(content, triggerData, options);
-                }, this));
-
-                settings.deferred.fail($.proxy(function (/* url, options */) {
-                    this._removeActiveLinkClass(true);
-                    this._triggerWithDeprecated("changefailed", triggerData);
-                }, this));
-            },
-
             change: function (to, options) {
 
                 var settings = $.extend({}, $.mobile.changePage.defaults, options),
@@ -3268,7 +2541,25 @@
                     // if the toPage is a string simply convert it
                     triggerData.absUrl = $.mobile.path.makeUrlAbsolute(to, this._findBaseWithDefault());
 
-                    this._loadUrl(to, triggerData, settings);
+                    // preserve the original target as the dataUrl value will be
+                    // simplified eg, removing ui-state, and removing query params
+                    // from the hash this is so that users who want to use query
+                    // params have access to them in the event bindings for the page
+                    // life cycle See issue #5085
+                    settings.target = to;
+                    settings.deferred = $.Deferred();
+
+                    this.load(to, settings);
+
+                    settings.deferred.done($.proxy(function (url, options, content) {
+
+                        // store the original absolute url so that it can be provided
+                        // to events in the triggerData of the subsequent changePage call
+                        options.absUrl = triggerData.absUrl;
+
+                        this.transition(content, triggerData, options);
+                    }, this));
+
                 } else {
                     // if the toPage is a jQuery object grab the absolute url stored
                     // in the loadPage callback where it exists
@@ -3445,8 +2736,6 @@
                     transition: settings.transition,
                     reverse: settings.reverse
                 });
-
-                $.mobile.removeActiveLinkClass();
             },
 
             // determine the current base url
@@ -3458,82 +2747,17 @@
             }
         });
 
-        function zoomIn(elem) {
-            var keyframes = [{ transform: 'scale3d(.3, .3, .3)  ', opacity: '0', offset: 0 },
-              { transform: 'none', opacity: '1', offset: 1 }];
-            var timing = { duration: 200, iterations: 1 };
-            return elem.animate(keyframes, timing);
-        }
-
-        // The following handlers should be bound after mobileinit has been triggered
-        // the following deferred is resolved in the init file
-        $.mobile.navreadyDeferred = $.Deferred();
-
     })(jQuery);
 
     (function ($, undefined) {
 
         // resolved on domready
-        var domreadyDeferred = $.Deferred(),
-
-            // resolved and nulled on window.load()
-            loadDeferred = $.Deferred(),
-
-            // function that resolves the above deferred
-            pageIsFullyLoaded = function () {
-
-                // Resolve and null the deferred
-                loadDeferred.resolve();
-                loadDeferred = null;
-            },
-
+        var // function that resolves the above deferred
             documentUrl = $.mobile.path.documentUrl;
-
-        $.mobile.loadPage = function (url, opts) {
-            var container;
-
-            opts = opts || {};
-            container = (opts.pageContainer || $.mobile.pageContainer);
-
-            // create the deferred that will be supplied to loadPage callers
-            // and resolved by the content widget's load method
-            opts.deferred = $.Deferred();
-
-            // Preferring to allow exceptions for uninitialized opts.pageContainer
-            // widgets so we know if we need to force init here for users
-            container.pagecontainer("load", url, opts);
-
-            // provide the deferred
-            return opts.deferred.promise();
-        };
 
         //define vars for interal use
 
         /* internal utility functions */
-
-        // NOTE Issue #4950 Android phonegap doesn't navigate back properly
-        //      when a full page refresh has taken place. It appears that hashchange
-        //      and replacestate history alterations work fine but we need to support
-        //      both forms of history traversal in our code that uses backward history
-        //      movement
-        $.mobile.back = function () {
-            var nav = window.navigator;
-
-            // if the setting is on and the navigator object is
-            // available use the phonegap navigation capability
-            if (this.phonegapNavigationEnabled &&
-                nav &&
-                nav.app &&
-                nav.app.backHistory) {
-                nav.app.backHistory();
-            } else {
-                $.mobile.pageContainer.pagecontainer("back");
-            }
-        };
-
-        // Direct focus to the page title, or otherwise first focusable element
-        $.mobile.focusPage = function (page) {
-        };
 
         // Exposed $.mobile methods
 
@@ -3548,7 +2772,6 @@
             role: undefined, // By default we rely on the role defined by the @data-role attribute.
             duplicateCachedPage: undefined,
             pageContainer: undefined,
-            showLoadMsg: true, //loading message shows by default when pages are being fetched during changePage
             dataUrl: undefined,
             fromPage: undefined
         };
@@ -3570,9 +2793,6 @@
 
             // click routing - direct to HTTP or Ajax, accordingly
             document.addEventListener("click", function (event) {
-                if (!$.mobile.linkBindingEnabled) {
-                    return;
-                }
 
                 var link = parentWithTag(event.target, 'A');
 
@@ -3592,7 +2812,7 @@
 
                 //if there's a data-rel=back attr, go back in history
                 if (link.getAttribute('data-rel') == 'back') {
-                    $.mobile.back();
+                    $.mobile.pageContainer.pagecontainer("back");
                     return false;
                 }
 
@@ -3630,17 +2850,10 @@
                 // Should we handle this link, or let the browser deal with it?
                 useDefaultUrlHandling = link.getAttribute("rel") == "external" || link.getAttribute("data-ajax") == "false" || link.getAttribute('target');
 
-                // Some embedded browsers, like the web view in Phone Gap, allow cross-domain XHR
-                // requests if the document doing the request was loaded via the file:// protocol.
-                // This is usually to allow the application to "phone home" and fetch app specific
-                // data. We normally let the browser handle external/cross-domain urls, but if the
-                // allowCrossDomainPages option is true, we will allow cross-domain http/https
-                // requests to go through our page loading logic.
-
                 //check for protocol or rel and its not an embedded page
                 //TODO overlap in logic from isExternal, rel=external check should be
                 //     moved into more comprehensive isExternalLink
-                isExternal = useDefaultUrlHandling || ($.mobile.path.isExternal(href) && !$.mobile.path.isPermittedCrossDomainRequest(documentUrl, href));
+                isExternal = useDefaultUrlHandling || ($.mobile.path.isExternal(href));
 
                 if (isExternal) {
                     //use default click handling
@@ -3699,36 +2912,12 @@
                 }
             });
 
-        };//navreadyDeferred done callback
+        };
 
-        $(function () { domreadyDeferred.resolve(); });
-
-        // Account for the possibility that the load event has already fired
-        if (document.readyState === "complete") {
-            pageIsFullyLoaded();
-        } else {
-            $.mobile.window.load(pageIsFullyLoaded);
-        }
-
-        $.when(domreadyDeferred, $.mobile.navreadyDeferred).done(function () { $.mobile._registerInternalEvents(); });
     })(jQuery);
 
 
     (function ($, window, undefined) {
-        var $window = $.mobile.window;
-
-        // support conditions
-        // if device support condition(s) aren't met, leave things as they are -> a basic, usable experience,
-        // otherwise, proceed with the enhancements
-        if (!$.mobile.gradeA()) {
-            return;
-        }
-
-        // override ajaxEnabled on platforms that have known conflicts with hash history updates
-        // or generally work better browsing in regular http for full page refreshes (BB5, Opera Mini)
-        if ($.mobile.ajaxBlacklist) {
-            $.mobile.ajaxEnabled = false;
-        }
 
         $.extend($.mobile, {
             // find and enhance the pages in the dom and transition to the first page.
@@ -3760,9 +2949,7 @@
                     .addClass("ui-mobile-viewport")
                     .pagecontainer();
 
-                // initialize navigation events now, after mobileinit has occurred and the page container
-                // has been created but before the rest of the library is alerted to that fact
-                $.mobile.navreadyDeferred.resolve();
+                $.mobile._registerInternalEvents();
 
                 // if hashchange listening is disabled, there's no hash deeplink,
                 // the hash is not valid (contains more than one # or does not start with #)
@@ -3791,45 +2978,6 @@
             }
         });
 
-        $(function () {
-            //Run inlineSVG support test
-            $.support.inlineSVG();
-
-            // check which scrollTop value should be used by scrolling to 1 immediately at domready
-            // then check what the scroll top is. Android will report 0... others 1
-            // note that this initial scroll won't hide the address bar. It's just for the check.
-
-            // hide iOS browser chrome on load if hideUrlBar is true this is to try and do it as soon as possible
-            if ($.mobile.hideUrlBar) {
-                window.scrollTo(0, 1);
-            }
-
-            // if defaultHomeScroll hasn't been set yet, see if scrollTop is 1
-            // it should be 1 in most browsers, but android treats 1 as 0 (for hiding addr bar)
-            // so if it's 1, use 0 from now on
-            $.mobile.defaultHomeScroll = (!$.support.scrollTop || $.mobile.window.scrollTop() === 1) ? 0 : 1;
-
-            // window load event
-            // hide iOS browser chrome on load if hideUrlBar is true this is as fall back incase we were too early before
-            if ($.mobile.hideUrlBar) {
-                $window.load($.mobile.silentScroll);
-            }
-
-            if (!$.support.cssPointerEvents) {
-                // IE and Opera don't support CSS pointer-events: none that we use to disable link-based buttons
-                // by adding the 'ui-disabled' class to them. Using a JavaScript workaround for those browser.
-                // https://github.com/jquery/jquery-mobile/issues/3558
-
-                // DEPRECATED as of 1.4.0 - remove ui-disabled after 1.4.0 release
-                // only ui-state-disabled should be present thereafter
-                $.mobile.document.delegate(".ui-state-disabled,.ui-disabled", "click",
-                    function (e) {
-                        e.preventDefault();
-                        e.stopImmediatePropagation();
-                    }
-                );
-            }
-        });
     }(jQuery, this));
 
     (function ($, undefined) {

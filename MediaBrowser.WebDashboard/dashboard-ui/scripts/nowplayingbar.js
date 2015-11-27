@@ -209,7 +209,6 @@
         }
 
         bindEvents(elem);
-        $.mobile.loadPage('nowplaying.html');
 
         return elem;
     }

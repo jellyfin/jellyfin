@@ -181,7 +181,7 @@
                             altButtonClass = "ui-btn ui-btn-icon-notext ui-icon-" + spliticon + splitThemeClass;
 
                             last
-                                .attr("title", $.trim(last.getEncodedText()))
+                                .attr("title", $.trim(last.text()))
                                 .addClass(altButtonClass)
                                 .empty();
 
