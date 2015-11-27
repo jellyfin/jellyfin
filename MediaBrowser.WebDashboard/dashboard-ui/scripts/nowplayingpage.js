@@ -764,6 +764,7 @@
 
         var page = this;
 
+        Dashboard.importCss('css/nowplaying.css');
         bindEvents(page);
 
         $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);

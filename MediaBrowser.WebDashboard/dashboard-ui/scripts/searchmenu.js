@@ -6,6 +6,7 @@
 
         self.show = function () {
 
+            Dashboard.importCss('css/search.css');
             $('.headerSearchInput').val('');
 
             require(["jquery", "velocity"], function ($, Velocity) {

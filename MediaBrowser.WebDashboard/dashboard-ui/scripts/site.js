@@ -1924,9 +1924,26 @@ var AppInfo = {};
                 tapDelay: 0
             });
 
+            function parentWithClass(elem, className) {
+
+                while (!elem.classList || !elem.classList.contains(className)) {
+                    elem = elem.parentNode;
+
+                    if (!elem) {
+                        return null;
+                    }
+                }
+
+                return elem;
+            }
+
             // Have to work around this issue of fast click breaking the panel dismiss
-            $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
-                $(this).trigger('click');
+            document.body.addEventListener('touchstart', function (e) {
+
+                var tgt = parentWithClass(e.target, 'ui-panel-dismiss');
+                if (tgt) {
+                    $(tgt).click();
+                }
             });
         });
 

@@ -664,19 +664,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
     transform: translateY(-205%);
 }
 
-.largePanel {
-    width: 270px !important;
-}
-
-/* Make panels larger */
-.largePanelModalOpen.ui-panel-dismiss-position-right {
-    right: 270px !important;
-}
-
-.largePanelModalOpen.ui-panel-dismiss-position-left {
-    left: 270px !important;
-}
-
 .checkboxContainer {
     white-space: nowrap;
 }
@@ -695,22 +682,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
         display: inline-block;
         padding: .7em .5em;
     }
-
-@media all and (min-width: 340px) {
-
-    .largePanel {
-        width: 300px !important;
-    }
-
-    /* Make panels larger */
-    .largePanelModalOpen.ui-panel-dismiss-position-right {
-        right: 300px !important;
-    }
-
-    .largePanelModalOpen.ui-panel-dismiss-position-left {
-        left: 300px !important;
-    }
-}
 
 textarea {
     width: 100%;

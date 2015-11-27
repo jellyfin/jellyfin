@@ -674,6 +674,8 @@
 
         function ensureVideoPlayerElements() {
 
+            Dashboard.importCss('css/mediaplayer-video.css');
+
             var html = '<div id="mediaPlayer" style="display: none;">';
 
             html += '<div class="videoBackdrop">';
@@ -745,7 +747,6 @@
             var div = document.createElement('div');
             div.innerHTML = html;
             document.body.appendChild(div);
-            $(div).trigger('create');
         }
 
         Dashboard.ready(function () {

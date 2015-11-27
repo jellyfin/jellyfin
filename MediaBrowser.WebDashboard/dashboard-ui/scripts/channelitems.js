@@ -223,7 +223,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
-    pageIdOn.on('pageinit', "channelItemsPage", function () {
+    pageIdOn('pageinit', "channelItemsPage", function () {
 
         var page = this;
 

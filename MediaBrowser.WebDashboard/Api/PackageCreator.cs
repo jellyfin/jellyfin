@@ -629,15 +629,11 @@ namespace MediaBrowser.WebDashboard.Api
                                       "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.css",
                                       "css/site.css",
                                       "css/chromecast.css",
-                                      "css/mediaplayer.css",
-                                      "css/mediaplayer-video.css",
                                       "css/librarymenu.css",
                                       "css/librarybrowser.css",
                                       "css/card.css",
                                       "css/notifications.css",
-                                      "css/search.css",
                                       "css/userimage.css",
-                                      "css/nowplaying.css",
                                       "thirdparty/paper-button-style.css"
                                   };
 
