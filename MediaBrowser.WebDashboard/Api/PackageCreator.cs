@@ -500,8 +500,7 @@ namespace MediaBrowser.WebDashboard.Api
                 "apiclient/device.js",
                 "apiclient/credentials.js",
                 "apiclient/events.js",
-                "apiclient/deferred.js",
-                "apiclient/apiclient.js"
+                "apiclient/deferred.js"
             }.ToList();
 
             foreach (var file in commonFiles)

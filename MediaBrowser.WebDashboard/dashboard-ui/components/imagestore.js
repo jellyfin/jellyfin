@@ -125,7 +125,6 @@
                     originalUrl += "&accept=webp";
                 }
 
-                var deferred = DeferredBuilder.Deferred();
                 var key = getCacheKey(originalUrl);
 
                 var fileEntryCallback = function (fileEntry) {

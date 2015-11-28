@@ -2194,6 +2194,7 @@ var AppInfo = {};
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
+        deps.push('apiclient/apiclient');
         deps.push('apiclient/connectionmanager');
 
         require(deps, function () {

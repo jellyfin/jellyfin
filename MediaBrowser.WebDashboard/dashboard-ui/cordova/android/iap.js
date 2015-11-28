@@ -162,12 +162,14 @@
             }).then(function () {
 
                 appStorage.setItem(cacheKey, 'true');
+                return true;
 
             }, function (e) {
 
                 if (e.status == 404) {
                     appStorage.setItem(cacheKey, 'false');
                 }
+                return false;
             });
         }
     }
