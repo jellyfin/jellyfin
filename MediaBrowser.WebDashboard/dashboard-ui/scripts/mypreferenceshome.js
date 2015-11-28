@@ -220,7 +220,7 @@
 
         ApiClient.getUser(userId).done(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).done(function (displayPreferences) {
+            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (displayPreferences) {
 
                 saveUser(page, user, displayPreferences);
 
@@ -285,7 +285,7 @@
 
         ApiClient.getUser(userId).done(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).done(function (result) {
+            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (result) {
 
                 loadForm(page, user, result);
 

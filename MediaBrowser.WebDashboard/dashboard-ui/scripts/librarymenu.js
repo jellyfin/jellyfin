@@ -948,36 +948,33 @@
         Events.on(apiClient, 'websocketmessage', onWebSocketMessage);
     }
 
-    Dashboard.ready(function () {
+    if (window.ApiClient) {
+        initializeApiClient(window.ApiClient);
+    }
 
-        if (window.ApiClient) {
-            initializeApiClient(window.ApiClient);
-        }
+    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
+        initializeApiClient(apiClient);
 
-        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
-            initializeApiClient(apiClient);
-
-        });
-
-        Events.on(ConnectionManager, 'localusersignedin', function () {
-            requiresLibraryMenuRefresh = true;
-            requiresViewMenuRefresh = true;
-            requiresDrawerRefresh = true;
-        });
-
-        Events.on(ConnectionManager, 'localusersignedout', function () {
-            requiresLibraryMenuRefresh = true;
-            requiresViewMenuRefresh = true;
-            requiresDrawerRefresh = true;
-        });
-
-        Events.on(MediaController, 'playerchange', function () {
-            updateCastIcon();
-        });
-
-        var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
-        mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
     });
+
+    Events.on(ConnectionManager, 'localusersignedin', function () {
+        requiresLibraryMenuRefresh = true;
+        requiresViewMenuRefresh = true;
+        requiresDrawerRefresh = true;
+    });
+
+    Events.on(ConnectionManager, 'localusersignedout', function () {
+        requiresLibraryMenuRefresh = true;
+        requiresViewMenuRefresh = true;
+        requiresDrawerRefresh = true;
+    });
+
+    Events.on(MediaController, 'playerchange', function () {
+        updateCastIcon();
+    });
+
+    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+    mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
 
 })(window, document, jQuery, window.devicePixelRatio);
 

@@ -85,7 +85,7 @@
             if (result.Success) {
                 Dashboard.alert(Globalize.translate('MessageKeysLinked'));
             } else {
-                Dashboard.showError(result.ErrorMessage);
+                Dashboard.alert(result.ErrorMessage);
             }
             Logger.log(result);
 
@@ -109,7 +109,7 @@
             if (result.Success) {
                 Dashboard.alert(Globalize.translate('MessageKeyEmailedTo').replace("{0}", email));
             } else {
-                Dashboard.showError(result.ErrorMessage);
+                Dashboard.alert(result.ErrorMessage);
             }
             Logger.log(result);
 

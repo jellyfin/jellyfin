@@ -271,7 +271,7 @@
             function fadeOutLeft(elem, iterations) {
                 var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
                   { opacity: '0', transform: 'translate3d(-100%, 0, 0)', offset: 1 }];
-                var timing = { duration: 400, iterations: iterations };
+                var timing = { duration: 300, iterations: iterations };
                 return elem.animate(keyframes, timing);
             }
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
@@ -279,6 +279,7 @@
 
                     var animateTab = !$.browser.safari;
                     animateTab = false;
+
                     var selected = pages.selected;
                     if (selected != null && animateTab) {
                         var newValue = this.selected;

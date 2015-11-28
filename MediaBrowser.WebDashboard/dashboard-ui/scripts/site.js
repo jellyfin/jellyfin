@@ -16,50 +16,18 @@
     $.support.cors = true;
 
     function onOneDocumentClick() {
+
         document.removeEventListener('click', onOneDocumentClick);
-        WebNotifications.requestPermission();
+
+        if (window.Notification) {
+            Notification.requestPermission();
+        }
     }
     document.addEventListener('click', onOneDocumentClick);
 
 })();
 
 var Dashboard = {
-    jQueryMobileInit: function () {
-
-        // Page
-        //$.mobile.page.prototype.options.theme = "a";
-        //$.mobile.page.prototype.options.headerTheme = "a";
-        //$.mobile.page.prototype.options.contentTheme = "a";
-        //$.mobile.page.prototype.options.footerTheme = "a";
-
-        //$.mobile.button.prototype.options.theme = "c";
-        //$.mobile.listview.prototype.options.dividerTheme = "b";
-
-        //$.mobile.popup.prototype.options.theme = "c";
-        //$.mobile.popup.prototype.options.transition = "none";
-
-        if ($.browser.mobile) {
-            $.mobile.defaultPageTransition = "none";
-        } else {
-            $.mobile.defaultPageTransition = "none";
-        }
-        //$.mobile.collapsible.prototype.options.contentTheme = "a";
-
-        // Make panels a little larger than the defaults
-
-        //$.event.special.swipe.verticalDistanceThreshold = 40;
-        //$.mobile.page.prototype.options.domCache = true;
-
-        $.mobile.hideUrlBar = false;
-        $.mobile.autoInitializePage = false;
-        $.mobile.changePage.defaults.showLoadMsg = false;
-
-        // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
-        $.mobile.nojs = null;
-        $.mobile.degradeInputsWithin = null;
-
-        $.mobile.filterHtml = Dashboard.filterHtml;
-    },
 
     filterHtml: function (html) {
 
@@ -280,11 +248,6 @@ var Dashboard = {
         if (elem) {
             elem.parentNode.removeChild(elem);
         }
-    },
-
-    showError: function (message) {
-
-        Dashboard.alert(message);
     },
 
     updateSystemInfo: function (info) {
@@ -578,10 +541,8 @@ var Dashboard = {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert("Settings saved.");
+        Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
     },
-
-    defaultErrorMessage: Globalize.translate('DefaultErrorMessage'),
 
     processServerConfigurationUpdateResult: function (result) {
 
@@ -1364,7 +1325,7 @@ var Dashboard = {
 
         var newItems = data.ItemsAdded;
 
-        if (!newItems.length || AppInfo.isNativeApp) {
+        if (!newItems.length || AppInfo.isNativeApp || !window.Notification) {
             return;
         }
 
@@ -1389,7 +1350,8 @@ var Dashboard = {
                 var notification = {
                     title: "New " + item.Type,
                     body: item.Name,
-                    timeout: 5000
+                    timeout: 5000,
+                    vibrate: true
                 };
 
                 var imageTags = item.ImageTags || {};
@@ -1403,6 +1365,26 @@ var Dashboard = {
                     });
                 }
 
+                if (Notification.permission === "granted") {
+
+                    var notif = new Notification(notification.title, notification);
+
+                    if (notif.show) {
+                        notif.show();
+                    }
+
+                    if (notification.timeout) {
+                        setTimeout(function () {
+
+                            if (notif.close) {
+                                notif.close();
+                            }
+                            else if (notif.cancel) {
+                                notif.cancel();
+                            }
+                        }, notification.timeout);
+                    }
+                }
                 WebNotifications.show(notification);
             }
         });
@@ -1727,17 +1709,6 @@ var Dashboard = {
 
     exit: function () {
         Dashboard.logout();
-    },
-
-    loadDragula: function (callback) {
-
-        require(['dragula'], function (dragula) {
-
-            Dashboard.importCss('bower_components/dragula.js/dist/dragula.min.css');
-
-            callback(dragula);
-        });
-
     }
 };
 
@@ -2215,6 +2186,8 @@ var AppInfo = {};
             deps.push('bower_components/fetch/fetch');
         }
 
+        deps.push('scripts/mediacontroller');
+
         require(deps, function () {
 
             loadImageCache();
@@ -2247,8 +2220,12 @@ var AppInfo = {};
             require(['cordova/android/logging']);
         }
 
+        deps.push('scripts/librarybrowser');
+        deps.push('scripts/globalize');
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
+        deps.push('scripts/appsettings');
+        deps.push('apiclient/connectionmanager');
 
         require(deps, function () {
 
@@ -2382,6 +2359,11 @@ var AppInfo = {};
         deps.push('scripts/librarylist');
         deps.push('scripts/notifications');
         deps.push('scripts/alphapicker');
+        deps.push('thirdparty/jquery.unveil-custom.js');
+        deps.push('scripts/playlistmanager');
+        deps.push('scripts/sync');
+        deps.push('scripts/backdrops');
+        deps.push('scripts/librarymenu');
 
         require(deps, function () {
 
@@ -2605,4 +2587,4 @@ window.addEventListener("beforeunload", function () {
     }
 });
 
-Dashboard.jQueryMobileInit();
+$.mobile.filterHtml = Dashboard.filterHtml;

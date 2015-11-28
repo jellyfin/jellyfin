@@ -109,7 +109,7 @@
 
         }).fail(function() {
 
-            Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
+            Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
             Dashboard.hideLoadingMsg();
         });
     }

@@ -72,15 +72,15 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate('FileNotFound'));
+                Dashboard.alert(Globalize.translate('FileNotFound'));
                 break;
             case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.showError(Globalize.translate('FileReadError'));
+                Dashboard.alert(Globalize.translate('FileReadError'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError(Globalize.translate('FileReadError'));
+                Dashboard.alert(Globalize.translate('FileReadError'));
         };
     }
 
@@ -92,7 +92,7 @@
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
-        Dashboard.showError(Globalize.translate('FileReadCancelled'));
+        Dashboard.alert(Globalize.translate('FileReadCancelled'));
     }
 
     function setFiles(page, files) {
@@ -317,7 +317,7 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.showError(Globalize.translate('PasswordMatchError'));
+                Dashboard.alert(Globalize.translate('PasswordMatchError'));
             } else {
 
                 Dashboard.showLoadingMsg();

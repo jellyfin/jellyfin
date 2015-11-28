@@ -121,7 +121,7 @@
             Dashboard.hideLoadingMsg();
 
             setTimeout(function () {
-                Dashboard.showError(Globalize.translate('MessageInvalidUser'));
+                Dashboard.alert(Globalize.translate('MessageInvalidUser'));
             }, 300);
         });
 

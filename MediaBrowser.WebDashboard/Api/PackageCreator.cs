@@ -494,7 +494,6 @@ namespace MediaBrowser.WebDashboard.Api
                 "bower_components/requirejs/require.js",
                 "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js",
                 "thirdparty/browser.js",
-                "thirdparty/jquery.unveil-custom.js",
                 "apiclient/logger.js",
                 "apiclient/md5.js",
                 "apiclient/store.js",
@@ -505,8 +504,6 @@ namespace MediaBrowser.WebDashboard.Api
                 "apiclient/deferred.js",
                 "apiclient/apiclient.js"
             }.ToList();
-
-            commonFiles.Add("apiclient/connectionmanager.js");
 
             foreach (var file in commonFiles)
             {
@@ -570,15 +567,7 @@ namespace MediaBrowser.WebDashboard.Api
             return new[]
                             {
                                 "extensions.js",
-                                "globalize.js",
-                                "site.js",
-                                "librarybrowser.js",
-                                "librarymenu.js",
-                                "mediacontroller.js",
-                                "backdrops.js",
-                                "sync.js",
-                                "playlistmanager.js",
-                                "appsettings.js"
+                                "site.js"
                             };
         }
 

@@ -90,87 +90,6 @@ if (!Array.prototype.filter) {
     };
 }
 
-var WebNotifications = {
-
-    show: function (data) {
-
-        if (window.Notification) {
-
-            var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
-
-            if (level === "granted") {
-                var notif = new Notification(data.title, data);
-
-                if (notif.show) {
-                    notif.show();
-                }
-
-                if (data.timeout) {
-                    setTimeout(function () {
-
-                        if (notif.close) {
-                            notif.close();
-                        }
-                        else if (notif.cancel) {
-                            notif.cancel();
-                        }
-                    }, data.timeout);
-                }
-
-                return notif;
-            } else if (level === "default") {
-                Notification.requestPermission(function () {
-                    return WebNotifications.show(data);
-                });
-            }
-        }
-
-        else if (window.webkitNotifications) {
-            if (!webkitNotifications.checkPermission()) {
-                var notif = webkitNotifications.createNotification(data.icon, data.title, data.body);
-                notif.show();
-
-                if (data.timeout) {
-                    setTimeout(function () {
-
-                        if (notif.close) {
-                            notif.close();
-                        }
-                        else if (notif.cancel) {
-                            notif.cancel();
-                        }
-                    }, data.timeout);
-                }
-
-                return notif;
-            } else {
-                webkitNotifications.requestPermission(function () {
-                    return WebNotifications.show(data);
-                });
-            }
-        }
-    },
-
-    requestPermission: function () {
-        if (window.webkitNotifications) {
-            if (!webkitNotifications.checkPermission()) {
-            } else {
-                webkitNotifications.requestPermission(function () {
-                });
-            }
-        }
-        else if (window.Notification) {
-
-            var level = Notification.permissionLevel ? Notification.permissionLevel() : Notification.permission;
-
-            if (level === "default") {
-                Notification.requestPermission(function () {
-                });
-            }
-        }
-    }
-};
-
 /*
  * Javascript Humane Dates
  * Copyright (c) 2008 Dean Landolt (deanlandolt.com)
@@ -227,30 +146,6 @@ function humane_date(date_str) {
         return Math.round(seconds / 4730400000) + ' centuries' + token;
 
     return date_str;
-}
-
-function humane_elapsed(firstDateStr, secondDateStr) {
-    var dt1 = new Date(firstDateStr);
-    var dt2 = new Date(secondDateStr);
-    var seconds = (dt2.getTime() - dt1.getTime()) / 1000;
-    var numdays = Math.floor((seconds % 31536000) / 86400);
-    var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
-    var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
-    var numseconds = Math.round((((seconds % 31536000) % 86400) % 3600) % 60);
-
-    var elapsedStr = '';
-    elapsedStr += numdays == 1 ? numdays + ' day ' : '';
-    elapsedStr += numdays > 1 ? numdays + ' days ' : '';
-    elapsedStr += numhours == 1 ? numhours + ' hour ' : '';
-    elapsedStr += numhours > 1 ? numhours + ' hours ' : '';
-    elapsedStr += numminutes == 1 ? numminutes + ' minute ' : '';
-    elapsedStr += numminutes > 1 ? numminutes + ' minutes ' : '';
-    elapsedStr += elapsedStr.length > 0 ? 'and ' : '';
-    elapsedStr += numseconds == 1 ? numseconds + ' second' : '';
-    elapsedStr += numseconds == 0 || numseconds > 1 ? numseconds + ' seconds' : '';
-
-    return elapsedStr;
-
 }
 
 function getWindowUrl(win) {
@@ -358,25 +253,6 @@ function parseISO8601Date(s, options) {
 
     return new Date(ms);
 }
-
-
-//convert Ticks to human hr:min:sec format
-function ticks_to_human(str) {
-
-    var in_seconds = (str / 10000000);
-    var hours = Math.floor(in_seconds / 3600);
-    var minutes = Math.floor((in_seconds - (hours * 3600)) / 60);
-    var seconds = '0' + Math.round(in_seconds - (hours * 3600) - (minutes * 60));
-
-    var time = '';
-
-    if (hours > 0) time += hours + ":";
-    if (minutes < 10 && hours == 0) time += minutes;
-    else time += ('0' + minutes).substr(-2);
-    time += ":" + seconds.substr(-2);
-
-    return time;
-};
 
 // This only exists because the polymer elements get distorted when using regular jquery show/hide
 $.fn.visible = function (visible) {

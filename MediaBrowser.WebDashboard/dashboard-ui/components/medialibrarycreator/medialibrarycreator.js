@@ -31,7 +31,7 @@
 
         }).fail(function () {
 
-            Dashboard.showError(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
         });
 
         return false;

@@ -132,9 +132,18 @@
             Events.trigger(self, 'requestfail', [
             {
                 url: this.url,
-                type: this.type,
                 status: e.status,
                 errorCode: e.getResponseHeader("X-Application-Error-Code")
+            }]);
+        }
+
+        function onFetchFail(url, response) {
+
+            Events.trigger(self, 'requestfail', [
+            {
+                url: url,
+                status: response.status,
+                errorCode: response.headers ? response.headers["X-Application-Error-Code"] : null
             }]);
         }
 
@@ -195,6 +204,13 @@
             return deferred.promise();
         };
 
+        function getFetchPromise(request) {
+            return fetch(request.url, {
+                headers: request.headers,
+                method: request.type
+            });
+        }
+
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
@@ -213,28 +229,41 @@
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
                 logger.log('Requesting url without automatic networking: ' + request.url);
 
-                return fetch(request.url, {
-                    headers: request.headers,
-                    method: request.type
+                return new Promise(function (resolve, reject) {
+
+                    getFetchPromise(request).then(function (response) {
+
+                        if (response.status < 400) {
+                            resolve(response);
+                        } else {
+                            onFetchFail(request.url, response);
+                            reject();
+                        }
+
+                    }, function () {
+                        onFetchFail(request.url, {});
+                        reject();
+                    });
                 });
             }
 
-            var deferred = DeferredBuilder.Deferred();
-            self.ajaxWithFailover(request, deferred, true);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                self.fetchWithFailover(request, resolve, reject, true);
+            });
         };
 
         self.fetchJSON = function (url, includeAuthorization) {
 
             return self.fetch({
-                
+
                 url: url,
                 type: 'GET',
                 headers: {
                     accept: 'application/json'
                 }
 
-            }, includeAuthorization).then(function(response) {
+            }, includeAuthorization).then(function (response) {
                 return response.json();
             });
         };
@@ -317,6 +346,56 @@
             }, 500);
             return deferred.promise();
         }
+
+        self.fetchWithFailover = function (request, resolve, reject, enableReconnection) {
+
+            logger.log("Requesting " + request.url);
+
+            request.timeout = 30000;
+
+            getFetchPromise(request).then(function (response) {
+
+                if (response.status < 400) {
+                    resolve(response);
+                } else {
+                    onFetchFail(request.url, response);
+                    reject();
+                }
+
+            }, function () {
+
+                logger.log("Request failed to " + request.url);
+
+                // http://api.jquery.com/jQuery.ajax/
+                if (enableReconnection) {
+
+                    logger.log("Attempting reconnection");
+
+                    var previousServerAddress = self.serverAddress();
+
+                    tryReconnect().done(function () {
+
+                        logger.log("Reconnect succeesed");
+                        request.url = request.url.replace(previousServerAddress, self.serverAddress());
+
+                        self.fetchWithFailover(request, resolve, reject, false);
+
+                    }).fail(function () {
+
+                        logger.log("Reconnect failed");
+                        onFetchFail(request.url, {});
+                        reject();
+
+                    });
+                } else {
+
+                    logger.log("Reporting request failure");
+
+                    onFetchFail(request.url, {});
+                    reject();
+                }
+            });
+        };
 
         self.ajaxWithFailover = function (request, deferred, enableReconnection) {
 
@@ -1170,7 +1249,7 @@
                 client: app
             });
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         self.updateDisplayPreferences = function (id, obj, userId, app) {

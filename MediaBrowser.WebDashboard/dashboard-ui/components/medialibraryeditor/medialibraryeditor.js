@@ -17,7 +17,7 @@
 
         }).fail(function () {
 
-            Dashboard.showError(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
         });
     }
 
@@ -43,7 +43,7 @@
 
                 }).fail(function () {
 
-                    Dashboard.showError(Globalize.translate('DefaultErrorMessage'));
+                    Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
                 });
             }
         });

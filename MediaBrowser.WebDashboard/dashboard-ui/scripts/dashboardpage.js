@@ -1276,7 +1276,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function dismissWelcome(page, userId) {
 
-        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').then(function (result) {
 
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
@@ -1289,7 +1289,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
         var userId = Dashboard.getCurrentUserId();
 
-        apiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+        apiClient.getDisplayPreferences('dashboard', userId, 'dashboard').then(function (result) {
 
             if (result.CustomPrefs[welcomeTourKey] == welcomeDismissValue) {
                 $('.welcomeMessage', page).hide();

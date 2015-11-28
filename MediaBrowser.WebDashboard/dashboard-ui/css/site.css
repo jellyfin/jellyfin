@@ -1562,14 +1562,6 @@ progress {
     user-drag: none;
 }
 
-.nativeApp input {
-    -webkit-user-select: auto !important;
-    -khtml-user-select: auto !important;
-    -moz-user-select: auto !important;
-    -ms-user-select: auto !important;
-    user-select: auto !important;
-}
-
 .supporterMembershipDisabled .tabSupporterMembership {
     display: none;
 }

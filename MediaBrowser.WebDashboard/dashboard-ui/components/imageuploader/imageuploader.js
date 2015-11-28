@@ -11,12 +11,12 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate('MessageFileNotFound'));
+                Dashboard.alert(Globalize.translate('MessageFileNotFound'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError(Globalize.translate('MessageFileReadError'));
+                Dashboard.alert(Globalize.translate('MessageFileReadError'));
                 break;
         };
     }

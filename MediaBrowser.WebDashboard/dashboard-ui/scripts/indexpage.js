@@ -133,7 +133,7 @@
 
     function dismissWelcome(page, userId) {
 
-        getDisplayPreferences('home', userId).done(function (result) {
+        getDisplayPreferences('home', userId).then(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
             ApiClient.updateDisplayPreferences('home', result, userId, AppSettings.displayPreferencesKey());
@@ -201,11 +201,11 @@
 
                 Dashboard.showLoadingMsg();
 
-                getDisplayPreferences('home', userId).done(function (result) {
+                getDisplayPreferences('home', userId).then(function (result) {
 
                     Dashboard.getCurrentUser().then(function (user) {
 
-                        loadSections(tabContent, user, result).done(function () {
+                        loadSections(tabContent, user, result).then(function () {
 
                             if (!AppInfo.isNativeApp) {
                                 showWelcomeIfNeeded(page, result);
@@ -307,9 +307,7 @@
 
     function getDisplayPreferences(key, userId) {
 
-        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey()).done(function (result) {
-
-        });
+        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey());
     }
 
     window.HomePage = {
