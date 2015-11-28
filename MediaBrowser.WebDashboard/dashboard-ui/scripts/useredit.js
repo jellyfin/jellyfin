@@ -109,15 +109,16 @@
 
                     callback: actionCallback
 
-                }).fail(function () {
+                });
+            }).fail(function () {
 
-                    Dashboard.alert({
+                Dashboard.alert({
 
-                        message: Globalize.translate('ErrorAddingEmbyConnectAccount')
+                    message: Globalize.translate('ErrorAddingEmbyConnectAccount')
 
-                    });
                 });
             });
+
         } else {
             if (noActionCallback) {
                 noActionCallback();
