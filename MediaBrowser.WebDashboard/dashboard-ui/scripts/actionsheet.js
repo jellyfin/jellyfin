@@ -54,7 +54,7 @@
         }
 
         // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-        var isScrollable = !$.browser.safari;
+        var isScrollable = !browserInfo.safari;
 
         if (isScrollable) {
             html += '<paper-dialog-scrollable>';
@@ -108,7 +108,7 @@
             });
 
             // Seeing an issue in some non-chrome browsers where this is requiring a double click
-            var eventName = $.browser.chrome || $.browser.safari ? 'click' : 'mousedown';
+            var eventName = browserInfo.chrome || browserInfo.safari ? 'click' : 'mousedown';
 
             $('.actionSheetMenuItem', dlg).on(eventName, function () {
 

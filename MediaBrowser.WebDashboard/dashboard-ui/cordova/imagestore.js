@@ -52,7 +52,7 @@
         }
 
         function normalizeReturnUrl(url) {
-            if ($.browser.safari) {
+            if (browserInfo.safari) {
 
                 // Use the embedded server for iOS8, and also if we don't know the iOS version, just to be safe
                 var index = url.indexOf('/Documents');
@@ -68,7 +68,7 @@
 
         self.getImageUrl = function (originalUrl) {
 
-            if ($.browser.android && originalUrl.indexOf('tag=') != -1) {
+            if (browserInfo.android && originalUrl.indexOf('tag=') != -1) {
                 originalUrl += "&accept=webp";
             }
 
@@ -108,7 +108,7 @@
                 setImageIntoElement(elem, url);
             }
 
-            //if ($.browser.safari) {
+            //if (browserInfo.safari) {
             //    setImageWithSdWebImage(elem, url);
             //    return;
             //}

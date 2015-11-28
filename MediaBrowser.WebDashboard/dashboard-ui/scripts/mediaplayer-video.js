@@ -959,7 +959,7 @@
 
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
-                    if ($.browser.safari && !mediaSource.RunTimeTicks) {
+                    if (browserInfo.safari && !mediaSource.RunTimeTicks) {
 
                         Dashboard.showLoadingMsg();
 
@@ -1110,7 +1110,7 @@
 
             }).on("click.mediaplayerevent", function (e) {
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
                     if (this.paused()) {
                         self.unpause();
                     } else {
@@ -1120,7 +1120,7 @@
 
             }).on("dblclick.mediaplayerevent", function () {
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
                     self.toggleFullscreen();
                 }
             });

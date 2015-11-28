@@ -205,7 +205,7 @@
 
         elem = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
 
-        if (($.browser.safari || !AppInfo.isNativeApp) && $.browser.mobile) {
+        if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
             // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
             elem.classList.add('noMediaProgress');
         }

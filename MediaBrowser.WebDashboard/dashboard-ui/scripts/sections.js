@@ -14,7 +14,7 @@
 
                 var view = items[i];
 
-                if (AppInfo.isNativeApp && $.browser.safari && view.CollectionType == 'livetv') {
+                if (AppInfo.isNativeApp && browserInfo.safari && view.CollectionType == 'livetv') {
                     continue;
                 }
 
@@ -52,7 +52,7 @@
 
     function enableScrollX() {
 
-        return $.browser.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {
@@ -374,7 +374,7 @@
 
                 html += '</div>';
 
-                var scrollX = enableScrollX() && $.browser.safari && screenWidth > 800;
+                var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
 
                 if (scrollX) {
                     html += '<div class="hiddenScrollX itemsContainer homeTopViews">';

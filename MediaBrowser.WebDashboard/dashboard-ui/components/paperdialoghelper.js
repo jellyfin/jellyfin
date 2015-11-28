@@ -52,10 +52,10 @@
 
     function enableHashChange() {
         // It's not firing popstate in response to hashbang changes
-        if ($.browser.msie) {
+        if (browserInfo.msie) {
             return false;
         }
-        if ($.browser.edge) {
+        if (browserInfo.edge) {
             return false;
         }
         return true;
@@ -92,7 +92,7 @@
         // but not needed here since this is already on top of an existing dialog
         // but skip it in IE because it's causing the entire browser to hang
         // Also have to disable for firefox because it's causing select elements to not be clickable
-        if (!$.browser.msie && !$.browser.mozilla) {
+        if (!browserInfo.msie && !browserInfo.mozilla) {
             if (options.modal !== false) {
                 dlg.setAttribute('modal', 'modal');
             }

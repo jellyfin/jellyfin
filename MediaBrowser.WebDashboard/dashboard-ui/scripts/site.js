@@ -1505,7 +1505,7 @@ var Dashboard = {
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
 
-        if (Dashboard.isRunningInCordova() && !$.browser.safari) {
+        if (Dashboard.isRunningInCordova() && !browserInfo.safari) {
             caps.SupportsOfflineAccess = true;
             caps.SupportsSync = true;
             caps.SupportsContentUploading = true;
@@ -1558,27 +1558,27 @@ var Dashboard = {
 
             var name;
 
-            if ($.browser.chrome) {
+            if (browserInfo.chrome) {
                 name = "Chrome";
-            } else if ($.browser.edge) {
+            } else if (browserInfo.edge) {
                 name = "Edge";
-            } else if ($.browser.mozilla) {
+            } else if (browserInfo.mozilla) {
                 name = "Firefox";
-            } else if ($.browser.msie) {
+            } else if (browserInfo.msie) {
                 name = "Internet Explorer";
             } else {
                 name = "Web Browser";
             }
 
-            if ($.browser.version) {
-                name += " " + $.browser.version;
+            if (browserInfo.version) {
+                name += " " + browserInfo.version;
             }
 
-            if ($.browser.ipad) {
+            if (browserInfo.ipad) {
                 name += " Ipad";
-            } else if ($.browser.iphone) {
+            } else if (browserInfo.iphone) {
                 name += " Iphone";
-            } else if ($.browser.android) {
+            } else if (browserInfo.android) {
                 name += " Android";
             }
             return name;
@@ -1680,9 +1680,9 @@ var AppInfo = {};
 
         AppInfo.enableAppStorePolicy = isCordova;
 
-        var isIOS = $.browser.ipad || $.browser.iphone;
-        var isAndroid = $.browser.android;
-        var isMobile = $.browser.mobile;
+        var isIOS = browserInfo.ipad || browserInfo.iphone;
+        var isAndroid = browserInfo.android;
+        var isMobile = browserInfo.mobile;
 
         if (isIOS) {
 
@@ -1949,7 +1949,7 @@ var AppInfo = {};
             return jQuery;
         });
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("appstorage", ["cordova/android/appstorage"]);
         } else {
             define('appstorage', [], function () {
@@ -1970,15 +1970,15 @@ var AppInfo = {};
             define("localassetmanager", ["apiclient/localassetmanager"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
-        else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+        else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
             define("audiorenderer", ["cordova/ios/vlcplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
@@ -1987,7 +1987,7 @@ var AppInfo = {};
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.android) {
+        if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("localsync", ["cordova/android/localsync"]);
         }
         else {
@@ -2029,7 +2029,7 @@ var AppInfo = {};
             define("sharingwidget", ["scripts/sharingwidget"]);
         }
 
-        if (Dashboard.isRunningInCordova() && $.browser.safari) {
+        if (Dashboard.isRunningInCordova() && browserInfo.safari) {
             define("searchmenu", ["cordova/searchmenu"]);
         } else {
             define("searchmenu", ["scripts/searchmenu"]);
@@ -2131,13 +2131,13 @@ var AppInfo = {};
 
         drawer.drawerWidth = drawerWidth + "px";
 
-        if ($.browser.safari) {
+        if (browserInfo.safari) {
             drawer.disableEdgeSwipe = true;
         }
 
         var deps = [];
 
-        if (AppInfo.isNativeApp && $.browser.android) {
+        if (AppInfo.isNativeApp && browserInfo.android) {
             require(['cordova/android/logging']);
         }
 
@@ -2153,7 +2153,7 @@ var AppInfo = {};
 
         require(deps, function () {
 
-            if (Dashboard.isRunningInCordova() && $.browser.android) {
+            if (Dashboard.isRunningInCordova() && browserInfo.android) {
                 AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
 
                 // TODO: This is going to exclude it from both playback and sync, so improve on this
@@ -2163,7 +2163,7 @@ var AppInfo = {};
 
                 AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
             }
-            else if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
 
                 AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
 
@@ -2226,47 +2226,47 @@ var AppInfo = {};
 
     function onAppReady(promiseResolve) {
 
-        if ($.browser.msie) {
+        if (browserInfo.msie) {
             require(['devices/ie/ie']);
         }
 
         // Do these now to prevent a flash of content
-        if (AppInfo.isNativeApp && $.browser.android) {
+        if (AppInfo.isNativeApp && browserInfo.android) {
             Dashboard.importCss('devices/android/android.css');
-        } else if (AppInfo.isNativeApp && $.browser.safari) {
+        } else if (AppInfo.isNativeApp && browserInfo.safari) {
             Dashboard.importCss('devices/ios/ios.css');
-        } else if (!$.browser.android) {
+        } else if (!browserInfo.android) {
             Dashboard.importCss('devices/android/android.css');
         }
 
         loadTheme();
 
-        if ($.browser.safari && $.browser.mobile) {
+        if (browserInfo.safari && browserInfo.mobile) {
             initFastClick();
         }
 
         if (Dashboard.isRunningInCordova()) {
             require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
 
-            if ($.browser.android) {
+            if (browserInfo.android) {
                 require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
             } else {
                 require(['cordova/volume']);
             }
 
-            if ($.browser.safari) {
+            if (browserInfo.safari) {
                 require(['cordova/ios/orientation']);
             }
 
         } else {
-            if ($.browser.chrome) {
+            if (browserInfo.chrome) {
                 require(['scripts/chromecast']);
             }
         }
 
         var deps = [];
 
-        if (AppInfo.isNativeApp && $.browser.safari) {
+        if (AppInfo.isNativeApp && browserInfo.safari) {
 
             if (Dashboard.capabilities().SupportsSync) {
                 deps.push('cordova/ios/backgroundfetch');
@@ -2317,7 +2317,7 @@ var AppInfo = {};
         cordova.getAppVersion.getVersionNumber(function (appVersion) {
             var capablities = Dashboard.capabilities();
 
-            var name = $.browser.android ? "Emby for Android Mobile" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+            var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
 
             // Remove special characters
             var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
@@ -2399,7 +2399,7 @@ var AppInfo = {};
             browser.mobile = true;
         }
 
-        jQuery.browser = browser;
+        window.browserInfo = browser;
     }
 
     initRequire();
@@ -2519,7 +2519,7 @@ pageClassOn('pageshow', "page", function () {
         page.classList.remove('ui-body-a');
     }
 
-    if (currentTheme != 'a' && !$.browser.mobile) {
+    if (currentTheme != 'a' && !browserInfo.mobile) {
         document.body.classList.add('darkScrollbars');
     } else {
         document.body.classList.remove('darkScrollbars');

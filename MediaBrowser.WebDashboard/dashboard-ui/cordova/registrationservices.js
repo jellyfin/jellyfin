@@ -22,7 +22,7 @@
 
         } : null;
 
-        var prefix = $.browser.android ? 'android' : 'ios';
+        var prefix = browserInfo.android ? 'android' : 'ios';
 
         IapManager.isUnlockedOverride(feature).then(function (isUnlocked) {
 
@@ -430,7 +430,7 @@
         Events.on(IapManager, 'productupdated', onProductUpdated);
     }
 
-    if ($.browser.android) {
+    if (browserInfo.android) {
         requirejs(['cordova/android/iap'], onIapManagerLoaded);
     } else {
         requirejs(['cordova/iap'], onIapManagerLoaded);

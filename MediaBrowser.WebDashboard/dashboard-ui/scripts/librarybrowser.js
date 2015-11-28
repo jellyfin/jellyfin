@@ -48,7 +48,7 @@
 
         getDefaultItemsView: function (view, mobileView) {
 
-            return $.browser.mobile ? mobileView : view;
+            return browserInfo.mobile ? mobileView : view;
 
         },
 
@@ -132,7 +132,7 @@
 
             if (AppInfo.isNativeApp) {
                 cacheDuration = 300000;
-            } else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
+            } else if (browserInfo.ipad || browserInfo.iphone || browserInfo.android) {
                 cacheDuration = 10000;
             } else {
                 cacheDuration = 30000;
@@ -162,7 +162,7 @@
                 return false;
             }
 
-            if ($.browser.safari) {
+            if (browserInfo.safari) {
                 return false;
             }
 
@@ -245,13 +245,13 @@
         configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
 
             // Causing iron-select to not fire in IE and safari
-            if ($.browser.chrome) {
+            if (browserInfo.chrome) {
                 tabs.noink = true;
             }
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
-                if ($.browser.safari) {
+                if (browserInfo.safari) {
                     tabs.noSlide = true;
                     tabs.noBar = true;
                 } else {
@@ -298,7 +298,7 @@
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                 tabs.addEventListener('iron-select', function () {
 
-                    var animateTab = !$.browser.safari;
+                    var animateTab = !browserInfo.safari;
                     animateTab = false;
 
                     var selected = pages.selected;
@@ -413,7 +413,7 @@
                         var tabs = this.querySelector('paper-tabs');
 
                         // For some reason the live tv page will not switch tabs in IE and safari
-                        var delay = $.browser.chrome ? 0 : 100;
+                        var delay = browserInfo.chrome ? 0 : 100;
 
                         setTimeout(function () {
                             var noSlide = tabs.noSlide;
@@ -1648,7 +1648,7 @@
 
                 var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
 
                     shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
                 }
@@ -2798,7 +2798,7 @@
             // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
             // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
             var isScrollable = false;
-            if ($.browser.android) {
+            if (browserInfo.android) {
                 isScrollable = true;
             }
 

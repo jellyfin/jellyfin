@@ -120,7 +120,7 @@
                 })[0].maxHeight;
             }
 
-            var isVlc = AppInfo.isNativeApp && $.browser.android;
+            var isVlc = AppInfo.isNativeApp && browserInfo.android;
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
             var supportedFormats = getSupportedFormats();
@@ -147,7 +147,7 @@
                 });
             }
 
-            if ($.browser.chrome) {
+            if (browserInfo.chrome) {
                 profile.DirectPlayProfiles.push({
                     Container: 'mkv,mov',
                     Type: 'Video',
@@ -211,7 +211,7 @@
                     Protocol: 'hls'
                 });
 
-                if (canPlayAac && $.browser.safari && !AppInfo.isNativeApp) {
+                if (canPlayAac && browserInfo.safari && !AppInfo.isNativeApp) {
                     profile.TranscodingProfiles.push({
                         Container: 'ts',
                         Type: 'Audio',
@@ -252,7 +252,7 @@
                 Protocol: 'http'
             });
 
-            if (canPlayAac && $.browser.safari) {
+            if (canPlayAac && browserInfo.safari) {
 
                 profile.TranscodingProfiles.push({
                     Container: 'aac',
@@ -542,7 +542,7 @@
 
             var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
             // Ease up with safari because it doesn't perform as well
-            if ($.browser.safari) {
+            if (browserInfo.safari) {
                 intervalTime = Math.max(intervalTime, 5000);
             }
             self.lastProgressReport = 0;
@@ -1881,7 +1881,7 @@
                 return true;
             }
 
-            if ($.browser.mobile) {
+            if (browserInfo.mobile) {
                 return false;
             }
 

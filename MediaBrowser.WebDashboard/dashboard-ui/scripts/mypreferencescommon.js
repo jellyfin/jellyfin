@@ -31,14 +31,14 @@ pageIdOn('pageshow', 'myPreferencesMenuPage', function () {
 
         page.querySelector('.headerUser').innerHTML = user.Name;
 
-        if (AppInfo.isNativeApp && $.browser.safari && user.Policy.IsAdministrator) {
+        if (AppInfo.isNativeApp && browserInfo.safari && user.Policy.IsAdministrator) {
             page.querySelector('.adminSection').classList.remove('hide');
         } else {
             page.querySelector('.adminSection').classList.add('hide');
         }
     });
 
-    if (AppInfo.isNativeApp && $.browser.safari) {
+    if (AppInfo.isNativeApp && browserInfo.safari) {
         page.querySelector('.userSection').classList.remove('hide');
     } else {
         page.querySelector('.userSection').classList.add('hide');

@@ -4,7 +4,7 @@
 
         var html = '';
 
-        var backIcon = $.browser.safari ? 'chevron-left' : 'arrow-back';
+        var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
 
@@ -37,7 +37,7 @@
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
-        if (!$.browser.mobile && !Dashboard.isConnectMode()) {
+        if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
@@ -162,7 +162,7 @@
     }
     function onMainDrawerOpened() {
 
-        if ($.browser.mobile) {
+        if (browserInfo.mobile) {
             document.body.classList.add('bodyWithPopupOpen');
         }
 
@@ -330,7 +330,7 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
-        if (!$.browser.mobile) {
+        if (!browserInfo.mobile) {
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
         }
         html += '</div>';
@@ -514,7 +514,7 @@
     }
 
     function showUserAtTop() {
-        return Dashboard.isConnectMode() || $.browser.mobile;
+        return Dashboard.isConnectMode() || browserInfo.mobile;
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -548,7 +548,7 @@
                     closeMainDrawer();
 
                     // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                    var delay = $.browser.mobile ? 350 : 0;
+                    var delay = browserInfo.mobile ? 350 : 0;
 
                     setTimeout(function () {
                         if (action) {
@@ -573,7 +573,7 @@
                 closeMainDrawer();
 
                 // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                var delay = $.browser.mobile ? 350 : 0;
+                var delay = browserInfo.mobile ? 350 : 0;
 
                 setTimeout(function () {
                     Dashboard.logout();
@@ -620,7 +620,7 @@
             var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
             if (mainDrawerButton) {
-                if (!visible && $.browser.mobile) {
+                if (!visible && browserInfo.mobile) {
                     mainDrawerButton.classList.remove('hide');
                 } else {
                     mainDrawerButton.classList.remove('hide');
@@ -837,7 +837,7 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
+            if (page.getAttribute('data-menubutton') == 'false' && browserInfo.mobile) {
                 mainDrawerButton.classList.remove('hide');
             } else {
                 mainDrawerButton.classList.remove('hide');
@@ -868,7 +868,7 @@
             document.body.classList.add('hideMainDrawer');
         }
 
-        if (!Dashboard.isConnectMode() && !$.browser.mobile) {
+        if (!Dashboard.isConnectMode() && !browserInfo.mobile) {
             darkDrawer = true;
         }
 

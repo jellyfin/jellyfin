@@ -20,7 +20,7 @@
 
             Dashboard.importCss('themes/halloween/style.css');
 
-            if (!$.browser.mobile) {
+            if (!browserInfo.mobile) {
 
                 if (!page.classList.contains('itemDetailPage')) {
                     Backdrops.setBackdropUrl(page, 'themes/halloween/bg.jpg');

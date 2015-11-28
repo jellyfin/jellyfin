@@ -4,7 +4,7 @@
 
     function getDefaultSection(index) {
 
-        if (AppInfo.isNativeApp && $.browser.safari) {
+        if (AppInfo.isNativeApp && browserInfo.safari) {
 
             switch (index) {
 

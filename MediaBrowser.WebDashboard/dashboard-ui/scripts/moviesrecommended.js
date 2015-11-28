@@ -11,7 +11,7 @@
     }
 
     function enableScrollX() {
-        return $.browser.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function getPortraitShape() {

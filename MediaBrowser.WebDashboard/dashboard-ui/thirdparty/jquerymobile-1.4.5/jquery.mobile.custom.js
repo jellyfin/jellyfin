@@ -2081,7 +2081,7 @@
                 }
 
                 // TODO deprecate prevPage in favor of previous
-                if (!prefix && $.browser.msie) {
+                if (!prefix && browserInfo.msie) {
 
                     // Add a delay for IE because it seems to be having issues with web components
                     var curr = this;

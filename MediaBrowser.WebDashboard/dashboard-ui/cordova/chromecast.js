@@ -510,7 +510,7 @@
             currentSession.on('message', handleMessage);
             currentSession.on('disconnect', handleSessionDisconnect);
 
-            if (connectToSession || $.browser.safari) {
+            if (connectToSession || browserInfo.safari) {
                 currentSession.connect().success(function () {
 
                     onWebAppSessionConnect(currentSession, device);

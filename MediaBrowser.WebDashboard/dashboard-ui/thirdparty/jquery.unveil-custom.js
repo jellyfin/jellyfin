@@ -204,7 +204,7 @@
             elem.setAttribute("src", url);
         }
 
-        if ($.browser.chrome && !$.browser.mobile) {
+        if (browserInfo.chrome && !browserInfo.mobile) {
             if (!elem.classList.contains('noFade')) {
                 fadeIn(elem, 1);
             }

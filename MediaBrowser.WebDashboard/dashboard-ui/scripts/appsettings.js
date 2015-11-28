@@ -68,7 +68,7 @@
                 return val != 'false';
             }
 
-            if ($.browser.mobile) {
+            if (browserInfo.mobile) {
                 return false;
             }
 

@@ -886,7 +886,7 @@
 
         var deferred = DeferredBuilder.Deferred();
 
-        if ($.browser.android) {
+        if (browserInfo.android) {
             deferred.resolveWith(null, ['file://' + path]);
             return deferred.promise();
         }

@@ -942,7 +942,7 @@
 
             $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
 
-            if (!$.browser.mobile) {
+            if (!browserInfo.mobile) {
                 shake(btnSelectionPanelOptions, 1);
             }
         }

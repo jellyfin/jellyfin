@@ -483,7 +483,7 @@
                 onProgramGridScroll(tabContent, this);
             });
 
-            if ($.browser.mobile) {
+            if (browserInfo.mobile) {
                 tabContent.querySelector('.tvGuide').classList.add('mobileGuide');
             } else {
 
