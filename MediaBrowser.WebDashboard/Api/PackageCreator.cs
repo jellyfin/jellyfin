@@ -491,16 +491,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var commonFiles = new[]
             {
-                "bower_components/requirejs/require.js",
-                "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js",
-                "thirdparty/browser.js",
-                "apiclient/logger.js",
-                "apiclient/md5.js",
-                "apiclient/store.js",
-                "apiclient/device.js",
-                "apiclient/credentials.js",
-                "apiclient/events.js",
-                "apiclient/deferred.js"
+                "bower_components/requirejs/require.js"
             }.ToList();
 
             foreach (var file in commonFiles)
@@ -607,12 +598,9 @@ namespace MediaBrowser.WebDashboard.Api
                                       "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css",
                                       "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.css",
                                       "css/site.css",
-                                      "css/chromecast.css",
                                       "css/librarymenu.css",
                                       "css/librarybrowser.css",
                                       "css/card.css",
-                                      "css/notifications.css",
-                                      "css/userimage.css",
                                       "thirdparty/paper-button-style.css"
                                   };
 
