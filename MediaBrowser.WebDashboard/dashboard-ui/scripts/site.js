@@ -485,7 +485,7 @@ var Dashboard = {
 
             elem = document.createElement('modalLoading');
             elem.classList.add('modalLoading');
-            elem.style.display = 'none';
+            elem.classList.add('hide');
             document.body.appendChild(elem);
 
         }
@@ -494,12 +494,12 @@ var Dashboard = {
     },
 
     showModalLoadingMsg: function () {
-        Dashboard.getModalLoadingMsg().show();
+        Dashboard.getModalLoadingMsg().classList.remove('hide');
         Dashboard.showLoadingMsg();
     },
 
     hideModalLoadingMsg: function () {
-        Dashboard.getModalLoadingMsg().hide();
+        Dashboard.getModalLoadingMsg().classList.add('hide');
         Dashboard.hideLoadingMsg();
     },
 
