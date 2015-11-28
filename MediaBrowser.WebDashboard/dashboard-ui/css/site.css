@@ -1614,3 +1614,13 @@ progress {
     .scheduledTaskPaperIconItem paper-progress {
         display: inline-block;
     }
+
+.imageDropZone {
+    border: 2px dashed #bbb;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 25px;
+    text-align: center;
+    color: #bbb;
+}

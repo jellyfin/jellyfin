@@ -42,12 +42,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             Stream resourceStream;
 
-            if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
-            {
-                resourceStream = await GetAllJavascript(mode, localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
-                enableMinification = false;
-            }
-            else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
+            if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
             {
                 resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
                 enableMinification = false;
@@ -441,11 +436,21 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var builder = new StringBuilder();
 
+            builder.Append("<script>");
+            if (!string.IsNullOrWhiteSpace(mode))
+            {
+                builder.AppendFormat("window.appMode='{0}';", mode);
+            }
+
+            builder.AppendFormat("window.dashboardVersion='{0}';", version);
+            builder.Append("</script>");
+
             var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
             var files = new List<string>
             {
-                "scripts/all.js" + versionString
+                "bower_components/requirejs/require.js" + versionString,
+                "scripts/site.js" + versionString
             };
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
@@ -453,111 +458,19 @@ namespace MediaBrowser.WebDashboard.Api
                 files.Insert(0, "cordova.js");
             }
 
-            var tags = files.Select(s => string.Format("<script src=\"{0}\" async></script>", s)).ToArray();
+            var tags = files.Select(s =>
+            {
+                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return string.Format("<script src=\"{0}\" async></script>", s);
+                }
+                return string.Format("<script src=\"{0}\"></script>", s);
+
+            }).ToArray();
 
             builder.Append(string.Join(string.Empty, tags));
 
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// Gets a stream containing all concatenated javascript
-        /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllJavascript(string mode, string culture, string version, bool enableMinification)
-        {
-            var memoryStream = new MemoryStream();
-            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
-
-            await AppendResource(memoryStream, "bower_components/jquery/dist/jquery.min.js", newLineBytes).ConfigureAwait(false);
-
-            //await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
-            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(mode))
-            {
-                var appModeBytes = Encoding.UTF8.GetBytes(string.Format("window.appMode='{0}';", mode));
-                await memoryStream.WriteAsync(appModeBytes, 0, appModeBytes.Length).ConfigureAwait(false);
-            }
-
-            // Write the version string for the dashboard comparison function
-            var versionString = string.Format("window.dashboardVersion='{0}';", version);
-            var versionBytes = Encoding.UTF8.GetBytes(versionString);
-
-            await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
-            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-
-            var builder = new StringBuilder();
-
-            var commonFiles = new[]
-            {
-                "bower_components/requirejs/require.js"
-            }.ToList();
-
-            foreach (var file in commonFiles)
-            {
-                using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            foreach (var file in GetScriptFiles())
-            {
-                var path = GetDashboardResourcePath("scripts/" + file);
-
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-                {
-                    using (var streamReader = new StreamReader(fs))
-                    {
-                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                        builder.Append(text);
-                        builder.Append(Environment.NewLine);
-                    }
-                }
-            }
-
-            var js = builder.ToString();
-
-            if (enableMinification)
-            {
-                try
-                {
-                    var result = new CrockfordJsMinifier().Minify(js, false, Encoding.UTF8);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
-                    }
-                    else
-                    {
-                        js = result.MinifiedContent;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error minifying javascript", ex);
-                }
-            }
-
-            var bytes = Encoding.UTF8.GetBytes(js);
-            await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-
-            memoryStream.Position = 0;
-            return memoryStream;
-        }
-        private IEnumerable<string> GetScriptFiles()
-        {
-            return new[]
-                            {
-                                "extensions.js",
-                                "site.js"
-                            };
         }
 
         /// <summary>

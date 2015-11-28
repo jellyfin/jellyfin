@@ -1,4 +1,4 @@
-﻿var LibraryBrowser = (function (window, document, $, screen) {
+﻿var LibraryBrowser = (function (window, document, screen) {
 
     // Regular Expressions for parsing tags and attributes
     var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
@@ -2839,7 +2839,7 @@
             document.body.appendChild(dlg);
 
             dlg.addEventListener('iron-overlay-closed', function () {
-                $(dlg).remove();
+                dlg.parentNode.removeChild(dlg);
             });
 
             require(['components/paperdialoghelper'], function () {
@@ -3539,26 +3539,6 @@
             }
         },
 
-        renderBudget: function (elem, item) {
-
-            if (item.Budget) {
-
-                elem.show().html(Globalize.translate('ValueBudget', '$' + item.Budget));
-            } else {
-                elem.hide();
-            }
-        },
-
-        renderRevenue: function (elem, item) {
-
-            if (item.Revenue) {
-
-                elem.show().html(Globalize.translate('ValueRevenue', '$' + item.Revenue));
-            } else {
-                elem.hide();
-            }
-        },
-
         renderAwardSummary: function (elem, item) {
             if (item.AwardSummary) {
                 elem.show().html(Globalize.translate('ValueAwards', item.AwardSummary));
@@ -3615,4 +3595,4 @@
 
     return libraryBrowser;
 
-})(window, document, jQuery, screen);
+})(window, document, screen);

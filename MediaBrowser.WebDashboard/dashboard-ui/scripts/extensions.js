@@ -1,16 +1,4 @@
-﻿$.fn.checked = function (value) {
-    if (value === true || value === false) {
-        // Set the value of the checkbox
-        return $(this).each(function () {
-            this.checked = value;
-        });
-    } else {
-        // Return check state
-        return this.length && this[0].checked;
-    }
-};
-
-function getWindowLocationSearch(win) {
+﻿function getWindowLocationSearch(win) {
 
     var search = (win || window).location.search;
 

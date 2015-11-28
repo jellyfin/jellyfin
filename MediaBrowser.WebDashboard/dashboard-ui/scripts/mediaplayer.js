@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -1997,4 +1997,4 @@
     window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
 
 
-})(document, setTimeout, clearTimeout, screen, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, setInterval, window);

@@ -365,7 +365,7 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        if (!$(".footer").length) {
+        if (!document.querySelector(".footer")) {
 
             var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
 
@@ -479,11 +479,14 @@ var Dashboard = {
 
     getModalLoadingMsg: function () {
 
-        var elem = $('.modalLoading');
+        var elem = document.querySelector('.modalLoading');
 
-        if (!elem.length) {
+        if (!elem) {
 
-            elem = $('<div class="modalLoading" style="display:none;"></div>').appendTo(document.body);
+            elem = document.createElement('modalLoading');
+            elem.classList.add('modalLoading');
+            elem.style.display = 'none';
+            document.body.appendChild(elem);
 
         }
 
@@ -1079,7 +1082,7 @@ var Dashboard = {
                 Dashboard.onBrowseCommand(cmd.Arguments);
                 break;
             case 'GoToSearch':
-                Search.showSearchPanel($.mobile.activePage);
+                Search.showSearchPanel();
                 break;
             case 'DisplayMessage':
                 {
@@ -1444,7 +1447,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html);
+        select.innerHTML = html;
     },
 
     populateCountries: function (select, allCountries) {
@@ -1460,7 +1463,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html);
+        select.innerHTML = html;
     },
 
     getSupportedRemoteCommands: function () {
@@ -1783,7 +1786,7 @@ var AppInfo = {};
             window.ConnectionManager.clearData();
         }
 
-        $(ConnectionManager).on('apiclientcreated', function (e, newApiClient) {
+        Events.on(ConnectionManager, 'apiclientcreated', function (e, newApiClient) {
 
             initializeApiClient(newApiClient);
         });
@@ -1925,7 +1928,8 @@ var AppInfo = {};
             isMobile: 'bower_components/isMobile/isMobile.min',
             headroom: 'bower_components/headroom.js/dist/headroom.min',
             masonry: 'bower_components/masonry/dist/masonry.pkgd.min',
-            humanedate: 'components/humanedate'
+            humanedate: 'components/humanedate',
+            jQuery: 'bower_components/jquery/dist/jquery.min'
         };
 
         if (Dashboard.isRunningInCordova()) {
@@ -1943,11 +1947,6 @@ var AppInfo = {};
     }
 
     function init(promiseResolve, capabilities, appName, appVersion, deviceId, deviceName) {
-
-        // Required since jQuery is loaded before requireJs
-        define('jquery', [], function () {
-            return jQuery;
-        });
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("appstorage", ["cordova/android/appstorage"]);
@@ -2109,10 +2108,27 @@ var AppInfo = {};
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
         deps.push('apiclient/events');
+        deps.push('jQuery');
 
         require(deps, function () {
 
-            $.extend(AppInfo, Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName));
+            // TODO: This needs to be deprecated, but it's used heavily
+            $.fn.checked = function (value) {
+                if (value === true || value === false) {
+                    // Set the value of the checkbox
+                    return $(this).each(function () {
+                        this.checked = value;
+                    });
+                } else {
+                    // Return check state
+                    return this.length && this[0].checked;
+                }
+            };
+
+            var baseInfo = Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName);
+            for (var i in baseInfo) {
+                AppInfo[i] = baseInfo[i];
+            }
 
             initAfterDependencies(promiseResolve, capabilities);
         });
@@ -2150,6 +2166,8 @@ var AppInfo = {};
         deps.push('apiclient/deferred');
         deps.push('apiclient/credentials');
         deps.push('apiclient/md5');
+
+        deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
 
         require(deps, function () {
 
@@ -2286,6 +2304,8 @@ var AppInfo = {};
 
         require(deps, function () {
 
+            $.mobile.filterHtml = Dashboard.filterHtml;
+
             $.mobile.initializePage();
             promiseResolve();
 
@@ -2407,10 +2427,10 @@ var AppInfo = {};
     var initialDependencies = [];
 
     initialDependencies.push('isMobile');
-    initialDependencies.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
     initialDependencies.push('apiclient/logger');
     initialDependencies.push('apiclient/store');
     initialDependencies.push('apiclient/device');
+    initialDependencies.push('scripts/extensions');
 
     var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
 
@@ -2423,8 +2443,6 @@ var AppInfo = {};
     }
 
     require(initialDependencies, function (isMobile) {
-
-        $.mobile.filterHtml = Dashboard.filterHtml;
 
         Dashboard.initPromise = new Promise(function (resolve, reject) {
 
@@ -2477,24 +2495,25 @@ function pageIdOn(eventName, id, fn) {
 
 pageClassOn('pagecreate', "page", function () {
 
-    var page = $(this);
+    var jPage = $(this);
+    var page = this;
 
-    var current = page.data('theme');
+    var current = jPage.data('theme');
 
     if (!current) {
 
         var newTheme;
 
-        if (page.hasClass('libraryPage')) {
+        if (page.classList.contains('libraryPage')) {
             newTheme = 'b';
         } else {
             newTheme = 'a';
         }
 
-        current = page.page("option", "theme");
+        current = jPage.page("option", "theme");
 
         if (current && current != newTheme) {
-            page.page("option", "theme", newTheme);
+            jPage.page("option", "theme", newTheme);
         }
     }
 

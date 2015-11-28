@@ -1,4 +1,4 @@
-﻿(function ($, window) {
+﻿(function (window) {
 
     var currentDisplayInfo;
     function mirrorItem(info) {
@@ -238,7 +238,9 @@
 
         var keys = new bindKeys(self);
 
-        $(window).on("keydown", keys.keyBinding).on("keypress", keys.keyPrevent).on("keyup", keys.keyPrevent);
+        window.addEventListener('keydown', keys.keyBinding);
+        window.addEventListener('keypress', keys.keyPrevent);
+        window.addEventListener('keyup', keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 
@@ -253,11 +255,11 @@
         };
 
         function onBeforePlaybackStart(e, state) {
-            $(self).trigger('beforeplaybackstart', [state, this]);
+            Events.trigger(self, 'beforeplaybackstart', [state, this]);
         }
 
         function onPlaybackStop(e, state) {
-            $(self).trigger('playbackstop', [state, this]);
+            Events.trigger(self, 'playbackstop', [state, this]);
         }
 
         self.getPlayerInfo = function () {
@@ -278,7 +280,7 @@
 
         function triggerPlayerChange(newPlayer, newTarget) {
 
-            $(self).trigger('playerchange', [newPlayer, newTarget]);
+            Events.trigger(self, 'playerchange', [newPlayer, newTarget]);
         }
 
         self.setActivePlayer = function (player, targetInfo) {
@@ -1033,4 +1035,4 @@
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window);
+})(this);
