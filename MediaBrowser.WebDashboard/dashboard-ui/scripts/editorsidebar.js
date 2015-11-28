@@ -449,7 +449,7 @@
 
     function getCurrentItemId() {
 
-        var url = window.location.hash || getWindowUrl();
+        var url = window.location.hash || window.location.href;
 
         return getParameterByName('id', url);
     }

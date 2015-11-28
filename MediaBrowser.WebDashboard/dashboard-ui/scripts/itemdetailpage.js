@@ -157,7 +157,11 @@
                 $('.splitVersionContainer', page).hide();
             }
 
-            $('.btnMoreCommands', page).visible(LibraryBrowser.getMoreCommands(item, user).length > 0);
+            if (LibraryBrowser.getMoreCommands(item, user).length > 0) {
+                $('.btnMoreCommands', page).removeClass('hide');
+            } else {
+                $('.btnMoreCommands', page).addClass('hide');
+            }
 
             if (user.Policy.IsAdministrator) {
                 $('.chapterSettingsButton', page).show();

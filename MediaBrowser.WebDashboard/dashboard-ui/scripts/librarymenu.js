@@ -73,7 +73,7 @@
         var headerSearchButton = document.querySelector('.headerSearchButton');
 
         if (user.localUser) {
-            $('.btnCast', header).visible(true);
+            $('.btnCast', header).removeClass('hide');
 
             if (headerSearchButton) {
                 headerSearchButton.classList.remove('hide');
@@ -90,7 +90,7 @@
             });
 
         } else {
-            $('.btnCast', header).visible(false);
+            $('.btnCast', header).addClass('hide');
             document.querySelector('.headerVoiceButton').classList.add('hide');
             if (headerSearchButton) {
                 headerSearchButton.classList.add('hide');
@@ -143,24 +143,6 @@
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
         initHeadRoom(viewMenuBar);
-    }
-
-    function updateViewMenuBarHeadroom(page, viewMenuBar) {
-
-        //if (page.classList.contains('libraryPage')) {
-        //    // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
-        //    setTimeout(reEnableHeadroom, 700);
-        //} else {
-        //    viewMenuBar.classList.add('headroomDisabled');
-        //}
-    }
-
-    function reEnableHeadroom() {
-
-        //var headroomDisabled = document.querySelectorAll('.headroomDisabled');
-        //for (var i = 0, length = headroomDisabled.length; i < length; i++) {
-        //    headroomDisabled[i].classList.remove('headroomDisabled');
-        //}
     }
 
     function getItemHref(item, context) {
@@ -435,9 +417,9 @@
 
         if (!user) {
 
-            $('.adminMenuOptions').visible(false);
-            $('.lnkMySync').visible(false);
-            $('.userMenuOptions').visible(false);
+            $('.adminMenuOptions').addClass('hide');
+            $('.lnkMySync').addClass('hide');
+            $('.userMenuOptions').addClass('hide');
             return;
         }
 
@@ -519,15 +501,15 @@
         });
 
         if (user.Policy.IsAdministrator) {
-            $('.adminMenuOptions').visible(true);
+            $('.adminMenuOptions').removeClass('hide');
         } else {
-            $('.adminMenuOptions').visible(false);
+            $('.adminMenuOptions').addClass('hide');
         }
 
         if (user.Policy.EnableSync) {
-            $('.lnkMySync').visible(true);
+            $('.lnkMySync').removeClass('hide');
         } else {
-            $('.lnkMySync').visible(false);
+            $('.lnkMySync').addClass('hide');
         }
     }
 
@@ -565,13 +547,17 @@
                 setTimeout(function () {
                     closeMainDrawer();
 
+                    // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+                    var delay = $.browser.mobile ? 350 : 0;
+
                     setTimeout(function () {
                         if (action) {
                             action();
                         } else {
                             Dashboard.navigate(link.href);
                         }
-                    }, 350);
+                    }, delay);
+
                 }, 50);
             }
 
@@ -586,9 +572,12 @@
 
                 closeMainDrawer();
 
+                // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+                var delay = $.browser.mobile ? 350 : 0;
+
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 350);
+                }, delay);
             }
 
             return false;
@@ -779,7 +768,6 @@
         if (!viewMenuBar) {
 
             renderHeader();
-            updateViewMenuBarHeadroom(page, document.querySelector('.viewMenuBar'));
 
             updateCastIcon();
 
@@ -791,7 +779,6 @@
         } else {
             viewMenuBar.classList.remove('hide');
             updateLibraryNavLinks(page);
-            updateViewMenuBarHeadroom(page, viewMenuBar);
             requiresViewMenuRefresh = false;
         }
     }
@@ -924,7 +911,7 @@
             return;
         }
 
-        requirejs(["thirdparty/headroom"], function () {
+        requirejs(["headroom"], function () {
 
             // construct an instance of Headroom, passing the element
             var headroom = new Headroom(elem, {

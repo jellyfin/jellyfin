@@ -216,7 +216,7 @@
 
         commands = commands.map(function (c) {
 
-            return '<div class="exampleCommand"><i class="fa fa-quote-left"></i><span class="exampleCommandText">' + c + '</span><i class="fa fa-quote-right"></i></div>';
+            return '<div class="exampleCommand"><span class="exampleCommandText">"' + c + '"</span></div>';
 
         }).join('');
 
@@ -232,8 +232,6 @@
             $('.defaultVoiceHelp').show();
             return;
         }
-
-        require(['fontawesome']);
 
         var html = '';
 

@@ -108,12 +108,12 @@
         $('.pluginName', page).html(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
-            $("#btnInstallDiv", page).visible(true);
+            $("#btnInstallDiv", page).removeClass('hide');
             $("#nonServerMsg", page).hide();
-            $("#pSelectVersion", page).visible(true);
+            $("#pSelectVersion", page).removeClass('hide');
         } else {
-            $("#btnInstallDiv", page).visible(false);
-            $("#pSelectVersion", page).visible(false);
+            $("#btnInstallDiv", page).addClass('hide');
+            $("#pSelectVersion", page).addClass('hide');
 
             var msg = Globalize.translate('MessageInstallPluginFromApp');
             $("#nonServerMsg", page).html(msg).show();

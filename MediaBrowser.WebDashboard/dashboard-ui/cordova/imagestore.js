@@ -55,7 +55,6 @@
             if ($.browser.safari) {
 
                 // Use the embedded server for iOS8, and also if we don't know the iOS version, just to be safe
-                //if (($.browser.iOSVersion || 0) < 9) {
                 var index = url.indexOf('/Documents');
                 if (index != -1) {
                     return url.substring(index);
@@ -63,8 +62,6 @@
                 else {
                     return url.replace('file://', '');
                 }
-
-                //}
             }
             return url;
         }

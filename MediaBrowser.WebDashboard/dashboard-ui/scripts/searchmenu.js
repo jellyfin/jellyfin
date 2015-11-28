@@ -9,16 +9,13 @@
             Dashboard.importCss('css/search.css');
             $('.headerSearchInput').val('');
 
-            require(["jquery", "velocity"], function ($, Velocity) {
+            $('.btnCloseSearch').hide();
+            var elem = $('.viewMenuSearch').removeClass('hide')[0];
 
-                $('.btnCloseSearch').hide();
-                var elem = $('.viewMenuSearch').removeClass('hide')[0];
-
-                fadeIn(elem, 1).onfinish = function () {
-                    $('.headerSearchInput').focus();
-                    $('.btnCloseSearch').show();
-                };
-            });
+            fadeIn(elem, 1).onfinish = function () {
+                $('.headerSearchInput').focus();
+                $('.btnCloseSearch').show();
+            };
         };
 
         function fadeIn(elem, iterations) {

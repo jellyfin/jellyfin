@@ -2,26 +2,11 @@
 
     var showOverlayTimeout;
 
-    function getCardHoverElement(e) {
-
-        var elem = parentWithClass(e.target, 'card');
-
-        if (!elem) {
-            return null;
-        }
-
-        if (elem.classList.contains('bannerCard')) {
-            return null;
-        }
-
-        return elem;
-    }
-
     function onHoverOut(e) {
 
-        var elem = getCardHoverElement(e);
+        var elem = e.target;
 
-        if (!elem) {
+        if (!elem.classList.contains('card')) {
             return;
         }
 
@@ -732,9 +717,9 @@
 
         function onHoverIn(e) {
 
-            var elem = getCardHoverElement(e);
+            var elem = e.target;
 
-            if (!elem) {
+            if (!elem.classList.contains('card')) {
                 return;
             }
 

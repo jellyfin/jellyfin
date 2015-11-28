@@ -998,7 +998,7 @@
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('.videoTrackControl').visible(false);
+            $('.videoTrackControl').addClass('hide');
 
             var videoElement = $('#videoElement', mediaPlayerContainer);
 
@@ -1032,11 +1032,11 @@
             }
 
             if (AppInfo.hasPhysicalVolumeButtons) {
-                $(volumeSlider).visible(false);
+                $(volumeSlider).addClass('hide');
                 $('.muteButton', videoControls).addClass('hide');
                 $('.unmuteButton', videoControls).addClass('hide');
             } else {
-                $(volumeSlider).visible(true);
+                $(volumeSlider).removeClass('hide');
                 $('.muteButton', videoControls).removeClass('hide');
                 $('.unmuteButton', videoControls).removeClass('hide');
             }
@@ -1165,7 +1165,7 @@
             }
 
             if (length < 2) {
-                $('.videoTrackControl').visible(false);
+                $('.videoTrackControl').addClass('hide');
                 return;
             }
 
@@ -1187,8 +1187,8 @@
                 nextTrackButton.removeAttribute('disabled');
             }
 
-            $(previousTrackButton).visible(true);
-            $(nextTrackButton).visible(true);
+            $(previousTrackButton).removeClass('hide');
+            $(nextTrackButton).removeClass('hide');
         };
     }
 

@@ -375,7 +375,12 @@
 
         // See bindEvents for why this is necessary
         if (volumeSlider) {
-            $(volumeSlider).visible(showVolumeSlider);
+
+            if (showVolumeSlider) {
+                volumeSlider.classList.remove('hide');
+            } else {
+                volumeSlider.classList.add('hide');
+            }
 
             if (!volumeSlider.dragging) {
                 volumeSlider.value = playState.VolumeLevel || 0;

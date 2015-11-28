@@ -545,7 +545,13 @@
         var item = state.NowPlayingItem;
         var displayName = item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '';
 
-        $('.nowPlayingPageTitle', page).html(displayName).visible(displayName.length > 0);
+        $('.nowPlayingPageTitle', page).html(displayName);
+
+        if (displayName.length > 0) {
+            $('.nowPlayingPageTitle', page).removeClass('hide');
+        } else {
+            $('.nowPlayingPageTitle', page).addClass('hide');
+        }
 
         var url;
         var backdropUrl = null;

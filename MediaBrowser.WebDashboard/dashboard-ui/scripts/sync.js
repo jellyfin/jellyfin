@@ -391,7 +391,11 @@
                 SupportsSync: true
             };
 
-            $('.categorySyncButton', page).visible(isAvailable(item));
+            if (isAvailable(item)) {
+                $('.categorySyncButton', page).removeClass('hide');
+            } else {
+                $('.categorySyncButton', page).addClass('hide');
+            }
         });
     }
 

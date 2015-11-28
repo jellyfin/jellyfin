@@ -496,7 +496,7 @@
             }
 
             if (AppInfo.enableHeadRoom && options.enableHeadRoom) {
-                requirejs(["thirdparty/headroom"], function () {
+                requirejs(["headroom"], function () {
 
                     // construct an instance of Headroom, passing the element
                     var headroom = new Headroom(tabContent.querySelector('.tvGuideHeader'));

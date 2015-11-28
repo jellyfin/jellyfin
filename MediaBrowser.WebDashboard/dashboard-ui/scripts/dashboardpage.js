@@ -95,7 +95,11 @@
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
             }
 
-            $('.btnRestartContainer', page).visible(systemInfo.CanSelfRestart);
+            if (systemInfo.CanSelfRestart) {
+                $('.btnRestartContainer', page).removeClass('hide');
+            } else {
+                $('.btnRestartContainer', page).addClass('hide');
+            }
 
             DashboardPage.renderUrls(page, systemInfo);
             DashboardPage.renderPendingInstallations(page, systemInfo);
@@ -640,15 +644,6 @@
 
             if (device.indexOf('chrome') != -1) {
                 imgUrl = 'css/images/clients/chrome.png';
-            }
-            else if (device.indexOf('firefox') != -1) {
-                imgUrl = 'css/images/clients/firefox.png';
-            }
-            else if (device.indexOf('internet explorer') != -1) {
-                imgUrl = 'css/images/clients/ie.png';
-            }
-            else if (device.indexOf('safari') != -1) {
-                imgUrl = 'css/images/clients/safari.png';
             }
             else {
                 imgUrl = 'css/images/clients/html5.png';

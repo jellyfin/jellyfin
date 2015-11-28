@@ -108,15 +108,17 @@
             });
         }
 
-        for (var i = 0, length = list.length; i < length; i++) {
+        require(['humanedate'], function() {
+            for (var i = 0, length = list.length; i < length; i++) {
 
-            var notification = list[i];
+                var notification = list[i];
 
-            html += getNotificationHtml(notification);
+                html += getNotificationHtml(notification);
 
-        }
+            }
 
-        elem.html(html).trigger('create');
+            elem.html(html).trigger('create');
+        });
     }
 
     function getNotificationHtml(notification) {

@@ -337,6 +337,8 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "Sortable", "Sortable.min.js"), Path.Combine(path, "bower_components", "Sortable", "Sortable.min.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "fetch", "fetch.js"), Path.Combine(path, "bower_components", "fetch", "fetch.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "native-promise-only", "lib", "npo.src.js"), Path.Combine(path, "bower_components", "native-promise-only", "lib", "npo.src.js"));
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "headroom.js", "dist", "headroom.min.js"), Path.Combine(path, "bower_components", "headroom.js", "dist", "headroom.min.js"));
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "isMobile", "isMobile.min.js"), Path.Combine(path, "bower_components", "isMobile", "isMobile.min.js"));
             }
             
             MinifyCssDirectory(Path.Combine(path, "css"));

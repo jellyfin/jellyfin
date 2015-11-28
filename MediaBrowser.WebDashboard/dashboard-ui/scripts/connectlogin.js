@@ -187,12 +187,12 @@
     }
 
     function requireCaptcha() {
-        return !AppInfo.isNativeApp && getWindowUrl().toLowerCase().indexOf('https') == 0;
+        return !AppInfo.isNativeApp && window.location.href.toLowerCase().indexOf('https') == 0;
     }
 
     function supportInAppSignup() {
         return AppInfo.isNativeApp;
-        return AppInfo.isNativeApp || getWindowUrl().toLowerCase().indexOf('https') == 0;
+        return AppInfo.isNativeApp || window.location.href.toLowerCase().indexOf('https') == 0;
     }
 
     function initSignup(page) {
