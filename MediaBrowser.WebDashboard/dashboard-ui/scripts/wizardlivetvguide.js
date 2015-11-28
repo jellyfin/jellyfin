@@ -8,7 +8,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.fetchJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             var providerId = null;
 
@@ -58,7 +58,7 @@
     function skip() {
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Info')).done(function (info) {
+        apiClient.fetchJSON(apiClient.getUrl('Startup/Info')).then(function (info) {
 
             if (info.SupportsRunningAsService) {
                 Dashboard.navigate('wizardservice.html');

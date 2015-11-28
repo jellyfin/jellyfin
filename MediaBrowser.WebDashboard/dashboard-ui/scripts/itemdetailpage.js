@@ -42,7 +42,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getPromise().done(function (item) {
+        getPromise().then(function (item) {
 
             reloadFromItem(page, item);
             window.scrollTo(0, 0);
@@ -61,7 +61,7 @@
         LibraryBrowser.renderParentName(item, $('.parentName', page), context);
         LibraryMenu.setTitle(item.SeriesName || item.Name);
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             renderImage(page, item, user);
 
@@ -273,7 +273,7 @@
 
                     currentItem.UserData = userData;
 
-                    Dashboard.getCurrentUser().done(function (user) {
+                    Dashboard.getCurrentUser().then(function (user) {
 
                         refreshImage(page, currentItem, user);
                     });
@@ -616,7 +616,7 @@
 
         context = context || '';
 
-        promise.done(function (result) {
+        promise.then(function (result) {
 
             var foundExisting = false;
 
@@ -683,7 +683,7 @@
             options.limit = 12;
         }
 
-        ApiClient.getSimilarItems(item.Id, options).done(function (result) {
+        ApiClient.getSimilarItems(item.Id, options).then(function (result) {
 
             if (!result.Items.length) {
 
@@ -860,7 +860,7 @@
 
         promise = promise || ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
-        promise.done(function (result) {
+        promise.then(function (result) {
 
             var html = '';
 
@@ -1115,7 +1115,7 @@
             options.limit = limit;
         }
 
-        ApiClient.getCriticReviews(item.Id, options).done(function (result) {
+        ApiClient.getCriticReviews(item.Id, options).then(function (result) {
 
             if (result.TotalRecordCount || item.CriticRatingSummary || item.AwardSummary) {
                 $('#criticReviewsCollapsible', page).show();
@@ -1206,7 +1206,7 @@
 
     function renderThemeMedia(page, item) {
 
-        ApiClient.getThemeMedia(Dashboard.getCurrentUserId(), item.Id, true).done(function (result) {
+        ApiClient.getThemeMedia(Dashboard.getCurrentUserId(), item.Id, true).then(function (result) {
 
             var themeSongs = result.ThemeSongsResult.OwnerId == item.Id ?
                 result.ThemeSongsResult.Items :
@@ -1264,7 +1264,7 @@
             Fields: "DateCreated,SyncInfo",
             Albums: item.Name
 
-        }).done(function (result) {
+        }).then(function (result) {
             if (result.Items.length) {
 
                 $('#musicVideosCollapsible', page).show();
@@ -1279,7 +1279,7 @@
 
     function renderAdditionalParts(page, item, user) {
 
-        ApiClient.getAdditionalVideoParts(user.Id, item.Id).done(function (result) {
+        ApiClient.getAdditionalVideoParts(user.Id, item.Id).then(function (result) {
 
             if (result.Items.length) {
 
@@ -1612,7 +1612,7 @@
 
     function renderSpecials(page, item, user, limit) {
 
-        ApiClient.getSpecialFeatures(user.Id, item.Id).done(function (specials) {
+        ApiClient.getSpecialFeatures(user.Id, item.Id).then(function (specials) {
 
             var specialsContent = page.querySelector('#specialsContent');
             specialsContent.innerHTML = getVideosHtml(specials, user, limit, "moreSpecials");
@@ -1885,7 +1885,7 @@
 
     function playTrailer(page) {
 
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).done(function (trailers) {
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), currentItem.Id).then(function (trailers) {
 
             MediaController.play({ items: trailers });
 
@@ -1907,7 +1907,7 @@
 
         if (currentItem.Type == 'Program') {
 
-            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
+            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
 
                 LibraryBrowser.showPlayMenu(null, channel.Id, channel.Type, false, channel.MediaType, (channel.UserData || {}).PlaybackPositionTicks);
             });
@@ -1986,7 +1986,7 @@
 
             var button = this;
 
-            Dashboard.getCurrentUser().done(function(user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
             });
@@ -2004,7 +2004,7 @@
 
         $(page).on("click", ".moreScenes", function() {
 
-            Dashboard.getCurrentUser().done(function(user) {
+            Dashboard.getCurrentUser().then(function (user) {
                 renderScenes(page, currentItem, user);
             });
 
@@ -2014,7 +2014,7 @@
 
         }).on("click", ".moreSpecials", function() {
 
-            Dashboard.getCurrentUser().done(function(user) {
+            Dashboard.getCurrentUser().then(function (user) {
                 renderSpecials(page, currentItem, user);
             });
 

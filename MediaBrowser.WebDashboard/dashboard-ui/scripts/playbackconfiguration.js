@@ -14,7 +14,7 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.MinResumePct = $('#txtMinResumePct', form).val();
             config.MaxResumePct = $('#txtMaxResumePct', form).val();
@@ -37,7 +37,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 

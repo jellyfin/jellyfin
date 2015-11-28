@@ -82,7 +82,7 @@
 
     reloadSystemInfo: function (page) {
 
-        ApiClient.getSystemInfo().done(function (systemInfo) {
+        ApiClient.getSystemInfo().then(function (systemInfo) {
 
             Dashboard.setPageTitle(systemInfo.ServerName);
             Dashboard.updateSystemInfo(systemInfo);
@@ -1170,13 +1170,13 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
         var minDate = new Date();
         minDate.setTime(minDate.getTime() - 86400000);
 
-        ApiClient.getJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
+        ApiClient.fetchJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
 
             startIndex: startIndex,
             limit: limit,
             minDate: minDate.toISOString()
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             elem.setAttribute('data-activitystartindex', startIndex);
             elem.setAttribute('data-activitylimit', limit);

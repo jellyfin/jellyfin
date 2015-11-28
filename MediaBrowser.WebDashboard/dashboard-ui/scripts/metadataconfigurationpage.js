@@ -20,7 +20,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
 
@@ -52,7 +52,7 @@
         var allCultures;
         var allCountries;
 
-        ApiClient.getServerConfiguration().done(function (result) {
+        ApiClient.getServerConfiguration().then(function (result) {
 
             config = result;
             load(page, config, allCultures, allCountries);

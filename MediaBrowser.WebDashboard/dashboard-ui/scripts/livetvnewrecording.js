@@ -16,18 +16,18 @@
         registrationInfo = null;
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {
+        ApiClient.fetchJSON(ApiClient.getUrl('LiveTv/Registration', {
 
             ProgramId: programId,
             Feature: 'seriesrecordings'
-        })).done(function (result) {
+        })).then(function (result) {
 
             lastRegId = programId;
             registrationInfo = result;
             deferred.resolveWith(null, [registrationInfo]);
             Dashboard.hideLoadingMsg();
 
-        }).fail(function () {
+        }, function () {
 
             deferred.resolveWith(null, [
             {

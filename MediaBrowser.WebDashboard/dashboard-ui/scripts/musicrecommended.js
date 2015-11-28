@@ -30,7 +30,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
             elem.innerHTML = LibraryBrowser.getPosterViewHtml({
@@ -70,7 +70,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             var elem;
 
@@ -115,7 +115,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             var elem;
 
@@ -158,7 +158,7 @@
             Limit: itemsPerRow()
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             var elem;
 
@@ -316,7 +316,7 @@
 
             if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
                     page.setAttribute('data-title', item.Name);
                     LibraryMenu.setTitle(item.Name);

@@ -210,7 +210,7 @@
                 return;
             }
 
-            apiClient.getPublicSystemInfo().done(function (systemInfo) {
+            apiClient.getPublicSystemInfo().then(function (systemInfo) {
 
                 var credentials = credentialProvider.credentials();
                 existingServer.Id = systemInfo.Id;
@@ -1385,7 +1385,7 @@
 
                 if (!match.DateLastLocalConnection) {
 
-                    ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).done(function (info) {
+                    ApiClient.fetchJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
                         if (info.IsInNetwork) {
 
@@ -1395,7 +1395,7 @@
                             deferred.resolveWith(null, [{}]);
                         }
 
-                    }).fail(function () {
+                    }, function () {
 
                         deferred.resolveWith(null, [{}]);
                     });

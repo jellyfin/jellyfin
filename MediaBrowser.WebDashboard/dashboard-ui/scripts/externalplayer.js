@@ -435,7 +435,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getItem(userId, itemId).done(function (item) {
+        ApiClient.getItem(userId, itemId).then(function (item) {
 
             getVideoStreamInfo(item).done(function (streamInfo) {
 

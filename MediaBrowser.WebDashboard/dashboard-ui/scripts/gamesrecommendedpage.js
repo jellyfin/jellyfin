@@ -17,7 +17,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
@@ -44,7 +44,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getItems(userId, options).then(function (result) {
 
             if (result.Items.length) {
                 $('#recentlyPlayedSection', page).show();

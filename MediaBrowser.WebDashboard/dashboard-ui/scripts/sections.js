@@ -191,7 +191,7 @@
             EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -239,7 +239,7 @@
             IncludeItemTypes: "Movie"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -282,7 +282,7 @@
             IncludeItemTypes: "Episode"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -327,7 +327,7 @@
             UserId: userId
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        return ApiClient.fetchJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 
@@ -429,7 +429,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        return ApiClient.getItems(userId, options).done(function (result) {
+        return ApiClient.getItems(userId, options).then(function (result) {
 
             var html = '';
 
@@ -532,7 +532,7 @@
             SupportsLatestItems: true
         });
 
-        return ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
+        return ApiClient.fetchJSON(ApiClient.getUrl("Channels", options)).then(function (result) {
 
             var channels = result.Items;
 
@@ -567,7 +567,7 @@
             ChannelIds: channel.Id
         };
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 

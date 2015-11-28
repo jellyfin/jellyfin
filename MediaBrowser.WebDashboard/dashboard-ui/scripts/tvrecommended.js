@@ -122,7 +122,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -285,7 +285,7 @@
 
             if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
                     page.setAttribute('data-title', item.Name);
                     LibraryMenu.setTitle(item.Name);

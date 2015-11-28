@@ -348,12 +348,12 @@
             Dashboard.hideLoadingMsg();
         });
 
-        ApiClient.getJSON(ApiClient.getUrl('Connect/Pending')).done(function (pending) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Connect/Pending')).then(function (pending) {
 
             renderPendingGuests(page, pending);
         });
 
-        ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false })).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Library/MediaFolders", { IsHidden: false })).then(function (result) {
 
             renderLibrarySharingList(page, result);
         });
@@ -363,7 +363,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels", {})).done(function (channelsResult) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Channels", {})).then(function (channelsResult) {
 
             var shareExcludes = $(".chkShareFolder:checked", page).get().map(function (i) {
 
@@ -425,7 +425,7 @@
 
     function showInvitePopup(page) {
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             if (user.ConnectUserId) {
 

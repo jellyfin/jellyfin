@@ -77,7 +77,7 @@
 
         var apiClient = getApiClient();
 
-        apiClient.getJSON(apiClient.getUrl('Startup/User')).done(function (user) {
+        apiClient.fetchJSON(apiClient.getUrl('Startup/User')).then(function (user) {
 
             page.querySelector('#txtUsername').value = user.Name;
             page.querySelector('#txtConnectUserName').value = user.ConnectUserName;

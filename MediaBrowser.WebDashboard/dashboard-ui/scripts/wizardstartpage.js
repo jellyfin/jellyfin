@@ -17,7 +17,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.fetchJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             config.UICulture = $('#selectLocalizationLanguage', page).val();
 

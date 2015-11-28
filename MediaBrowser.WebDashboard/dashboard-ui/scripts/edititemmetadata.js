@@ -13,13 +13,13 @@
 
         var promise1 = MetadataEditor.getItemPromise();
         var promise2 = MetadataEditor.getCurrentItemId() ?
-            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.getCurrentItemId() + '/MetadataEditor')) :
+            ApiClient.fetchJSON(ApiClient.getUrl('Items/' + MetadataEditor.getCurrentItemId() + '/MetadataEditor')) :
             {};
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var item = response1[0];
-            metadataEditorInfo = response2[0];
+            var item = responses[0];
+            metadataEditorInfo = responses[1];
 
             currentItem = item;
 
@@ -280,7 +280,7 @@
             $('#fldYear', page).show();
         }
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             if (LibraryBrowser.getMoreCommands(item, user).indexOf('identify') != -1) {
 
@@ -895,7 +895,7 @@
 
                 Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
-                MetadataEditor.getItemPromise().done(function (i) {
+                MetadataEditor.getItemPromise().then(function (i) {
                     page.trigger('itemsaved', [i]);
                     bindItemChanged(page);
                 });
@@ -1088,7 +1088,7 @@
 
     function showMoreMenu(page, elem) {
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var moreCommands = LibraryBrowser.getMoreCommands(currentItem, user);
 

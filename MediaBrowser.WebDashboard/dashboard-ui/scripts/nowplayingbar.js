@@ -452,7 +452,7 @@
         nowPlayingImageElement.html(imgHtml);
 
         if (nowPlayingItem.Id) {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
                 nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
             });
         } else {

@@ -604,7 +604,7 @@
                 Backdrops.setBackdropUrl(page, backdropUrl);
             }
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).done(function (fullItem) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {
                 page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
             });
         } else {
@@ -686,7 +686,7 @@
         //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
         //    Limit: 100
 
-        //}).done(function (result) {
+        //}).then(function (result) {
 
         //    html += LibraryBrowser.getListViewHtml({
         //        items: result.Items,

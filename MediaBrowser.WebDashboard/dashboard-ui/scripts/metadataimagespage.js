@@ -27,12 +27,12 @@
         currentType = type;
 
         var promise1 = ApiClient.getServerConfiguration();
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
+        var promise2 = ApiClient.fetchJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var config = response1[0];
-            var metadataPlugins = response2[0];
+            var config = responses[0];
+            var metadataPlugins = responses[1];
 
             config = config.MetadataOptions.filter(function (c) {
                 return c.ItemType == type;
@@ -46,7 +46,7 @@
 
             } else {
 
-                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
+                ApiClient.fetchJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).then(function (defaultConfig) {
 
 
                     config = defaultConfig;
@@ -490,7 +490,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             var type = currentType;
 
@@ -505,7 +505,7 @@
 
             } else {
 
-                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
+                ApiClient.fetchJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).then(function (defaultOptions) {
 
                     defaultOptions.ItemType = type;
                     config.MetadataOptions.push(defaultOptions);

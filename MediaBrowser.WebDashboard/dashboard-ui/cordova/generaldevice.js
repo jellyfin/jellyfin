@@ -53,7 +53,7 @@
 
         self.play = function (options) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
@@ -65,7 +65,7 @@
 
                         Ids: options.ids.join(',')
 
-                    }).done(function (result) {
+                    }).then(function (result) {
 
                         options.items = result.Items;
                         self.playWithCommand(options, 'PlayNow');
@@ -80,7 +80,7 @@
         self.playWithCommand = function (options, command) {
 
             if (!options.items) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).then(function (item) {
 
                     options.items = [item];
                     self.playWithCommand(options, command);
@@ -220,7 +220,7 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getItem(userId, id).then(function (item) {
 
                 self.playWithCommand({
 
@@ -236,7 +236,7 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getItem(userId, id).then(function (item) {
 
                 self.playWithCommand({
 

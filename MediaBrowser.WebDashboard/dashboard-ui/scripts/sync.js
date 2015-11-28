@@ -217,7 +217,7 @@
             Category: options.Category
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).done(function (dialogOptions) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
 
             currentDialogOptions = dialogOptions;
 
@@ -385,7 +385,7 @@
             return;
         }
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var item = {
                 SupportsSync: true

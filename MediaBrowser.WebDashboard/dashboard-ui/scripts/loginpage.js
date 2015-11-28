@@ -40,7 +40,7 @@
                 Dashboard.hideLoadingMsg();
             });
 
-            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).done(function (options) {
+            apiClient.fetchJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
 
                 $('.disclaimer', page).html(options.LoginDisclaimer || '');
             });

@@ -19,7 +19,7 @@
 
         query.ParentId = LibraryMenu.getTopParentId();
 
-        ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {
 
             var items = result.Items;
 

@@ -64,7 +64,7 @@
                 ParentId: parentId
             };
 
-            apiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+            apiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
                 var images = result.Items.map(function (i) {
                     return {

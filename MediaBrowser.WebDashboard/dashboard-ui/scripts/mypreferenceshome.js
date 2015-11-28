@@ -140,15 +140,15 @@
             sortBy: "SortName"
         });
         var promise2 = ApiClient.getUserViews({}, user.Id);
-        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
+        var promise3 = ApiClient.fetchJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
+        var promise4 = ApiClient.fetchJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        $.when(promise1, promise2, promise3, promise4).done(function (r1, r2, r3, r4) {
+        Promise.all([promise1, promise2, promise3, promise4]).then(function (responses) {
 
-            renderViews(page, user, r4[0]);
-            renderLatestItems(page, user, r1[0]);
-            renderViewOrder(page, user, r2[0]);
-            renderViewStyles(page, user, r3[0]);
+            renderViews(page, user, responses[3]);
+            renderLatestItems(page, user, responses[0]);
+            renderViewOrder(page, user, responses[1]);
+            renderViewStyles(page, user, responses[2]);
 
             Dashboard.hideLoadingMsg();
         });

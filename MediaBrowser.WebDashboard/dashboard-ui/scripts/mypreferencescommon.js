@@ -27,7 +27,7 @@ pageIdOn('pageshow', 'myPreferencesMenuPage', function () {
         page.querySelector('.lnkSync').classList.add('hide');
     }
 
-    Dashboard.getCurrentUser().done(function (user) {
+    Dashboard.getCurrentUser().then(function (user) {
 
         page.querySelector('.headerUser').innerHTML = user.Name;
 

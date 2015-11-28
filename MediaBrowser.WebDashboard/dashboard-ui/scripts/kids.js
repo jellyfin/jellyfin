@@ -28,7 +28,7 @@
             EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             $('.itemsContainer', page).html(LibraryBrowser.getPosterViewHtml({
 

@@ -178,7 +178,7 @@
             query.IncludeItemTypes = result.itemType;
         }
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (queryResult) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (queryResult) {
 
             playItems(queryResult.Items, shuffle);
         });

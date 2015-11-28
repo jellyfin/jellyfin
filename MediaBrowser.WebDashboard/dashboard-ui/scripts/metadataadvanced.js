@@ -101,7 +101,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (configuration) {
+        ApiClient.getServerConfiguration().then(function (configuration) {
 
             loadAdvancedConfig(page, configuration);
 
@@ -170,7 +170,7 @@
 
     function saveAdvancedConfig(form) {
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 

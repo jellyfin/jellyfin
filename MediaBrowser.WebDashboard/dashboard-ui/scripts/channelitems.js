@@ -36,7 +36,7 @@
 
         var channelId = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features")).done(function (features) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Channels/" + channelId + "/Features")).then(function (features) {
 
             if (features.CanFilter) {
 
@@ -78,14 +78,14 @@
 
         if (folderId) {
 
-            ApiClient.getItem(query.UserId, folderId).done(function (item) {
+            ApiClient.getItem(query.UserId, folderId).then(function (item) {
 
                 LibraryMenu.setTitle(item.Name);
             });
 
         } else {
 
-            ApiClient.getItem(query.UserId, channelId).done(function (item) {
+            ApiClient.getItem(query.UserId, channelId).then(function (item) {
 
                 LibraryMenu.setTitle(item.Name);
             });
@@ -93,7 +93,7 @@
 
         query.folderId = folderId;
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);

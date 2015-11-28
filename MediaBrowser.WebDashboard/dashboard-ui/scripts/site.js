@@ -301,7 +301,7 @@ var Dashboard = {
 
             Dashboard.hideDashboardVersionWarning();
 
-            Dashboard.getCurrentUser().done(function (currentUser) {
+            Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showServerRestartWarning(info);
@@ -766,7 +766,7 @@ var Dashboard = {
 
         if (apiClient && apiClient.accessToken()) {
             if (AppInfo.enableFooterNotifications) {
-                apiClient.getSystemInfo().done(function (info) {
+                apiClient.getSystemInfo().then(function (info) {
 
                     Dashboard.updateSystemInfo(info);
                 });
@@ -795,7 +795,7 @@ var Dashboard = {
     reloadPageWhenServerAvailable: function (retryCount) {
 
         // Don't use apiclient method because we don't want it reporting authentication under the old version
-        ApiClient.getJSON(ApiClient.getUrl("System/Info")).done(function (info) {
+        ApiClient.fetchJSON(ApiClient.getUrl("System/Info")).then(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
@@ -1220,7 +1220,7 @@ var Dashboard = {
 
         }
         else if (msg.MessageType === "PackageInstallationCompleted") {
-            Dashboard.getCurrentUser().done(function (currentUser) {
+            Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "completed");
@@ -1229,7 +1229,7 @@ var Dashboard = {
             });
         }
         else if (msg.MessageType === "PackageInstallationFailed") {
-            Dashboard.getCurrentUser().done(function (currentUser) {
+            Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "failed");
@@ -1238,7 +1238,7 @@ var Dashboard = {
             });
         }
         else if (msg.MessageType === "PackageInstallationCancelled") {
-            Dashboard.getCurrentUser().done(function (currentUser) {
+            Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
@@ -1247,7 +1247,7 @@ var Dashboard = {
             });
         }
         else if (msg.MessaapiclientcgeType === "PackageInstalling") {
-            Dashboard.getCurrentUser().done(function (currentUser) {
+            Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
                     Dashboard.showPackageInstallNotification(msg.Data, "progress");
@@ -1293,7 +1293,7 @@ var Dashboard = {
             return;
         }
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).done(function (item) {
+        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).then(function (item) {
 
             Dashboard.navigate(LibraryBrowser.getHref(item, null, ''));
 
@@ -1378,7 +1378,7 @@ var Dashboard = {
             ImageTypes: "Primary",
             Ids: newItems.join(',')
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             var items = result.Items;
 
@@ -2381,20 +2381,18 @@ var AppInfo = {};
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
         deps.push('scripts/notifications');
+        deps.push('scripts/alphapicker');
 
         require(deps, function () {
 
             $.mobile.initializePage();
             promiseResolve();
-            require(['scripts/mediaplayer-video']);
+            require(['scripts/thememediaplayer']);
         });
 
         if (AppInfo.enableNowPlayingBar) {
             require(['scripts/nowplayingbar']);
         }
-
-        require(['scripts/alphapicker']);
-        require(['scripts/thememediaplayer']);
     }
 
     function loadImageCache() {
@@ -2551,7 +2549,7 @@ pageClassOn('pageshow', "page", function () {
 
             Dashboard.ensureToolsMenu(page);
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (!user.Policy.IsAdministrator) {
                     Dashboard.logout();

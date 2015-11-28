@@ -131,14 +131,14 @@
 
     function loadFilters(page, userId, itemQuery, reloadItemsFn) {
 
-        return ApiClient.getJSON(ApiClient.getUrl('Items/Filters', {
+        return ApiClient.fetchJSON(ApiClient.getUrl('Items/Filters', {
 
             UserId: userId,
             ParentId: itemQuery.ParentId,
             IncludeItemTypes: itemQuery.IncludeItemTypes
 
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderFilters(page, result);
 

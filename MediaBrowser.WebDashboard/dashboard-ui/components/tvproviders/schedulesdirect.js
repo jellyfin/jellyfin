@@ -35,7 +35,7 @@
 
         function setCountry(info) {
 
-            ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).done(function (result) {
+            ApiClient.fetchJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).then(function (result) {
 
                 var countryList = [];
                 var i, length;
@@ -72,7 +72,7 @@
 
                 $(page.querySelector('.txtZipCode')).trigger('change');
 
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.alert({
                     message: Globalize.translate('ErrorGettingTvLineups')

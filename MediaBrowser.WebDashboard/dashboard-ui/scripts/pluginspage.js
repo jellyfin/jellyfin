@@ -110,7 +110,7 @@
 
     function renderPlugins(page, plugins, showNoPluginsMessage) {
 
-        ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
+        ApiClient.fetchJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").then(function (configPages) {
 
             populateList(page, plugins, configPages, showNoPluginsMessage);
 

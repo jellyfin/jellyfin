@@ -236,7 +236,7 @@
 
     function showIdentificationForm(page, item) {
 
-        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
 
             var html = '';
 
@@ -288,7 +288,7 @@
 
         }).done(function (template) {
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
 

@@ -154,7 +154,7 @@
             return;
         }
 
-        Dashboard.getCurrentUser().done(showUserTabs);
+        Dashboard.getCurrentUser().then(showUserTabs);
     }
 
     var isFirstHide = true;

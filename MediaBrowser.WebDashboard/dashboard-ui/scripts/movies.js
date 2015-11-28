@@ -47,7 +47,7 @@
         var query = getQuery();
         var view = getPageData().view;
 
-        ApiClient.getItems(userId, query).done(function (result) {
+        ApiClient.getItems(userId, query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);

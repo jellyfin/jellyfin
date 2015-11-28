@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Dlna/ProfileInfos")).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Dlna/ProfileInfos")).then(function (result) {
 
             renderProfiles(page, result);
 

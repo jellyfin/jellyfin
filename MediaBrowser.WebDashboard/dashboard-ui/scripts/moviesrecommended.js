@@ -36,7 +36,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var view = getView();
             var html = '';
@@ -93,7 +93,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getItems(userId, options).then(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -216,7 +216,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });
 
-        ApiClient.getJSON(url).done(function (recommendations) {
+        ApiClient.fetchJSON(url).then(function (recommendations) {
 
             if (!recommendations.length) {
 
@@ -355,7 +355,7 @@
 
             if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
                     page.setAttribute('data-title', item.Name);
                     LibraryMenu.setTitle(item.Name);

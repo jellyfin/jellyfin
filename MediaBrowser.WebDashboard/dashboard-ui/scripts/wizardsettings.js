@@ -7,7 +7,7 @@
         var apiClient = ApiClient;
 
         // After saving chapter task, now save server config
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.fetchJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
             config.MetadataCountryCode = $('#selectCountry', page).val();

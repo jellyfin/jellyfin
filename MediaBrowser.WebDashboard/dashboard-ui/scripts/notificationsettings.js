@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Notifications/Types")).done(function (list) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Notifications/Types")).then(function (list) {
 
             var html = '';
 

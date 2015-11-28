@@ -288,9 +288,9 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
-            ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
+            ApiClient.fetchJSON(ApiClient.getUrl('Sync/Options', {
 
                 UserId: job.UserId,
                 ItemIds: (job.RequestedItemIds && job.RequestedItemIds.length ? job.RequestedItemIds.join('') : null),
@@ -299,7 +299,7 @@
                 Category: job.Category,
                 TargetId: job.TargetId
 
-            })).done(function (options) {
+            })).then(function (options) {
 
                 _jobOptions = options;
                 renderJob(page, job, options);
@@ -307,12 +307,12 @@
             });
         });
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/JobItems', {
+        ApiClient.fetchJSON(ApiClient.getUrl('Sync/JobItems', {
 
             JobId: id,
             AddMetadata: true
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderJobItems(page, result.Items);
             Dashboard.hideLoadingMsg();
@@ -331,7 +331,7 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             SyncManager.setJobValues(job, page);
 

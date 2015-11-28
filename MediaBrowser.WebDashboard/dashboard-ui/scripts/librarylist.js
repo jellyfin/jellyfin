@@ -645,7 +645,7 @@
             return;
         }
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             if (items.length == 1) {
 
@@ -703,10 +703,10 @@
             var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
             var promise2 = Dashboard.getCurrentUser();
 
-            $.when(promise1, promise2).done(function (response1, response2) {
+            Promise.all([promise1, promise2]).then(function (responses) {
 
-                var item = response1[0];
-                var user = response2[0];
+                var item = responses[0];
+                var user = responses[1];
 
                 var card = elem;
 
@@ -1040,7 +1040,7 @@
 
     function showMenuForSelectedItems(e) {
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var items = [];
 
@@ -1234,7 +1234,7 @@
             Fields: 'MediaSources,Chapters',
             Limit: 100
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             MediaController[method]({
                 items: result.Items

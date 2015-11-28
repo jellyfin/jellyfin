@@ -22,7 +22,7 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.HttpServerPortNumber = $('#txtPortNumber', form).val();
             config.PublicPort = $('#txtPublicPort', form).val();
@@ -46,7 +46,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 

@@ -173,7 +173,7 @@
 
     function loadMediaFolders(page, scope, openItems, callback) {
 
-        ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders")).done(function (result) {
+        ApiClient.fetchJSON(ApiClient.getUrl("Library/MediaFolders")).then(function (result) {
 
             var nodes = result.Items.map(function (n) {
 
@@ -229,7 +229,7 @@
             query.SortBy = "SortName";
         }
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             var nodes = result.Items.map(function (n) {
 
@@ -422,7 +422,7 @@
 
         var page = this;
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var id = getCurrentItemId();
 

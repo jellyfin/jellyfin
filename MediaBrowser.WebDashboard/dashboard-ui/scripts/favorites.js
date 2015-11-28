@@ -65,7 +65,7 @@
             promise = ApiClient.getItems(userId, options);
         }
 
-        return promise.done(function (result) {
+        return promise.then(function (result) {
 
             var html = '';
 

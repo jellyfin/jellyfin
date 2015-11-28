@@ -257,7 +257,7 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
     function loadUserInfo(page) {
 
-        ApiClient.getJSON(ApiClient.getUrl('System/SupporterInfo')).done(function (info) {
+        ApiClient.fetchJSON(ApiClient.getUrl('System/SupporterInfo')).then(function (info) {
 
             if (info.IsActiveSupporter) {
                 $('.supporterContainer', page).addClass('hide');

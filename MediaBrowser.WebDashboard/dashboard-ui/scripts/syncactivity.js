@@ -315,7 +315,7 @@
 
         var options = {};
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             if ($(page).hasClass('mySyncPage')) {
                 options.UserId = Dashboard.getCurrentUserId();
@@ -325,7 +325,7 @@
                 }
             }
 
-            ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).done(function (response) {
+            ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
 
                 loadData(page, response.Items);
                 Dashboard.hideLoadingMsg();

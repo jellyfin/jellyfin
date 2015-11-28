@@ -53,11 +53,11 @@
 
         var itemsPromise = ApiClient.getItems(userId, query);
 
-        $.when(parentItemPromise, itemsPromise).done(function (r1, r2) {
+        Promise.all([parentItemPromise, itemsPromise]).done(function (responses) {
 
-            var item = r1[0];
+            var item = responses[0];
             currentItem = item;
-            var result = r2[0];
+            var result = responses[1];
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);

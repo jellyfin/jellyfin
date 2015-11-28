@@ -21,7 +21,7 @@
             reloadItem(page, item);
         }
         else {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).then(function (item) {
                 reloadItem(page, item);
             });
         }
@@ -240,7 +240,7 @@
 
         }).done(function (template) {
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = PaperDialogHelper.createDialog({
                     theme: options.theme

@@ -29,7 +29,7 @@
 
     function refreshPageTitle(page) {
 
-        ApiClient.getSystemInfo().done(function (systemInfo) {
+        ApiClient.getSystemInfo().then(function (systemInfo) {
 
             Dashboard.setPageTitle(systemInfo.ServerName);
         });
@@ -41,7 +41,7 @@
         var form = this;
         var page = $(form).parents('.page');
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.ServerName = form.querySelector('#txtServerName').value;
             config.UICulture = $('#selectLocalizationLanguage', form).val();
@@ -114,11 +114,11 @@
 
         var promise1 = ApiClient.getServerConfiguration();
 
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
+        var promise2 = ApiClient.fetchJSON(ApiClient.getUrl("Localization/Options"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, responses[0], responses[1]);
 
         });
 

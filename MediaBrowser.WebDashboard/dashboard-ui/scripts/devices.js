@@ -82,11 +82,11 @@
     function loadData(page) {
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl('Devices', {
+        ApiClient.fetchJSON(ApiClient.getUrl('Devices', {
             
             SupportsPersistentIdentifier: true
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             load(page, result.Items);
 

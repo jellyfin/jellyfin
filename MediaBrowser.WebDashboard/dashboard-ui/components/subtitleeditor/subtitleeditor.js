@@ -189,7 +189,7 @@
         }
         else {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 var lang = user.Configuration.SubtitleLanguagePreference;
 
@@ -291,7 +291,7 @@
 
         var url = ApiClient.getUrl('Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + language);
 
-        ApiClient.getJSON(url).done(function (results) {
+        ApiClient.fetchJSON(url).then(function (results) {
 
             renderSearchResults(page, results);
         });
@@ -310,7 +310,7 @@
         }
 
         if (typeof itemId == 'string') {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(onGetItem);
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(onGetItem);
         }
         else {
             onGetItem(itemId);
@@ -338,7 +338,7 @@
 
         }).done(function (template) {
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = PaperDialogHelper.createDialog();
 

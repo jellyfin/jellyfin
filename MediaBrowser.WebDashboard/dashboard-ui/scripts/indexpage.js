@@ -203,7 +203,7 @@
 
                 getDisplayPreferences('home', userId).done(function (result) {
 
-                    Dashboard.getCurrentUser().done(function (user) {
+                    Dashboard.getCurrentUser().then(function (user) {
 
                         loadSections(tabContent, user, result).done(function () {
 

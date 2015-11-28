@@ -38,6 +38,10 @@
                 return;
             }
 
+            if (self.isFullScreen()) {
+                self.exitFullScreen();
+            }
+
             fadeOut(document.querySelector('#mediaPlayer'));
             $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");

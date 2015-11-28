@@ -628,12 +628,12 @@
                 subtitleStreamIndex = parseInt(subtitleStreamIndex);
             }
 
-            MediaController.getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+            MediaController.getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
 
                 if (validatePlaybackInfoResult(result)) {
 
                     self.currentMediaSource = result.MediaSources[0];
-                    self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks).done(function (streamInfo) {
+                    self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks).then(function (streamInfo) {
 
                         if (!streamInfo.url) {
                             MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
@@ -753,8 +753,6 @@
 
         function translateItemsForPlayback(items) {
 
-            var deferred = $.Deferred();
-
             var firstItem = items[0];
             var promise;
 
@@ -797,26 +795,31 @@
             }
 
             if (promise) {
-                promise.done(function (result) {
+                return new Promise(function (resolve, reject) {
 
-                    deferred.resolveWith(null, [result.Items]);
+                    promise.then(function (result) {
+
+                        resolve(result.Items);
+                    });
                 });
             } else {
-                deferred.resolveWith(null, [items]);
-            }
 
-            return deferred.promise();
+                return new Promise(function (resolve, reject) {
+
+                    resolve(items);
+                });
+            }
         }
 
         self.play = function (options) {
 
             Dashboard.showLoadingMsg();
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
-                    translateItemsForPlayback(options.items).done(function (items) {
+                    translateItemsForPlayback(options.items).then(function (items) {
 
                         self.playWithIntros(items, options, user);
                     });
@@ -827,9 +830,9 @@
 
                         Ids: options.ids.join(',')
 
-                    }).done(function (result) {
+                    }).then(function (result) {
 
-                        translateItemsForPlayback(result.Items).done(function (items) {
+                        translateItemsForPlayback(result.Items).then(function (items) {
 
                             self.playWithIntros(items, options, user);
                         });
@@ -859,7 +862,7 @@
                 return;
             }
 
-            ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).done(function (intros) {
+            ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).then(function (intros) {
 
                 items = intros.Items.concat(items);
                 self.playInternal(items[0], options.startPositionTicks, function () {
@@ -1077,7 +1080,7 @@
 
                 Dashboard.showModalLoadingMsg();
 
-                ApiClient.detectBitrate().done(function (bitrate) {
+                ApiClient.detectBitrate().then(function (bitrate) {
 
                     Logger.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
@@ -1101,7 +1104,7 @@
                 Dashboard.showModalLoadingMsg();
             }
 
-            MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
+            MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).then(function (playbackInfoResult) {
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
 
@@ -1149,7 +1152,7 @@
 
             if (item.MediaType === "Video") {
 
-                requirejs(['videorenderer'], function () {
+                requirejs(['videorenderer', 'scripts/mediaplayer-video'], function () {
                     self.playVideo(item, self.currentMediaSource, startPosition, callback);
                 });
 
@@ -1209,17 +1212,16 @@
             var userId = Dashboard.getCurrentUserId();
 
             if (query.Ids && query.Ids.split(',').length == 1) {
-                var deferred = DeferredBuilder.Deferred();
 
-                ApiClient.getItem(userId, query.Ids.split(',')).done(function (item) {
-                    deferred.resolveWith(null, [
-                    {
-                        Items: [item],
-                        TotalRecordCount: 1
-                    }]);
+                return new Promise(function (resolve, reject) {
+
+                    ApiClient.getItem(userId, query.Ids.split(',')).then(function (item) {
+                        resolve({
+                            Items: [item],
+                            TotalRecordCount: 1
+                        });
+                    });
                 });
-
-                return deferred.promise();
             }
             else {
 
@@ -1336,11 +1338,11 @@
                 return;
             }
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
-                    translateItemsForPlayback(options.items).done(function (items) {
+                    translateItemsForPlayback(options.items).then(function (items) {
 
                         self.queueItems(items);
                     });
@@ -1351,9 +1353,9 @@
 
                         Ids: options.ids.join(',')
 
-                    }).done(function (result) {
+                    }).then(function (result) {
 
-                        translateItemsForPlayback(result.Items).done(function (items) {
+                        translateItemsForPlayback(result.Items).then(function (items) {
 
                             self.queueItems(items);
                         });
@@ -1370,7 +1372,7 @@
                 return;
             }
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
@@ -1382,7 +1384,7 @@
 
                         Ids: options.ids.join(',')
 
-                    }).done(function (result) {
+                    }).then(function (result) {
 
                         options.items = result.Items;
 
@@ -1480,7 +1482,7 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getItem(userId, id).then(function (item) {
 
                 var query = {
                     UserId: userId,
@@ -1511,7 +1513,7 @@
                     return;
                 }
 
-                self.getItemsForPlayback(query).done(function (result) {
+                self.getItemsForPlayback(query).then(function (result) {
 
                     self.play({ items: result.Items });
 
@@ -1530,7 +1532,7 @@
                 Fields: getItemFields,
                 Limit: itemLimit
 
-            }).done(function (result) {
+            }).then(function (result) {
 
                 self.play({ items: result.Items });
 
@@ -1571,10 +1573,9 @@
                 self.streamInfo = {};
             }
 
-            if (self.isFullScreen()) {
-                self.exitFullScreen();
+            if (self.resetEnhancements) {
+                self.resetEnhancements();
             }
-            self.resetEnhancements();
         };
 
         self.isPlaying = function () {
@@ -1776,9 +1777,6 @@
 
             if (item.MediaType == "Video") {
 
-                if (self.isFullScreen()) {
-                    self.exitFullScreen();
-                }
                 self.resetEnhancements();
             }
 
@@ -1922,7 +1920,7 @@
 
         function playAudioInternal(item, mediaSource, startPositionTicks) {
 
-            self.createStreamInfo('Audio', item, mediaSource, startPositionTicks).done(function (streamInfo) {
+            self.createStreamInfo('Audio', item, mediaSource, startPositionTicks).then(function (streamInfo) {
 
                 self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
@@ -1974,7 +1972,7 @@
                 self.currentMediaRenderer = mediaRenderer;
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
-                mediaRenderer.init().done(function () {
+                mediaRenderer.init().then(function () {
 
                     // Set volume first to avoid an audible change
                     mediaRenderer.volume(initialVolume);

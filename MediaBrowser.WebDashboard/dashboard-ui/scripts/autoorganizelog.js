@@ -59,10 +59,10 @@
             includeItemTypes: 'Series',
             sortBy: 'SortName'
 
-        }).done(function (result) {
+        }).then(function (result) {
             Dashboard.hideLoadingMsg();
             showEpisodeCorrectionPopup(page, item, result.Items);
-        }).fail(onApiFailure);
+        }, onApiFailure);
 
     }
 

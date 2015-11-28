@@ -195,6 +195,50 @@
             return deferred.promise();
         };
 
+        /**
+         * Wraps around jQuery ajax methods to add additional info to the request.
+         */
+        self.fetch = function (request, includeAuthorization) {
+
+            if (!request) {
+                throw new Error("Request cannot be null");
+            }
+
+            if (includeAuthorization !== false) {
+
+                request.headers = request.headers || {};
+                self.setRequestHeaders(request.headers);
+            }
+
+            if (self.enableAutomaticNetworking === false || request.type != "GET") {
+                logger.log('Requesting url without automatic networking: ' + request.url);
+
+                return fetch(request.url, {
+                    headers: request.headers,
+                    method: request.type
+                });
+            }
+
+            var deferred = DeferredBuilder.Deferred();
+            self.ajaxWithFailover(request, deferred, true);
+            return deferred.promise();
+        };
+
+        self.fetchJSON = function (url, includeAuthorization) {
+
+            return self.fetch({
+                
+                url: url,
+                type: 'GET',
+                headers: {
+                    accept: 'application/json'
+                }
+
+            }, includeAuthorization).then(function(response) {
+                return response.json();
+            });
+        };
+
         function switchConnectionMode(connectionMode) {
 
             var currentServerInfo = self.serverInfo();
@@ -569,7 +613,7 @@
                 self.getUrl("Users/" + userId + "/Items/" + itemId) :
                 self.getUrl("Items/" + itemId);
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         /**
@@ -583,7 +627,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/Root");
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         self.getNotificationSummary = function (userId) {
@@ -1092,7 +1136,7 @@
 
             var url = self.getUrl("System/Info");
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         /**
@@ -1102,12 +1146,7 @@
 
             var url = self.getUrl("System/Info/Public");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-
-            }, false);
+            return self.fetchJSON(url, false);
         };
 
         self.getInstantMixFromItem = function (itemId, options) {
@@ -1425,7 +1464,7 @@
 
             var url = self.getUrl("System/Configuration");
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         /**
@@ -2067,7 +2106,7 @@
 
             var url = self.getUrl("Genres/" + self.encodeName(name), options);
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         self.getMusicGenre = function (name, userId) {
@@ -2084,7 +2123,7 @@
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(name), options);
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         self.getGameGenre = function (name, userId) {
@@ -2101,7 +2140,7 @@
 
             var url = self.getUrl("GameGenres/" + self.encodeName(name), options);
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         /**
@@ -2121,7 +2160,7 @@
 
             var url = self.getUrl("Artists/" + self.encodeName(name), options);
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         /**
@@ -2744,7 +2783,7 @@
                 url = self.getUrl("Items", options);
             }
 
-            return self.getJSON(url);
+            return self.fetchJSON(url);
         };
 
         self.getChannels = function (query) {

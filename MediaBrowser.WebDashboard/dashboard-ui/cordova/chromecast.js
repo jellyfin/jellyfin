@@ -18,17 +18,15 @@
             var userId = Dashboard.getCurrentUserId();
 
             if (query.Ids && query.Ids.split(',').length == 1) {
-                var deferred = DeferredBuilder.Deferred();
+                return new Promise(function (resolve, reject) {
 
-                ApiClient.getItem(userId, query.Ids.split(',')).done(function (item) {
-                    deferred.resolveWith(null, [
-                    {
-                        Items: [item],
-                        TotalRecordCount: 1
-                    }]);
+                    ApiClient.getItem(userId, query.Ids.split(',')).then(function (item) {
+                        resolve({
+                            Items: [item],
+                            TotalRecordCount: 1
+                        });
+                    });
                 });
-
-                return deferred.promise();
             }
             else {
 
@@ -78,7 +76,7 @@
                 return deferred.promise();
             }
 
-            return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).done(function (info) {
+            return ApiClient.fetchJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
                 endpointInfo = info;
             });
@@ -98,10 +96,10 @@
                 supportsAc3: AppSettings.enableChromecastAc3()
             });
 
-            getEndpointInfo().done(function (endpoint) {
+            getEndpointInfo().then(function (endpoint) {
 
                 if (endpoint.IsInNetwork) {
-                    ApiClient.getPublicSystemInfo().done(function (info) {
+                    ApiClient.getPublicSystemInfo().then(function (info) {
 
                         message.serverAddress = info.LocalAddress;
                         sendMessageInternal(message);
@@ -119,7 +117,7 @@
 
         self.play = function (options) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
@@ -131,7 +129,7 @@
 
                         Ids: options.ids.join(',')
 
-                    }).done(function (result) {
+                    }).then(function (result) {
 
                         options.items = result.Items;
                         self.playWithCommand(options, 'PlayNow');
@@ -146,7 +144,7 @@
         self.playWithCommand = function (options, command) {
 
             if (!options.items) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).then(function (item) {
 
                     options.items = [item];
                     self.playWithCommand(options, command);
@@ -189,7 +187,7 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getItem(userId, id).then(function (item) {
 
                 self.playWithCommand({
 
@@ -205,7 +203,7 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            ApiClient.getItem(userId, id).done(function (item) {
+            ApiClient.getItem(userId, id).then(function (item) {
 
                 self.playWithCommand({
 
