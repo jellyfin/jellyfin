@@ -17,13 +17,13 @@
             return deferred.promise();
         }
 
-        getLocalItem(itemId, serverId).done(function (localItem) {
+        getLocalItem(itemId, serverId).then(function (localItem) {
 
             if (localItem && localItem.Item.MediaSources.length) {
 
                 var mediaSource = localItem.Item.MediaSources[0];
 
-                fileExists(mediaSource.Path).done(function (exists) {
+                fileExists(mediaSource.Path).then(function (exists) {
 
                     if (exists) {
                         deferred.resolveWith(null, [mediaSource]);
@@ -32,13 +32,14 @@
                         deferred.resolveWith(null, [null]);
                     }
 
-                }).fail(getOnFail(deferred));
+                }, getOnFail(deferred));
                 return;
             }
 
             deferred.resolveWith(null, [null]);
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
+
         return deferred.promise();
     }
 
@@ -348,7 +349,7 @@
 
         var deferred = DeferredBuilder.Deferred();
 
-        getLocalItem(itemId, serverId).done(function (item) {
+        getLocalItem(itemId, serverId).then(function (item) {
 
             getOfflineItemsDb(function (db) {
 
@@ -359,16 +360,16 @@
                     var files = item.AdditionalFiles || [];
                     files.push(item.LocalPath);
 
-                    deleteFiles(files).done(function () {
+                    deleteFiles(files).then(function () {
 
                         deferred.resolve();
 
-                    }).fail(getOnFail(deferred));
+                    }, getOnFail(deferred));
 
                 });
             });
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
 
         return deferred.promise();
     }
@@ -386,9 +387,9 @@
             return;
         }
 
-        deleteFile(file).done(function () {
+        deleteFile(file).then(function () {
             deleteNextFile(files, index + 1, deferred);
-        }).fail(function () {
+        }, function () {
             deleteNextFile(files, index + 1, deferred);
         });
     }
@@ -420,7 +421,7 @@
 
     function resolveFile(path, options, success, fail) {
 
-        getFileSystem().done(function (fileSystem) {
+        getFileSystem().then(function (fileSystem) {
 
             fileSystem.root.getFile(path, options || { create: false }, success, fail);
         });
@@ -541,7 +542,7 @@
 
         Logger.log('downloading: ' + url + ' to ' + localPath);
 
-        createDirectory(getParentDirectoryPath(localPath)).done(function () {
+        createDirectory(getParentDirectoryPath(localPath)).then(function () {
 
             resolveFile(localPath, { create: true }, function (targetFile) {
 
@@ -593,7 +594,7 @@
 
             });
 
-        }).fail(getOnFail(deferred));;
+        }, getOnFail(deferred));
 
         return deferred.promise();
     }
@@ -626,7 +627,7 @@
 
         Logger.log('downloading: ' + url + ' to ' + localPath);
 
-        createDirectory(getParentDirectoryPath(localPath)).done(function () {
+        createDirectory(getParentDirectoryPath(localPath)).then(function () {
 
             resolveFile(localPath, { create: true }, function (targetFile) {
 
@@ -679,7 +680,7 @@
                 deferred.reject();
             });
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
 
         return deferred.promise();
     }
@@ -702,11 +703,11 @@
         parts.length = index + 1;
         var pathToCreate = parts.join('/');
 
-        createDirectoryInternal(pathToCreate).done(function () {
+        createDirectoryInternal(pathToCreate).then(function () {
 
             createDirectoryPart(path, index + 1, deferred);
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
     }
 
     function createDirectoryInternal(path) {
@@ -714,7 +715,7 @@
         Logger.log('creating directory: ' + path);
         var deferred = DeferredBuilder.Deferred();
 
-        getFileSystem().done(function (fileSystem) {
+        getFileSystem().then(function (fileSystem) {
 
             fileSystem.root.getDirectory(path, { create: true, exclusive: false }, function (targetFile) {
 
@@ -727,7 +728,7 @@
                 deferred.reject();
             });
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
 
         return deferred.promise();
     }
@@ -796,30 +797,31 @@
     function hasImage(serverId, itemId, imageTag) {
 
         var deferred = DeferredBuilder.Deferred();
-        getImageLocalPath(serverId, itemId, imageTag).done(function (localPath) {
+        getImageLocalPath(serverId, itemId, imageTag).then(function (localPath) {
 
-            fileExists(localPath).done(function (exists) {
+            fileExists(localPath).then(function (exists) {
 
                 deferred.resolveWith(null, [exists]);
 
-            }).fail(getOnFail(deferred));
+            }, getOnFail(deferred));
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
         return deferred.promise();
     }
 
     function downloadImage(url, serverId, itemId, imageTag) {
 
         var deferred = DeferredBuilder.Deferred();
-        getImageLocalPath(serverId, itemId, imageTag).done(function (localPath) {
+        getImageLocalPath(serverId, itemId, imageTag).then(function (localPath) {
 
-            downloadFile(url, localPath).done(function () {
+            downloadFile(url, localPath).then(function () {
 
                 deferred.resolve();
 
-            }).fail(getOnFail(deferred));
+            }, getOnFail(deferred));
 
-        }).fail(getOnFail(deferred));
+        }, getOnFail(deferred));
+
         return deferred.promise();
     }
 

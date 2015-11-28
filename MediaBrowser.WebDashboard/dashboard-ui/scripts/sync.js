@@ -49,7 +49,7 @@
             contentType: "application/json",
             dataType: 'json'
 
-        }).done(function () {
+        }).then(function () {
 
             panel.panel('close');
             $(window.SyncManager).trigger('jobsubmit');
@@ -197,7 +197,7 @@
     function showSyncMenu(options) {
 
         requirejs(["scripts/registrationservices", "jqmcollapsible", "jqmpanel"], function () {
-            RegistrationServices.validateFeature('sync').done(function () {
+            RegistrationServices.validateFeature('sync').then(function () {
                 showSyncMenuInternal(options);
             });
         });
@@ -217,7 +217,7 @@
             Category: options.Category
         };
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
 
             currentDialogOptions = dialogOptions;
 
@@ -314,7 +314,7 @@
 
     function loadQualityOptions(form, targetId, dialogOptionsFn) {
 
-        dialogOptionsFn(targetId).done(function (options) {
+        dialogOptionsFn(targetId).then(function (options) {
 
             renderTargetDialogOptions(form, options);
         });

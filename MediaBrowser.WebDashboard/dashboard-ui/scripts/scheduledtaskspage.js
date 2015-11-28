@@ -2,7 +2,7 @@
 
     function reloadList(page) {
 
-        ApiClient.getScheduledTasks({ isHidden: false }).done(function (tasks) {
+        ApiClient.getScheduledTasks({ isHidden: false }).then(function (tasks) {
 
             populateList(page, tasks);
 
@@ -255,7 +255,7 @@
 
             var button = this;
             var id = button.getAttribute('data-taskid');
-            ApiClient.startScheduledTask(id).done(function () {
+            ApiClient.startScheduledTask(id).then(function () {
 
                 updateTaskButton(button, "Running");
                 reloadList(page);
@@ -265,7 +265,7 @@
 
             var button = this;
             var id = button.getAttribute('data-taskid');
-            ApiClient.stopScheduledTask(id).done(function () {
+            ApiClient.stopScheduledTask(id).then(function () {
 
                 updateTaskButton(button, "");
                 reloadList(page);

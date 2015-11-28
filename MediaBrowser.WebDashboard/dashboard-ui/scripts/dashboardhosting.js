@@ -33,7 +33,7 @@
             config.WanDdns = $('#txtDdns', form).val();
             config.CertificatePath = $('#txtCertificatePath', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

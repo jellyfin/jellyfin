@@ -2160,7 +2160,7 @@
 
                     this.load(to, settings);
 
-                    settings.deferred.done($.proxy(function (url, options, content) {
+                    settings.deferred.then($.proxy(function (url, options, content) {
 
                         // store the original absolute url so that it can be provided
                         // to events in the triggerData of the subsequent changePage call

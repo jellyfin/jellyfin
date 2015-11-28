@@ -148,7 +148,7 @@
 
         if (result.category == 'nextup') {
 
-            ApiClient.getNextUpEpisodes(query).done(function (queryResult) {
+            ApiClient.getNextUpEpisodes(query).then(function (queryResult) {
 
                 playItems(queryResult.Items, shuffle);
 
@@ -280,7 +280,7 @@
 
         elem = $('.voiceInputHelp');
 
-        getCommandsPromise.done(function (commands) {
+        getCommandsPromise.then(function (commands) {
             renderSampleCommands(elem, commands);
         });
 
@@ -324,7 +324,7 @@
             $('.blockedMessage').show();
         }
 
-        processText(text).done(hideVoiceHelp).fail(showUnrecognizedCommandHelp);
+        processText(text).then(hideVoiceHelp, showUnrecognizedCommandHelp);
     }
 
     function startListening() {

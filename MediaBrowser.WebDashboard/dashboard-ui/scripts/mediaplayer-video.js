@@ -955,7 +955,7 @@
 
             requirejs(['videorenderer'], function () {
 
-                self.createStreamInfo('Video', item, mediaSource, startPosition).done(function (streamInfo) {
+                self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
@@ -964,14 +964,15 @@
                         Dashboard.showLoadingMsg();
 
                         ApiClient.ajax({
+
                             type: 'GET',
                             url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                        }).always(function () {
 
+                        }).then(function () {
                             Dashboard.hideLoadingMsg();
-
-                        }).done(function () {
                             self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                        }, function () {
+                            Dashboard.hideLoadingMsg();
                         });
 
                     } else {
@@ -1135,7 +1136,7 @@
 
             self.updateNowPlayingInfo(item);
 
-            mediaRenderer.init().done(function () {
+            mediaRenderer.init().then(function () {
 
                 self.onBeforePlaybackStart(mediaRenderer, item, mediaSource);
 

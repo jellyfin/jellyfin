@@ -131,7 +131,7 @@
 
     function loadFilters(page, userId, itemQuery, reloadItemsFn) {
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Items/Filters', {
+        return ApiClient.getJSON(ApiClient.getUrl('Items/Filters', {
 
             UserId: userId,
             ParentId: itemQuery.ParentId,

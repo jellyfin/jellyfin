@@ -160,7 +160,7 @@
             promises.push(loadSection(elem, userId, topParentId, section, sections.length == 1));
         }
 
-        $.when(promises).done(function () {
+        $.when(promises).then(function () {
             Dashboard.hideLoadingMsg();
 
             LibraryBrowser.setLastRefreshed(page);

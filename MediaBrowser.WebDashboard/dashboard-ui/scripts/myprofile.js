@@ -8,7 +8,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             $('.username', page).html(user.Name);
             Events.trigger($('#uploadUserImage', page).val('')[0], 'change');
@@ -168,7 +168,7 @@
 
             var userId = getParameterByName("userId");
 
-            ApiClient.uploadUserImage(userId, 'Primary', file).done(processImageChangeResult);
+            ApiClient.uploadUserImage(userId, 'Primary', file).then(processImageChangeResult);
 
             return false;
         };
@@ -199,7 +199,7 @@
 
                     var userId = getParameterByName("userId");
 
-                    ApiClient.deleteUserImage(userId, "primary").done(processImageChangeResult);
+                    ApiClient.deleteUserImage(userId, "primary").then(processImageChangeResult);
                 }
 
             });
@@ -218,7 +218,7 @@
 
         var userid = getParameterByName("userId");
 
-        ApiClient.getUser(userid).done(function (user) {
+        ApiClient.getUser(userid).then(function (user) {
 
             Dashboard.setPageTitle(user.Name);
 
@@ -262,7 +262,7 @@
 
         if (easyPassword) {
 
-            ApiClient.updateEasyPassword(userId, easyPassword).done(function () {
+            ApiClient.updateEasyPassword(userId, easyPassword).then(function () {
 
                 onEasyPasswordSaved(page, userId);
 
@@ -275,11 +275,11 @@
 
     function onEasyPasswordSaved(page, userId) {
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             user.Configuration.EnableLocalPassword = page.querySelector('.chkEnableLocalEasyPassword').checked;
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+            ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
 
                 Dashboard.hideLoadingMsg();
 
@@ -296,7 +296,7 @@
         var currentPassword = $('#txtCurrentPassword', page).val();
         var newPassword = $('#txtNewPassword', page).val();
 
-        ApiClient.updateUserPassword(userId, currentPassword, newPassword).done(function () {
+        ApiClient.updateUserPassword(userId, currentPassword, newPassword).then(function () {
 
             Dashboard.hideLoadingMsg();
 
@@ -356,7 +356,7 @@
 
                     Dashboard.showLoadingMsg();
 
-                    ApiClient.resetUserPassword(userId).done(function () {
+                    ApiClient.resetUserPassword(userId).then(function () {
 
                         Dashboard.hideLoadingMsg();
 
@@ -386,7 +386,7 @@
 
                     Dashboard.showLoadingMsg();
 
-                    ApiClient.resetEasyPassword(userId).done(function () {
+                    ApiClient.resetEasyPassword(userId).then(function () {
 
                         Dashboard.hideLoadingMsg();
 

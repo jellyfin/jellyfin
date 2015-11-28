@@ -32,7 +32,7 @@
         var promise3 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
         var promise4 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Services"));
 
-        $.when(promise1, promise2, promise3, promise4).done(function (response1, response2, response3, response4) {
+        $.when(promise1, promise2, promise3, promise4).then(function (response1, response2, response3, response4) {
 
             var users = response1[0];
             var notificationOptions = response2[0];
@@ -102,7 +102,7 @@
         var promise1 = ApiClient.getNamedConfiguration(notificationsConfigurationKey);
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Notifications/Types"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             var notificationOptions = response1[0];
             var types = response2[0];
@@ -147,7 +147,7 @@
                 return c.getAttribute('data-itemid');
             });
 
-            ApiClient.updateNamedConfiguration(notificationsConfigurationKey, notificationOptions).done(function (r) {
+            ApiClient.updateNamedConfiguration(notificationsConfigurationKey, notificationOptions).then(function (r) {
 
                 Dashboard.navigate('notificationsettings.html');
             });

@@ -4,7 +4,9 @@
 
         Dashboard.showLoadingMsg();
 
-        Sections.loadLatestChannelItems(page.querySelector('.latestItems'), Dashboard.getCurrentUserId()).always(function() {
+        Sections.loadLatestChannelItems(page.querySelector('.latestItems'), Dashboard.getCurrentUserId()).then(function() {
+            Dashboard.hideLoadingMsg();
+        }, function () {
             Dashboard.hideLoadingMsg();
         });
     }

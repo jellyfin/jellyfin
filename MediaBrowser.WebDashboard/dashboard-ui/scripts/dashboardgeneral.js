@@ -52,18 +52,18 @@
                 Dashboard.showDashboardRefreshNotification();
             }
 
-            ApiClient.updateServerConfiguration(config).done(function () {
+            ApiClient.updateServerConfiguration(config).then(function () {
 
                 refreshPageTitle(page);
 
-                ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
+                ApiClient.getNamedConfiguration(brandingConfigKey).then(function (brandingConfig) {
 
                     brandingConfig.LoginDisclaimer = form.querySelector('#txtLoginDisclaimer').value;
                     brandingConfig.CustomCss = form.querySelector('#txtCustomCss').value;
 
                     var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
 
-                    ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
+                    ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).then(Dashboard.processServerConfigurationUpdateResult);
 
                     if (cssChanged) {
                         Dashboard.showDashboardRefreshNotification();
@@ -114,7 +114,7 @@
 
         var promise1 = ApiClient.getServerConfiguration();
 
-        var promise2 = ApiClient.fetchJSON(ApiClient.getUrl("Localization/Options"));
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
 
         Promise.all([promise1, promise2]).then(function (responses) {
 
@@ -122,7 +122,7 @@
 
         });
 
-        ApiClient.getNamedConfiguration(brandingConfigKey).done(function (config) {
+        ApiClient.getNamedConfiguration(brandingConfigKey).then(function (config) {
 
             currentBrandingOptions = config;
 

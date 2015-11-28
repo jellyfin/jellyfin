@@ -18,7 +18,7 @@
 
     function loadForm(page, user, loggedInUser, allCulturesPromise) {
 
-        allCulturesPromise.done(function (allCultures) {
+        allCulturesPromise.then(function (allCultures) {
 
             populateLanguages($('#selectAudioLanguage', page), allCultures);
             populateLanguages($('#selectSubtitleLanguage', page), allCultures);
@@ -67,13 +67,13 @@
 
         var allCulturesPromise = ApiClient.getCultures();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             loadForm(page, response1[0] || response1, response2[0], allCulturesPromise);
 
         });
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (cinemaConfig) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (cinemaConfig) {
 
             if (cinemaConfig.EnableIntrosForMovies || cinemaConfig.EnableIntrosForEpisodes) {
                 $('.cinemaModeOptions', page).show();
@@ -93,10 +93,12 @@
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
+
+            Dashboard.hideLoadingMsg();
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
-        }).always(function () {
+        }, function () {
             Dashboard.hideLoadingMsg();
         });
     }
@@ -121,7 +123,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (result) {
+        ApiClient.getUser(userId).then(function (result) {
 
             saveUser(page, result);
 

@@ -108,7 +108,7 @@
             HasAired: false,
             SortBy: "StartDate"
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderPrograms(page, result);
 

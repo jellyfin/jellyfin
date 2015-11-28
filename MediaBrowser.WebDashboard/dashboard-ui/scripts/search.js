@@ -111,14 +111,14 @@
             searchTerm: searchTerm,
             limit: 30
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             if (currentTimeout == searchHintTimeout) {
                 renderSearchResultsInOverlay(elem, result.SearchHints);
             }
 
             Dashboard.hideLoadingMsg();
-        }).fail(function () {
+        }, function () {
             Dashboard.hideLoadingMsg();
         });
     }

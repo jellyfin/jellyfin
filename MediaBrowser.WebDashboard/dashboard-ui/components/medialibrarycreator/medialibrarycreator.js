@@ -24,12 +24,12 @@
             type = null;
         }
 
-        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).done(function () {
+        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).then(function () {
 
             hasChanges = true;
             PaperDialogHelper.close(dlg);
 
-        }).fail(function () {
+        }, function () {
 
             Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
         });
@@ -188,13 +188,12 @@
 
             require(['components/paperdialoghelper'], function () {
 
-                HttpClient.send({
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'components/medialibrarycreator/medialibrarycreator.template.html', true);
 
-                    type: 'GET',
-                    url: 'components/medialibrarycreator/medialibrarycreator.template.html'
+                xhr.onload = function (e) {
 
-                }).done(function (template) {
-
+                    var template = this.response;
                     var dlg = PaperDialogHelper.createDialog({
                         size: 'small',
                         theme: 'a',
@@ -233,7 +232,9 @@
 
                     paths = [];
                     renderPaths(editorContent);
-                });
+                }
+
+                xhr.send();
 
             });
 

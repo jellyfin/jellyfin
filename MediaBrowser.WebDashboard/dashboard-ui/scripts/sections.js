@@ -4,7 +4,7 @@
 
         var deferred = $.Deferred();
 
-        ApiClient.getUserViews({}, userId).done(function (result) {
+        ApiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -160,7 +160,7 @@
 
     function loadlibraryButtons(elem, userId, index) {
 
-        return getUserViews(userId).done(function (items) {
+        return getUserViews(userId).then(function (items) {
 
             var html = '<br/>';
 
@@ -191,7 +191,7 @@
             EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -239,7 +239,7 @@
             IncludeItemTypes: "Movie"
         };
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -282,7 +282,7 @@
             IncludeItemTypes: "Episode"
         };
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -327,7 +327,7 @@
             UserId: userId
         };
 
-        return ApiClient.fetchJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 
@@ -355,7 +355,7 @@
 
     function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
 
-        return getUserViews(user.Id).done(function (items) {
+        return getUserViews(user.Id).then(function (items) {
 
             var html = '';
 
@@ -474,7 +474,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getNextUpEpisodes(query).done(function (result) {
+        ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             var html = '';
 
@@ -532,7 +532,7 @@
             SupportsLatestItems: true
         });
 
-        return ApiClient.fetchJSON(ApiClient.getUrl("Channels", options)).then(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels", options)).then(function (result) {
 
             var channels = result.Items;
 
@@ -567,7 +567,7 @@
             ChannelIds: channel.Id
         };
 
-        ApiClient.fetchJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 
@@ -612,7 +612,7 @@
             limit: 5,
             IsInProgress: false
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             var html = '';
 

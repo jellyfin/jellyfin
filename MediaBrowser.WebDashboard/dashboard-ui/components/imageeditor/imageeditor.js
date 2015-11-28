@@ -31,7 +31,7 @@
 
         currentItem = item;
 
-        ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
+        ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).then(function (providers) {
 
             if (providers.length) {
                 $('.btnBrowseAllImages', page).removeClass('hide');
@@ -39,7 +39,7 @@
                 $('.btnBrowseAllImages', page).addClass('hide');
             }
 
-            ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
+            ApiClient.getItemImageInfos(currentItem.Id).then(function (imageInfos) {
 
                 renderStandardImages(page, item, imageInfos, providers);
                 renderBackdrops(page, item, imageInfos, providers);
@@ -122,7 +122,7 @@
             Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('HeaderDeleteImage'), function (result) {
 
                 if (result) {
-                    ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
+                    ApiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
 
                         hasChanges = true;
                         reload(page);
@@ -137,7 +137,7 @@
             var type = this.getAttribute('data-imagetype');
             var index = parseInt(this.getAttribute('data-index'));
             var newIndex = parseInt(this.getAttribute('data-newindex'));
-            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
+            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
 
                 hasChanges = true;
                 reload(page);
@@ -192,7 +192,7 @@
     function showImageDownloader(page, imageType) {
         require(['components/imagedownloader/imagedownloader'], function () {
 
-            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).done(function (hasChanged) {
+            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).then(function (hasChanged) {
 
                 if (hasChanged) {
                     hasChanges = true;
@@ -212,7 +212,7 @@
                     
                     theme: options.theme
 
-                }).done(function (hasChanged) {
+                }).then(function (hasChanged) {
 
                     if (hasChanged) {
                         hasChanges = true;
@@ -233,13 +233,12 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/imageeditor/imageeditor.template.html', true);
 
-            type: 'GET',
-            url: 'components/imageeditor/imageeditor.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = PaperDialogHelper.createDialog({
@@ -269,12 +268,14 @@
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
-                $('.btnCloseDialog', dlg).on('click', function() {
-                    
+                $('.btnCloseDialog', dlg).on('click', function () {
+
                     PaperDialogHelper.close(dlg);
                 });
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {

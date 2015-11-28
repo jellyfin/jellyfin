@@ -15,7 +15,7 @@
                         Id: id
                     })
 
-                }).done(function () {
+                }).then(function () {
 
                     loadData(page);
                 });
@@ -82,7 +82,7 @@
     function loadData(page) {
         Dashboard.showLoadingMsg();
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Devices', {
+        ApiClient.getJSON(ApiClient.getUrl('Devices', {
             
             SupportsPersistentIdentifier: true
 

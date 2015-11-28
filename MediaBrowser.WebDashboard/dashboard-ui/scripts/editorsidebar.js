@@ -106,7 +106,7 @@
 
         var promise2 = ApiClient.getLiveTvChannels({ limit: 0 });
 
-        $.when(promise2).done(function (response2) {
+        $.when(promise2).then(function (response2) {
 
             var result = response2;
 
@@ -155,7 +155,7 @@
 
     function loadLiveTvChannels(service, openItems, callback) {
 
-        ApiClient.getLiveTvChannels({ ServiceName: service, AddCurrentProgram: false }).done(function (result) {
+        ApiClient.getLiveTvChannels({ ServiceName: service, AddCurrentProgram: false }).then(function (result) {
 
             var nodes = result.Items.map(function (i) {
 
@@ -173,7 +173,7 @@
 
     function loadMediaFolders(page, scope, openItems, callback) {
 
-        ApiClient.fetchJSON(ApiClient.getUrl("Library/MediaFolders")).then(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Library/MediaFolders")).then(function (result) {
 
             var nodes = result.Items.map(function (n) {
 
@@ -278,7 +278,7 @@
 
     function initializeTree(page, currentUser, openItems, selectedId) {
 
-        loadJsTree().done(function () {
+        loadJsTree().then(function () {
             initializeTreeInternal(page, currentUser, openItems, selectedId);
         });
     }
@@ -428,7 +428,7 @@
 
             if (id) {
 
-                ApiClient.getAncestorItems(id, user.Id).done(function (ancestors) {
+                ApiClient.getAncestorItems(id, user.Id).then(function (ancestors) {
 
                     var ids = ancestors.map(function (i) {
                         return i.Id;

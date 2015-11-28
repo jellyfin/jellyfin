@@ -44,7 +44,7 @@
 
         query.ParentId = LibraryMenu.getTopParentId();
 
-        ApiClient.getNextUpEpisodes(query).done(function (result) {
+        ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             if (result.Items.length) {
                 $('.noNextUpItems', page).hide();

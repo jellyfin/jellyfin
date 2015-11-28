@@ -24,12 +24,12 @@
 
                 options.cameraUploadServers = AppSettings.cameraUploadServers();
 
-                syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).done(function () {
+                syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).then(function () {
 
                     syncPromise = null;
                     deferred.resolve();
 
-                }).fail(function () {
+                }, function () {
 
                     syncPromise = null;
                 });

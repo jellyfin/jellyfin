@@ -28,7 +28,7 @@
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
             loadForm(page, user);
@@ -43,7 +43,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             saveUser(page, user);
 
@@ -67,7 +67,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             loadForm(page, user);
 

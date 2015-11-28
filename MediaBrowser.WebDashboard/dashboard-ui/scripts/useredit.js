@@ -68,7 +68,7 @@
                 type: "DELETE",
                 url: linkUrl
 
-            }).done(function () {
+            }).then(function () {
 
                 Dashboard.alert({
 
@@ -78,7 +78,7 @@
                     callback: actionCallback
 
                 });
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.alert({
 
@@ -99,7 +99,7 @@
                 },
                 dataType: 'json'
 
-            }).done(function (result) {
+            }).then(function (result) {
 
                 var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
 
@@ -109,15 +109,17 @@
 
                     callback: actionCallback
 
-                }).fail(function () {
+                });
 
-                    Dashboard.alert({
+            }, function () {
 
-                        message: Globalize.translate('ErrorAddingEmbyConnectAccount')
+                Dashboard.alert({
 
-                    });
+                    message: Globalize.translate('ErrorAddingEmbyConnectAccount')
+
                 });
             });
+
         } else {
             if (noActionCallback) {
                 noActionCallback();
@@ -168,9 +170,9 @@
         user.Policy.EnableSyncTranscoding = $('#chkEnableSyncTranscoding', page).checked();
         user.Policy.EnablePublicSharing = $('#chkEnableSharing', page).checked();
 
-        ApiClient.updateUser(user).done(function () {
+        ApiClient.updateUser(user).then(function () {
 
-            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+            ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
 
                 onSaveComplete(page, user);
             });
@@ -182,7 +184,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getUser().done(function (result) {
+        getUser().then(function (result) {
             saveUser(result, page);
         });
 
@@ -201,7 +203,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getUser().done(function (user) {
+        getUser().then(function (user) {
 
             loadUser(page, user);
         });

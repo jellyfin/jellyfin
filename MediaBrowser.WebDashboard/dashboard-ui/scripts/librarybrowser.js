@@ -435,7 +435,7 @@
 
         playAllFromHere: function (fn, index) {
 
-            fn(index, 100, "MediaSources,Chapters").done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").then(function (result) {
 
                 MediaController.play({
                     items: result.Items
@@ -445,7 +445,7 @@
 
         queueAllFromHere: function (query, index) {
 
-            fn(index, 100, "MediaSources,Chapters").done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").then(function (result) {
 
                 MediaController.queue({
                     items: result.Items
@@ -577,7 +577,7 @@
 
         playInExternalPlayer: function (id) {
 
-            Dashboard.loadExternalPlayer().done(function () {
+            Dashboard.loadExternalPlayer().then(function () {
                 ExternalPlayer.showMenu(id);
             });
         },

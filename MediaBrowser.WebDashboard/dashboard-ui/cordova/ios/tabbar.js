@@ -108,11 +108,11 @@
             return;
         }
 
-        ApiClient.getUserViews({}, user.Id).done(function (result) {
+        ApiClient.getUserViews({}, user.Id).then(function (result) {
 
             onUserViewResponse(user, result.Items);
 
-        }).fail(function (result) {
+        }, function (result) {
 
             onUserViewResponse(user, []);
         });

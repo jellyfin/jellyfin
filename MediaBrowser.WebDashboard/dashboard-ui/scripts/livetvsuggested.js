@@ -33,7 +33,7 @@
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary"
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderItems(page, result.Items, 'activeProgramItems', 'play');
             LibraryBrowser.setLastRefreshed(page);
@@ -56,7 +56,7 @@
             IsKids: false,
             IsSeries: true
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderItems(page, result.Items, 'upcomingProgramItems');
         });
@@ -69,7 +69,7 @@
             limit: getLimit(),
             IsMovie: true
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderItems(page, result.Items, 'upcomingTvMovieItems', null, getPortraitShape());
         });
@@ -82,7 +82,7 @@
             limit: getLimit(),
             IsSports: true
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderItems(page, result.Items, 'upcomingSportsItems');
         });
@@ -95,7 +95,7 @@
             limit: getLimit(),
             IsKids: true
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderItems(page, result.Items, 'upcomingKidsItems');
         });

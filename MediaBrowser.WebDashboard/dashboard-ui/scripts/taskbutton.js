@@ -7,7 +7,7 @@ $.fn.taskButton = function (options) {
 
             IsEnabled: true
 
-        }).done(function (tasks) {
+        }).then(function (tasks) {
 
             updateTasks(button, tasks);
         });
@@ -66,7 +66,7 @@ $.fn.taskButton = function (options) {
     }
 
     function onScheduledTaskMessageConfirmed(instance, id) {
-        ApiClient.startScheduledTask(id).done(function () {
+        ApiClient.startScheduledTask(id).then(function () {
 
             pollTasks(instance);
         });

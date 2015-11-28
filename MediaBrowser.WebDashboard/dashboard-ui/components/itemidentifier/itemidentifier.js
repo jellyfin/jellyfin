@@ -69,7 +69,7 @@
             data: JSON.stringify(lookupInfo),
             contentType: "application/json"
 
-        }).done(function (results) {
+        }).then(function (results) {
 
             Dashboard.hideLoadingMsg();
             showIdentificationSearchResults(page, results);
@@ -213,14 +213,14 @@
             data: JSON.stringify(currentSearchResult),
             contentType: "application/json"
 
-        }).done(function () {
+        }).then(function () {
 
             hasChanges = true;
             Dashboard.hideLoadingMsg();
 
             PaperDialogHelper.close(document.querySelector('.identifyDialog'));
 
-        }).fail(function () {
+        }, function () {
 
             Dashboard.hideLoadingMsg();
 
@@ -236,7 +236,7 @@
 
     function showIdentificationForm(page, item) {
 
-        ApiClient.fetchJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
+        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
 
             var html = '';
 
@@ -281,13 +281,12 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
 
-            type: 'GET',
-            url: 'components/itemidentifier/itemidentifier.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
@@ -325,7 +324,9 @@
                 showIdentificationForm(dlg, item);
                 Dashboard.hideLoadingMsg();
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {

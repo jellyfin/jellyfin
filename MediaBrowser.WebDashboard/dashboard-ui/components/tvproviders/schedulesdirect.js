@@ -10,7 +10,7 @@
 
             Dashboard.showLoadingMsg();
 
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 var info = config.ListingProviders.filter(function (i) {
                     return i.Id == providerId;
@@ -35,7 +35,7 @@
 
         function setCountry(info) {
 
-            ApiClient.fetchJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).then(function (result) {
+            ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).then(function (result) {
 
                 var countryList = [];
                 var i, length;
@@ -108,13 +108,13 @@
                     data: JSON.stringify(info),
                     contentType: "application/json"
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     Dashboard.processServerConfigurationUpdateResult();
                     providerId = result.Id;
                     reload();
 
-                }).fail(function () {
+                }, function () {
                     Dashboard.alert({
                         message: Globalize.translate('ErrorSavingTvProvider')
                     });
@@ -137,7 +137,7 @@
 
             var id = providerId;
 
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 var info = config.ListingProviders.filter(function (i) {
                     return i.Id == id;
@@ -155,7 +155,7 @@
                     data: JSON.stringify(info),
                     contentType: "application/json"
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     Dashboard.hideLoadingMsg();
                     if (options.showConfirmation !== false) {
@@ -163,7 +163,7 @@
                     }
                     $(self).trigger('submitted');
 
-                }).fail(function () {
+                }, function () {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
                         message: Globalize.translate('ErrorAddingListingsToSchedulesDirect')
@@ -191,7 +191,7 @@
                 }),
                 dataType: 'json'
 
-            }).done(function (result) {
+            }).then(function (result) {
 
                 $('#selectListing', page).html(result.map(function (o) {
 
@@ -205,7 +205,7 @@
 
                 Dashboard.hideModalLoadingMsg();
 
-            }).fail(function (result) {
+            }, function (result) {
 
                 Dashboard.alert({
                     message: Globalize.translate('ErrorGettingTvLineups')

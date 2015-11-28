@@ -68,11 +68,11 @@
                 data: {
                     Parameters: JSON.stringify(result)
                 }
-            }).done(function () {
+            }).then(function () {
 
                 refreshPurchases();
 
-            }).fail(function (e) {
+            }, function (e) {
 
                 refreshPurchases();
             });
@@ -123,14 +123,14 @@
 
     function isPlaybackUnlockedViaOldApp(deferred) {
 
-        testDeviceId(ConnectionManager.deviceId()).done(function (isUnlocked) {
+        testDeviceId(ConnectionManager.deviceId()).then(function (isUnlocked) {
 
             if (isUnlocked) {
                 deferred.resolveWith(null, [true]);
                 return;
             }
 
-            testDeviceId(device.uuid).done(function (isUnlocked) {
+            testDeviceId(device.uuid).then(function (isUnlocked) {
 
                 if (isUnlocked) {
                     deferred.resolveWith(null, [true]);
@@ -159,11 +159,11 @@
                 type: 'GET',
                 url: 'https://mb3admin.com/admin/service/statistics/appAccess?application=AndroidV1&deviceId=' + deviceId
 
-            }).done(function () {
+            }).then(function () {
 
                 appStorage.setItem(cacheKey, 'true');
 
-            }).fail(function (e) {
+            }, function (e) {
 
                 if (e.status == 404) {
                     appStorage.setItem(cacheKey, 'false');

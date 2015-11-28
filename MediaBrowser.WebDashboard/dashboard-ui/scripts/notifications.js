@@ -37,7 +37,7 @@
                 return;
             }
 
-            promise.done(function (summary) {
+            promise.then(function (summary) {
 
                 var item = $('.btnNotificationsInner').removeClass('levelNormal').removeClass('levelWarning').removeClass('levelError').html(summary.UnreadCount);
 
@@ -49,7 +49,7 @@
 
         self.markNotificationsRead = function (ids, callback) {
 
-            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function () {
+            ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).then(function () {
 
                 self.getNotificationsSummaryPromise = null;
 
@@ -75,7 +75,7 @@
         var apiClient = window.ApiClient;
 
         if (apiClient) {
-            return apiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
+            return apiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).then(function (result) {
 
                 listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, showPaging);
 

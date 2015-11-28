@@ -7,7 +7,7 @@
         var apiClient = ApiClient;
 
         // After saving chapter task, now save server config
-        apiClient.fetchJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
             config.MetadataCountryCode = $('#selectCountry', page).val();
@@ -20,7 +20,7 @@
                 data: config,
                 url: apiClient.getUrl('Startup/Configuration')
 
-            }).done(function () {
+            }).then(function () {
 
                 navigateToNextPage();
 
@@ -50,7 +50,7 @@
         var promise2 = apiClient.getCultures();
         var promise3 = apiClient.getCountries();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
 
             reloadData(page, response1[0], response2[0], response3[0]);
 

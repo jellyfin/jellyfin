@@ -24,7 +24,7 @@
 
         var prefix = $.browser.android ? 'android' : 'ios';
 
-        IapManager.isUnlockedOverride(feature).done(function (isUnlocked) {
+        IapManager.isUnlockedOverride(feature).then(function (isUnlocked) {
 
             if (isUnlocked) {
                 deferred.resolve();
@@ -38,7 +38,7 @@
                     return;
                 }
 
-                IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
+                IapManager.getSubscriptionOptions().then(function (subscriptionOptions) {
 
                     if (subscriptionOptions.filter(function (p) {
                         return p.owned;
@@ -58,7 +58,7 @@
             }
 
             // Get supporter status
-            getRegistrationInfo(prefix + 'appunlock').done(onRegistrationInfoResponse).fail(function () {
+            getRegistrationInfo(prefix + 'appunlock').then(onRegistrationInfoResponse, function () {
                 onRegistrationInfoResponse({});
             });
         });
@@ -371,7 +371,7 @@
 
     function validateSync(deferred) {
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 deferred.resolve();
@@ -384,7 +384,7 @@
                     return;
                 }
 
-                IapManager.getSubscriptionOptions().done(function (subscriptionOptions) {
+                IapManager.getSubscriptionOptions().then(function (subscriptionOptions) {
 
                     var dialogOptions = {
                         title: Globalize.translate('HeaderUnlockSync'),
@@ -396,7 +396,7 @@
             }
 
             // Get supporter status
-            getRegistrationInfo('Sync').done(onRegistrationInfoResponse).fail(function () {
+            getRegistrationInfo('Sync').then(onRegistrationInfoResponse, function () {
                 onRegistrationInfoResponse({});
             });
         });

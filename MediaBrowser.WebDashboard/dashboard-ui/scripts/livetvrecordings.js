@@ -86,7 +86,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsInProgress: true
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderRecordings(page.querySelector('#activeRecordings'), result.Items);
 
@@ -98,7 +98,7 @@
             limit: 12,
             IsInProgress: false
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderRecordings(page.querySelector('#latestRecordings'), result.Items);
         });
@@ -107,7 +107,7 @@
 
             userId: Dashboard.getCurrentUserId()
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             renderRecordingGroups(page, result.Items);
 

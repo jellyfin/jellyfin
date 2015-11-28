@@ -254,7 +254,7 @@
         LibraryBrowser.loadSavedQueryValues(viewkey, query);
         QueryFilters.onPageShow(page, query);
 
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+        LibraryBrowser.getSavedViewSetting(viewkey).then(function (val) {
 
             if (val) {
                 $('#selectView', page).val(val).trigger('change');

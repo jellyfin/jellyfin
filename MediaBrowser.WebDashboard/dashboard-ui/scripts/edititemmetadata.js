@@ -13,7 +13,7 @@
 
         var promise1 = MetadataEditor.getItemPromise();
         var promise2 = MetadataEditor.getCurrentItemId() ?
-            ApiClient.fetchJSON(ApiClient.getUrl('Items/' + MetadataEditor.getCurrentItemId() + '/MetadataEditor')) :
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.getCurrentItemId() + '/MetadataEditor')) :
             {};
 
         Promise.all([promise1, promise2]).then(function (responses) {
@@ -901,7 +901,7 @@
                 });
             }
 
-            ApiClient.updateItem(item).done(function () {
+            ApiClient.updateItem(item).then(function () {
 
                 var newContentType = $('#selectContentType', form).val() || '';
 
@@ -915,7 +915,7 @@
 
                         type: 'POST'
 
-                    }).done(function () {
+                    }).then(function () {
                         afterContentTypeUpdated();
                     });
 

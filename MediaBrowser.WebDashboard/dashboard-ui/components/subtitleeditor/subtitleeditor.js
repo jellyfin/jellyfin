@@ -35,7 +35,7 @@
 
         var url = 'Providers/Subtitles/Subtitles/' + id;
 
-        ApiClient.get(ApiClient.getUrl(url)).done(function (result) {
+        ApiClient.get(ApiClient.getUrl(url)).then(function (result) {
 
             $('.subtitleContent', page).html(result);
 
@@ -54,7 +54,7 @@
             type: "POST",
             url: ApiClient.getUrl(url)
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.alert(Globalize.translate('MessageDownloadQueued'));
         });
@@ -78,7 +78,7 @@
                     type: "DELETE",
                     url: ApiClient.getUrl(url)
 
-                }).done(function () {
+                }).then(function () {
 
                     reload(page, itemId);
                 });
@@ -291,7 +291,7 @@
 
         var url = ApiClient.getUrl('Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + language);
 
-        ApiClient.fetchJSON(url).then(function (results) {
+        ApiClient.getJSON(url).then(function (results) {
 
             renderSearchResults(page, results);
         });
@@ -331,13 +331,12 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/subtitleeditor/subtitleeditor.template.html', true);
 
-            type: 'GET',
-            url: 'components/subtitleeditor/subtitleeditor.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = PaperDialogHelper.createDialog();
@@ -365,7 +364,7 @@
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
-                ApiClient.getCultures().done(function (languages) {
+                ApiClient.getCultures().then(function (languages) {
 
                     fillLanguages(editorContent, languages);
                 });
@@ -375,7 +374,9 @@
                     PaperDialogHelper.close(dlg);
                 });
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {

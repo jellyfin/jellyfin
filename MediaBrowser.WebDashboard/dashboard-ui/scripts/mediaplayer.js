@@ -668,7 +668,7 @@
             });
 
             if (self.currentItem.MediaType == "Video") {
-                ApiClient.stopActiveEncodings(playSessionId).done(function () {
+                ApiClient.stopActiveEncodings(playSessionId).then(function () {
 
                     //self.startTimeTicksOffset = newPositionTicks;
                     self.setSrcIntoRenderer(mediaRenderer, streamInfo, self.currentItem, self.currentMediaSource);
@@ -862,7 +862,7 @@
                 return;
             }
 
-            ApiClient.fetchJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).then(function (intros) {
+            ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/' + firstItem.Id + '/Intros')).then(function (intros) {
 
                 items = intros.Items.concat(items);
                 self.playInternal(items[0], options.startPositionTicks, function () {
@@ -880,7 +880,7 @@
                 return MediaController.supportsDirectPlay(v);
             });
 
-            $.when.apply($, promises).done(function () {
+            $.when.apply($, promises).then(function () {
 
                 for (var i = 0, length = versions.length; i < length; i++) {
                     versions[i].enableDirectPlay = arguments[i] || false;
@@ -1036,7 +1036,7 @@
 
                 require(['localassetmanager'], function () {
 
-                    LocalAssetManager.translateFilePath(resultInfo.url).done(function (path) {
+                    LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
 
                         resultInfo.url = path;
                         Logger.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
@@ -1087,7 +1087,8 @@
                     AppSettings.maxStreamingBitrate(bitrate);
 
                     playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
-                }).fail(function () {
+
+                }, function () {
 
                     playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
                 });
@@ -1108,14 +1109,14 @@
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-                    getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources).done(function (mediaSource) {
+                    getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources).then(function (mediaSource) {
                         if (mediaSource) {
 
                             if (mediaSource.RequiresOpening) {
 
-                                MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                                MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).then(function (openLiveStreamResult) {
 
-                                    MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource).done(function (result) {
+                                    MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource).then(function (result) {
 
                                         openLiveStreamResult.MediaSource.enableDirectPlay = result;
                                         callback(openLiveStreamResult.MediaSource);

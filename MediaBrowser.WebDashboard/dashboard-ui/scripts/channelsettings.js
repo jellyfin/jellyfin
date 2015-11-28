@@ -13,12 +13,12 @@
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("channels").done(function (config) {
+        ApiClient.getNamedConfiguration("channels").then(function (config) {
 
             // This should be null if empty
             config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
 
-            ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("channels", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -37,7 +37,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("channels").done(function (config) {
+        ApiClient.getNamedConfiguration("channels").then(function (config) {
 
             loadPage(page, config);
 

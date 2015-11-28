@@ -53,7 +53,7 @@
             parentPathPromise = parentPathPromise.promise();
         }
 
-        $.when(promise, parentPathPromise).done(function (response1, response2) {
+        $.when(promise, parentPathPromise).then(function (response1, response2) {
 
             var folders = response1[0];
             var parentPath = response2 && response2.length ? response2[0] || '' : '';
@@ -84,7 +84,7 @@
 
             Dashboard.hideLoadingMsg();
 
-        }).fail(function () {
+        }, function () {
 
             $('#txtDirectoryPickerPath', page).val("");
             $('.results', page).html('');
@@ -211,7 +211,7 @@
                 fileOptions.includeFiles = options.includeFiles;
             }
 
-            getSystemInfo().done(function (systemInfo) {
+            getSystemInfo().then(function (systemInfo) {
 
                 require(['components/paperdialoghelper'], function () {
 

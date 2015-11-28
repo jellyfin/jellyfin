@@ -10,7 +10,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.resetLiveTvTuner(id).done(function () {
+                ApiClient.resetLiveTvTuner(id).then(function () {
 
                     Dashboard.hideLoadingMsg();
 
@@ -172,7 +172,7 @@
 
         renderTuners(page, tuners);
 
-        ApiClient.getNamedConfiguration("livetv").done(function (config) {
+        ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
             renderDevices(page, config.TunerHosts);
             renderProviders(page, config.ListingProviders);
@@ -243,7 +243,7 @@
                         Id: id
                     })
 
-                }).done(function () {
+                }).then(function () {
 
                     reload(page);
                 });
@@ -255,7 +255,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvInfo().done(function (liveTvInfo) {
+        ApiClient.getLiveTvInfo().then(function (liveTvInfo) {
 
             loadPage(page, liveTvInfo);
 
@@ -276,11 +276,11 @@
             }),
             contentType: "application/json"
 
-        }).done(function () {
+        }).then(function () {
 
             reload(page);
 
-        }).fail(function () {
+        }, function () {
             Dashboard.alert({
                 message: Globalize.translate('ErrorAddingTunerDevice')
             });
@@ -345,7 +345,11 @@
                         Id: id
                     })
 
-                }).always(function () {
+                }).then(function () {
+
+                    reload(page);
+
+                }, function () {
 
                     reload(page);
                 });

@@ -172,7 +172,7 @@
             var apiClient = window.ApiClient;
 
             if (apiClient) {
-                apiClient.getSessions().done(function (sessions) {
+                apiClient.getSessions().then(function (sessions) {
 
                     var currentTargetId = MediaController.getPlayerInfo().id;
 
@@ -203,7 +203,7 @@
                 var apiClient = window.ApiClient;
 
                 if (apiClient) {
-                    apiClient.getSessions().done(processUpdatedSessions);
+                    apiClient.getSessions().then(processUpdatedSessions);
                 }
             }
         }
@@ -272,7 +272,7 @@
             var apiClient = window.ApiClient;
 
             if (apiClient) {
-                apiClient.getSessions(sessionQuery).done(function (sessions) {
+                apiClient.getSessions(sessionQuery).then(function (sessions) {
 
                     var targets = sessions.filter(function (s) {
 
@@ -293,10 +293,11 @@
 
                     deferred.resolveWith(null, [targets]);
 
-                }).fail(function () {
+                }, function () {
 
                     deferred.reject();
                 });
+
             } else {
                 deferred.resolveWith(null, []);
             }

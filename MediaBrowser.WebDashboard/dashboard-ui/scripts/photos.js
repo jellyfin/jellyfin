@@ -154,7 +154,7 @@
             index = 0;
         }
 
-        Dashboard.loadSwipebox().done(function () {
+        Dashboard.loadSwipebox().then(function () {
 
             $.swipebox(slideshowItems, {
                 initialIndexOnArray: index,

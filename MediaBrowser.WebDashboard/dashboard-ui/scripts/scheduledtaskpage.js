@@ -6,7 +6,7 @@
         var id = getParameterByName('id');
 
 
-        ApiClient.getScheduledTask(id).done(ScheduledTaskPage.loadScheduledTask);
+        ApiClient.getScheduledTask(id).then(ScheduledTaskPage.loadScheduledTask);
     },
 
     loadScheduledTask: function (task) {
@@ -177,11 +177,11 @@
         var id = getParameterByName('id');
 
 
-        ApiClient.getScheduledTask(id).done(function (task) {
+        ApiClient.getScheduledTask(id).then(function (task) {
 
             task.Triggers.remove(index);
 
-            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).done(function () {
+            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
 
                 ScheduledTaskPage.refreshScheduledTask();
 
@@ -293,11 +293,11 @@
 
         var id = getParameterByName('id');
 
-        ApiClient.getScheduledTask(id).done(function (task) {
+        ApiClient.getScheduledTask(id).then(function (task) {
 
             task.Triggers.push(ScheduledTaskPage.getTriggerToAdd());
 
-            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).done(function () {
+            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
 
                 $('#popupAddTrigger').popup('close');
 

@@ -28,7 +28,7 @@
 
         var page = $(form).parents('.page');
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (config) {
 
             config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
             config.TrailerLimit = $('#txtNumTrailers', page).val();
@@ -44,7 +44,7 @@
             config.EnableIntrosFromUpcomingStreamingMovies = $('.chkUpcomingStreamingTrailers', page).checked();
             config.EnableIntrosFromSimilarMovies = $('.chkOtherTrailers', page).checked();
 
-            ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("cinemamode", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -84,7 +84,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (config) {
 
             loadPage(page, config);
 

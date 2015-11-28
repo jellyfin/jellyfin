@@ -80,7 +80,7 @@
 
             //Logger.log('getImageUrl:' + originalUrl);
 
-            getFileSystem().done(function (fileSystem) {
+            getFileSystem().then(function (fileSystem) {
                 var path = fileSystem.root.toURL() + "/emby/cache/" + key;
 
                 resolveLocalFileSystemURL(path, function (fileEntry) {
@@ -116,11 +116,11 @@
             //    return;
             //}
 
-            self.getImageUrl(url).done(function (localUrl) {
+            self.getImageUrl(url).then(function (localUrl) {
 
                 setImageIntoElement(elem, localUrl);
 
-            }).fail(onFail);
+            }, onFail);
         };
 
         var imageIdIndex = 1;

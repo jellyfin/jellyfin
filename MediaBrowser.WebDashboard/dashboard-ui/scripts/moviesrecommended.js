@@ -36,7 +36,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var view = getView();
             var html = '';
@@ -216,7 +216,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });
 
-        ApiClient.fetchJSON(url).then(function (recommendations) {
+        ApiClient.getJSON(url).then(function (recommendations) {
 
             if (!recommendations.length) {
 

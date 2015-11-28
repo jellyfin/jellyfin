@@ -14,7 +14,7 @@
                     url: ApiClient.getUrl('Sync/Jobs/' + id),
                     type: 'DELETE'
 
-                }).done(function () {
+                }).then(function () {
 
                     reloadData(page);
                 });
@@ -325,7 +325,7 @@
                 }
             }
 
-            ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
+            ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
 
                 loadData(page, response.Items);
                 Dashboard.hideLoadingMsg();
@@ -381,7 +381,7 @@
         $('.btnSyncSupporter', page).on('click', function () {
 
             requirejs(["scripts/registrationservices"], function () {
-                RegistrationServices.validateFeature('sync').done(function () {
+                RegistrationServices.validateFeature('sync').then(function () {
                 });
             });
         });
@@ -391,7 +391,7 @@
 
         var page = this;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 $('.supporterPromotionContainer', page).hide();

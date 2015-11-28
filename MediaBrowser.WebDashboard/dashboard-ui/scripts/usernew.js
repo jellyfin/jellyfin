@@ -70,7 +70,7 @@
 
         var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
 
-        $.when(promise4, promise5).done(function (response4, response5) {
+        $.when(promise4, promise5).then(function (response4, response5) {
 
             loadMediaFolders(page, response4[0].Items);
             loadChannels(page, response5[0].Items);
@@ -83,7 +83,7 @@
 
         var name = $('#txtUserName', page).val();
 
-        ApiClient.createUser(name).done(function (user) {
+        ApiClient.createUser(name).then(function (user) {
 
             user.Policy.EnableAllFolders = $('#chkEnableAllFolders', page).checked();
             user.Policy.EnabledFolders = user.Policy.EnableAllFolders ?
@@ -103,11 +103,11 @@
 
                 }).get();
 
-            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+            ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
 
-        }).fail(function() {
+        }, function () {
 
             Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
             Dashboard.hideLoadingMsg();

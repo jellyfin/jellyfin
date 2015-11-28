@@ -67,7 +67,7 @@
             var nextDay = new Date(date.getTime() + msPerDay - 2000);
 
             Logger.log(nextDay);
-            channelsPromise.done(function (channelsResult) {
+            channelsPromise.then(function (channelsResult) {
 
                 ApiClient.getLiveTvPrograms({
                     UserId: Dashboard.getCurrentUserId(),
@@ -80,7 +80,7 @@
                     EnableImages: false,
                     SortBy: "StartDate"
 
-                }).done(function (programsResult) {
+                }).then(function (programsResult) {
 
                     renderGuide(page, date, channelsResult.Items, programsResult.Items);
 
@@ -424,7 +424,7 @@
 
             channelLimit = limit;
 
-            ApiClient.getLiveTvGuideInfo().done(function (guideInfo) {
+            ApiClient.getLiveTvGuideInfo().then(function (guideInfo) {
 
                 setDateRange(page, guideInfo);
             });
@@ -434,11 +434,11 @@
 
             $('.guideRequiresUnlock', page).hide();
 
-            RegistrationServices.validateFeature('livetv').done(function () {
+            RegistrationServices.validateFeature('livetv').then(function () {
                 Dashboard.showModalLoadingMsg();
 
                 reloadPageAfterValidation(page, 1000);
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.showModalLoadingMsg();
 
@@ -469,13 +469,12 @@
             });
         }
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/tvguide/tvguide.template.html', true);
 
-            type: 'GET',
-            url: 'components/tvguide/tvguide.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             var tabContent = options.element;
             tabContent.innerHTML = Globalize.translateDocument(template);
 
@@ -517,6 +516,8 @@
             });
 
             self.refresh();
-        });
+        }
+
+        xhr.send();
     };
 });

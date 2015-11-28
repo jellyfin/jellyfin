@@ -213,7 +213,7 @@
             type: "DELETE",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId)
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -227,7 +227,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/MarkForRemoval')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -240,7 +240,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/UnmarkForRemoval')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -253,7 +253,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/Enable')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -288,9 +288,9 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
-            ApiClient.fetchJSON(ApiClient.getUrl('Sync/Options', {
+            ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
 
                 UserId: job.UserId,
                 ItemIds: (job.RequestedItemIds && job.RequestedItemIds.length ? job.RequestedItemIds.join('') : null),
@@ -307,7 +307,7 @@
             });
         });
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Sync/JobItems', {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/JobItems', {
 
             JobId: id,
             AddMetadata: true
@@ -331,7 +331,7 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             SyncManager.setJobValues(job, page);
 
@@ -342,7 +342,7 @@
                 data: JSON.stringify(job),
                 contentType: "application/json"
 
-            }).done(function () {
+            }).then(function () {
 
                 Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('SettingsSaved'));

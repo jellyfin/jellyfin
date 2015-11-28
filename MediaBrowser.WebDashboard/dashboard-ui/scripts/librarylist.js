@@ -158,7 +158,7 @@
 
         var id = this.getAttribute('data-itemid');
 
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).done(function (trailers) {
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).then(function (trailers) {
             MediaController.play({ items: trailers });
         });
 
@@ -226,7 +226,7 @@
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var items = [];
 
@@ -495,7 +495,7 @@
                                 MediaController.queue(itemId);
                                 break;
                             case 'trailer':
-                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).done(function (trailers) {
+                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).then(function (trailers) {
                                     MediaController.play({ items: trailers });
                                 });
                                 break;
@@ -645,7 +645,7 @@
             return;
         }
 
-        ApiClient.fetchJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             if (items.length == 1) {
 
@@ -1160,7 +1160,7 @@
                     type: "POST",
                     url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
 
-                }).done(function () {
+                }).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     hideSelections();

@@ -58,7 +58,7 @@
 
     function populateReviews(id, page) {
 
-        ApiClient.getPackageReviews(id, null, null, 3).done(function (positive) {
+        ApiClient.getPackageReviews(id, null, null, 3).then(function (positive) {
 
             var html = '';
 
@@ -185,7 +185,7 @@
         var promise2 = ApiClient.getInstalledPlugins();
         var promise3 = ApiClient.getPluginSecurityInfo();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
 
             renderPackage(response1[0], response2[0], response3[0], page);
 
@@ -243,7 +243,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.installPlugin(packageName, guid, updateClass, version).done(function () {
+                ApiClient.installPlugin(packageName, guid, updateClass, version).then(function () {
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -281,7 +281,7 @@
             var name = getParameterByName('name');
             var guid = getParameterByName('guid');
 
-            ApiClient.getInstalledPlugins().done(function (plugins) {
+            ApiClient.getInstalledPlugins().then(function (plugins) {
 
                 var installedPlugin = plugins.filter(function (ip) {
                     return ip.Name == name;

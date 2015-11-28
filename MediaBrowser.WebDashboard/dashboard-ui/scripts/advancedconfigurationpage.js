@@ -63,7 +63,7 @@
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
             config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

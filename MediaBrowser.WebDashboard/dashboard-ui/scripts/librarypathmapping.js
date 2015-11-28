@@ -12,7 +12,7 @@
 
                     config.PathSubstitutions.splice(index, 1);
 
-                    ApiClient.updateServerConfiguration(config).done(function () {
+                    ApiClient.updateServerConfiguration(config).then(function () {
 
                         reload(page);
                     });
@@ -103,7 +103,7 @@
         ApiClient.getServerConfiguration().then(function (config) {
 
             addSubstitution(page, config);
-            ApiClient.updateServerConfiguration(config).done(function () {
+            ApiClient.updateServerConfiguration(config).then(function () {
 
                 reload(page);
             });

@@ -75,7 +75,7 @@
 
         Dashboard.showModalLoadingMsg();
 
-        MediaController.getTargets().done(function (targets) {
+        MediaController.getTargets().then(function (targets) {
 
             var menuItems = targets.map(function (t) {
 
@@ -207,7 +207,7 @@
 
             var player = controller.getCurrentPlayer();
 
-            player.getPlayerState().done(function (result) {
+            player.getPlayerState().then(function (result) {
 
                 var state = result;
 
@@ -321,7 +321,7 @@
 
             currentPairingId = targetInfo.id;
 
-            player.tryPair(targetInfo).done(function () {
+            player.tryPair(targetInfo).then(function () {
 
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
@@ -340,7 +340,7 @@
 
             name = normalizeName(name);
 
-            self.getTargets().done(function (result) {
+            self.getTargets().then(function (result) {
 
                 var target = result.filter(function (p) {
                     return normalizeName(p.name) == name;
@@ -418,7 +418,7 @@
                 return p.getTargets();
             });
 
-            $.when.apply($, promises).done(function () {
+            $.when.apply($, promises).then(function () {
 
                 var targets = [];
 
@@ -461,7 +461,7 @@
 
                 self.playbackTimeLimitMs = null;
 
-                RegistrationServices.validateFeature('playback').done(fn).fail(function () {
+                RegistrationServices.validateFeature('playback').then(fn, function () {
 
                     self.playbackTimeLimitMs = lockedTimeLimitMs;
                     startAutoStopTimer();
@@ -801,7 +801,7 @@
                 var serverInfo = ApiClient.serverInfo();
 
                 if (serverInfo.Id) {
-                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).done(function (localMediaSource) {
+                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).then(function (localMediaSource) {
                         // Use the local media source if a specific one wasn't requested, or the smae one was requested
                         if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
 
@@ -823,9 +823,9 @@
         }
 
         function getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred) {
-            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
                 deferred.resolveWith(null, [result]);
-            }).fail(function () {
+            }, function () {
                 deferred.reject();
             });
         }
@@ -916,7 +916,7 @@
 
                     require(['localassetmanager'], function () {
 
-                        LocalAssetManager.fileExists(mediaSource.Path).done(function (exists) {
+                        LocalAssetManager.fileExists(mediaSource.Path).then(function (exists) {
                             Logger.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
                             deferred.resolveWith(null, [exists]);
                         });

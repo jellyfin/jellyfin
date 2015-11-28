@@ -123,24 +123,24 @@
 
         } else {
 
-            promise = HttpClient.send({
-                type: "POST",
-                url: "http://mb3admin.com/admin/service/appstore/register",
-                data: JSON.stringify(postData),
-                contentType: "application/json",
+            promise = fetch("http://mb3admin.com/admin/service/appstore/register", {
+                
+                method: 'POST',
+                body: JSON.stringify(postData),
                 headers: {
-                    "X-Emby-Token": "EMBY-APPLE-VALIDATE"
+                    "X-Emby-Token": "EMBY-APPLE-VALIDATE",
+                    "Content-Type": "application/json"
                 }
             });
         }
 
-        promise.done(function () {
+        promise.then(function () {
 
             setCachedResult(cacheKey, true);
 
             callback(true, product);
 
-        }).fail(function (e) {
+        }, function (e) {
 
             if (e.status == 402) {
 

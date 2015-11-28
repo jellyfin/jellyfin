@@ -53,7 +53,7 @@
 
         var itemsPromise = ApiClient.getItems(userId, query);
 
-        Promise.all([parentItemPromise, itemsPromise]).done(function (responses) {
+        Promise.all([parentItemPromise, itemsPromise]).then(function (responses) {
 
             var item = responses[0];
             currentItem = item;

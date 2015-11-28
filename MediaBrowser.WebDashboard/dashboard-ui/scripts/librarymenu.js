@@ -188,7 +188,7 @@
 
         if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
 
-            ConnectionManager.user(window.ApiClient).done(function (user) {
+            ConnectionManager.user(window.ApiClient).then(function (user) {
 
                 var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
 
@@ -389,7 +389,7 @@
 
         var deferred = $.Deferred();
 
-        apiClient.getUserViews({}, userId).done(function (result) {
+        apiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -445,7 +445,7 @@
 
         var apiClient = window.ApiClient;
 
-        getUserViews(apiClient, userId).done(function (result) {
+        getUserViews(apiClient, userId).then(function (result) {
 
             var items = result;
 
@@ -786,7 +786,7 @@
             updateLibraryNavLinks(page);
             requiresViewMenuRefresh = false;
 
-            ConnectionManager.user(window.ApiClient).done(addUserToHeader);
+            ConnectionManager.user(window.ApiClient).then(addUserToHeader);
 
         } else {
             viewMenuBar.classList.remove('hide');

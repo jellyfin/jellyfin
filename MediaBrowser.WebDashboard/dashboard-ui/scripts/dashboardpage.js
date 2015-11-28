@@ -28,7 +28,7 @@
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
@@ -120,7 +120,7 @@
             Limit: 7
         };
 
-        ApiClient.getProductNews(query).done(function (result) {
+        ApiClient.getProductNews(query).then(function (result) {
 
             var html = result.Items.map(function (item) {
 
@@ -242,11 +242,11 @@
             return;
         }
 
-        apiClient.getSessions().done(function (sessions) {
+        apiClient.getSessions().then(function (sessions) {
 
             DashboardPage.renderInfo(page, sessions, forceUpdate);
         });
-        apiClient.getScheduledTasks().done(function (tasks) {
+        apiClient.getScheduledTasks().then(function (tasks) {
 
             DashboardPage.renderRunningTasks(page, tasks);
         });
@@ -834,7 +834,7 @@
 
             DashboardPage.lastAppUpdateCheck = new Date().getTime();
 
-            ApiClient.getAvailableApplicationUpdate().done(function (packageInfo) {
+            ApiClient.getAvailableApplicationUpdate().then(function (packageInfo) {
 
                 var version = packageInfo[0];
 
@@ -892,7 +892,7 @@
 
         DashboardPage.lastPluginUpdateCheck = new Date().getTime();
 
-        ApiClient.getAvailablePluginUpdates().done(function (updates) {
+        ApiClient.getAvailablePluginUpdates().then(function (updates) {
 
             var elem = $('#pPluginUpdates', page);
 
@@ -932,7 +932,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.installPlugin(name, guid, classification, version).done(function () {
+        ApiClient.installPlugin(name, guid, classification, version).then(function () {
 
             Dashboard.hideLoadingMsg();
         });
@@ -945,14 +945,14 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getScheduledTasks().done(function (tasks) {
+        ApiClient.getScheduledTasks().then(function (tasks) {
 
             var task = tasks.filter(function (t) {
 
                 return t.Key == DashboardPage.systemUpdateTaskKey;
             })[0];
 
-            ApiClient.startScheduledTask(task.Id).done(function () {
+            ApiClient.startScheduledTask(task.Id).then(function () {
 
                 DashboardPage.pollForInfo(page);
 
@@ -965,7 +965,7 @@
 
         var page = $.mobile.activePage;
 
-        ApiClient.stopScheduledTask(id).done(function () {
+        ApiClient.stopScheduledTask(id).then(function () {
 
             DashboardPage.pollForInfo(page);
         });
@@ -1170,7 +1170,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
         var minDate = new Date();
         minDate.setTime(minDate.getTime() - 86400000);
 
-        ApiClient.fetchJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
+        ApiClient.getJSON(ApiClient.getUrl('System/ActivityLog/Entries', {
 
             startIndex: startIndex,
             limit: limit,
@@ -1313,7 +1313,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function takeTour(page, userId) {
 
-        Dashboard.loadSwipebox().done(function () {
+        Dashboard.loadSwipebox().then(function () {
 
             $.swipebox([
                     { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
@@ -1366,7 +1366,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
         var page = this;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (!$('.customSupporterPromotion', page).length) {
                 $('.supporterPromotion', page).remove();

@@ -22,7 +22,7 @@
         var promise1 = ApiClient.getJSON(ApiClient.getUrl('Devices/Info', { Id: id }));
         var promise2 = ApiClient.getJSON(ApiClient.getUrl('Devices/Capabilities', { Id: id }));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             load(page, response1[0], response2[0]);
 
@@ -46,7 +46,7 @@
             }),
             contentType: "application/json"
 
-        }).done(Dashboard.processServerConfigurationUpdateResult);
+        }).then(Dashboard.processServerConfigurationUpdateResult);
     }
 
     function onSubmit() {

@@ -211,7 +211,7 @@
 
         user.Policy.BlockedTags = getBlockedTagsFromPage(page);
 
-        ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+        ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
             onSaveComplete(page);
         });
     }
@@ -226,7 +226,7 @@
 
             var userId = getParameterByName("userId");
 
-            ApiClient.getUser(userId).done(function (result) {
+            ApiClient.getUser(userId).then(function (result) {
                 saveUser(result, page);
             });
 
@@ -407,7 +407,7 @@
 
         var promise2 = ApiClient.getParentalRatings();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             loadUser(page, response1[0] || response1, response2[0]);
 

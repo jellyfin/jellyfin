@@ -36,7 +36,7 @@
                 }),
                 dataType: "json"
 
-            }).done(function (share) {
+            }).then(function (share) {
 
                 var options = {
                     share: share
@@ -45,7 +45,7 @@
                 Dashboard.hideLoadingMsg();
                 SharingWidget.showMenu(options, onSharingSuccess, onSharingCancel);
 
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.hideLoadingMsg();
             });

@@ -47,7 +47,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             saveUser(page, user);
 
@@ -66,7 +66,7 @@
         $('.btnSelectSyncPath', page).on('click', function () {
 
             require(['nativedirectorychooser'], function () {
-                NativeDirectoryChooser.chooseDirectory().done(function (path) {
+                NativeDirectoryChooser.chooseDirectory().then(function (path) {
                     $('#txtSyncPath', page).val(path);
                 });
             });
@@ -80,7 +80,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             loadForm(page, user);
         });

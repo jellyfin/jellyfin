@@ -151,7 +151,7 @@
         user.Policy.BlockedChannels = null;
         user.Policy.BlockedMediaFolders = null;
 
-        ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+        ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
             onSaveComplete(page);
         });
     }
@@ -163,7 +163,7 @@
 
         var userId = getParameterByName("userId");
 
-        ApiClient.getUser(userId).done(function (result) {
+        ApiClient.getUser(userId).then(function (result) {
             saveUser(result, page);
         });
 
@@ -238,7 +238,7 @@
             SupportsPersistentIdentifier: true
         }));
 
-        $.when(promise1, promise2, promise4, promise5, promise6).done(function (response1, response2, response4, response5, response6) {
+        $.when(promise1, promise2, promise4, promise5, promise6).then(function (response1, response2, response4, response5, response6) {
 
             loadUser(page, response1[0] || response1, response2[0], response4[0].Items, response5[0].Items, response6[0].Items);
 

@@ -146,17 +146,18 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            deviceReadyPromise.done(function () {
+            deviceReadyPromise.then(function () {
 
                 try {
-                    findServersInternal(timeoutMs).done(function (result) {
+                    findServersInternal(timeoutMs).then(function (result) {
 
                         deferred.resolveWith(null, [result]);
 
-                    }).fail(function () {
+                    }, function () {
 
                         deferred.resolveWith(null, [[]]);
                     });
+
                 } catch (err) {
                     deferred.resolveWith(null, [[]]);
                 }

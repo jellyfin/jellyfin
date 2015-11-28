@@ -118,23 +118,7 @@ var Dashboard = {
 
     getCurrentUser: function () {
 
-        if (!Dashboard.getUserPromise) {
-
-            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(function () {
-                Dashboard.getUserPromise = null;
-            });
-        }
-
-        return Dashboard.getUserPromise;
-    },
-
-    validateCurrentUser: function () {
-
-        Dashboard.getUserPromise = null;
-
-        if (Dashboard.getCurrentUserId()) {
-            Dashboard.getCurrentUser();
-        }
+        return window.ApiClient.getCurrentUser();
     },
 
     serverAddress: function () {
@@ -189,8 +173,6 @@ var Dashboard = {
         apiClient = apiClient || window.ApiClient;
 
         window.ApiClient = apiClient;
-
-        Dashboard.getUserPromise = null;
     },
 
     logout: function (logoutWithServer) {
@@ -211,7 +193,7 @@ var Dashboard = {
         if (logoutWithServer === false) {
             onLogoutDone();
         } else {
-            ConnectionManager.logout().done(onLogoutDone);
+            ConnectionManager.logout().then(onLogoutDone);
         }
     },
 
@@ -330,7 +312,7 @@ var Dashboard = {
 
     cancelInstallation: function (id) {
 
-        ApiClient.cancelPackageInstallation(id).always(Dashboard.refreshSystemInfoFromServer);
+        ApiClient.cancelPackageInstallation(id).then(Dashboard.refreshSystemInfoFromServer, Dashboard.refreshSystemInfoFromServer);
 
     },
 
@@ -742,13 +724,13 @@ var Dashboard = {
         Dashboard.suppressAjaxErrors = true;
         Dashboard.showLoadingMsg();
 
-        ApiClient.restartServer().done(function () {
+        ApiClient.restartServer().then(function () {
 
             setTimeout(function () {
                 Dashboard.reloadPageWhenServerAvailable();
             }, 250);
 
-        }).fail(function () {
+        }, function () {
             Dashboard.suppressAjaxErrors = false;
         });
     },
@@ -756,7 +738,7 @@ var Dashboard = {
     reloadPageWhenServerAvailable: function (retryCount) {
 
         // Don't use apiclient method because we don't want it reporting authentication under the old version
-        ApiClient.fetchJSON(ApiClient.getUrl("System/Info")).then(function (info) {
+        ApiClient.getJSON(ApiClient.getUrl("System/Info")).then(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
@@ -765,7 +747,7 @@ var Dashboard = {
                 Dashboard.retryReload(retryCount);
             }
 
-        }).fail(function () {
+        }, function () {
             Dashboard.retryReload(retryCount);
         });
     },
@@ -809,7 +791,7 @@ var Dashboard = {
                 $(this).off("panelclose").remove();
             });
 
-            ConnectionManager.user(window.ApiClient).done(function (user) {
+            ConnectionManager.user(window.ApiClient).then(function (user) {
                 Dashboard.updateUserFlyout(elem, user);
             });
         });
@@ -867,7 +849,7 @@ var Dashboard = {
                     // Don't show normal dashboard errors
                 }
 
-            }).done(function (result) {
+            }).then(function (result) {
                 deferred.resolveWith(null, [result]);
             });
 
@@ -1161,24 +1143,11 @@ var Dashboard = {
         else if (msg.MessageType === "ServerRestarting") {
             Dashboard.hideServerRestartWarning();
         }
-        else if (msg.MessageType === "UserDeleted") {
-            Dashboard.validateCurrentUser();
-        }
         else if (msg.MessageType === "SystemInfo") {
             Dashboard.updateSystemInfo(msg.Data);
         }
         else if (msg.MessageType === "RestartRequired") {
             Dashboard.updateSystemInfo(msg.Data);
-        }
-        else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
-            var user = msg.Data;
-
-            if (user.Id == Dashboard.getCurrentUserId()) {
-
-                Dashboard.validateCurrentUser();
-                $('.currentUsername').html(user.Name);
-            }
-
         }
         else if (msg.MessageType === "PackageInstallationCompleted") {
             Dashboard.getCurrentUser().then(function (currentUser) {
@@ -1870,7 +1839,7 @@ var AppInfo = {};
                 if (!Dashboard.isServerlessPage()) {
 
                     if (server && server.UserId && server.AccessToken) {
-                        ConnectionManager.connectToServer(server).done(function (result) {
+                        ConnectionManager.connectToServer(server).then(function (result) {
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;
                             }
@@ -2187,6 +2156,7 @@ var AppInfo = {};
         }
 
         deps.push('scripts/mediacontroller');
+        deps.push('scripts/globalize');
 
         require(deps, function () {
 
@@ -2221,7 +2191,6 @@ var AppInfo = {};
         }
 
         deps.push('scripts/librarybrowser');
-        deps.push('scripts/globalize');
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');

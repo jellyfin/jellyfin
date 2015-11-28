@@ -32,7 +32,7 @@
             config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
             config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

@@ -16,7 +16,7 @@
         registrationInfo = null;
         Dashboard.showLoadingMsg();
 
-        ApiClient.fetchJSON(ApiClient.getUrl('LiveTv/Registration', {
+        ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {
 
             ProgramId: programId,
             Feature: 'seriesrecordings'
@@ -84,7 +84,7 @@
         var promise1 = ApiClient.getNewLiveTvTimerDefaults({ programId: programId });
         var promise2 = ApiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             var defaults = response1[0];
             var program = response2[0];
@@ -142,7 +142,7 @@
 
         var programId = getParameterByName('programid');
 
-        ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
+        ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).then(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
@@ -155,7 +155,7 @@
 
             if ($('#chkRecordSeries', form).checked()) {
 
-                ApiClient.createLiveTvSeriesTimer(item).done(function () {
+                ApiClient.createLiveTvSeriesTimer(item).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetv.html');
@@ -163,7 +163,7 @@
                 });
 
             } else {
-                ApiClient.createLiveTvTimer(item).done(function () {
+                ApiClient.createLiveTvTimer(item).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetv.html');
@@ -187,7 +187,7 @@
         $('#seriesFields', page).show();
         page.querySelector('.btnSubmitContainer').classList.remove('hide');
 
-        getRegistration(getParameterByName('programid')).done(function (regInfo) {
+        getRegistration(getParameterByName('programid')).then(function (regInfo) {
 
             if (regInfo.IsValid) {
                 page.querySelector('.btnSubmitContainer').classList.remove('hide');

@@ -40,7 +40,7 @@
             var promise = LocalSync.sync(syncOptions);
 
             if (reportToFetcher) {
-                promise.done(onSyncFinish).fail(onSyncFail);
+                promise.then(onSyncFinish, onSyncFail);
             }
         });
     }

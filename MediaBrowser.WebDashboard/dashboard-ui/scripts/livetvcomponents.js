@@ -342,7 +342,7 @@
 
             var id = elem.getAttribute('data-programid');
 
-            ApiClient.getLiveTvProgram(id, Dashboard.getCurrentUserId()).done(function (item) {
+            ApiClient.getLiveTvProgram(id, Dashboard.getCurrentUserId()).then(function (item) {
 
                 showOverlay(elem, item);
 

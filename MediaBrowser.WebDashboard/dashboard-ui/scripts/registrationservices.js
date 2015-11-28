@@ -4,7 +4,7 @@
 
     function validatePlayback(deferred) {
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 deferred.resolve();
@@ -138,7 +138,7 @@
 
     function validateSync(deferred) {
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 deferred.resolve();
@@ -147,7 +147,7 @@
 
             Dashboard.showLoadingMsg();
 
-            ApiClient.getRegistrationInfo('Sync').done(function (registrationInfo) {
+            ApiClient.getRegistrationInfo('Sync').then(function (registrationInfo) {
 
                 Dashboard.hideLoadingMsg();
 
@@ -161,7 +161,7 @@
                     title: Globalize.translate('HeaderSync')
                 });
 
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.hideLoadingMsg();
 

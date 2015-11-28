@@ -29,7 +29,7 @@
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -58,7 +58,7 @@
             load(page, config, allCultures, allCountries);
         });
 
-        ApiClient.getCultures().done(function (result) {
+        ApiClient.getCultures().then(function (result) {
 
             Dashboard.populateLanguages($('#selectLanguage', page), result);
 
@@ -66,7 +66,7 @@
             load(page, config, allCultures, allCountries);
         });
 
-        ApiClient.getCountries().done(function (result) {
+        ApiClient.getCountries().then(function (result) {
 
             Dashboard.populateCountries($('#selectCountry', page), result);
 

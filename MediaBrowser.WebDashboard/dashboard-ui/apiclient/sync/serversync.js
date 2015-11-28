@@ -21,7 +21,7 @@
                 reportCapabilities: false
             };
 
-            connectionManager.connectToServer(server, connectionOptions).done(function (result) {
+            connectionManager.connectToServer(server, connectionOptions).then(function (result) {
 
                 if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                     performSync(server, options, deferred);
@@ -30,7 +30,7 @@
                     deferred.reject();
                 }
 
-            }).fail(function () {
+            }, function () {
 
                 Logger.log('Unable to connect to server id: ' + server.Id);
                 deferred.reject();
@@ -62,13 +62,13 @@
 
             require(['contentuploader'], function () {
 
-                new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).done(function () {
+                new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).then(function () {
 
                     Logger.log("ContentUploaded succeeded to server: " + server.Id);
 
                     nextAction();
 
-                }).fail(function () {
+                }, function () {
 
                     Logger.log("ContentUploaded failed to server: " + server.Id);
 
@@ -88,13 +88,13 @@
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                new MediaBrowser.OfflineUserSync().sync(apiClient, server).done(function () {
+                new MediaBrowser.OfflineUserSync().sync(apiClient, server).then(function () {
 
                     Logger.log("OfflineUserSync succeeded to server: " + server.Id);
 
                     syncMedia(server, options, deferred);
 
-                }).fail(function () {
+                }, function () {
 
                     Logger.log("OfflineUserSync failed to server: " + server.Id);
 
@@ -109,13 +109,13 @@
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                new MediaBrowser.MediaSync().sync(apiClient, server, options).done(function () {
+                new MediaBrowser.MediaSync().sync(apiClient, server, options).then(function () {
 
                     Logger.log("MediaSync succeeded to server: " + server.Id);
 
                     deferred.resolve();
 
-                }).fail(function () {
+                }, function () {
 
                     Logger.log("MediaSync failed to server: " + server.Id);
 

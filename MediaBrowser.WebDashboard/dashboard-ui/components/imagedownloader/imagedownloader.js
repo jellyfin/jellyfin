@@ -38,7 +38,7 @@
             options.ProviderName = provider;
         }
 
-        ApiClient.getAvailableRemoteImages(options).done(function (result) {
+        ApiClient.getAvailableRemoteImages(options).then(function (result) {
 
             renderRemoteImages(page, result, browsableImageType, options.startIndex, options.limit);
 
@@ -125,7 +125,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.downloadRemoteImage(options).done(function () {
+        ApiClient.downloadRemoteImage(options).then(function () {
 
             hasChanges = true;
             var dlg = $(page).parents('paper-dialog')[0];
@@ -260,13 +260,12 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/imagedownloader/imagedownloader.template.html', true);
 
-            type: 'GET',
-            url: 'components/imagedownloader/imagedownloader.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             currentItemId = itemId;
             currentItemType = itemType;
 
@@ -299,7 +298,9 @@
             });
 
             reloadBrowsableImages(editorContent);
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {

@@ -85,7 +85,7 @@
 
         var imageType = $('#selectImageType', page).val();
 
-        ApiClient.uploadItemImage(currentItemId, imageType, file).done(function () {
+        ApiClient.uploadItemImage(currentItemId, imageType, file).then(function () {
 
             $('#uploadImage', page).val('').trigger('change');
             Dashboard.hideLoadingMsg();
@@ -125,13 +125,12 @@
 
         options = options || {};
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/imageuploader/imageuploader.template.html', true);
 
-            type: 'GET',
-            url: 'components/imageuploader/imageuploader.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             currentItemId = itemId;
 
             var dlg = PaperDialogHelper.createDialog({
@@ -163,7 +162,9 @@
 
                 PaperDialogHelper.close(dlg);
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {

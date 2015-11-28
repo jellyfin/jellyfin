@@ -274,7 +274,7 @@
         var url = "";
 
         url = ApiClient.getUrl("Reports/Headers", query);
-        ApiClient.fetchJSON(url).then(function (result) {
+        ApiClient.getJSON(url).then(function (result) {
             var selected = "None";
 
             $('#selectReportGroup', page).find('option').remove().end();
@@ -438,7 +438,7 @@
                 break;
         }
 
-        ApiClient.fetchJSON(url).then(function (result) {
+        ApiClient.getJSON(url).then(function (result) {
             updateFilterControls(page);
             renderItems(page, result);
         });
@@ -1029,7 +1029,7 @@
 
     function loadFilters(page, userId, itemQuery, reloadItemsFn) {
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Items/Filters', {
+        return ApiClient.getJSON(ApiClient.getUrl('Items/Filters', {
 
             UserId: userId,
             ParentId: itemQuery.ParentId,
@@ -1047,7 +1047,7 @@
 
     function loadColumns(page, userId, itemQuery, reloadItemsFn) {
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('Reports/Headers', {
+        return ApiClient.getJSON(ApiClient.getUrl('Reports/Headers', {
 
             UserId: userId,
             IncludeItemTypes: itemQuery.IncludeItemTypes,

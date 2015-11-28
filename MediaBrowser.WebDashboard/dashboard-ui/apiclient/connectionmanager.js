@@ -83,13 +83,63 @@
             return baseUrl + "/emby/" + handler;
         }
 
+        function getFetchPromise(request) {
+
+            var headers = request.headers || {};
+
+            if (request.dataType == 'json') {
+                headers.accept = 'application/json';
+            }
+
+            var fetchRequest = {
+                headers: headers,
+                method: request.type
+            };
+
+            if (request.data) {
+
+                if (typeof request.data === 'string') {
+                    fetchRequest.body = request.data;
+                }
+            }
+
+            if (request.contentType) {
+
+                headers['Content-Type'] = request.contentType;
+            }
+
+            return fetch(request.url, fetchRequest);
+        }
+
+        function ajax(request) {
+
+            return getFetchPromise(request).then(function (response) {
+
+                if (response.status < 400) {
+
+                    if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                        return response.json();
+                    } else {
+                        return response;
+                    }
+                } else {
+                    onFetchFail(request.url, response);
+                    return Promise.reject(response);
+                }
+
+            }, function () {
+                onFetchFail(request.url, {});
+                return Promise.reject({});
+            });
+        }
+
         function tryConnect(url, timeout) {
 
             url = getEmbyServerUrl(url, "system/info/public");
 
             logger.log('tryConnect url: ' + url);
 
-            return HttpClient.send({
+            return ajax({
 
                 type: "GET",
                 url: url,
@@ -360,12 +410,12 @@
 
                 connectUser = null;
 
-                getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).done(function (user) {
+                getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).then(function (user) {
 
                     onConnectUserSignIn(user);
                     deferred.resolveWith(null, [[]]);
 
-                }).fail(function () {
+                }, function () {
                     deferred.resolveWith(null, [[]]);
                 });
 
@@ -387,7 +437,7 @@
 
             var url = "https://connect.emby.media/service/user?id=" + userId;
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -412,7 +462,7 @@
 
             url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -420,15 +470,18 @@
                     "X-MediaBrowser-Token": server.ExchangeToken
                 }
 
-            }).done(function (auth) {
+            }).then(function (auth) {
 
                 server.UserId = auth.LocalUserId;
                 server.AccessToken = auth.AccessToken;
+                return auth;
 
-            }).fail(function () {
+            }, function () {
 
                 server.UserId = null;
                 server.AccessToken = null;
+                return Promise.reject();
+
             });
         }
 
@@ -438,7 +491,7 @@
 
             var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
-            HttpClient.send({
+            ajax({
 
                 type: "GET",
                 url: getEmbyServerUrl(url, "System/Info"),
@@ -447,13 +500,13 @@
                     "X-MediaBrowser-Token": server.AccessToken
                 }
 
-            }).done(function (systemInfo) {
+            }).then(function (systemInfo) {
 
                 updateServerInfo(server, systemInfo);
 
                 if (server.UserId) {
 
-                    HttpClient.send({
+                    ajax({
 
                         type: "GET",
                         url: getEmbyServerUrl(url, "users/" + server.UserId),
@@ -462,12 +515,12 @@
                             "X-MediaBrowser-Token": server.AccessToken
                         }
 
-                    }).done(function (user) {
+                    }).then(function (user) {
 
                         onLocalUserSignIn(user);
                         deferred.resolveWith(null, [[]]);
 
-                    }).fail(function () {
+                    }, function () {
 
                         server.UserId = null;
                         server.AccessToken = null;
@@ -475,7 +528,7 @@
                     });
                 }
 
-            }).fail(function () {
+            }, function () {
 
                 server.UserId = null;
                 server.AccessToken = null;
@@ -520,7 +573,7 @@
 
             var localUser;
 
-            function onLocalUserDone() {
+            function onLocalUserDone(e) {
 
                 var image = getImageUrl(localUser);
 
@@ -528,7 +581,7 @@
                 {
                     localUser: localUser,
                     name: connectUser ? connectUser.Name : (localUser ? localUser.Name : null),
-                    canManageServer: localUser && localUser.Policy.IsAdministrator,
+                    canManageServer: localUser ? localUser.Policy.IsAdministrator : false,
                     imageUrl: image.url,
                     supportsImageParams: image.supportsParams
                 }]);
@@ -537,9 +590,11 @@
             function onEnsureConnectUserDone() {
 
                 if (apiClient && apiClient.getCurrentUserId()) {
-                    apiClient.getCurrentUser().done(function (u) {
+                    apiClient.getCurrentUser().then(function (u) {
                         localUser = u;
-                    }).always(onLocalUserDone);
+                        onLocalUserDone();
+
+                    }, onLocalUserDone);
                 } else {
                     onLocalUserDone();
                 }
@@ -548,7 +603,7 @@
             var credentials = credentialProvider.credentials();
 
             if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(apiClient && apiClient.getCurrentUserId())) {
-                ensureConnectUser(credentials).always(onEnsureConnectUserDone);
+                ensureConnectUser(credentials).then(onEnsureConnectUserDone, onEnsureConnectUserDone);
             } else {
                 onEnsureConnectUserDone();
             }
@@ -579,7 +634,7 @@
                 }
             }
 
-            return DeferredBuilder.when(promises).done(function () {
+            return DeferredBuilder.when(promises).then(function () {
 
                 var credentials = credentialProvider.credentials();
 
@@ -624,7 +679,10 @@
                 serverId: serverInfo.Id
             };
 
-            return apiClient.logout().always(function () {
+            return apiClient.logout().then(function () {
+
+                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+            }, function () {
 
                 Events.trigger(self, 'localusersignedout', [logoutInfo]);
             });
@@ -643,7 +701,7 @@
 
             var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
 
-            HttpClient.send({
+            ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -652,7 +710,7 @@
                     "X-Connect-UserToken": credentials.ConnectAccessToken
                 }
 
-            }).done(function (servers) {
+            }).then(function (servers) {
 
                 servers = servers.map(function (i) {
                     return {
@@ -668,7 +726,7 @@
 
                 deferred.resolveWith(null, [servers]);
 
-            }).fail(function () {
+            }, function () {
                 deferred.resolveWith(null, [[]]);
 
             });
@@ -701,9 +759,9 @@
             var connectServersPromise = getConnectServers(credentials);
             var findServersPromise = findServers();
 
-            connectServersPromise.done(function (connectServers) {
+            connectServersPromise.then(function (connectServers) {
 
-                findServersPromise.done(function (foundServers) {
+                findServersPromise.then(function (foundServers) {
 
                     var servers = credentials.Servers.slice(0);
                     mergeServers(servers, foundServers);
@@ -748,7 +806,7 @@
             var deferred = DeferredBuilder.Deferred();
 
             require(['serverdiscovery'], function () {
-                ServerDiscovery.findServers(1000).done(function (foundServers) {
+                ServerDiscovery.findServers(1000).then(function (foundServers) {
 
                     var servers = foundServers.map(function (foundServer) {
 
@@ -798,9 +856,9 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            self.getAvailableServers().done(function (servers) {
+            self.getAvailableServers().then(function (servers) {
 
-                self.connectToServers(servers).done(function (result) {
+                self.connectToServers(servers).then(function (result) {
 
                     deferred.resolveWith(null, [result]);
 
@@ -823,7 +881,7 @@
 
             if (servers.length == 1) {
 
-                self.connectToServer(servers[0]).done(function (result) {
+                self.connectToServer(servers[0]).then(function (result) {
 
                     if (result.State == MediaBrowser.ConnectionState.Unavailable) {
 
@@ -842,7 +900,7 @@
                 var firstServer = servers.length ? servers[0] : null;
                 // See if we have any saved credentials and can auto sign in
                 if (firstServer) {
-                    self.connectToServer(firstServer).done(function (result) {
+                    self.connectToServer(firstServer).then(function (result) {
 
                         if (result.State == MediaBrowser.ConnectionState.SignedIn) {
 
@@ -948,12 +1006,12 @@
 
             logger.log('testing connection mode ' + mode + ' with server ' + server.Name);
 
-            tryConnect(address, timeout).done(function (result) {
+            tryConnect(address, timeout).then(function (result) {
 
                 logger.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
                 onSuccessfulConnection(server, result, mode, options, deferred);
 
-            }).fail(function () {
+            }, function () {
 
                 logger.log('test failed for connection mode ' + mode + ' with server ' + server.Name);
 
@@ -977,10 +1035,14 @@
             var credentials = credentialProvider.credentials();
             if (credentials.ConnectAccessToken) {
 
-                ensureConnectUser(credentials).done(function () {
+                ensureConnectUser(credentials).then(function () {
 
                     if (server.ExchangeToken) {
-                        addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(function () {
+                        addAuthenticationInfoFromConnect(server, connectionMode, credentials).then(function () {
+
+                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+
+                        }, function () {
 
                             afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
                         });
@@ -1000,7 +1062,7 @@
 
             if (verifyLocalAuthentication && server.AccessToken) {
 
-                validateAuthentication(server, connectionMode).done(function () {
+                validateAuthentication(server, connectionMode).then(function () {
 
                     afterConnectValidated(server, credentials, systemInfo, connectionMode, false, options, deferred);
                 });
@@ -1075,7 +1137,7 @@
                 resolveWithFailure(deferred);
             }
 
-            tryConnect(address, defaultTimeout).done(function (publicInfo) {
+            tryConnect(address, defaultTimeout).then(function (publicInfo) {
 
                 logger.log('connectToAddress ' + address + ' succeeded');
 
@@ -1085,13 +1147,13 @@
                 };
                 updateServerInfo(server, publicInfo);
 
-                self.connectToServer(server).done(function (result) {
+                self.connectToServer(server).then(function (result) {
 
                     deferred.resolveWith(null, [result]);
 
-                }).fail(onFail);
+                }, onFail);
 
-            }).fail(onFail);
+            }, onFail);
 
             return deferred.promise();
         };
@@ -1113,7 +1175,7 @@
 
                 var md5 = self.getConnectPasswordHash(password);
 
-                HttpClient.send({
+                ajax({
                     type: "POST",
                     url: "https://connect.emby.media/service/user/authenticate",
                     data: {
@@ -1126,7 +1188,7 @@
                         "X-Application": appName + "/" + appVersion
                     }
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     var credentials = credentialProvider.credentials();
 
@@ -1139,7 +1201,7 @@
 
                     deferred.resolveWith(null, [result]);
 
-                }).fail(function () {
+                }, function () {
                     deferred.reject();
                 });
             });
@@ -1176,7 +1238,7 @@
 
                 var md5 = self.getConnectPasswordHash(password);
 
-                HttpClient.send({
+                ajax({
                     type: "POST",
                     url: "https://connect.emby.media/service/register",
                     data: {
@@ -1191,11 +1253,11 @@
                         "X-CONNECT-TOKEN": "CONNECT-REGISTER"
                     }
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     deferred.resolve(null, []);
 
-                }).fail(function (e) {
+                }, function (e) {
 
                     try {
 
@@ -1248,7 +1310,7 @@
 
             var url = "https://connect.emby.media/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -1299,7 +1361,7 @@
 
             var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + server.ConnectServerId + "&userId=" + connectUserId;
 
-            HttpClient.send({
+            ajax({
                 type: "DELETE",
                 url: url,
                 headers: {
@@ -1307,7 +1369,7 @@
                     "X-Application": appName + "/" + appVersion
                 }
 
-            }).always(onDone);
+            }).then(onDone, onDone);
 
             return deferred.promise();
         };
@@ -1328,14 +1390,12 @@
 
             var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return HttpClient.send({
-                type: "DELETE",
-                url: url,
+            return fetch(url, {
+                method: "DELETE",
                 headers: {
                     "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
-
             });
         };
 
@@ -1355,7 +1415,7 @@
 
             var url = "https://connect.emby.media/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 headers: {
@@ -1370,7 +1430,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            self.getAvailableServers().done(function (servers) {
+            self.getAvailableServers().then(function (servers) {
 
                 var matchedServers = servers.filter(function (s) {
                     return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
@@ -1385,7 +1445,7 @@
 
                 if (!match.DateLastLocalConnection) {
 
-                    ApiClient.fetchJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
+                    ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
                         if (info.IsInNetwork) {
 
@@ -1405,7 +1465,7 @@
 
                 onLocalCheckSuccess(feature, apiClient, deferred);
 
-            }).fail(function () {
+            }, function () {
 
                 deferred.reject();
             });
@@ -1431,10 +1491,10 @@
 
         function onLocalCheckSuccess(feature, apiClient, deferred) {
 
-            apiClient.getRegistrationInfo(feature).done(function (result) {
+            apiClient.getRegistrationInfo(feature).then(function (result) {
 
                 deferred.resolveWith(null, [result]);
-            }).fail(function () {
+            }, function () {
 
                 deferred.reject();
             });

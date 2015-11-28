@@ -323,7 +323,7 @@
             return deferred.promise();
         }
 
-        return ApiClient.fetchJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
+        return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
             endpointInfo = info;
         });

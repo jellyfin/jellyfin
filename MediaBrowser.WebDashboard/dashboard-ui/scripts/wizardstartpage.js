@@ -17,7 +17,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.fetchJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             config.UICulture = $('#selectLocalizationLanguage', page).val();
 
@@ -27,7 +27,7 @@
                 data: config,
                 url: apiClient.getUrl('Startup/Configuration')
 
-            }).done(function () {
+            }).then(function () {
 
                 Dashboard.navigate('wizarduser.html');
 
@@ -57,7 +57,7 @@
 
         var promise2 = apiClient.getJSON(apiClient.getUrl("Localization/Options"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             loadPage(page, response1[0], response2[0]);
 

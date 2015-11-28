@@ -499,7 +499,6 @@ namespace MediaBrowser.WebDashboard.Api
                 "apiclient/store.js",
                 "apiclient/device.js",
                 "apiclient/credentials.js",
-                "apiclient/ajax.js",
                 "apiclient/events.js",
                 "apiclient/deferred.js",
                 "apiclient/apiclient.js"

@@ -8,7 +8,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvTimer(id).done(function () {
+                ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
@@ -39,7 +39,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvTimers().done(function (result) {
+        ApiClient.getLiveTvTimers().then(function (result) {
 
             renderTimers(page, result.Items);
         });

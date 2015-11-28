@@ -6,7 +6,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.fetchJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
+        apiClient.getJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
 
             var html = '';
 

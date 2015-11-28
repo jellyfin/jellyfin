@@ -156,7 +156,7 @@
 
         Logger.log('binding remotecontrols to ' + player.name);
 
-        player.getPlayerState().done(function (state) {
+        player.getPlayerState().then(function (state) {
 
             if (state.NowPlayingItem) {
                 player.beginPlayerUpdates();

@@ -1090,7 +1090,7 @@
             type: "DELETE",
             url: url
 
-        }).done(function () {
+        }).then(function () {
 
             renderChildren(page, parentItem, user, context);
             Dashboard.hideLoadingMsg();
@@ -1873,7 +1873,7 @@
                     type: "DELETE",
                     url: ApiClient.getUrl("Videos/" + id + "/AlternateSources")
 
-                }).done(function () {
+                }).then(function () {
 
                     Dashboard.hideLoadingMsg();
 
@@ -1934,7 +1934,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvTimer(id).done(function () {
+                ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 

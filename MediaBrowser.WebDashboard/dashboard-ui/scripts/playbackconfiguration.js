@@ -20,7 +20,7 @@
             config.MaxResumePct = $('#txtMaxResumePct', form).val();
             config.MinResumeDurationSeconds = $('#txtMinResumeDuration', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

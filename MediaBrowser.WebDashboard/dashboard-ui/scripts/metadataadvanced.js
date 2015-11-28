@@ -107,23 +107,23 @@
 
         });
 
-        ApiClient.getNamedConfiguration("metadata").done(function (metadata) {
+        ApiClient.getNamedConfiguration("metadata").then(function (metadata) {
 
             loadMetadataConfig(page, metadata);
 
         });
 
-        ApiClient.getNamedConfiguration("fanart").done(function (metadata) {
+        ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
 
             loadFanartConfig(page, metadata);
         });
 
-        ApiClient.getNamedConfiguration("themoviedb").done(function (metadata) {
+        ApiClient.getNamedConfiguration("themoviedb").then(function (metadata) {
 
             loadTmdbConfig(page, metadata);
         });
 
-        ApiClient.getNamedConfiguration("tvdb").done(function (metadata) {
+        ApiClient.getNamedConfiguration("tvdb").then(function (metadata) {
 
             loadTvdbConfig(page, metadata);
         });
@@ -131,7 +131,7 @@
         var promise1 = ApiClient.getNamedConfiguration("chapters");
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        $.when(promise1, promise2).then(function (response1, response2) {
 
             loadChapters(page, response1[0], response2[0]);
         });
@@ -139,7 +139,7 @@
 
     function saveFanart(form) {
 
-        ApiClient.getNamedConfiguration("fanart").done(function (config) {
+        ApiClient.getNamedConfiguration("fanart").then(function (config) {
 
             config.EnableAutomaticUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.UserApiKey = $('#txtFanartApiKey', form).val();
@@ -150,7 +150,7 @@
 
     function saveTvdb(form) {
 
-        ApiClient.getNamedConfiguration("tvdb").done(function (config) {
+        ApiClient.getNamedConfiguration("tvdb").then(function (config) {
 
             config.EnableAutomaticUpdates = $('#chkEnableTvdbUpdates', form).checked();
 
@@ -160,7 +160,7 @@
 
     function saveTmdb(form) {
 
-        ApiClient.getNamedConfiguration("themoviedb").done(function (config) {
+        ApiClient.getNamedConfiguration("themoviedb").then(function (config) {
 
             config.EnableAutomaticUpdates = $('#chkEnableTmdbUpdates', form).checked();
 
@@ -190,13 +190,13 @@
             config.PeopleMetadataOptions.DownloadWriterMetadata = $('#chkPeopleWriters', form).checked();
             config.PeopleMetadataOptions.DownloadOtherPeopleMetadata = $('#chkPeopleOthers', form).checked();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
     }
 
     function saveMetadata(form) {
 
-        ApiClient.getNamedConfiguration("metadata").done(function (config) {
+        ApiClient.getNamedConfiguration("metadata").then(function (config) {
 
             config.UseFileCreationTimeForDateAdded = $('#selectDateAdded', form).val() == '1';
 
@@ -206,7 +206,7 @@
 
     function saveChapters(form) {
 
-        ApiClient.getNamedConfiguration("chapters").done(function (config) {
+        ApiClient.getNamedConfiguration("chapters").then(function (config) {
 
             config.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
             config.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
