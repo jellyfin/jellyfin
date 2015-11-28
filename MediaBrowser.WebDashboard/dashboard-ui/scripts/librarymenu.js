@@ -133,13 +133,7 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            if (AppInfo.isTouchPreferred || $.browser.mobile) {
-
-                mainDrawerButton.addEventListener('click', openMainDrawer);
-
-            } else {
-                $(mainDrawerButton).createHoverTouch().on('hovertouch', openMainDrawer);
-            }
+            mainDrawerButton.addEventListener('click', openMainDrawer);
         }
 
         var headerBackButton = document.querySelector('.headerBackButton');
@@ -312,7 +306,6 @@
         var userHeader = drawer.querySelector('.userheader');
 
         userHeader.innerHTML = html;
-
         ImageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
     }
 
@@ -339,10 +332,6 @@
         html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
 
         drawer.querySelector('.dashboardDrawerContent').innerHTML = html;
-    }
-
-    function replaceAll(string, find, replace) {
-        return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
     }
 
     function refreshBottomUserInfoInDrawer(user, drawer) {
@@ -582,7 +571,7 @@
                         } else {
                             Dashboard.navigate(link.href);
                         }
-                    }, 400);
+                    }, 350);
                 }, 50);
             }
 
@@ -599,7 +588,7 @@
 
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 400);
+                }, 350);
             }
 
             return false;
@@ -807,7 +796,7 @@
         }
     }
 
-    pageClassOn('pagebeforeshow', 'page', function () {
+    pageClassOn('pageinit', 'page', function () {
 
         var page = this;
 
@@ -815,7 +804,7 @@
             requiresDashboardDrawerRefresh = true;
         }
 
-        onPageBeforeShowDocumentReady(page);
+        onPageBeforeShow(page);
 
     });
 
@@ -823,20 +812,15 @@
 
         var page = this;
 
-        onPageShowDocumentReady(page);
+        if (!NavHelper.isBack()) {
+            // Scroll back up so in case vertical scroll was messed with
+            window.scrollTo(0, 0);
+        }
+        updateTabLinks(page);
 
     });
 
-    //pageClassOn('pagebeforehide', 'page', function () {
-
-    //    var headroomEnabled = document.querySelectorAll('.headroomEnabled');
-    //    for (var i = 0, length = headroomEnabled.length; i < length; i++) {
-    //        headroomEnabled[i].classList.add('headroomDisabled');
-    //    }
-
-    //});
-
-    function onPageBeforeShowDocumentReady(page) {
+    function onPageBeforeShow(page) {
 
         buildViewMenuBar(page);
 
@@ -934,15 +918,6 @@
         }
     }
 
-    function onPageShowDocumentReady(page) {
-
-        if (!NavHelper.isBack()) {
-            // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
-        }
-        updateTabLinks(page);
-    }
-
     function initHeadRoom(elem) {
 
         if (!AppInfo.enableHeadRoom) {
@@ -1005,59 +980,6 @@
     });
 
 })(window, document, jQuery, window.devicePixelRatio);
-
-$.fn.createHoverTouch = function () {
-
-    var preventHover = false;
-    var timerId;
-
-    function startTimer(elem) {
-
-        stopTimer();
-
-        timerId = setTimeout(function () {
-
-            Events.trigger(elem, 'hovertouch');
-        }, 300);
-    }
-
-    function stopTimer(elem) {
-
-        if (timerId) {
-            clearTimeout(timerId);
-            timerId = null;
-        }
-    }
-
-    return $(this).on('mouseenter', function () {
-
-        if (preventHover === true) {
-            preventHover = false;
-            return;
-        }
-
-        startTimer(this);
-
-    }).on('mouseleave', function () {
-
-        stopTimer(this);
-
-    }).on('touchstart', function () {
-
-        preventHover = true;
-
-    }).on('click', function () {
-
-        preventHover = true;
-
-        if (preventHover) {
-            Events.trigger(this, 'hovertouch');
-            stopTimer(this);
-            preventHover = false;
-        }
-    });
-
-};
 
 (function () {
 

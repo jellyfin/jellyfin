@@ -2365,11 +2365,7 @@
 
                 var link = parentWithTag(event.target, 'A');
 
-                var $link = $(link),
-
-                    baseUrl, href,
-                    useDefaultUrlHandling, isExternal,
-                    reverse, role;
+                var $link = $(link);
 
                 // If there is no link associated with the click or its not a left
                 // click we want to ignore the click
@@ -2385,10 +2381,10 @@
                     return false;
                 }
 
-                baseUrl = $.mobile.getClosestBaseUrl(link);
+                var baseUrl = $.mobile.getClosestBaseUrl(link);
 
                 //get href, if defined, otherwise default to empty hash
-                href = $.mobile.path.makeUrlAbsolute(link.getAttribute("href") || "#", baseUrl);
+                var href = $.mobile.path.makeUrlAbsolute(link.getAttribute("href") || "#", baseUrl);
 
                 // XXX_jblas: Ideally links to application pages should be specified as
                 //            an url to the application document with a hash that is either
@@ -2417,25 +2413,19 @@
                 }
 
                 // Should we handle this link, or let the browser deal with it?
-                useDefaultUrlHandling = link.getAttribute("rel") == "external" || link.getAttribute("data-ajax") == "false" || link.getAttribute('target');
-
                 //check for protocol or rel and its not an embedded page
                 //TODO overlap in logic from isExternal, rel=external check should be
                 //     moved into more comprehensive isExternalLink
-                isExternal = useDefaultUrlHandling || ($.mobile.path.isExternal(href));
-
-                if (isExternal) {
+                if (link.getAttribute("rel") == "external" || link.getAttribute("data-ajax") == "false" || link.getAttribute('target') || ($.mobile.path.isExternal(href))) {
                     //use default click handling
                     return;
                 }
 
                 //use ajax
-                reverse = $link.data("direction") === "reverse" ||
-                            // deprecated - remove by 1.0
-                            $link.data("back");
+                var reverse = $link.data("direction") === "reverse";
 
                 //this may need to be more specific as we use data-rel more
-                role = link.getAttribute("data-rel") || undefined;
+                var role = link.getAttribute("data-rel") || undefined;
 
                 $.mobile.changePage(href, { reverse: reverse, role: role, link: $link });
                 event.preventDefault();
@@ -2493,24 +2483,21 @@
             initializePage: function () {
                 // find present pages
                 var path = $.mobile.path,
-                    $pages = $(document.querySelectorAll("div[data-role='page']")),
+                    firstPage = document.querySelector("div[data-role='page']"),
                     hash = path.stripHash(path.stripQueryParams(path.parseLocation().hash)),
                     theLocation = $.mobile.path.parseLocation(),
                     hashPage = hash ? document.getElementById(hash) : undefined;
 
                 // add dialogs, set data-url attrs
-                $pages.each(function () {
-                    var $this = $(this);
-
+                if (firstPage) {
                     // unless the data url is already set set it to the pathname
-                    if (!$this[0].getAttribute("data-url")) {
-                        $this.attr("data-url", $this.attr("id") ||
-                            path.convertUrlToDataUrl(theLocation.pathname + theLocation.search));
+                    if (!firstPage.getAttribute("data-url")) {
+                        firstPage.setAttribute("data-url", firstPage.getAttribute("id") || path.convertUrlToDataUrl(theLocation.pathname + theLocation.search));
                     }
-                });
+                }
 
                 // define first page in dom case one backs out to the directory root (not always the first page visited, but defined as fallback)
-                $.mobile.firstPage = $pages.first();
+                $.mobile.firstPage = $(firstPage);
 
                 // define page container
                 $.mobile.pageContainer = $.mobile.firstPage

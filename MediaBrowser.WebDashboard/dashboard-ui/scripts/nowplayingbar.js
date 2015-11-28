@@ -201,7 +201,9 @@
             return elem;
         }
 
-        elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications')[0];
+        Dashboard.importCss('css/nowplayingbar.css');
+
+        elem = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
 
         if (($.browser.safari || !AppInfo.isNativeApp) && $.browser.mobile) {
             // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
@@ -563,14 +565,11 @@
             .on('positionchange', onStateChanged);
     }
 
-    Dashboard.ready(function () {
-
-        Events.on(MediaController, 'playerchange', function () {
-
-            bindToPlayer(MediaController.getCurrentPlayer());
-        });
+    Events.on(MediaController, 'playerchange', function () {
 
         bindToPlayer(MediaController.getCurrentPlayer());
     });
+
+    bindToPlayer(MediaController.getCurrentPlayer());
 
 })(window, document, jQuery, setTimeout, clearTimeout);

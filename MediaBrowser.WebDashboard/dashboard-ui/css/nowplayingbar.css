@@ -54,6 +54,14 @@
 
 /* Now playing bar */
 .nowPlayingBar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* Above everything, except for the video player and popup overlays */
+    z-index: 1097;
+    color: #fff;
+    background-color: rgba(26,26,26,.94);
     border-top: 1px solid #444;
     text-align: center;
     /*box-shadow: 0 0 8px rgba(255,255,255,.4);*/

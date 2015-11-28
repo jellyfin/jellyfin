@@ -184,28 +184,23 @@
         });
     });
 
-    Dashboard.ready(function () {
+    if (window.ApiClient) {
+        initializeApiClient(window.ApiClient);
+    }
 
-        if (window.ApiClient) {
-            initializeApiClient(window.ApiClient);
-        }
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        initializeApiClient(apiClient);
+    });
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-            initializeApiClient(apiClient);
-        });
+    Events.on(ConnectionManager, 'localusersignedin', function () {
+        needsRefresh = true;
+    });
 
-        Events.on(ConnectionManager, 'localusersignedin', function () {
-            needsRefresh = true;
-        });
-
-        Events.on(ConnectionManager, 'localusersignedout', function () {
-            needsRefresh = true;
-        });
+    Events.on(ConnectionManager, 'localusersignedout', function () {
+        needsRefresh = true;
     });
 
     pageClassOn('pageshow', "type-interior", function () {
-
-        var page = $(this);
 
         if (needsRefresh) {
             Notifications.updateNotificationCount();

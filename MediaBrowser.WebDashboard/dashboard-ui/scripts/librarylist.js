@@ -1340,18 +1340,15 @@
         $('.hasrefreshtime').removeClass('hasrefreshtime').removeAttr('data-lastrefresh');
     }
 
-    Dashboard.ready(function () {
+    if (window.ApiClient) {
+        initializeApiClient(window.ApiClient);
+    }
 
-        if (window.ApiClient) {
-            initializeApiClient(window.ApiClient);
-        }
-
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-            initializeApiClient(apiClient);
-        });
-
-        Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
-        Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        initializeApiClient(apiClient);
     });
+
+    Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
+    Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
 })(jQuery, document, window);

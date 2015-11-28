@@ -573,20 +573,12 @@ namespace MediaBrowser.WebDashboard.Api
                                 "globalize.js",
                                 "site.js",
                                 "librarybrowser.js",
-                                "librarylist.js",
                                 "librarymenu.js",
                                 "mediacontroller.js",
                                 "backdrops.js",
                                 "sync.js",
                                 "playlistmanager.js",
-                                "appsettings.js",
-                                "mediaplayer.js",
-                                "mediaplayer-video.js",
-                                "alphapicker.js",
-                                "notifications.js",
-                                "remotecontrol.js",
-                                "search.js",
-                                "thememediaplayer.js"
+                                "appsettings.js"
                             };
         }
 

@@ -26,7 +26,7 @@
 
             var targets = [{
                 name: Globalize.translate('MyDevice'),
-                id: ConnectionManager.deviceId(),
+                id: AppInfo.deviceId,
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
                 isLocalPlayer: true,
@@ -1049,7 +1049,7 @@
             return deferred.promise();
         };
 
-        self.lastBitrateDetect = 0;
+        self.lastBitrateDetections = {};
 
         self.playInternal = function (item, startPosition, callback) {
 
@@ -1071,14 +1071,16 @@
                 return;
             }
 
-            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - self.lastBitrateDetect) > 300000) {
+            var bitrateDetectionKey = ApiClient.serverAddress();
+
+            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
 
                 Dashboard.showModalLoadingMsg();
 
                 ApiClient.detectBitrate().done(function (bitrate) {
 
                     Logger.log('Max bitrate auto detected to ' + bitrate);
-                    self.lastBitrateDetect = new Date().getTime();
+                    self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
 
                     playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
@@ -1997,17 +1999,8 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-    function onConnectionChange() {
-        window.MediaPlayer.lastBitrateDetect = 0;
-    }
-
-    Dashboard.ready(function () {
-        window.MediaController.registerPlayer(window.MediaPlayer);
-        window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
-
-        Events.on(ConnectionManager, 'localusersignedin', onConnectionChange);
-        Events.on(ConnectionManager, 'localusersignedout', onConnectionChange);
-    });
+    window.MediaController.registerPlayer(window.MediaPlayer);
+    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
 
 
 })(document, setTimeout, clearTimeout, screen, $, setInterval, window);

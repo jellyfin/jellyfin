@@ -435,6 +435,17 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
+        if (!$(".footer").length) {
+
+            var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
+
+            footerHtml += '<div id="footerNotifications"></div>';
+            footerHtml += '</div>';
+
+            $(document.body).append(footerHtml);
+
+        }
+
         var footer = $(".footer").css("top", "initial").show();
 
         var parentElem = $('#footerNotifications', footer);
@@ -1688,12 +1699,7 @@ var Dashboard = {
 
     ready: function (fn) {
 
-        if (Dashboard.initPromiseDone) {
-            fn();
-            return;
-        }
-
-        Dashboard.initPromise.done(fn);
+        Dashboard.initPromise.then(fn);
     },
 
     loadExternalPlayer: function () {
@@ -1884,36 +1890,36 @@ var AppInfo = {};
             initializeApiClient(newApiClient);
         });
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        if (Dashboard.isConnectMode()) {
+            if (Dashboard.isConnectMode()) {
 
-            var server = ConnectionManager.getLastUsedServer();
+                var server = ConnectionManager.getLastUsedServer();
 
-            if (!Dashboard.isServerlessPage()) {
+                if (!Dashboard.isServerlessPage()) {
 
-                if (server && server.UserId && server.AccessToken) {
-                    ConnectionManager.connectToServer(server).done(function (result) {
-                        if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-                            window.ApiClient = result.ApiClient;
-                        }
-                        deferred.resolve();
-                    });
-                    return deferred.promise();
+                    if (server && server.UserId && server.AccessToken) {
+                        ConnectionManager.connectToServer(server).done(function (result) {
+                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+                                window.ApiClient = result.ApiClient;
+                            }
+                            resolve();
+                        });
+                        return;
+                    }
                 }
+                resolve();
+
+            } else {
+
+                var apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId);
+                apiClient.enableAutomaticNetworking = false;
+                ConnectionManager.addApiClient(apiClient);
+                Dashboard.importCss(apiClient.getUrl('Branding/Css'));
+                window.ApiClient = apiClient;
+                resolve();
             }
-            deferred.resolve();
-
-        } else {
-
-            var apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId);
-            apiClient.enableAutomaticNetworking = false;
-            ConnectionManager.addApiClient(apiClient);
-            Dashboard.importCss(apiClient.getUrl('Branding/Css'));
-            window.ApiClient = apiClient;
-            deferred.resolve();
-        }
-        return deferred.promise();
+        });
     }
 
     function initFastClick() {
@@ -2004,82 +2010,6 @@ var AppInfo = {};
         }
     }
 
-    function onDocumentReady() {
-
-        if ($.browser.msie) {
-            require(['devices/ie/ie']);
-        }
-
-        // Do these now to prevent a flash of content
-        if (AppInfo.isNativeApp && $.browser.android) {
-            Dashboard.importCss('devices/android/android.css');
-        } else if (AppInfo.isNativeApp && $.browser.safari) {
-            Dashboard.importCss('devices/ios/ios.css');
-        } else if (!$.browser.android) {
-            Dashboard.importCss('devices/android/android.css');
-        }
-
-        loadTheme();
-
-        if ($.browser.safari && $.browser.mobile) {
-            initFastClick();
-        }
-
-        var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
-
-        footerHtml += '<div id="footerNotifications"></div>';
-        footerHtml += '</div>';
-
-        $(document.body).append(footerHtml);
-
-        window.addEventListener("beforeunload", function () {
-
-            var apiClient = window.ApiClient;
-
-            // Close the connection gracefully when possible
-            if (apiClient && apiClient.isWebSocketOpen()) {
-
-                var localActivePlayers = MediaController.getPlayers().filter(function (p) {
-
-                    return p.isLocalPlayer && p.isPlaying();
-                });
-
-                if (!localActivePlayers.length) {
-                    Logger.log('Sending close web socket command');
-                    apiClient.closeWebSocket();
-                }
-            }
-        });
-
-        if (Dashboard.isRunningInCordova()) {
-            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
-
-            if ($.browser.android) {
-                require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
-            } else {
-                require(['cordova/volume']);
-            }
-
-            if ($.browser.safari) {
-                require(['cordova/ios/orientation']);
-            }
-
-        } else {
-            if ($.browser.chrome) {
-                require(['scripts/chromecast']);
-            }
-        }
-
-        if (AppInfo.enableNowPlayingBar) {
-            require(['scripts/nowplayingbar']);
-            Dashboard.importCss('css/nowplayingbar.css');
-        }
-
-        if (navigator.splashscreen) {
-            navigator.splashscreen.hide();
-        }
-    }
-
     function initRequire() {
 
         var urlArgs = "v=" + window.dashboardVersion;
@@ -2115,7 +2045,7 @@ var AppInfo = {};
 
     }
 
-    function init(deferred, capabilities, appName, appVersion, deviceId, deviceName) {
+    function init(promiseResolve, capabilities, appName, appVersion, deviceId, deviceName) {
 
         // Required since jQuery is loaded before requireJs
         define('jquery', [], function () {
@@ -2290,11 +2220,11 @@ var AppInfo = {};
             loadImageCache();
             $.extend(AppInfo, Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName));
 
-            initAfterDependencies(deferred, capabilities);
+            initAfterDependencies(promiseResolve, capabilities);
         });
     }
 
-    function initAfterDependencies(deferred, capabilities) {
+    function initAfterDependencies(promiseResolve, capabilities) {
 
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
@@ -2314,10 +2244,11 @@ var AppInfo = {};
         var deps = [];
 
         if (AppInfo.isNativeApp && $.browser.android) {
-            deps.push('cordova/android/logging');
+            require(['cordova/android/logging']);
         }
 
         deps.push('appstorage');
+        deps.push('scripts/mediaplayer');
 
         require(deps, function () {
 
@@ -2342,64 +2273,98 @@ var AppInfo = {};
             }
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-            createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
 
-            //$(document.body).append('<div style="background:#00ACC1;position:fixed;z-index:999999;top:1px;left:1px;width:800px;height:450px;display:flex;align-items:center;justify-content:center;"><iron-icon icon="ondemand-video" style="width:320px;height:320px;color:#fff;"></iron-icon></div>');
-        });
-    }
+            var connectionManagerPromise = createConnectionManager(capabilities);
 
-    function onConnectionManagerCreated(deferred) {
+            Promise.all([Globalize.ensure(), connectionManagerPromise]).then(function () {
 
-        Globalize.ensure().then(function () {
-            document.title = Globalize.translateDocument(document.title, 'html');
+                document.title = Globalize.translateDocument(document.title, 'html');
 
-            $(function () {
+                $(function () {
 
-                var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+                    var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
 
-                if (mainDrawerPanelContent) {
+                    if (mainDrawerPanelContent) {
 
-                    var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
-                    newHtml = newHtml.substring(0, newHtml.length - 3);
+                        var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
+                        newHtml = newHtml.substring(0, newHtml.length - 3);
 
-                    var srch = 'data-require=';
-                    var index = newHtml.indexOf(srch);
-                    var depends;
+                        var srch = 'data-require=';
+                        var index = newHtml.indexOf(srch);
+                        var depends;
 
-                    if (index != -1) {
+                        if (index != -1) {
 
-                        var requireAttribute = newHtml.substring(index + srch.length + 1);
+                            var requireAttribute = newHtml.substring(index + srch.length + 1);
 
-                        requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
-                        depends = requireAttribute.split(',');
+                            requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
+                            depends = requireAttribute.split(',');
+                        }
+
+                        depends = depends || [];
+
+                        if (newHtml.indexOf('type-interior') != -1) {
+                            depends.push('jqmpopup');
+                            depends.push('jqmlistview');
+                            depends.push('jqmcollapsible');
+                            depends.push('jqmcontrolgroup');
+                            depends.push('jqmcheckbox');
+                        }
+
+                        require(depends, function () {
+
+                            // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
+                            $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
+                            onAppReady(promiseResolve);
+                        });
+                        return;
                     }
 
-                    depends = depends || [];
-
-                    if (newHtml.indexOf('type-interior') != -1) {
-                        depends.push('jqmpopup');
-                        depends.push('jqmlistview');
-                        depends.push('jqmcollapsible');
-                        depends.push('jqmcontrolgroup');
-                        depends.push('jqmcheckbox');
-                    }
-
-                    require(depends, function () {
-
-                        // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                        $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
-                        onAppReady(deferred);
-                    });
-                    return;
-                }
-
-                onAppReady(deferred);
+                    onAppReady(promiseResolve);
+                });
             });
         });
     }
 
-    function onAppReady(deferred) {
-        onDocumentReady();
+    function onAppReady(promiseResolve) {
+
+        if ($.browser.msie) {
+            require(['devices/ie/ie']);
+        }
+
+        // Do these now to prevent a flash of content
+        if (AppInfo.isNativeApp && $.browser.android) {
+            Dashboard.importCss('devices/android/android.css');
+        } else if (AppInfo.isNativeApp && $.browser.safari) {
+            Dashboard.importCss('devices/ios/ios.css');
+        } else if (!$.browser.android) {
+            Dashboard.importCss('devices/android/android.css');
+        }
+
+        loadTheme();
+
+        if ($.browser.safari && $.browser.mobile) {
+            initFastClick();
+        }
+
+        if (Dashboard.isRunningInCordova()) {
+            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
+
+            if ($.browser.android) {
+                require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
+            } else {
+                require(['cordova/volume']);
+            }
+
+            if ($.browser.safari) {
+                require(['cordova/ios/orientation']);
+            }
+
+        } else {
+            if ($.browser.chrome) {
+                require(['scripts/chromecast']);
+            }
+        }
 
         var deps = [];
 
@@ -2412,13 +2377,24 @@ var AppInfo = {};
             deps.push('cordova/ios/tabbar');
         }
 
+        deps.push('scripts/remotecontrol');
+        deps.push('scripts/search');
+        deps.push('scripts/librarylist');
+        deps.push('scripts/notifications');
+
         require(deps, function () {
 
-            Dashboard.initPromiseDone = true;
             $.mobile.initializePage();
-            deferred.resolve();
+            promiseResolve();
+            require(['scripts/mediaplayer-video']);
         });
-        //require(['localsync']);
+
+        if (AppInfo.enableNowPlayingBar) {
+            require(['scripts/nowplayingbar']);
+        }
+
+        require(['scripts/alphapicker']);
+        require(['scripts/thememediaplayer']);
     }
 
     function loadImageCache() {
@@ -2461,33 +2437,33 @@ var AppInfo = {};
         }, false);
     }
 
-    var initDeferred = $.Deferred();
-    Dashboard.initPromise = initDeferred.promise();
+    Dashboard.initPromise = new Promise(function (resolve, reject) {
 
-    setAppInfo();
-    setDocumentClasses();
+        setAppInfo();
+        setDocumentClasses();
 
-    function onWebComponentsReady() {
-        if (Dashboard.isRunningInCordova()) {
-            initCordova(initDeferred);
-        } else {
-            init(initDeferred, Dashboard.capabilities());
+        function onWebComponentsReady() {
+            if (Dashboard.isRunningInCordova()) {
+                initCordova(resolve);
+            } else {
+                init(resolve, Dashboard.capabilities());
+            }
         }
-    }
 
-    initRequire();
+        initRequire();
 
-    if ('registerElement' in document && 'content' in document.createElement('template')) {
-        onWebComponentsReady();
-    } else {
+        if ('registerElement' in document && 'content' in document.createElement('template')) {
+            onWebComponentsReady();
+        } else {
 
-        document.addEventListener('WebComponentsReady', function () {
+            document.addEventListener('WebComponentsReady', function () {
 
-            var delay = $.browser.mobile ? 500 : 300;
-            setTimeout(onWebComponentsReady, delay);
-        });
-        require(['bower_components/webcomponentsjs/webcomponents-lite.min.js']);
-    }
+                var delay = $.browser.mobile ? 500 : 300;
+                setTimeout(onWebComponentsReady, delay);
+            });
+            require(['bower_components/webcomponentsjs/webcomponents-lite.min.js']);
+        }
+    });
 
 })();
 
@@ -2610,6 +2586,25 @@ pageClassOn('pageshow', "page", function () {
         Dashboard.refreshSystemInfoFromServer();
     }
 
+});
+
+window.addEventListener("beforeunload", function () {
+
+    var apiClient = window.ApiClient;
+
+    // Close the connection gracefully when possible
+    if (apiClient && apiClient.isWebSocketOpen()) {
+
+        var localActivePlayers = MediaController.getPlayers().filter(function (p) {
+
+            return p.isLocalPlayer && p.isPlaying();
+        });
+
+        if (!localActivePlayers.length) {
+            Logger.log('Sending close web socket command');
+            apiClient.closeWebSocket();
+        }
+    }
 });
 
 Dashboard.jQueryMobileInit();

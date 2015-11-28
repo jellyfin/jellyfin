@@ -34,6 +34,10 @@
 
         self.resetEnhancements = function () {
 
+            if (!initComplete) {
+                return;
+            }
+
             fadeOut(document.querySelector('#mediaPlayer'));
             $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");
@@ -676,6 +680,9 @@
 
             Dashboard.importCss('css/mediaplayer-video.css');
 
+            // TODO: remove dependency on this file
+            Dashboard.importCss('css/nowplayingbar.css');
+
             var html = '<div id="mediaPlayer" style="display: none;">';
 
             html += '<div class="videoBackdrop">';
@@ -749,8 +756,15 @@
             document.body.appendChild(div);
         }
 
-        Dashboard.ready(function () {
+        var initComplete;
 
+        function initVideoElements() {
+
+            if (initComplete) {
+                return;
+            }
+
+            initComplete = true;
             ensureVideoPlayerElements();
 
             var parent = $("#mediaPlayer");
@@ -783,7 +797,7 @@
                 updateVolumeButtons(vol);
                 self.setVolume(vol);
             })[0];
-        });
+        }
 
         var idleHandlerTimeout;
         function idleHandler() {
@@ -924,12 +938,16 @@
         // Replace audio version
         self.cleanup = function (mediaRenderer) {
 
-            currentTimeElement.html('--:--');
+            if (currentTimeElement) {
+                currentTimeElement.html('--:--');
+            }
 
             unbindEventsForPlayback(mediaRenderer);
         };
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
+
+            initVideoElements();
 
             requirejs(['videorenderer'], function () {
 
@@ -1127,6 +1145,11 @@
         };
 
         self.updatePlaylistUi = function () {
+
+            if (!initComplete) {
+                return;
+            }
+
             var index = self.currentPlaylistIndex(null);
             var length = self.playlist.length;
 
