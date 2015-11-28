@@ -598,7 +598,7 @@
 				}
 			});
 
-			$.when(prerequisites.screen, prerequisites.container).then(function () {
+			Promise.all([prerequisites.screen, prerequisites.container]).then(function () {
 				if (prerequisites === self._prerequisites) {
 					self._prerequisites = null;
 					whenDone();

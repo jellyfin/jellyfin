@@ -125,7 +125,7 @@
             promises.push(loadSection(page, user, displayPreferences, i));
         }
 
-        return $.when(promises);
+        return Promise.all(promises);
     }
 
     var homePageDismissValue = '14';

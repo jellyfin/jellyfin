@@ -50,9 +50,9 @@
         var promise2 = apiClient.getCultures();
         var promise3 = apiClient.getCountries();
 
-        $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            reloadData(page, response1[0], response2[0], response3[0]);
+            reloadData(page, responses[0], responses[1], responses[2]);
 
         });
     }

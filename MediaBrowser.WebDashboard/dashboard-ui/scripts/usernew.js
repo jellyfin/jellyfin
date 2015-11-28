@@ -70,10 +70,10 @@
 
         var promise5 = ApiClient.getJSON(ApiClient.getUrl("Channels"));
 
-        $.when(promise4, promise5).then(function (response4, response5) {
+        Promise.all([promise4, promise5]).then(function (responses) {
 
-            loadMediaFolders(page, response4[0].Items);
-            loadChannels(page, response5[0].Items);
+            loadMediaFolders(page, responses[0].Items);
+            loadChannels(page, responses[1].Items);
 
             Dashboard.hideLoadingMsg();
         });

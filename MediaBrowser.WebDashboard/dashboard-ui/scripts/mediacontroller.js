@@ -418,13 +418,13 @@
                 return p.getTargets();
             });
 
-            $.when.apply($, promises).then(function () {
+            Promise.all(promises).then(function (responses) {
 
                 var targets = [];
 
-                for (var i = 0; i < arguments.length; i++) {
+                for (var i = 0; i < responses.length; i++) {
 
-                    var subTargets = arguments[i];
+                    var subTargets = responses[i];
 
                     for (var j = 0; j < subTargets.length; j++) {
 

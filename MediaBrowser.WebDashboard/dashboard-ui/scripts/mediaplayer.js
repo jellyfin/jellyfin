@@ -880,10 +880,10 @@
                 return MediaController.supportsDirectPlay(v);
             });
 
-            $.when.apply($, promises).then(function () {
+            Promise.all(promises).then(function (responses) {
 
                 for (var i = 0, length = versions.length; i < length; i++) {
-                    versions[i].enableDirectPlay = arguments[i] || false;
+                    versions[i].enableDirectPlay = responses[i] || false;
                 }
                 var optimalVersion = versions.filter(function (v) {
 

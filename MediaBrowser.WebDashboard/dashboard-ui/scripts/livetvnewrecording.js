@@ -84,10 +84,10 @@
         var promise1 = ApiClient.getNewLiveTvTimerDefaults({ programId: programId });
         var promise2 = ApiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
 
-        $.when(promise1, promise2).then(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var defaults = response1[0];
-            var program = response2[0];
+            var defaults = responses[0];
+            var program = responses[1];
 
             renderRecording(page, defaults, program);
         });

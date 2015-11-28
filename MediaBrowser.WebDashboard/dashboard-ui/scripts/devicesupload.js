@@ -74,10 +74,10 @@
 
         }));
 
-        $.when(promise1, promise2).then(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
 
-            load(page, response2[0].Items, response1[0]);
+            load(page, responses[1].Items, responses[0]);
 
             Dashboard.hideLoadingMsg();
         });

@@ -185,9 +185,9 @@
         var promise2 = ApiClient.getInstalledPlugins();
         var promise3 = ApiClient.getPluginSecurityInfo();
 
-        $.when(promise1, promise2, promise3).then(function (response1, response2, response3) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            renderPackage(response1[0], response2[0], response3[0], page);
+            renderPackage(responses[0], responses[1], responses[2], page);
 
         });
 

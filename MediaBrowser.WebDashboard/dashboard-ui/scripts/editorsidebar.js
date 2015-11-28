@@ -104,11 +104,7 @@
 
     function loadChildrenOfRootNode(page, scope, callback) {
 
-        var promise2 = ApiClient.getLiveTvChannels({ limit: 0 });
-
-        $.when(promise2).then(function (response2) {
-
-            var result = response2;
+        ApiClient.getLiveTvChannels({ limit: 0 }).then(function (result) {
 
             var nodes = [];
 

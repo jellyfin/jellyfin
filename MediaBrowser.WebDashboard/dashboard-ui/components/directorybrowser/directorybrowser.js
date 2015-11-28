@@ -53,10 +53,10 @@
             parentPathPromise = parentPathPromise.promise();
         }
 
-        $.when(promise, parentPathPromise).then(function (response1, response2) {
+        Promise.all(promise, parentPathPromise).then(function (responses) {
 
-            var folders = response1[0];
-            var parentPath = response2 && response2.length ? response2[0] || '' : '';
+            var folders = responses[0];
+            var parentPath = responses[1] || '';
 
             $('#txtDirectoryPickerPath', page).val(path || "");
 

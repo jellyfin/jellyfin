@@ -67,9 +67,9 @@
 
         var allCulturesPromise = ApiClient.getCultures();
 
-        $.when(promise1, promise2).then(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadForm(page, response1[0] || response1, response2[0], allCulturesPromise);
+            loadForm(page, responses[1], responses[0], allCulturesPromise);
 
         });
 

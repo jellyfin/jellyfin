@@ -14,11 +14,11 @@
         var promise1 = getProfile();
         var promise2 = ApiClient.getUsers();
 
-        $.when(promise1, promise2).then(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            currentProfile = response1[0];
+            currentProfile = responses[0];
 
-            renderProfile(page, currentProfile, response2[0]);
+            renderProfile(page, currentProfile, responses[1]);
 
             Dashboard.hideLoadingMsg();
 

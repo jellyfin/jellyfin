@@ -131,9 +131,9 @@
         var promise1 = ApiClient.getNamedConfiguration("chapters");
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
 
-        $.when(promise1, promise2).then(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadChapters(page, response1[0], response2[0]);
+            loadChapters(page, responses[0], responses[1]);
         });
     });
 
