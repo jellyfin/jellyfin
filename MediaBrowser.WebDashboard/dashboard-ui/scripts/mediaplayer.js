@@ -1076,7 +1076,6 @@
                 Dashboard.showModalLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
-
                     Logger.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
