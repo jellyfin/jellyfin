@@ -58,9 +58,41 @@
             load(page, config, allCultures, allCountries);
         });
 
+        function populateLanguages(select, languages) {
+
+            var html = "";
+
+            html += "<option value=''></option>";
+
+            for (var i = 0, length = languages.length; i < length; i++) {
+
+                var culture = languages[i];
+
+                html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
+            }
+
+            select.innerHTML = html;
+        }
+
+        function populateCountries(select, allCountries) {
+
+            var html = "";
+
+            html += "<option value=''></option>";
+
+            for (var i = 0, length = allCountries.length; i < length; i++) {
+
+                var culture = allCountries[i];
+
+                html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
+            }
+
+            select.innerHTML = html;
+        }
+
         ApiClient.getCultures().then(function (result) {
 
-            Dashboard.populateLanguages($('#selectLanguage', page), result);
+            populateLanguages(page.querySelector('#selectLanguage'), result);
 
             allCultures = result;
             load(page, config, allCultures, allCountries);
@@ -68,7 +100,7 @@
 
         ApiClient.getCountries().then(function (result) {
 
-            Dashboard.populateCountries($('#selectCountry', page), result);
+            populateCountries(page.querySelector('#selectCountry'), result);
 
             allCountries = result;
             load(page, config, allCultures, allCountries);

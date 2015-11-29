@@ -521,29 +521,27 @@ var Dashboard = {
 
         if (typeof options == "string") {
 
-            require(['paperbuttonstyle'], function () {
-                var message = options;
+            var message = options;
 
-                Dashboard.toastId = Dashboard.toastId || 0;
+            Dashboard.toastId = Dashboard.toastId || 0;
 
-                var id = 'toast' + (Dashboard.toastId++);
+            var id = 'toast' + (Dashboard.toastId++);
 
-                var elem = document.createElement("paper-toast");
-                elem.setAttribute('text', message);
-                elem.id = id;
+            var elem = document.createElement("paper-toast");
+            elem.setAttribute('text', message);
+            elem.id = id;
 
-                document.body.appendChild(elem);
+            document.body.appendChild(elem);
 
-                // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-                // element onload never fires
+            // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+            // element onload never fires
+            setTimeout(function () {
+                elem.show();
+
                 setTimeout(function () {
-                    elem.show();
-
-                    setTimeout(function () {
-                        elem.parentNode.removeChild(elem);
-                    }, 5000);
-                }, 300);
-            });
+                    elem.parentNode.removeChild(elem);
+                }, 5000);
+            }, 300);
 
             return;
         }
@@ -1378,10 +1376,6 @@ var Dashboard = {
         html += '</div>';
 
         $(parent).prepend(html);
-
-        if (helpUrl) {
-            require(['paperbuttonstyle']);
-        }
     },
 
     setPageTitle: function (title) {
@@ -1437,38 +1431,6 @@ var Dashboard = {
         parts.push(seconds);
 
         return parts.join(':');
-    },
-
-    populateLanguages: function (select, languages) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = languages.length; i < length; i++) {
-
-            var culture = languages[i];
-
-            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        select.innerHTML = html;
-    },
-
-    populateCountries: function (select, allCountries) {
-
-        var html = "";
-
-        html += "<option value=''></option>";
-
-        for (var i = 0, length = allCountries.length; i < length; i++) {
-
-            var culture = allCountries[i];
-
-            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
-        }
-
-        select.innerHTML = html;
     },
 
     getSupportedRemoteCommands: function () {
@@ -1999,9 +1961,7 @@ var AppInfo = {};
         }
 
         define("connectservice", ["apiclient/connectservice"]);
-        define("paperbuttonstyle", [], function () {
-            return {};
-        });
+
         define("jqmicons", [], function () {
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
             return {};

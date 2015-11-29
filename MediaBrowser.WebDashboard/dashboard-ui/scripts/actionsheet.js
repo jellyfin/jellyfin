@@ -100,6 +100,24 @@
         setTimeout(function () {
             var dlg = document.getElementById(id);
 
+            // The animations flicker in IE and Firefox (probably wherever the polyfill is used)
+            if (browserInfo.chrome) {
+                dlg.animationConfig = {
+                    // scale up
+                    'entry': {
+                        name: 'scale-up-animation',
+                        node: dlg,
+                        timing: { duration: 160, easing: 'ease-out' }
+                    },
+                    // fade out
+                    'exit': {
+                        name: 'fade-out-animation',
+                        node: dlg,
+                        timing: { duration: 200, easing: 'ease-in' }
+                    }
+                };
+            }
+
             dlg.open();
 
             // Has to be assigned a z-index after the call to .open() 

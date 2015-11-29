@@ -29,10 +29,42 @@
 
     }
 
+    function populateLanguages(select, languages) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = languages.length; i < length; i++) {
+
+            var culture = languages[i];
+
+            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        select.innerHTML = html;
+    }
+
+    function populateCountries (select, allCountries) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = allCountries.length; i < length; i++) {
+
+            var culture = allCountries[i];
+
+            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        select.innerHTML = html;
+    }
+
     function reloadData(page, config, cultures, countries) {
 
-        Dashboard.populateLanguages($('#selectLanguage', page), cultures);
-        Dashboard.populateCountries($('#selectCountry', page), countries);
+        populateLanguages(page.querySelector('#selectLanguage'), cultures);
+        populateCountries(page.querySelector('#selectCountry'), countries);
 
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage);
         $('#selectCountry', page).val(config.MetadataCountryCode);

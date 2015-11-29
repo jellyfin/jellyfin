@@ -2,8 +2,6 @@
 
     function renderJob(page, job, dialogOptions) {
 
-        require(['paperbuttonstyle']);
-
         var html = '';
 
         html += '<div>';

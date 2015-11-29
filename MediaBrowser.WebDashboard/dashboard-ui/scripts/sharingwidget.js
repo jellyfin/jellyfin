@@ -4,7 +4,7 @@
 
         Dashboard.importCss('thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css');
 
-        require(['paperbuttonstyle', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min'], function () {
+        require(['thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min'], function () {
 
             var id = 'dlg' + new Date().getTime();
             var html = '';
