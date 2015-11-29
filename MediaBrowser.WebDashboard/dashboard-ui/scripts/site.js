@@ -2452,11 +2452,19 @@ var AppInfo = {};
         Dashboard.initPromise = new Promise(function (resolve, reject) {
 
             function onWebComponentsReady() {
-                if (Dashboard.isRunningInCordova()) {
-                    initCordova(resolve);
-                } else {
-                    init(resolve, Dashboard.capabilities());
-                }
+
+                var link = document.createElement('link');
+                link.rel = 'import';
+
+                link.onload = function() {
+                    if (Dashboard.isRunningInCordova()) {
+                        initCordova(resolve);
+                    } else {
+                        init(resolve, Dashboard.capabilities());
+                    }
+                };
+                link.href = "vulcanize-out.html?v=" + window.dashboardVersion;
+                document.head.appendChild(link);
             }
 
             setBrowserInfo(isMobile);
@@ -2466,10 +2474,7 @@ var AppInfo = {};
             if (supportsNativeWebComponents) {
                 onWebComponentsReady();
             } else {
-                document.addEventListener('WebComponentsReady', function () {
-
-                    setTimeout(onWebComponentsReady, 500);
-                });
+                document.addEventListener('WebComponentsReady', onWebComponentsReady);
             }
         });
     });
