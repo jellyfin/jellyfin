@@ -18,16 +18,30 @@
         elem = elem.querySelector('.cardOverlayTarget');
 
         if ($(elem).is(':visible')) {
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                Velocity.animate(elem, { "height": "0" },
-                {
-                    complete: function () {
-                        $(elem).hide();
-                    }
-                });
-            });
+            slideDown(elem, 1);
         }
+    }
+
+    function slideDown(elem, iterations) {
+
+        var keyframes = [
+          { height: '100%', offset: 0 },
+          { height: '0', display: 'none', offset: 1 }];
+        var timing = { duration: 300, iterations: iterations, fill: 'forwards', easing: 'ease-out' };
+        elem.animate(keyframes, timing).onfinish = function() {
+            elem.style.display = 'none';
+        };
+    }
+
+    function slideUp(elem, iterations) {
+
+        elem.style.display = 'block';
+
+        var keyframes = [
+          { height: '0', offset: 0 },
+          { height: '100%', offset: 1 }];
+        var timing = { duration: 300, iterations: iterations, fill: 'forwards', easing: 'ease-out' };
+        return elem.animate(keyframes, timing);
     }
 
     function getOverlayHtml(item, currentUser, card, commands) {
@@ -707,12 +721,8 @@
             });
 
             $(innerElem).show();
-            innerElem.style.height = '0';
 
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                Velocity.animate(innerElem, { "height": "100%" }, "fast");
-            });
+            slideUp(innerElem, 1);
         }
 
         function onHoverIn(e) {
