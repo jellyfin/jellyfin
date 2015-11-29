@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    var supporterPlaybackKey = 'lastSupporterPlaybackMessage2';
+    var supporterPlaybackKey = 'lastSupporterPlaybackMessage4';
 
     function validatePlayback(deferred) {
 
@@ -97,42 +97,52 @@
 
     function showPlaybackOverlay(deferred) {
 
-        require(['paperbuttonstyle']);
+        require(['components/paperdialoghelper'], function () {
 
-        var html = '';
-        html += '<div class="supporterInfoOverlay background-theme-b ui-body-b" style="top: 0;left: 0;right: 0;bottom: 0;position: fixed;background-color:#1c1c1c;background-image: url(css/images/splash.jpg);background-position: center center;background-size: 100% 100%;background-repeat: no-repeat;z-index:1097;">';
-        html += '<div style="background:rgba(0,0,0,.90);top: 0;left: 0;right: 0;bottom: 0;position: fixed;z-index:1098;font-size:14px;">';
-        html += '<div class="readOnlyContent" style="margin:20px auto 0;color:#fff;padding:1em;">';
+            var dlg = PaperDialogHelper.createDialog({});
 
-        html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
+            var html = '';
+            html += '<h2 class="dialogHeader">';
+            html += '<paper-fab icon="arrow-back" mini class="btnCancelSupporterInfo"></paper-fab>';
+            html += '</h2>';
 
-        html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode') + '</p>';
-        html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode2') + '</p>';
+            html += '<div class="readOnlyContent" style="margin:20px auto 0;color:#fff;padding:1em;">';
 
-        html += '<br/>';
+            html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 
-        html += '<h1>' + Globalize.translate('HeaderBenefitsEmbyPremiere') + '</h1>';
+            html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode') + '</p>';
+            html += '<p>' + Globalize.translate('MessageDidYouKnowCinemaMode2') + '</p>';
 
-        html += '<div class="paperList">';
-        html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join('');
-        html += '</div>';
+            html += '<br/>';
 
-        html += '<br/>';
+            html += '<h1>' + Globalize.translate('HeaderBenefitsEmbyPremiere') + '</h1>';
 
-        html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
-        html += '<paper-button raised class="subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></paper-button>';
+            html += '<div class="paperList">';
+            html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join('');
+            html += '</div>';
 
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
+            html += '<br/>';
 
-        $(document.body).append(html);
+            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
+            html += '<paper-button raised class="subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></paper-button>';
 
-        $('.btnCancelSupporterInfo').on('click', function () {
+            html += '</div>';
 
-            $('.supporterInfoOverlay').remove();
-            appStorage.setItem(supporterPlaybackKey, new Date().getTime());
-            deferred.resolve();
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            // Has to be assigned a z-index after the call to .open() 
+            dlg.addEventListener('iron-overlay-closed', function(e) {
+                appStorage.setItem(supporterPlaybackKey, new Date().getTime());
+                dlg.parentNode.removeChild(dlg);
+                deferred.resolve();
+            });
+
+            PaperDialogHelper.openWithHash(dlg, 'premiere');
+
+            $('.btnCancelSupporterInfo').on('click', function () {
+                PaperDialogHelper.close(dlg);
+            });
         });
     }
 
