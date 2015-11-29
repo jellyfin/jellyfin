@@ -639,15 +639,9 @@
             return;
         }
 
-        var buttonParents = $(target).parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
-        if (buttonParents.length) {
-            return;
-        }
-
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             if (items.length == 1) {
-
                 Dashboard.navigate(LibraryBrowser.getHref(items[0], context));
                 return;
             }
@@ -656,10 +650,11 @@
             if (context) {
                 url += '&context=' + context;
             }
-            Dashboard.navigate(url);
 
+            Dashboard.navigate(url);
         });
 
+        e.stopPropagation();
         e.preventDefault();
         return false;
     }

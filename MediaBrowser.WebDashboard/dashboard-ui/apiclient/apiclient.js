@@ -128,16 +128,6 @@
             return val.substring(val.indexOf('=') + 1).replace("'", '%27');
         };
 
-        function onRequestFail(e) {
-
-            Events.trigger(self, 'requestfail', [
-            {
-                url: this.url,
-                status: e.status,
-                errorCode: e.getResponseHeader("X-Application-Error-Code")
-            }]);
-        }
-
         function onFetchFail(url, response) {
 
             Events.trigger(self, 'requestfail', [
@@ -426,7 +416,7 @@
 
                 var value = params[key];
 
-                if (value) {
+                if (value !== null && value !== undefined && value !== '') {
                     values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
                 }
             }
