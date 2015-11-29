@@ -340,12 +340,10 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            var tvdbId = item.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!String.IsNullOrEmpty(tvdbId))
+            if (TvdbSeriesProvider.IsValidSeries(item.ProviderIds))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, item.ProviderIds), "banners.xml");
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
