@@ -304,21 +304,9 @@ namespace MediaBrowser.WebDashboard.Api
                         .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
-                var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + appVersion : string.Empty;
-
-                var imports = new[]
-                {
-                    "vulcanize-out.html" + versionString
-                };
-                var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\" async>").ToArray());
-
-                // It would be better to make polymer completely dynamic and loaded on demand, but seeing issues with that
-                // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
-                //imports = "";
-
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
 
-                html = html.Replace("</body>", importsHtml + GetCommonJavascript(mode, appVersion) + "</body>");
+                html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
