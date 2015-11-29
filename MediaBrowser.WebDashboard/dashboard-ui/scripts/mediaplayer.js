@@ -1786,7 +1786,7 @@
             Events.trigger(self, 'playstatechange', [state]);
         };
 
-        Events.on(window, "beforeunload", function () {
+        window.addEventListener("beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
             if (self.currentItem && self.currentMediaRenderer && currentProgressInterval) {

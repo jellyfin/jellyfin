@@ -2113,22 +2113,10 @@ var AppInfo = {};
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
         deps.push('apiclient/events');
+
         deps.push('jQuery');
 
         require(deps, function () {
-
-            // TODO: This needs to be deprecated, but it's used heavily
-            $.fn.checked = function (value) {
-                if (value === true || value === false) {
-                    // Set the value of the checkbox
-                    return $(this).each(function () {
-                        this.checked = value;
-                    });
-                } else {
-                    // Return check state
-                    return this.length && this[0].checked;
-                }
-            };
 
             var baseInfo = Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName);
             for (var i in baseInfo) {
@@ -2175,6 +2163,19 @@ var AppInfo = {};
         deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
 
         require(deps, function () {
+
+            // TODO: This needs to be deprecated, but it's used heavily
+            $.fn.checked = function (value) {
+                if (value === true || value === false) {
+                    // Set the value of the checkbox
+                    return $(this).each(function () {
+                        this.checked = value;
+                    });
+                } else {
+                    // Return check state
+                    return this.length && this[0].checked;
+                }
+            };
 
             if (Dashboard.isRunningInCordova() && browserInfo.android) {
                 AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
