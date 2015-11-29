@@ -218,6 +218,14 @@
         }
     }
 
+    $.fn.lazyChildren = function () {
+
+        for (var i = 0, length = this.length; i < length; i++) {
+            ImageLoader.lazyChildren(this[i]);
+        }
+        return this;
+    };
+
     function refreshData(page, jobs) {
 
         for (var i = 0, length = jobs.length; i < length; i++) {

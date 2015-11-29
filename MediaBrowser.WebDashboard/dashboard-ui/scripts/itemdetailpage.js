@@ -725,6 +725,14 @@
         });
     }
 
+    $.fn.lazyChildren = function () {
+
+        for (var i = 0, length = this.length; i < length; i++) {
+            ImageLoader.lazyChildren(this[i]);
+        }
+        return this;
+    };
+
     function renderSeriesAirTime(page, item, isStatic) {
 
         if (item.Type != "Series") {

@@ -770,13 +770,16 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
+            var userFlyout = document.querySelector('#userFlyout');
+            ImageLoader.lazyChildren(userFlyout);
+
+            $(userFlyout).panel({}).panel("open").on("panelclose", function () {
 
                 $(this).off("panelclose").remove();
             });
 
             ConnectionManager.user(window.ApiClient).then(function (user) {
-                Dashboard.updateUserFlyout(elem, user);
+                Dashboard.updateUserFlyout(userFlyout, user);
             });
         });
     },
@@ -797,7 +800,9 @@ var Dashboard = {
         }
         html += user.name;
 
-        $('.userHeader', elem).html(html).lazyChildren();
+        var userHeader = elem.querySelector('.userHeader');
+        userHeader.innerHTML = html;
+        ImageLoader.lazyChildren(userHeader);
 
         html = '';
 

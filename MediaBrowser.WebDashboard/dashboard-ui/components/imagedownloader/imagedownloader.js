@@ -65,7 +65,9 @@
             html += getRemoteImageHtml(imagesResult.Images[i], imageType);
         }
 
-        $('.availableImagesList', page).html(html).lazyChildren();
+        var availableImagesList = page.querySelector('.availableImagesList');
+        availableImagesList.innerHTML = html;
+        ImageLoader.lazyChildren(availableImagesList);
 
         $('.btnNextPage', page).on('click', function () {
             browsableImageStartIndex += browsableImagePageSize;

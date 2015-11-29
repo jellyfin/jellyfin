@@ -132,7 +132,9 @@
                 });
             }
 
-            $('#resumableItems', page).html(html).lazyChildren();
+            var resumableItems = page.querySelector('#resumableItems');
+            resumableItems.innerHTML = html;
+            ImageLoader.lazyChildren(resumableItems);
 
         });
     }

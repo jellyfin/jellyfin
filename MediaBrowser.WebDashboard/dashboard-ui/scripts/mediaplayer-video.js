@@ -428,6 +428,14 @@
             });
         };
 
+        $.fn.lazyChildren = function () {
+
+            for (var i = 0, length = this.length; i < length; i++) {
+                ImageLoader.lazyChildren(this[i]);
+            }
+            return this;
+        };
+
         function getNowPlayingTabsHtml(item) {
 
             var html = '';

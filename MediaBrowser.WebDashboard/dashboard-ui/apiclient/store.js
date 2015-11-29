@@ -10,6 +10,7 @@
         if (defaultObject) {
             try {
                 defaultObject.setItem('_test', '0');
+                defaultObject.removeItem('_test');
                 isDefaultAvailable = true;
             } catch (e) {
 
