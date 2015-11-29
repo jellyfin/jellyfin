@@ -57,12 +57,10 @@ namespace MediaBrowser.Providers.TV
             var episode = (Episode)item;
             var series = episode.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId))
+            if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
                 // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
                 var indexOffset = TvdbSeriesProvider.GetSeriesOffset(series.ProviderIds) ?? 0;
 
                 var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode.ParentIndexNumber + indexOffset, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
@@ -204,12 +202,10 @@ namespace MediaBrowser.Providers.TV
             {
                 var series = episode.Series;
 
-                var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-                if (!string.IsNullOrEmpty(seriesId))
+                if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
                 {
                     // Process images
-                    var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                    var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
 
                     var files = TvdbEpisodeProvider.Current.GetEpisodeXmlFiles(episode.ParentIndexNumber, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
 

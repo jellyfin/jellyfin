@@ -375,17 +375,10 @@ namespace MediaBrowser.Providers.TV
             var season = (Season)item;
             var series = season.Series;
 
-            if (series == null)
-            {
-                return false;
-            }
-
-            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!String.IsNullOrEmpty(tvdbId))
+            if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
                 // Process images
-                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, tvdbId), "banners.xml");
+                var imagesXmlPath = Path.Combine(TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds), "banners.xml");
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 

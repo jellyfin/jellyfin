@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -27,7 +26,6 @@ namespace MediaBrowser.Providers.TV
     /// </summary>
     class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasChangeMonitor
     {
-        private const string FullIdFormat = "{0}:{1}:{2}"; // seriesId:seasonIndex:episodeNumbers
         private static readonly string FullIdKey = MetadataProviders.Tvdb + "-Full";
 
         internal static TvdbEpisodeProvider Current;
@@ -47,31 +45,20 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            var seriesProviderIds = searchInfo.SeriesProviderIds;
-
             var list = new List<RemoteSearchResult>();
 
-            var identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
-
-            if (identity == null)
+            if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) && searchInfo.IndexNumber.HasValue)
             {
-                await Identify(searchInfo).ConfigureAwait(false);
-                identity = Identity.ParseIdentity(searchInfo.GetProviderId(FullIdKey));
-            }
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, searchInfo.SeriesProviderIds);
 
-            if (identity != null)
-            {
-                seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                seriesProviderIds[MetadataProviders.Tvdb.ToString()] = identity.Value.SeriesId;
-            }
-
-            if (TvdbSeriesProvider.IsValidSeries(seriesProviderIds))
-            {
-                var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var searchNumbers = new EpisodeNumbers();
+                searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
+                searchNumbers.SeasonNumber = searchInfo.ParentIndexNumber;
+                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber; 
 
                 try
                 {
-                    var metadataResult = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    var metadataResult = FetchEpisodeData(searchInfo, searchNumbers, seriesDataPath, cancellationToken);
 
                     if (metadataResult.HasMetadata)
                     {
@@ -122,11 +109,41 @@ namespace MediaBrowser.Providers.TV
 
             if (identity != null)
             {
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, identity.Value.SeriesId);
+                var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                seriesProviderIds[MetadataProviders.Tvdb.ToString()] = identity.Value.SeriesId;
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+
+                var searchNumbers = new EpisodeNumbers();
+                searchNumbers.EpisodeNumber = identity.Value.EpisodeNumber;
+                var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(searchInfo.SeriesProviderIds) ?? 0;
+                searchNumbers.SeasonNumber = identity.Value.SeasonIndex + seasonOffset;
+                searchNumbers.EpisodeNumberEnd = identity.Value.EpisodeNumberEnd ?? searchNumbers.EpisodeNumber;
+                
+                try
+                {
+                    result = FetchEpisodeData(searchInfo, searchNumbers, seriesDataPath, cancellationToken);
+                }
+                catch (FileNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Don't fail the provider because this will just keep on going and going.
+                }
+            }
+            else if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) && searchInfo.IndexNumber.HasValue)
+            {
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, searchInfo.SeriesProviderIds);
+
+                var searchNumbers = new EpisodeNumbers();
+                searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
+                searchNumbers.SeasonNumber = searchInfo.ParentIndexNumber;
+                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber; 
 
                 try
                 {
-                    result = FetchEpisodeData(searchInfo, identity.Value, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    result = FetchEpisodeData(searchInfo, searchNumbers, seriesDataPath, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -156,12 +173,10 @@ namespace MediaBrowser.Providers.TV
             var episode = (Episode)item;
             var series = episode.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tvdb) : null;
-
-            if (!string.IsNullOrEmpty(seriesId))
+            if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
                 // Process images
-                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesId);
+                var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, series.ProviderIds);
 
                 var files = GetEpisodeXmlFiles(episode.ParentIndexNumber, episode.IndexNumber, episode.IndexNumberEnd, seriesDataPath);
 
@@ -243,20 +258,25 @@ namespace MediaBrowser.Providers.TV
             return files;
         }
 
+        private class EpisodeNumbers
+        {
+            public int EpisodeNumber;
+            public int? SeasonNumber;
+            public int EpisodeNumberEnd;
+        }
+
         /// <summary>
         /// Fetches the episode data.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="identity">The identity.</param>
+        /// <param name="searchNumbers">The search numbers.</param>
         /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, Identity? identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, EpisodeNumbers searchNumbers, string seriesDataPath, CancellationToken cancellationToken)
         {
-            var episodeNumber = identity.HasValue ? (identity.Value.EpisodeNumber) : id.IndexNumber.Value;
-            var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
-            var seasonNumber = identity.HasValue ? (identity.Value.SeasonIndex + seasonOffset) : id.ParentIndexNumber;
+            var episodeNumber = searchNumbers.EpisodeNumber;
+            var seasonNumber = searchNumbers.SeasonNumber;
             
             string file;
             var usingAbsoluteData = false;
@@ -299,7 +319,7 @@ namespace MediaBrowser.Providers.TV
                 usingAbsoluteData = true;
             }
 
-            var end = identity.HasValue ? (identity.Value.EpisodeNumberEnd ?? episodeNumber) : (id.IndexNumberEnd ?? episodeNumber);
+            var end = searchNumbers.EpisodeNumberEnd;
             episodeNumber++;
 
             while (episodeNumber <= end)
