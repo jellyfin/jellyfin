@@ -285,7 +285,7 @@
     window.MusicPage.renderSuggestedTab = loadSuggestionsTab;
     window.MusicPage.initSuggestedTab = initSuggestedTab;
 
-    $(document).on('pageinit', "#musicRecommendedPage", function () {
+    pageIdOn('pageinit', "musicRecommendedPage", function () {
 
         var page = this;
 
@@ -306,7 +306,9 @@
             loadTab(page, parseInt(e.target.selected));
         });
 
-    }).on('pageshow', "#musicRecommendedPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "musicRecommendedPage", function () {
 
         var page = this;
 

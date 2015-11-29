@@ -2231,6 +2231,7 @@ var AppInfo = {};
                         depends.push('jqmcollapsible');
                         depends.push('jqmcontrolgroup');
                         depends.push('jqmcheckbox');
+                        depends.push('scripts/notifications');
                     }
 
                     require(depends, function () {
@@ -2324,7 +2325,6 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('scripts/thememediaplayer');
-            postInitDependencies.push('scripts/notifications');
             postInitDependencies.push('scripts/remotecontrol');
             require(postInitDependencies);
 

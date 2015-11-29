@@ -143,6 +143,10 @@
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
         initHeadRoom(viewMenuBar);
+
+        viewMenuBar.querySelector('.btnNotifications').addEventListener('click', function () {
+            Dashboard.navigate('notificationlist.html');
+        });
     }
 
     function getItemHref(item, context) {

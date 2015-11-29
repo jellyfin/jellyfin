@@ -180,12 +180,6 @@
         $(apiClient).off("websocketmessage", onWebSocketMessage).on("websocketmessage", onWebSocketMessage);
     }
 
-    document.addEventListener('headercreated', function () {
-        $('.btnNotifications').on('click', function () {
-            Dashboard.navigate('notificationlist.html');
-        });
-    });
-
     if (window.ApiClient) {
         initializeApiClient(window.ApiClient);
     }

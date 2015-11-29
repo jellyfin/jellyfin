@@ -1231,7 +1231,12 @@
             renderThemeSongs(page, themeSongs);
             renderThemeVideos(page, themeVideos);
 
-            $(page).trigger('thememediadownload', [result]);
+            page.dispatchEvent(new CustomEvent("thememediadownload", {
+                detail: {
+                    themeMediaResult: result
+                }
+            }));
+
         });
 
     }

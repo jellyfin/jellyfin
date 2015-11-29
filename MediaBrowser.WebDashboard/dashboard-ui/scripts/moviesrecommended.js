@@ -347,7 +347,7 @@
         });
     });
 
-    pageIdOn('pageshow', "moviesPage", function () {
+    pageIdOn('pagebeforeshow', "moviesPage", function () {
 
         var page = this;
 

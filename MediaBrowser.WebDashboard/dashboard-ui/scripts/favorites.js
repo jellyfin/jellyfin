@@ -182,7 +182,7 @@
 
     pageIdOn('pageinit', "indexPage", initHomePage);
 
-    pageIdOn('pageshow', "favoritesPage", function () {
+    pageIdOn('pagebeforeshow', "favoritesPage", function () {
 
         var page = this;
 

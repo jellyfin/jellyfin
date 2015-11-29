@@ -1929,6 +1929,7 @@
                         dependencies.push('jqmcollapsible');
                         dependencies.push('jqmcontrolgroup');
                         dependencies.push('jqmcheckbox');
+                        dependencies.push('scripts/notifications');
                     }
 
                     require(dependencies, function () {
