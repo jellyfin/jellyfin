@@ -52,13 +52,12 @@
             return list1;
         }
 
-        function resolveWithFailure(deferred) {
+        function resolveFailure(resolve) {
 
-            deferred.resolveWith(null, [
-            {
+            resolve({
                 State: MediaBrowser.ConnectionState.Unavailable,
                 ConnectUser: self.connectUser()
-            }]);
+            });
         }
 
         function updateServerInfo(server, systemInfo) {
@@ -862,57 +861,55 @@
 
             logger.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (servers.length == 1) {
+                if (servers.length == 1) {
 
-                self.connectToServer(servers[0]).then(function (result) {
+                    self.connectToServer(servers[0]).then(function (result) {
 
-                    if (result.State == MediaBrowser.ConnectionState.Unavailable) {
+                        if (result.State == MediaBrowser.ConnectionState.Unavailable) {
 
-                        result.State = result.ConnectUser == null ?
-                            MediaBrowser.ConnectionState.ConnectSignIn :
-                            MediaBrowser.ConnectionState.ServerSelection;
-                    }
-
-                    logger.log('resolving connectToServers with result.State: ' + result.State);
-                    deferred.resolveWith(null, [result]);
-
-                });
-
-            } else {
-
-                var firstServer = servers.length ? servers[0] : null;
-                // See if we have any saved credentials and can auto sign in
-                if (firstServer) {
-                    self.connectToServer(firstServer).then(function (result) {
-
-                        if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-
-                            deferred.resolveWith(null, [result]);
-
-                        } else {
-                            deferred.resolveWith(null, [
-                            {
-                                Servers: servers,
-                                State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
-                                ConnectUser: self.connectUser()
-                            }]);
+                            result.State = result.ConnectUser == null ?
+                                MediaBrowser.ConnectionState.ConnectSignIn :
+                                MediaBrowser.ConnectionState.ServerSelection;
                         }
 
+                        logger.log('resolving connectToServers with result.State: ' + result.State);
+                        resolve(result);
+
                     });
+
                 } else {
 
-                    deferred.resolveWith(null, [
-                    {
-                        Servers: servers,
-                        State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
-                        ConnectUser: self.connectUser()
-                    }]);
-                }
-            }
+                    var firstServer = servers.length ? servers[0] : null;
+                    // See if we have any saved credentials and can auto sign in
+                    if (firstServer) {
+                        self.connectToServer(firstServer).then(function (result) {
 
-            return deferred.promise();
+                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+
+                                resolve(result);
+
+                            } else {
+                                resolve({
+                                    Servers: servers,
+                                    State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                                    ConnectUser: self.connectUser()
+                                });
+                            }
+
+                        });
+                    } else {
+
+                        resolve({
+                            Servers: servers,
+                            State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                            ConnectUser: self.connectUser()
+                        });
+                    }
+                }
+
+            });
         };
 
         function beginWakeServer(server) {
@@ -929,25 +926,24 @@
 
         self.connectToServer = function (server, options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var tests = [];
+                var tests = [];
 
-            if (server.LastConnectionMode != null) {
-                //tests.push(server.LastConnectionMode);
-            }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
+                if (server.LastConnectionMode != null) {
+                    //tests.push(server.LastConnectionMode);
+                }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
 
-            beginWakeServer(server);
+                beginWakeServer(server);
 
-            var wakeOnLanSendTime = new Date().getTime();
+                var wakeOnLanSendTime = new Date().getTime();
 
-            options = options || {};
-            testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
-
-            return deferred.promise();
+                options = options || {};
+                testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, resolve);
+            });
         };
 
         function stringEqualsIgnoreCase(str1, str2) {
@@ -955,12 +951,12 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
-        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, deferred) {
+        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, resolve) {
 
             if (index >= tests.length) {
 
                 logger.log('Tested all connection modes. Failing server connection.');
-                resolveWithFailure(deferred);
+                resolveFailure(resolve);
                 return;
             }
 
@@ -985,7 +981,7 @@
             }
 
             if (skipTest || !address) {
-                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
                 return;
             }
 
@@ -994,7 +990,7 @@
             tryConnect(address, timeout).then(function (result) {
 
                 logger.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
-                onSuccessfulConnection(server, result, mode, options, deferred);
+                onSuccessfulConnection(server, result, mode, options, resolve);
 
             }, function () {
 
@@ -1006,16 +1002,16 @@
 
                     // TODO: Implement delay and retry
 
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
 
                 } else {
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
 
                 }
             });
         }
 
-        function onSuccessfulConnection(server, systemInfo, connectionMode, options, deferred) {
+        function onSuccessfulConnection(server, systemInfo, connectionMode, options, resolve) {
 
             var credentials = credentialProvider.credentials();
             if (credentials.ConnectAccessToken) {
@@ -1025,31 +1021,31 @@
                     if (server.ExchangeToken) {
                         addAuthenticationInfoFromConnect(server, connectionMode, credentials).then(function () {
 
-                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
 
                         }, function () {
 
-                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
                         });
 
                     } else {
 
-                        afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                        afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
                     }
                 });
             }
             else {
-                afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
             }
         }
 
-        function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, deferred) {
+        function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, resolve) {
 
             if (verifyLocalAuthentication && server.AccessToken) {
 
                 validateAuthentication(server, connectionMode).then(function () {
 
-                    afterConnectValidated(server, credentials, systemInfo, connectionMode, false, options, deferred);
+                    afterConnectValidated(server, credentials, systemInfo, connectionMode, false, options, resolve);
                 });
 
                 return;
@@ -1085,7 +1081,7 @@
                 afterConnected(result.ApiClient, options);
             }
 
-            deferred.resolveWith(null, [result]);
+            resolve(result);
 
             Events.trigger(self, 'connected', [result]);
         }
@@ -1108,39 +1104,35 @@
 
         self.connectToAddress = function (address) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!address) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!address) {
+                    reject();
+                    return;
+                }
 
-            address = normalizeAddress(address);
+                address = normalizeAddress(address);
 
-            function onFail() {
-                logger.log('connectToAddress ' + address + ' failed');
-                resolveWithFailure(deferred);
-            }
+                function onFail() {
+                    logger.log('connectToAddress ' + address + ' failed');
+                    resolveFailure(resolve);
+                }
 
-            tryConnect(address, defaultTimeout).then(function (publicInfo) {
+                tryConnect(address, defaultTimeout).then(function (publicInfo) {
 
-                logger.log('connectToAddress ' + address + ' succeeded');
+                    logger.log('connectToAddress ' + address + ' succeeded');
 
-                var server = {
-                    ManualAddress: address,
-                    LastConnectionMode: MediaBrowser.ConnectionMode.Manual
-                };
-                updateServerInfo(server, publicInfo);
+                    var server = {
+                        ManualAddress: address,
+                        LastConnectionMode: MediaBrowser.ConnectionMode.Manual
+                    };
+                    updateServerInfo(server, publicInfo);
 
-                self.connectToServer(server).then(function (result) {
-
-                    deferred.resolveWith(null, [result]);
+                    self.connectToServer(server).then(resolve, onFail);
 
                 }, onFail);
 
-            }, onFail);
-
-            return deferred.promise();
+            });
         };
 
         self.loginToConnect = function (username, password) {
