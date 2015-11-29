@@ -667,81 +667,6 @@
             $(event.target).enhanceWithin();
         });
 
-        $.widget("mobile.page", {
-            options: {
-                theme: "a",
-                domCache: false,
-
-                // Deprecated in 1.4 remove in 1.5
-                contentTheme: null,
-                enhanced: false
-            },
-
-            // DEPRECATED for > 1.4
-            // TODO remove at 1.5
-            _createWidget: function () {
-
-                $.Widget.prototype._createWidget.apply(this, arguments);
-                this._trigger("init");
-            },
-
-            _create: function () {
-
-                if (!this.options.enhanced) {
-                    this._enhance();
-                }
-
-                this.element.enhanceWithin();
-            },
-
-            _enhance: function () {
-                var attrPrefix = "data-",
-                    self = this;
-
-                var element = this.element[0];
-
-                if (this.options.role) {
-                    element.setAttribute("data-role", this.options.role);
-                }
-
-                element.setAttribute("tabindex", "0");
-                element.classList.add("ui-page");
-                element.classList.add("ui-page-theme-" + this.options.theme);
-
-                var contents = element.querySelectorAll("div[data-role='content']");
-
-                for (var i = 0, length = contents.length; i < length; i++) {
-                    var content = contents[i];
-                    var theme = content.getAttribute(attrPrefix + "theme") || undefined;
-                    self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.data("role") === "dialog" && self.options.theme);
-                    content.classList.add("ui-content");
-                    if (self.options.contentTheme) {
-                        content.classList.add("ui-body-" + (self.options.contentTheme));
-                    }
-                    // Add ARIA role
-                    content.setAttribute("role", "main");
-                    content.classList.add("ui-content");
-                }
-            },
-
-            _setOptions: function (o) {
-
-                var elem = this.element[0];
-                if (o.theme !== undefined) {
-                    elem.classList.remove("ui-page-theme-" + this.options.theme);
-                    elem.classList.add("ui-page-theme-" + o.theme);
-                }
-
-                if (o.contentTheme !== undefined) {
-                    var elems = elem.querySelectorAll("*[data-" + "" + "='content']");
-                    for (var i = 0, length = elems.length; i < length; i++) {
-                        var el = elems[i];
-                        el.classList.remove("ui-body-" + this.options.contentTheme);
-                        el.classList.add("ui-body-" + o.contentTheme);
-                    }
-                }
-            }
-        });
     })(jQuery);
 
 
@@ -1519,6 +1444,60 @@
 
     (function ($, undefined) {
 
+        function jqmPage(pageElem) {
+
+            var self = this;
+            if (pageElem.hasPage) {
+                return;
+            }
+
+            pageElem.hasPage = true;
+
+            pageElem.dispatchEvent(new CustomEvent("pagecreate", {
+                bubbles: true
+            }));
+
+            self.element = $(pageElem);
+
+            self.options = {
+                theme: pageElem.getAttribute('data-theme') || 'a'
+            };
+
+            self._enhance = function () {
+                var attrPrefix = "data-";
+
+                var element = self.element[0];
+
+                element.setAttribute("data-role", 'page');
+
+                element.setAttribute("tabindex", "0");
+                element.classList.add("ui-page");
+                element.classList.add("ui-page-theme-" + self.options.theme);
+
+                var contents = element.querySelectorAll("div[data-role='content']");
+
+                for (var i = 0, length = contents.length; i < length; i++) {
+                    var content = contents[i];
+                    var theme = content.getAttribute(attrPrefix + "theme") || undefined;
+                    self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.data("role") === "dialog" && self.options.theme);
+                    content.classList.add("ui-content");
+                    if (self.options.contentTheme) {
+                        content.classList.add("ui-body-" + (self.options.contentTheme));
+                    }
+                    // Add ARIA role
+                    content.setAttribute("role", "main");
+                    content.classList.add("ui-content");
+                }
+            };
+
+            self._enhance();
+            self.element.enhanceWithin();
+
+            pageElem.dispatchEvent(new CustomEvent("pageinit", {
+                bubbles: true
+            }));
+        }
+
         var pageCache = {};
 
         function pageContainer(containerElem) {
@@ -1605,9 +1584,7 @@
             };
 
             self._enhance = function (content, role) {
-                // TODO consider supporting a custom callback, and passing in
-                // the settings which includes the role
-                return content.page({ role: role });
+                new jqmPage(content[0]);
             };
 
             self._include = function (page, jPage, settings) {
@@ -2005,8 +1982,7 @@
                     return;
                 }
 
-                // We need to make sure the page we are given has already been enhanced.
-                toPage.page({ role: settings.role });
+                new jqmPage(toPage[0]);
 
                 // If the changePage request was sent from a hashChange event, check to
                 // see if the page is already within the urlHistory stack. If so, we'll

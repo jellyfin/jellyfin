@@ -2505,10 +2505,9 @@ function pageIdOn(eventName, id, fn) {
 
 pageClassOn('pagecreate', "page", function () {
 
-    var jPage = $(this);
     var page = this;
 
-    var current = jPage.data('theme');
+    var current = page.getAttribute('data-theme');
 
     if (!current) {
 
@@ -2520,11 +2519,7 @@ pageClassOn('pagecreate', "page", function () {
             newTheme = 'a';
         }
 
-        current = jPage.page("option", "theme");
-
-        if (current && current != newTheme) {
-            jPage.page("option", "theme", newTheme);
-        }
+        page.setAttribute("data-theme", newTheme);
     }
 
 });
