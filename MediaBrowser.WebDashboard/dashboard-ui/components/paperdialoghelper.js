@@ -2,9 +2,9 @@
 
     function paperDialogHashHandler(dlg, hash, lockDocumentScroll) {
 
-        function onHashChange(e, data) {
+        function onHashChange(e) {
 
-            data = data.state;
+            var data = e.detail.state || {};
             var isActive = data.hash == '#' + hash;
 
             if (data.direction == 'back') {
@@ -25,7 +25,7 @@
 
             dlg = null;
             if (enableHashChange()) {
-                $(window).off('navigate', onHashChange);
+                window.removeEventListener('navigate', onHashChange);
 
                 if (window.location.hash == '#' + hash) {
                     history.back();
@@ -33,9 +33,7 @@
             }
         }
 
-        var self = this;
-
-        $(dlg).on('iron-overlay-closed', onDialogClosed);
+        dlg.addEventListener('iron-overlay-closed', onDialogClosed);
         dlg.open();
 
         if (lockDocumentScroll !== false) {
@@ -46,7 +44,7 @@
 
             window.location.hash = hash;
 
-            $(window).on('navigate', onHashChange);
+            window.addEventListener('navigate', onHashChange);
         }
     }
 

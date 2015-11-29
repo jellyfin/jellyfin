@@ -91,62 +91,31 @@
         $.event.special.navigate = self = {
             bound: false,
 
-            originalEventName: undefined,
-
             // TODO a lot of duplication between popstate and hashchange
             popstate: function (event) {
-                var newEvent = new $.Event("navigate"),
-                    state = event.originalEvent.state || {};
-
-                if (event.historyState) {
-                    $.extend(state, event.historyState);
-                }
-
-                // Make sure the original event is tracked for the end
-                // user to inspect incase they want to do something special
-                newEvent.originalEvent = event;
+                var state = event.state || {};
 
                 // NOTE we let the current stack unwind because any assignment to
                 //      location.hash will stop the world and run this event handler. By
                 //      doing this we create a similar behavior to hashchange on hash
                 //      assignment
                 setTimeout(function () {
-                    $win.trigger(newEvent, {
-                        state: state
-                    });
-                }, 0);
-            },
 
-            hashchange: function (event /*, data */) {
-
-                // Trigger the hashchange with state provided by the user
-                // that altered the hash
-                window.dispatchEvent(new CustomEvent("navigate", {
-                    detail: {
-                        // Users that want to fully normalize the two events
-                        // will need to do history management down the stack and
-                        // add the state to the event before this binding is fired
-                        // TODO consider allowing for the explicit addition of callbacks
-                        //      to be fired before this value is set to avoid event timing issues
-                        state: event.hashchangeState || {}
+                    if (event.historyState) {
+                        $.extend(state, event.historyState);
                     }
-                }));
-            },
 
-            // TODO We really only want to set this up once
-            //      but I'm not clear if there's a beter way to achieve
-            //      this with the jQuery special event structure
-            setup: function ( /* data, namespaces */) {
-                if (self.bound) {
-                    return;
-                }
-
-                self.bound = true;
-
-                self.originalEventName = "popstate";
-                $win.bind("popstate.navigate", self.popstate);
+                    window.dispatchEvent(new CustomEvent("navigate", {
+                        detail: {
+                            state: state,
+                            originalEvent: event
+                        }
+                    }));
+                }, 0);
             }
         };
+
+        window.addEventListener('popstate', self.popstate);
     })(jQuery);
 
     jQuery.mobile.widgets = {};
@@ -699,9 +668,7 @@
             this.history = history;
             this.ignoreInitialHashChange = true;
 
-            $(window).bind({
-                "popstate.history": $.proxy(this.popstate, this)
-            });
+            window.addEventListener('popstate', $.proxy(this.popstate, this));
         };
 
         $.extend($.mobile.Navigator.prototype, {
@@ -802,12 +769,6 @@
                     title: document.title
                 }, data);
 
-                popstateEvent = new $.Event("popstate");
-                popstateEvent.originalEvent = {
-                    type: "popstate",
-                    state: null
-                };
-
                 this.squash(url, state);
 
                 // Trigger a new faux popstate event to replace the one that we
@@ -815,7 +776,14 @@
                 if (!noEvents) {
                     this.ignorePopState = true;
                     //$(window).trigger(popstateEvent);
-                    window.dispatchEvent(new CustomEvent(popstateEvent, {}));
+                    window.dispatchEvent(new CustomEvent("popstate", {
+                        detail: {
+                            originalEvent: {
+                                type: "popstate",
+                                state: null
+                            }
+                        }
+                    }));
                 }
 
                 // record the history entry so that the information can be included
@@ -849,12 +817,14 @@
                     return;
                 }
 
+                var originalEventState = event.state || (event.detail ? event.detail.originalEvent.state : event.state);
+
                 // If there is no state, and the history stack length is one were
                 // probably getting the page load popstate fired by browsers like chrome
                 // avoid it and set the one time flag to false.
                 // TODO: Do we really need all these conditions? Comparing location hrefs
                 // should be sufficient.
-                if (!event.originalEvent.state &&
+                if (!originalEventState &&
                     this.history.stack.length === 1 &&
                     this.ignoreInitialHashChange) {
                     this.ignoreInitialHashChange = false;
@@ -872,7 +842,7 @@
                 // TODO it might be better to only add to the history stack
                 //      when the hash is adjacent to the active history entry
                 hash = path.parseLocation().hash;
-                if (!event.originalEvent.state && hash) {
+                if (!originalEventState && hash) {
                     // squash the hash that's been assigned on the URL with replaceState
                     // also grab the resulting state object for storage
                     state = this.squash(hash);
@@ -893,11 +863,12 @@
                 // If all else fails this is a popstate that comes from the back or forward buttons
                 // make sure to set the state of our history stack properly, and record the directionality
                 this.history.direct({
-                    url: (event.originalEvent.state || {}).url || hash,
+                    url: (originalEventState || {}).url || hash,
 
                     // When the url is either forward or backward in history include the entry
                     // as data on the event object for merging as data in the navigate event
                     present: function (historyEntry, direction) {
+
                         // make sure to create a new object to pass down as the navigate event data
                         event.historyState = $.extend({}, historyEntry);
                         event.historyState.direction = direction;
@@ -993,14 +964,21 @@
             self.element = containerElem;
             self.initSelector = false;
 
-            $(window).on("navigate", function (e, data) {
+            window.addEventListener("navigate", function (e) {
                 var url;
-
-                if (e.originalEvent && e.originalEvent.isDefaultPrevented()) {
+                if (e.defaultPrevented) {
                     return;
                 }
 
-                url = e.originalEvent.type.indexOf("hashchange") > -1 ? data.state.hash : data.state.url;
+                var originalEvent = e.detail.originalEvent;
+
+                if (originalEvent && originalEvent.defaultPrevented) {
+                    return;
+                }
+
+                var data = e.detail;
+
+                url = originalEvent.type.indexOf("hashchange") > -1 ? data.state.hash : data.state.url;
 
                 if (!url) {
                     url = $.mobile.path.parseLocation().hash;

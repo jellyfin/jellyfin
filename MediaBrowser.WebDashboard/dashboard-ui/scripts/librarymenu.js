@@ -973,9 +973,12 @@
 
     var isCurrentNavBack = false;
 
-    $(window).on("navigate", function (e, data) {
-        data = data.state || {};
-        isCurrentNavBack = data.direction == 'back';
+    window.addEventListener("navigate", function (e) {
+
+        var data = e.detail.state || {};
+        var direction = data.direction;
+
+        isCurrentNavBack = direction == 'back';
     });
 
     function isBack() {
