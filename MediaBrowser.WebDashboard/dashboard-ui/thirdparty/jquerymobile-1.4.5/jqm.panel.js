@@ -99,7 +99,7 @@
 
         _create: function () {
             var el = this.element,
-                parentPage = el.closest(".ui-page, :jqmData(role='page')");
+                parentPage = el.closest(".ui-page, [data-role='page']");
 
             // expose some private props to other methods
             $.extend(this, {
@@ -315,7 +315,7 @@
             }
             // Clean up open panels after page hide
             if (self._parentPage) {
-                this.document.on("pagehide", ":jqmData(role='page')", function () {
+                this.document.on("pagehide", "[data-role='page']", function () {
                     if (self._open) {
                         self.close(true);
                     }

@@ -128,7 +128,7 @@
 			transition: "none",
 			positionTo: "origin",
 			tolerance: null,
-			closeLinkSelector: "a:jqmData(rel='back')",
+			closeLinkSelector: "a[data-rel='back']",
 			closeLinkEvents: "click.popup",
 			navigateEvents: "navigate.popup",
 			closeEvents: "navigate.popup pagebeforechange.popup",

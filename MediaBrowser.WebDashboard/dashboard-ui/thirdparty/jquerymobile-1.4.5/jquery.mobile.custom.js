@@ -11,73 +11,9 @@
 (function (root, doc, factory) {
     // Browser globals
     factory(root.jQuery, root, doc);
-}(this, document, function (jQuery, window, document, undefined) {/*!
- * jQuery hashchange event - v1.3 - 7/21/2010
- * http://benalman.com/projects/jquery-hashchange-plugin/
- * 
- * Copyright (c) 2010 "Cowboy" Ben Alman
- * Dual licensed under the MIT and GPL licenses.
- * http://benalman.com/about/license/
- */
+}(this, document, function (jQuery, window, document, undefined) {
 
-    (function ($, window, undefined) {
-
-        // Reused string.
-        var str_hashchange = 'hashchange';
-
-        // Method: jQuery.fn.hashchange
-        // 
-        // Bind a handler to the window.onhashchange event or trigger all bound
-        // window.onhashchange event handlers. This behavior is consistent with
-        // jQuery's built-in event handlers.
-        // 
-        // Usage:
-        // 
-        // > jQuery(window).hashchange( [ handler ] );
-        // 
-        // Arguments:
-        // 
-        //  handler - (Function) Optional handler to be bound to the hashchange
-        //    event. This is a "shortcut" for the more verbose form:
-        //    jQuery(window).bind( 'hashchange', handler ). If handler is omitted,
-        //    all bound window.onhashchange event handlers will be triggered. This
-        //    is a shortcut for the more verbose
-        //    jQuery(window).trigger( 'hashchange' ). These forms are described in
-        //    the <hashchange event> section.
-        // 
-        // Returns:
-        // 
-        //  (jQuery) The initial jQuery collection of elements.
-
-        // Allow the "shortcut" format $(elem).hashchange( fn ) for binding and
-        // $(elem).hashchange() for triggering, like jQuery does for built-in events.
-        $.fn[str_hashchange] = function (fn) {
-            return fn ? this.bind(str_hashchange, fn) : this.trigger(str_hashchange);
-        };
-
-        $.fn[str_hashchange].delay = 50;
-        $.mobile = {};
-
-    })(jQuery, this);
-
-    // default the property to remove dependency on assignment in init module
-    jQuery.mobile.pageContainer = $();
-
-    (function ($, window, undefined) {
-        var oldFind = $.find,
-            jqmDataRE = /:jqmData\(([^)]*)\)/g;
-
-        $.find = function (selector, context, ret, extra) {
-            if (selector.indexOf(":jqmData") > -1) {
-                selector = selector.replace(jqmDataRE, "[data-$1]");
-            }
-
-            return oldFind.call(this, selector, context, ret, extra);
-        };
-
-        $.extend($.find, oldFind);
-
-    })(jQuery, this);
+    jQuery.mobile = {};
 
     (function ($, window, undefined) {
 
@@ -146,14 +82,6 @@
                 return this;
             }
         });
-
-        $.find.matches = function (expr, set) {
-            return $.find(expr, null, null, set);
-        };
-
-        $.find.matchesSelector = function (node, expr) {
-            return $.find(expr, null, null, [node]).length > 0;
-        };
 
     })(jQuery, this);
 
@@ -687,13 +615,9 @@
 
     (function ($, undefined) {
 
-        var rcapitals = /[A-Z]/g,
-            replaceFunction = function (c) {
-                return "-" + c.toLowerCase();
-            };
-
         $.extend($.Widget.prototype, {
             _getCreateOptions: function () {
+
                 var option, value,
                     elem = this.element[0],
                     options = {};
@@ -767,11 +691,6 @@
                     this._enhance();
                 }
 
-                this._on(this.element, {
-                    pagebeforehide: "removeContainerBackground",
-                    pagebeforeshow: "_handlePageBeforeShow"
-                });
-
                 this.element.enhanceWithin();
             },
 
@@ -821,19 +740,6 @@
                         el.classList.add("ui-body-" + o.contentTheme);
                     }
                 }
-            },
-
-            _handlePageBeforeShow: function (/* e */) {
-                this.setContainerBackground();
-            },
-            // Deprecated in 1.4 remove in 1.5
-            removeContainerBackground: function () {
-                $(this.element[0].parentNode).pagecontainer({ "theme": "none" });
-            },
-            // Deprecated in 1.4 remove in 1.5
-            // set the page container background to the page theme
-            setContainerBackground: function (theme) {
-                $(this.element[0].parentNode).pagecontainer({ "theme": theme || this.options.theme });
             }
         });
     })(jQuery);
@@ -1023,14 +929,6 @@
 					hash = relObj.hash;
 
                 return protocol + doubleSlash + authority + pathname + search + hash;
-            },
-
-            //Add search (aka query) params to the specified url.
-            addSearchParams: function (url, params) {
-                var u = path.parseUrl(url),
-					p = (typeof params === "object") ? $.param(params) : params,
-					s = u.search || "?";
-                return u.hrefNoSearch + s + (s.charAt(s.length - 1) !== "?" ? "&" : "") + p + (u.hash || "");
             },
 
             convertUrlToDataUrl: function (absUrl) {
@@ -1505,7 +1403,8 @@
                 // caught that was triggered by the hash setting above.
                 if (!noEvents) {
                     this.ignorePopState = true;
-                    $(window).window.trigger(popstateEvent);
+                    //$(window).trigger(popstateEvent);
+                    window.dispatchEvent(new CustomEvent(popstateEvent, {}));
                 }
 
                 // record the history entry so that the information can be included
@@ -1622,26 +1521,14 @@
 
         var pageCache = {};
 
-        $.widget("mobile.pagecontainer", {
-            options: {
-                theme: "a"
-            },
+        function pageContainer(containerElem) {
 
-            initSelector: false,
+            var self = this;
 
-            _create: function () {
+            self.element = containerElem;
+            self.initSelector = false;
 
-                // TODO consider moving the navigation handler OUT of widget into
-                //      some other object as glue between the navigate event and the
-                //      content widget load and change methods
-                this._on(this.window, { navigate: "_filterNavigateEvents" });
-            },
-
-            _setOptions: function (options) {
-                this._super(options);
-            },
-
-            _filterNavigateEvents: function (e, data) {
+            $(window).on("navigate", function (e, data) {
                 var url;
 
                 if (e.originalEvent && e.originalEvent.isDefaultPrevented()) {
@@ -1651,69 +1538,36 @@
                 url = e.originalEvent.type.indexOf("hashchange") > -1 ? data.state.hash : data.state.url;
 
                 if (!url) {
-                    url = this._getHash();
+                    url = $.mobile.path.parseLocation().hash;
                 }
 
                 if (!url || url === "#" || url.indexOf("#" + $.mobile.path.uiStateKey) === 0) {
                     url = location.href;
                 }
 
-                this._handleNavigate(url, data.state);
-            },
+                self._handleNavigate(url, data.state);
+            });
 
-            _getHash: function () {
-                return $.mobile.path.parseLocation().hash;
-            },
+            self.back = function () {
+                self.go(-1);
+            };
 
-            // TODO active page should be managed by the container (ie, it should be a property)
-            getActivePage: function () {
-                return this.activePage;
-            },
+            self.forward = function () {
+                self.go(1);
+            };
 
-            // TODO the first page should be a property set during _create using the logic
-            //      that currently resides in init
-            _getInitialContent: function () {
-                return $.mobile.firstPage;
-            },
-
-            // TODO each content container should have a history object
-            _getHistory: function () {
-                return $.mobile.navigate.history;
-            },
-
-            _getActiveHistory: function () {
-                return this._getHistory().getActive();
-            },
-
-            // TODO the document base should be determined at creation
-            _getDocumentBase: function () {
-                return $.mobile.path.documentBase;
-            },
-
-            back: function () {
-                this.go(-1);
-            },
-
-            forward: function () {
-                this.go(1);
-            },
-
-            go: function (steps) {
+            self.go = function (steps) {
 
                 window.history.go(steps);
-            },
+            };
 
-            // TODO rename _handleDestination
-            _handleDestination: function (to) {
-                var history;
-
+            self._handleDestination = function (to) {
                 // clean the hash for comparison if it's a url
                 if ($.type(to) === "string") {
                     to = $.mobile.path.stripHash(to);
                 }
 
                 if (to) {
-                    history = this._getHistory();
 
                     // At this point, 'to' can be one of 3 things, a cached page
                     // element from a history stack entry, an id, or site-relative /
@@ -1724,27 +1578,15 @@
                     // page/dialog.
                     //
                     // TODO move check to history object or path object?
-                    to = !$.mobile.path.isPath(to) ? ($.mobile.path.makeUrlAbsolute("#" + to, this._getDocumentBase())) : to;
+                    to = !$.mobile.path.isPath(to) ? ($.mobile.path.makeUrlAbsolute("#" + to, $.mobile.path.documentBase)) : to;
                 }
-                return to || this._getInitialContent();
-            },
+                return to || $.mobile.firstPage;
+            };
 
-            _transitionFromHistory: function (direction, defaultTransition) {
-                var history = this._getHistory(),
-                    entry = (direction === "back" ? history.getLast() : history.getActive());
-
-                return (entry && entry.transition) || defaultTransition;
-            },
-
-            _handleNavigate: function (url, data) {
+            self._handleNavigate = function (url, data) {
                 //find first page via hash
                 // TODO stripping the hash twice with handleUrl
-                var to = $.mobile.path.stripHash(url), history = this._getHistory(),
-
-                    // transition is false if it's the first page, undefined
-                    // otherwise (and may be overridden by default)
-                    transition = history.stack.length === 0 ? "none" :
-                        this._transitionFromHistory(data.direction),
+                var to = $.mobile.path.stripHash(url),
 
                     // default options for the changPage calls made after examining
                     // the current state of the page and the hash, NOTE that the
@@ -1756,54 +1598,49 @@
                     };
 
                 $.extend(changePageOptions, data, {
-                    transition: transition
+                    transition: "none"
                 });
 
-                this._changeContent(this._handleDestination(to), changePageOptions);
-            },
+                $.mobile.changePage(self._handleDestination(to), changePageOptions);
+            };
 
-            _changeContent: function (to, opts) {
-                $.mobile.changePage(to, opts);
-            },
-
-            _enhance: function (content, role) {
+            self._enhance = function (content, role) {
                 // TODO consider supporting a custom callback, and passing in
                 // the settings which includes the role
                 return content.page({ role: role });
-            },
+            };
 
-            _include: function (page, jPage, settings) {
+            self._include = function (page, jPage, settings) {
 
                 // append to page and enhance
-                jPage.appendTo(this.element);
+                jPage.appendTo(self.element);
                 //alert(jPage[0].parentNode == this.element[0]);
                 //this.element[0].appendChild(page);
 
                 // use the page widget to enhance
-                this._enhance(jPage, settings.role);
-            },
+                self._enhance(jPage, settings.role);
+            };
 
-            _find: function (absUrl) {
+            self._find = function (absUrl) {
                 // TODO consider supporting a custom callback
                 var fileUrl = absUrl,
-                    dataUrl = this._createDataUrl(absUrl),
-                    page, initialContent = this._getInitialContent();
+                    dataUrl = self._createDataUrl(absUrl),
+                    page,
+                    initialContent = $.mobile.firstPage;
 
                 // Check to see if the page already exists in the DOM.
-                // NOTE do _not_ use the :jqmData pseudo selector because parenthesis
-                //      are a valid url char and it breaks on the first occurence
-                page = this.element[0].querySelector("[data-url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
+                page = self.element[0].querySelector("[data-url='" + $.mobile.path.hashToSelector(dataUrl) + "']");
 
                 // If we failed to find the page, check to see if the url is a
                 // reference to an embedded page. If so, it may have been dynamically
                 // injected by a developer, in which case it would be lacking a
                 // data-url attribute and in need of enhancement.
                 if (!page && dataUrl && !$.mobile.path.isPath(dataUrl)) {
-                    page = this.element[0].querySelector($.mobile.path.hashToSelector("#" + dataUrl));
+                    page = self.element[0].querySelector($.mobile.path.hashToSelector("#" + dataUrl));
 
                     if (page) {
                         $(page).attr("data-url", dataUrl)
-                        .data("url", dataUrl);
+                            .data("url", dataUrl);
                     }
                 }
 
@@ -1821,9 +1658,9 @@
                 }
 
                 return page ? $(page) : $();
-            },
+            };
 
-            _parse: function (html, fileUrl) {
+            self._parse = function (html, fileUrl) {
                 // TODO consider allowing customization of this method. It's very JQM specific
                 var page, all = document.createElement('div');
 
@@ -1842,13 +1679,13 @@
                 // TODO tagging a page with external to make sure that embedded pages aren't
                 // removed by the various page handling code is bad. Having page handling code
                 // in many places is bad. Solutions post 1.0
-                page.setAttribute("data-url", this._createDataUrl(fileUrl));
+                page.setAttribute("data-url", self._createDataUrl(fileUrl));
                 page.setAttribute("data-external-page", true);
 
                 return page;
-            },
+            };
 
-            _setLoadedTitle: function (page, html) {
+            self._setLoadedTitle = function (page, html) {
                 //page title regexp
                 if (!page.data("title")) {
 
@@ -1858,17 +1695,13 @@
                         page.data("title", newPageTitle);
                     }
                 }
-            },
+            };
 
-            _createDataUrl: function (absoluteUrl) {
+            self._createDataUrl = function (absoluteUrl) {
                 return $.mobile.path.convertUrlToDataUrl(absoluteUrl);
-            },
+            };
 
-            _triggerWithDeprecated: function (name, data, page) {
-                var deprecatedEvent = $.Event("page" + name),
-                    newEvent = $.Event(this.widgetName + name);
-
-                // DEPRECATED
+            self._triggerWithDeprecated = function (name, data, page) {
 
                 // trigger the old deprecated event on the page if it's provided
                 //(page || this.element).trigger(deprecatedEvent, data);
@@ -1878,26 +1711,18 @@
                         data: data
                     }
                 }));
-
-                // use the widget trigger method for the new content* event
-                //this._trigger(name, newEvent, data);
-
-                return {
-                    deprecatedEvent: deprecatedEvent,
-                    event: newEvent
-                };
-            },
+            };
 
             // TODO it would be nice to split this up more but everything appears to be "one off"
             //      or require ordering such that other bits are sprinkled in between parts that
             //      could be abstracted out as a group
-            _loadSuccess: function (absUrl, triggerData, settings, deferred) {
+            self._loadSuccess = function (absUrl, settings, deferred) {
 
                 var fileUrl = absUrl;
-                var currentSelf = this;
+                var currentSelf = self;
 
                 return function (html, wasCached) {
-                    
+
                     if (!wasCached || typeof (wasCached) != 'boolean') {
                         if ($.mobile.filterHtml) {
                             html = $.mobile.filterHtml(html);
@@ -1911,13 +1736,6 @@
                     var content = $(contentElem);
 
                     currentSelf._setLoadedTitle(content, html);
-
-                    // DEPRECATED
-                    triggerData.page = content;
-
-                    triggerData.content = content;
-
-                    triggerData.toPage = content;
 
                     var dependencies = contentElem.getAttribute('data-require');
                     dependencies = dependencies ? dependencies.split(',') : null;
@@ -1938,9 +1756,9 @@
                     });
 
                 };
-            },
+            };
 
-            _loadDefaults: {
+            self._loadDefaults = {
                 type: "get",
                 data: undefined,
 
@@ -1951,62 +1769,27 @@
 
                 // By default we rely on the role defined by the @data-role attribute.
                 role: undefined
-            },
+            };
 
-            load: function (url, options) {
+            self.load = function (url, options) {
                 // This function uses deferred notifications to let callers
                 // know when the content is done loading, or if an error has occurred.
                 var deferred = (options && options.deferred) || $.Deferred(),
 
-                    // Examining the option "reloadPage" passed by the user is deprecated as of 1.4.0
-                    // and will be removed in 1.5.0.
-                    // Copy option "reloadPage" to "reload", but only if option "reload" is not present
-                    reloadOptionExtension =
-                        ((options && options.reload === undefined &&
-                            options.reloadPage !== undefined) ?
-							{ reload: options.reloadPage } : {}),
-
                     // The default load options with overrides specified by the caller.
-                    settings = $.extend({}, this._loadDefaults, options, reloadOptionExtension),
-
-                    // The DOM element for the content after it has been loaded.
-                    content = null,
+                    settings = $.extend({}, self._loadDefaults, options),
 
                     // The absolute version of the URL passed into the function. This
                     // version of the URL may contain dialog/subcontent params in it.
-                    absUrl = $.mobile.path.makeUrlAbsolute(url, this._findBaseWithDefault()),
-                    fileUrl, dataUrl, triggerData;
+                    absUrl = $.mobile.path.makeUrlAbsolute(url, self._findBaseWithDefault());
 
-                // If the caller provided data, and we're using "get" request,
-                // append the data to the URL.
-                if (settings.data && settings.type === "get") {
-                    absUrl = $.mobile.path.addSearchParams(absUrl, settings.data);
-                    settings.data = undefined;
-                }
-
-                // If the caller is using a "post" request, reload must be true
-                if (settings.data && settings.type === "post") {
-                    settings.reload = true;
-                }
-
-                // The absolute version of the URL minus any dialog/subcontent params.
-                // In otherwords the real URL of the content to be loaded.
-                fileUrl = absUrl;
-
-                // The version of the Url actually stored in the data-url attribute of
-                // the content. For embedded content, it is just the id of the page. For
-                // content within the same domain as the document base, it is the site
-                // relative path. For cross-domain content (Phone Gap only) the entire
-                // absolute Url is used to load the content.
-                dataUrl = this._createDataUrl(absUrl);
-
-                content = this._find(absUrl);
+                var content = self._find(absUrl);
 
                 // If it isn't a reference to the first content and refers to missing
                 // embedded content reject the deferred and return
                 if (content.length === 0 &&
-                    $.mobile.path.isEmbeddedPage(fileUrl) &&
-                    !$.mobile.path.isFirstPageUrl(fileUrl)) {
+                    $.mobile.path.isEmbeddedPage(absUrl) &&
+                    !$.mobile.path.isFirstPageUrl(absUrl)) {
                     deferred.reject(absUrl, settings);
                     return deferred.promise();
                 }
@@ -2016,23 +1799,13 @@
                 // reload of the file, we are done. Resolve the deferrred so that
                 // users can bind to .done on the promise
                 if (content.length && !settings.reload) {
-                    this._enhance(content, settings.role);
+                    self._enhance(content, settings.role);
                     deferred.resolve(absUrl, settings, content);
 
                     return deferred.promise();
                 }
 
-                triggerData = {
-                    url: url,
-                    absUrl: absUrl,
-                    toPage: url,
-                    prevPage: options ? options.fromPage : undefined,
-                    dataUrl: dataUrl,
-                    deferred: deferred,
-                    options: settings
-                };
-
-                var successFn = this._loadSuccess(absUrl, triggerData, settings, deferred);
+                var successFn = self._loadSuccess(absUrl, settings, deferred);
                 var cachedResult = pageCache[absUrl.split('?')[0]];
                 if (cachedResult) {
                     successFn(cachedResult, true);
@@ -2050,7 +1823,7 @@
                 //    error: this._loadError(absUrl, triggerData, settings, deferred)
                 //});
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', fileUrl, true);
+                xhr.open('GET', absUrl, true);
 
                 xhr.onload = function (e) {
                     successFn(this.response);
@@ -2059,10 +1832,10 @@
                 xhr.send();
 
                 return deferred.promise();
-            },
+            };
 
             // TODO move into transition handlers?
-            _triggerCssTransitionEvents: function (to, from, prefix) {
+            self._triggerCssTransitionEvents = function (to, from, prefix) {
 
                 prefix = prefix || "";
 
@@ -2071,7 +1844,7 @@
 
                     //trigger before show/hide events
                     // TODO deprecate nextPage in favor of next
-                    this._triggerWithDeprecated(prefix + "hide", {
+                    self._triggerWithDeprecated(prefix + "hide", {
 
                         // Deprecated in 1.4 remove in 1.5
                         nextPage: to,
@@ -2085,30 +1858,29 @@
                 if (!prefix && browserInfo.msie) {
 
                     // Add a delay for IE because it seems to be having issues with web components
-                    var curr = this;
                     setTimeout(function () {
-                        curr._triggerWithDeprecated(prefix + "show", {
+                        self._triggerWithDeprecated(prefix + "show", {
                             prevPage: from || $(""),
                             toPage: to
                         }, to);
                     }, 50);
 
                 } else {
-                    this._triggerWithDeprecated(prefix + "show", {
+                    self._triggerWithDeprecated(prefix + "show", {
                         prevPage: from || $(""),
                         toPage: to
                     }, to);
                 }
-            },
+            };
 
             // TODO make private once change has been defined in the widget
-            _cssTransition: function (to, from, options) {
+            self._cssTransition = function (to, from, options) {
 
-                this._triggerCssTransitionEvents(to, from, "before");
+                self._triggerCssTransitionEvents(to, from, "before");
 
                 if (from) {
                     from[0].style.display = 'none';
-                    var pages = this.element[0].childNodes;
+                    var pages = self.element[0].childNodes;
                     for (var i = 0, length = pages.length; i < length; i++) {
                         var pg = pages[i];
                         if (pg.getAttribute && pg.getAttribute('data-role') == 'page') {
@@ -2118,26 +1890,19 @@
                 }
 
                 var toPage = to[0];
-
                 toPage.style.display = 'block';
+                self._triggerCssTransitionEvents(to, from);
+            };
 
-                //var transition = toPage.getAttribute('data-transition');
-                //if (transition == 'zoom') {
-                //    zoomIn(toPage);
-                //}
-
-                this._triggerCssTransitionEvents(to, from);
-            },
-
-            change: function (to, options) {
+            self.change = function (to, options) {
 
                 var settings = $.extend({}, $.mobile.changePage.defaults, options),
                     triggerData = {};
 
                 // Make sure we have a fromPage.
-                settings.fromPage = settings.fromPage || this.activePage;
+                settings.fromPage = settings.fromPage || self.activePage;
 
-                triggerData.prevPage = this.activePage;
+                triggerData.prevPage = self.activePage;
                 $.extend(triggerData, {
                     toPage: to,
                     options: settings
@@ -2149,7 +1914,7 @@
                 // it is done loading or if an error ocurred.
                 if ($.type(to) === "string") {
                     // if the toPage is a string simply convert it
-                    triggerData.absUrl = $.mobile.path.makeUrlAbsolute(to, this._findBaseWithDefault());
+                    triggerData.absUrl = $.mobile.path.makeUrlAbsolute(to, self._findBaseWithDefault());
 
                     // preserve the original target as the dataUrl value will be
                     // simplified eg, removing ui-state, and removing query params
@@ -2159,7 +1924,7 @@
                     settings.target = to;
                     settings.deferred = $.Deferred();
 
-                    this.load(to, settings);
+                    self.load(to, settings);
 
                     settings.deferred.then($.proxy(function (url, options, content) {
 
@@ -2167,23 +1932,28 @@
                         // to events in the triggerData of the subsequent changePage call
                         options.absUrl = triggerData.absUrl;
 
-                        this.transition(content, triggerData, options);
-                    }, this));
+                        self.transition(content, triggerData, options);
+                    }, self));
 
                 } else {
                     // if the toPage is a jQuery object grab the absolute url stored
                     // in the loadPage callback where it exists
                     triggerData.absUrl = settings.absUrl;
 
-                    this.transition(to, triggerData, settings);
+                    self.transition(to, triggerData, settings);
                 }
-            },
+            };
 
-            transition: function (toPage, triggerData, settings) {
-                var fromPage, url, pageUrl, fileUrl,
-                    active, activeIsInitialPage,
-                    historyDir, pageTitle,
-                    alreadyThere, newPageTitle,
+            self.transition = function (toPage, triggerData, settings) {
+                var fromPage,
+                    url,
+                    pageUrl,
+                    fileUrl,
+                    active,
+                    historyDir,
+                    pageTitle,
+                    alreadyThere,
+                    newPageTitle,
                     params;
 
                 triggerData.prevPage = settings.fromPage;
@@ -2207,7 +1977,6 @@
                 pageUrl = url;
                 fileUrl = url;
                 active = $.mobile.navigate.history.getActive();
-                activeIsInitialPage = $.mobile.navigate.history.activeIndex === 0;
                 historyDir = 0;
                 pageTitle = document.title;
 
@@ -2224,8 +1993,8 @@
                 // animation transition is used.
                 if (fromPage && fromPage[0] === toPage[0]) {
 
-                    this._triggerWithDeprecated("transition", triggerData);
-                    this._triggerWithDeprecated("change", triggerData);
+                    self._triggerWithDeprecated("transition", triggerData);
+                    self._triggerWithDeprecated("change", triggerData);
 
                     // Even if there is no page change to be done, we should keep the
                     // urlHistory in sync with the hash changes
@@ -2283,11 +2052,7 @@
                         role: settings.role
                     };
 
-                    if (settings.changeHash !== false) {
-                        $.mobile.navigate(this.window[0].encodeURI(url), params, true);
-                    } else if (toPage[0] !== $.mobile.firstPage[0]) {
-                        $.mobile.navigate.history.add(url, params);
-                    }
+                    $.mobile.navigate(encodeURI(url), params, true);
                 }
 
                 //set page title
@@ -2297,25 +2062,27 @@
                 $.mobile.activePage = toPage;
 
                 //new way to handle activePage
-                this.activePage = toPage;
+                self.activePage = toPage;
 
                 // If we're navigating back in the URL history, set reverse accordingly.
                 settings.reverse = settings.reverse || historyDir < 0;
 
-                this._cssTransition(toPage, fromPage, {
+                self._cssTransition(toPage, fromPage, {
                     transition: settings.transition,
                     reverse: settings.reverse
                 });
-            },
+            };
 
             // determine the current base url
-            _findBaseWithDefault: function () {
+            self._findBaseWithDefault = function () {
 
-                var closestBase = (this.activePage &&
-                $.mobile.getClosestBaseUrl(this.activePage[0]));
+                var closestBase = (self.activePage &&
+                    $.mobile.getClosestBaseUrl(self.activePage[0]));
                 return closestBase || $.mobile.path.documentBase.hrefNoHash;
-            }
-        });
+            };
+        }
+
+        $.mobile.pageContainerBuilder = pageContainer;
 
     })(jQuery);
 
@@ -2332,7 +2099,7 @@
         // Exposed $.mobile methods
 
         $.mobile.changePage = function (to, options) {
-            $.mobile.pageContainer.pagecontainer("change", to, options);
+            $.mobile.pageContainer.change(to, options);
         };
 
         $.mobile.changePage.defaults = {
@@ -2378,7 +2145,7 @@
 
                 //if there's a data-rel=back attr, go back in history
                 if (link.getAttribute('data-rel') == 'back') {
-                    $.mobile.pageContainer.pagecontainer("back");
+                    $.mobile.pageContainer.back();
                     return false;
                 }
 
@@ -2432,9 +2199,6 @@
                 event.preventDefault();
             });
 
-            // TODO ensure that the navigate binding in the content widget happens at the right time
-            $.mobile.pageContainer.pagecontainer();
-
             function removePage(page) {
 
                 page.parentNode.removeChild(page);
@@ -2476,71 +2240,59 @@
 
     })(jQuery);
 
+    jQuery.mobile.initializePage = function () {
+        // find present pages
+        var path = $.mobile.path,
+            firstPage = document.querySelector("div[data-role='page']"),
+            hash = path.stripHash(path.stripQueryParams(path.parseLocation().hash)),
+            theLocation = $.mobile.path.parseLocation(),
+            hashPage = hash ? document.getElementById(hash) : undefined;
 
-    (function ($, window, undefined) {
-
-        $.extend($.mobile, {
-            // find and enhance the pages in the dom and transition to the first page.
-            initializePage: function () {
-                // find present pages
-                var path = $.mobile.path,
-                    firstPage = document.querySelector("div[data-role='page']"),
-                    hash = path.stripHash(path.stripQueryParams(path.parseLocation().hash)),
-                    theLocation = $.mobile.path.parseLocation(),
-                    hashPage = hash ? document.getElementById(hash) : undefined;
-
-                // add dialogs, set data-url attrs
-                if (firstPage) {
-                    // unless the data url is already set set it to the pathname
-                    if (!firstPage.getAttribute("data-url")) {
-                        firstPage.setAttribute("data-url", firstPage.getAttribute("id") || path.convertUrlToDataUrl(theLocation.pathname + theLocation.search));
-                    }
-                }
-
-                // define first page in dom case one backs out to the directory root (not always the first page visited, but defined as fallback)
-                $.mobile.firstPage = $(firstPage);
-
-                // define page container
-                $.mobile.pageContainer = $.mobile.firstPage
-                    .parent()
-                    .addClass("ui-mobile-viewport")
-                    .pagecontainer();
-
-                $.mobile._registerInternalEvents();
-
-                // if hashchange listening is disabled, there's no hash deeplink,
-                // the hash is not valid (contains more than one # or does not start with #)
-                // or there is no page with that hash, change to the first page in the DOM
-                // Remember, however, that the hash can also be a path!
-                if (!($.mobile.path.isHashValid(location.hash) &&
-                    ($(hashPage).is("[data-role='page']") ||
-                        $.mobile.path.isPath(hash)))) {
-
-                    // make sure to set initial popstate state if it exists
-                    // so that navigation back to the initial page works properly
-                    $.mobile.navigate.navigator.squash(path.parseLocation().href);
-
-                    $.mobile.changePage($.mobile.firstPage, {
-                        reverse: true,
-                        changeHash: false,
-                        fromHashChange: true
-                    });
-                } else {
-                    // TODO figure out how to simplify this interaction with the initial history entry
-                    // at the bottom js/navigate/navigate.js
-                    $.mobile.navigate.history.stack = [];
-                    $.mobile.navigate($.mobile.path.isPath(location.hash) ? location.hash : location.href);
-                }
+        // add dialogs, set data-url attrs
+        if (firstPage) {
+            // unless the data url is already set set it to the pathname
+            if (!firstPage.getAttribute("data-url")) {
+                firstPage.setAttribute("data-url", firstPage.getAttribute("id") || path.convertUrlToDataUrl(theLocation.pathname + theLocation.search));
             }
-        });
+        }
 
-    }(jQuery, this));
+        // define first page in dom case one backs out to the directory root (not always the first page visited, but defined as fallback)
+        $.mobile.firstPage = $(firstPage);
 
-    (function ($, undefined) {
+        // define page container
+        $.mobile.pageContainer = new $.mobile.pageContainerBuilder($.mobile.firstPage
+            .parent()
+            .addClass("ui-mobile-viewport"));
 
-        $.fn.selectmenu = function () {
-            return this;
-        };
-    })(jQuery);
+        $.mobile._registerInternalEvents();
+
+        // if hashchange listening is disabled, there's no hash deeplink,
+        // the hash is not valid (contains more than one # or does not start with #)
+        // or there is no page with that hash, change to the first page in the DOM
+        // Remember, however, that the hash can also be a path!
+        if (!($.mobile.path.isHashValid(location.hash) &&
+            ($(hashPage).is("[data-role='page']") ||
+                $.mobile.path.isPath(hash)))) {
+
+            // make sure to set initial popstate state if it exists
+            // so that navigation back to the initial page works properly
+            $.mobile.navigate.navigator.squash(path.parseLocation().href);
+
+            $.mobile.changePage($.mobile.firstPage, {
+                reverse: true,
+                changeHash: false,
+                fromHashChange: true
+            });
+        } else {
+            // TODO figure out how to simplify this interaction with the initial history entry
+            // at the bottom js/navigate/navigate.js
+            $.mobile.navigate.history.stack = [];
+            $.mobile.navigate($.mobile.path.isPath(location.hash) ? location.hash : location.href);
+        }
+    };
+
+    jQuery.fn.selectmenu = function () {
+        return this;
+    };
 
 }));

@@ -104,7 +104,7 @@
                 miniClass = (this.options.mini || control.data("mini")) ? " ui-mini" : "",
                 cType = control[0].nodeName.toLowerCase(),
                 isToggleSwitch = (cType === "select"),
-                isRangeslider = control.parent().is(":jqmData(role='rangeslider')"),
+                isRangeslider = control.parent().is("[data-role='rangeslider']"),
                 selectClass = (isToggleSwitch) ? "ui-slider-switch" : "",
                 controlID = control.attr("id"),
                 $label = $("[for='" + controlID + "']"),
