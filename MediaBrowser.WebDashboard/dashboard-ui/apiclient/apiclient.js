@@ -292,7 +292,7 @@
             return connectionMode;
         }
 
-        function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
+        function tryReconnectInternal(resolve, reject, connectionMode, currentRetryCount) {
 
             connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
@@ -316,7 +316,7 @@
                 self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
 
-                deferred.resolve();
+                resolve();
 
             }, function () {
 
@@ -327,22 +327,23 @@
                     var newConnectionMode = switchConnectionMode(connectionMode);
 
                     setTimeout(function () {
-                        tryReconnectInternal(deferred, newConnectionMode, currentRetryCount + 1);
+                        tryReconnectInternal(resolve, reject, newConnectionMode, currentRetryCount + 1);
                     }, 500);
 
                 } else {
-                    deferred.reject();
+                    reject();
                 }
             });
         }
 
         function tryReconnect() {
 
-            var deferred = DeferredBuilder.Deferred();
-            setTimeout(function () {
-                tryReconnectInternal(deferred, self.serverInfo().LastConnectionMode, 0);
-            }, 500);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                setTimeout(function () {
+                    tryReconnectInternal(resolve, reject, self.serverInfo().LastConnectionMode, 0);
+                }, 500);
+            });
         }
 
         self.fetchWithFailover = function (request, enableReconnection) {
@@ -589,54 +590,35 @@
                 Size: byteSize
             });
 
-            var deferred = DeferredBuilder.Deferred();
-
             var now = new Date().getTime();
 
-            self.get(url).then(function () {
+            return self.get(url).then(function () {
 
                 var responseTimeSeconds = (new Date().getTime() - now) / 1000;
                 var bytesPerSecond = byteSize / responseTimeSeconds;
                 var bitrate = Math.round(bytesPerSecond * 8);
 
-                deferred.resolveWith(null, [bitrate]);
-
-            }, function () {
-
-                deferred.reject();
+                return bitrate;
             });
-
-            return deferred.promise();
         };
 
         self.detectBitrate = function () {
 
-            var deferred = DeferredBuilder.Deferred();
-
             // First try a small amount so that we don't hang up their mobile connection
-            self.getDownloadSpeed(1000000).then(function (bitrate) {
+            return self.getDownloadSpeed(1000000).then(function (bitrate) {
 
                 if (bitrate < 1000000) {
-                    deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+                    return Math.round(bitrate * .8);
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    self.getDownloadSpeed(2400000).then(function (bitrate) {
+                    return self.getDownloadSpeed(2400000).then(function (bitrate) {
 
-                        deferred.resolveWith(null, [Math.round(bitrate * .8)]);
-
-                    }, function () {
-
-                        deferred.reject();
+                        return Math.round(bitrate * .8);
                     });
                 }
 
-            }, function () {
-
-                deferred.reject();
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -735,10 +717,11 @@
                 }).then(done, done);
             }
 
-            var deferred = DeferredBuilder.Deferred();
-            done();
-            deferred.resolveWith(null, []);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                done();
+                resolve();
+            });
         };
 
         function getRemoteImagePrefix(options) {
@@ -1964,44 +1947,43 @@
                 throw new Error("File must be an image.");
             }
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var reader = new FileReader();
+                var reader = new FileReader();
 
-            reader.onerror = function () {
-                deferred.reject();
-            };
+                reader.onerror = function () {
+                    reject();
+                };
 
-            reader.onabort = function () {
-                deferred.reject();
-            };
+                reader.onabort = function () {
+                    reject();
+                };
 
-            // Closure to capture the file information.
-            reader.onload = function (e) {
+                // Closure to capture the file information.
+                reader.onload = function (e) {
 
-                // Split by a comma to remove the url: prefix
-                var data = e.target.result.split(',')[1];
+                    // Split by a comma to remove the url: prefix
+                    var data = e.target.result.split(',')[1];
 
-                var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
+                    var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: data,
-                    contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).then(function (result) {
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: data,
+                        contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
+                    }).then(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }, function () {
-                    deferred.reject();
-                });
-            };
+                    }, function () {
+                        reject();
+                    });
+                };
 
-            // Read in the image file as a data URL.
-            reader.readAsDataURL(file);
-
-            return deferred.promise();
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(file);
+            });
         };
 
         self.uploadItemImage = function (itemId, imageType, file) {
@@ -2026,42 +2008,41 @@
 
             url += "/" + imageType;
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var reader = new FileReader();
+                var reader = new FileReader();
 
-            reader.onerror = function () {
-                deferred.reject();
-            };
+                reader.onerror = function () {
+                    reject();
+                };
 
-            reader.onabort = function () {
-                deferred.reject();
-            };
+                reader.onabort = function () {
+                    reject();
+                };
 
-            // Closure to capture the file information.
-            reader.onload = function (e) {
+                // Closure to capture the file information.
+                reader.onload = function (e) {
 
-                // Split by a comma to remove the url: prefix
-                var data = e.target.result.split(',')[1];
+                    // Split by a comma to remove the url: prefix
+                    var data = e.target.result.split(',')[1];
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: data,
-                    contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).then(function (result) {
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: data,
+                        contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
+                    }).then(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }, function () {
-                    deferred.reject();
-                });
-            };
+                    }, function () {
+                        reject();
+                    });
+                };
 
-            // Read in the image file as a data URL.
-            reader.readAsDataURL(file);
-
-            return deferred.promise();
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(file);
+            });
         };
 
         /**
@@ -2425,43 +2406,39 @@
          */
         self.authenticateUserByName = function (name, password) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!name) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!name) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/authenticatebyname");
+                var url = self.getUrl("Users/authenticatebyname");
 
-            require(["cryptojs-sha1"], function () {
-                var postData = {
-                    password: CryptoJS.SHA1(password || "").toString(),
-                    Username: name
-                };
+                require(["cryptojs-sha1"], function () {
+                    var postData = {
+                        password: CryptoJS.SHA1(password || "").toString(),
+                        Username: name
+                    };
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: JSON.stringify(postData),
-                    dataType: "json",
-                    contentType: "application/json"
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: JSON.stringify(postData),
+                        dataType: "json",
+                        contentType: "application/json"
 
-                }).then(function (result) {
+                    }).then(function (result) {
 
-                    if (self.onAuthenticated) {
-                        self.onAuthenticated(self, result);
-                    }
+                        if (self.onAuthenticated) {
+                            self.onAuthenticated(self, result);
+                        }
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }, function () {
-
-                    deferred.reject();
+                    }, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -2472,35 +2449,27 @@
          */
         self.updateUserPassword = function (userId, currentPassword, newPassword) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!userId) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!userId) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/" + userId + "/Password");
+                var url = self.getUrl("Users/" + userId + "/Password");
 
-            require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1"], function () {
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {
-                        currentPassword: CryptoJS.SHA1(currentPassword).toString(),
-                        newPassword: CryptoJS.SHA1(newPassword).toString()
-                    }
-                }).then(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-
-                }, function () {
-
-                    deferred.reject();
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {
+                            currentPassword: CryptoJS.SHA1(currentPassword).toString(),
+                            newPassword: CryptoJS.SHA1(newPassword).toString()
+                        }
+                    }).then(resolve, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -2510,34 +2479,26 @@
          */
         self.updateEasyPassword = function (userId, newPassword) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!userId) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!userId) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/" + userId + "/EasyPassword");
+                var url = self.getUrl("Users/" + userId + "/EasyPassword");
 
-            require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1"], function () {
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {
-                        newPassword: CryptoJS.SHA1(newPassword).toString()
-                    }
-                }).then(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-
-                }, function () {
-
-                    deferred.reject();
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {
+                            newPassword: CryptoJS.SHA1(newPassword).toString()
+                        }
+                    }).then(resolve, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -3211,14 +3172,12 @@
 
             if (self.isWebSocketOpen()) {
 
-                var deferred = DeferredBuilder.Deferred();
+                return new Promise(function (resolve, reject) {
 
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackProgress", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
+                    var msg = JSON.stringify(options);
+                    self.sendWebSocketMessage("ReportPlaybackProgress", msg);
+                    resolve();
+                });
             }
 
             var url = self.getUrl("Sessions/Playing/Progress");
