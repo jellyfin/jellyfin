@@ -1,874 +1,354 @@
-﻿(function () {
+﻿define(['jqmwidget'], function () {
 
-    if (jQuery.widget) {
-        return;
-    }
+    /*
+    * "checkboxradio" plugin
+    */
 
-    /*!
-     * jQuery UI Widget c0ab71056b936627e8a7821f03c044aec6280a40
-     * http://jqueryui.com
-     *
-     * Copyright 2013 jQuery Foundation and other contributors
-     * Released under the MIT license.
-     * http://jquery.org/license
-     *
-     * http://api.jqueryui.com/jQuery.widget/
-     */
     (function ($, undefined) {
 
-        var uuid = 0,
-            slice = Array.prototype.slice,
-            _cleanData = $.cleanData;
-        $.cleanData = function (elems) {
-            for (var i = 0, elem; (elem = elems[i]) != null; i++) {
-                try {
-                    $(elem).triggerHandler("remove");
-                    // http://bugs.jquery.com/ticket/8235
-                } catch (e) { }
-            }
-            _cleanData(elems);
-        };
+        var escapeId = $.mobile.path.hashToSelector;
 
-        $.widget = function (name, base, prototype) {
-            var fullName, existingConstructor, constructor, basePrototype,
-                // proxiedPrototype allows the provided prototype to remain unmodified
-                // so that it can be used as a mixin for multiple widgets (#8876)
-                proxiedPrototype = {},
-                namespace = name.split(".")[0];
+        $.widget("mobile.checkboxradio", $.extend({
 
-            name = name.split(".")[1];
-            fullName = namespace + "-" + name;
+            initSelector: "input[type='checkbox']:not([data-role='none']),input[type='radio']:not([data-role='none'])",
 
-            if (!prototype) {
-                prototype = base;
-                base = $.Widget;
-            }
-
-            // create selector for plugin
-            $.expr[":"][fullName.toLowerCase()] = function (elem) {
-                return !!$.data(elem, fullName);
-            };
-
-            $[namespace] = $[namespace] || {};
-            existingConstructor = $[namespace][name];
-            constructor = $[namespace][name] = function (options, element) {
-                // allow instantiation without "new" keyword
-                if (!this._createWidget) {
-                    return new constructor(options, element);
-                }
-
-                // allow instantiation without initializing for simple inheritance
-                // must use "new" keyword (the code above always passes args)
-                if (arguments.length) {
-                    this._createWidget(options, element);
-                }
-            };
-            // extend with the existing constructor to carry over any static properties
-            $.extend(constructor, existingConstructor, {
-                version: prototype.version,
-                // copy the object used to create the prototype in case we need to
-                // redefine the widget later
-                _proto: $.extend({}, prototype),
-                // track widgets that inherit from this widget in case this widget is
-                // redefined after a widget inherits from it
-                _childConstructors: []
-            });
-
-            basePrototype = new base();
-            // we need to make the options hash a property directly on the new instance
-            // otherwise we'll modify the options hash on the prototype that we're
-            // inheriting from
-            basePrototype.options = $.widget.extend({}, basePrototype.options);
-            $.each(prototype, function (prop, value) {
-                if (!$.isFunction(value)) {
-                    proxiedPrototype[prop] = value;
-                    return;
-                }
-                proxiedPrototype[prop] = (function () {
-                    var _super = function () {
-                        return base.prototype[prop].apply(this, arguments);
-                    },
-                        _superApply = function (args) {
-                            return base.prototype[prop].apply(this, args);
-                        };
-                    return function () {
-                        var __super = this._super,
-                            __superApply = this._superApply,
-                            returnValue;
-
-                        this._super = _super;
-                        this._superApply = _superApply;
-
-                        returnValue = value.apply(this, arguments);
-
-                        this._super = __super;
-                        this._superApply = __superApply;
-
-                        return returnValue;
-                    };
-                })();
-            });
-            constructor.prototype = $.widget.extend(basePrototype, {
-                // TODO: remove support for widgetEventPrefix
-                // always use the name + a colon as the prefix, e.g., draggable:start
-                // don't prefix for widgets that aren't DOM-based
-                widgetEventPrefix: existingConstructor ? (basePrototype.widgetEventPrefix || name) : name
-            }, proxiedPrototype, {
-                constructor: constructor,
-                namespace: namespace,
-                widgetName: name,
-                widgetFullName: fullName
-            });
-
-            // If this widget is being redefined then we need to find all widgets that
-            // are inheriting from it and redefine all of them so that they inherit from
-            // the new version of this widget. We're essentially trying to replace one
-            // level in the prototype chain.
-            if (existingConstructor) {
-                $.each(existingConstructor._childConstructors, function (i, child) {
-                    var childPrototype = child.prototype;
-
-                    // redefine the child widget using the same prototype that was
-                    // originally used, but inherit from the new version of the base
-                    $.widget(childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto);
-                });
-                // remove the list of existing child constructors from the old constructor
-                // so the old child constructors can be garbage collected
-                delete existingConstructor._childConstructors;
-            } else {
-                base._childConstructors.push(constructor);
-            }
-
-            $.widget.bridge(name, constructor);
-
-            return constructor;
-        };
-
-        $.widget.extend = function (target) {
-            var input = slice.call(arguments, 1),
-                inputIndex = 0,
-                inputLength = input.length,
-                key,
-                value;
-            for (; inputIndex < inputLength; inputIndex++) {
-                for (key in input[inputIndex]) {
-                    value = input[inputIndex][key];
-                    if (input[inputIndex].hasOwnProperty(key) && value !== undefined) {
-                        // Clone objects
-                        if ($.isPlainObject(value)) {
-                            target[key] = $.isPlainObject(target[key]) ?
-                                $.widget.extend({}, target[key], value) :
-                                // Don't extend strings, arrays, etc. with objects
-                                $.widget.extend({}, value);
-                            // Copy everything else by reference
-                        } else {
-                            target[key] = value;
-                        }
-                    }
-                }
-            }
-            return target;
-        };
-
-        $.widget.bridge = function (name, object) {
-
-            var fullName = object.prototype.widgetFullName || name;
-            $.fn[name] = function (options) {
-                var isMethodCall = typeof options === "string",
-                    args = slice.call(arguments, 1),
-                    returnValue = this;
-
-                // allow multiple hashes to be passed on init
-                options = !isMethodCall && args.length ?
-                    $.widget.extend.apply(null, [options].concat(args)) :
-                    options;
-
-                if (isMethodCall) {
-                    this.each(function () {
-                        var methodValue,
-                            instance = $.data(this, fullName);
-                        if (options === "instance") {
-                            returnValue = instance;
-                            return false;
-                        }
-                        if (!instance) {
-                            return $.error("cannot call methods on " + name + " prior to initialization; " +
-                                "attempted to call method '" + options + "'");
-                        }
-                        if (!$.isFunction(instance[options]) || options.charAt(0) === "_") {
-                            return $.error("no such method '" + options + "' for " + name + " widget instance");
-                        }
-                        methodValue = instance[options].apply(instance, args);
-                        if (methodValue !== instance && methodValue !== undefined) {
-                            returnValue = methodValue && methodValue.jquery ?
-                                returnValue.pushStack(methodValue.get()) :
-                                methodValue;
-                            return false;
-                        }
-                    });
-                } else {
-                    this.each(function () {
-                        var instance = $.data(this, fullName);
-                        if (instance) {
-                            instance.option(options || {})._init();
-                        } else {
-                            $.data(this, fullName, new object(options, this));
-                        }
-                    });
-                }
-
-                return returnValue;
-            };
-        };
-
-        $.Widget = function ( /* options, element */) { };
-        $.Widget._childConstructors = [];
-
-        $.Widget.prototype = {
-            widgetName: "widget",
-            widgetEventPrefix: "",
-            defaultElement: "<div>",
             options: {
-                disabled: false,
+                theme: "inherit",
+                mini: false,
+                wrapperClass: null,
+                enhanced: false,
+                iconpos: "left"
 
-                // callbacks
-                create: null
             },
-            _createWidget: function (options, element) {
-                element = $(element || this.defaultElement || this)[0];
-                this.element = $(element);
-                this.uuid = uuid++;
-                this.eventNamespace = "." + this.widgetName + this.uuid;
-                this.options = $.widget.extend({},
-                    this.options,
-                    this._getCreateOptions(),
-                    options);
-
-                this.bindings = $();
-                this.hoverable = $();
-                this.focusable = $();
-
-                if (element !== this) {
-                    $.data(element, this.widgetFullName, this);
-                    this._on(true, this.element, {
-                        remove: function (event) {
-                            if (event.target === element) {
-                                this.destroy();
-                            }
-                        }
-                    });
-                    this.document = $(element.style ?
-                        // element within the document
-                        element.ownerDocument :
-                        // element is window or document
-                        element.document || element);
-                    this.window = $(this.document[0].defaultView || this.document[0].parentWindow);
-                }
-
-                this._create();
-                this._trigger("create", null, this._getCreateEventData());
-                this._init();
-            },
-            _getCreateOptions: $.noop,
-            _getCreateEventData: $.noop,
-            _create: $.noop,
-            _init: $.noop,
-
-            destroy: function () {
-                this._destroy();
-                // we can probably remove the unbind calls in 2.0
-                // all event bindings should go through this._on()
-                this.element
-                    .unbind(this.eventNamespace)
-                    .removeData(this.widgetFullName)
-                    // support: jquery <1.6.3
-                    // http://bugs.jquery.com/ticket/9413
-                    .removeData($.camelCase(this.widgetFullName));
-                this.widget()
-                    .unbind(this.eventNamespace)
-                    .removeAttr("aria-disabled")
-                    .removeClass(
-                        this.widgetFullName + "-disabled " +
-                        "ui-state-disabled");
-
-                // clean up events and states
-                this.bindings.unbind(this.eventNamespace);
-                this.hoverable.removeClass("ui-state-hover");
-                this.focusable.removeClass("ui-state-focus");
-            },
-            _destroy: $.noop,
-
-            widget: function () {
-                return this.element;
-            },
-
-            option: function (key, value) {
-                var options = key,
-                    parts,
-                    curOption,
-                    i;
-
-                if (arguments.length === 0) {
-                    // don't return a reference to the internal hash
-                    return $.widget.extend({}, this.options);
-                }
-
-                if (typeof key === "string") {
-                    // handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
-                    options = {};
-                    parts = key.split(".");
-                    key = parts.shift();
-                    if (parts.length) {
-                        curOption = options[key] = $.widget.extend({}, this.options[key]);
-                        for (i = 0; i < parts.length - 1; i++) {
-                            curOption[parts[i]] = curOption[parts[i]] || {};
-                            curOption = curOption[parts[i]];
-                        }
-                        key = parts.pop();
-                        if (value === undefined) {
-                            return curOption[key] === undefined ? null : curOption[key];
-                        }
-                        curOption[key] = value;
-                    } else {
-                        if (value === undefined) {
-                            return this.options[key] === undefined ? null : this.options[key];
-                        }
-                        options[key] = value;
-                    }
-                }
-
-                this._setOptions(options);
-
-                return this;
-            },
-            _setOptions: function (options) {
-                var key;
-
-                for (key in options) {
-                    this._setOption(key, options[key]);
-                }
-
-                return this;
-            },
-            _setOption: function (key, value) {
-                this.options[key] = value;
-
-                if (key === "disabled") {
-                    this.widget()
-                        .toggleClass(this.widgetFullName + "-disabled", !!value);
-                    this.hoverable.removeClass("ui-state-hover");
-                    this.focusable.removeClass("ui-state-focus");
-                }
-
-                return this;
-            },
-
-            enable: function () {
-                return this._setOptions({ disabled: false });
-            },
-            disable: function () {
-                return this._setOptions({ disabled: true });
-            },
-
-            _on: function (suppressDisabledCheck, element, handlers) {
-                var delegateElement,
-                    instance = this;
-
-                // no suppressDisabledCheck flag, shuffle arguments
-                if (typeof suppressDisabledCheck !== "boolean") {
-                    handlers = element;
-                    element = suppressDisabledCheck;
-                    suppressDisabledCheck = false;
-                }
-
-                // no element argument, shuffle and use this.element
-                if (!handlers) {
-                    handlers = element;
-                    element = this.element;
-                    delegateElement = this.widget();
-                } else {
-                    // accept selectors, DOM elements
-                    element = delegateElement = $(element);
-                    this.bindings = this.bindings.add(element);
-                }
-
-                $.each(handlers, function (event, handler) {
-                    function handlerProxy() {
-                        // allow widgets to customize the disabled handling
-                        // - disabled as an array instead of boolean
-                        // - disabled class as method for disabling individual parts
-                        if (!suppressDisabledCheck &&
-                                (instance.options.disabled === true ||
-                                    $(this).hasClass("ui-state-disabled"))) {
-                            return;
-                        }
-                        return (typeof handler === "string" ? instance[handler] : handler)
-                            .apply(instance, arguments);
-                    }
-
-                    // copy the guid so direct unbinding works
-                    if (typeof handler !== "string") {
-                        handlerProxy.guid = handler.guid =
-                            handler.guid || handlerProxy.guid || $.guid++;
-                    }
-
-                    var match = event.match(/^(\w+)\s*(.*)$/),
-                        eventName = match[1] + instance.eventNamespace,
-                        selector = match[2];
-                    if (selector) {
-                        delegateElement.delegate(selector, eventName, handlerProxy);
-                    } else {
-                        element.bind(eventName, handlerProxy);
-                    }
-                });
-            },
-
-            _off: function (element, eventName) {
-                eventName = (eventName || "").split(" ").join(this.eventNamespace + " ") + this.eventNamespace;
-                element.unbind(eventName).undelegate(eventName);
-            },
-
-            _trigger: function (type, event, data) {
-                var prop, orig,
-                    callback = this.options[type];
-
-                data = data || {};
-                event = $.Event(event);
-                event.type = (type === this.widgetEventPrefix ?
-                    type :
-                    this.widgetEventPrefix + type).toLowerCase();
-                // the original event may come from any element
-                // so we need to reset the target on the new event
-                event.target = this.element[0];
-
-                // copy original event properties over to the new event
-                orig = event.originalEvent;
-                if (orig) {
-                    for (prop in orig) {
-                        if (!(prop in event)) {
-                            event[prop] = orig[prop];
-                        }
-                    }
-                }
-
-                this.element[0].dispatchEvent(new CustomEvent(event.type, {
-                    bubbles: true,
-                    detail: {
-                        data: data,
-                        originalEvent: event
-                    }
-                }));
-
-                //this.element.trigger(event, data);
-                return !($.isFunction(callback) &&
-                    callback.apply(this.element[0], [event].concat(data)) === false ||
-                    event.isDefaultPrevented());
-            }
-        };
-
-    })(jQuery);
-
-    (function ($, undefined) {
-
-        $.extend($.Widget.prototype, {
-            _getCreateOptions: function () {
-
-                var option, value,
-                    elem = this.element[0],
-                    options = {};
-
-                //
-                if (!this.element.data("defaults")) {
-                    for (option in this.options) {
-
-                        value = this.element.data(option);
-
-                        if (value != null) {
-                            options[option] = value;
-                        }
-                    }
-                }
-
-                return options;
-            }
-        });
-
-    })(jQuery);
-
-    (function ($, undefined) {
-
-
-        var originalWidget = $.widget
-
-        $.widget = (function (orig) {
-            return function () {
-                var constructor = orig.apply(this, arguments),
-                    name = constructor.prototype.widgetName;
-
-                constructor.initSelector = ((constructor.prototype.initSelector !== undefined) ?
-                    constructor.prototype.initSelector : "*[data-role='" + name + "']:not([data-role='none'])");
-
-                $.mobile.widgets[name] = constructor;
-
-                return constructor;
-            };
-        })($.widget);
-
-        // Make sure $.widget still has bridge and extend methods
-        $.extend($.widget, originalWidget);
-
-    })(jQuery);
-
-
-})();
-
-/*
-* "checkboxradio" plugin
-*/
-
-(function ($, undefined) {
-
-    var escapeId = $.mobile.path.hashToSelector;
-
-    $.widget("mobile.checkboxradio", $.extend({
-
-        initSelector: "input[type='checkbox']:not([data-role='none']),input[type='radio']:not([data-role='none'])",
-
-        options: {
-            theme: "inherit",
-            mini: false,
-            wrapperClass: null,
-            enhanced: false,
-            iconpos: "left"
-
-        },
-        _create: function () {
-            var input = this.element,
-                o = this.options,
-                inheritAttr = function (input, dataAttr) {
-                    return input.data(dataAttr) ||
-                        input.closest("form, fieldset").data(dataAttr);
-                },
-                label = this.options.enhanced ?
+            _create: function () {
+                var input = this.element,
+                    o = this.options,
+                    inheritAttr = function (input, dataAttr) {
+                        return input.data(dataAttr) ||
+                            input.closest("form, fieldset").data(dataAttr);
+                    },
+                    label = this.options.enhanced ?
 				{
 				    element: this.element.siblings("label"),
 				    isParent: false
 				} :
-                    this._findLabel(),
-                inputtype = input[0].type,
-                checkedClass = "ui-" + inputtype + "-on",
-                uncheckedClass = "ui-" + inputtype + "-off";
+                        this._findLabel(),
+                    inputtype = input[0].type,
+                    checkedClass = "ui-" + inputtype + "-on",
+                    uncheckedClass = "ui-" + inputtype + "-off";
 
-            if (inputtype !== "checkbox" && inputtype !== "radio") {
-                return;
-            }
+                if (inputtype !== "checkbox" && inputtype !== "radio") {
+                    return;
+                }
 
-            if (this.element[0].disabled) {
-                this.options.disabled = true;
-            }
+                if (this.element[0].disabled) {
+                    this.options.disabled = true;
+                }
 
-            o.iconpos = inheritAttr(input, "iconpos") ||
-                label.element.attr("data-iconpos") || o.iconpos,
+                o.iconpos = inheritAttr(input, "iconpos") ||
+                    label.element.attr("data-iconpos") || o.iconpos,
 
-            // Establish options
-            o.mini = inheritAttr(input, "mini") || o.mini;
+                // Establish options
+                o.mini = inheritAttr(input, "mini") || o.mini;
 
-            // Expose for other methods
-            $.extend(this, {
-                input: input,
-                label: label.element,
-                labelIsParent: label.isParent,
-                inputtype: inputtype,
-                checkedClass: checkedClass,
-                uncheckedClass: uncheckedClass
-            });
+                // Expose for other methods
+                $.extend(this, {
+                    input: input,
+                    label: label.element,
+                    labelIsParent: label.isParent,
+                    inputtype: inputtype,
+                    checkedClass: checkedClass,
+                    uncheckedClass: uncheckedClass
+                });
 
-            if (!this.options.enhanced) {
-                this._enhance();
-            }
+                if (!this.options.enhanced) {
+                    this._enhance();
+                }
 
-            this._on(label.element, {
-                mouseover: "_handleLabelVMouseOver",
-                click: "_handleLabelVClick"
-            });
+                this._on(label.element, {
+                    mouseover: "_handleLabelVMouseOver",
+                    click: "_handleLabelVClick"
+                });
 
-            this._on(input, {
-                mousedown: "_cacheVals",
-                click: "_handleInputVClick",
-                focus: "_handleInputFocus",
-                blur: "_handleInputBlur"
-            });
+                this._on(input, {
+                    mousedown: "_cacheVals",
+                    click: "_handleInputVClick",
+                    focus: "_handleInputFocus",
+                    blur: "_handleInputBlur"
+                });
 
-            this.refresh();
-        },
+                this.refresh();
+            },
 
-        _findLabel: function () {
-            var parentLabel, label, isParent,
-                input = this.element,
-                labelsList = input[0].labels;
+            _findLabel: function () {
+                var parentLabel, label, isParent,
+                    input = this.element,
+                    labelsList = input[0].labels;
 
-            if (labelsList && labelsList.length > 0) {
-                label = $(labelsList[0]);
-                isParent = $.contains(label[0], input[0]);
-            } else {
-                parentLabel = input.closest("label");
-                isParent = (parentLabel.length > 0);
-
-                // NOTE: Windows Phone could not find the label through a selector
-                // filter works though.
-                label = isParent ? parentLabel :
-                    $(this.document[0].getElementsByTagName("label"))
-                        .filter("[for='" + escapeId(input[0].id) + "']")
-                        .first();
-            }
-
-            return {
-                element: label,
-                isParent: isParent
-            };
-        },
-
-        _enhance: function () {
-            this.label.addClass("ui-btn ui-corner-all");
-
-            if (this.labelIsParent) {
-                this.input.add(this.label).wrapAll(this._wrapper());
-            } else {
-                //this.element.replaceWith( this.input.add( this.label ).wrapAll( this._wrapper() ) );
-                this.element.wrap(this._wrapper());
-                this.element.parent().prepend(this.label);
-            }
-
-            // Wrap the input + label in a div
-
-            this._setOptions({
-                "theme": this.options.theme,
-                "iconpos": this.options.iconpos,
-                "mini": this.options.mini
-            });
-
-        },
-
-        _wrapper: function () {
-            return $("<div class='" +
-                (this.options.wrapperClass ? this.options.wrapperClass : "") +
-                " ui-" + this.inputtype +
-                (this.options.disabled ? " ui-state-disabled" : "") + "' ></div>");
-        },
-
-        _handleInputFocus: function () {
-            this.label.addClass($.mobile.focusClass);
-        },
-
-        _handleInputBlur: function () {
-            this.label.removeClass($.mobile.focusClass);
-        },
-
-        _handleInputVClick: function () {
-            // Adds checked attribute to checked input when keyboard is used
-            this.element.prop("checked", this.element.is(":checked"));
-            this._getInputSet().not(this.element).prop("checked", false);
-            this._updateAll(true);
-        },
-
-        _handleLabelVMouseOver: function (event) {
-            if (this.label.parent().hasClass("ui-state-disabled")) {
-                event.stopPropagation();
-            }
-        },
-
-        _handleLabelVClick: function (event) {
-            var input = this.element;
-
-            if (input.is(":disabled")) {
-                event.preventDefault();
-                return;
-            }
-
-            this._cacheVals();
-
-            input.prop("checked", this.inputtype === "radio" && true || !input.prop("checked"));
-
-            // trigger click handler's bound directly to the input as a substitute for
-            // how label clicks behave normally in the browsers
-            // TODO: it would be nice to let the browser's handle the clicks and pass them
-            //       through to the associate input. we can swallow that click at the parent
-            //       wrapper element level
-            input.triggerHandler("click");
-
-            // Input set for common radio buttons will contain all the radio
-            // buttons, but will not for checkboxes. clearing the checked status
-            // of other radios ensures the active button state is applied properly
-            this._getInputSet().not(input).prop("checked", false);
-
-            this._updateAll();
-            return false;
-        },
-
-        _cacheVals: function () {
-            this._getInputSet().each(function () {
-                $(this).attr("data-cacheVal", this.checked);
-            });
-        },
-
-        // Returns those radio buttons that are supposed to be in the same group as
-        // this radio button. In the case of a checkbox or a radio lacking a name
-        // attribute, it returns this.element.
-        _getInputSet: function () {
-            var selector, formId,
-                radio = this.element[0],
-                name = radio.name,
-                form = radio.form,
-                doc = this.element.parents().last().get(0),
-
-                // A radio is always a member of its own group
-                radios = this.element;
-
-            // Only start running selectors if this is an attached radio button with a name
-            if (name && this.inputtype === "radio" && doc) {
-                selector = "input[type='radio'][name='" + escapeId(name) + "']";
-
-                // If we're inside a form
-                if (form) {
-                    formId = form.getAttribute("id");
-
-                    // If the form has an ID, collect radios scattered throught the document which
-                    // nevertheless are part of the form by way of the value of their form attribute
-                    if (formId) {
-                        radios = $(selector + "[form='" + escapeId(formId) + "']", doc);
-                    }
-
-                    // Also add to those the radios in the form itself
-                    radios = $(form).find(selector).filter(function () {
-
-                        // Some radios inside the form may belong to some other form by virtue of
-                        // having a form attribute defined on them, so we must filter them out here
-                        return (this.form === form);
-                    }).add(radios);
-
-                    // If we're outside a form
+                if (labelsList && labelsList.length > 0) {
+                    label = $(labelsList[0]);
+                    isParent = $.contains(label[0], input[0]);
                 } else {
+                    parentLabel = input.closest("label");
+                    isParent = (parentLabel.length > 0);
 
-                    // Collect all those radios which are also outside of a form and match our name
-                    radios = $(selector, doc).filter(function () {
-                        return !this.form;
-                    });
+                    // NOTE: Windows Phone could not find the label through a selector
+                    // filter works though.
+                    label = isParent ? parentLabel :
+                        $(this.document[0].getElementsByTagName("label"))
+                            .filter("[for='" + escapeId(input[0].id) + "']")
+                            .first();
                 }
-            }
-            return radios;
-        },
 
-        _updateAll: function (changeTriggered) {
-            var self = this;
+                return {
+                    element: label,
+                    isParent: isParent
+                };
+            },
 
-            this._getInputSet().each(function () {
-                var $this = $(this);
+            _enhance: function () {
+                this.label.addClass("ui-btn ui-corner-all");
 
-                if ((this.checked || self.inputtype === "checkbox") && !changeTriggered) {
-                    $this.trigger("change");
+                if (this.labelIsParent) {
+                    this.input.add(this.label).wrapAll(this._wrapper());
+                } else {
+                    //this.element.replaceWith( this.input.add( this.label ).wrapAll( this._wrapper() ) );
+                    this.element.wrap(this._wrapper());
+                    this.element.parent().prepend(this.label);
                 }
-            })
-            .checkboxradio("refresh");
-        },
 
-        _reset: function () {
-            this.refresh();
-        },
+                // Wrap the input + label in a div
 
-        // Is the widget supposed to display an icon?
-        _hasIcon: function () {
-            var controlgroup, controlgroupWidget,
-                controlgroupConstructor = $.mobile.controlgroup;
+                this._setOptions({
+                    "theme": this.options.theme,
+                    "iconpos": this.options.iconpos,
+                    "mini": this.options.mini
+                });
 
-            // If the controlgroup widget is defined ...
-            if (controlgroupConstructor) {
-                controlgroup = this.element.closest(
-                    ":mobile-controlgroup," +
-                    controlgroupConstructor.prototype.initSelector);
+            },
 
-                // ... and the checkbox is in a controlgroup ...
-                if (controlgroup.length > 0) {
+            _wrapper: function () {
+                return $("<div class='" +
+                    (this.options.wrapperClass ? this.options.wrapperClass : "") +
+                    " ui-" + this.inputtype +
+                    (this.options.disabled ? " ui-state-disabled" : "") + "' ></div>");
+            },
 
-                    // ... look for a controlgroup widget instance, and ...
-                    controlgroupWidget = $.data(controlgroup[0], "mobile-controlgroup");
+            _handleInputFocus: function () {
+                this.label.addClass($.mobile.focusClass);
+            },
 
-                    // ... if found, decide based on the option value, ...
-                    return ((controlgroupWidget ? controlgroupWidget.options.type :
+            _handleInputBlur: function () {
+                this.label.removeClass($.mobile.focusClass);
+            },
 
-                        // ... otherwise decide based on the "type" data attribute.
-                        controlgroup.attr("data-type")) !== "horizontal");
+            _handleInputVClick: function () {
+                // Adds checked attribute to checked input when keyboard is used
+                this.element.prop("checked", this.element.is(":checked"));
+                this._getInputSet().not(this.element).prop("checked", false);
+                this._updateAll(true);
+            },
+
+            _handleLabelVMouseOver: function (event) {
+                if (this.label.parent().hasClass("ui-state-disabled")) {
+                    event.stopPropagation();
                 }
+            },
+
+            _handleLabelVClick: function (event) {
+                var input = this.element;
+
+                if (input.is(":disabled")) {
+                    event.preventDefault();
+                    return;
+                }
+
+                this._cacheVals();
+
+                input.prop("checked", this.inputtype === "radio" && true || !input.prop("checked"));
+
+                // trigger click handler's bound directly to the input as a substitute for
+                // how label clicks behave normally in the browsers
+                // TODO: it would be nice to let the browser's handle the clicks and pass them
+                //       through to the associate input. we can swallow that click at the parent
+                //       wrapper element level
+                input.triggerHandler("click");
+
+                // Input set for common radio buttons will contain all the radio
+                // buttons, but will not for checkboxes. clearing the checked status
+                // of other radios ensures the active button state is applied properly
+                this._getInputSet().not(input).prop("checked", false);
+
+                this._updateAll();
+                return false;
+            },
+
+            _cacheVals: function () {
+                this._getInputSet().each(function () {
+                    $(this).attr("data-cacheVal", this.checked);
+                });
+            },
+
+            // Returns those radio buttons that are supposed to be in the same group as
+            // this radio button. In the case of a checkbox or a radio lacking a name
+            // attribute, it returns this.element.
+            _getInputSet: function () {
+                var selector, formId,
+                    radio = this.element[0],
+                    name = radio.name,
+                    form = radio.form,
+                    doc = this.element.parents().last().get(0),
+
+                    // A radio is always a member of its own group
+                    radios = this.element;
+
+                // Only start running selectors if this is an attached radio button with a name
+                if (name && this.inputtype === "radio" && doc) {
+                    selector = "input[type='radio'][name='" + escapeId(name) + "']";
+
+                    // If we're inside a form
+                    if (form) {
+                        formId = form.getAttribute("id");
+
+                        // If the form has an ID, collect radios scattered throught the document which
+                        // nevertheless are part of the form by way of the value of their form attribute
+                        if (formId) {
+                            radios = $(selector + "[form='" + escapeId(formId) + "']", doc);
+                        }
+
+                        // Also add to those the radios in the form itself
+                        radios = $(form).find(selector).filter(function () {
+
+                            // Some radios inside the form may belong to some other form by virtue of
+                            // having a form attribute defined on them, so we must filter them out here
+                            return (this.form === form);
+                        }).add(radios);
+
+                        // If we're outside a form
+                    } else {
+
+                        // Collect all those radios which are also outside of a form and match our name
+                        radios = $(selector, doc).filter(function () {
+                            return !this.form;
+                        });
+                    }
+                }
+                return radios;
+            },
+
+            _updateAll: function (changeTriggered) {
+                var self = this;
+
+                this._getInputSet().each(function () {
+                    var $this = $(this);
+
+                    if ((this.checked || self.inputtype === "checkbox") && !changeTriggered) {
+                        $this.trigger("change");
+                    }
+                })
+                .checkboxradio("refresh");
+            },
+
+            _reset: function () {
+                this.refresh();
+            },
+
+            // Is the widget supposed to display an icon?
+            _hasIcon: function () {
+                var controlgroup, controlgroupWidget,
+                    controlgroupConstructor = $.mobile.controlgroup;
+
+                // If the controlgroup widget is defined ...
+                if (controlgroupConstructor) {
+                    controlgroup = this.element.closest(
+                        ":mobile-controlgroup," +
+                        controlgroupConstructor.prototype.initSelector);
+
+                    // ... and the checkbox is in a controlgroup ...
+                    if (controlgroup.length > 0) {
+
+                        // ... look for a controlgroup widget instance, and ...
+                        controlgroupWidget = $.data(controlgroup[0], "mobile-controlgroup");
+
+                        // ... if found, decide based on the option value, ...
+                        return ((controlgroupWidget ? controlgroupWidget.options.type :
+
+                            // ... otherwise decide based on the "type" data attribute.
+                            controlgroup.attr("data-type")) !== "horizontal");
+                    }
+                }
+
+                // Normally, the widget displays an icon.
+                return true;
+            },
+
+            refresh: function () {
+                var isChecked = this.element[0].checked,
+                    active = $.mobile.activeBtnClass,
+                    iconposClass = "ui-btn-icon-" + this.options.iconpos,
+                    addClasses = [],
+                    removeClasses = [];
+
+                if (this._hasIcon()) {
+                    removeClasses.push(active);
+                    addClasses.push(iconposClass);
+                } else {
+                    removeClasses.push(iconposClass);
+                    (isChecked ? addClasses : removeClasses).push(active);
+                }
+
+                if (isChecked) {
+                    addClasses.push(this.checkedClass);
+                    removeClasses.push(this.uncheckedClass);
+                } else {
+                    addClasses.push(this.uncheckedClass);
+                    removeClasses.push(this.checkedClass);
+                }
+
+                this.widget().toggleClass("ui-state-disabled", this.element.prop("disabled"));
+
+                this.label
+                    .addClass(addClasses.join(" "))
+                    .removeClass(removeClasses.join(" "));
+            },
+
+            widget: function () {
+                return this.label.parent();
+            },
+
+            _setOptions: function (options) {
+                var label = this.label,
+                    currentOptions = this.options,
+                    outer = this.widget(),
+                    hasIcon = this._hasIcon();
+
+                if (options.disabled !== undefined) {
+                    this.input.prop("disabled", !!options.disabled);
+                    outer.toggleClass("ui-state-disabled", !!options.disabled);
+                }
+                if (options.mini !== undefined) {
+                    outer.toggleClass("ui-mini", !!options.mini);
+                }
+                if (options.theme !== undefined) {
+                    label
+                        .removeClass("ui-btn-" + currentOptions.theme)
+                        .addClass("ui-btn-" + options.theme);
+                }
+                if (options.wrapperClass !== undefined) {
+                    outer
+                        .removeClass(currentOptions.wrapperClass)
+                        .addClass(options.wrapperClass);
+                }
+                if (options.iconpos !== undefined && hasIcon) {
+                    label.removeClass("ui-btn-icon-" + currentOptions.iconpos).addClass("ui-btn-icon-" + options.iconpos);
+                } else if (!hasIcon) {
+                    label.removeClass("ui-btn-icon-" + currentOptions.iconpos);
+                }
+                this._super(options);
             }
 
-            // Normally, the widget displays an icon.
-            return true;
-        },
+        }, $.mobile.behaviors.formReset));
 
-        refresh: function () {
-            var isChecked = this.element[0].checked,
-                active = $.mobile.activeBtnClass,
-                iconposClass = "ui-btn-icon-" + this.options.iconpos,
-                addClasses = [],
-                removeClasses = [];
+    })(jQuery);
 
-            if (this._hasIcon()) {
-                removeClasses.push(active);
-                addClasses.push(iconposClass);
-            } else {
-                removeClasses.push(iconposClass);
-                (isChecked ? addClasses : removeClasses).push(active);
-            }
-
-            if (isChecked) {
-                addClasses.push(this.checkedClass);
-                removeClasses.push(this.uncheckedClass);
-            } else {
-                addClasses.push(this.uncheckedClass);
-                removeClasses.push(this.checkedClass);
-            }
-
-            this.widget().toggleClass("ui-state-disabled", this.element.prop("disabled"));
-
-            this.label
-                .addClass(addClasses.join(" "))
-                .removeClass(removeClasses.join(" "));
-        },
-
-        widget: function () {
-            return this.label.parent();
-        },
-
-        _setOptions: function (options) {
-            var label = this.label,
-                currentOptions = this.options,
-                outer = this.widget(),
-                hasIcon = this._hasIcon();
-
-            if (options.disabled !== undefined) {
-                this.input.prop("disabled", !!options.disabled);
-                outer.toggleClass("ui-state-disabled", !!options.disabled);
-            }
-            if (options.mini !== undefined) {
-                outer.toggleClass("ui-mini", !!options.mini);
-            }
-            if (options.theme !== undefined) {
-                label
-                    .removeClass("ui-btn-" + currentOptions.theme)
-                    .addClass("ui-btn-" + options.theme);
-            }
-            if (options.wrapperClass !== undefined) {
-                outer
-                    .removeClass(currentOptions.wrapperClass)
-                    .addClass(options.wrapperClass);
-            }
-            if (options.iconpos !== undefined && hasIcon) {
-                label.removeClass("ui-btn-icon-" + currentOptions.iconpos).addClass("ui-btn-icon-" + options.iconpos);
-            } else if (!hasIcon) {
-                label.removeClass("ui-btn-icon-" + currentOptions.iconpos);
-            }
-            this._super(options);
-        }
-
-    }, $.mobile.behaviors.formReset));
-
-})(jQuery);
+});

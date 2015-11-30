@@ -2793,6 +2793,24 @@
             dlg.entryAnimation = 'fade-in-animation';
             dlg.exitAnimation = 'fade-out-animation';
 
+            // The animations flicker in IE and Firefox (probably wherever the polyfill is used)
+            if (browserInfo.chrome) {
+                dlg.animationConfig = {
+                    // scale up
+                    'entry': {
+                        name: 'scale-up-animation',
+                        node: dlg,
+                        timing: { duration: 160, easing: 'ease-out' }
+                    },
+                    // fade out
+                    'exit': {
+                        name: 'fade-out-animation',
+                        node: dlg,
+                        timing: { duration: 200, easing: 'ease-in' }
+                    }
+                };
+            }
+
             var html = '';
 
             // There seems to be a bug with this in safari causing it to immediately roll up to 0 height

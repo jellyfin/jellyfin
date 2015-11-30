@@ -1906,6 +1906,11 @@ var AppInfo = {};
         }
 
         requirejs.config({
+            map: {
+                '*': {
+                    'css': 'components/requirecss'
+                }
+            },
             urlArgs: urlArgs,
 
             paths: paths
@@ -2004,6 +2009,10 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"], function () {
+            return {};
+        });
+
         define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider"], function () {
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.slider.css');
             return {};
@@ -2029,16 +2038,9 @@ var AppInfo = {};
             return {};
         });
 
-        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.checkbox.css');
-            return {};
-        });
+        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
 
-        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel"], function () {
-
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.panel.css');
-            return {};
-        });
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
             return Hammer;

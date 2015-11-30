@@ -849,9 +849,6 @@
         });
     }
 
-    requirejs(["thirdparty/cast_sender"], function () {
-
-        initializeChromecast();
-    });
+    requirejs(["https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"], initializeChromecast);
 
 })(window, window.chrome, console);

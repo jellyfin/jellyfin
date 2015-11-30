@@ -20,8 +20,7 @@
 
         var html = '';
 
-        // add return false because on iOS clicking the bar often ends up clicking the content underneath. 
-        html += '<div class="nowPlayingBar" style="display:none;">';
+        html += '<div class="nowPlayingBar hide">';
 
         html += '<div class="nowPlayingBarPositionContainer">';
         html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
@@ -69,6 +68,58 @@
         html += '</div>';
 
         return html;
+    }
+
+    var isSlidUp;
+    var height;
+
+    function getHeight(elem) {
+
+        if (!height) {
+            height = elem.offsetHeight;
+        }
+
+        return height + 'px';
+        return '80px';
+    }
+
+    function slideDown(elem) {
+
+        if (!isSlidUp) {
+            return;
+        }
+
+        isSlidUp = false;
+
+        requestAnimationFrame(function () {
+            var keyframes = [
+              { height: getHeight(elem), offset: 0 },
+              { height: '0', display: 'none', offset: 1 }];
+            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
+            elem.animate(keyframes, timing).onfinish = function () {
+                elem.classList.add('hide');
+            };
+        });
+    }
+
+    function slideUp(elem) {
+
+        if (isSlidUp) {
+            return;
+        }
+
+        isSlidUp = true;
+
+        requestAnimationFrame(function () {
+
+            elem.classList.remove('hide');
+
+            var keyframes = [
+              { height: '0', offset: 0 },
+              { height: getHeight(elem), offset: 1 }];
+            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
+            elem.animate(keyframes, timing);
+        });
     }
 
     function bindEvents(elem) {
@@ -193,26 +244,36 @@
         }, 300);
     }
 
+    var nowPlayingBarElement;
     function getNowPlayingBar() {
 
-        var elem = document.querySelector('.nowPlayingBar');
+        return new Promise(function (resolve, reject) {
 
-        if (elem) {
-            return elem;
-        }
+            if (nowPlayingBarElement) {
+                resolve(nowPlayingBarElement);
+                return;
+            }
 
-        Dashboard.importCss('css/nowplayingbar.css');
+            require(['css!/css/nowplayingbar.css'], function () {
 
-        elem = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
+                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-        if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
-            // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
-            elem.classList.add('noMediaProgress');
-        }
+                if (nowPlayingBarElement) {
+                    resolve(nowPlayingBarElement);
+                    return;
+                }
 
-        bindEvents(elem);
+                nowPlayingBarElement = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
 
-        return elem;
+                if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
+                    // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
+                    nowPlayingBarElement.classList.add('noMediaProgress');
+                }
+
+                bindEvents(nowPlayingBarElement);
+                resolve(nowPlayingBarElement);
+            });
+        });
     }
 
     function showButton(button) {
@@ -227,12 +288,24 @@
 
     function updatePlayerState(event, state) {
 
-        if (state.NowPlayingItem) {
-            showNowPlayingBar();
-        } else {
+        if (!state.NowPlayingItem) {
             hideNowPlayingBar();
             return;
         }
+
+        if (nowPlayingBarElement) {
+            updatePlayerStateInternal(event, state);
+            return;
+        }
+
+        getNowPlayingBar().then(function () {
+            updatePlayerStateInternal(event, state);
+        });
+    }
+
+    function updatePlayerStateInternal(event, state) {
+
+        showNowPlayingBar();
 
         if (event.type == 'positionchange') {
             // Try to avoid hammering the document with changes
@@ -245,10 +318,6 @@
         }
 
         lastPlayerState = state;
-
-        if (!muteButton) {
-            getNowPlayingBar();
-        }
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -305,10 +374,6 @@
     function updatePlayerVolumeState(state, playerInfo) {
 
         playerInfo = playerInfo || MediaController.getPlayerInfo();
-
-        if (!muteButton) {
-            getNowPlayingBar();
-        }
 
         var playState = state.PlayState || {};
         var supportedCommands = playerInfo.supportedCommands;
@@ -478,9 +543,7 @@
 
     function showNowPlayingBar() {
 
-        var nowPlayingBar = getNowPlayingBar();
-
-        $(nowPlayingBar).show();
+        getNowPlayingBar().then(slideUp);
     }
 
     function hideNowPlayingBar() {
@@ -491,7 +554,7 @@
         // Don't call getNowPlayingBar here because we don't want to end up creating it just to hide it
         var elem = document.getElementsByClassName('nowPlayingBar')[0];
         if (elem) {
-            elem.style.display = 'none';
+            slideDown(elem);
         }
     }
 
@@ -538,7 +601,9 @@
 
         var player = this;
 
-        player.getPlayerState().then(function (state) {
+        Promise.all([player.getPlayerState(), getNowPlayingBar()]).then(function (responses) {
+
+            var state = responses[0];
 
             if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
                 return;

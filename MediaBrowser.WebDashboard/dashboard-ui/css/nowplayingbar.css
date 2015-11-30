@@ -64,7 +64,9 @@
     background-color: rgba(26,26,26,.94);
     border-top: 1px solid #444;
     text-align: center;
-    /*box-shadow: 0 0 8px rgba(255,255,255,.4);*/
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
@@ -91,10 +93,6 @@
 }
 
 .nowPlayingBarInfoContainer {
-    vertical-align: middle;
-    position: absolute;
-    left: 0;
-    bottom: 0;
 }
 
 .nowPlayingImage {
@@ -166,9 +164,11 @@
     vertical-align: middle;
     text-align: center;
     margin-top: 12px;
-    position: relative;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
+    position: absolute;
+    left: 0;
+    right: 0;
 }
 
 .nowPlayingBarPositionContainer {
@@ -210,10 +210,8 @@
 }
 
 .nowPlayingBarRight {
-    position: absolute;
-    bottom: 12px;
-    right: 10px;
-    vertical-align: middle;
+    position: relative;
+    margin: 0 1em 0 auto;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
 }
@@ -255,27 +253,19 @@
     .nowPlayingBar .playlistButton {
         display: none !important;
     }
-
-    .nowPlayingBarRight {
-        bottom: 18px;
-    }
 }
 
 @media all and (max-width: 800px) {
 
     .nowPlayingBarCurrentTime {
         padding-left: 0;
-        top: 12px;
-        right: 130px;
+        top: 22px;
+        right: 140px;
         position: absolute;
     }
 
     .nowPlayingBarCenter > *:not(.nowPlayingBarCurrentTime) {
         display: none !important;
-    }
-
-    .nowPlayingBarRight {
-        bottom: 10px;
     }
 
     .nowPlayingBar, .nowPlayingImage img {

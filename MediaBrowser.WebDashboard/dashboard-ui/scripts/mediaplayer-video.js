@@ -690,10 +690,8 @@
 
         function ensureVideoPlayerElements() {
 
-            Dashboard.importCss('css/mediaplayer-video.css');
-
-            // TODO: remove dependency on this file
-            Dashboard.importCss('css/nowplayingbar.css');
+            // TODO: remove dependency on nowplayingbar
+            require(['css!/css/nowplayingbar.css', 'css!/css/mediaplayer-video.css']);
 
             var html = '<div id="mediaPlayer" style="display: none;">';
 
