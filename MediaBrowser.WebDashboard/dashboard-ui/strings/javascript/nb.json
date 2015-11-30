@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "Legg til samling",
     "HeaderSelectCertificatePath": "Velg sti for sertifikat:",
     "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
-    "HeaderSupporterBenefit": "St\u00f8ttemedlemskap gir ytterligere fordeler som for eksempel tilgang til synkronisering, premium plugins, internett-kanaler og mer. {0}L\u00e6r mer{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "Det ser ikke ut til at du har noen applikasjoner som st\u00f8tter synkronisering.",
     "HeaderWelcomeToProjectServerDashboard": "Velkommen til Emby Server Dashboard",
     "HeaderWelcomeToProjectWebClient": "Velkommen til Emby",

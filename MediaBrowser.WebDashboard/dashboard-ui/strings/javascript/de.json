@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "Zu Sammlung hinzuf\u00fcgen",
     "HeaderSelectCertificatePath": "W\u00e4hlen Sie einen Zertifikat Ordner",
     "ConfirmMessageScheduledTaskButton": "Dieser Vorgang l\u00e4uft in der Regel automatisch als geplante Aufgabe ab und erfordert keine manuellen Eingabe. Um die geplante Aufgabe zu konfigurieren, finden Sie unter:",
-    "HeaderSupporterBenefit": "Eine Unterst\u00fctzer-Mitgliedschaft bietet weitere Funktionen wie z.B. Zugriff auf die Synchronisation, Premium-Plugins, Internet Kan\u00e4le und mehr. {0}Erfahren Sie mehr{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "Es sieht so aus als w\u00fcrden Sie aktuell keine Apps verwenden, die Synchronisation unterst\u00fctzen.",
     "HeaderWelcomeToProjectServerDashboard": "Willkommen zur Emby Server \u00dcbersicht",
     "HeaderWelcomeToProjectWebClient": "Willkommen zu Emby",

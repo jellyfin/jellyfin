@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "Dodaj do zbior\u00f3w",
     "HeaderSelectCertificatePath": "Wybierz \u015bcie\u017ck\u0119 do certyfiaktu",
     "ConfirmMessageScheduledTaskButton": "Operacja zazwyczaj dzia\u0142a w tle jako zaplanowane zadanie oraz nie wymaga r\u0119cznego w\u0142\u0105czenia. Aby skonfigurowa\u0107 zaplanowane zadanie zobacz:",
-    "HeaderSupporterBenefit": "Cz\u0142onkostwo suportera dostarcza dodatkowe korzy\u015bci takie jak dost\u0119p do synchronizacji, wtyczek premium, zawarto\u015bci kana\u0142\u00f3w internetowych, i wiele innych. {0}Dowiedz si\u0119 wi\u0119cej{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "Wygl\u0105da na to, \u017ce nie masz \u017cadnych aplikacji wspieraj\u0105cych synchronizacj\u0119.",
     "HeaderWelcomeToProjectServerDashboard": "Witaj w dashboard'zie serwera Emby!",
     "HeaderWelcomeToProjectWebClient": "Witamy w Emby",

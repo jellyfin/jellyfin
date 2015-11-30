@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "\uceec\ub809\uc158\uc5d0 \ucd94\uac00",
     "HeaderSelectCertificatePath": "Select Certificate Path",
     "ConfirmMessageScheduledTaskButton": "\uc774 \uc791\uc5c5\uc740 \uc77c\ubc18\uc801\uc73c\ub85c \uc608\uc57d \uc791\uc5c5\uc73c\ub85c \uc790\ub3d9 \uc2e4\ud589\ub418\ubbc0\ub85c \uc218\uc791\uc5c5\uc774 \ud544\uc694\uc5c6\uc2b5\ub2c8\ub2e4. \uc608\uc57d \uc791\uc5c5\uc744 \uc124\uc815\ud558\ub824\uba74 \ub2e4\uc74c\uc744 \ubcf4\uc138\uc694:",
-    "HeaderSupporterBenefit": "\uc11c\ud3ec\ud130 \uba64\ubc84\uc2ed\uc740 \ub3d9\uae30\ud654, \ud504\ub9ac\ubbf8\uc5c4 \ud50c\ub7ec\uadf8\uc778, \uc778\ud130\ub137 \ucc44\ub110 \ucf58\ud150\ud2b8 \ub4f1\uc758 \ucd94\uac00 \ud61c\ud0dd\uc774 \uc8fc\uc5b4\uc9d1\ub2c8\ub2e4. {0}\ub354 \uc54c\uc544\ubcf4\uae30{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "\ud604\uc7ac \ub3d9\uae30\ud654\ub97c \uc9c0\uc6d0\ud558\ub294 \uc571\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",

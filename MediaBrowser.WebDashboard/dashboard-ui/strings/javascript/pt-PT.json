@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "Add to collection",
     "HeaderSelectCertificatePath": "Select Certificate Path",
     "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
-    "HeaderSupporterBenefit": "Uma conta de Apoiante fornece benef\u00edcios adicionais como acesso \u00e0 sincroniza\u00e7\u00e3o, extens\u00f5es premium, conte\u00fados de canais da internet e mais. {0}Saiba mais{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support sync.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
