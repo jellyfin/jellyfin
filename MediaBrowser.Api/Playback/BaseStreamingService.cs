@@ -318,7 +318,7 @@ namespace MediaBrowser.Api.Playback
             {
                 param = "-preset superfast";
 
-                param += " -crf 23 -rc-lookahead 0 -muxdelay 0 -refs 1";
+                param += " -crf 23";
             }
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
