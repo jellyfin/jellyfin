@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Playback.Hls
     {
     }
 
-    [Route("/Videos/{Id}/hlsdynamic/{PlaylistId}/{SegmentId}.ts", "GET")]
+    [Route("/Videos/{Id}/hls1/{PlaylistId}/{SegmentId}.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment : VideoStreamRequest
     {
@@ -79,8 +79,8 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
-    [Route("/Audio/{Id}/hlsdynamic/{PlaylistId}/{SegmentId}.aac", "GET")]
-    [Route("/Audio/{Id}/hlsdynamic/{PlaylistId}/{SegmentId}.ts", "GET")]
+    [Route("/Audio/{Id}/hls1/{PlaylistId}/{SegmentId}.aac", "GET")]
+    [Route("/Audio/{Id}/hls1/{PlaylistId}/{SegmentId}.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsAudioSegment : StreamRequest
     {
@@ -725,7 +725,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 builder.AppendLine("#EXTINF:" + length.ToString("0.0000", UsCulture) + ",");
 
-                builder.AppendLine(string.Format("hlsdynamic/{0}/{1}{2}{3}",
+                builder.AppendLine(string.Format("hls1/{0}/{1}{2}{3}",
 
                     name,
                     index.ToString(UsCulture),
