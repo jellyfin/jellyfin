@@ -340,11 +340,9 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "headroom.js", "dist", "headroom.min.js"), Path.Combine(path, "bower_components", "headroom.js", "dist", "headroom.min.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "isMobile", "isMobile.min.js"), Path.Combine(path, "bower_components", "isMobile", "isMobile.min.js"));
             }
-            
-            MinifyCssDirectory(Path.Combine(path, "css"));
-            MinifyJsDirectory(Path.Combine(path, "scripts"));
-            MinifyJsDirectory(Path.Combine(path, "apiclient"));
-            MinifyJsDirectory(Path.Combine(path, "voice"));
+
+            MinifyCssDirectory(path);
+            MinifyJsDirectory(path);
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
@@ -358,6 +356,15 @@ namespace MediaBrowser.WebDashboard.Api
         {
             foreach (var file in Directory.GetFiles(path, "*.css", SearchOption.AllDirectories))
             {
+                if (file.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    continue;
+                }
+                if (file.IndexOf("bower_", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    continue;
+                }
+
                 try
                 {
 					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
@@ -385,6 +392,15 @@ namespace MediaBrowser.WebDashboard.Api
         {
             foreach (var file in Directory.GetFiles(path, "*.js", SearchOption.AllDirectories))
             {
+                if (file.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    continue;
+                }
+                if (file.IndexOf("bower_", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    continue;
+                }
+
                 try
                 {
 					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);

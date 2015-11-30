@@ -65,14 +65,14 @@ namespace MediaBrowser.WebDashboard.Api
                 }
                 else if (IsFormat(path, "js"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "css"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
                     }
@@ -460,31 +460,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             return builder.ToString();
         }
-
-        /// <summary>
-        /// Appends the resource.
-        /// </summary>
-        /// <param name="outputStream">The output stream.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="newLineBytes">The new line bytes.</param>
-        /// <returns>Task.</returns>
-        private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
-        {
-            path = GetDashboardResourcePath(path);
-
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                using (var streamReader = new StreamReader(fs))
-                {
-                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-                    var bytes = Encoding.UTF8.GetBytes(text);
-                    await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                }
-            }
-
-            await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-        }
-
 
         /// <summary>
         /// Gets all CSS.
