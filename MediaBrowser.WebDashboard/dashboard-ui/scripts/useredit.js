@@ -68,7 +68,7 @@
                 type: "DELETE",
                 url: linkUrl
 
-            }).then(function () {
+            }).done(function () {
 
                 Dashboard.alert({
 
@@ -78,7 +78,7 @@
                     callback: actionCallback
 
                 });
-            }, function () {
+            }).fail(function () {
 
                 Dashboard.alert({
 
@@ -99,7 +99,7 @@
                 },
                 dataType: 'json'
 
-            }).then(function (result) {
+            }).done(function (result) {
 
                 var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
 
@@ -110,8 +110,7 @@
                     callback: actionCallback
 
                 });
-
-            }, function () {
+            }).fail(function () {
 
                 Dashboard.alert({
 
@@ -170,9 +169,9 @@
         user.Policy.EnableSyncTranscoding = $('#chkEnableSyncTranscoding', page).checked();
         user.Policy.EnablePublicSharing = $('#chkEnableSharing', page).checked();
 
-        ApiClient.updateUser(user).then(function () {
+        ApiClient.updateUser(user).done(function () {
 
-            ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
+            ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
 
                 onSaveComplete(page, user);
             });
@@ -184,7 +183,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getUser().then(function (result) {
+        getUser().done(function (result) {
             saveUser(result, page);
         });
 
@@ -203,7 +202,7 @@
 
         Dashboard.showLoadingMsg();
 
-        getUser().then(function (user) {
+        getUser().done(function (user) {
 
             loadUser(page, user);
         });

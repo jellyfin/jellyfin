@@ -132,7 +132,7 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function (e) {
+            dlg.addEventListener('iron-overlay-closed', function(e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                 dlg.parentNode.removeChild(dlg);
                 deferred.resolve();
@@ -168,15 +168,11 @@
 
                 Dashboard.alert({
                     message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/premiere" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
-                    title: Globalize.translate('HeaderSync'),
-                    callback: function () {
-                        deferred.reject();
-                    }
+                    title: Globalize.translate('HeaderSync')
                 });
 
             }, function () {
 
-                deferred.reject();
                 Dashboard.hideLoadingMsg();
 
                 Dashboard.alert({
@@ -238,12 +234,7 @@
 
                         var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
 
-                        fetch(url, { mode: 'no-cors' }).then(function (response) {
-
-                            return response.json();
-
-                        }).then(function (dev) {
-
+                        $.getJSON(url).done(function (dev) {
                             if (dev.payPalEmail) {
                                 $('#payPalEmail', page).val(dev.payPalEmail);
 
