@@ -219,7 +219,7 @@
 
             html += '</video>';
 
-            var elem = $('#videoElement', '#mediaPlayer').prepend(html);
+            var elem = $('#videoElement', '#videoPlayer').prepend(html);
 
             return $('.itemVideo', elem)
             	.one('.loadedmetadata', onLoadedMetadata)

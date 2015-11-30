@@ -42,7 +42,7 @@
                 self.exitFullScreen();
             }
 
-            fadeOut(document.querySelector('#mediaPlayer'));
+            fadeOut(document.querySelector('#videoPlayer'));
             $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
@@ -51,18 +51,6 @@
             document.querySelector('.videoControls .nowPlayingInfo').classList.add('hide');
             document.querySelector('.videoControls').classList.add('hiddenOnIdle');
         };
-
-        function fadeOut(elem) {
-            $(elem).hide();
-            return;
-            var keyframes = [
-              { opacity: '1', offset: 0 },
-              { opacity: '0', offset: 1 }];
-            var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing).onfinish = function () {
-                $(elem).hide();
-            };
-        }
 
         self.exitFullScreen = function () {
 
@@ -690,13 +678,9 @@
 
         function ensureVideoPlayerElements() {
 
-            // TODO: remove dependency on nowplayingbar
-            require(['css!/css/nowplayingbar.css', 'css!/css/mediaplayer-video.css']);
+            var html = '';
 
-            var html = '<div id="mediaPlayer" style="display: none;">';
-
-            html += '<div class="videoBackdrop">';
-            html += '<div id="videoPlayer">';
+            html += '<div id="videoPlayer" class="hide">';
 
             html += '<div id="videoElement">';
             html += '<div id="play" class="status"></div>';
@@ -758,8 +742,6 @@
             html += '</div>'; // videoControls
 
             html += '</div>'; // videoPlayer
-            html += '</div>'; // videoBackdrop
-            html += '</div>'; // mediaPlayer
 
             var div = document.createElement('div');
             div.innerHTML = html;
@@ -777,7 +759,7 @@
             initComplete = true;
             ensureVideoPlayerElements();
 
-            var parent = $("#mediaPlayer");
+            var parent = $("#videoPlayer");
 
             muteButton = $('.muteButton', parent);
             unmuteButton = $('.unmuteButton', parent);
@@ -957,9 +939,10 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            initVideoElements();
+            // TODO: remove dependency on nowplayingbar
+            requirejs(['videorenderer', 'css!/css/nowplayingbar.css', 'css!/css/mediaplayer-video.css'], function () {
 
-            requirejs(['videorenderer'], function () {
+                initVideoElements();
 
                 self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
@@ -988,6 +971,53 @@
             });
         };
 
+        function fadeOut(elem) {
+
+            if (elem.classList.contains('hide')) {
+                return;
+            }
+
+            var onfinish = function () {
+                elem.classList.add('hide');
+            };
+
+            if (!browserInfo.animate) {
+                onfinish();
+                return;
+            }
+
+            requestAnimationFrame(function () {
+                var keyframes = [
+                  { opacity: '1', offset: 0 },
+                  { opacity: '0', offset: 1 }];
+                var timing = { duration: 400, iterations: 1, easing: 'ease-out' };
+                elem.animate(keyframes, timing).onfinish = onfinish;
+            });
+        }
+
+        function fadeIn(elem) {
+
+            if (!elem.classList.contains('hide')) {
+                return;
+            }
+
+            elem.classList.remove('hide');
+
+            if (!browserInfo.animate) {
+                return;
+            }
+
+            requestAnimationFrame(function () {
+
+                var keyframes = [
+                    { transform: 'scale3d(.2, .2, .2)  ', opacity: '.6', offset: 0 },
+                  { transform: 'none', opacity: '1', offset: 1 }
+                ];
+
+                var timing = { duration: 240, iterations: 1, easing: 'ease-out' };
+                elem.animate(keyframes, timing);
+            });
+        }
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
@@ -998,7 +1028,8 @@
             });
 
             // Create video player
-            var mediaPlayerContainer = $("#mediaPlayer").show();
+            var mediaPlayerContainer = document.querySelector('#videoPlayer');
+            fadeIn(mediaPlayerContainer);
             var videoControls = $('.videoControls', mediaPlayerContainer);
 
             //show stop button

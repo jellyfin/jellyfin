@@ -118,7 +118,7 @@
 
         setTimeout(function () {
             dlg.open();
-        }, 10);
+        }, 50);
 
         // Has to be assigned a z-index after the call to .open() 
         dlg.addEventListener('iron-overlay-closed', function () {

@@ -1,5 +1,4 @@
-﻿.videoBackdrop {
-    /* Allows popups to be closed, because their z-index is 1099 */
+﻿#mediaPlayer {
     z-index: 1098;
     position: fixed;
     background-color: transparent;
