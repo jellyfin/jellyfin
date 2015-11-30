@@ -6,7 +6,7 @@
 
         self.show = function () {
 
-            Dashboard.importCss('css/search.css');
+            require(['css!/css/search.css']);
             $('.headerSearchInput').val('');
 
             $('.btnCloseSearch').hide();

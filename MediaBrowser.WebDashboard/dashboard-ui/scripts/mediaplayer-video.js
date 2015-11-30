@@ -1014,7 +1014,7 @@
                   { transform: 'none', opacity: '1', offset: 1 }
                 ];
 
-                var timing = { duration: 240, iterations: 1, easing: 'ease-out' };
+                var timing = { duration: 200, iterations: 1, easing: 'ease-out' };
                 elem.animate(keyframes, timing);
             });
         }

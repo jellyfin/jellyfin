@@ -18,7 +18,7 @@
                 return;
             }
 
-            Dashboard.importCss('themes/halloween/style.css');
+            require(['css!themes/halloween/style.css']);
 
             if (!browserInfo.mobile) {
 

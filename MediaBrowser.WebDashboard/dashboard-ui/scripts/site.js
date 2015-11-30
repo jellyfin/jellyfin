@@ -1967,10 +1967,6 @@ var AppInfo = {};
 
         define("connectservice", ["apiclient/connectservice"]);
 
-        define("jqmicons", [], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
-            return {};
-        });
         define("livetvcss", [], function () {
             Dashboard.importCss('css/livetv.css');
             return {};
@@ -1979,10 +1975,7 @@ var AppInfo = {};
             Dashboard.importCss('css/detailtable.css');
             return {};
         });
-        define("tileitemcss", [], function () {
-            Dashboard.importCss('css/tileitem.css');
-            return {};
-        });
+        define("tileitemcss", ['css!/css/tileitem.css']);
 
         if (Dashboard.isRunningInCordova()) {
             define("actionsheet", ["cordova/actionsheet"]);
@@ -2004,39 +1997,20 @@ var AppInfo = {};
             define("searchmenu", ["scripts/searchmenu"]);
         }
 
-        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.table.css');
-            return {};
-        });
+        define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
-        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"], function () {
-            return {};
-        });
+        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
 
-        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.slider.css');
-            return {};
-        });
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
 
-        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.popup.css');
-            return {};
-        });
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.listview.css');
-            return {};
-        });
+        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview", 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css');
-            return {};
-        });
+        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
-        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible"], function () {
-            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.collapsible.css');
-            return {};
-        });
+        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 
         define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
 

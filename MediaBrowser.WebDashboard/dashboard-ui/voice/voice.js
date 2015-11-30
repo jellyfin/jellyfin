@@ -329,7 +329,7 @@
 
         destroyCurrentRecognition();
 
-        Dashboard.importCss('voice/voice.css');
+        require(['css!voice/voice.css']);
         startListeningInternal();
     }
 

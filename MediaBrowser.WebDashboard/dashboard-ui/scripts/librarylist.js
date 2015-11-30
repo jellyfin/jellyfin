@@ -728,7 +728,7 @@
 
             var elem = e.target;
 
-            if (!elem.classList.contains('card')) {
+            if (!elem.classList.contains('cardImage')) {
                 return;
             }
 
