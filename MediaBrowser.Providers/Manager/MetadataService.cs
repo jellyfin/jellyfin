@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var id = itemOfType.GetLookupInfo();
 
-                    await FindIdentities(id, cancellationToken).ConfigureAwait(false);
+                    //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
