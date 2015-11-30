@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "Ajouter \u00e0 une collection",
     "HeaderSelectCertificatePath": "S\u00e9lectionnez le chemin du certificat",
     "ConfirmMessageScheduledTaskButton": "Cette op\u00e9ration s'ex\u00e9cute normalement automatiquement en tant que t\u00e2che planifi\u00e9e et ne requiert aucune action manuelle. Pour configurer cette t\u00e2che, voir :",
-    "HeaderSupporterBenefit": "Un partenariat de membre supporteur apporte des avantages suppl\u00e9mentaires, comme l'acc\u00e8s \u00e0 la synchronisation, aux plugins premiums, aux contenus des cha\u00eenes Internet, et plus encore. {0}En savoir plus{1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "Il semble que vous n'ayez actuellement aucune application qui supporte la synchronisation.",
     "HeaderWelcomeToProjectServerDashboard": "Bienvenue dans le tableau de bord du serveur Emby",
     "HeaderWelcomeToProjectWebClient": "Bienvenue dans Emby",

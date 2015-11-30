@@ -105,7 +105,7 @@
     "ButtonAddToCollection": "P\u0159idat do kolekce",
     "HeaderSelectCertificatePath": "Vyber cestu k certifik\u00e1tu",
     "ConfirmMessageScheduledTaskButton": "Tato operace se obvykle spust\u00ed automaticky pomoc\u00ed napl\u00e1novan\u00e9 \u00falohy a nevy\u017eaduje \u017e\u00e1dn\u00fd v\u00e1\u0161 z\u00e1sah. Chcete-li napl\u00e1novat \u00falohy, pak:",
-    "HeaderSupporterBenefit": "\u010clenstv\u00ed v podpo\u0159e (supporter membership) poskytuje dal\u0161\u00ed v\u00fdhody, jako je p\u0159\u00edstup k synchronizaci, pr\u00e9miov\u00fdm z\u00e1suvn\u00fdm modul\u016fm, obsahu kan\u00e1l\u016f z internetu, a dal\u0161\u00ed. {0} V\u00edce informac\u00ed {1}.",
+    "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "Vypad\u00e1 to, \u017ee v sou\u010dasn\u00e9 dob\u011b nem\u00e1te \u017e\u00e1dn\u00e9 aplikace, kter\u00e9 podporuj\u00ed synchronizaci.",
     "HeaderWelcomeToProjectServerDashboard": "V\u00edtejte na hlavn\u00ed nab\u00eddce Server Emby",
     "HeaderWelcomeToProjectWebClient": "V\u00edtejte v Emby",
