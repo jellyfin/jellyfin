@@ -2387,6 +2387,8 @@ var AppInfo = {};
             browser.mobile = true;
         }
 
+        browser.animate = document.documentElement.animate != null;
+
         window.browserInfo = browser;
     }
 

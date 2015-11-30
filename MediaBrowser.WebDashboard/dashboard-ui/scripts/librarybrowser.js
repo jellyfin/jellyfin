@@ -2794,7 +2794,7 @@
             dlg.exitAnimation = 'fade-out-animation';
 
             // The animations flicker in IE and Firefox (probably wherever the polyfill is used)
-            if (browserInfo.chrome) {
+            if (browserInfo.animate) {
                 dlg.animationConfig = {
                     // scale up
                     'entry': {

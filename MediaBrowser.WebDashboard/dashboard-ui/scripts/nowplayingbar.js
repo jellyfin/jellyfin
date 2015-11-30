@@ -70,7 +70,6 @@
         return html;
     }
 
-    var isSlidUp;
     var height;
 
     function getHeight(elem) {
@@ -85,34 +84,41 @@
 
     function slideDown(elem) {
 
-        if (!isSlidUp) {
+        if (elem.classList.contains('hide')) {
             return;
         }
 
-        isSlidUp = false;
+        var onfinish = function() {
+            elem.classList.add('hide');
+        };
+
+        if (!browserInfo.animate) {
+            onfinish();
+            return;
+        }
 
         requestAnimationFrame(function () {
             var keyframes = [
               { height: getHeight(elem), offset: 0 },
               { height: '0', display: 'none', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
-            elem.animate(keyframes, timing).onfinish = function () {
-                elem.classList.add('hide');
-            };
+            elem.animate(keyframes, timing).onfinish = onfinish;
         });
     }
 
     function slideUp(elem) {
 
-        if (isSlidUp) {
+        if (!elem.classList.contains('hide')) {
             return;
         }
 
-        isSlidUp = true;
+        elem.classList.remove('hide');
+
+        if (!browserInfo.animate) {
+            return;
+        }
 
         requestAnimationFrame(function () {
-
-            elem.classList.remove('hide');
 
             var keyframes = [
               { height: '0', offset: 0 },
