@@ -27,7 +27,7 @@
     }
 
     // Request Quota (only for File System API)  
-    var requestedBytes = 1024 * 1024 * 200; // 200MB
+    var requestedBytes = 1024 * 1024 * 500; // 500MB
     var imageCacheDirectoryEntry;
     var imageCacheFolder = 'images';
 
@@ -46,24 +46,23 @@
         }, errorCallback);
     }
 
-    navigator.webkitPersistentStorage.requestQuota(
-        requestedBytes, function (grantedBytes) {
+    navigator.webkitPersistentStorage.requestQuota(requestedBytes, function (grantedBytes) {
 
-            var requestMethod = window.webkitRequestFileSystem || window.requestFileSystem;
+        var requestMethod = window.webkitRequestFileSystem || window.requestFileSystem;
 
-            requestMethod(PERSISTENT, grantedBytes, function (fs) {
+        requestMethod(PERSISTENT, grantedBytes, function (fs) {
 
-                fileSystem = fs;
+            fileSystem = fs;
 
-                createDir(fileSystem.root, imageCacheFolder.split('/'), function (dirEntry) {
+            createDir(fileSystem.root, imageCacheFolder.split('/'), function (dirEntry) {
 
-                    imageCacheDirectoryEntry = dirEntry;
-
-                });
+                imageCacheDirectoryEntry = dirEntry;
 
             });
 
         });
+
+    });
 
     var fileSystem;
 

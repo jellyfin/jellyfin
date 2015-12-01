@@ -901,7 +901,6 @@
                     shape: getPortraitShape(),
                     showTitle: false,
                     centerText: true,
-                    context: context,
                     lazy: true
                 });
             }

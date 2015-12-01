@@ -138,14 +138,6 @@
             }]);
         }
 
-        function onRetryRequestFail(request) {
-
-            Events.trigger(self, 'requestfail', [
-            {
-                url: request.url
-            }]);
-        }
-
         self.setRequestHeaders = function (headers) {
 
             var currentServerInfo = self.serverInfo();
@@ -195,16 +187,22 @@
                 method: request.type
             };
 
+            var contentType = request.contentType;
+
             if (request.data) {
 
                 if (typeof request.data === 'string') {
                     fetchRequest.body = request.data;
+                } else {
+                    fetchRequest.body = paramsToString(request.data);
+
+                    contentType = contentType || 'application/x-www-form-urlencoded';
                 }
             }
 
-            if (request.contentType) {
+            if (contentType) {
 
-                headers['Content-Type'] = request.contentType;
+                headers['Content-Type'] = contentType;
             }
 
             return fetch(request.url, fetchRequest);
