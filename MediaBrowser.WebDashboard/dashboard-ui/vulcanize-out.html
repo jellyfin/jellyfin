@@ -8288,10 +8288,7 @@ this.fire('dom-change');
     };
 
     --layout-horizontal: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: row;
       -webkit-flex-direction: row;
@@ -8299,16 +8296,15 @@ this.fire('dom-change');
     };
 
     --layout-horizontal-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: row-reverse;
       -webkit-flex-direction: row-reverse;
       flex-direction: row-reverse;
     };
 
     --layout-vertical: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: column;
       -webkit-flex-direction: column;
@@ -8316,6 +8312,8 @@ this.fire('dom-change');
     };
 
     --layout-vertical-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: column-reverse;
       -webkit-flex-direction: column-reverse;
       flex-direction: column-reverse;
@@ -8472,13 +8470,8 @@ this.fire('dom-change');
     };
 
     --layout-center-center: {
-      /* @apply(--layout-center --layout-center-justified); */
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
     };
 
     /* self alignment */
@@ -20417,20 +20410,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   </script>
 </dom-module>
 <dom-module id="paper-radio-group" assetpath="bower_components/paper-radio-group/">
-  <style>
-    :host {
-      display: inline-block;
-    }
-
-    :host ::content > * {
-      padding: 12px;
-    }
-  </style>
-
   <template>
-      <content id="items" select="*"></content>
-  </template>
+    <style>
+      :host {
+        display: inline-block;
+      }
 
+      :host ::content > * {
+        padding: 12px;
+      }
+    </style>
+
+    <content id="items" select="*"></content>
+  </template>
 </dom-module>
 
 <script>

@@ -48,12 +48,12 @@
         }
 
         if (!parentPathPromise) {
-            parentPathPromise = $.Deferred();
-            parentPathPromise.resolveWith(null, []);
-            parentPathPromise = parentPathPromise.promise();
+            parentPathPromise = new Promise(function (resolve, reject) {
+                resolve();
+            });
         }
 
-        Promise.all(promise, parentPathPromise).then(function (responses) {
+        Promise.all([promise, parentPathPromise]).then(function (responses) {
 
             var folders = responses[0];
             var parentPath = responses[1] || '';

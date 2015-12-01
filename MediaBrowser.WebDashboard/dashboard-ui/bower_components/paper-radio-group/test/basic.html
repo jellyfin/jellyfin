@@ -16,10 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <link rel="import" href="../../test-fixture/test-fixture.html">
     <link rel="import" href="../paper-radio-group.html">
 
   </head>
@@ -60,122 +57,152 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var LEFT_ARROW = 37;
         var RIGHT_ARROW = 39;
 
-        test('group can have no selection', function () {
+        test('group can have no selection', function (done) {
           var g = fixture('NoSelection');
-          expect(g.selected).to.not.be.ok;
-          var items = g.items;
-          expect(items.length).to.be.equal(3);
-          expect(items[0].checked).to.be.equal(false);
-          expect(items[1].checked).to.be.equal(false);
-          expect(items[2].checked).to.be.equal(false);
+
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            expect(g.selected).to.not.be.ok;
+            var items = g.items;
+            expect(items.length).to.be.equal(3);
+
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(false);
+
+            done();
+          }, 1);
+
         });
 
-        test('group can have a selection', function () {
+        test('group can have a selection', function (done) {
           var g = fixture('WithSelection');
-          expect(g.selected).to.be.ok;
-          var items = g.items;
-          expect(items.length).to.be.equal(3);
 
-          expect(items[0].checked).to.be.equal(true);
-          expect(items[1].checked).to.be.equal(false);
-          expect(items[2].checked).to.be.equal(false);
-          expect(items[0].getAttribute('name')).to.be.equal(g.selected);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            expect(g.selected).to.be.ok;
+            var items = g.items;
+            expect(items.length).to.be.equal(3);
+
+            expect(items[0].checked).to.be.equal(true);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(false);
+            expect(items[0].getAttribute('name')).to.be.equal(g.selected);
+
+            done();
+          }, 1);
         });
 
         test('right arrow advances the selection', function (done) {
           var g = fixture('WithSelection');
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
+            expect(items[0].checked).to.be.equal(true);
 
-          g.addEventListener('paper-radio-group-changed', function () {
-            expect(items[0].checked).to.be.equal(false);
-            expect(items[1].checked).to.be.equal(true);
-            expect(items[2].checked).to.be.equal(false);
-            done();
-          });
-
-          MockInteractions.keyDownOn(g, RIGHT_ARROW);
+            g.addEventListener('paper-radio-group-changed', function () {
+              expect(items[0].checked).to.be.equal(false);
+              expect(items[1].checked).to.be.equal(true);
+              expect(items[2].checked).to.be.equal(false);
+              done();
+            });
+            MockInteractions.keyDownOn(g, RIGHT_ARROW);
+          }, 1);
         });
 
         test('left arrow reverses the selection', function (done) {
           var g = fixture('WithSelection');
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
+            expect(items[0].checked).to.be.equal(true);
 
-          g.addEventListener('paper-radio-group-changed', function () {
-            expect(items[0].checked).to.be.equal(false);
-            expect(items[1].checked).to.be.equal(false);
-            expect(items[2].checked).to.be.equal(true);
-            done();
-          });
-          MockInteractions.keyDownOn(g, LEFT_ARROW);
+            g.addEventListener('paper-radio-group-changed', function () {
+              expect(items[0].checked).to.be.equal(false);
+              expect(items[1].checked).to.be.equal(false);
+              expect(items[2].checked).to.be.equal(true);
+              done();
+            });
+            MockInteractions.keyDownOn(g, LEFT_ARROW);
+          }, 1);
         });
 
         test('selection should skip disabled items', function (done) {
           var g = fixture('WithDisabled');
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
+            expect(items[0].checked).to.be.equal(true);
 
-          g.addEventListener('paper-radio-group-changed', function () {
-            expect(items[0].checked).to.be.equal(false);
-            expect(items[1].checked).to.be.equal(false);
-            expect(items[2].checked).to.be.equal(true);
-            done();
-          });
-          MockInteractions.keyDownOn(g, RIGHT_ARROW);
+            g.addEventListener('paper-radio-group-changed', function () {
+              expect(items[0].checked).to.be.equal(false);
+              expect(items[1].checked).to.be.equal(false);
+              expect(items[2].checked).to.be.equal(true);
+              done();
+            });
+            MockInteractions.keyDownOn(g, RIGHT_ARROW);
+          }, 1);
         });
 
         test('clicking should change the selection', function (done) {
           var g = fixture('WithSelection');
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
+            expect(items[0].checked).to.be.equal(true);
 
-          g.addEventListener('paper-radio-group-changed', function () {
-            expect(items[0].checked).to.be.equal(false);
-            expect(items[1].checked).to.be.equal(true);
-            expect(items[2].checked).to.be.equal(false);
-            done();
-          });
-
-          MockInteractions.tap(items[1]);
+            g.addEventListener('paper-radio-group-changed', function () {
+              expect(items[0].checked).to.be.equal(false);
+              expect(items[1].checked).to.be.equal(true);
+              expect(items[2].checked).to.be.equal(false);
+              done();
+            });
+            MockInteractions.tap(items[1]);
+          }, 1);
         });
 
         test('clicking the selected item should not deselect', function (done) {
           var g = fixture('WithSelection');
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
-          MockInteractions.tap(items[0]);
-
-          // The selection should not change, but wait for a little bit just
-          // in case it would and an event would be fired.
-          setTimeout(function() {
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
             expect(items[0].checked).to.be.equal(true);
-            expect(items[1].checked).to.be.equal(false);
-            expect(items[2].checked).to.be.equal(false);
-            done();
+
+            // The selection should not change, but wait for a little bit just
+            // in case it would and an event would be fired.
+            setTimeout(function() {
+              expect(items[0].checked).to.be.equal(true);
+              expect(items[1].checked).to.be.equal(false);
+              expect(items[2].checked).to.be.equal(false);
+              done();
+            }, 1);
+            MockInteractions.tap(items[0]);
           }, 1);
         });
 
         test('clicking the selected item should deselect if allow-empty-selection is set', function (done) {
           var g = fixture('WithSelection');
           g.allowEmptySelection = true;
-          var items = g.items;
 
-          expect(items[0].checked).to.be.equal(true);
-          MockInteractions.tap(items[0]);
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            var items = g.items;
+            expect(items[0].checked).to.be.equal(true);
 
-          // The selection should not change, but wait for a little bit just
-          // in case it would and an event would be fired.
-          setTimeout(function() {
-            expect(items[0].checked).to.be.equal(false);
-            expect(items[1].checked).to.be.equal(false);
-            expect(items[2].checked).to.be.equal(false);
-            done();
+            // The selection should not change, but wait for a little bit just
+            // in case it would and an event would be fired.
+            setTimeout(function() {
+              expect(items[0].checked).to.be.equal(false);
+              expect(items[1].checked).to.be.equal(false);
+              expect(items[2].checked).to.be.equal(false);
+              done();
+            }, 1);
+            MockInteractions.tap(items[0]);
           }, 1);
         });
 

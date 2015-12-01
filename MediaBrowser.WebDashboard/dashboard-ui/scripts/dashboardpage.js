@@ -1367,7 +1367,10 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
                 $('.supporterPromotion', page).remove();
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
-                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
+
+                    var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
+
+                    $('.content-primary', page).append(html);
                 }
             }
 

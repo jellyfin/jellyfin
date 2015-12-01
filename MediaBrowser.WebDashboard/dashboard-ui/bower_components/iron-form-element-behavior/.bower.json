@@ -1,11 +1,9 @@
 {
   "name": "iron-form-element-behavior",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "http://polymer.github.io/LICENSE.txt",
   "private": true,
-  "main": [
-    "iron-form-element-behavior.html"
-  ],
+  "main": "iron-form-element-behavior.html",
   "authors": [
     "The Polymer Authors"
   ],
@@ -24,17 +22,18 @@
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
+  "ignore": [],
   "homepage": "https://github.com/PolymerElements/iron-form-element-behavior",
-  "_release": "1.0.5",
+  "_release": "1.0.6",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.5",
-    "commit": "52b16e14511a4b659658da705f5f4b2b45131941"
+    "tag": "v1.0.6",
+    "commit": "cf9e09ded62daf3363852ce98260aaad1ed0fae1"
   },
   "_source": "git://github.com/PolymerElements/iron-form-element-behavior.git",
   "_target": "^1.0.0",

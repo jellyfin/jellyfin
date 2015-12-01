@@ -260,7 +260,7 @@
                 return;
             }
 
-            require(['css!/css/nowplayingbar.css'], function () {
+            require(['css!css/nowplayingbar.css'], function () {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 

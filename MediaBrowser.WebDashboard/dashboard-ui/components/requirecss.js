@@ -26,7 +26,7 @@ define(function () {
     requireCss.load = function (cssId, req, load, config) {
 
         // Somehow if the url starts with /css, require will get all screwed up since this extension is also called css
-        cssId = cssId.replace('js/requirecss', 'css');
+        cssId = cssId.replace('components/requirecss', 'css');
         var url = cssId + '.css';
 
         var packageName = '';

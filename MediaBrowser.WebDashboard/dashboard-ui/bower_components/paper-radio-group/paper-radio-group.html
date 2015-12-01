@@ -50,20 +50,19 @@ information about `paper-radio-button`.
 -->
 
 <dom-module id="paper-radio-group">
-  <style>
-    :host {
-      display: inline-block;
-    }
-
-    :host ::content > * {
-      padding: 12px;
-    }
-  </style>
-
   <template>
-      <content id="items" select="*"></content>
-  </template>
+    <style>
+      :host {
+        display: inline-block;
+      }
 
+      :host ::content > * {
+        padding: 12px;
+      }
+    </style>
+
+    <content id="items" select="*"></content>
+  </template>
 </dom-module>
 
 <script>

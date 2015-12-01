@@ -1,11 +1,9 @@
 {
   "name": "iron-form-element-behavior",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "http://polymer.github.io/LICENSE.txt",
   "private": true,
-  "main": [
-    "iron-form-element-behavior.html"
-  ],
+  "main": "iron-form-element-behavior.html",
   "authors": [
     "The Polymer Authors"
   ],
@@ -24,9 +22,10 @@
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
-  }
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
 }

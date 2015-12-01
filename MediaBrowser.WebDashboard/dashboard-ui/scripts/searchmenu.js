@@ -6,7 +6,7 @@
 
         self.show = function () {
 
-            require(['css!/css/search.css']);
+            require(['css!css/search.css']);
             $('.headerSearchInput').val('');
 
             $('.btnCloseSearch').hide();

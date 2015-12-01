@@ -1975,7 +1975,7 @@ var AppInfo = {};
             Dashboard.importCss('css/detailtable.css');
             return {};
         });
-        define("tileitemcss", ['css!/css/tileitem.css']);
+        define("tileitemcss", ['css!css/tileitem.css']);
 
         if (Dashboard.isRunningInCordova()) {
             define("actionsheet", ["cordova/actionsheet"]);
