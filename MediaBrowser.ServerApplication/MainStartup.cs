@@ -31,6 +31,9 @@ namespace MediaBrowser.ServerApplication
         private static bool _isRunningAsService = false;
         private static bool _appHostDisposed;
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
+
         /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
@@ -42,6 +45,9 @@ namespace MediaBrowser.ServerApplication
             var currentProcess = Process.GetCurrentProcess();
 
             var applicationPath = currentProcess.MainModule.FileName;
+            var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+
+            var success = SetDllDirectory(architecturePath);
 
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 

@@ -689,7 +689,6 @@
     <Content Include="dashboard-ui\cordova\android\iap.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\cordova\android\immersive.js" />
     <Content Include="dashboard-ui\cordova\chromecast.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
