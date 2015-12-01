@@ -149,6 +149,8 @@
         window.ImageStore = self;
     }
 
-    new indexedDbBlobImageStore();
+    require(['cryptojs-sha1'], function () {
+        new indexedDbBlobImageStore();
+    });
 
 })();

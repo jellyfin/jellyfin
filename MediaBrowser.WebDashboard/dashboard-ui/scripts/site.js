@@ -1522,71 +1522,6 @@ var Dashboard = {
         }
     },
 
-    getAppInfo: function (appName, appVersion, deviceId, deviceName) {
-
-        function generateDeviceName() {
-
-            var name;
-
-            if (browserInfo.chrome) {
-                name = "Chrome";
-            } else if (browserInfo.edge) {
-                name = "Edge";
-            } else if (browserInfo.mozilla) {
-                name = "Firefox";
-            } else if (browserInfo.msie) {
-                name = "Internet Explorer";
-            } else {
-                name = "Web Browser";
-            }
-
-            if (browserInfo.version) {
-                name += " " + browserInfo.version;
-            }
-
-            if (browserInfo.ipad) {
-                name += " Ipad";
-            } else if (browserInfo.iphone) {
-                name += " Iphone";
-            } else if (browserInfo.android) {
-                name += " Android";
-            }
-            return name;
-        }
-
-        appVersion = appVersion || window.dashboardVersion;
-        appName = appName || "Emby Web Client";
-
-        deviceName = deviceName || generateDeviceName();
-
-        var seed = [];
-        var keyName = 'randomId';
-
-        deviceId = deviceId || MediaBrowser.generateDeviceId(keyName, seed.join(','));
-
-        return {
-            appName: appName,
-            appVersion: appVersion,
-            deviceName: deviceName,
-            deviceId: deviceId
-        };
-    },
-
-    loadSwipebox: function () {
-
-        var deferred = DeferredBuilder.Deferred();
-
-        Dashboard.importCss('bower_components/swipebox/src/css/swipebox.min.css');
-
-        require([
-            'bower_components/swipebox/src/js/jquery.swipebox.min'
-        ], function () {
-
-            deferred.resolve();
-        });
-        return deferred.promise();
-    },
-
     ready: function (fn) {
 
         Dashboard.initPromise.then(fn);
@@ -1915,9 +1850,11 @@ var AppInfo = {};
             paths: paths
         });
 
+        define("cryptojs-sha1", ["apiclient/sha1"]);
+        define("cryptojs-md5", ["apiclient/md5"]);
     }
 
-    function init(promiseResolve, capabilities, appName, appVersion, deviceId, deviceName) {
+    function init(promiseResolve, hostingAppInfo) {
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("appstorage", ["cordova/android/appstorage"]);
@@ -2019,7 +1956,7 @@ var AppInfo = {};
             return Hammer;
         });
 
-        define("cryptojs-sha1", ["apiclient/sha1"]);
+        define("swipebox", ['bower_components/swipebox/src/js/jquery.swipebox.min', "css!bower_components/swipebox/src/css/swipebox.min.css"]);
 
         define("contentuploader", ["apiclient/sync/contentuploader"]);
         define("serversync", ["apiclient/sync/serversync"]);
@@ -2037,10 +1974,6 @@ var AppInfo = {};
 
         var deps = [];
 
-        if (!deviceId) {
-            deps.push('cryptojs-sha1');
-        }
-
         if (!window.fetch) {
             deps.push('bower_components/fetch/fetch');
         }
@@ -2053,16 +1986,15 @@ var AppInfo = {};
 
         require(deps, function () {
 
-            var baseInfo = Dashboard.getAppInfo(appName, appVersion, deviceId, deviceName);
-            for (var i in baseInfo) {
-                AppInfo[i] = baseInfo[i];
+            for (var i in hostingAppInfo) {
+                AppInfo[i] = hostingAppInfo[i];
             }
 
-            initAfterDependencies(promiseResolve, capabilities);
+            initAfterDependencies(promiseResolve);
         });
     }
 
-    function initAfterDependencies(promiseResolve, capabilities) {
+    function initAfterDependencies(promiseResolve) {
 
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
@@ -2093,7 +2025,6 @@ var AppInfo = {};
         deps.push('apiclient/connectionmanager');
         deps.push('apiclient/deferred');
         deps.push('apiclient/credentials');
-        deps.push('apiclient/md5');
 
         deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
 
@@ -2131,6 +2062,8 @@ var AppInfo = {};
                     AppInfo.directPlayAudioContainers.push('flac');
                 }
             }
+
+            var capabilities = Dashboard.capabilities();
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
 
@@ -2273,34 +2206,97 @@ var AppInfo = {};
         }
     }
 
-    function initCordovaWithDeviceId(deferred, deviceId) {
+    function getCordovaHostingAppInfo() {
 
-        cordova.getAppVersion.getVersionNumber(function (appVersion) {
-            var capablities = Dashboard.capabilities();
+        return new Promise(function (resolve, reject) {
 
-            var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
+            document.addEventListener("deviceready", function () {
 
-            // Remove special characters
-            var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+                cordova.getAppVersion.getVersionNumber(function (appVersion) {
 
-            init(deferred, capablities, name, appVersion, deviceId, cleanDeviceName);
+                    var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
+
+                    // Remove special characters
+                    var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+
+                    resolve({
+                        deviceId: device.uuid,
+                        deviceName: cleanDeviceName,
+                        appName: name,
+                        appVersion: appVersion
+                    });
+
+                });
+
+            }, false);
         });
     }
 
-    function initCordova(deferred) {
+    function getWebHostingAppInfo() {
 
-        document.addEventListener("deviceready", function () {
+        return new Promise(function (resolve, reject) {
 
-            window.plugins.uniqueDeviceID.get(function (uuid) {
+            var deviceName;
 
-                initCordovaWithDeviceId(deferred, uuid);
+            if (browserInfo.chrome) {
+                deviceName = "Chrome";
+            } else if (browserInfo.edge) {
+                deviceName = "Edge";
+            } else if (browserInfo.mozilla) {
+                deviceName = "Firefox";
+            } else if (browserInfo.msie) {
+                deviceName = "Internet Explorer";
+            } else {
+                deviceName = "Web Browser";
+            }
 
-            }, function () {
+            if (browserInfo.version) {
+                deviceName += " " + browserInfo.version;
+            }
 
-                // Failure. Use cordova uuid
-                initCordovaWithDeviceId(deferred, device.uuid);
-            });
-        }, false);
+            if (browserInfo.ipad) {
+                deviceName += " Ipad";
+            } else if (browserInfo.iphone) {
+                deviceName += " Iphone";
+            } else if (browserInfo.android) {
+                deviceName += " Android";
+            }
+
+            function onDeviceAdAcquired(id) {
+
+                resolve({
+                    deviceId: id,
+                    deviceName: deviceName,
+                    appName: "Emby Web Client",
+                    appVersion: window.dashboardVersion
+                });
+            }
+
+            var deviceId = appStorage.getItem('_deviceId');
+
+            if (deviceId) {
+                onDeviceAdAcquired(deviceId);
+            } else {
+                require(['cryptojs-md5'], function () {
+                    var keys = [];
+                    keys.push(navigator.userAgent);
+                    keys.push((navigator.cpuClass || ""));
+
+                    var randomId = CryptoJS.SHA1(keys.join('|')).toString();
+                    appStorage.setItem('_deviceId', randomId);
+                    onDeviceAdAcquired(randomId);
+                });
+            }
+        });
+    }
+
+    function getHostingAppInfo() {
+
+        if (Dashboard.isRunningInCordova()) {
+            return getCordovaHostingAppInfo();
+        }
+
+        return getWebHostingAppInfo();
     }
 
     function setBrowserInfo(isMobile) {
@@ -2372,7 +2368,6 @@ var AppInfo = {};
     initialDependencies.push('isMobile');
     initialDependencies.push('apiclient/logger');
     initialDependencies.push('apiclient/store');
-    initialDependencies.push('apiclient/device');
     initialDependencies.push('scripts/extensions');
 
     var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
@@ -2395,11 +2390,10 @@ var AppInfo = {};
                 link.rel = 'import';
 
                 link.onload = function () {
-                    if (Dashboard.isRunningInCordova()) {
-                        initCordova(resolve);
-                    } else {
-                        init(resolve, Dashboard.capabilities());
-                    }
+
+                    getHostingAppInfo().then(function (hostingAppInfo) {
+                        init(resolve, hostingAppInfo);
+                    });
                 };
                 link.href = "vulcanize-out.html?v=" + window.dashboardVersion;
                 document.head.appendChild(link);

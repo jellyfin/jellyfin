@@ -165,7 +165,7 @@
 
     function takeTour(page, userId) {
 
-        Dashboard.loadSwipebox().then(function () {
+        require(['swipebox'], function () {
 
             $.swipebox([
                     { href: 'css/images/tour/web/tourcontent.jpg', title: Globalize.translate('WebClientTourContent') },

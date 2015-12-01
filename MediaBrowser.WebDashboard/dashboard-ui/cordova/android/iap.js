@@ -130,15 +130,20 @@
                 return;
             }
 
-            testDeviceId(device.uuid).then(function (isUnlocked) {
+            var legacyDeviceId = NativeIapManager.getLegacyDeviceId();
+            if (legacyDeviceId) {
+                testDeviceId(legacyDeviceId).then(function(isUnlocked) {
 
-                if (isUnlocked) {
-                    deferred.resolveWith(null, [true]);
-                    return;
-                }
+                    if (isUnlocked) {
+                        deferred.resolveWith(null, [true]);
+                        return;
+                    }
 
+                    deferred.resolveWith(null, [false]);
+                });
+            } else {
                 deferred.resolveWith(null, [false]);
-            });
+            }
         });
     }
 

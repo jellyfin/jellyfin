@@ -1308,7 +1308,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function takeTour(page, userId) {
 
-        Dashboard.loadSwipebox().then(function () {
+        require(['swipebox'], function () {
 
             $.swipebox([
                     { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },

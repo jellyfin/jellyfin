@@ -1148,7 +1148,7 @@
                     return;
                 }
 
-                require(['connectservice'], function () {
+                require(['connectservice', 'cryptojs-md5'], function () {
 
                     var md5 = self.getConnectPasswordHash(password);
 
@@ -1208,7 +1208,7 @@
                     return;
                 }
 
-                require(['connectservice'], function () {
+                require(['connectservice', 'cryptojs-md5'], function () {
 
                     var md5 = self.getConnectPasswordHash(password);
 

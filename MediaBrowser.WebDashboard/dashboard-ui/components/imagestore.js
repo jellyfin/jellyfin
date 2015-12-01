@@ -178,6 +178,8 @@
         window.ImageStore = self;
     }
 
-    new imageFileStore();
+    require(['cryptojs-sha1'], function () {
+        new imageFileStore();
+    });
 
 })();
