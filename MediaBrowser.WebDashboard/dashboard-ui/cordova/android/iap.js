@@ -149,26 +149,29 @@
         var cacheValue = appStorage.getItem(cacheKey);
         if (cacheValue) {
 
-            var deferred = DeferredBuilder.Deferred();
-            deferred.resolveWith(null, [cacheValue == 'true']);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                resolve(cacheValue == 'true');
+            });
 
         } else {
-            return HttpClient.send({
 
-                type: 'GET',
-                url: 'https://mb3admin.com/admin/service/statistics/appAccess?application=AndroidV1&deviceId=' + deviceId
+            return fetch('https://mb3admin.com/admin/service/statistics/appAccess?application=AndroidV1&deviceId=' + deviceId, {
+                method: 'GET'
 
-            }).then(function () {
+            }).then(function (response) {
 
-                appStorage.setItem(cacheKey, 'true');
-                return true;
+                if (response.status == 404) {
+                    appStorage.setItem(cacheKey, 'false');
+                } else if (response.status < 400) {
+                    appStorage.setItem(cacheKey, 'true');
+                    return true;
+                }
+
+                return false;
 
             }, function (e) {
 
-                if (e.status == 404) {
-                    appStorage.setItem(cacheKey, 'false');
-                }
                 return false;
             });
         }

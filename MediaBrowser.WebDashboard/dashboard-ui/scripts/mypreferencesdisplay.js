@@ -11,8 +11,6 @@
 
         $('#selectLanguage', page).val(AppSettings.displayLanguage());
 
-        page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -22,7 +20,6 @@
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
         user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
-        AppSettings.enableFullScreen(page.querySelector('.chkEnableFullScreen').checked);
         AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
@@ -79,12 +76,6 @@
         });
 
         $('.fldEnableBackdrops', page).show();
-
-        if (AppInfo.supportsFullScreen) {
-            $('.fldFullscreen', page).show();
-        } else {
-            $('.fldFullscreen', page).hide();
-        }
 
         if (AppInfo.supportsUserDisplayLanguageSetting) {
             $('.languageSection', page).show();

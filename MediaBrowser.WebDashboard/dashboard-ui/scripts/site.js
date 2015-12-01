@@ -1716,7 +1716,6 @@ var AppInfo = {};
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
-        AppInfo.supportsFullScreen = isCordova && isAndroid;
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
         AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
@@ -2210,7 +2209,7 @@ var AppInfo = {};
             require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
 
             if (browserInfo.android) {
-                require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
+                require(['cordova/android/androidcredentials', 'cordova/android/mediasession']);
             } else {
                 require(['cordova/volume']);
             }
