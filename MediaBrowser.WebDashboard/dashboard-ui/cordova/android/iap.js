@@ -110,7 +110,7 @@
 
     function isUnlockedOverride(feature) {
 
-        if (feature == 'playback' || feature == 'livetv') {
+        if (feature == 'playback') {
             return isPlaybackUnlockedViaOldApp();
         } else {
             return new Promise(function (resolve, reject) {

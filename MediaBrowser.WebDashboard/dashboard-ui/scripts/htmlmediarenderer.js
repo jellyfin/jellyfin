@@ -586,20 +586,16 @@
 
         self.init = function () {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (options.type == 'video' && enableHlsPlayer()) {
+                if (options.type == 'video' && enableHlsPlayer()) {
 
-                requireHlsPlayer(function () {
+                    requireHlsPlayer(resolve);
 
-                    deferred.resolve();
-                });
-
-            } else {
-                deferred.resolve();
-            }
-
-            return deferred.promise();
+                } else {
+                    resolve();
+                }
+            });
         };
 
         if (options.type == 'audio') {

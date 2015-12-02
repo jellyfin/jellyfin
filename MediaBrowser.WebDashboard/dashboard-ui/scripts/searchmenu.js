@@ -6,16 +6,17 @@
 
         self.show = function () {
 
-            require(['css!css/search.css']);
-            $('.headerSearchInput').val('');
+            require(['css!css/search.css'], function() {
+                $('.headerSearchInput').val('');
 
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch').removeClass('hide')[0];
+                $('.btnCloseSearch').hide();
+                var elem = $('.viewMenuSearch').removeClass('hide')[0];
 
-            fadeIn(elem, 1).onfinish = function () {
-                $('.headerSearchInput').focus();
-                $('.btnCloseSearch').show();
-            };
+                fadeIn(elem, 1).onfinish = function () {
+                    $('.headerSearchInput').focus();
+                    $('.btnCloseSearch').show();
+                };
+            });
         };
 
         function fadeIn(elem, iterations) {

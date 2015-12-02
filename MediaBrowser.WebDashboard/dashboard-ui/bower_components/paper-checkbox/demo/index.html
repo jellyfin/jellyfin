@@ -17,86 +17,66 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../../paper-styles/demo-pages.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../paper-checkbox.html">
 
-    <style is="custom-style">
+    <style is="custom-style" include="demo-pages-shared-styles">
       paper-checkbox {
         display: block;
+        margin-right: 24px;
+      }
+
+      demo-snippet {
         margin-bottom: 40px;
       }
-
-      paper-checkbox.blue {
-        --paper-checkbox-checked-color: var(--paper-light-blue-500);
-        --paper-checkbox-checked-ink-color: var(--paper-light-blue-500);
-        --paper-checkbox-unchecked-color: var(--paper-light-blue-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-light-blue-900);
-      }
-
-      paper-checkbox.red {
-        --paper-checkbox-checked-color: var(--paper-red-500);
-        --paper-checkbox-checked-ink-color: var(--paper-red-500);
-        --paper-checkbox-unchecked-color: var(--paper-red-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
-      }
-
-      paper-checkbox.green {
-        --paper-checkbox-checked-color: var(--paper-green-500);
-        --paper-checkbox-checked-ink-color: var(--paper-green-500);
-        --paper-checkbox-unchecked-color: var(--paper-green-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-green-900);
-      }
-
-      paper-checkbox.orange {
-        --paper-checkbox-checked-color: var(--paper-orange-500);
-        --paper-checkbox-checked-ink-color: var(--paper-orange-500);
-        --paper-checkbox-unchecked-color: var(--paper-orange-900);
-        --paper-checkbox-unchecked-ink-color: var(--paper-orange-900);
+      .vertical-section-container {
+        max-width: 550px;
       }
     </style>
   </head>
   <body unresolved>
-    <div class="horizontal-section-container">
-      <div>
-        <h4>Enabled</h4>
-        <div class="horizontal-section">
-          <paper-checkbox>Oxygen</paper-checkbox>
-          <paper-checkbox>Carbon</paper-checkbox>
-          <paper-checkbox checked>Hydrogen</paper-checkbox>
-          <paper-checkbox checked>Nitrogen</paper-checkbox>
-          <paper-checkbox checked>Calcium</paper-checkbox>
-        </div>
-      </div>
-      <div>
-        <h4>Disabled</h4>
-        <div class="horizontal-section">
-          <paper-checkbox disabled>Oxygen</paper-checkbox>
-          <paper-checkbox disabled>Carbon</paper-checkbox>
-          <paper-checkbox checked disabled>Hydrogen</paper-checkbox>
-          <paper-checkbox checked disabled>Nitrogen</paper-checkbox>
-          <paper-checkbox checked disabled>Calcium</paper-checkbox>
-        </div>
-      </div>
-      <div>
-        <h4>Color</h4>
-        <div class="horizontal-section">
-          <paper-checkbox class="blue" checked aria-label="Hurray for oxygen">Oxygen</paper-checkbox>
-          <paper-checkbox class="red" checked>Carbon</paper-checkbox>
-          <paper-checkbox class="orange" checked>Hydrogen</paper-checkbox>
-          <paper-checkbox class="green" checked>Nitrogen</paper-checkbox>
-          <paper-checkbox class="blue" checked>Calcium</paper-checkbox>
-        </div>
-      </div>
-      <div>
-        <h4>Noink</h4>
-        <div class="horizontal-section">
-          <paper-checkbox noink>Oxygen</paper-checkbox>
-          <paper-checkbox noink>Carbon</paper-checkbox>
-          <paper-checkbox checked noink>Hydrogen</paper-checkbox>
-          <paper-checkbox checked noink>Nitrogen</paper-checkbox>
-          <paper-checkbox checked noink>Calcium</paper-checkbox>
-        </div>
-      </div>
+    <div class="vertical-section-container centered">
+      <h3>Checkboxes can be checked or unchecked, or disabled entirely</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <paper-checkbox>Checkbox</paper-checkbox>
+          <paper-checkbox checked>Checkbox</paper-checkbox>
+          <paper-checkbox disabled>Disabled</paper-checkbox>
+        </template>
+      </demo-snippet>
+
+      <h3>Checkboxes can hide the ripple effect using the <i>noink</i> attribute</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <paper-checkbox noink>Checkbox</paper-checkbox>
+        </template>
+      </demo-snippet>
+
+      <h3>Checkboxes can be styled using custom properties</h3>
+      <demo-snippet class="centered-demo small-text">
+        <template>
+          <style is="custom-style">
+            paper-checkbox.red {
+              --paper-checkbox-checked-color: var(--paper-red-500);
+              --paper-checkbox-checked-ink-color: var(--paper-red-500);
+              --paper-checkbox-unchecked-color: var(--paper-red-900);
+              --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
+              --paper-checkbox-label-color: var(--paper-red-500);
+            }
+            paper-checkbox.green {
+              --paper-checkbox-checked-color: var(--paper-green-500);
+              --paper-checkbox-checked-ink-color: var(--paper-green-500);
+              --paper-checkbox-unchecked-color: var(--paper-green-900);
+              --paper-checkbox-unchecked-ink-color: var(--paper-green-900);
+              --paper-checkbox-label-color: var(--paper-green-500);
+            }
+          </style>
+
+          <paper-checkbox class="red">Checkbox</paper-checkbox>
+          <paper-checkbox checked class="green">Checkbox</paper-checkbox>
+        </template>
+      </demo-snippet>
     </div>
   </body>
 </html>

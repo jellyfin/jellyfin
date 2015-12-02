@@ -851,6 +851,7 @@
 
     function disableEvent(e) {
         e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
@@ -879,6 +880,8 @@
                     chkItemSelect.checked = !chkItemSelect.checked;
                 }
             }
+            e.preventDefault();
+            return false;
         }
     }
 
@@ -896,6 +899,7 @@
         }
 
         e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 

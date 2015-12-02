@@ -124,7 +124,7 @@
         } else {
 
             promise = fetch("http://mb3admin.com/admin/service/appstore/register", {
-                
+
                 method: 'POST',
                 body: JSON.stringify(postData),
                 headers: {
@@ -250,35 +250,37 @@
     }
 
     function getSubscriptionOptions() {
-        var deferred = DeferredBuilder.Deferred();
 
-        var options = [];
+        return new Promise(function (resolve, reject) {
 
-        options.push({
-            feature: 'embypremieremonthly',
-            buttonText: 'EmbyPremiereMonthlyWithPrice'
+            var options = [];
+
+            options.push({
+                feature: 'embypremieremonthly',
+                buttonText: 'EmbyPremiereMonthlyWithPrice'
+            });
+
+            options = options.filter(function (o) {
+                return getProduct(o.feature) != null;
+
+            }).map(function (o) {
+
+                o.id = getStoreFeatureId(o.feature);
+                o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
+                o.owned = getProduct(o.feature).owned;
+                return o;
+            });
+
+            resolve(options);
         });
-
-        options = options.filter(function (o) {
-            return getProduct(o.feature) != null;
-
-        }).map(function (o) {
-
-            o.id = getStoreFeatureId(o.feature);
-            o.buttonText = Globalize.translate(o.buttonText, getProduct(o.feature).price);
-            o.owned = getProduct(o.feature).owned;
-            return o;
-        });
-
-        deferred.resolveWith(null, [options]);
-        return deferred.promise();
     }
 
     function isUnlockedOverride(feature) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [false]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+
+            resolve(false);
+        });
     }
 
     window.IapManager = {

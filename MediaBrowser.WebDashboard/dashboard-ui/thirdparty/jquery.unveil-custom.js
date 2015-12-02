@@ -23,6 +23,7 @@
 
     var thresholdX = Math.max(screen.availWidth);
     var thresholdY = Math.max(screen.availHeight);
+    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 
     function visibleInViewport(elem, partial) {
 
@@ -58,7 +59,7 @@
         }
     }
 
-    function unveilElements(elems, parent) {
+    function unveilElements(elems) {
 
         if (!elems.length) {
             return;
@@ -67,14 +68,6 @@
         var images = elems;
 
         unveilId++;
-
-        var parents = [];
-        if (parent) {
-            parents = parent.querySelectorAll('.itemsContainer');
-            if (!parents.length) {
-                parents = [parent];
-            }
-        }
 
         function unveil() {
 
@@ -93,17 +86,14 @@
 
             if (!images.length) {
                 document.removeEventListener('scroll', unveil);
+                document.removeEventListener(wheelEvent, unveil);
                 window.removeEventListener('resize', unveil);
-                bindEvent(parents, 'removeEventListener', 'scroll', unveil);
             }
         }
 
-        document.addEventListener('scroll', unveil);
-        window.addEventListener('resize', unveil);
-
-        if (parents.length) {
-            bindEvent(parents, 'addEventListener', 'scroll', unveil);
-        }
+        document.addEventListener('scroll', unveil, true);
+        document.addEventListener(wheelEvent, unveil, true);
+        window.addEventListener('resize', unveil, true);
 
         unveil();
     }

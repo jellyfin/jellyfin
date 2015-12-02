@@ -6,11 +6,10 @@
 
         self.upload = function (file, name, url) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            deferred.reject();
-
-            return deferred.promise();
+                reject();
+            });
         };
     }
 
