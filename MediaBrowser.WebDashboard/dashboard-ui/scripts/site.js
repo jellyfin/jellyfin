@@ -2181,7 +2181,7 @@ var AppInfo = {};
             postInitDependencies.push('scripts/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
-            postInitDependencies.push('css!css/notifications.css');
+            postInitDependencies.push('css!css/chromecast.css');
 
             if (Dashboard.isRunningInCordova()) {
 
