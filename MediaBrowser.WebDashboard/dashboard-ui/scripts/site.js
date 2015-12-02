@@ -2219,8 +2219,11 @@ var AppInfo = {};
                     // Remove special characters
                     var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
+                    var deviceId = window.MainActivity ? MainActivity.getLegacyDeviceId() : null;
+                    deviceId = deviceId || device.uuid;
+
                     resolve({
-                        deviceId: device.uuid,
+                        deviceId: deviceId,
                         deviceName: cleanDeviceName,
                         appName: name,
                         appVersion: appVersion
@@ -2277,7 +2280,7 @@ var AppInfo = {};
             if (deviceId) {
                 onDeviceAdAcquired(deviceId);
             } else {
-                require(['cryptojs-md5'], function () {
+                require(['cryptojs-sha1'], function () {
                     var keys = [];
                     keys.push(navigator.userAgent);
                     keys.push((navigator.cpuClass || ""));

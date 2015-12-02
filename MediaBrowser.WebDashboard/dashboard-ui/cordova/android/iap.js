@@ -110,40 +110,37 @@
 
     function isUnlockedOverride(feature) {
 
-        var deferred = DeferredBuilder.Deferred();
-
         if (feature == 'playback' || feature == 'livetv') {
-            isPlaybackUnlockedViaOldApp(deferred);
+            return isPlaybackUnlockedViaOldApp();
         } else {
-            deferred.resolveWith(null, [false]);
-        }
+            return new Promise(function (resolve, reject) {
 
-        return deferred.promise();
+                resolve(false);
+            });
+        }
     }
 
-    function isPlaybackUnlockedViaOldApp(deferred) {
+    function isPlaybackUnlockedViaOldApp() {
 
-        testDeviceId(ConnectionManager.deviceId()).then(function (isUnlocked) {
+        return testDeviceId(ConnectionManager.deviceId()).then(function (isUnlocked) {
 
             if (isUnlocked) {
-                deferred.resolveWith(null, [true]);
-                return;
+                return true;
             }
 
-            var legacyDeviceId = NativeIapManager.getLegacyDeviceId();
-            if (legacyDeviceId) {
-                testDeviceId(legacyDeviceId).then(function(isUnlocked) {
+            return testDeviceId(device.uuid).then(function (isUnlocked) {
 
-                    if (isUnlocked) {
-                        deferred.resolveWith(null, [true]);
-                        return;
-                    }
+                if (isUnlocked) {
+                    return true;
+                }
 
-                    deferred.resolveWith(null, [false]);
-                });
-            } else {
-                deferred.resolveWith(null, [false]);
-            }
+                var legacyDeviceId = MainActivity.getLegacyDeviceId();
+                if (legacyDeviceId) {
+                    return testDeviceId(legacyDeviceId);
+                }
+
+                return false;
+            });
         });
     }
 

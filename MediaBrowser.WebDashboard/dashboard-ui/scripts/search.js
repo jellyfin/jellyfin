@@ -158,7 +158,6 @@
         return elem;
     }
 
-    var currentAnimation;
     var isVisible;
 
     function onHeaderSearchChange(val) {
@@ -199,7 +198,7 @@
           { opacity: '0', offset: 0 },
           { opacity: '1', offset: 1 }];
         var timing = { duration: 200, iterations: iterations, fill: 'both' };
-        currentAnimation = elem.animate(keyframes, timing);
+        elem.animate(keyframes, timing);
     }
 
     function fadeOut(elem, iterations) {
@@ -207,7 +206,9 @@
           { opacity: '1', offset: 0 },
           { opacity: '0', offset: 1 }];
         var timing = { duration: 600, iterations: iterations, fill: 'both' };
-        currentAnimation = elem.animate(keyframes, timing);
+        elem.animate(keyframes, timing).onfinish = function () {
+            elem.parentNode.removeChild(elem);
+        };
     }
 
     function bindSearchEvents() {

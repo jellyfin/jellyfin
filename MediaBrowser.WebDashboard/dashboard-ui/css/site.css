@@ -660,8 +660,8 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-205%);
-    transform: translateY(-205%);
+    -webkit-transform: translateY(-240%);
+    transform: translateY(-240%);
 }
 
 .checkboxContainer {
