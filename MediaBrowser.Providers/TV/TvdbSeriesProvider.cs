@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.TV
                 result.Item = new Series();
                 result.HasMetadata = true;
 
-                FetchSeriesData(result, itemId.ProviderIds, cancellationToken);
+                FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
                 await FindAnimeSeriesIndex(result.Item, itemId).ConfigureAwait(false);
             }
 
@@ -140,10 +140,11 @@ namespace MediaBrowser.Providers.TV
         /// Fetches the series data.
         /// </summary>
         /// <param name="result">The result.</param>
+        /// <param name="metadataLanguage">The metadata language.</param>
         /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private void FetchSeriesData(MetadataResult<Series> result, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private void FetchSeriesData(MetadataResult<Series> result, string metadataLanguage, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
             var series = result.Item;
 
@@ -160,7 +161,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-            var seriesXmlFilename = series.GetPreferredMetadataLanguage().ToLower() + ".xml";
+            var seriesXmlFilename = metadataLanguage.ToLower() + ".xml";
 
             var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
             var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
