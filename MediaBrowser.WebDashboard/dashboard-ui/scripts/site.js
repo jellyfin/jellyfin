@@ -2119,10 +2119,6 @@ var AppInfo = {};
 
     function onAppReady(promiseResolve) {
 
-        if (browserInfo.msie) {
-            require(['devices/ie/ie']);
-        }
-
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp && browserInfo.android) {
             Dashboard.importCss('devices/android/android.css');
@@ -2139,31 +2135,20 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
+            require(['scripts/registrationservices', 'cordova/back']);
 
             if (browserInfo.android) {
-                require(['cordova/android/androidcredentials', 'cordova/android/mediasession']);
-            } else {
-                require(['cordova/volume']);
-            }
-
-            if (browserInfo.safari) {
-                require(['cordova/ios/orientation']);
-            }
-
-        } else {
-            if (browserInfo.chrome) {
-                require(['scripts/chromecast']);
+                require(['cordova/android/androidcredentials']);
             }
         }
 
         var deps = [];
 
-        if (AppInfo.isNativeApp && browserInfo.safari) {
+        if (browserInfo.msie) {
+            deps.push('devices/ie/ie');
+        }
 
-            if (Dashboard.capabilities().SupportsSync) {
-                deps.push('cordova/ios/backgroundfetch');
-            }
+        if (AppInfo.isNativeApp && browserInfo.safari) {
 
             deps.push('cordova/ios/tabbar');
         }
@@ -2195,15 +2180,39 @@ var AppInfo = {};
 
             postInitDependencies.push('scripts/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
+            postInitDependencies.push('css!css/notifications.css');
+            postInitDependencies.push('css!css/notifications.css');
+
+            if (Dashboard.isRunningInCordova()) {
+
+                postInitDependencies.push('cordova/connectsdk');
+
+                if (browserInfo.android) {
+                    postInitDependencies.push('cordova/android/mediasession');
+                } else {
+                    postInitDependencies.push('cordova/volume');
+                }
+
+                if (browserInfo.safari) {
+
+                    postInitDependencies.push('cordova/ios/orientation');
+
+                    if (Dashboard.capabilities().SupportsSync) {
+
+                        postInitDependencies.push('cordova/ios/backgroundfetch');
+                    }
+                }
+
+            } else if (browserInfo.chrome) {
+                postInitDependencies.push('scripts/chromecast');
+            }
+
+            if (AppInfo.enableNowPlayingBar) {
+                postInitDependencies.push('scripts/nowplayingbar');
+            }
+
             require(postInitDependencies);
-
-            Dashboard.importCss('css/notifications.css');
-            Dashboard.importCss('css/chromecast.css');
         });
-
-        if (AppInfo.enableNowPlayingBar) {
-            require(['scripts/nowplayingbar']);
-        }
     }
 
     function getCordovaHostingAppInfo() {

@@ -78,12 +78,9 @@
         options.syncOfflineUsers = (new Date().getTime() - lastStart) >= offlineUserSyncInterval;
     }
 
-    Dashboard.ready(function () {
+    require(['localsync'], function () {
 
-        require(['localsync'], function () {
-
-            LocalSync.normalizeSyncOptions = normalizeSyncOptions;
-        });
+        LocalSync.normalizeSyncOptions = normalizeSyncOptions;
     });
 
     pageClassOn('pageshow', "libraryPage", function () {

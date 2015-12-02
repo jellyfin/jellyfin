@@ -31,6 +31,6 @@
         getDeviceList: getDeviceList
     };
 
-    Dashboard.ready(initSdk);
+    initSdk();
 
 })();

@@ -171,17 +171,13 @@
             .on('positionchange', onStateChanged);
     }
 
-    Dashboard.ready(function () {
+    Logger.log('binding remotecontrols to MediaController');
 
-        Logger.log('binding remotecontrols to MediaController');
-
-        $(MediaController).on('playerchange', function () {
-
-            bindToPlayer(MediaController.getCurrentPlayer());
-        });
+    $(MediaController).on('playerchange', function () {
 
         bindToPlayer(MediaController.getCurrentPlayer());
-
     });
+
+    bindToPlayer(MediaController.getCurrentPlayer());
 
 })();
