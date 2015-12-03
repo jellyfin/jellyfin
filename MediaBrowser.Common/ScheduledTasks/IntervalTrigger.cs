@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace MediaBrowser.Common.ScheduledTasks
@@ -30,16 +31,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </value>
         public TaskExecutionOptions TaskOptions { get; set; }
 
-        /// <summary>
-        /// Gets or sets the first run delay.
-        /// </summary>
-        /// <value>The first run delay.</value>
-        public TimeSpan FirstRunDelay { get; set; }
-
-        public IntervalTrigger()
-        {
-            FirstRunDelay = TimeSpan.FromHours(1);
-        }
+        private DateTime _lastStartDate;
 
         /// <summary>
         /// Stars waiting for the trigger action
@@ -50,20 +42,21 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             DisposeTimer();
 
-            var triggerDate = lastResult != null ?
-                            lastResult.EndTimeUtc.Add(Interval) :
-                            DateTime.UtcNow.Add(FirstRunDelay);
+            DateTime triggerDate;
+
+            if (lastResult == null)
+            {
+                // Task has never been completed before
+                triggerDate = DateTime.UtcNow.AddHours(1);
+            }
+            else
+            {
+                triggerDate = new[] { lastResult.EndTimeUtc, _lastStartDate }.Max().Add(Interval);
+            }
 
             if (DateTime.UtcNow > triggerDate)
             {
-                if (isApplicationStartup)
-                {
-                    triggerDate = DateTime.UtcNow.AddMinutes(1);
-                }
-                else
-                {
-                    triggerDate = DateTime.UtcNow.AddMinutes(1);
-                }
+                triggerDate = DateTime.UtcNow.AddMinutes(1);
             }
 
             Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.UtcNow, TimeSpan.FromMilliseconds(-1));
@@ -98,8 +91,11 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         private void OnTriggered()
         {
+            DisposeTimer();
+
             if (Triggered != null)
             {
+                _lastStartDate = DateTime.UtcNow;
                 Triggered(this, new GenericEventArgs<TaskExecutionOptions>(TaskOptions));
             }
         }
