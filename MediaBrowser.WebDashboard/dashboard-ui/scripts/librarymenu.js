@@ -70,10 +70,11 @@
 
         var header = document.querySelector('.viewMenuBar');
 
-        var headerSearchButton = document.querySelector('.headerSearchButton');
+        var headerSearchButton = header.querySelector('.headerSearchButton');
+        var btnCast = header.querySelector('.btnCast');
 
         if (user.localUser) {
-            $('.btnCast', header).removeClass('hide');
+            btnCast.classList.remove('hide');
 
             if (headerSearchButton) {
                 headerSearchButton.classList.remove('hide');
@@ -82,23 +83,22 @@
             requirejs(['voice/voice'], function () {
 
                 if (VoiceInputManager.isSupported()) {
-                    document.querySelector('.headerVoiceButton').classList.remove('hide');
+                    header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
-                    document.querySelector('.headerVoiceButton').classList.add('hide');
+                    header.querySelector('.headerVoiceButton').classList.add('hide');
                 }
 
             });
 
         } else {
-            $('.btnCast', header).addClass('hide');
-            document.querySelector('.headerVoiceButton').classList.add('hide');
+            btnCast.classList.add('hide');
+            header.querySelector('.headerVoiceButton').classList.add('hide');
             if (headerSearchButton) {
                 headerSearchButton.classList.add('hide');
             }
         }
 
-        var dashboardEntryHeaderButton = document.querySelector('.dashboardEntryHeaderButton');
-
+        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
         if (dashboardEntryHeaderButton) {
             if (user.canManageServer) {
                 dashboardEntryHeaderButton.classList.remove('hide');
@@ -125,6 +125,30 @@
                     headerUserButton.classList.add('headerUserButtonRound');
                 }
             }
+        }
+
+        requiresUserRefresh = false;
+    }
+
+    function removeUserFromHeader() {
+        
+        var header = document.querySelector('.viewMenuBar');
+
+        header.querySelector('.headerVoiceButton').classList.add('hide');
+
+        var btnCast = header.querySelector('.btnCast');
+        if (btnCast) {
+            btnCast.classList.add('hide');
+        }
+
+        var headerSearchButton = header.querySelector('.headerSearchButton');
+        if (headerSearchButton) {
+            headerSearchButton.classList.add('hide');
+        }
+
+        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
+        if (dashboardEntryHeaderButton) {
+            dashboardEntryHeaderButton.classList.add('hide');
         }
     }
 
@@ -156,6 +180,7 @@
 
     var requiresDrawerRefresh = true;
     var requiresDashboardDrawerRefresh = true;
+    var requiresUserRefresh = true;
     var lastOpenTime = new Date().getTime();
 
     function openMainDrawer() {
@@ -164,6 +189,7 @@
         drawerPanel.openDrawer();
         lastOpenTime = new Date().getTime();
     }
+
     function onMainDrawerOpened() {
 
         if (browserInfo.mobile) {
@@ -522,7 +548,6 @@
     }
 
     var requiresLibraryMenuRefresh = false;
-    var requiresViewMenuRefresh = false;
 
     function onManageServerClicked() {
 
@@ -711,7 +736,6 @@
     }
 
     function updateTabLinks(page) {
-        var context = getParameterByName('context');
 
         var elems = page.querySelectorAll('.scopedLibraryViewNav a');
 
@@ -756,34 +780,13 @@
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
         if (page.classList.contains('standalonePage')) {
-            if (viewMenuBar) {
-                viewMenuBar.classList.add('hide');
-            }
-            return;
-        }
-
-        if (requiresViewMenuRefresh) {
-            if (viewMenuBar) {
-                viewMenuBar.parentNode.removeChild(viewMenuBar);
-                viewMenuBar = null;
-            }
-        }
-
-        if (!viewMenuBar) {
-
-            renderHeader();
-
-            updateCastIcon();
-
-            updateLibraryNavLinks(page);
-            requiresViewMenuRefresh = false;
-
-            ConnectionManager.user(window.ApiClient).then(addUserToHeader);
-
+            viewMenuBar.classList.add('hide');
         } else {
             viewMenuBar.classList.remove('hide');
-            updateLibraryNavLinks(page);
-            requiresViewMenuRefresh = false;
+        }
+
+        if (requiresUserRefresh) {
+            ConnectionManager.user(window.ApiClient).then(addUserToHeader);
         }
     }
 
@@ -795,8 +798,8 @@
             requiresDashboardDrawerRefresh = true;
         }
 
-        onPageBeforeShow(page);
-
+        buildViewMenuBar(page);
+        updateTabLinks(page);
     });
 
     pageClassOn('pageshow', 'page', function () {
@@ -807,46 +810,11 @@
             // Scroll back up so in case vertical scroll was messed with
             window.scrollTo(0, 0);
         }
-        updateTabLinks(page);
 
-    });
-
-    function onPageBeforeShow(page) {
-
-        buildViewMenuBar(page);
+        updateTitle(page);
+        updateBackButton(page);
 
         var isLibraryPage = page.classList.contains('libraryPage');
-        var darkDrawer = false;
-
-        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
-
-        if (!title) {
-            var titleKey = getParameterByName('titlekey');
-
-            if (titleKey) {
-                title = Globalize.translate(titleKey);
-            }
-        }
-
-        if (!title) {
-            if (page.classList.contains('type-interior')) {
-                title = Globalize.translate('ButtonHome');
-            }
-        }
-
-        if (title) {
-            LibraryMenu.setTitle(title);
-        }
-
-        var mainDrawerButton = document.querySelector('.mainDrawerButton');
-
-        if (mainDrawerButton) {
-            if (page.getAttribute('data-menubutton') == 'false' && browserInfo.mobile) {
-                mainDrawerButton.classList.remove('hide');
-            } else {
-                mainDrawerButton.classList.remove('hide');
-            }
-        }
 
         if (isLibraryPage) {
 
@@ -872,6 +840,8 @@
             document.body.classList.add('hideMainDrawer');
         }
 
+        // Set drawer background color
+        var darkDrawer = false;
         if (!Dashboard.isConnectMode() && !browserInfo.mobile) {
             darkDrawer = true;
         }
@@ -884,8 +854,28 @@
                 drawer.classList.remove('darkDrawer');
             }
         }
+    });
 
-        updateBackButton(page);
+    function updateTitle(page) {
+        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
+
+        if (!title) {
+            var titleKey = getParameterByName('titlekey');
+
+            if (titleKey) {
+                title = Globalize.translate(titleKey);
+            }
+        }
+
+        if (!title) {
+            if (page.classList.contains('type-interior')) {
+                title = Globalize.translate('ButtonHome');
+            }
+        }
+
+        if (title) {
+            LibraryMenu.setTitle(title);
+        }
     }
 
     function updateBackButton(page) {
@@ -950,14 +940,14 @@
 
     Events.on(ConnectionManager, 'localusersignedin', function () {
         requiresLibraryMenuRefresh = true;
-        requiresViewMenuRefresh = true;
         requiresDrawerRefresh = true;
+        ConnectionManager.user(window.ApiClient).then(addUserToHeader);
     });
 
     Events.on(ConnectionManager, 'localusersignedout', function () {
         requiresLibraryMenuRefresh = true;
-        requiresViewMenuRefresh = true;
         requiresDrawerRefresh = true;
+        removeUserFromHeader();
     });
 
     Events.on(MediaController, 'playerchange', function () {
@@ -966,6 +956,8 @@
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
+
+    renderHeader();
 
 })(window, document, jQuery, window.devicePixelRatio);
 
