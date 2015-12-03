@@ -96,10 +96,14 @@
             }
         }
 
-        //// seeing max call stack size exceeded in the debugger with this
+        // seeing max call stack size exceeded in the debugger with this
         dlg.setAttribute('noAutoFocus', 'noAutoFocus');
-        dlg.entryAnimation = 'scale-up-animation';
-        dlg.exitAnimation = 'fade-out-animation';
+
+        // These don't seem to perform well on mobile
+        if (!browserInfo.mobile) {
+            dlg.entryAnimation = 'scale-up-animation';
+            dlg.exitAnimation = 'fade-out-animation';
+        }
 
         dlg.classList.add('popupEditor');
 

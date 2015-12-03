@@ -2119,13 +2119,15 @@ var AppInfo = {};
 
     function onAppReady(promiseResolve) {
 
+        var deps = [];
+
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp && browserInfo.android) {
-            Dashboard.importCss('devices/android/android.css');
+            deps.push('css!devices/android/android.css');
         } else if (AppInfo.isNativeApp && browserInfo.safari) {
-            Dashboard.importCss('devices/ios/ios.css');
+            deps.push('css!devices/ios/ios.css');
         } else if (!browserInfo.android) {
-            Dashboard.importCss('devices/android/android.css');
+            deps.push('css!devices/android/android.css');
         }
 
         loadTheme();
@@ -2135,14 +2137,13 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            require(['scripts/registrationservices', 'cordova/back']);
+            deps.push('scripts/registrationservices');
+            deps.push('cordova/back');
 
             if (browserInfo.android) {
-                require(['cordova/android/androidcredentials']);
+                deps.push('cordova/android/androidcredentials');
             }
         }
-
-        var deps = [];
 
         if (browserInfo.msie) {
             deps.push('devices/ie/ie');

@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    Dashboard.importCss('devices/ie/ie.css');
+    require(['css!devices/ie/ie.css']);
     var browserSwitchKey = "ieswitchbrowser";
 
     function getWeek(date) {
