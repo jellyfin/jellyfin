@@ -115,6 +115,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public object GetOptimizedResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
             where T : class
         {
+            return GetOptimizedResultInternal<T>(requestContext, result, true, responseHeaders);
+        }
+
+        private object GetOptimizedResultInternal<T>(IRequest requestContext, T result, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
+          where T : class
+        {
             if (result == null)
             {
                 throw new ArgumentNullException("result");
@@ -122,20 +128,27 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var optimizedResult = requestContext.ToOptimizedResult(result);
 
-            if (responseHeaders != null)
+            if (responseHeaders == null)
             {
-                // Apply headers
-                var hasOptions = optimizedResult as IHasOptions;
+                responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
 
-                if (hasOptions != null)
-                {
-                    AddResponseHeaders(hasOptions, responseHeaders);
-                }
+            if (addCachePrevention)
+            {
+                responseHeaders["Expires"] = "-1";
+            }
+
+            // Apply headers
+            var hasOptions = optimizedResult as IHasOptions;
+
+            if (hasOptions != null)
+            {
+                AddResponseHeaders(hasOptions, responseHeaders);
             }
 
             return optimizedResult;
         }
-
+        
         /// <summary>
         /// Gets the optimized result using cache.
         /// </summary>
@@ -166,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (responseHeaders == null)
             {
-                responseHeaders = new Dictionary<string, string>();
+                responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
             // See if the result is already cached in the browser
@@ -177,7 +190,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return result;
             }
 
-            return GetOptimizedResult(requestContext, factoryFn(), responseHeaders);
+            return GetOptimizedResultInternal(requestContext, factoryFn(), false, responseHeaders);
         }
 
         /// <summary>
@@ -209,7 +222,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (responseHeaders == null)
             {
-                responseHeaders = new Dictionary<string, string>();
+                responseHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
 
             // See if the result is already cached in the browser
@@ -363,7 +376,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public object GetStaticResult(IRequest requestContext, StaticResultOptions options)
         {
             var cacheKey = options.CacheKey;
-            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>();
+            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var contentType = options.ContentType;
 
             if (cacheKey == Guid.Empty)
