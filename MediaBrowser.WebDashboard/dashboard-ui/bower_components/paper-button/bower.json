@@ -1,6 +1,6 @@
 {
   "name": "paper-button",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Material design button",
   "authors": [
     "The Polymer Authors"
@@ -36,5 +36,6 @@
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "paper-styles": "polymerelements/paper-styles#^1.0.0"
-  }
+  },
+  "ignore": []
 }

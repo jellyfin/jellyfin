@@ -990,7 +990,7 @@
                 var keyframes = [
                   { opacity: '1', offset: 0 },
                   { opacity: '0', offset: 1 }];
-                var timing = { duration: 400, iterations: 1, easing: 'ease-out' };
+                var timing = { duration: 600, iterations: 1, easing: 'ease-out' };
                 elem.animate(keyframes, timing).onfinish = onfinish;
             });
         }

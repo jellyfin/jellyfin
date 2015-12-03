@@ -64,7 +64,7 @@
         });
     }
 
-    function showPlayerSelection() {
+    function showPlayerSelection(button) {
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -73,7 +73,7 @@
             return;
         }
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         MediaController.getTargets().then(function (targets) {
 
@@ -95,11 +95,12 @@
 
             require(['actionsheet'], function () {
 
-                Dashboard.hideModalLoadingMsg();
+                Dashboard.hideLoadingMsg();
 
                 ActionSheetElement.show({
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
+                    positionTo: button,
                     callback: function (id) {
 
                         var target = targets.filter(function (t) {
@@ -1011,7 +1012,7 @@
 
     function onCastButtonClicked() {
 
-        showPlayerSelection();
+        showPlayerSelection(this);
     }
 
     document.addEventListener('headercreated', function () {

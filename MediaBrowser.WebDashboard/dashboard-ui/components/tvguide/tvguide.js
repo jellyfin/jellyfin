@@ -50,7 +50,7 @@
 
         function reloadGuide(page) {
 
-            Dashboard.showModalLoadingMsg();
+            Dashboard.showLoadingMsg();
 
             channelQuery.UserId = Dashboard.getCurrentUserId();
 
@@ -84,7 +84,7 @@
 
                     renderGuide(page, date, channelsResult.Items, programsResult.Items);
 
-                    Dashboard.hideModalLoadingMsg();
+                    Dashboard.hideLoadingMsg();
 
                     LibraryBrowser.setLastRefreshed(page);
 
@@ -435,12 +435,12 @@
             $('.guideRequiresUnlock', page).hide();
 
             RegistrationServices.validateFeature('livetv').then(function () {
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
 
                 reloadPageAfterValidation(page, 1000);
             }, function () {
 
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
 
                 var limit = 5;
                 $('.guideRequiresUnlock', page).show();

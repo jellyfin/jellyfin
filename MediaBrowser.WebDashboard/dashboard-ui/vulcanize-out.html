@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
 --><!--
 @license
-Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
@@ -16,7 +16,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><!--
 @license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
@@ -12638,6 +12638,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       for (var i = 0, item; item = this.items[i]; i++) {
         var attr = this.attrForItemTitle || 'textContent';
         var title = item[attr] || item.getAttribute(attr);
+
         if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
           this._setFocusedItem(item);
           break;
@@ -12678,7 +12679,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       } else {
         item.removeAttribute('aria-selected');
       }
-
       Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
     },
 
@@ -12726,18 +12726,18 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * @param {CustomEvent} event A key combination event.
      */
     _onShiftTabDown: function(event) {
-      var oldTabIndex;
+      var oldTabIndex = this.getAttribute('tabindex');
 
       Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
 
-      oldTabIndex = this.getAttribute('tabindex');
+      this._setFocusedItem(null);
 
       this.setAttribute('tabindex', '-1');
 
       this.async(function() {
         this.setAttribute('tabindex', oldTabIndex);
         Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-      // NOTE(cdata): polymer/polymer#1305
+        // NOTE(cdata): polymer/polymer#1305
       }, 1);
     },
 
@@ -12748,23 +12748,27 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      */
     _onFocus: function(event) {
       if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
+        // do not focus the menu itself
         return;
       }
-      // do not focus the menu itself
+
       this.blur();
+
       // clear the cached focus item
-      this._setFocusedItem(null);
       this._defaultFocusAsync = this.async(function() {
         // focus the selected item when the menu receives focus, or the first item
         // if no item is selected
         var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
+
+        this._setFocusedItem(null);
+
         if (selectedItem) {
           this._setFocusedItem(selectedItem);
         } else {
           this._setFocusedItem(this.items[0]);
         }
-      // async 100ms to wait for `select` to get called from `_itemActivate`
-      }, 100);
+      // async 1ms to wait for `select` to get called from `_itemActivate`
+      }, 1);
     },
 
     /**
@@ -12802,12 +12806,17 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * @param {KeyboardEvent} event A keyboard event.
      */
     _onKeydown: function(event) {
-      if (this.keyboardEventMatchesKeys(event, 'up down esc')) {
-        return;
+      if (!this.keyboardEventMatchesKeys(event, 'up down esc')) {
+        // all other keys focus the menu item starting with that character
+        this._focusWithKeyboardEvent(event);
       }
+      event.stopPropagation();
+    },
 
-      // all other keys focus the menu item starting with that character
-      this._focusWithKeyboardEvent(event);
+    // override _activateHandler
+    _activateHandler: function(event) {
+      Polymer.IronSelectableBehavior._activateHandler.call(this, event);
+      event.stopPropagation();
     }
   };
 
@@ -15084,6 +15093,15 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
     }
+    /**
+
+    Fired when the animation finishes.
+    This is useful if you want to wait until
+    the ripple animation finishes to perform some action.
+
+    @event transitionend
+    @param {{node: Object}} detail Contains the animated node.
+    */
   });
 </script>
 <dom-module id="iron-a11y-announcer" assetpath="bower_components/iron-a11y-announcer/">

@@ -68,7 +68,7 @@
 
     function reloadItems(page) {
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         var channelId = getParameterByName('id');
         var folderId = getParameterByName('folderId');
@@ -145,11 +145,11 @@
                 showSortMenu(page);
             });
 
-            Dashboard.hideModalLoadingMsg();
+            Dashboard.hideLoadingMsg();
 
         }, function () {
 
-            Dashboard.hideModalLoadingMsg();
+            Dashboard.hideLoadingMsg();
         });
     }
 
