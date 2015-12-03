@@ -531,12 +531,6 @@ namespace MediaBrowser.Model.Dto
         public double? PrimaryImageAspectRatio { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary image aspect ratio, before image enhancements.
-        /// </summary>
-        /// <value>The original primary image aspect ratio.</value>
-        public double? OriginalPrimaryImageAspectRatio { get; set; }
-
-        /// <summary>
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>
@@ -560,6 +554,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The type of the collection.</value>
         public string CollectionType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the original collection.
+        /// </summary>
+        /// <value>The type of the original collection.</value>
+        public string OriginalCollectionType { get; set; }
+        
         /// <summary>
         /// Gets or sets the display order.
         /// </summary>
