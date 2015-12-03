@@ -4855,6 +4855,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\kk.json">
       <Link>Resources\dashboard-ui\strings\javascript\kk.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\ko.json">
+      <Link>Resources\dashboard-ui\strings\javascript\ko.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\javascript\ms.json">
       <Link>Resources\dashboard-ui\strings\javascript\ms.json</Link>
     </BundleResource>
@@ -4923,6 +4926,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\headroom.js">
       <Link>Resources\dashboard-ui\thirdparty\headroom.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\hls.min.js">
+      <Link>Resources\dashboard-ui\thirdparty\hls.min.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquery.unveil-custom.js">
       <Link>Resources\dashboard-ui\thirdparty\jquery.unveil-custom.js</Link>
