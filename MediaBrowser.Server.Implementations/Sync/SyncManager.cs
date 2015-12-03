@@ -640,7 +640,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             dtoOptions.Fields.Remove(ItemFields.MediaStreams);
             dtoOptions.Fields.Remove(ItemFields.IndexOptions);
             dtoOptions.Fields.Remove(ItemFields.MediaSourceCount);
-            dtoOptions.Fields.Remove(ItemFields.OriginalPrimaryImageAspectRatio);
             dtoOptions.Fields.Remove(ItemFields.Path);
             dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
             dtoOptions.Fields.Remove(ItemFields.Settings);

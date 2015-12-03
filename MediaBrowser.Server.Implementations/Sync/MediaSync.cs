@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // Do the data sync twice so the server knows what was removed from the device
             await SyncData(provider, dataProvider, serverId, target, cancellationToken).ConfigureAwait(false);
-
+            
             progress.Report(100);
         }
 

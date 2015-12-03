@@ -285,5 +285,25 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return 0;
             }
         }
+
+        protected async Task<string> CreateSingleImage(List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
+        {
+            var image = itemsWithImages
+                .Where(i => i.HasImage(imageType) && i.GetImageInfo(imageType, 0).IsLocalFile && Path.HasExtension(i.GetImagePath(imageType)))
+                .Select(i => i.GetImagePath(imageType))
+                .FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(image))
+            {
+                return null;
+            }
+
+            var ext = Path.GetExtension(image);
+
+            var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ext);
+            File.Copy(image, outputPath);
+
+            return outputPath;
+        }
     }
 }
