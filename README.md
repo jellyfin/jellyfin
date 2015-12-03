@@ -8,7 +8,7 @@ It features a REST-based api with built-in documention to facilitate client deve
 ## Emby Apps
 
 - [Android Mobile (Play Store)](https://play.google.com/store/apps/details?id=com.mb.android "Android Mobile (Play Store)")
-- [Android Mobile (Amazon)](http://www.amazon.com/Emby-Mobile/dp/B017OSA1QS "Android Mobile (Amazon)")
+- [Android Mobile (Amazon)](http://www.amazon.com/Emby-for-Android/dp/B00GVH9O0I "Android Mobile (Amazon)")
 - [Android TV](https://play.google.com/store/apps/details?id=tv.emby.embyatv "Android TV")
 - [Amazon Fire TV](http://www.amazon.com/Emby-for-Fire-TV/dp/B00VVJKTW8 "Amazon Fire TV")
 - [HTML5](http://app.emby.media "HTML5")
