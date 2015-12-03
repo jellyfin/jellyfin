@@ -1765,14 +1765,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 return;
             }
 
-            if (fields.Contains(ItemFields.OriginalPrimaryImageAspectRatio))
-            {
-                if (size.Width > 0 && size.Height > 0)
-                {
-                    dto.OriginalPrimaryImageAspectRatio = size.Width / size.Height;
-                }
-            }
-
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
 
             foreach (var enhancer in supportedEnhancers)

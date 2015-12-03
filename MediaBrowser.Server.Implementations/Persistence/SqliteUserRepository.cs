@@ -144,15 +144,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select data from users";
+                cmd.CommandText = "select guid,data from users";
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
                     while (reader.Read())
                     {
-                        using (var stream = reader.GetMemoryStream(0))
+                        var id = reader.GetGuid(0);
+
+                        using (var stream = reader.GetMemoryStream(1))
                         {
                             var user = _jsonSerializer.DeserializeFromStream<User>(stream);
+                            user.Id = id;
                             yield return user;
                         }
                     }
