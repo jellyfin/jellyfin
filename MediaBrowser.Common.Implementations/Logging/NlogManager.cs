@@ -110,7 +110,7 @@ namespace MediaBrowser.Common.Implementations.Logging
 			var logFile = new FileTarget
             {
                 FileName = path,
-                Layout = "${longdate} ${level} - ${logger}: ${message}"
+                Layout = "${longdate} ${level} ${logger}: ${message}"
             };
 
             logFile.Name = "ApplicationLogFile";
