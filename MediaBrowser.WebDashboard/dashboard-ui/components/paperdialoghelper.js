@@ -1,4 +1,4 @@
-﻿(function (globalScope) {
+﻿define(['paper-dialog', 'scale-up-animation', 'fade-out-animation'], function () {
 
     function paperDialogHashHandler(dlg, hash, lockDocumentScroll) {
 
@@ -164,11 +164,12 @@
         }
     }
 
-    globalScope.PaperDialogHelper = {
+    window.PaperDialogHelper = {
         openWithHash: openWithHash,
         close: close,
         createDialog: createDialog,
         positionTo: positionTo
     };
 
-})(this);
+    return PaperDialogHelper;
+});
