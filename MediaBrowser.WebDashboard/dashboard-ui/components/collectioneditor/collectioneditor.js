@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog'], function () {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input'], function () {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();

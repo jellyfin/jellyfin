@@ -344,7 +344,7 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
+            require(['components/paperdialoghelper', 'paper-input'], function () {
 
                 showEditor(itemId);
             });
