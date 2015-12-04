@@ -59,18 +59,20 @@
 
     function onIconClick() {
 
-        Dashboard.dialog({
+        require(['dialog'], function (dialog) {
+            dialog({
 
-            title: "Happy Halloween",
-            message: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
-            callback: function (result) {
+                title: "Happy Halloween",
+                message: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
+                callback: function (result) {
 
-                if (result == 1) {
-                    destroyTheme();
-                }
-            },
+                    if (result == 1) {
+                        destroyTheme();
+                    }
+                },
 
-            buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo')]
+                buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo')]
+            });
         });
     }
 

@@ -88,11 +88,11 @@
             return;
         }
 
-        var onfinish = function() {
+        var onfinish = function () {
             elem.classList.add('hide');
         };
 
-        if (!browserInfo.animate) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             onfinish();
             return;
         }
@@ -114,7 +114,7 @@
 
         elem.classList.remove('hide');
 
-        if (!browserInfo.animate) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             return;
         }
 
@@ -260,7 +260,7 @@
                 return;
             }
 
-            require(['css!css/nowplayingbar.css'], function () {
+            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 

@@ -450,6 +450,7 @@ var Dashboard = {
 
     showLoadingMsg: function () {
 
+        Dashboard.loadingVisible = true;
         var elem = document.querySelector('.docspinner');
 
         if (elem) {
@@ -464,12 +465,14 @@ var Dashboard = {
                 elem.classList.add('docspinner');
 
                 document.body.appendChild(elem);
-                elem.active = true;
+                elem.active = Dashboard.loadingVisible == true;
             });
         }
     },
 
     hideLoadingMsg: function () {
+
+        Dashboard.loadingVisible = false;
 
         var elem = document.querySelector('.docspinner');
 
@@ -523,27 +526,30 @@ var Dashboard = {
 
         if (typeof options == "string") {
 
-            var message = options;
+            require(['paper-toast'], function () {
+                var message = options;
 
-            Dashboard.toastId = Dashboard.toastId || 0;
+                Dashboard.toastId = Dashboard.toastId || 0;
 
-            var id = 'toast' + (Dashboard.toastId++);
+                var id = 'toast' + (Dashboard.toastId++);
 
-            var elem = document.createElement("paper-toast");
-            elem.setAttribute('text', message);
-            elem.id = id;
+                var elem = document.createElement("paper-toast");
+                elem.setAttribute('text', message);
+                elem.id = id;
 
-            document.body.appendChild(elem);
+                document.body.appendChild(elem);
 
-            // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-            // element onload never fires
-            setTimeout(function () {
-                elem.show();
+                // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+                // element onload never fires
+                setTimeout(function () {
+                    elem.show();
+                }, 300);
 
                 setTimeout(function () {
                     elem.parentNode.removeChild(elem);
-                }, 5000);
-            }, 300);
+                }, 5300);
+
+            });
 
             return;
         }
@@ -556,75 +562,6 @@ var Dashboard = {
         } else {
             Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
         }
-    },
-
-    dialog: function (options) {
-
-        var title = options.title;
-        var message = options.message;
-        var buttons = options.buttons;
-        var callback = options.callback;
-
-        // Cordova
-        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
-
-            navigator.notification.confirm(message, function (index) {
-
-                callback(index);
-
-            }, title, buttons.join(','));
-
-        } else {
-            Dashboard.dialogInternal(message, title, buttons, callback);
-        }
-    },
-
-    dialogInternal: function (message, title, buttons, callback) {
-
-        var id = 'paperdlg' + new Date().getTime();
-
-        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
-        html += '<h2>' + title + '</h2>';
-        html += '<div>' + message + '</div>';
-        html += '<div class="buttons">';
-
-        var index = 0;
-        html += buttons.map(function (b) {
-
-            var dataIndex = ' data-index="' + index + '"';
-            index++;
-            return '<paper-button class="dialogButton"' + dataIndex + ' dialog-dismiss>' + b + '</paper-button>';
-
-        }).join('');
-
-        html += '</div>';
-        html += '</paper-dialog>';
-
-        $(document.body).append(html);
-
-        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-        // element onload never fires
-        setTimeout(function () {
-
-            var dlg = document.getElementById(id);
-
-            $('.dialogButton', dlg).on('click', function () {
-
-                if (callback) {
-                    callback(parseInt(this.getAttribute('data-index')));
-                }
-
-            });
-
-            // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function (e) {
-
-                dlg.parentNode.removeChild(dlg);
-            });
-
-            dlg.open();
-
-        }, 300);
     },
 
     confirm: function (message, title, callback) {
@@ -641,7 +578,10 @@ var Dashboard = {
             }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
 
         } else {
-            Dashboard.confirmInternal(message, title, true, callback);
+
+            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
+                Dashboard.confirmInternal(message, title, true, callback);
+            });
         }
     },
 
@@ -1836,9 +1776,13 @@ var AppInfo = {};
         };
 
         if (Dashboard.isRunningInCordova()) {
+            paths.dialog = "cordova/dialog";
             paths.prompt = "cordova/prompt";
+            paths.sharingwidget = "cordova/sharingwidget";
         } else {
+            paths.dialog = "components/dialog";
             paths.prompt = "components/prompt";
+            paths.sharingwidget = "components/sharingwidget";
         }
 
         requirejs.config({
@@ -1856,7 +1800,39 @@ var AppInfo = {};
         define("cryptojs-sha1", ["apiclient/sha1"]);
         define("cryptojs-md5", ["apiclient/md5"]);
 
-        define("paper-spinner", []);
+        // Done
+        define("paper-spinner", ["html!bower_components/paper-spinner/paper-spinner.html"]);
+        define("paper-toast", ["html!bower_components/paper-toast/paper-toast.html"]);
+        define("paper-slider", ["html!bower_components/paper-slider/paper-slider.html"]);
+        define("paper-tabs", ["html!bower_components/paper-tabs/paper-tabs.html"]);
+        define("paper-menu", ["html!bower_components/paper-menu/paper-menu.html"]);
+        define("paper-dialog-scrollable", ["html!bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
+        define("paper-button", ["html!bower_components/paper-button/paper-button.html"]);
+        define("paper-icon-button", ["html!bower_components/paper-icon-button/paper-icon-button.html"]);
+        define("paper-drawer-panel", ["html!bower_components/paper-drawer-panel/paper-drawer-panel.html"]);
+        define("paper-radio-group", ["html!bower_components/paper-radio-group/paper-radio-group.html"]);
+        define("paper-radio-button", ["html!bower_components/paper-radio-button/paper-radio-button.html"]);
+        define("neon-animated-pages", ["html!bower_components/neon-animation/neon-animated-pages.html"]);
+
+        define("slide-right-animation", ["html!bower_components/neon-animation/animations/slide-right-animation.html"]);
+        define("slide-left-animation", ["html!bower_components/neon-animation/animations/slide-left-animation.html"]);
+        define("slide-from-right-animation", ["html!bower_components/neon-animation/animations/slide-from-right-animation.html"]);
+        define("slide-from-left-animation", ["html!bower_components/neon-animation/animations/slide-from-left-animation.html"]);
+        define("paper-textarea", ["html!bower_components/paper-input/paper-textarea.html"]);
+        define("paper-item", ["html!bower_components/paper-item/paper-item.html"]);
+        define("paper-checkbox", ["html!bower_components/paper-checkbox/paper-checkbox.html"]);
+        define("fade-in-animation", ["html!bower_components/neon-animation/animations/fade-in-animation.html"]);
+        define("fade-out-animation", ["html!bower_components/neon-animation/animations/fade-out-animation.html"]);
+        define("scale-up-animation", ["html!bower_components/neon-animation/animations/scale-up-animation.html"]);
+        define("paper-dialog", ["html!bower_components/paper-dialog/paper-dialog.html"]);
+
+        // Not done
+
+        define("paper-fab", ["html!bower_components/paper-fab/paper-fab.html"]);
+        define("paper-input", ["html!bower_components/paper-input/paper-input.html"]);
+
+        define("paper-icon-item", ["html!bower_components/paper-item/paper-icon-item.html"]);
+        define("paper-item-body", ["html!bower_components/paper-item/paper-item-body.html"]);
     }
 
     function init(promiseResolve, hostingAppInfo) {
@@ -1926,12 +1902,6 @@ var AppInfo = {};
 
         define("sharingmanager", ["scripts/sharingmanager"]);
 
-        if (Dashboard.isRunningInCordova()) {
-            define("sharingwidget", ["cordova/sharingwidget"]);
-        } else {
-            define("sharingwidget", ["scripts/sharingwidget"]);
-        }
-
         if (Dashboard.isRunningInCordova() && browserInfo.safari) {
             define("searchmenu", ["cordova/searchmenu"]);
         } else {
@@ -1989,6 +1959,8 @@ var AppInfo = {};
 
         deps.push('jQuery');
 
+        deps.push('paper-drawer-panel');
+
         require(deps, function () {
 
             for (var i in hostingAppInfo) {
@@ -2033,6 +2005,15 @@ var AppInfo = {};
 
         deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
 
+        deps.push('paper-button');
+        deps.push('paper-icon-button');
+
+        // TODO: These need to be removed
+        deps.push('paper-fab');
+        deps.push('paper-input');
+        deps.push('paper-icon-item');
+        deps.push('paper-item-body');
+
         require(deps, function () {
 
             // TODO: This needs to be deprecated, but it's used heavily
@@ -2072,9 +2053,11 @@ var AppInfo = {};
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
 
-            var connectionManagerPromise = createConnectionManager(capabilities);
+            deps = [];
+            deps.push(Globalize.ensure());
+            deps.push(createConnectionManager(capabilities));
 
-            Promise.all([Globalize.ensure(), connectionManagerPromise]).then(function () {
+            Promise.all(deps).then(function () {
 
                 document.title = Globalize.translateDocument(document.title, 'html');
 
@@ -2125,6 +2108,10 @@ var AppInfo = {};
     function onAppReady(promiseResolve) {
 
         var deps = [];
+
+        if (!(AppInfo.isNativeApp && browserInfo.android)) {
+            document.documentElement.classList.add('minimumSizeTabs');
+        }
 
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp && browserInfo.android) {
@@ -2218,6 +2205,8 @@ var AppInfo = {};
             if (AppInfo.enableNowPlayingBar) {
                 postInitDependencies.push('scripts/nowplayingbar');
             }
+
+            //postInitDependencies.push('components/testermessage');
 
             require(postInitDependencies);
         });
@@ -2406,7 +2395,11 @@ var AppInfo = {};
 
             function onWebComponentsReady() {
 
-                require(['html!vulcanize-out.html'], function () {
+                var polymerDependencies = [];
+                polymerDependencies.push('html!thirdparty/emby-icons.html');
+
+                require(polymerDependencies, function () {
+
                     getHostingAppInfo().then(function (hostingAppInfo) {
                         init(resolve, hostingAppInfo);
                     });

@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper'], function () {
 
     var currentDeferred;
     var hasChanges;
@@ -140,54 +140,50 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'components/medialibraryeditor/medialibraryeditor.template.html', true);
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'components/medialibraryeditor/medialibraryeditor.template.html', true);
+            xhr.onload = function (e) {
 
-                xhr.onload = function (e) {
+                var template = this.response;
+                var dlg = PaperDialogHelper.createDialog({
+                    size: 'small',
+                    theme: 'a',
 
-                    var template = this.response;
-                    var dlg = PaperDialogHelper.createDialog({
-                        size: 'small',
-                        theme: 'a',
+                    // In (at least) chrome this is causing the text field to not be editable
+                    modal: false
+                });
 
-                        // In (at least) chrome this is causing the text field to not be editable
-                        modal: false
-                    });
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
 
-                    var html = '';
-                    html += '<h2 class="dialogHeader">';
-                    html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + options.library.Name + '</div>';
+                html += '</h2>';
 
-                    html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + options.library.Name + '</div>';
-                    html += '</h2>';
+                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+                html += Globalize.translateDocument(template);
+                html += '</div>';
 
-                    html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                    html += Globalize.translateDocument(template);
-                    html += '</div>';
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
 
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
+                var editorContent = dlg.querySelector('.editorContent');
+                initEditor(editorContent, options);
 
-                    var editorContent = dlg.querySelector('.editorContent');
-                    initEditor(editorContent, options);
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                    $(dlg).on('iron-overlay-closed', onDialogClosed);
+                PaperDialogHelper.openWithHash(dlg, 'medialibraryeditor');
 
-                    PaperDialogHelper.openWithHash(dlg, 'medialibraryeditor');
+                $('.btnCloseDialog', dlg).on('click', function () {
 
-                    $('.btnCloseDialog', dlg).on('click', function () {
+                    PaperDialogHelper.close(dlg);
+                });
 
-                        PaperDialogHelper.close(dlg);
-                    });
+                refreshLibraryFromServer(editorContent);
+            }
 
-                    refreshLibraryFromServer(editorContent);
-                }
-
-                xhr.send();
-
-            });
+            xhr.send();
 
             return deferred.promise();
         };

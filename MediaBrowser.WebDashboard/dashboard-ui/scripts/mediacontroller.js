@@ -118,6 +118,13 @@
 
     function showActivePlayerMenu(playerInfo) {
 
+        require(['paper-checkbox', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function () {
+            showActivePlayerMenuInternal(playerInfo);
+        });
+    }
+
+    function showActivePlayerMenuInternal(playerInfo) {
+
         var id = 'dlg' + new Date().getTime();
         var html = '';
 
@@ -401,7 +408,9 @@
                     buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo'), Globalize.translate('ButtonCancel')]
                 };
 
-                Dashboard.dialog(options);
+                require(['dialog'], function (dialog) {
+                    dialog(options);
+                });
 
             } else {
 

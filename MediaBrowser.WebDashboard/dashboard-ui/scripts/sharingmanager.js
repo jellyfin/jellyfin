@@ -25,7 +25,7 @@
 
         Dashboard.showLoadingMsg();
 
-        require(['sharingwidget'], function () {
+        require(['sharingwidget'], function (SharingWidget) {
 
             ApiClient.ajax({
                 type: 'POST',

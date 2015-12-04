@@ -244,7 +244,7 @@
 
     function showOverlay(elem, item) {
 
-        require(['components/paperdialoghelper'], function () {
+        require(['components/paperdialoghelper', 'scale-up-animation', 'fade-out-animation'], function () {
 
             var dlg = document.createElement('paper-dialog');
 

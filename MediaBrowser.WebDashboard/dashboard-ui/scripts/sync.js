@@ -76,6 +76,13 @@
 
     function renderForm(options) {
 
+        require(['paper-checkbox'], function () {
+            renderFormInternal(options);
+        });
+    }
+
+    function renderFormInternal(options) {
+
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
 

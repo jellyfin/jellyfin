@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog'], function () {
 
     var currentItemId;
     var currentItemType;
@@ -312,7 +312,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ImageDownloader = {
+    return {
         show: function (itemId, itemType, imageType) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -323,12 +323,8 @@
             browsableImageType = imageType || 'Primary';
             selectedProvider = null;
 
-            require(['components/paperdialoghelper'], function () {
-
-                showEditor(itemId, itemType);
-            });
+            showEditor(itemId, itemType);
             return deferred.promise();
         }
     };
-
-})(jQuery, window, document);
+});

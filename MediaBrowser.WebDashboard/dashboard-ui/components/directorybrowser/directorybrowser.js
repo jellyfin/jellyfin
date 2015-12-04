@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper', 'paper-item'], function () {
 
     var systemInfo;
     function getSystemInfo() {
@@ -213,54 +213,51 @@
 
             getSystemInfo().then(function (systemInfo) {
 
-                require(['components/paperdialoghelper'], function () {
-
-                    var dlg = PaperDialogHelper.createDialog({
-                        theme: 'a',
-                        size: 'medium'
-                    });
-
-                    dlg.classList.add('directoryPicker');
-
-                    var html = '';
-                    html += '<h2 class="dialogHeader">';
-                    html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-                    html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
-                    html += '</h2>';
-
-                    html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                    html += getEditorHtml(options, systemInfo);
-                    html += '</div>';
-
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
-
-                    var editorContent = dlg.querySelector('.editorContent');
-                    initEditor(editorContent, options, fileOptions);
-
-                    // Has to be assigned a z-index after the call to .open() 
-                    $(dlg).on('iron-overlay-opened', function () {
-                        this.querySelector('#txtDirectoryPickerPath input').focus();
-                    });
-                    $(dlg).on('iron-overlay-closed', onDialogClosed);
-
-                    PaperDialogHelper.openWithHash(dlg, 'directorybrowser');
-
-                    $('.btnCloseDialog', dlg).on('click', function () {
-
-                        PaperDialogHelper.close(dlg);
-                    });
-
-                    currentDialog = dlg;
-
-                    var txtCurrentPath = $('#txtDirectoryPickerPath', editorContent);
-
-                    if (options.path) {
-                        txtCurrentPath.val(options.path);
-                    }
-
-                    refreshDirectoryBrowser(editorContent, txtCurrentPath.val());
+                var dlg = PaperDialogHelper.createDialog({
+                    theme: 'a',
+                    size: 'medium'
                 });
+
+                dlg.classList.add('directoryPicker');
+
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
+                html += '</h2>';
+
+                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+                html += getEditorHtml(options, systemInfo);
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                var editorContent = dlg.querySelector('.editorContent');
+                initEditor(editorContent, options, fileOptions);
+
+                // Has to be assigned a z-index after the call to .open() 
+                $(dlg).on('iron-overlay-opened', function () {
+                    this.querySelector('#txtDirectoryPickerPath input').focus();
+                });
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
+
+                PaperDialogHelper.openWithHash(dlg, 'directorybrowser');
+
+                $('.btnCloseDialog', dlg).on('click', function () {
+
+                    PaperDialogHelper.close(dlg);
+                });
+
+                currentDialog = dlg;
+
+                var txtCurrentPath = $('#txtDirectoryPickerPath', editorContent);
+
+                if (options.path) {
+                    txtCurrentPath.val(options.path);
+                }
+
+                refreshDirectoryBrowser(editorContent, txtCurrentPath.val());
 
             });
         };

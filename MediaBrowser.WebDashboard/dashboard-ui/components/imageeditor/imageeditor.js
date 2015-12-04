@@ -1,4 +1,4 @@
-﻿(function ($, document, window, FileReader, escape) {
+﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css'], function () {
 
     var currentItem;
     var currentDeferred;
@@ -190,7 +190,7 @@
     }
 
     function showImageDownloader(page, imageType) {
-        require(['components/imagedownloader/imagedownloader'], function () {
+        require(['components/imagedownloader/imagedownloader'], function (ImageDownloader) {
 
             ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).then(function (hasChanged) {
 
@@ -209,7 +209,7 @@
             require(['components/imageuploader/imageuploader'], function () {
 
                 ImageUploader.show(currentItem.Id, {
-                    
+
                     theme: options.theme
 
                 }).then(function (hasChanged) {
@@ -285,7 +285,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ImageEditor = {
+    return {
         show: function (itemId, options) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -293,13 +293,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
-
-                Dashboard.importCss('css/metadataeditor.css');
-                showEditor(itemId, options);
-            });
+            showEditor(itemId, options);
             return deferred.promise();
         }
     };
-
-})(jQuery, document, window, window.FileReader, escape);
+});

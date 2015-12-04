@@ -221,11 +221,6 @@ namespace MediaBrowser.WebDashboard.Api
 
         public bool IsCoreHtml(string path)
         {
-            if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return false;
-            }
-
             if (path.IndexOf(".template.html", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;

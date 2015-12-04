@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper', 'paper-dialog'], function () {
 
     var lastPlaylistId = '';
 
@@ -197,39 +197,36 @@
 
             items = items || [];
 
-            require(['components/paperdialoghelper'], function () {
+            var dlg = PaperDialogHelper.createDialog({
+                size: 'small'
+            });
 
-                var dlg = PaperDialogHelper.createDialog({
-                    size: 'small'
-                });
+            var html = '';
+            html += '<h2 class="dialogHeader">';
+            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
 
-                var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+            var title = Globalize.translate('HeaderAddToPlaylist');
 
-                var title = Globalize.translate('HeaderAddToPlaylist');
+            html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
+            html += '</h2>';
 
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
-                html += '</h2>';
+            html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+            html += getEditorHtml();
+            html += '</div>';
 
-                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                html += getEditorHtml();
-                html += '</div>';
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
 
-                dlg.innerHTML = html;
-                document.body.appendChild(dlg);
+            var editorContent = dlg.querySelector('.editorContent');
+            initEditor(editorContent, items);
 
-                var editorContent = dlg.querySelector('.editorContent');
-                initEditor(editorContent, items);
+            $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+            PaperDialogHelper.openWithHash(dlg, 'playlisteditor');
 
-                PaperDialogHelper.openWithHash(dlg, 'playlisteditor');
+            $('.btnCloseDialog', dlg).on('click', function () {
 
-                $('.btnCloseDialog', dlg).on('click', function () {
-
-                    PaperDialogHelper.close(dlg);
-                });
+                PaperDialogHelper.close(dlg);
             });
         };
     }

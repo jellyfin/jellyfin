@@ -312,6 +312,19 @@
     display: none;
 }
 
+.minimumSizeTabs .libraryViewNav .tab-content {
+    display: block !important;
+}
+
+.minimumSizeTabs .libraryViewNav paper-tab {
+    height: auto !important;
+    flex-grow: 0 !important;
+}
+
+.minimumSizeTabs .libraryViewNav #tabsContainer {
+    flex-grow: 0 !important;
+}
+
 @media all and (max-width: 400px) {
 
     .libraryMenuButtonText {

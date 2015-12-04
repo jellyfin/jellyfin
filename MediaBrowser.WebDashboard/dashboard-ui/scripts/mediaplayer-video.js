@@ -940,7 +940,7 @@
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
             // TODO: remove dependency on nowplayingbar
-            requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css'], function () {
+            requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'paper-slider'], function () {
 
                 initVideoElements();
 

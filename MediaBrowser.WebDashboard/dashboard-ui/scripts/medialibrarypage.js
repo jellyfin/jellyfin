@@ -207,7 +207,7 @@
                 return;
             }
 
-            require(['components/imageeditor/imageeditor'], function () {
+            require(['components/imageeditor/imageeditor'], function (ImageEditor) {
 
                 ImageEditor.show(virtualFolder.ItemId, {
                     theme: 'a'

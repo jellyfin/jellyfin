@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper'], function () {
 
     var currentItem;
 
@@ -12,7 +12,7 @@
         var url = 'Videos/' + currentItem.Id + '/Subtitles/' + index;
 
         ApiClient.ajax({
-            
+
             type: 'GET',
             url: url
 
@@ -385,14 +385,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    window.SubtitleEditor = {
-        show: function (itemId) {
-
-            require(['components/paperdialoghelper'], function () {
-
-                showEditor(itemId);
-            });
-        }
+    return {
+        show: showEditor
     };
-
-})(jQuery, window, document);
+});

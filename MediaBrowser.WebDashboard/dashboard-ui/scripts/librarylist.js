@@ -913,17 +913,19 @@
 
         if (!itemSelectionPanel) {
 
-            itemSelectionPanel = document.createElement('div');
-            itemSelectionPanel.classList.add('itemSelectionPanel');
+            require(['paper-checkbox'], function() {
+                itemSelectionPanel = document.createElement('div');
+                itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent').appendChild(itemSelectionPanel);
+                item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-            var chkItemSelect = document.createElement('paper-checkbox');
-            chkItemSelect.classList.add('chkItemSelect');
+                var chkItemSelect = document.createElement('paper-checkbox');
+                chkItemSelect.classList.add('chkItemSelect');
 
-            $(chkItemSelect).on('change', onSelectionChange);
+                $(chkItemSelect).on('change', onSelectionChange);
 
-            itemSelectionPanel.appendChild(chkItemSelect);
+                itemSelectionPanel.appendChild(chkItemSelect);
+            });
         }
     }
 

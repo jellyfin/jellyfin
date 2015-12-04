@@ -318,14 +318,16 @@
 
         if (endpointInfo) {
 
-            var deferred = $.Deferred();
-            deferred.resolveWith(null, [endpointInfo]);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                resolve(endpointInfo);
+            });
         }
 
         return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
             endpointInfo = info;
+            return info;
         });
     }
 
