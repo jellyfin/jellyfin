@@ -2,7 +2,7 @@
 <!---
 
 This README is automatically generated from the comments in these files:
-all-imports.html  paper-icon-item.html  paper-item-body.html  paper-item-shared-styles.html  paper-item.html
+paper-icon-item.html  paper-item-behavior.html  paper-item-body.html  paper-item.html
 
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
@@ -19,7 +19,7 @@ _[Demo and API Docs](https://elements.polymer-project.org/elements/paper-item)_
 
 Material design: [Lists](https://www.google.com/design/spec/components/lists.html)
 
-`<paper-item>` is a non-interactive list item. By default, it is a horizontal flexbox.
+`<paper-item>` is an interactive list item. By default, it is a horizontal flexbox.
 
     <paper-item>Item</paper-item>
 
@@ -49,7 +49,6 @@ Custom property               | Description                                    |
 `--paper-item-focused`        | Mixin applied to focused paper-items         | `{}`
 `--paper-item-focused-before` | Mixin applied to :before focused paper-items | `{}`
 
-
 ### Accessibility
 
 This element has `role="listitem"` by default. Depending on usage, it may be more appropriate to set
@@ -67,7 +66,7 @@ This element has `role="listitem"` by default. Depending on usage, it may be mor
 ##&lt;paper-icon-item&gt;
 
 
-`<paper-icon-item>` is a convenience element to make an item with icon. It is a non interactive list
+`<paper-icon-item>` is a convenience element to make an item with icon. It is an interactive list
 item with a fixed-width icon area, according to Material Design. This is useful if the icons are of
 varying widths, but you want the item bodies to line up. Use this like a `<paper-item>`. The child
 node with the attribute `item-icon` is placed in the icon area.
@@ -97,7 +96,6 @@ Custom property               | Description                                    |
 `--paper-item-focused-before` | Mixin applied to :before focused paper-items | `{}`
 
 
-
 ##&lt;paper-item-body&gt;
 
 
@@ -125,3 +123,5 @@ Custom property | Description | Default
 `--paper-item-body-secondary`             | Mixin applied to the `secondary` area      | `{}`
 
 
+
+<!-- No docs for Polymer.PaperItemBehavior found. -->

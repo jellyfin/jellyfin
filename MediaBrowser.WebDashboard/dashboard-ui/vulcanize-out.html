@@ -14298,6 +14298,25 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 
 
+<script>
+  /** @polymerBehavior Polymer.PaperItemBehavior */
+  Polymer.PaperItemBehaviorImpl = {
+    hostAttributes: {
+      role: 'option',
+      tabindex: '0'
+    }
+  };
+
+  /** @polymerBehavior */
+  Polymer.PaperItemBehavior = [
+    Polymer.IronControlState,
+    Polymer.IronButtonState,
+    Polymer.PaperItemBehaviorImpl
+  ];
+
+</script>
+
+
 
 
 
@@ -20212,14 +20231,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     Polymer({
       is: 'paper-item',
 
-      hostAttributes: {
-        role: 'option',
-        tabindex: '0'
-      },
-
       behaviors: [
-        Polymer.IronControlState,
-        Polymer.IronButtonState
+        Polymer.PaperItemBehavior
       ]
     });
   </script>
@@ -20239,10 +20252,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       .content-icon {
         width: var(--paper-item-icon-width, 56px);
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
     </style>
 
-    <div id="contentIcon" class="content-icon layout horizontal center">
+    <div id="contentIcon" class="content-icon">
       <content select="[item-icon]"></content>
     </div>
     <content></content>
@@ -20252,14 +20267,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     Polymer({
       is: 'paper-icon-item',
 
-      hostAttributes: {
-        'role': 'option',
-        'tabindex': '0'
-      },
-
       behaviors: [
-        Polymer.IronControlState,
-        Polymer.IronButtonState
+        Polymer.PaperItemBehavior
       ]
     });
   </script>
