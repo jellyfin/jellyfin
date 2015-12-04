@@ -49,10 +49,16 @@ as to not overlap the native UI (search icon, file button, etc.).
 
 See `Polymer.PaperInputBehavior` for more API docs.
 
+### Focus
+
+To focus a paper-input, you can call the native `focus()` method as long as the
+paper input has a tab index.
+
 ### Styling
 
 See `Polymer.PaperInputContainer` for a list of custom properties used to
 style this element.
+
 
 
 
@@ -147,7 +153,7 @@ Custom property | Description | Default
 `--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
 `--paper-input-container-input` | Mixin applied to the input | `{}`
 `--paper-input-container-underline` | Mixin applied to the underline | `{}`
-`--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focued | `{}`
+`--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focused | `{}`
 `--paper-input-container-underline-disabled` | Mixin applied to the underline when the input is disabled | `{}`
 `--paper-input-prefix` | Mixin applied to the input prefix | `{}`
 `--paper-input-suffix` | Mixin applied to the input suffix | `{}`

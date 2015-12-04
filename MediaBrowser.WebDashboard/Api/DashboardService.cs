@@ -305,14 +305,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                // Overwrite certain files with cordova specific versions
-                var cordovaVersion = Path.Combine(path, "cordova", "registrationservices.js");
-				_fileSystem.CopyFile(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
-				_fileSystem.DeleteFile(cordovaVersion);
-
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
 				_fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
-				_fileSystem.DeleteDirectory(Path.Combine(path, "apiclient", "alt"), true);
 
 				_fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
 
@@ -340,12 +334,13 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "headroom.js", "dist", "headroom.min.js"), Path.Combine(path, "bower_components", "headroom.js", "dist", "headroom.min.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "isMobile", "isMobile.min.js"), Path.Combine(path, "bower_components", "isMobile", "isMobile.min.js"));
             }
-
-            MinifyCssDirectory(path);
-            MinifyJsDirectory(path);
+            else
+            {
+                MinifyCssDirectory(path);
+                MinifyJsDirectory(path);
+            }
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
-            await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
 
             await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
 
@@ -426,7 +421,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)
         {
-            foreach (var file in Directory.GetFiles(source, "*.html", SearchOption.TopDirectoryOnly))
+            foreach (var file in Directory.GetFiles(source, "*", SearchOption.TopDirectoryOnly))
             {
                 var filename = Path.GetFileName(file);
 
@@ -443,16 +438,6 @@ namespace MediaBrowser.WebDashboard.Api
             foreach (var file in excludeFiles)
             {
 				_fileSystem.DeleteFile(Path.Combine(destination, file));
-            }
-        }
-
-        private async Task DumpJs(string source, string mode, string destination, string culture, string appVersion)
-        {
-            foreach (var file in Directory.GetFiles(source, "*.js", SearchOption.TopDirectoryOnly))
-            {
-                var filename = Path.GetFileName(file);
-
-                await DumpFile("scripts/" + filename, Path.Combine(destination, "scripts", filename), mode, culture, appVersion).ConfigureAwait(false);
             }
         }
 

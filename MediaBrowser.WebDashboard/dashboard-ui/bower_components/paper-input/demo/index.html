@@ -56,6 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <div class="vertical center-justified layout">
     <h4>Text input</h4>
+
     <div class="vertical-section">
       <paper-input label="label"></paper-input>
 
@@ -90,7 +91,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <paper-textarea label="textarea" char-counter></paper-textarea>
 
-      <paper-textarea label="textarea with maxlength" char-counter maxlength="10"></paper-textarea>
+      <paper-textarea label="textarea with maxlength" maxlength="10" char-counter></paper-textarea>
 
       <paper-textarea label="text area with rows and max-rows" rows="3" max-rows="4"></paper-textarea>
     </div>
@@ -108,7 +109,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-input class="short" label="icons and buttons" id="inputWithButton">
         <iron-icon icon="search" prefix></iron-icon>
         <paper-icon-button suffix onclick="clearInput()"
-            icon="clear" alt="clear" title="clear" tabindex="0">
+            icon="clear" alt="clear" title="clear">
         </paper-icon-button>
       </paper-input>
     </div>

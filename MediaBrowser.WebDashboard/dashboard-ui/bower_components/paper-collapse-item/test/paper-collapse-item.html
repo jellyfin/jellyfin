@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+	<head>
+		<title>paper-collapse-item</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+		<script src="../../web-component-tester/browser.js"></script>
+		<script src="../../test-fixture/test-fixture-mocha.js"></script>
+		
+		<link rel="import" href="../paper-collapse-item.html">
+		<link rel="import" href="../../test-fixture/test-fixture.html">
+	</head>
+	<body>
+	
+		<test-fixture id="TrivialElement">
+			<template>
+				<paper-collapse-item></paper-collapse-item>
+			</template>
+		</test-fixture>
+	
+		<script>
+			suite('<paper-collapse-item>', function() {
+				suite('open/close behavior', function() {
+					var element;
+	
+					setup(function() {
+						element = fixture('TrivialElement');
+					});
+					
+					test('defaults to closed', function() {
+						expect(element.opened).to.be.eql(false);
+					});
+
+					test('shows open toggle icon when closed', function() {
+						element.opened = false;
+						expect(element._toggleIcon).to.be.eql('icons:expand-more');
+					});
+
+					test('shows open toggle icon when opened', function() {
+						element.opened = true;
+						expect(element._toggleIcon).to.be.eql('icons:expand-less');
+					});
+				});
+			});
+		</script>
+	
+	</body>
+</html>

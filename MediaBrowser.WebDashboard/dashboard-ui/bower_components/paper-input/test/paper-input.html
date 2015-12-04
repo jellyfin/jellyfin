@@ -37,6 +37,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="has-tabindex">
+    <template>
+      <paper-input tabindex="0"></paper-input>
+    </template>
+  </test-fixture>
+
   <test-fixture id="label">
     <template>
       <paper-input label="foo"></paper-input>
@@ -211,7 +217,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     });
 
-
     suite('validation', function() {
 
       test('invalid attribute updated after calling validate()', function() {
@@ -255,6 +260,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(input.inputElement.getAttribute('aria-describedby'), Polymer.dom(input.root).querySelector('paper-input-error').id + ' ' + Polymer.dom(input.root).querySelector('paper-input-char-counter').id, 'aria-describedby points to the error message and character counter');
       });
 
+      test('focus an input with tabindex', function(done) {
+        var input = fixture('has-tabindex');
+        flush(function() {
+          MockInteractions.focus(input);
+          flush(function() {
+            assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
+                document.activeElement, input._focusableElement);
+            done();
+          });
+        });
+      });
+     
     });
 
   </script>

@@ -459,11 +459,13 @@ var Dashboard = {
 
         } else {
 
-            elem = document.createElement("paper-spinner");
-            elem.classList.add('docspinner');
+            require(['paper-spinner'], function () {
+                elem = document.createElement("paper-spinner");
+                elem.classList.add('docspinner');
 
-            document.body.appendChild(elem);
-            elem.active = true;
+                document.body.appendChild(elem);
+                elem.active = true;
+            });
         }
     },
 
@@ -1842,7 +1844,8 @@ var AppInfo = {};
         requirejs.config({
             map: {
                 '*': {
-                    'css': 'components/requirecss'
+                    'css': 'components/requirecss',
+                    'html': 'components/requirehtml'
                 }
             },
             urlArgs: urlArgs,
@@ -1852,6 +1855,8 @@ var AppInfo = {};
 
         define("cryptojs-sha1", ["apiclient/sha1"]);
         define("cryptojs-md5", ["apiclient/md5"]);
+
+        define("paper-spinner", []);
     }
 
     function init(promiseResolve, hostingAppInfo) {
@@ -2137,12 +2142,14 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            deps.push('scripts/registrationservices');
+            deps.push('cordova/registrationservices');
             deps.push('cordova/back');
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
             }
+        } else {
+            deps.push('scripts/registrationservices');
         }
 
         if (browserInfo.msie) {
@@ -2399,17 +2406,11 @@ var AppInfo = {};
 
             function onWebComponentsReady() {
 
-                var link = document.createElement('link');
-                link.rel = 'import';
-
-                link.onload = function () {
-
+                require(['html!vulcanize-out.html'], function () {
                     getHostingAppInfo().then(function (hostingAppInfo) {
                         init(resolve, hostingAppInfo);
                     });
-                };
-                link.href = "vulcanize-out.html?v=" + window.dashboardVersion;
-                document.head.appendChild(link);
+                });
             }
 
             setBrowserInfo(isMobile);

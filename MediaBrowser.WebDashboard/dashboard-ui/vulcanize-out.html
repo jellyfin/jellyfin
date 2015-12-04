@@ -12293,25 +12293,26 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         type: Boolean,
         value: false
       },
-      
+
       /**
        * @type {function(MediaQueryList)}
-       */ 
+       */
       _boundMQHandler: {
         value: function() {
           return this.queryHandler.bind(this);
         }
       },
-      
+
       /**
        * @type {MediaQueryList}
-       */ 
+       */
       _mq: {
         value: null
       }
     },
 
     attached: function() {
+      this.style.display = 'none';
       this.queryChanged();
     },
 
@@ -13627,7 +13628,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
        */
 
       /**
-       * The label for this input. Bind this to `<paper-input-container>`'s `label` property.
+       * The label for this input. Bind this to `<label>`'s content and `hidden` property, e.g.
+       * `<label hidden$="[[!label]]">[[label]]</label>` in your `template`
        */
       label: {
         type: String
@@ -13882,21 +13884,21 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `results` property, , used with type=search.
+       * Bind this to the `<input is="iron-input">`'s `results` property, used with type=search.
        */
       results: {
         type: Number
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `accept` property, , used with type=file.
+       * Bind this to the `<input is="iron-input">`'s `accept` property, used with type=file.
        */
       accept: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `multiple` property, , used with type=file.
+       * Bind this to the `<input is="iron-input">`'s `multiple` property, used with type=file.
        */
       multiple: {
         type: Boolean
@@ -13915,18 +13917,34 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     listeners: {
-      'addon-attached': '_onAddonAttached'
+      'addon-attached': '_onAddonAttached',
+      'focus': '_onFocus'
     },
 
     observers: [
       '_focusedControlStateChanged(focused)'
     ],
 
+    keyBindings: {
+      'shift+tab:keydown': '_onShiftTabDown'
+    },
+
+    hostAttributes: {
+      tabindex: 0
+    },
+
     /**
      * Returns a reference to the input element.
      */
     get inputElement() {
       return this.$.input;
+    },
+
+    /**
+     * Returns a reference to the focusable element.
+     */
+    get _focusableElement() {
+      return this.inputElement;
     },
 
     attached: function() {
@@ -13962,6 +13980,29 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       return this.inputElement.validate();
     },
 
+    /**
+     * Forward focus to inputElement
+     */
+    _onFocus: function() {
+      if (!this._shiftTabPressed) {
+        this._focusableElement.focus();
+      }
+    },
+
+    /**
+     * Handler that is called when a shift+tab keypress is detected by the menu.
+     *
+     * @param {CustomEvent} event A key combination event.
+     */
+    _onShiftTabDown: function(event) {
+      var oldTabIndex = this.getAttribute('tabindex');
+      this._shiftTabPressed = true;
+      this.setAttribute('tabindex', '-1');
+      this.async(function() {
+        this.setAttribute('tabindex', oldTabIndex);
+        this._shiftTabPressed = false;
+      }, 1);
+    },
     /**
      * If `autoValidate` is true, then validates the element.
      */
@@ -14046,7 +14087,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   };
 
   /** @polymerBehavior */
-  Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
+  Polymer.PaperInputBehavior = [
+    Polymer.IronControlState,
+    Polymer.IronA11yKeysBehavior,
+    Polymer.PaperInputBehaviorImpl
+  ];
 
 </script>
 <script>
@@ -18239,7 +18284,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       .input-content {
         position: relative;
         @apply(--layout-horizontal);
-        @apply(--layout-end);
+        @apply(--layout-center);
       }
 
       .input-content ::content label,
@@ -18738,7 +18783,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" tabindex$="[[tabindex]]" autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
 
       <content select="[suffix]"></content>
 
@@ -18761,8 +18806,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     behaviors: [
       Polymer.IronFormElementBehavior,
-      Polymer.PaperInputBehavior,
-      Polymer.IronControlState
+      Polymer.PaperInputBehavior
     ]
   });
 </script>
@@ -19892,7 +19936,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     _ariaDescribedByChanged: function(ariaDescribedBy) {
       this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
-    }
+    },
+
+    get _focusableElement() {
+      return this.$.input.textarea;
+    },
   });
 </script>
 <dom-module id="paper-checkbox" assetpath="bower_components/paper-checkbox/">
@@ -20668,6 +20716,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             <g id="sync-problem"><path d="M3 12c0 2.21.91 4.2 2.36 5.64L3 20h6v-6l-2.24 2.24C5.68 15.15 5 13.66 5 12c0-2.61 1.67-4.83 4-5.65V4.26C5.55 5.15 3 8.27 3 12zm8 5h2v-2h-2v2zM21 4h-6v6l2.24-2.24C18.32 8.85 19 10.34 19 12c0 2.61-1.67 4.83-4 5.65v2.09c3.45-.89 6-4.01 6-7.74 0-2.21-.91-4.2-2.36-5.64L21 4zm-10 9h2V7h-2v6z"></path></g>
             <g id="notifications-active"><path d="M6.58 3.58L5.15 2.15C2.76 3.97 1.18 6.8 1.03 10h2c.15-2.65 1.51-4.97 3.55-6.42zM19.97 10h2c-.15-3.2-1.73-6.03-4.13-7.85l-1.43 1.43c2.05 1.45 3.41 3.77 3.56 6.42zm-1.97.5c0-3.07-2.13-5.64-5-6.32V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5v.68c-2.87.68-5 3.25-5 6.32V16l-2 2v1h17v-1l-2-2v-5.5zM11.5 22c.14 0 .27-.01.4-.04.65-.13 1.19-.58 1.44-1.18.1-.24.16-.5.16-.78h-4c0 1.1.9 2 2 2z"></path></g>
             <g id="notifications-off"><path d="M11.5 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 10.5c0-3.07-2.13-5.64-5-6.32V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5v.68c-.51.12-.99.32-1.45.56L18 14.18V10.5zm-.27 8.5l2 2L21 19.73 4.27 3 3 4.27l2.92 2.92C5.34 8.16 5 9.29 5 10.5V16l-2 2v1h14.73z"></path></g>
+            <g id="expand-less"><path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"></path></g>
+            <g id="expand-more"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"></path></g>
         </defs>
     </svg>
 </iron-iconset-svg>

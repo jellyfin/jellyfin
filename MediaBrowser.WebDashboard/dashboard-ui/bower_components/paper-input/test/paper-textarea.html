@@ -36,6 +36,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="has-tabindex">
+    <template>
+      <paper-textarea tabindex="0"></paper-input>
+    </template>
+  </test-fixture>
+
   <test-fixture id="label">
     <template>
       <paper-textarea label="foo"></paper-textarea>
@@ -128,7 +134,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var inputContent = Polymer.dom(container.root).querySelector('.input-content');
         assert.isTrue(inputContent.classList.contains('label-is-floating'), 'label is floating');
       });
-
     });
 
     suite('focus/blur events', function() {
@@ -155,6 +160,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(nBlurEvents >= 1, 'blur event fired')
       });
 
+      test('focus a textarea with tabindex', function(done) {
+        var input = fixture('has-tabindex');
+        flush(function() {
+          assert.notEqual(document.activeElement, input._focusableElement);
+          MockInteractions.focus(input);
+          setTimeout(function() {
+            assert.equal(document.activeElement, input.shadowRoot ? input : input._focusableElement);
+            done();
+          }, 1);
+        })
+      });
     });
 
     suite('a11y', function() {
@@ -185,7 +201,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(input.inputElement.textarea.hasAttribute('aria-describedby'));
         assert.equal(input.inputElement.textarea.getAttribute('aria-describedby'), Polymer.dom(input.root).querySelector('paper-input-error').id + ' ' + Polymer.dom(input.root).querySelector('paper-input-char-counter').id, 'aria-describedby points to the error message and character counter');
       });
-
 
     });
 
