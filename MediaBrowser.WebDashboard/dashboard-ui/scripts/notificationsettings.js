@@ -66,7 +66,7 @@
 
         var page = this;
 
-        require(['paper-fab', 'paper-item-body'], function () {
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
             reload(page);
         });
     });

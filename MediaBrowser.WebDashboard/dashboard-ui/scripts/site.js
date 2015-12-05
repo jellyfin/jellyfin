@@ -2005,9 +2005,6 @@ var AppInfo = {};
         deps.push('paper-button');
         deps.push('paper-icon-button');
 
-        // TODO: These need to be removed
-        deps.push('paper-icon-item');
-
         require(deps, function () {
 
             // TODO: This needs to be deprecated, but it's used heavily

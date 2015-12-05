@@ -280,7 +280,7 @@
 
         startInterval();
 
-        require(['paper-fab', 'paper-progress', 'paper-item-body'], function () {
+        require(['paper-fab', 'paper-progress', 'paper-item-body', 'paper-icon-item'], function () {
             reloadList(page);
         });
 

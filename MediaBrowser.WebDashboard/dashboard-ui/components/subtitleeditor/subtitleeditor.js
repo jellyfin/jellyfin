@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body'], function () {
+﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
 
     var currentItem;
 

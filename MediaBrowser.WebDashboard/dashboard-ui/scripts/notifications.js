@@ -108,7 +108,7 @@
             });
         }
 
-        require(['humanedate', 'paper-fab', 'paper-item-body'], function () {
+        require(['humanedate', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
             for (var i = 0, length = list.length; i < length; i++) {
 
                 var notification = list[i];
