@@ -2007,7 +2007,6 @@ var AppInfo = {};
 
         // TODO: These need to be removed
         deps.push('paper-icon-item');
-        deps.push('paper-item-body');
 
         require(deps, function () {
 

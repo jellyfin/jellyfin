@@ -4,7 +4,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['paper-fab'], function () {
+            require(['paper-fab', 'paper-item-body'], function () {
                 var html = '';
 
                 var index = '';

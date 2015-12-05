@@ -88,7 +88,7 @@
 
         })).then(function (result) {
 
-            require(['paper-fab'], function() {
+            require(['paper-fab', 'paper-item-body'], function () {
                 load(page, result.Items);
             });
 
