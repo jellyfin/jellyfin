@@ -44,7 +44,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -91,6 +91,11 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
+<ItemGroup>
+    <None Include="dashboard-ui\bower_components\**\*.*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+</ItemGroup>
   <ItemGroup>
     <Content Include="dashboard-ui\apiclient\sync\contentuploader.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -108,81 +113,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\apiclient\sync\serversync.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\fastclick\lib\fastclick.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\fetch\fetch.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\hammerjs\hammer.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\hammerjs\hammer.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\headroom.js\dist\headroom.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\howler.js\howler.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\isMobile\isMobile.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\jquery\dist\jquery.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\jstree\dist\jstree.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\native-promise-only\lib\npo.src.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\requirejs\require.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\Sortable\Sortable.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\swipebox\src\css\swipebox.min.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\swipebox\src\img\icons.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\swipebox\src\img\icons.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\swipebox\src\js\jquery.swipebox.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\velocity\velocity.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\HTMLImports.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\HTMLImports.min.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\MutationObserver.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\MutationObserver.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\ShadowDOM.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\ShadowDOM.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents.js" />
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\buttonenabled.js">
@@ -2293,11 +2223,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dashboard-ui\bower_components\webcomponentsjs\.bower.json" />
-    <None Include="dashboard-ui\bower_components\webcomponentsjs\bower.json" />
-    <None Include="dashboard-ui\bower_components\webcomponentsjs\build.log" />
-    <None Include="dashboard-ui\bower_components\webcomponentsjs\package.json" />
-    <None Include="dashboard-ui\bower_components\webcomponentsjs\README.md" />
     <None Include="dashboard-ui\css\fonts\roboto\RobotoBold.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
