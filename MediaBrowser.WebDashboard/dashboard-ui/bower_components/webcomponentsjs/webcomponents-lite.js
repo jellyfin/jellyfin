@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.18
+// @version 0.7.19
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}

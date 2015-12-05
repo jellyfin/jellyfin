@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.18
+// @version 0.7.19
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}
@@ -2771,7 +2771,7 @@ if (WebComponents.flags.shadow) {
         enumerable: true
       });
     }
-    [ "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
+    [ "focus", "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
     registerWrapper(OriginalHTMLElement, HTMLElement, document.createElement("b"));
     scope.wrappers.HTMLElement = HTMLElement;
     scope.getInnerHTML = getInnerHTML;
@@ -3373,6 +3373,7 @@ if (WebComponents.flags.shadow) {
     var setInnerHTML = scope.setInnerHTML;
     var unsafeUnwrap = scope.unsafeUnwrap;
     var unwrap = scope.unwrap;
+    var wrap = scope.wrap;
     var shadowHostTable = new WeakMap();
     var nextOlderShadowTreeTable = new WeakMap();
     function ShadowRoot(hostWrapper) {
@@ -3408,6 +3409,22 @@ if (WebComponents.flags.shadow) {
       },
       getSelection: function() {
         return document.getSelection();
+      },
+      get activeElement() {
+        var unwrappedActiveElement = unwrap(this).ownerDocument.activeElement;
+        if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+        var activeElement = wrap(unwrappedActiveElement);
+        while (!this.contains(activeElement)) {
+          while (activeElement.parentNode) {
+            activeElement = activeElement.parentNode;
+          }
+          if (activeElement.host) {
+            activeElement = activeElement.host;
+          } else {
+            return null;
+          }
+        }
+        return activeElement;
       }
     });
     scope.wrappers.ShadowRoot = ShadowRoot;
@@ -4066,6 +4083,7 @@ if (WebComponents.flags.shadow) {
     var ShadowRoot = scope.wrappers.ShadowRoot;
     var TreeScope = scope.TreeScope;
     var cloneNode = scope.cloneNode;
+    var defineGetter = scope.defineGetter;
     var defineWrapGetter = scope.defineWrapGetter;
     var elementFromPoint = scope.elementFromPoint;
     var forwardMethodsToWrapper = scope.forwardMethodsToWrapper;
@@ -4089,6 +4107,23 @@ if (WebComponents.flags.shadow) {
     defineWrapGetter(Document, "documentElement");
     defineWrapGetter(Document, "body");
     defineWrapGetter(Document, "head");
+    defineGetter(Document, "activeElement", function() {
+      var unwrappedActiveElement = unwrap(this).activeElement;
+      if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+      var activeElement = wrap(unwrappedActiveElement);
+      while (!this.contains(activeElement)) {
+        var lastHost = activeElement;
+        while (activeElement.parentNode) {
+          activeElement = activeElement.parentNode;
+        }
+        if (activeElement.host) {
+          activeElement = activeElement.host;
+        } else {
+          return null;
+        }
+      }
+      return activeElement;
+    });
     function wrapMethod(name) {
       var original = document[name];
       Document.prototype[name] = function() {
