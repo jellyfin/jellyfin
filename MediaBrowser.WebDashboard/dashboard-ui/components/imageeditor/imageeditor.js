@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css'], function () {
+﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function () {
 
     var currentItem;
     var currentDeferred;

@@ -141,15 +141,15 @@
 
         var timers = result.Items;
 
-        var html = LiveTvHelpers.getTimersHtml(timers);
+        LiveTvHelpers.getTimersHtml(timers).then(function(html) {
+            var elem = $('.scheduleTab', page).html(html);
 
-        var elem = $('.scheduleTab', page).html(html);
+            $('.btnDeleteTimer', elem).on('click', function () {
 
-        $('.btnDeleteTimer', elem).on('click', function () {
+                var id = this.getAttribute('data-timerid');
 
-            var id = this.getAttribute('data-timerid');
-
-            deleteTimer(page, id);
+                deleteTimer(page, id);
+            });
         });
     }
 

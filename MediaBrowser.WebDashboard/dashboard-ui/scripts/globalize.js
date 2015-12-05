@@ -27,7 +27,8 @@
             }
 
             var url = getUrl(name, culture);
-            var requestUrl = url + "?v=" + window.dashboardVersion;
+
+            var requestUrl = url + "?v=" + AppInfo.appVersion;
 
             var xhr = new XMLHttpRequest();
             xhr.open('GET', requestUrl, true);

@@ -279,7 +279,10 @@
         Dashboard.showLoadingMsg();
 
         startInterval();
-        reloadList(page);
+
+        require(['paper-fab', 'paper-progress'], function () {
+            reloadList(page);
+        });
 
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 

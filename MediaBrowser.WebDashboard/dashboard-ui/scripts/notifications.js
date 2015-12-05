@@ -108,7 +108,7 @@
             });
         }
 
-        require(['humanedate'], function() {
+        require(['humanedate', 'paper-fab'], function () {
             for (var i = 0, length = list.length; i < length; i++) {
 
                 var notification = list[i];

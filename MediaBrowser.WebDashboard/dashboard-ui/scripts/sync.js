@@ -212,7 +212,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['components/paperdialoghelper'], function () {
+        require(['components/paperdialoghelper', 'paper-fab'], function () {
 
             var userId = Dashboard.getCurrentUserId();
 

@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input'], function () {
+﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab'], function () {
 
     var systemInfo;
     function getSystemInfo() {

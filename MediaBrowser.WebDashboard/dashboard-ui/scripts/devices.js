@@ -88,7 +88,9 @@
 
         })).then(function (result) {
 
-            load(page, result.Items);
+            require(['paper-fab'], function() {
+                load(page, result.Items);
+            });
 
             Dashboard.hideLoadingMsg();
         });

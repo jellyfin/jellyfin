@@ -66,7 +66,9 @@
 
         var page = this;
 
-        reload(page);
+        require(['paper-fab'], function () {
+            reload(page);
+        });
     });
 
 })(jQuery, window);

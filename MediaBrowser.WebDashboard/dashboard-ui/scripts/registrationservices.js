@@ -97,7 +97,7 @@
 
     function showPlaybackOverlay(deferred) {
 
-        require(['components/paperdialoghelper'], function () {
+        require(['components/paperdialoghelper', 'paper-fab'], function () {
 
             var dlg = PaperDialogHelper.createDialog({});
 
