@@ -2,11 +2,15 @@
 
     function onPageShow() {
 
+        if (!browserInfo.android) {
+            return;
+        }
+
         var msg;
 
         var settingsKey = "betatester";
 
-        var expectedValue = new Date().toDateString() + "3";
+        var expectedValue = new Date().toDateString() + "5";
         if (appStorage.getItem(settingsKey) == expectedValue) {
             return;
         }
@@ -18,10 +22,12 @@
 
         Dashboard.alert({
             message: msg,
-            title: 'Hello Emby Beta Tester!'
+            title: 'Hello Emby Beta Tester!',
+            callback: function () {
+                appStorage.setItem(settingsKey, expectedValue);
+            }
         });
 
-        appStorage.setItem(settingsKey, expectedValue);
     }
 
     pageClassOn('pageshow', "homePage", onPageShow);

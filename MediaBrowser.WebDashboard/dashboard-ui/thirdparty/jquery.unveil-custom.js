@@ -98,13 +98,6 @@
         unveil();
     }
 
-    function bindEvent(elems, method, name, fn) {
-
-        for (var i = 0, length = elems.length; i < length; i++) {
-            elems[i][method](name, fn);
-        }
-    }
-
     function fillImages(elems) {
 
         for (var i = 0, length = elems.length; i < length; i++) {

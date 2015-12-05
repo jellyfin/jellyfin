@@ -560,7 +560,9 @@ var Dashboard = {
             navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
 
         } else {
-            Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
+            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
+                Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
+            });
         }
     },
 
@@ -587,9 +589,15 @@ var Dashboard = {
 
     confirmInternal: function (message, title, showCancel, callback) {
 
-        var id = 'paperdlg' + new Date().getTime();
+        var dlg = document.createElement('paper-dialog');
 
-        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        dlg.setAttribute('with-backdrop', 'with-backdrop');
+        dlg.setAttribute('role', 'alertdialog');
+        dlg.entryAnimation = 'fade-in-animation';
+        dlg.exitAnimation = 'fade-out-animation';
+        dlg.setAttribute('with-backdrop', 'with-backdrop');
+
+        var html = '';
         html += '<h2>' + title + '</h2>';
         html += '<div>' + message + '</div>';
         html += '<div class="buttons">';
@@ -601,30 +609,22 @@ var Dashboard = {
         }
 
         html += '</div>';
-        html += '</paper-dialog>';
 
-        $(document.body).append(html);
+        dlg.innerHTML = html;
+        document.body.appendChild(dlg);
 
-        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-        // element onload never fires
-        setTimeout(function () {
+        // Has to be assigned a z-index after the call to .open() 
+        dlg.addEventListener('iron-overlay-closed', function (e) {
 
-            var dlg = document.getElementById(id);
+            var confirmed = dlg.closingReason.confirmed;
+            dlg.parentNode.removeChild(dlg);
 
-            // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function (e) {
+            if (callback) {
+                callback(confirmed);
+            }
+        });
 
-                var confirmed = dlg.closingReason.confirmed;
-                dlg.parentNode.removeChild(dlg);
-
-                if (callback) {
-                    callback(confirmed);
-                }
-            });
-
-            dlg.open();
-
-        }, 300);
+        dlg.open();
     },
 
     refreshSystemInfoFromServer: function () {
@@ -1806,6 +1806,7 @@ var AppInfo = {};
         define("paper-slider", ["html!bower_components/paper-slider/paper-slider.html"]);
         define("paper-tabs", ["html!bower_components/paper-tabs/paper-tabs.html"]);
         define("paper-menu", ["html!bower_components/paper-menu/paper-menu.html"]);
+        define("paper-dialog", ["html!bower_components/paper-dialog/paper-dialog.html"]);
         define("paper-dialog-scrollable", ["html!bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
         define("paper-button", ["html!bower_components/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!bower_components/paper-icon-button/paper-icon-button.html"]);
@@ -1824,7 +1825,6 @@ var AppInfo = {};
         define("fade-in-animation", ["html!bower_components/neon-animation/animations/fade-in-animation.html"]);
         define("fade-out-animation", ["html!bower_components/neon-animation/animations/fade-out-animation.html"]);
         define("scale-up-animation", ["html!bower_components/neon-animation/animations/scale-up-animation.html"]);
-        define("paper-dialog", ["html!bower_components/paper-dialog/paper-dialog.html"]);
         define("paper-fab", ["html!bower_components/paper-fab/paper-fab.html"]);
         define("paper-progress", ["html!bower_components/paper-progress/paper-progress.html"]);
         define("paper-input", ["html!bower_components/paper-input/paper-input.html"]);
@@ -1968,6 +1968,14 @@ var AppInfo = {};
         });
     }
 
+    function getRequirePromise(deps) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(deps, resolve);
+        });
+    }
+
     function initAfterDependencies(promiseResolve) {
 
         var drawer = document.querySelector('.mainDrawerPanel');
@@ -1991,19 +1999,12 @@ var AppInfo = {};
             require(['cordova/android/logging']);
         }
 
-        deps.push('scripts/librarybrowser');
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
         deps.push('apiclient/apiclient');
         deps.push('apiclient/connectionmanager');
-        deps.push('apiclient/deferred');
         deps.push('apiclient/credentials');
-
-        deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
-
-        deps.push('paper-button');
-        deps.push('paper-icon-button');
 
         require(deps, function () {
 
@@ -2044,11 +2045,21 @@ var AppInfo = {};
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
 
+            var promises = [];
             deps = [];
-            deps.push(Globalize.ensure());
-            deps.push(createConnectionManager(capabilities));
+            deps.push('thirdparty/jquery.unveil-custom.js');
+            deps.push('html!thirdparty/emby-icons.html');
+            deps.push('paper-icon-button');
+            deps.push('paper-button');
+            deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
+            deps.push('scripts/librarybrowser');
+            promises.push(getRequirePromise(deps));
 
-            Promise.all(deps).then(function () {
+            promises.push(Globalize.ensure());
+            promises.push(createConnectionManager(capabilities));
+
+
+            Promise.all(promises).then(function () {
 
                 document.title = Globalize.translateDocument(document.title, 'html');
 
@@ -2142,11 +2153,11 @@ var AppInfo = {};
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
         deps.push('scripts/alphapicker');
-        deps.push('thirdparty/jquery.unveil-custom.js');
         deps.push('scripts/playlistmanager');
         deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
+        deps.push('apiclient/deferred');
 
         require(deps, function () {
 
@@ -2197,7 +2208,7 @@ var AppInfo = {};
                 postInitDependencies.push('scripts/nowplayingbar');
             }
 
-            //postInitDependencies.push('components/testermessage');
+            postInitDependencies.push('components/testermessage');
 
             require(postInitDependencies);
         });
@@ -2387,7 +2398,6 @@ var AppInfo = {};
             function onWebComponentsReady() {
 
                 var polymerDependencies = [];
-                polymerDependencies.push('html!thirdparty/emby-icons.html');
 
                 require(polymerDependencies, function () {
 
