@@ -914,7 +914,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
+                    overlayMoreButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -1961,31 +1961,31 @@
         });
     }
 
-    pageIdOn('pageinit', "itemDetailPage", function() {
+    pageIdOn('pageinit', "itemDetailPage", function () {
 
         var page = this;
 
-        $('.btnPlay', page).on('click', function() {
+        $('.btnPlay', page).on('click', function () {
             playCurrentItem(this);
         });
 
-        $('.btnPlayTrailer', page).on('click', function() {
+        $('.btnPlayTrailer', page).on('click', function () {
             playTrailer(page);
         });
 
-        $('.btnSplitVersions', page).on('click', function() {
+        $('.btnSplitVersions', page).on('click', function () {
 
             splitVersions(page);
         });
 
-        $('.btnSync', page).on('click', function() {
+        $('.btnSync', page).on('click', function () {
 
             SyncManager.showMenu({
                 items: [currentItem]
             });
         });
 
-        $('.btnRecord,.btnFloatingRecord', page).on('click', function() {
+        $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
 
@@ -1993,12 +1993,12 @@
 
         });
 
-        $('.btnCancelRecording', page).on('click', function() {
+        $('.btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
         });
 
-        $('.btnMoreCommands', page).on('click', function() {
+        $('.btnMoreCommands', page).on('click', function () {
 
             var button = this;
 
@@ -2008,33 +2008,33 @@
             });
         });
 
-        $('.childrenItemsContainer', page).on('playallfromhere', function(e, index) {
+        $('.childrenItemsContainer', page).on('playallfromhere', function (e, index) {
 
             LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
 
-        }).on('queueallfromhere', function(e, index) {
+        }).on('queueallfromhere', function (e, index) {
 
             LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
 
         });
 
-        $(page).on("click", ".moreScenes", function() {
+        $(page).on("click", ".moreScenes", function () {
 
             Dashboard.getCurrentUser().then(function (user) {
                 renderScenes(page, currentItem, user);
             });
 
-        }).on("click", ".morePeople", function() {
+        }).on("click", ".morePeople", function () {
 
             renderCast(page, currentItem, getContext(currentItem));
 
-        }).on("click", ".moreSpecials", function() {
+        }).on("click", ".moreSpecials", function () {
 
             Dashboard.getCurrentUser().then(function (user) {
                 renderSpecials(page, currentItem, user);
             });
 
-        }).on("click", ".moreCriticReviews", function() {
+        }).on("click", ".moreCriticReviews", function () {
 
             renderCriticReviews(page, currentItem);
         });
@@ -2046,7 +2046,7 @@
 
     });
 
-    pageIdOn('pagebeforeshow', "itemDetailPage", function() {
+    pageIdOn('pagebeforeshow', "itemDetailPage", function () {
 
         var page = this;
 

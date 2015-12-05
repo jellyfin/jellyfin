@@ -2208,7 +2208,7 @@ var AppInfo = {};
                 postInitDependencies.push('scripts/nowplayingbar');
             }
 
-            postInitDependencies.push('components/testermessage');
+            //postInitDependencies.push('components/testermessage');
 
             require(postInitDependencies);
         });

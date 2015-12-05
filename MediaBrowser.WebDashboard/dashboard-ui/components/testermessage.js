@@ -10,7 +10,7 @@
 
         var settingsKey = "betatester";
 
-        var expectedValue = new Date().toDateString() + "5";
+        var expectedValue = new Date().toDateString() + "6";
         if (appStorage.getItem(settingsKey) == expectedValue) {
             return;
         }
