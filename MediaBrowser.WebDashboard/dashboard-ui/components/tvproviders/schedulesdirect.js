@@ -106,7 +106,8 @@
                         ValidateLogin: true
                     }),
                     data: JSON.stringify(info),
-                    contentType: "application/json"
+                    contentType: "application/json",
+                    dataType: 'json'
 
                 }).then(function (result) {
 

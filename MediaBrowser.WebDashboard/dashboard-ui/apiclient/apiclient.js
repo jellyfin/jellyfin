@@ -196,7 +196,7 @@
                 } else {
                     fetchRequest.body = paramsToString(request.data);
 
-                    contentType = contentType || 'application/x-www-form-urlencoded';
+                    contentType = contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
                 }
             }
 
@@ -206,6 +206,21 @@
             }
 
             return fetch(request.url, fetchRequest);
+        }
+
+        function paramsToString(params) {
+
+            var values = [];
+
+            for (var key in params) {
+
+                var value = params[key];
+
+                if (value !== null && value !== undefined && value !== '') {
+                    values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+                }
+            }
+            return values.join('&');
         }
 
         /**
@@ -406,21 +421,6 @@
                 url: url
             });
         };
-
-        function paramsToString(params) {
-
-            var values = [];
-
-            for (var key in params) {
-
-                var value = params[key];
-
-                if (value !== null && value !== undefined && value !== '') {
-                    values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
-                }
-            }
-            return values.join('&');
-        }
 
         /**
          * Creates an api url based on a handler name and query string parameters

@@ -95,22 +95,51 @@
                 method: request.type
             };
 
+            var contentType = request.contentType;
+
             if (request.data) {
 
                 if (typeof request.data === 'string') {
                     fetchRequest.body = request.data;
+                } else {
+                    fetchRequest.body = paramsToString(request.data);
+
+                    contentType = contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
                 }
             }
 
-            if (request.contentType) {
+            if (contentType) {
 
-                headers['Content-Type'] = request.contentType;
+                headers['Content-Type'] = contentType;
             }
 
             return fetch(request.url, fetchRequest);
         }
 
+        function paramsToString(params) {
+
+            var values = [];
+
+            for (var key in params) {
+
+                var value = params[key];
+
+                if (value !== null && value !== undefined && value !== '') {
+                    values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+                }
+            }
+            return values.join('&');
+        }
+
         function ajax(request) {
+
+            if (!request) {
+                throw new Error("Request cannot be null");
+            }
+
+            request.headers = request.headers || {};
+
+            logger.log('Requesting url without automatic networking: ' + request.url);
 
             return getFetchPromise(request).then(function (response) {
 
@@ -122,12 +151,10 @@
                         return response;
                     }
                 } else {
-                    onFetchFail(request.url, response);
                     return Promise.reject(response);
                 }
 
             }, function () {
-                onFetchFail(request.url, {});
                 return Promise.reject({});
             });
         }
@@ -1227,17 +1254,22 @@
                             "X-CONNECT-TOKEN": "CONNECT-REGISTER"
                         }
 
-                    }).then(resolve, function (e) {
+                    }).then(resolve, function (response) {
 
                         try {
+                            return response.json();
 
-                            var result = JSON.parse(e.responseText);
-
-                            reject({ errorCode: result.Status });
                         } catch (err) {
-                            reject({});
+                            reject();
                         }
-                    });
+
+                    }).then(function (result) {
+
+                        if (result && result.Status) {
+                            reject({ errorCode: result.Status });
+                        }
+
+                    }, reject);
                 });
             });
         };

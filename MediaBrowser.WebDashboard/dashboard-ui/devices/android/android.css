@@ -1,5 +1,5 @@
 ﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
-    background-color: #101010;
+    background-color: #080808;
 }
 
     .viewMenuBar.semiTransparent {
@@ -7,7 +7,7 @@
     }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background-color: #202020;
+    background-color: #1b1b1b;
 }
 
 .defaultBackground .cardImage {

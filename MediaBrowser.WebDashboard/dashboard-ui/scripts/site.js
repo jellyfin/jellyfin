@@ -759,9 +759,10 @@ var Dashboard = {
 
         if (!apiClient) {
 
-            var deferred = $.Deferred();
-            deferred.reject();
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                reject();
+            });
         }
 
         if (!Dashboard.getPluginSecurityInfoPromise) {
