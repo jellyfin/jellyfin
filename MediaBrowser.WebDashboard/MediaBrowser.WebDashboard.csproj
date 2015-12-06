@@ -63,8 +63,9 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="WebMarkupMin.Core">
-      <HintPath>..\packages\WebMarkupMin.Core.1.0.0\lib\net40\WebMarkupMin.Core.dll</HintPath>
+    <Reference Include="WebMarkupMin.Core, Version=1.0.1.0, Culture=neutral, PublicKeyToken=99472178d266584b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\WebMarkupMin.Core.1.0.1\lib\net40\WebMarkupMin.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -91,11 +92,11 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
-<ItemGroup>
+  <ItemGroup>
     <None Include="dashboard-ui\bower_components\**\*.*">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-</ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="dashboard-ui\apiclient\sync\contentuploader.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
