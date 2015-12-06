@@ -31,10 +31,15 @@ namespace MediaBrowser.Api.Library
         /// <exception cref="System.IO.DirectoryNotFoundException">The media folder does not exist</exception>
         public static void RemoveMediaPath(IFileSystem fileSystem, string virtualFolderName, string mediaPath, IServerApplicationPaths appPaths)
         {
+            if (string.IsNullOrWhiteSpace(mediaPath))
+            {
+                throw new ArgumentNullException("mediaPath");
+            }
+
             var rootFolderPath = appPaths.DefaultUserViewsPath;
             var path = Path.Combine(rootFolderPath, virtualFolderName);
 
-			if (!fileSystem.DirectoryExists(path))
+            if (!fileSystem.DirectoryExists(path))
             {
                 throw new DirectoryNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }
@@ -56,7 +61,7 @@ namespace MediaBrowser.Api.Library
         /// <param name="appPaths">The app paths.</param>
         public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, IServerApplicationPaths appPaths)
         {
-            if (!string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
