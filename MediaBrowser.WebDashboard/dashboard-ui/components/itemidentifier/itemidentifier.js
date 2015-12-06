@@ -67,7 +67,8 @@
             type: "POST",
             url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
             data: JSON.stringify(lookupInfo),
-            contentType: "application/json"
+            contentType: "application/json",
+            dataType: 'json'
 
         }).then(function (results) {
 
@@ -88,7 +89,6 @@
         for (var i = 0, length = results.length; i < length; i++) {
 
             var result = results[i];
-
             html += getSearchResultHtml(result, i);
         }
 

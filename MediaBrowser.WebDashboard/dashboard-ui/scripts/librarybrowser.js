@@ -3259,7 +3259,8 @@
                 elem.classList.remove('squareDetailImageContainer');
             }
 
-            ImageLoader.lazyImage(elem.querySelector('img'), url);
+            var img = elem.querySelector('img');
+            ImageLoader.lazyImage(img, url);
         },
 
         refreshDetailImageUserData: function (elem, item) {
