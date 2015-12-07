@@ -1269,6 +1269,8 @@
 
         getListViewHtml: function (options) {
 
+            require(['paper-icon-item', 'paper-item-body']);
+
             var outerHtml = "";
 
             if (options.title) {

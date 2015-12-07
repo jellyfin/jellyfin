@@ -2201,6 +2201,8 @@ var AppInfo = {};
                     }
                 }
 
+                postInitDependencies.push('components/testermessage');
+
             } else if (browserInfo.chrome) {
                 postInitDependencies.push('scripts/chromecast');
             }
@@ -2208,8 +2210,6 @@ var AppInfo = {};
             if (AppInfo.enableNowPlayingBar) {
                 postInitDependencies.push('scripts/nowplayingbar');
             }
-
-            postInitDependencies.push('components/testermessage');
 
             require(postInitDependencies);
         });

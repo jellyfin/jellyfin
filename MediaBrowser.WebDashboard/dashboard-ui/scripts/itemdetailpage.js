@@ -1233,7 +1233,8 @@
             page.dispatchEvent(new CustomEvent("thememediadownload", {
                 detail: {
                     themeMediaResult: result
-                }
+                },
+                bubbles: true
             }));
 
         });
