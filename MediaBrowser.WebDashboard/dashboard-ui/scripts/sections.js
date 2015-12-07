@@ -24,14 +24,14 @@
 
                     view.ImageTags = {};
                     view.icon = 'live-tv';
-                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);return false;";
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);event.preventDefault();event.stopPropagation();return false;";
 
                     var guideView = $.extend({}, view);
                     guideView.Name = Globalize.translate('ButtonGuide');
                     guideView.ImageTags = {};
                     guideView.icon = 'dvr';
                     guideView.url = 'livetv.html?tab=1';
-                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);return false;";
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);event.preventDefault();event.stopPropagation();return false;";
                     list.push(guideView);
 
                     var recordedTvView = $.extend({}, view);
@@ -39,7 +39,7 @@
                     recordedTvView.ImageTags = {};
                     recordedTvView.icon = 'video-library';
                     recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);return false;";
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 2);event.preventDefault();event.stopPropagation();return false;";
                     list.push(recordedTvView);
                 }
             }
