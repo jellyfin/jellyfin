@@ -425,7 +425,11 @@ namespace MediaBrowser.WebDashboard.Api
                 builder.AppendFormat("window.appMode='{0}';", mode);
             }
 
-            builder.AppendFormat("window.dashboardVersion='{0}';", version);
+            if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.AppendFormat("window.dashboardVersion='{0}';", version);
+            }
+
             builder.Append("</script>");
 
             var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;

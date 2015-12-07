@@ -644,7 +644,7 @@
     }
 
     function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts && screen.availWidth <= 1000;
     }
 
     function getPortraitShape() {
@@ -899,7 +899,7 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: getPortraitShape(),
-                    showTitle: false,
+                    showTitle: true,
                     centerText: true,
                     lazy: true
                 });

@@ -113,7 +113,23 @@
                 headers['Content-Type'] = contentType;
             }
 
-            return fetch(request.url, fetchRequest);
+            if (!request.timeout) {
+                return fetch(request.url, fetchRequest);
+            }
+
+            return new Promise(function (resolve, reject) {
+
+                var timeout = setTimeout(reject, request.timeout);
+
+                fetch(request.url, fetchRequest).then(function (response) {
+                    clearTimeout(timeout);
+                    resolve(response);
+                }, function (error) {
+                    clearTimeout(timeout);
+                    throw error;
+                });
+
+            });
         }
 
         function paramsToString(params) {
@@ -154,8 +170,8 @@
                     return Promise.reject(response);
                 }
 
-            }, function () {
-                return Promise.reject({});
+            }, function (error) {
+                throw error;
             });
         }
 

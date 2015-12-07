@@ -3260,6 +3260,11 @@
             }
 
             var img = elem.querySelector('img');
+            img.onload = function () {
+                if (img.src.indexOf('empty.png') == -1) {
+                    img.classList.add('loaded');
+                }
+            };
             ImageLoader.lazyImage(img, url);
         },
 

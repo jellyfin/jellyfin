@@ -763,10 +763,9 @@
             curr.addEventListener('click', onCardClick);
 
             if (AppInfo.isTouchPreferred) {
+
                 curr.removeEventListener('contextmenu', disableEvent);
                 curr.addEventListener('contextmenu', disableEvent);
-                //this.off('contextmenu', onContextMenu);
-                //this.on('contextmenu', onContextMenu);
             }
             else {
                 curr.removeEventListener('contextmenu', onContextMenu);
@@ -820,6 +819,7 @@
             hammertime.on('press', onTapHold);
             hammertime.on('pressup', onTapHoldUp);
         });
+
         showTapHoldHelp(element);
     }
 
@@ -863,9 +863,16 @@
 
             showSelections(card);
 
+            if (s.stopPropagation) {
+                e.stopPropagation();
+            }
             e.preventDefault();
+            e.stopPropagation();
             return false;
         }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
     }
 
     function onTapHoldUp(e) {

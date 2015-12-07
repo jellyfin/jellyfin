@@ -334,24 +334,24 @@
 
     function updatePageStyle(page) {
 
-        if (ConnectionManager.isLoggedIntoConnect()) {
+        if (getParameterByName('showuser') == '1') {
             $(page).addClass('libraryPage').addClass('noSecondaryNavPage').removeClass('standalonePage');
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
         }
     }
 
-    $(document).on('pageinit pagebeforeshow', "#selectServerPage", function () {
+    pageIdOn('pagebeforeshow', "selectServerPage", function () {
 
         var page = this;
         updatePageStyle(page);
+    });
 
-    }).on('pageshow', "#selectServerPage", function () {
+    pageIdOn('pageshow', "selectServerPage", function () {
 
         var page = this;
 
         loadPage(page);
-
     });
 
 })();

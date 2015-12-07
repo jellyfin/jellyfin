@@ -167,7 +167,7 @@
 
     function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, deferred) {
 
-        Dashboard.hideModalLoadingMsg();
+        Dashboard.hideLoadingMsg();
 
         currentItem = item;
         currentMediaSource = mediaSource;

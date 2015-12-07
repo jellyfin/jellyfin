@@ -781,7 +781,10 @@
 
         self.endSession = function () {
 
-            castPlayer.stopApp();
+            self.stop();
+            setTimeout(function () {
+                castPlayer.stopApp();
+            }, 1000);
         };
 
         self.volumeUp = function () {

@@ -1757,7 +1757,7 @@ var AppInfo = {};
 
     function initRequire() {
 
-        var urlArgs = "v=" + window.dashboardVersion;
+        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
 
         var paths = {
             velocity: "bower_components/velocity/velocity.min",
@@ -2209,7 +2209,7 @@ var AppInfo = {};
                 postInitDependencies.push('scripts/nowplayingbar');
             }
 
-            //postInitDependencies.push('components/testermessage');
+            postInitDependencies.push('components/testermessage');
 
             require(postInitDependencies);
         });

@@ -845,7 +845,7 @@
 
             if (firstItem.MediaType === "Video") {
 
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
             }
 
             if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !AppSettings.enableCinemaMode()) {
@@ -1064,7 +1064,7 @@
             }
 
             if (item.IsPlaceHolder) {
-                Dashboard.hideModalLoadingMsg();
+                Dashboard.hideLoadingMsg();
                 MediaController.showPlaybackInfoErrorMessage('PlaceHolder');
                 return;
             }
@@ -1073,7 +1073,7 @@
 
             if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
 
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
                     Logger.log('Max bitrate auto detected to ' + bitrate);
@@ -1096,7 +1096,7 @@
 
             if (item.MediaType === "Video") {
 
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
             }
 
             MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).then(function (playbackInfoResult) {
@@ -1122,7 +1122,7 @@
                                 callback(mediaSource);
                             }
                         } else {
-                            Dashboard.hideModalLoadingMsg();
+                            Dashboard.hideLoadingMsg();
                             MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
                         }
                     });
@@ -1140,7 +1140,7 @@
 
         function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
 
-            Dashboard.hideModalLoadingMsg();
+            Dashboard.hideLoadingMsg();
 
             self.currentMediaSource = mediaSource;
             self.currentItem = item;

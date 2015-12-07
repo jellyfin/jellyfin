@@ -205,7 +205,23 @@
                 headers['Content-Type'] = contentType;
             }
 
-            return fetch(request.url, fetchRequest);
+            if (!request.timeout) {
+                return fetch(request.url, fetchRequest);
+            }
+
+            return new Promise(function (resolve, reject) {
+
+                var timeout = setTimeout(reject, request.timeout);
+
+                fetch(request.url, fetchRequest).then(function (response) {
+                    clearTimeout(timeout);
+                    resolve(response);
+                }, function (error) {
+                    clearTimeout(timeout);
+                    throw error;
+                });
+
+            });
         }
 
         function paramsToString(params) {
@@ -256,9 +272,9 @@
                         return Promise.reject(response);
                     }
 
-                }, function () {
+                }, function (error) {
                     onFetchFail(request.url, {});
-                    return Promise.reject({});
+                    throw error;
                 });
             }
 
@@ -379,7 +395,7 @@
                     return Promise.reject(response);
                 }
 
-            }, function () {
+            }, function (error) {
 
                 logger.log("Request failed to " + request.url);
 
@@ -390,26 +406,26 @@
 
                     var previousServerAddress = self.serverAddress();
 
-                    tryReconnect().then(function () {
+                    return tryReconnect().then(function () {
 
                         logger.log("Reconnect succeesed");
                         request.url = request.url.replace(previousServerAddress, self.serverAddress());
 
-                        self.fetchWithFailover(request, false);
+                        return self.fetchWithFailover(request, false);
 
-                    }, function () {
+                    }, function (innerError) {
 
                         logger.log("Reconnect failed");
                         onFetchFail(request.url, {});
-                        return Promise.reject({});
-
+                        throw innerError;
                     });
+
                 } else {
 
                     logger.log("Reporting request failure");
 
                     onFetchFail(request.url, {});
-                    return Promise.reject({});
+                    throw error;
                 }
             });
         };
@@ -590,7 +606,13 @@
 
             var now = new Date().getTime();
 
-            return self.get(url).then(function () {
+            return self.ajax({
+
+                type: "GET",
+                url: url,
+                timeout: 5000
+
+            }).then(function () {
 
                 var responseTimeSeconds = (new Date().getTime() - now) / 1000;
                 var bytesPerSecond = byteSize / responseTimeSeconds;

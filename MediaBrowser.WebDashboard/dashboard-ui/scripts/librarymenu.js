@@ -272,7 +272,7 @@
 
         var userAtTop = showUserAtTop();
 
-        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
+        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
 
         var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
 
@@ -376,7 +376,7 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><iron-icon icon="sync" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
@@ -790,7 +790,7 @@
         }
     }
 
-    pageClassOn('pageinit', 'page', function () {
+    pageClassOn('pagebeforeshow', 'page', function () {
 
         var page = this;
 
