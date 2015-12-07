@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
@@ -13,7 +14,7 @@
 		<style>
 			.header {
 				min-height: 48px;
-				opacity: var(--dark-primary-opacity);
+				color: var(--primary-text-color);
 				@apply(--layout-horizontal);
 				@apply(--layout-center-center);
 				@apply(--paper-font-subhead);
@@ -26,11 +27,11 @@
 			}
 		
 			.icon,.toogle {
-				opacity: var(--dark-disabled-opacity);
+				color: var(--disabled-text-color);
 			}
 						
 			.content {
-				opacity: var(--dark-primary-opacity);
+				color: var(--primary-text-color);
 				@apply(--paper-font-body1);
 			}
 		</style>
