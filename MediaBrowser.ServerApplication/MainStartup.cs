@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonIO.Windows;
+using ImageMagickSharp;
 using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.ServerApplication
@@ -46,6 +47,8 @@ namespace MediaBrowser.ServerApplication
 
             var applicationPath = currentProcess.MainModule.FileName;
             var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+
+            Wand.SetMagickCoderModulePath(architecturePath);
 
             var success = SetDllDirectory(architecturePath);
 

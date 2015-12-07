@@ -105,11 +105,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
-        private int GetMaxAllowedBitrateForExternalSubtitleStream()
-        {
-            return 30000000;
-        }
-
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
         {
             var list = streams.ToList();
@@ -120,25 +115,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (subtitleStreams.Count > 0)
             {
-                var videoStream = list.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                int maxAllowedBitrateForExternalSubtitleStream = GetMaxAllowedBitrateForExternalSubtitleStream();
-
-                var videoBitrate = videoStream == null ? maxAllowedBitrateForExternalSubtitleStream : videoStream.BitRate ?? maxAllowedBitrateForExternalSubtitleStream;
-
                 foreach (var subStream in subtitleStreams)
                 {
-                    var supportsExternalStream = StreamSupportsExternalStream(subStream);
-
-                    if (!subStream.IsExternal)
-                    {
-                        if (supportsExternalStream && videoBitrate >= maxAllowedBitrateForExternalSubtitleStream)
-                        {
-                            supportsExternalStream = false;
-                        }
-                    }
-
-                    subStream.SupportsExternalStream = supportsExternalStream;
+                    subStream.SupportsExternalStream = StreamSupportsExternalStream(subStream);
                 }
             }
 
