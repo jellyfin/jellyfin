@@ -869,7 +869,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             if (!seriesTimer.RecordAnyTime)
             {
-                allPrograms = allPrograms.Where(epg => (seriesTimer.StartDate.TimeOfDay == epg.StartDate.TimeOfDay));
+                allPrograms = allPrograms.Where(epg => Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - epg.StartDate.TimeOfDay.Ticks) < TimeSpan.FromMinutes(5).Ticks);
             }
 
             if (seriesTimer.RecordNewOnly)
