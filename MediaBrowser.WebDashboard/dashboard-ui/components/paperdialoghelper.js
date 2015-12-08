@@ -102,25 +102,24 @@
         dlg.setAttribute('noAutoFocus', 'noAutoFocus');
 
         // These don't seem to perform well on mobile
-        if (!browserInfo.mobile) {
-            dlg.entryAnimation = options.entryAnimation || 'scale-up-animation';
-            dlg.exitAnimation = 'fade-out-animation';
+        var defaultEntryAnimation = browserInfo.mobile ? 'fade-in-animation' : 'scale-up-animation';
+        dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
+        dlg.exitAnimation = 'fade-out-animation';
 
-            dlg.animationConfig = {
-                // scale up
-                'entry': {
-                    name: options.entryAnimation || 'scale-up-animation',
-                    node: dlg,
-                    timing: { duration: options.entryAnimationDuration || 300, easing: 'ease-out' }
-                },
-                // fade out
-                'exit': {
-                    name: 'fade-out-animation',
-                    node: dlg,
-                    timing: { duration: options.exitAnimationDuration || 400, easing: 'ease-in' }
-                }
-            };
-        }
+        dlg.animationConfig = {
+            // scale up
+            'entry': {
+                name: options.entryAnimation || defaultEntryAnimation,
+                node: dlg,
+                timing: { duration: options.entryAnimationDuration || 300, easing: 'ease-out' }
+            },
+            // fade out
+            'exit': {
+                name: 'fade-out-animation',
+                node: dlg,
+                timing: { duration: options.exitAnimationDuration || 400, easing: 'ease-in' }
+            }
+        };
 
         dlg.classList.add('popupEditor');
 
