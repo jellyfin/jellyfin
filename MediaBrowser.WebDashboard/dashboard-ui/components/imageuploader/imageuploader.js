@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItemId;
     var currentFile;
@@ -133,7 +133,7 @@
             var template = this.response;
             currentItemId = itemId;
 
-            var dlg = PaperDialogHelper.createDialog({
+            var dlg = paperDialogHelper.createDialog({
                 theme: options.theme
             });
 
@@ -153,14 +153,14 @@
             // Has to be assigned a z-index after the call to .open() 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-            PaperDialogHelper.openWithHash(dlg, 'imageuploader');
+            paperDialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
         }
 
@@ -174,7 +174,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ImageUploader = {
+    return {
         show: function (itemId, options) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -182,12 +182,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper', 'paper-dialog'], function () {
-
-                showEditor(itemId, options);
-            });
+            showEditor(itemId, options);
             return deferred.promise();
         }
     };
-
-})(jQuery, window, document);
+});

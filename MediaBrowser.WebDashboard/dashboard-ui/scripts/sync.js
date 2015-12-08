@@ -212,7 +212,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['components/paperdialoghelper', 'paper-fab'], function () {
+        require(['components/paperdialoghelper', 'paper-fab'], function (paperDialogHelper) {
 
             var userId = Dashboard.getCurrentUserId();
 
@@ -230,7 +230,7 @@
 
                 currentDialogOptions = dialogOptions;
 
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     size: 'small',
                     theme: 'a'
                 });
@@ -267,7 +267,7 @@
                     dlg.parentNode.removeChild(dlg);
                 });
 
-                PaperDialogHelper.openWithHash(dlg, 'syncjob');
+                paperDialogHelper.open(dlg);
 
                 $('form', dlg).on('submit', function () {
 
@@ -276,7 +276,7 @@
                 });
 
                 $('.btnCancel').on('click', function () {
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 renderForm({

@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function () {
+﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -213,7 +213,7 @@
 
             getSystemInfo().then(function (systemInfo) {
 
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     theme: 'a',
                     size: 'medium'
                 });
@@ -242,11 +242,11 @@
                 });
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'directorybrowser');
+                paperDialogHelper.open(dlg);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 currentDialog = dlg;
@@ -264,7 +264,7 @@
 
         self.close = function () {
             if (currentDialog) {
-                PaperDialogHelper.close(currentDialog);
+                paperDialogHelper.close(currentDialog);
             }
         };
 

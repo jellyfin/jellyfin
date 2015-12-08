@@ -165,7 +165,7 @@
     }
 
     window.PaperDialogHelper = {
-        openWithHash: openWithHash,
+        open: openWithHash,
         close: close,
         createDialog: createDialog,
         positionTo: positionTo

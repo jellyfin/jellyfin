@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab'], function () {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab'], function (paperDialogHelper) {
 
     var lastPlaylistId = '';
 
@@ -52,7 +52,7 @@
 
             var id = result.Id;
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
             redirectToPlaylist(id);
         });
     }
@@ -73,7 +73,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
             Dashboard.alert(Globalize.translate('MessageAddedToPlaylistSuccess'));
 
         });
@@ -197,7 +197,7 @@
 
             items = items || [];
 
-            var dlg = PaperDialogHelper.createDialog({
+            var dlg = paperDialogHelper.createDialog({
                 size: 'small'
             });
 
@@ -222,11 +222,11 @@
 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-            PaperDialogHelper.openWithHash(dlg, 'playlisteditor');
+            paperDialogHelper.open(dlg);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
         };
     }

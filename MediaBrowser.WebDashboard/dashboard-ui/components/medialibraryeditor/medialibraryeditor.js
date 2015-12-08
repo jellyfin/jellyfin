@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentDeferred;
     var hasChanges;
@@ -146,7 +146,7 @@
             xhr.onload = function (e) {
 
                 var template = this.response;
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     size: 'small',
                     theme: 'a',
 
@@ -173,11 +173,11 @@
 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'medialibraryeditor');
+                paperDialogHelper.open(dlg);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 refreshLibraryFromServer(editorContent);

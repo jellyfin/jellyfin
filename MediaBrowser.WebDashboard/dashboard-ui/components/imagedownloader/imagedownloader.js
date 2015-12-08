@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function () {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItemId;
     var currentItemType;
@@ -131,7 +131,7 @@
 
             hasChanges = true;
             var dlg = $(page).parents('paper-dialog')[0];
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
         });
     }
 
@@ -271,7 +271,7 @@
             currentItemId = itemId;
             currentItemType = itemType;
 
-            var dlg = PaperDialogHelper.createDialog();
+            var dlg = paperDialogHelper.createDialog();
 
             var html = '';
             html += '<h2 class="dialogHeader">';
@@ -289,14 +289,14 @@
             // Has to be assigned a z-index after the call to .open() 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-            PaperDialogHelper.openWithHash(dlg, 'imagedownloader');
+            paperDialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
 
             reloadBrowsableImages(editorContent);

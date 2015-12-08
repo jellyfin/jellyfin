@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentDeferred;
     var hasChanges;
@@ -27,7 +27,7 @@
         ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).then(function () {
 
             hasChanges = true;
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
 
         }, function () {
 
@@ -192,7 +192,7 @@
             xhr.onload = function (e) {
 
                 var template = this.response;
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     size: 'small',
                     theme: 'a',
 
@@ -221,11 +221,11 @@
 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'medialibrarycreator');
+                paperDialogHelper.open(dlg);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 paths = [];

@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -218,13 +218,13 @@
             hasChanges = true;
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(document.querySelector('.identifyDialog'));
+            paperDialogHelper.close(document.querySelector('.identifyDialog'));
 
         }, function () {
 
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(document.querySelector('.identifyDialog'));
+            paperDialogHelper.close(document.querySelector('.identifyDialog'));
         });
     }
 
@@ -291,7 +291,7 @@
 
                 currentItem = item;
 
-                var dlg = PaperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog();
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -309,14 +309,14 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'itemidentifier');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 initEditor(editorContent);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 dlg.classList.add('identifyDialog');
@@ -344,12 +344,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper', 'paper-input'], function () {
-
-                showEditor(itemId);
-            });
+            showEditor(itemId);
             return deferred.promise();
         }
     };
-
-})(jQuery, window, document);
+});

@@ -2829,7 +2829,7 @@
 
         showSortMenu: function (options) {
 
-            require(['paper-dialog', 'components/paperdialoghelper', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function () {
+            require(['components/paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
 
                 var dlg = document.createElement('paper-dialog');
 
@@ -2906,7 +2906,7 @@
                     dlg.parentNode.removeChild(dlg);
                 });
 
-                PaperDialogHelper.openWithHash(dlg, 'sortmenu');
+                paperDialogHelper.open(dlg);
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
 

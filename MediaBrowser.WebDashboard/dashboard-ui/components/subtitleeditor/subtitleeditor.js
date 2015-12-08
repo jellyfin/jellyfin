@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentItem;
 
@@ -339,7 +339,7 @@
             var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-                var dlg = PaperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog();
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -359,7 +359,7 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'subtitleeditor');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
@@ -371,7 +371,7 @@
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
             });
         }

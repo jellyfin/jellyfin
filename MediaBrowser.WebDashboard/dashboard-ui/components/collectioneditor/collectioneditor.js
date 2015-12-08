@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-fab'], function () {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-fab'], function (paperDialogHelper) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();
@@ -39,7 +39,7 @@
 
             var id = result.Id;
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
             redirectToCollection(id);
 
         });
@@ -71,7 +71,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
 
             Dashboard.alert(Globalize.translate('MessageItemsAdded'));
         });
@@ -192,7 +192,7 @@
 
             items = items || [];
 
-            var dlg = PaperDialogHelper.createDialog({
+            var dlg = paperDialogHelper.createDialog({
                 size: 'small'
             });
 
@@ -217,11 +217,11 @@
 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-            PaperDialogHelper.openWithHash(dlg, 'collectioneditor');
+            paperDialogHelper.open(dlg);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
         };
     }

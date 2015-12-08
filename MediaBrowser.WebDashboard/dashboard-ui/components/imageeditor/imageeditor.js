@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function () {
+﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -206,9 +206,9 @@
 
         $('.btnOpenUploadMenu', page).on('click', function () {
 
-            require(['components/imageuploader/imageuploader'], function () {
+            require(['components/imageuploader/imageuploader'], function (imageUploader) {
 
-                ImageUploader.show(currentItem.Id, {
+                imageUploader.show(currentItem.Id, {
 
                     theme: options.theme
 
@@ -241,7 +241,7 @@
             var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     theme: options.theme
                 });
 
@@ -263,14 +263,14 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'imageeditor');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
             });
         }
