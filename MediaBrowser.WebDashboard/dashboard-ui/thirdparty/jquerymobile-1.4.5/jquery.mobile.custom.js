@@ -85,38 +85,23 @@
 
     })(jQuery, this);
 
-    (function ($, undefined) {
-        var $win = $(window), self;
+    window.addEventListener('popstate', function (event) {
+        var state = event.state || {};
 
-        $.event.special.navigate = self = {
-            bound: false,
+        setTimeout(function () {
 
-            // TODO a lot of duplication between popstate and hashchange
-            popstate: function (event) {
-                var state = event.state || {};
-
-                // NOTE we let the current stack unwind because any assignment to
-                //      location.hash will stop the world and run this event handler. By
-                //      doing this we create a similar behavior to hashchange on hash
-                //      assignment
-                setTimeout(function () {
-
-                    if (event.historyState) {
-                        $.extend(state, event.historyState);
-                    }
-
-                    window.dispatchEvent(new CustomEvent("navigate", {
-                        detail: {
-                            state: state,
-                            originalEvent: event
-                        }
-                    }));
-                }, 0);
+            if (event.historyState) {
+                $.extend(state, event.historyState);
             }
-        };
 
-        window.addEventListener('popstate', self.popstate);
-    })(jQuery);
+            window.dispatchEvent(new CustomEvent("navigate", {
+                detail: {
+                    state: state,
+                    originalEvent: event
+                }
+            }));
+        }, 0);
+    });
 
     jQuery.mobile.widgets = {};
 

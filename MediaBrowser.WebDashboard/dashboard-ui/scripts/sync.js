@@ -179,7 +179,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html).trigger('create');
+        $(elem).html(html);
 
         $('#selectSyncTarget', elem).on('change', function () {
 

@@ -202,7 +202,7 @@
 
                 var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
 
-                $('#itemBirthLocation', page).show().html(Globalize.translate('BirthPlaceValue').replace('{0}', gmap)).trigger('create');
+                $('#itemBirthLocation', page).show().html(Globalize.translate('BirthPlaceValue').replace('{0}', gmap));
             } else {
                 $('#itemBirthLocation', page).hide();
             }
@@ -461,7 +461,7 @@
         }
 
         if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
-            $('.artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context)).trigger('create');
+            $('.artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context));
         } else {
             $('.artist', page).hide();
         }
@@ -541,7 +541,7 @@
 
         html += attributes.join('<br/>');
 
-        $('.photoInfoContent', page).html(html).trigger('create');
+        $('.photoInfoContent', page).html(html);
     }
 
     function renderTabButtons(page, item) {
@@ -765,7 +765,7 @@
         if (html) {
             html = (item.Status == 'Ended' ? 'Aired ' : 'Airs ') + html;
 
-            $('#seriesAirTime', page).show().html(html).trigger('create');
+            $('#seriesAirTime', page).show().html(html);
         } else {
             $('#seriesAirTime', page).hide();
         }

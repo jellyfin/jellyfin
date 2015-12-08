@@ -58,7 +58,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
+            }));
 
             if (view == "List") {
 

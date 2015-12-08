@@ -16,7 +16,7 @@
         html += '<paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></paper-button>';
         html += '</button>';
 
-        $('.syncJobForm', page).html(html).trigger('create');
+        $('.syncJobForm', page).html(html);
         SyncManager.renderForm({
             elem: $('.formFields', page),
             dialogOptions: dialogOptions,
@@ -125,7 +125,7 @@
 
         html += '</div>';
 
-        var elem = $('.jobItems', page).html(html).trigger('create').lazyChildren();
+        var elem = $('.jobItems', page).html(html).lazyChildren();
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);

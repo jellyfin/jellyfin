@@ -699,7 +699,7 @@
         //        smallIcon: true
         //    });
 
-        //    $(".playlist", page).html(html).trigger('create').lazyChildren();
+        //    $(".playlist", page).html(html).lazyChildren();
         //});
 
         html += LibraryBrowser.getListViewHtml({

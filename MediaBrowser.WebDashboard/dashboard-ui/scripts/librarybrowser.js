@@ -2617,7 +2617,7 @@
             Dashboard.setPageTitle(name);
 
             if (linkToElement) {
-                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>').trigger('create');
+                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>');
             } else {
                 nameElem.html(name);
             }
@@ -2659,7 +2659,7 @@
             }
 
             if (html.length) {
-                parentNameElem.show().html(html.join(' - ')).trigger('create');
+                parentNameElem.show().html(html.join(' - '));
             } else {
                 parentNameElem.hide();
             }
@@ -2690,7 +2690,7 @@
                 html = Globalize.translate('ValueLinks', html);
 
                 linksElem.innerHTML = html;
-                $(linksElem).trigger('create');
+                $(linksElem);
                 $(linksElem).show();
 
             } else {

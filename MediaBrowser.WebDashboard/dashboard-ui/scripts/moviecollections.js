@@ -67,7 +67,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
+            }));
 
             if (result.TotalRecordCount) {
 
