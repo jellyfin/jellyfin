@@ -457,6 +457,7 @@ var Dashboard = {
 
             // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
             elem.active = true;
+            elem.classList.remove('hide');
 
         } else {
 
@@ -479,6 +480,7 @@ var Dashboard = {
         if (elem) {
 
             elem.active = false;
+            elem.classList.add('hide');
         }
     },
 

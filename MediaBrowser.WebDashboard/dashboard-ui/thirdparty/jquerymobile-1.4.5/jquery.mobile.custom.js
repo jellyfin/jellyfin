@@ -85,23 +85,41 @@
 
     })(jQuery, this);
 
-    window.addEventListener('popstate', function (event) {
+    var previousState = {};
+
+    // This is just a temporary api until jquery mobile is eventually deprecated and we have an actual routing library
+    jQuery.onStatePushed = function(state) {
+        previousState = state;
+    };
+
+    function ignorePopState(event) {
+
         var state = event.state || {};
 
-        setTimeout(function () {
+        if (previousState.navigate === false) {
+            // Ignore
+            previousState = state;
+            return true;
+        }
 
-            if (event.historyState) {
-                $.extend(state, event.historyState);
+        previousState = state;
+        return false;
+    }
+
+    function fireNavigateFromPopstateEvent(event) {
+
+        var state = event.state || {};
+        if (event.historyState) {
+            $.extend(state, event.historyState);
+        }
+
+        window.dispatchEvent(new CustomEvent("navigate", {
+            detail: {
+                state: state,
+                originalEvent: event
             }
-
-            window.dispatchEvent(new CustomEvent("navigate", {
-                detail: {
-                    state: state,
-                    originalEvent: event
-                }
-            }));
-        }, 0);
-    });
+        }));
+    }
 
     jQuery.mobile.widgets = {};
 
@@ -785,8 +803,16 @@
             // TODO grab the original event here and use it for the synthetic event in the
             //      second half of the navigate execution that will follow this binding
             popstate: function (event) {
-                var hash, state;
 
+                if (ignorePopState(event)) {
+                    return;
+                }
+
+                setTimeout(function () {
+                    fireNavigateFromPopstateEvent(event);
+                }, 0);
+
+                var hash, state;
                 // If this is the popstate triggered by the actual alteration of the hash
                 // prevent it completely. History is tracked manually
                 if (this.preventHashAssignPopState) {

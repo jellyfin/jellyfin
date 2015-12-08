@@ -2,18 +2,21 @@
 
     function paperDialogHashHandler(dlg, hash, resolve, lockDocumentScroll) {
 
+        var self = this;
+        self.originalUrl = window.location.href;
+        var activeElement = document.activeElement;
+
         function onHashChange(e) {
 
-            var data = e.detail.state || {};
-            var isActive = data.hash == '#' + hash;
+            var isBack = self.originalUrl == window.location.href;
 
-            if (data.direction == 'back') {
-                if (dlg) {
-                    if (!isActive) {
-                        dlg.close();
-                        dlg = null;
-                    }
-                }
+            if (isBack || !dlg.opened) {
+                window.removeEventListener('popstate', onHashChange);
+            }
+
+            if (isBack) {
+                self.closedByBack = true;
+                dlg.close();
             }
         }
 
@@ -23,14 +26,29 @@
                 Dashboard.onPopupClose();
             }
 
-            dlg = null;
-            if (enableHashChange()) {
-                window.removeEventListener('navigate', onHashChange);
+            window.removeEventListener('popstate', onHashChange);
 
-                if (window.location.hash == '#' + hash) {
+            if (!self.closedByBack) {
+                var state = history.state || {};
+                if (state.dialogId == hash) {
                     history.back();
                 }
             }
+
+            activeElement.focus();
+
+            if (dlg.getAttribute('data-removeonclose') == 'true') {
+                dlg.parentNode.removeChild(dlg);
+            }
+
+            //resolve();
+            // if we just called history.back(), then use a timeout to allow the history events to fire first
+            setTimeout(function () {
+                resolve({
+                    element: dlg,
+                    closedByBack: self.closedByBack
+                });
+            }, 1);
         }
 
         dlg.addEventListener('iron-overlay-closed', onDialogClosed);
@@ -40,23 +58,15 @@
             Dashboard.onPopupOpen();
         }
 
-        if (enableHashChange()) {
+        var state = {
+            dialogId: hash,
+            navigate: false
+        };
+        history.pushState(state, "Dialog", hash);
 
-            window.location.hash = hash;
+        jQuery.onStatePushed(state);
 
-            window.addEventListener('navigate', onHashChange);
-        }
-    }
-
-    function enableHashChange() {
-        // It's not firing popstate in response to hashbang changes
-        if (browserInfo.msie) {
-            return false;
-        }
-        if (browserInfo.edge) {
-            return false;
-        }
-        return true;
+        window.addEventListener('popstate', onHashChange);
     }
 
     function open(dlg) {
