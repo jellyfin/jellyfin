@@ -1,112 +1,110 @@
 ﻿(function () {
 
     function getLocalMediaSource(serverId, itemId) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [null]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve(null);
+        });
     }
 
     function saveOfflineUser(user) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolve();
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function deleteOfflineUser(id) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolve();
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function getCameraPhotos() {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve([]);
+        });
     }
 
     function getOfflineActions(serverId) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve([]);
+        });
     }
 
     function deleteOfflineActions(actions) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve([]);
+        });
     }
 
     function getServerItemIds(serverId) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [[]]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve([]);
+        });
     }
 
     function removeLocalItem(itemId, serverId) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function getLocalItem(itemId, serverId) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function addOrUpdateLocalItem(localItem) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function createLocalItem(libraryItem, serverInfo, originalFileName) {
 
-        var item = {};
-
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [item]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve({});
+        });
     }
 
     function downloadFile(url, localPath) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, []);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve();
+        });
     }
 
     function downloadSubtitles(url, localItem, subtitleStreamh) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [""]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve("");
+        });
     }
 
     function hasImage(serverId, itemId, imageTag) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [false]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve(false);
+        });
     }
 
     function downloadImage(url, serverId, itemId, imageTag) {
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [false]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve(false);
+        });
     }
 
     function fileExists(path) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [false]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve(false);
+        });
     }
 
     function translateFilePath(path) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolveWith(null, [path]);
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+            resolve(path);
+        });
     }
 
     window.LocalAssetManager = {

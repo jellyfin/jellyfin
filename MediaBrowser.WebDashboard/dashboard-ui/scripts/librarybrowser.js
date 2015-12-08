@@ -2123,8 +2123,6 @@
             }
             html += '</div>';
 
-            html += '<div class="cardOverlayTarget"></div>';
-
             if (item.LocationType == "Virtual" || item.LocationType == "Offline") {
                 if (options.showLocationTypeIndicator !== false) {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
@@ -2192,8 +2190,6 @@
         getCardFooterText: function (item, options, showTitle, imgUrl, forceName, footerClass, progressHtml) {
 
             var html = '';
-
-            html += '<div class="' + footerClass + '">';
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
@@ -2307,8 +2303,12 @@
                 }
             }
 
-            //cardFooter
-            html += "</div>";
+            if (html) {
+                html = '<div class="' + footerClass + '">' + html;
+
+                //cardFooter
+                html += "</div>";
+            }
 
             return html;
         },

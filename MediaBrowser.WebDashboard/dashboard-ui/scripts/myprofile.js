@@ -31,10 +31,10 @@
 
             $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
 
+            var showNewImageForm = false;
 
             if (user.ConnectLinkType == 'Guest') {
 
-                $('.newImageForm', page).hide();
                 $('#btnDeleteImage', page).hide();
                 $('.connectMessage', page).show();
             }
@@ -42,14 +42,20 @@
 
                 $('#btnDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
-                $('.newImageForm', page).show();
+                showNewImageForm = true;
                 $('.connectMessage', page).hide();
 
             } else {
-                $('.newImageForm', page).show();
+                showNewImageForm = true;
                 $('#btnDeleteImage', page).hide();
                 $('#headerUploadNewImage', page).show();
                 $('.connectMessage', page).hide();
+            }
+
+            if (showNewImageForm && AppInfo.supportsFileInput) {
+                $('.newImageForm', page).show();
+            } else {
+                $('.newImageForm', page).hide();
             }
 
             Dashboard.hideLoadingMsg();
@@ -115,16 +121,14 @@
         reader.onabort = onFileReaderAbort;
 
         // Closure to capture the file information.
-        reader.onload = (function (theFile) {
-            return function (e) {
+        reader.onload = function (e) {
 
-                // Render thumbnail.
-                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
+            // Render thumbnail.
+            var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(file.name), '"/>'].join('');
 
-                $('#userImageOutput', page).html(html);
-                $('#fldUpload', page).show();
-            };
-        })(file);
+            $('#userImageOutput', page).html(html);
+            $('#fldUpload', page).show();
+        };
 
         // Read in the image file as a data URL.
         reader.readAsDataURL(file);
@@ -172,11 +176,6 @@
 
             return false;
         };
-
-        self.onFileUploadChange = function (fileUpload) {
-
-            setFiles($.mobile.activePage, fileUpload.files);
-        };
     }
 
     window.MyProfilePage = new myProfilePage();
@@ -207,6 +206,9 @@
 
         $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
 
+        page.querySelector('#uploadUserImage').addEventListener('change', function(e) {
+            setFiles(page, e.target.files);
+        });
     });
 
 
@@ -240,10 +242,10 @@
 
             if (user.HasConfiguredEasyPassword) {
                 $('#txtEasyPassword', page).val('').attr('placeholder', '******');
-                $('#btnResetEasyPassword', page).show();
+                $('#btnResetEasyPassword', page).removeClass('hide');
             } else {
                 $('#txtEasyPassword', page).val('').attr('placeholder', '');
-                $('#btnResetEasyPassword', page).hide();
+                $('#btnResetEasyPassword', page).addClass('hide');
             }
 
             page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;

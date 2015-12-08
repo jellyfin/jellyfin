@@ -17,25 +17,36 @@
 
         elem = elem.querySelector('.cardOverlayTarget');
 
-        if ($(elem).is(':visible')) {
-            slideDown(elem, 1);
+        if (elem) {
+            slideDownToHide(elem);
         }
     }
 
-    function slideDown(elem, iterations) {
+    function slideDownToHide(elem) {
+
+        if (elem.classList.contains('hide')) {
+            return;
+        }
 
         requestAnimationFrame(function () {
             var keyframes = [
               { height: '100%', offset: 0 },
               { height: '0', display: 'none', offset: 1 }];
-            var timing = { duration: 300, iterations: iterations, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+
             elem.animate(keyframes, timing).onfinish = function () {
-                elem.style.display = 'none';
+                elem.classList.add('hide');
             };
         });
     }
 
-    function slideUp(elem, iterations) {
+    function slideUpToShow(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
 
         requestAnimationFrame(function () {
             elem.style.display = 'block';
@@ -43,7 +54,7 @@
             var keyframes = [
               { height: '0', offset: 0 },
               { height: '100%', offset: 1 }];
-            var timing = { duration: 300, iterations: iterations, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
     }
@@ -690,6 +701,13 @@
 
             var innerElem = elem.querySelector('.cardOverlayTarget');
 
+            if (!innerElem) {
+                innerElem = document.createElement('div');
+                innerElem.classList.add('hide');
+                innerElem.classList.add('cardOverlayTarget');
+                parentWithClass(elem, 'cardContent').appendChild(innerElem);
+            }
+
             var dataElement = elem;
             while (dataElement && !dataElement.getAttribute('data-itemid')) {
                 dataElement = dataElement.parentNode;
@@ -721,7 +739,7 @@
 
             $(innerElem).show();
 
-            slideUp(innerElem, 1);
+            slideUpToShow(innerElem);
         }
 
         function onHoverIn(e) {
@@ -920,7 +938,7 @@
 
         if (!itemSelectionPanel) {
 
-            require(['paper-checkbox'], function() {
+            require(['paper-checkbox'], function () {
                 itemSelectionPanel = document.createElement('div');
                 itemSelectionPanel.classList.add('itemSelectionPanel');
 
@@ -1273,19 +1291,27 @@
 
         if (userData.Played) {
 
-            if (!$('.playedIndicator', card).length) {
+            var playedIndicator = card.querySelector('.playedIndicator');
 
-                $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
+            if (!playedIndicator) {
+
+                playedIndicator = document.createElement('div');
+                playedIndicator.classList.add('playedIndicator');
+                card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            $('.playedIndicator', card).html('<iron-icon icon="check"></iron-icon>');
+            playedIndicator.innerHTML = '<iron-icon icon="check"></iron-icon>';
         }
         else if (userData.UnplayedItemCount) {
 
-            if (!$('.playedIndicator', card).length) {
+            var playedIndicator = card.querySelector('.playedIndicator');
 
-                $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
+            if (!playedIndicator) {
+
+                playedIndicator = document.createElement('div');
+                playedIndicator.classList.add('playedIndicator');
+                card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            $('.playedIndicator', card).html(userData.UnplayedItemCount);
+            playedIndicator.innerHTML = userData.UnplayedItemCount;
         }
 
         var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);

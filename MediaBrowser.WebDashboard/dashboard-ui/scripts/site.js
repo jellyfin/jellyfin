@@ -1590,6 +1590,9 @@ var AppInfo = {};
 
         AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
 
+        // This currently isn't working on android, unfortunately
+        AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
+
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
