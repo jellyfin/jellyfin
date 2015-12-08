@@ -232,7 +232,8 @@
 
                 var dlg = paperDialogHelper.createDialog({
                     size: 'small',
-                    theme: 'a'
+                    theme: 'a',
+                    removeOnClose: true
                 });
 
                 var html = '';
@@ -261,11 +262,6 @@
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
-
-                // Has to be assigned a z-index after the call to .open() 
-                dlg.addEventListener('iron-overlay-closed', function (e) {
-                    dlg.parentNode.removeChild(dlg);
-                });
 
                 paperDialogHelper.open(dlg);
 
