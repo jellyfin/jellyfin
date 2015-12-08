@@ -113,7 +113,9 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             get
             {
-                return _devices.Values.SelectMany(i => i).ToList();
+                var devices = _devices.Values.ToList();
+
+                return devices.SelectMany(i => i).ToList();
             }
         }
 
