@@ -2909,20 +2909,27 @@
                 PaperDialogHelper.openWithHash(dlg, 'sortmenu');
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
-                    options.query.SortBy = this.selected.replace('_', ',');
+
+                    var newValue = this.selected.replace('_', ',');
+                    var changed = options.query.SortBy != newValue;
+
+                    options.query.SortBy = newValue;
                     options.query.StartIndex = 0;
 
-                    if (options.callback) {
+                    if (options.callback && changed) {
                         options.callback();
                     }
                 });
 
                 $('.groupSortOrder', dlg).on('iron-select', function () {
 
-                    options.query.SortOrder = this.selected;
+                    var newValue = this.selected;
+                    var changed = options.query.SortOrder != newValue;
+
+                    options.query.SortOrder = newValue;
                     options.query.StartIndex = 0;
 
-                    if (options.callback) {
+                    if (options.callback && changed) {
                         options.callback();
                     }
                 });

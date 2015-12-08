@@ -2204,7 +2204,7 @@ var AppInfo = {};
                     }
                 }
 
-                postInitDependencies.push('components/testermessage');
+                //postInitDependencies.push('components/testermessage');
 
             } else if (browserInfo.chrome) {
                 postInitDependencies.push('scripts/chromecast');
