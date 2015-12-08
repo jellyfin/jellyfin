@@ -105,8 +105,8 @@
         }
         document.body.appendChild(dlg);
 
-        // The animations flicker in IE and Firefox (probably wherever the polyfill is used)
-        if (browserInfo.animate) {
+        // The animations flicker in IE
+        if (!browserInfo.msie) {
             dlg.animationConfig = {
                 // scale up
                 'entry': {

@@ -2831,31 +2831,12 @@
 
             require(['components/paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
 
-                var dlg = document.createElement('paper-dialog');
-
-                dlg.setAttribute('with-backdrop', 'with-backdrop');
-                dlg.setAttribute('role', 'alertdialog');
-
-                dlg.entryAnimation = 'fade-in-animation';
-                dlg.exitAnimation = 'fade-out-animation';
-
-                // The animations flicker in IE and Firefox (probably wherever the polyfill is used)
-                if (browserInfo.animate) {
-                    dlg.animationConfig = {
-                        // scale up
-                        'entry': {
-                            name: 'scale-up-animation',
-                            node: dlg,
-                            timing: { duration: 160, easing: 'ease-out' }
-                        },
-                        // fade out
-                        'exit': {
-                            name: 'fade-out-animation',
-                            node: dlg,
-                            timing: { duration: 200, easing: 'ease-in' }
-                        }
-                    };
-                }
+                var dlg = paperDialogHelper.createDialog({
+                    removeOnClose: true,
+                    theme: 'a',
+                    size: 'auto',
+                    modal: false
+                });
 
                 var html = '';
 
@@ -2902,11 +2883,14 @@
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
-                dlg.addEventListener('iron-overlay-closed', function () {
-                    dlg.parentNode.removeChild(dlg);
-                });
+                var fireCallbackOnClose = false;
 
-                paperDialogHelper.open(dlg);
+                paperDialogHelper.open(dlg).then(function() {
+
+                    if (options.callback && fireCallbackOnClose) {
+                        options.callback();
+                    }
+                });
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
 
@@ -2917,7 +2901,7 @@
                     options.query.StartIndex = 0;
 
                     if (options.callback && changed) {
-                        options.callback();
+                        fireCallbackOnClose = true;
                     }
                 });
 
@@ -2930,7 +2914,7 @@
                     options.query.StartIndex = 0;
 
                     if (options.callback && changed) {
-                        options.callback();
+                        fireCallbackOnClose = true;
                     }
                 });
             });

@@ -131,15 +131,17 @@
             }
         };
 
-        dlg.classList.add('popupEditor');
+        if (options.size != 'auto') {
+            dlg.classList.add('popupEditor');
 
-        if (options.size == 'small') {
-            dlg.classList.add('small-paper-dialog');
-        }
-        else if (options.size == 'medium') {
-            dlg.classList.add('medium-paper-dialog');
-        } else {
-            dlg.classList.add('fullscreen-paper-dialog');
+            if (options.size == 'small') {
+                dlg.classList.add('small-paper-dialog');
+            }
+            else if (options.size == 'medium') {
+                dlg.classList.add('medium-paper-dialog');
+            } else {
+                dlg.classList.add('fullscreen-paper-dialog');
+            }
         }
 
         var theme = options.theme || 'b';
