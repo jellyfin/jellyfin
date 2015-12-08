@@ -1,6 +1,6 @@
-﻿define(['paper-dialog', 'scale-up-animation', 'fade-out-animation'], function () {
+﻿define(['paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation'], function () {
 
-    function paperDialogHashHandler(dlg, hash, lockDocumentScroll) {
+    function paperDialogHashHandler(dlg, hash, resolve, lockDocumentScroll) {
 
         function onHashChange(e) {
 
@@ -59,22 +59,24 @@
         return true;
     }
 
-    function openWithHash(dlg, hash, lockDocumentScroll) {
+    function open(dlg) {
 
-        new paperDialogHashHandler(dlg, hash, lockDocumentScroll);
+        return new Promise(function (resolve, reject) {
+
+            new paperDialogHashHandler(dlg, 'dlg' + new Date().getTime(), resolve);
+        });
     }
 
     function close(dlg) {
 
-        if (enableHashChange()) {
-
-            if (dlg.opened) {
-                history.back();
-            }
-
-        } else {
-            dlg.close();
+        if (dlg.opened) {
+            history.back();
         }
+    }
+
+    function onDialogOpened(e) {
+
+        //Emby.FocusManager.autoFocus(e.target, true);
     }
 
     function createDialog(options) {
@@ -101,8 +103,23 @@
 
         // These don't seem to perform well on mobile
         if (!browserInfo.mobile) {
-            dlg.entryAnimation = 'scale-up-animation';
+            dlg.entryAnimation = options.entryAnimation || 'scale-up-animation';
             dlg.exitAnimation = 'fade-out-animation';
+
+            dlg.animationConfig = {
+                // scale up
+                'entry': {
+                    name: options.entryAnimation || 'scale-up-animation',
+                    node: dlg,
+                    timing: { duration: options.entryAnimationDuration || 300, easing: 'ease-out' }
+                },
+                // fade out
+                'exit': {
+                    name: 'fade-out-animation',
+                    node: dlg,
+                    timing: { duration: options.exitAnimationDuration || 400, easing: 'ease-in' }
+                }
+            };
         }
 
         dlg.classList.add('popupEditor');
@@ -121,6 +138,10 @@
         dlg.classList.add('ui-body-' + theme);
         dlg.classList.add('background-theme-' + theme);
         dlg.classList.add('smoothScrollY');
+
+        if (options.removeOnClose) {
+            dlg.setAttribute('data-removeonclose', 'true');
+        }
 
         return dlg;
     }
@@ -165,7 +186,7 @@
     }
 
     window.PaperDialogHelper = {
-        open: openWithHash,
+        open: open,
         close: close,
         createDialog: createDialog,
         positionTo: positionTo
