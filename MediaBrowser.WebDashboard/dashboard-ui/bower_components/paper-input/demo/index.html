@@ -10,7 +10,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <html>
 <head>
-
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
@@ -19,27 +18,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-  <link rel="import" href="../paper-input.html">
-  <link rel="import" href="../paper-input-container.html">
-  <link rel="import" href="../paper-input-error.html">
-  <link rel="import" href="../paper-input-char-counter.html">
-  <link rel="import" href="../paper-textarea.html">
-  <link rel="import" href="../../iron-input/iron-input.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../iron-icon/iron-icon.html">
   <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../iron-input/iron-input.html">
   <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../paper-input-container.html">
+  <link rel="import" href="../paper-input-error.html">
+  <link rel="import" href="../paper-input.html">
+  <link rel="import" href="../paper-textarea.html">
   <link rel="import" href="ssn-input.html">
 
-  <link rel="stylesheet" href="../../paper-styles/color.html">
-  <link rel="import" href="../../paper-styles/demo-pages.html">
-
-  <style is="custom-style">
-    body {
-      padding: 40px;
+  <style is="custom-style" include="demo-pages-shared-styles">
+    paper-input {
+      display: block;
     }
 
-    paper-input.short {
-      width: 200px;
+    demo-snippet.horizontal {
+      --demo-snippet-demo: {
+        @apply(--layout-horizontal);
+        @apply(--layout-justified);
+        @apply(--layout-wrap);
+      }
+    }
+    demo-snippet.horizontal paper-input {
+      display: inline-block;
+    }
+
+    button {
+      width: 70px;
+    }
+
+    #inputForValidation {
+      display: inline-block;
+      width: calc(100% - 75px);
+    }
+
+    .vertical-section-container {
+      max-width: 600px;
     }
 
     paper-icon-button {
@@ -49,82 +67,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       height: 23px;
       padding: 0px 4px;
     }
-  </style>
 
+    iron-icon {
+      padding-right: 5px;
+    }
+  </style>
 </head>
 <body unresolved>
+  <div class="vertical-section-container centered">
+    <h3>Inputs can have different types, and be disabled</h3>
+    <demo-snippet>
+      <template>
+        <paper-input label="text input"></paper-input>
+        <paper-textarea label="autoresizing textarea input"></paper-textarea>
+        <paper-input label="password input" type="password"></paper-input>
+        <paper-input label="disabled input" disabled></paper-input>
+      </template>
+    </demo-snippet>
 
-  <div class="vertical center-justified layout">
-    <h4>Text input</h4>
+    <h3>Inputs can have character counters</h3>
+    <demo-snippet>
+      <template>
+        <paper-input label="simple character counter" char-counter></paper-input>
+        <paper-input label="input with at most 10 characters" char-counter maxlength="10"></paper-input>
+      </template>
+    </demo-snippet>
 
-    <div class="vertical-section">
-      <paper-input label="label"></paper-input>
+    <h3>The label can have different floating states</h3>
+    <demo-snippet>
+      <template>
+        <paper-input label="this label floats after typing"></paper-input>
+        <paper-input label="this label is always floating" always-float-label></paper-input>
+        <paper-input label="this label never floats" no-label-float></paper-input>
+        <paper-input label="this label is always floating" always-float-label placeholder="placeholder text"></paper-input>
+      </template>
+    </demo-snippet>
 
-      <paper-input label="password" type="password"></paper-input>
+    <h3>Inputs can validate automatically or on demand, and can have custom error messages</h3>
+    <demo-snippet>
+      <template>
+        <paper-input label="this input requires some text" required auto-validate error-message="needs some text!"></paper-input>
+        <paper-input label="this input requires letters only" auto-validate pattern="[a-zA-Z]*" error-message="letters only!"></paper-input>
+        <paper-input label="this input will only let you type letters" auto-validate allowed-pattern="[a-zA-Z]"></paper-input>
+        <paper-input id="inputForValidation" required label="this input is manually validated" pattern="[a-zA-Z]*" error-message="letters only!"></paper-input>
+        <button onclick="validate()">Validate!</button>
+      </template>
+    </demo-snippet>
 
-      <paper-input no-label-float label="label (no-label-float)"></paper-input>
+    <h3>Inputs can have prefixes and suffixes</h3>
+    <demo-snippet class="horizontal">
+      <template>
+        <paper-input class="short" label="total" type="number">
+          <div prefix>$</div>
+        </paper-input>
+        <paper-input class="short" label="username" id="inputWithButton">
+          <iron-icon icon="mail" prefix></iron-icon>
+          <div suffix>@email.com</div>
+          <paper-icon-button suffix onclick="clearInput()"
+              icon="clear" alt="clear" title="clear">
+          </paper-icon-button>
+        </paper-input>
+      </template>
+    </demo-snippet>
 
-      <paper-input label="disabled" disabled></paper-input>
-    </div>
-
-    <h4>Text area</h4>
-    <div class="vertical-section">
-      <paper-textarea label="textarea label"></paper-textarea>
-    </div>
-
-    <h4>Validation</h4>
-    <div class="vertical-section">
-      <paper-input label="input validates on blur (required, auto-validate)" required auto-validate error-message="needs some text!"></paper-input>
-
-      <paper-input label="only type letters (auto-validate)" auto-validate pattern="[a-zA-Z]*" error-message="letters only!"></paper-input>
-
-      <paper-input id="inputForValidation" required label="only type letters (no auto validate)" pattern="[a-zA-Z]*" error-message="letters only, required input!"></paper-input>
-      <br>
-      <button onclick="validate()">Validate!</button>
-    </div>
-
-    <h4>Character counter</h4>
-    <div class="vertical-section">
-      <paper-input label="label" char-counter></paper-input>
-
-      <paper-input label="at most 10 letters" char-counter auto-validate pattern="[a-zA-Z]*" maxlength="10" error-message="letters only!"></paper-input>
-
-      <paper-textarea label="textarea" char-counter></paper-textarea>
-
-      <paper-textarea label="textarea with maxlength" maxlength="10" char-counter></paper-textarea>
-
-      <paper-textarea label="text area with rows and max-rows" rows="3" max-rows="4"></paper-textarea>
-    </div>
-
-    <h4>Prefixes and Suffixes</h4>
-    <div class="vertical-section">
-      <paper-input class="short" label="total" type="number">
-        <div prefix>$</div>
-      </paper-input>
-
-      <paper-input class="short" label="username">
-        <div suffix>@email.com</div>
-      </paper-input>
-
-      <paper-input class="short" label="icons and buttons" id="inputWithButton">
-        <iron-icon icon="search" prefix></iron-icon>
-        <paper-icon-button suffix onclick="clearInput()"
-            icon="clear" alt="clear" title="clear">
-        </paper-icon-button>
-      </paper-input>
-    </div>
-
-    <h4>Complex inputs</h4>
-    <div class="vertical-section">
-      <template is="dom-bind">
+    <h3>Inputs can have custom logic</h3>
+    <demo-snippet>
+      <template>
         <paper-input-container always-float-label auto-validate attr-for-value="value">
           <label>Social Security Number</label>
           <ssn-input class="paper-input-input"></ssn-input>
           <paper-input-error>SSN invalid!</paper-input-error>
         </paper-input-container>
       </template>
-    </div>
+    </demo-snippet>
   </div>
+
   <script>
     function validate() {
       document.getElementById('inputForValidation').validate();

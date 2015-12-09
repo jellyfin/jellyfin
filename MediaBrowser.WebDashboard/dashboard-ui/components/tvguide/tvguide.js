@@ -489,9 +489,9 @@
 
                 tabContent.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-                Events.on(tabContent.querySelector('.timeslotHeaders'), 'scroll', function () {
+                tabContent.querySelector('.timeslotHeaders').addEventListener('scroll', function (e) {
 
-                    onTimeslotHeadersScroll(tabContent, this);
+                    onTimeslotHeadersScroll(tabContent, e.target);
                 });
             }
 

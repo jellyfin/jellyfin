@@ -9,10 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-styles/typography.html">
-<link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-styles/typography.html">
 
 <!--
 `<paper-input-container>` is a container for a `<label>`, an `<input is="iron-input">` or
@@ -81,6 +81,7 @@ Custom property | Description | Default
 `--paper-input-container-disabled` | Mixin applied to the container when it's disabled | `{}`
 `--paper-input-container-label` | Mixin applied to the label | `{}`
 `--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
+`--paper-input-container-label-floating` | Mixin applied to the label when floating | `{}`
 `--paper-input-container-input` | Mixin applied to the input | `{}`
 `--paper-input-container-underline` | Mixin applied to the underline | `{}`
 `--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focused | `{}`
@@ -91,9 +92,9 @@ Custom property | Description | Default
 This element is `display:block` by default, but you can set the `inline` attribute to make it
 `display:inline-block`.
 -->
+
 <dom-module id="paper-input-container">
   <template>
-
     <style>
       :host {
         display: block;
@@ -122,15 +123,14 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .focused-line {
-        height: 2px;
         @apply(--layout-fit);
 
+        background: var(--paper-input-container-focus-color, --default-primary-color);
+        height: 2px;
         -webkit-transform-origin: center center;
         transform-origin: center center;
         -webkit-transform: scale3d(0,1,1);
         transform: scale3d(0,1,1);
-
-        background: var(--paper-input-container-focus-color, --default-primary-color);
 
         @apply(--paper-input-container-underline-focus);
       }
@@ -146,7 +146,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
 
       .underline.is-invalid .focused-line {
         background: var(--paper-input-container-invalid-color, --google-red-500);
-
         -webkit-transform: none;
         transform: none;
         -webkit-transition: -webkit-transform 0.25s;
@@ -156,8 +155,9 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .unfocused-line {
-        height: 1px;
         @apply(--layout-fit);
+
+        height: 1px;
         background: var(--paper-input-container-color, --secondary-text-color);
 
         @apply(--paper-input-container-underline);
@@ -177,9 +177,10 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .input-content {
-        position: relative;
         @apply(--layout-horizontal);
         @apply(--layout-center);
+
+        position: relative;
       }
 
       .input-content ::content label,
@@ -202,7 +203,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
         transform: translateY(-75%) scale(0.75);
         -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
-
         -webkit-transform-origin: left top;
         transform-origin: left top;
 
@@ -211,6 +211,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         width: 133%;
 
         @apply(--paper-transition-easing);
+        @apply(--paper-input-container-label-floating);
       }
 
       :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
@@ -301,6 +302,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       <div class="label-and-input-container" id="labelAndInputContainer">
         <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
       </div>
+
       <content select="[suffix]"></content>
     </div>
 
@@ -312,7 +314,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
     <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
       <content id="addOnContent" select="[add-on]"></content>
     </div>
-
   </template>
 </dom-module>
 

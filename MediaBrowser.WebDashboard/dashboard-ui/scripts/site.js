@@ -1286,7 +1286,6 @@ var Dashboard = {
                         }, notification.timeout);
                     }
                 }
-                WebNotifications.show(notification);
             }
         });
     },

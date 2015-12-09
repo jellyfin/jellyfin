@@ -7,12 +7,12 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
+
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-behaviors/iron-control-state.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
 
 <script>
-
   /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
    * behavior is implemented by `<paper-input>`. It exposes a number of properties from
@@ -24,7 +24,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    * @polymerBehavior Polymer.PaperInputBehavior
    */
   Polymer.PaperInputBehaviorImpl = {
-
     properties: {
       /**
        * Fired when the input changes due to user interaction.
@@ -408,6 +407,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._shiftTabPressed = false;
       }, 1);
     },
+
     /**
      * If `autoValidate` is true, then validates the element.
      */
@@ -488,7 +488,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       }
     }
-
   };
 
   /** @polymerBehavior */
@@ -497,5 +496,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer.IronA11yKeysBehavior,
     Polymer.PaperInputBehaviorImpl
   ];
-
 </script>

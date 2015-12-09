@@ -371,7 +371,7 @@
 
                     var hls = new Hls();
                     hls.loadSource(val);
-                    hls.attachVideo(elem);
+                    hls.attachMedia(elem);
                     hls.on(Hls.Events.MANIFEST_PARSED, function () {
                         elem.play();
                     });
