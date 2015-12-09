@@ -258,23 +258,9 @@
         }
     }
 
-    function loadJsTree() {
-
-        var deferred = DeferredBuilder.Deferred();
-
-        require([
-            'bower_components/jstree/dist/jstree.min'
-        ], function () {
-
-            Dashboard.importCss('thirdparty/jstree/themes/default/style.min.css');
-            deferred.resolve();
-        });
-        return deferred.promise();
-    }
-
     function initializeTree(page, currentUser, openItems, selectedId) {
 
-        loadJsTree().then(function () {
+        require(['jstree'], function () {
             initializeTreeInternal(page, currentUser, openItems, selectedId);
         });
     }

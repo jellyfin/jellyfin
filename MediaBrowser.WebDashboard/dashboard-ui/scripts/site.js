@@ -1673,7 +1673,7 @@ var AppInfo = {};
 
     function initFastClick() {
 
-        require(["bower_components/fastclick/lib/fastclick"], function (FastClick) {
+        require(["fastclick"], function (FastClick) {
 
             FastClick.attach(document.body, {
                 tapDelay: 0
@@ -1763,21 +1763,24 @@ var AppInfo = {};
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
 
+        var bowerPath = "bower_components";
+
         var paths = {
-            velocity: "bower_components/velocity/velocity.min",
+            velocity: bowerPath + "/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
             directorybrowser: 'components/directorybrowser/directorybrowser',
             collectioneditor: 'components/collectioneditor/collectioneditor',
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
-            howler: 'bower_components/howler.js/howler.min',
-            sortable: 'bower_components/Sortable/Sortable.min',
-            isMobile: 'bower_components/isMobile/isMobile.min',
-            headroom: 'bower_components/headroom.js/dist/headroom.min',
-            masonry: 'bower_components/masonry/dist/masonry.pkgd.min',
+            howler: bowerPath + '/howler.js/howler.min',
+            sortable: bowerPath + '/Sortable/Sortable.min',
+            isMobile: bowerPath + '/isMobile/isMobile.min',
+            headroom: bowerPath + '/headroom.js/dist/headroom.min',
+            masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
-            jQuery: 'bower_components/jquery/dist/jquery.min'
+            jQuery: bowerPath + '/jquery/dist/jquery.min',
+            fastclick: bowerPath + '/fastclick/lib/fastclick'
         };
 
         if (Dashboard.isRunningInCordova()) {
@@ -1806,35 +1809,66 @@ var AppInfo = {};
         define("cryptojs-md5", ["apiclient/md5"]);
 
         // Done
-        define("paper-spinner", ["html!bower_components/paper-spinner/paper-spinner.html"]);
-        define("paper-toast", ["html!bower_components/paper-toast/paper-toast.html"]);
-        define("paper-slider", ["html!bower_components/paper-slider/paper-slider.html"]);
-        define("paper-tabs", ["html!bower_components/paper-tabs/paper-tabs.html"]);
-        define("paper-menu", ["html!bower_components/paper-menu/paper-menu.html"]);
-        define("paper-dialog", ["html!bower_components/paper-dialog/paper-dialog.html"]);
-        define("paper-dialog-scrollable", ["html!bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
-        define("paper-button", ["html!bower_components/paper-button/paper-button.html"]);
-        define("paper-icon-button", ["html!bower_components/paper-icon-button/paper-icon-button.html"]);
-        define("paper-drawer-panel", ["html!bower_components/paper-drawer-panel/paper-drawer-panel.html"]);
-        define("paper-radio-group", ["html!bower_components/paper-radio-group/paper-radio-group.html"]);
-        define("paper-radio-button", ["html!bower_components/paper-radio-button/paper-radio-button.html"]);
-        define("neon-animated-pages", ["html!bower_components/neon-animation/neon-animated-pages.html"]);
+        define("paper-spinner", ["html!" + bowerPath + "/paper-spinner/paper-spinner.html"]);
+        define("paper-toast", ["html!" + bowerPath + "/paper-toast/paper-toast.html"]);
+        define("paper-slider", ["html!" + bowerPath + "/paper-slider/paper-slider.html"]);
+        define("paper-tabs", ["html!" + bowerPath + "/paper-tabs/paper-tabs.html"]);
+        define("paper-menu", ["html!" + bowerPath + "/paper-menu/paper-menu.html"]);
+        define("paper-dialog", ["html!" + bowerPath + "/paper-dialog/paper-dialog.html"]);
+        define("paper-dialog-scrollable", ["html!" + bowerPath + "/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
+        define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
+        define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
+        define("paper-drawer-panel", ["html!" + bowerPath + "/paper-drawer-panel/paper-drawer-panel.html"]);
+        define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
+        define("paper-radio-button", ["html!" + bowerPath + "/paper-radio-button/paper-radio-button.html"]);
+        define("neon-animated-pages", ["html!" + bowerPath + "/neon-animation/neon-animated-pages.html"]);
 
-        define("slide-right-animation", ["html!bower_components/neon-animation/animations/slide-right-animation.html"]);
-        define("slide-left-animation", ["html!bower_components/neon-animation/animations/slide-left-animation.html"]);
-        define("slide-from-right-animation", ["html!bower_components/neon-animation/animations/slide-from-right-animation.html"]);
-        define("slide-from-left-animation", ["html!bower_components/neon-animation/animations/slide-from-left-animation.html"]);
-        define("paper-textarea", ["html!bower_components/paper-input/paper-textarea.html"]);
-        define("paper-item", ["html!bower_components/paper-item/paper-item.html"]);
-        define("paper-checkbox", ["html!bower_components/paper-checkbox/paper-checkbox.html"]);
-        define("fade-in-animation", ["html!bower_components/neon-animation/animations/fade-in-animation.html"]);
-        define("fade-out-animation", ["html!bower_components/neon-animation/animations/fade-out-animation.html"]);
-        define("scale-up-animation", ["html!bower_components/neon-animation/animations/scale-up-animation.html"]);
-        define("paper-fab", ["html!bower_components/paper-fab/paper-fab.html"]);
-        define("paper-progress", ["html!bower_components/paper-progress/paper-progress.html"]);
-        define("paper-input", ["html!bower_components/paper-input/paper-input.html"]);
-        define("paper-icon-item", ["html!bower_components/paper-item/paper-icon-item.html"]);
-        define("paper-item-body", ["html!bower_components/paper-item/paper-item-body.html"]);
+        define("slide-right-animation", ["html!" + bowerPath + "/neon-animation/animations/slide-right-animation.html"]);
+        define("slide-left-animation", ["html!" + bowerPath + "/neon-animation/animations/slide-left-animation.html"]);
+        define("slide-from-right-animation", ["html!" + bowerPath + "/neon-animation/animations/slide-from-right-animation.html"]);
+        define("slide-from-left-animation", ["html!" + bowerPath + "/neon-animation/animations/slide-from-left-animation.html"]);
+        define("paper-textarea", ["html!" + bowerPath + "/paper-input/paper-textarea.html"]);
+        define("paper-item", ["html!" + bowerPath + "/paper-item/paper-item.html"]);
+        define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
+        define("fade-in-animation", ["html!" + bowerPath + "/neon-animation/animations/fade-in-animation.html"]);
+        define("fade-out-animation", ["html!" + bowerPath + "/neon-animation/animations/fade-out-animation.html"]);
+        define("scale-up-animation", ["html!" + bowerPath + "/neon-animation/animations/scale-up-animation.html"]);
+        define("paper-fab", ["html!" + bowerPath + "/paper-fab/paper-fab.html"]);
+        define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
+        define("paper-input", ["html!" + bowerPath + "/paper-input/paper-input.html"]);
+        define("paper-icon-item", ["html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
+        define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
+
+        define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
+
+        define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
+
+        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
+
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
+
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
+
+        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview", 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+
+        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
+
+        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
+
+        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
+
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
+
+        define("hammer", [bowerPath + "/hammerjs/hammer.min"], function (Hammer) {
+            return Hammer;
+        });
+
+        define("swipebox", [bowerPath + '/swipebox/src/js/jquery.swipebox.min', "css!" + bowerPath + "/swipebox/src/css/swipebox.min.css"]);
+
+        define('fetch', [bowerPath + '/fetch/fetch']);
+        define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
+        define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
     }
 
     function init(promiseResolve, hostingAppInfo) {
@@ -1910,31 +1944,6 @@ var AppInfo = {};
             define("searchmenu", ["scripts/searchmenu"]);
         }
 
-        define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
-        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
-
-        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
-
-        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
-
-        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
-
-        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview", 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
-
-        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
-
-        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
-
-        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
-
-        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
-
-        define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
-            return Hammer;
-        });
-
-        define("swipebox", ['bower_components/swipebox/src/js/jquery.swipebox.min', "css!bower_components/swipebox/src/css/swipebox.min.css"]);
-
         define("contentuploader", ["apiclient/sync/contentuploader"]);
         define("serversync", ["apiclient/sync/serversync"]);
         define("multiserversync", ["apiclient/sync/multiserversync"]);
@@ -1952,7 +1961,7 @@ var AppInfo = {};
         var deps = [];
 
         if (!window.fetch) {
-            deps.push('bower_components/fetch/fetch');
+            deps.push('fetch');
         }
 
         deps.push('scripts/mediacontroller');
@@ -2389,11 +2398,11 @@ var AppInfo = {};
     var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
 
     if (!supportsNativeWebComponents) {
-        initialDependencies.push('bower_components/webcomponentsjs/webcomponents-lite.min.js');
+        initialDependencies.push('webcomponentsjs');
     }
 
     if (!window.Promise) {
-        initialDependencies.push('bower_components/native-promise-only/lib/npo.src');
+        initialDependencies.push('native-promise-only');
     }
 
     require(initialDependencies, function (isMobile) {
