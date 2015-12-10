@@ -748,7 +748,7 @@ var Dashboard = {
 
         html = '';
 
-        if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
+        if (user.localUser) {
             html += '<p><a data-mini="true" data-role="button" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
         }
 

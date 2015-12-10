@@ -31,32 +31,34 @@
 
             $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
 
-            var showNewImageForm = false;
+            var showImageEditing = false;
 
             if (user.ConnectLinkType == 'Guest') {
 
-                $('#btnDeleteImage', page).hide();
                 $('.connectMessage', page).show();
             }
             else if (user.PrimaryImageTag) {
 
-                $('#btnDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
-                showNewImageForm = true;
+                showImageEditing = true;
                 $('.connectMessage', page).hide();
 
             } else {
-                showNewImageForm = true;
-                $('#btnDeleteImage', page).hide();
+                showImageEditing = true;
                 $('#headerUploadNewImage', page).show();
                 $('.connectMessage', page).hide();
             }
 
-            if (showNewImageForm && AppInfo.supportsFileInput) {
-                $('.newImageForm', page).show();
-            } else {
-                $('.newImageForm', page).hide();
-            }
+            Dashboard.getCurrentUser().then(function (loggedInUser) {
+
+                if (showImageEditing && AppInfo.supportsFileInput && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.newImageForm', page).show();
+                    $('#btnDeleteImage', page).removeClass('hide');
+                } else {
+                    $('.newImageForm', page).hide();
+                    $('#btnDeleteImage', page).addClass('hide');
+                }
+            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -222,33 +224,47 @@
 
         ApiClient.getUser(userid).then(function (user) {
 
-            Dashboard.setPageTitle(user.Name);
+            Dashboard.getCurrentUser().then(function(loggedInUser) {
+                
+                Dashboard.setPageTitle(user.Name);
 
-            if (user.ConnectLinkType == 'Guest') {
-                $('.localAccessSection', page).hide();
-                $('.passwordSection', page).hide();
-            }
-            else if (user.HasConfiguredPassword) {
-                $('#btnResetPassword', page).show();
-                $('#fldCurrentPassword', page).show();
-                $('.localAccessSection', page).show();
-                $('.passwordSection', page).show();
-            } else {
-                $('#btnResetPassword', page).hide();
-                $('#fldCurrentPassword', page).hide();
-                $('.localAccessSection', page).hide();
-                $('.passwordSection', page).show();
-            }
+                var showPasswordSection = true;
+                var showLocalAccessSection = false;
+                if (user.ConnectLinkType == 'Guest') {
+                    $('.localAccessSection', page).hide();
+                    showPasswordSection = false;
+                }
+                else if (user.HasConfiguredPassword) {
+                    $('#btnResetPassword', page).show();
+                    $('#fldCurrentPassword', page).show();
+                    showLocalAccessSection = true;
+                } else {
+                    $('#btnResetPassword', page).hide();
+                    $('#fldCurrentPassword', page).hide();
+                }
 
-            if (user.HasConfiguredEasyPassword) {
-                $('#txtEasyPassword', page).val('').attr('placeholder', '******');
-                $('#btnResetEasyPassword', page).removeClass('hide');
-            } else {
-                $('#txtEasyPassword', page).val('').attr('placeholder', '');
-                $('#btnResetEasyPassword', page).addClass('hide');
-            }
+                if (showPasswordSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.passwordSection', page).show();
+                } else {
+                    $('.passwordSection', page).hide();
+                }
 
-            page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;
+                if (showLocalAccessSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.localAccessSection', page).show();
+                } else {
+                    $('.localAccessSection', page).hide();
+                }
+
+                if (user.HasConfiguredEasyPassword) {
+                    $('#txtEasyPassword', page).val('').attr('placeholder', '******');
+                    $('#btnResetEasyPassword', page).removeClass('hide');
+                } else {
+                    $('#txtEasyPassword', page).val('').attr('placeholder', '');
+                    $('#btnResetEasyPassword', page).addClass('hide');
+                }
+
+                page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;
+            });
         });
 
         $('#txtCurrentPassword', page).val('');

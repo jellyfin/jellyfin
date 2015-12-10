@@ -311,12 +311,12 @@
                             Value: 'HE-AAC'
                         }
                         // Disabling this is going to require us to learn why it was disabled in the first place
-                        ,
-                        {
-                            Condition: 'NotEquals',
-                            Property: 'AudioProfile',
-                            Value: 'LC'
-                        }
+                        //,
+                        //{
+                        //    Condition: 'NotEquals',
+                        //    Property: 'AudioProfile',
+                        //    Value: 'LC'
+                        //}
                     ]
                 });
             }

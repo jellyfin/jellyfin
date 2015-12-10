@@ -206,6 +206,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }, 1);
         });
 
+        test('arrow keys cause iron-activate events', function(done) {
+          var g = fixture('WithSelection');
+
+          // Needs to be async since the underlying iron-selector uses observeNodes.
+          Polymer.Base.async(function() {
+            g.items[0].focus();
+
+            var i = 0;
+            g.addEventListener('iron-activate', function() {
+              switch (i++) {
+                case 0:
+                  MockInteractions.pressAndReleaseKeyOn(g, 38);
+                break;
+
+                case 1:
+                  MockInteractions.pressAndReleaseKeyOn(g, 39);
+                break;
+
+                case 2:
+                  MockInteractions.pressAndReleaseKeyOn(g, 40);
+                break;
+
+                default:
+                  done();
+              }
+            });
+
+            MockInteractions.pressAndReleaseKeyOn(g, 37);
+          }, 1);
+        });
+
       });
     </script>
   </body>
