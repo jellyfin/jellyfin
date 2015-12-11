@@ -117,18 +117,31 @@
                 return fetch(request.url, fetchRequest);
             }
 
+            return fetchWithTimeout(request.url, fetchRequest, request.timeout);
+        }
+
+        function fetchWithTimeout(url, options, timeoutMs) {
+
+            logger.log('fetchWithTimeout: timeoutMs: ' + timeoutMs + ', url: ' + url);
+
             return new Promise(function (resolve, reject) {
 
-                var timeout = setTimeout(reject, request.timeout);
+                var timeout = setTimeout(reject, timeoutMs);
 
-                fetch(request.url, fetchRequest).then(function (response) {
+                fetch(url, options).then(function (response) {
                     clearTimeout(timeout);
+
+                    logger.log('fetchWithTimeout: succeeded connecting to url: ' + url);
+
                     resolve(response);
                 }, function (error) {
+
                     clearTimeout(timeout);
+
+                    logger.log('fetchWithTimeout: timed out connecting to url: ' + url);
+
                     throw error;
                 });
-
             });
         }
 
@@ -155,9 +168,11 @@
 
             request.headers = request.headers || {};
 
-            logger.log('Requesting url without automatic networking: ' + request.url);
+            logger.log('ConnectionManager requesting url: ' + request.url);
 
             return getFetchPromise(request).then(function (response) {
+
+                logger.log('ConnectionManager response status: ' + response.status + ', url: ' + request.url);
 
                 if (response.status < 400) {
 
@@ -170,8 +185,10 @@
                     return Promise.reject(response);
                 }
 
-            }, function (error) {
-                throw error;
+            }, function (err) {
+
+                logger.log('ConnectionManager request failed to url: ' + request.url);
+                throw err;
             });
         }
 

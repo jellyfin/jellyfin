@@ -1008,8 +1008,7 @@
         $(apiClient).off("websocketmessage", onWebSocketMessageReceived).on("websocketmessage", onWebSocketMessageReceived);
     }
 
-    Dashboard.ready(function () {
-
+    MediaController.init = function () {
         if (window.ApiClient) {
             initializeApiClient(window.ApiClient);
         }
@@ -1017,7 +1016,7 @@
         $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
-    });
+    };
 
     function onCastButtonClicked() {
 
@@ -1027,7 +1026,6 @@
     document.addEventListener('headercreated', function () {
 
         $('.btnCast').off('click', onCastButtonClicked).on('click', onCastButtonClicked);
-
     });
 
     pageClassOn('pagebeforeshow', "page", function () {
@@ -1035,11 +1033,11 @@
         var page = this;
 
         currentDisplayInfo = null;
-
     });
 
-    pageClassOn('displayingitem', "libraryPage", function (e, info) {
+    pageClassOn('displayingitem', "libraryPage", function (e) {
 
+        var info = e.detail.info;
         currentDisplayInfo = info;
 
         mirrorIfEnabled(info);

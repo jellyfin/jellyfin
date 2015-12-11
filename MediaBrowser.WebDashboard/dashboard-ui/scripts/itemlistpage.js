@@ -196,10 +196,12 @@
 
             LibraryMenu.setTitle(name);
 
-            $(page).trigger('displayingitem', [{
-
-                item: item
-            }]);
+            page.dispatchEvent(new CustomEvent("displayingitem", {
+                detail: {
+                    item: item
+                },
+                bubbles: true
+            }));
 
             LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();

@@ -58,25 +58,32 @@
             return serverInfo;
         };
 
-        var currentUserPromise;
+        var currentUser;
         /**
          * Gets or sets the current user id.
          */
         self.getCurrentUser = function () {
 
-            var promise = currentUserPromise;
+            if (currentUser) {
+                return new Promise(function (resolve, reject) {
 
-            if (promise == null) {
-
-                promise = self.getUser(self.getCurrentUserId()).catch(function (err) {
-                    currentUserPromise = null;
-                    throw err;
+                    resolve(currentUser);
                 });
-
-                currentUserPromise = promise;
             }
 
-            return promise;
+            var userId = self.getCurrentUserId();
+
+            if (!userId) {
+                return new Promise(function (resolve, reject) {
+
+                    reject();
+                });
+            }
+
+            return self.getUser(userId).then(function (user) {
+                currentUser = user;
+                return user;
+            });
         };
 
         /**
@@ -112,7 +119,7 @@
         };
 
         self.setAuthenticationInfo = function (accessKey, userId) {
-            currentUserPromise = null;
+            currentUser = null;
 
             serverInfo.AccessToken = accessKey;
             serverInfo.UserId = userId;
@@ -209,18 +216,22 @@
                 return fetch(request.url, fetchRequest);
             }
 
+            return fetchWithTimeout(request.url, fetchRequest, request.timeout);
+        }
+
+        function fetchWithTimeout(url, options, timeoutMs) {
+
             return new Promise(function (resolve, reject) {
 
-                var timeout = setTimeout(reject, request.timeout);
+                var timeout = setTimeout(reject, timeoutMs);
 
-                fetch(request.url, fetchRequest).then(function (response) {
+                fetch(url, options).then(function (response) {
                     clearTimeout(timeout);
                     resolve(response);
                 }, function (error) {
                     clearTimeout(timeout);
                     throw error;
                 });
-
             });
         }
 
@@ -330,7 +341,7 @@
 
             var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
-            fetch(url + "/system/info/public", {
+            fetchWithTimeout(url + "/system/info/public", {
 
                 method: 'GET',
                 accept: 'application/json'
@@ -338,7 +349,7 @@
                 // Commenting this out since the fetch api doesn't have a timeout option yet
                 //timeout: timeout
 
-            }).then(function () {
+            }, timeout).then(function () {
 
                 logger.log("Reconnect succeeded to " + url);
 
@@ -357,7 +368,7 @@
 
                     setTimeout(function () {
                         tryReconnectInternal(resolve, reject, newConnectionMode, currentRetryCount + 1);
-                    }, 500);
+                    }, 300);
 
                 } else {
                     reject();
@@ -371,7 +382,7 @@
 
                 setTimeout(function () {
                     tryReconnectInternal(resolve, reject, self.serverInfo().LastConnectionMode, 0);
-                }, 500);
+                }, 300);
             });
         }
 
@@ -551,14 +562,14 @@
         function onWebSocketMessage(msg) {
 
             if (msg.MessageType === "UserDeleted") {
-                currentUserPromise = null;
+                currentUser = null;
             }
             else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
 
                 var user = msg.Data;
                 if (user.Id == self.getCurrentUserId()) {
 
-                    currentUserPromise = null;
+                    currentUser = null;
                 }
             }
 

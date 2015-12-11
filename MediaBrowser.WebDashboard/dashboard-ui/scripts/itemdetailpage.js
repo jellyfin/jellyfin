@@ -238,11 +238,13 @@
 
         setPeopleHeader(page, item);
 
-        $(page).trigger('displayingitem', [{
-
-            item: item,
-            context: context
-        }]);
+        page.dispatchEvent(new CustomEvent("displayingitem", {
+            detail: {
+                item: item,
+                context: context
+            },
+            bubbles: true
+        }));
 
         Dashboard.hideLoadingMsg();
     }
