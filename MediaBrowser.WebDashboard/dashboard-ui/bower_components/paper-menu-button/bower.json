@@ -1,14 +1,16 @@
 {
   "name": "paper-menu-button",
-  "version": "1.0.3",
-  "description": "",
+  "version": "1.0.4",
+  "description": "A material design element that composes a trigger and a dropdown menu",
   "authors": [
     "The Polymer Authors"
   ],
   "keywords": [
     "web-components",
     "web-component",
-    "polymer"
+    "polymer",
+    "menu",
+    "button"
   ],
   "main": "paper-menu-button.html",
   "private": true,
@@ -40,5 +42,6 @@
     "paper-item": "polymerelements/paper-item#^1.0.0",
     "iron-image": "polymerelements/iron-image#^1.0.0",
     "iron-icon": "polymerelements/iron-icon#^1.0.0"
-  }
+  },
+  "ignore": []
 }

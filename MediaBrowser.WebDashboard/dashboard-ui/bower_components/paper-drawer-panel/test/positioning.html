@@ -16,9 +16,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-drawer-panel.html">
 </head>
 <style>
@@ -53,8 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('drawer is positioned correctly', function(done) {
         var f, drawer, main;
         f = fixture('left-drawer');
-        drawer = f.querySelector('#drawer');
-        main = f.querySelector('#main');
+        drawer = f.$$('#drawer');
+        main = f.$$('#main');
 
         Polymer.Base.async(function() {
           var drawerStyle = window.getComputedStyle(drawer);
@@ -72,13 +69,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('right-drawer is positioned correctly', function(done) {
         var f, drawer, main;
         f = fixture('right-drawer');
-        drawer = f.querySelector('#drawer');
-        main = f.querySelector('#main');
+        drawer = f.$$('#drawer');
+        main = f.$$('#main');
 
         Polymer.Base.async(function() {
           var drawerStyle = window.getComputedStyle(drawer);
           expect(drawerStyle.right).to.be.equal('0px');
-          
+
           try {
             expect(drawerStyle.left).to.be.equal('auto');
           } catch(e) {

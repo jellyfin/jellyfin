@@ -2864,7 +2864,7 @@
                 }
                 html += '</paper-radio-group>';
 
-                html += '<p>';
+                html += '<p style="margin: 1em 0;padding: 0 0 0 1.5em;">';
                 html += Globalize.translate('HeaderSortOrder');
                 html += '</p>';
                 html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';

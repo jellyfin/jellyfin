@@ -300,11 +300,11 @@
                 });
             }
 
-            //items.push({
-            //    name: Globalize.translate('ButtonOpen'),
-            //    id: 'open',
-            //    ironIcon: 'folder-open'
-            //});
+            items.push({
+                name: Globalize.translate('ButtonOpen'),
+                id: 'open',
+                ironIcon: 'folder-open'
+            });
 
             if (options.showPlayOptions !== false) {
 
