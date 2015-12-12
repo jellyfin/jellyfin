@@ -513,7 +513,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // Main stream
             var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
-            playlistUrl += queryString;
+
+            if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                playlistUrl += queryString;
+            }
 
             var request = state.Request;
 
