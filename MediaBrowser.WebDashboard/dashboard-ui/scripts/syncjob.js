@@ -23,8 +23,9 @@
             dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
             showName: true,
             readOnlySyncTarget: true
+        }).then(function () {
+            fillJobValues(page, job, dialogOptions);
         });
-        fillJobValues(page, job, dialogOptions);
     }
 
     function getTargetDialogOptionsFn(dialogOptions) {
@@ -267,7 +268,11 @@
 
     function fillJobValues(page, job, editOptions) {
 
-        $('#txtSyncJobName', page).val(job.Name);
+        var txtSyncJobName = page.querySelector('#txtSyncJobName');
+        if (txtSyncJobName) {
+            txtSyncJobName.value = job.Name;
+        }
+
         $('#selectProfile', page).val(job.Profile || '').trigger('change');
         $('#selectQuality', page).val(job.Quality || '').trigger('change');
         $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly);

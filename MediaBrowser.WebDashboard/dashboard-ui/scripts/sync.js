@@ -76,8 +76,12 @@
 
     function renderForm(options) {
 
-        require(['paper-checkbox', 'paper-input'], function () {
-            renderFormInternal(options);
+        return new Promise(function (resolve, reject) {
+
+            require(['paper-checkbox', 'paper-input'], function () {
+                renderFormInternal(options);
+                resolve();
+            });
         });
     }
 

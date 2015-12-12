@@ -44,8 +44,7 @@
                 CameraUploadPath: $('#txtUploadPath', page).val()
 
             }),
-            contentType: "application/json",
-            dataType: 'json'
+            contentType: "application/json"
 
         }).then(Dashboard.processServerConfigurationUpdateResult);
     }

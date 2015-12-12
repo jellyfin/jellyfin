@@ -35,6 +35,22 @@
             var xhr = new XMLHttpRequest();
             xhr.open('GET', requestUrl, true);
 
+            var onError = function () {
+
+                Logger.log('Dictionary not found. Reverting to english');
+
+                // Grab the english version
+                var xhr2 = new XMLHttpRequest();
+                xhr2.open('GET', getUrl(name, 'en-US'), true);
+
+                xhr2.onload = function (e) {
+                    dictionaries[url] = JSON.parse(this.response);
+                    resolve();
+                };
+
+                xhr2.send();
+            };
+
             xhr.onload = function (e) {
 
                 Logger.log('Globalize response status: ' + this.status);
@@ -45,19 +61,11 @@
                     resolve();
 
                 } else {
-
-                    // Grab the english version
-                    var xhr2 = new XMLHttpRequest();
-                    xhr2.open('GET', getUrl(name, 'en-US'), true);
-
-                    xhr2.onload = function (e) {
-                        dictionaries[url] = JSON.parse(this.response);
-                        resolve();
-                    };
-
-                    xhr2.send();
+                    onError();
                 }
             };
+
+            xhr.onerror = onError;
 
             xhr.send();
         });
@@ -67,7 +75,6 @@
     function setCulture(value) {
 
         Logger.log('Setting culture to ' + value);
-
         currentCulture = value;
 
         return Promise.all([loadDictionary('html', value), loadDictionary('javascript', value)]);
@@ -115,14 +122,11 @@
 
         Logger.log('Entering Globalize.ensure');
 
-        return new Promise(function (resolve, reject) {
+        return getDeviceCulture().then(function (culture) {
 
-            getDeviceCulture().then(function (culture) {
+            culture = normalizeLocaleName(culture || 'en-US');
 
-                culture = normalizeLocaleName(culture || 'en-US');
-
-                setCulture(culture).then(resolve);
-            });
+            return setCulture(culture);
         });
     }
 
