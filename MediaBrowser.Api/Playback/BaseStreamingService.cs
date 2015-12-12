@@ -2180,14 +2180,9 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest != null)
             {
-                var videoCodec = GetVideoEncoder(state);
-                // See if we can save come cpu cycles by avoiding encoding
-                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        inputModifier += " -noaccurate_seek";
-                    }
+                    inputModifier += " -noaccurate_seek";
                 }
             }
             
