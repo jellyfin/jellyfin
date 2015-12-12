@@ -2178,6 +2178,8 @@ namespace MediaBrowser.Api.Playback
                 inputModifier += " " + videoDecoder;
             }
 
+            //inputModifier += " -noaccurate_seek";
+            
             return inputModifier;
         }
 

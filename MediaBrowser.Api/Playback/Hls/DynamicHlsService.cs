@@ -291,25 +291,6 @@ namespace MediaBrowser.Api.Playback.Hls
         private double[] GetSegmentLengths(StreamState state)
         {
             var result = new List<double>();
-            if (state.VideoRequest != null)
-            {
-                var encoder = GetVideoEncoder(state);
-
-                if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
-                {
-                    var videoStream = state.VideoStream;
-                    if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
-                    {
-                        foreach (var frame in videoStream.KeyFrames)
-                        {
-                            var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
-                            seconds -= result.Sum();
-                            result.Add(seconds);
-                        }
-                        return result.ToArray();
-                    }
-                }
-            }
 
             var ticks = state.RunTimeTicks ?? 0;
 
@@ -936,27 +917,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
         {
-            if (videoStream.KeyFrames == null || videoStream.KeyFrames.Count == 0)
-            {
-                Logger.Debug("Cannot stream copy video due to missing keyframe info");
-                return false;
-            }
-
-            var previousSegment = 0;
-            foreach (var frame in videoStream.KeyFrames)
-            {
-                var length = frame - previousSegment;
-
-                // Don't allow really long segments because this could result in long download times
-                if (length > 10000)
-                {
-                    Logger.Debug("Cannot stream copy video due to long segment length of {0}ms", length);
-                    return false;
-                }
-                previousSegment = frame;
-            }
-
-            return base.CanStreamCopyVideo(request, videoStream);
+            return false;
+            //return base.CanStreamCopyVideo(request, videoStream);
         }
     }
 }

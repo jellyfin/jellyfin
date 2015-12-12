@@ -209,8 +209,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableWindowsShortcuts { get; set; }
 
-        public bool EnableVideoFrameByFrameAnalysis { get; set; }
-
         public bool EnableDateLastRefresh { get; set; }
 
         public string[] Migrations { get; set; }

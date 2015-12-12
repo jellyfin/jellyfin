@@ -100,6 +100,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
+                //format = " -avoid_negative_ts disabled -start_at_zero -copyts -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
             var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));

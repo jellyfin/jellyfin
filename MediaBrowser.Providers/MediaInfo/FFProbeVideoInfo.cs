@@ -170,8 +170,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 VideoType = item.VideoType,
                 MediaType = DlnaProfileType.Video,
                 InputPath = item.Path,
-                Protocol = protocol,
-                ExtractKeyFrameInterval = true
+                Protocol = protocol
 
             }, cancellationToken).ConfigureAwait(false);
 
