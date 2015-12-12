@@ -2178,7 +2178,18 @@ namespace MediaBrowser.Api.Playback
                 inputModifier += " " + videoDecoder;
             }
 
-            //inputModifier += " -noaccurate_seek";
+            if (state.VideoRequest != null)
+            {
+                var videoCodec = GetVideoEncoder(state);
+                // See if we can save come cpu cycles by avoiding encoding
+                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        inputModifier += " -noaccurate_seek";
+                    }
+                }
+            }
             
             return inputModifier;
         }
