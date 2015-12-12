@@ -469,7 +469,7 @@
                 return;
             }
 
-            requirejs(["scripts/registrationservices"], function () {
+            requirejs(["registrationservices"], function () {
 
                 self.playbackTimeLimitMs = null;
 

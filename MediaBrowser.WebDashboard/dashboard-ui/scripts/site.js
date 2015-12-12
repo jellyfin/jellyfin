@@ -1867,6 +1867,13 @@ var AppInfo = {};
         define('fetch', [bowerPath + '/fetch/fetch']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
+
+        if (Dashboard.isRunningInCordova()) {
+            define('registrationservices', ['cordova/registrationservices']);
+
+        } else {
+            define('registrationservices', ['scripts/registrationservices']);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2145,23 +2152,17 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            deps.push('cordova/registrationservices');
+            deps.push('registrationservices');
+
             deps.push('cordova/back');
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
             }
-        } else {
-            deps.push('scripts/registrationservices');
         }
 
         if (browserInfo.msie) {
             deps.push('devices/ie/ie');
-        }
-
-        if (AppInfo.isNativeApp && browserInfo.safari) {
-
-            deps.push('cordova/ios/tabbar');
         }
 
         deps.push('scripts/search');
@@ -2221,6 +2222,11 @@ var AppInfo = {};
 
             if (AppInfo.enableNowPlayingBar) {
                 postInitDependencies.push('scripts/nowplayingbar');
+            }
+
+            if (AppInfo.isNativeApp && browserInfo.safari) {
+
+                postInitDependencies.push('cordova/ios/tabbar');
             }
 
             require(postInitDependencies);

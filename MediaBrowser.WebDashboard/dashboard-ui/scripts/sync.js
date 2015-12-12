@@ -203,7 +203,7 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["scripts/registrationservices"], function () {
+        requirejs(["registrationservices"], function () {
             RegistrationServices.validateFeature('sync').then(function () {
                 showSyncMenuInternal(options);
             });

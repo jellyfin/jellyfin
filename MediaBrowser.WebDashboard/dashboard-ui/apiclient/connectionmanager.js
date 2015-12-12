@@ -140,7 +140,7 @@
 
                     logger.log('fetchWithTimeout: timed out connecting to url: ' + url);
 
-                    throw error;
+                    reject();
                 });
             });
         }

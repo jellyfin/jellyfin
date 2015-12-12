@@ -811,13 +811,11 @@
 
         self.getPlayerState = function () {
 
-            var deferred = $.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var result = self.getPlayerStateInternal();
-
-            deferred.resolveWith(null, [result]);
-
-            return deferred.promise();
+                var result = self.getPlayerStateInternal();
+                resolve(result);
+            });
         };
 
         self.lastPlayerData = {};
@@ -833,9 +831,9 @@
 
         self.tryPair = function (target) {
 
-            var deferred = $.Deferred();
-            deferred.resolve();
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+                resolve();
+            });
         };
     }
 

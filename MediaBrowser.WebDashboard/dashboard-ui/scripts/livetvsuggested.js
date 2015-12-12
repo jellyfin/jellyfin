@@ -152,7 +152,7 @@
                 initMethod = 'initSuggestedTab';
                 break;
             case 1:
-                depends.push('scripts/registrationservices');
+                depends.push('registrationservices');
                 depends.push('scripts/livetvguide');
                 renderMethod = 'renderGuideTab';
                 initMethod = 'initGuideTab';

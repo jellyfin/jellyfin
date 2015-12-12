@@ -30,10 +30,14 @@
 
             var requestUrl = url + "?v=" + AppInfo.appVersion;
 
+            Logger.log('Requesting ' + requestUrl);
+
             var xhr = new XMLHttpRequest();
             xhr.open('GET', requestUrl, true);
 
             xhr.onload = function (e) {
+
+                Logger.log('Globalize response status: ' + this.status);
 
                 if (this.status < 400) {
 

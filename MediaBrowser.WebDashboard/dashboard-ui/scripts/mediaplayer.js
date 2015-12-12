@@ -201,6 +201,14 @@
 
             profile.TranscodingProfiles = [];
 
+            //profile.TranscodingProfiles.push({
+            //    Container: 'mkv',
+            //    Type: 'Video',
+            //    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+            //    VideoCodec: 'h264',
+            //    Context: 'Streaming'
+            //});
+
             if (self.canPlayHls()) {
                 profile.TranscodingProfiles.push({
                     Container: 'ts',

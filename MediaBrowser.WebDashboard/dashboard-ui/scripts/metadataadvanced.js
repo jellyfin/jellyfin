@@ -14,8 +14,6 @@
         $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata).checkboxradio("refresh");
         $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata).checkboxradio("refresh");
 
-        $('.chkEnableVideoFrameAnalysis', page).checked(config.EnableVideoFrameByFrameAnalysis);
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -173,8 +171,6 @@
         ApiClient.getServerConfiguration().then(function (config) {
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
-
-            config.EnableVideoFrameByFrameAnalysis = $('.chkEnableVideoFrameAnalysis', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();

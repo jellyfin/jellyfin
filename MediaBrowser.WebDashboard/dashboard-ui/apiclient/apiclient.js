@@ -230,7 +230,7 @@
                     resolve(response);
                 }, function (error) {
                     clearTimeout(timeout);
-                    throw error;
+                    reject();
                 });
             });
         }

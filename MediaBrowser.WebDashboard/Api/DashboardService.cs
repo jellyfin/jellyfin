@@ -303,6 +303,11 @@ namespace MediaBrowser.WebDashboard.Api
 
             var mode = request.Mode;
 
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                _fileSystem.DeleteFile(Path.Combine(path, "scripts", "registrationservices.js"));
+            }
+            
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
             DeleteFilesByExtension(bowerPath, ".log");

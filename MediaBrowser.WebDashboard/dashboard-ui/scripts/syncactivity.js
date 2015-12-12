@@ -388,7 +388,7 @@
 
         $('.btnSyncSupporter', page).on('click', function () {
 
-            requirejs(["scripts/registrationservices"], function () {
+            requirejs(["registrationservices"], function () {
                 RegistrationServices.validateFeature('sync').then(function () {
                 });
             });
