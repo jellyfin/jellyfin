@@ -10,6 +10,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
+using System.Globalization;
 using System.IO;
 using CommonIO;
 
@@ -100,7 +101,6 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
-                //format = " -avoid_negative_ts disabled -start_at_zero -copyts -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
             var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
@@ -124,27 +124,26 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// Gets video arguments to pass to ffmpeg
         /// </summary>
         /// <param name="state">The state.</param>
-        /// <param name="codec">The video codec.</param>
+        /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoArguments(StreamState state, string codec)
+        private string GetVideoArguments(StreamState state, string videoCodec)
         {
-            var args = "-codec:v:0 " + codec;
+            var args = "-codec:v:0 " + videoCodec;
 
             if (state.EnableMpegtsM2TsMode)
             {
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            // See if we can save come cpu cycles by avoiding encoding
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
+
+            if (state.RunTimeTicks.HasValue)
             {
-                var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
-
-                if (isOutputMkv)
-                {
-                    //args += " -copyts -avoid_negative_ts disabled -start_at_zero";
-                }
-
+                //args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+            }
+            
+            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
                 if (state.VideoStream != null && IsH264(state.VideoStream) &&
                     (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || isOutputMkv))
                 {
@@ -164,10 +163,10 @@ namespace MediaBrowser.Api.Playback.Progressive
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, codec);
+                args += GetOutputSizeParam(state, videoCodec);
             }
 
-            var qualityParam = GetVideoQualityParam(state, codec, false);
+            var qualityParam = GetVideoQualityParam(state, videoCodec, false);
 
             if (!string.IsNullOrEmpty(qualityParam))
             {
@@ -177,7 +176,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetGraphicalSubtitleParam(state, codec);
+                args += GetGraphicalSubtitleParam(state, videoCodec);
             }
 
             return args;
