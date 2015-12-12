@@ -459,7 +459,9 @@ var Dashboard = {
             elem.active = true;
             elem.classList.remove('hide');
 
-        } else {
+        } else if (!Dashboard.loadingAdded) {
+
+            Dashboard.loadingAdded = true;
 
             require(['paper-spinner'], function () {
                 elem = document.createElement("paper-spinner");
