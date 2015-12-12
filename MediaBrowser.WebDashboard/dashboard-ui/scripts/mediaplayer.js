@@ -202,7 +202,7 @@
 
             profile.TranscodingProfiles = [];
 
-            if (canPlayMkv) {
+            if (canPlayMkv && !isVlc) {
                 profile.TranscodingProfiles.push({
                     Container: 'mkv',
                     Type: 'Video',
@@ -643,13 +643,13 @@
 
                         self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                        changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, streamInfo.startTimeTicksOffset || 0);
+                        changeStreamToUrl(mediaRenderer, playSessionId, streamInfo);
                     });
                 }
             });
         };
 
-        function changeStreamToUrl(mediaRenderer, playSessionId, streamInfo, newPositionTicks) {
+        function changeStreamToUrl(mediaRenderer, playSessionId, streamInfo) {
 
             clearProgressInterval();
 
@@ -670,15 +670,10 @@
             if (self.currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings(playSessionId).then(function () {
 
-                    //self.startTimeTicksOffset = newPositionTicks;
                     self.setSrcIntoRenderer(mediaRenderer, streamInfo, self.currentItem, self.currentMediaSource);
-
                 });
 
-                self.startTimeTicksOffset = newPositionTicks || 0;
-                self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
-                self.startTimeTicksOffset = newPositionTicks || 0;
                 self.setSrcIntoRenderer(mediaRenderer, streamInfo, self.currentItem, self.currentMediaSource);
             }
         }
@@ -707,8 +702,11 @@
                 });
             }
 
+            self.startTimeTicksOffset = streamInfo.startTimeTicksOffset || 0;
+
             mediaRenderer.setCurrentSrc(streamInfo, item, mediaSource, tracks);
             self.streamInfo = streamInfo;
+            //self.updateTextStreamUrls(streamInfo.startTimeTicksOffset || 0);
         };
 
         self.setCurrentTime = function (ticks, positionSlider, currentTimeElement) {
@@ -968,8 +966,8 @@
                             if (mediaUrl.indexOf('.mkv') == -1) {
                                 mediaUrl += '&EnableAutoStreamCopy=false';
                             }
-
                             startTimeTicksOffset = startPosition || 0;
+
                             contentType = 'video/' + mediaSource.TranscodingContainer;
                         }
                     }
