@@ -100,6 +100,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
+                //format = " -avoid_negative_ts disabled -start_at_zero -copyts -f mp4 -movflags frag_keyframe+empty_moov";
             }
 
             var threads = GetNumberOfThreads(state, string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase));
@@ -135,11 +136,22 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) ?
-                    args + " -bsf:v h264_mp4toannexb" :
-                    args;
+                var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
+
+                if (isOutputMkv)
+                {
+                    //args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+                }
+
+                if (state.VideoStream != null && IsH264(state.VideoStream) &&
+                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || isOutputMkv))
+                {
+                    args += " -bsf:v h264_mp4toannexb";
+                }
+
+                return args;
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
