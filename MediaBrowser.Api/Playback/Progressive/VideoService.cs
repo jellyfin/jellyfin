@@ -138,13 +138,15 @@ namespace MediaBrowser.Api.Playback.Progressive
             // See if we can save come cpu cycles by avoiding encoding
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
+                var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
+
+                if (isOutputMkv)
                 {
                     //args += " -copyts -avoid_negative_ts disabled -start_at_zero";
                 }
 
                 if (state.VideoStream != null && IsH264(state.VideoStream) &&
-                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase)))
+                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || isOutputMkv))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
