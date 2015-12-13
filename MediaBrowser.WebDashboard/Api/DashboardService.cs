@@ -328,6 +328,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(bowerPath, "test");
             DeleteFoldersByName(bowerPath, "guides");
             DeleteFoldersByName(bowerPath, "grunt");
+            DeleteFoldersByName(bowerPath, "rollups");
 
             DeleteFoldersByName(Path.Combine(bowerPath, "jquery"), "src");
             DeleteFoldersByName(Path.Combine(bowerPath, "jstree"), "src");
