@@ -14,9 +14,9 @@
         });
     }
 
-    function mirrorIfEnabled() {
+    function mirrorIfEnabled(info) {
 
-        var info = currentDisplayInfo;
+        info = info || currentDisplayInfo;
 
         if (info && MediaController.enableDisplayMirroring()) {
 
@@ -1037,9 +1037,7 @@
 
     pageClassOn('displayingitem', "libraryPage", function (e) {
 
-        var info = e.detail.info;
-        currentDisplayInfo = info;
-
+        var info = e.detail;
         mirrorIfEnabled(info);
     });
 
