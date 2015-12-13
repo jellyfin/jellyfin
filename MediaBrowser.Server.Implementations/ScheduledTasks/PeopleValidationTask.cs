@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -17,13 +18,16 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        private readonly IServerApplicationHost _appHost;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        public PeopleValidationTask(ILibraryManager libraryManager)
+        public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost)
         {
             _libraryManager = libraryManager;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -32,9 +36,12 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
+            // Randomize the default start hour because this operation can really hammer internet metadata providers
+            var startHour = new Random(_appHost.SystemId.GetHashCode()).Next(0, 8);
+
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(3) },
+                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(startHour) },
                 };
         }
 
