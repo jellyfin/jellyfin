@@ -368,7 +368,7 @@
     <Content Include="dashboard-ui\apiclient\wakeonlan.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\emby-icons.html">
+    <Content Include="dashboard-ui\bower_components\emby-icons\emby-icons.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\hls.min.js">
