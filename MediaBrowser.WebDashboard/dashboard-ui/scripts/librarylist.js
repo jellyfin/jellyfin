@@ -31,7 +31,7 @@
         requestAnimationFrame(function () {
             var keyframes = [
               { height: '100%', offset: 0 },
-              { height: '0', display: 'none', offset: 1 }];
+              { height: '0', offset: 1 }];
             var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
