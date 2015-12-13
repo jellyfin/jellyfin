@@ -1765,6 +1765,12 @@ var AppInfo = {};
 
         var bowerPath = "bower_components";
 
+        // Put the version into the bower path since we can't easily put a query string param on html imports
+        // Emby server will handle this
+        if (!Dashboard.isRunningInCordova()) {
+            bowerPath += window.dashboardVersion;
+        }
+
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
@@ -1809,6 +1815,8 @@ var AppInfo = {};
         define("cryptojs-md5", ["apiclient/md5"]);
 
         // Done
+        define("emby-icons", ["html!" + bowerPath + "/emby-icons/emby-icons.html"]);
+
         define("paper-spinner", ["html!" + bowerPath + "/paper-spinner/paper-spinner.html"]);
         define("paper-toast", ["html!" + bowerPath + "/paper-toast/paper-toast.html"]);
         define("paper-slider", ["html!" + bowerPath + "/paper-slider/paper-slider.html"]);
@@ -2069,7 +2077,7 @@ var AppInfo = {};
             var promises = [];
             deps = [];
             deps.push('thirdparty/jquery.unveil-custom.js');
-            deps.push('html!thirdparty/emby-icons.html');
+            deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
             deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');

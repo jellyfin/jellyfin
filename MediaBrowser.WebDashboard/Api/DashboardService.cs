@@ -197,6 +197,8 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var path = request.ResourceName;
 
+            path = path.Replace("bower_components" + _appHost.ApplicationVersion, "bower_components", StringComparison.OrdinalIgnoreCase);
+
             var contentType = MimeTypes.GetMimeType(path);
 
             // Bounce them to the startup wizard if it hasn't been completed yet
@@ -263,22 +265,6 @@ namespace MediaBrowser.WebDashboard.Api
             return new PackageCreator(_fileSystem, _localization, Logger, _serverConfigurationManager, _jsonSerializer);
         }
 
-        /// <summary>
-        /// Determines whether the specified path is HTML.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-        private bool IsHtml(string path)
-        {
-            return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void CopyFile(string src, string dst)
-        {
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dst));
-			_fileSystem.CopyFile(src, dst, true);
-        }
-
         public async Task<object> Get(GetDashboardPackage request)
         {
             var path = Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath,
@@ -307,9 +293,17 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 _fileSystem.DeleteFile(Path.Combine(path, "scripts", "registrationservices.js"));
             }
-            
+
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
+
+            if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                var versionedBowerPath = Path.Combine(Path.GetDirectoryName(bowerPath), "bower_components" + _appHost.ApplicationVersion);
+                Directory.Move(bowerPath, versionedBowerPath);
+                bowerPath = versionedBowerPath;
+            }
+
             DeleteFilesByExtension(bowerPath, ".log");
             DeleteFilesByExtension(bowerPath, ".txt");
             DeleteFilesByExtension(bowerPath, ".map");
@@ -345,9 +339,9 @@ namespace MediaBrowser.WebDashboard.Api
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
-				_fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
+                _fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
 
-				_fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
+                _fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
             }
             else
             {
@@ -413,7 +407,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 try
                 {
-					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
+                    var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
 
                     var result = new KristensenCssMinifier().Minify(text, false, Encoding.UTF8);
 
@@ -424,7 +418,7 @@ namespace MediaBrowser.WebDashboard.Api
                     else
                     {
                         text = result.MinifiedContent;
-						_fileSystem.WriteAllText(file, text, Encoding.UTF8);
+                        _fileSystem.WriteAllText(file, text, Encoding.UTF8);
                     }
                 }
                 catch (Exception ex)
@@ -449,7 +443,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 try
                 {
-					var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
+                    var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
 
                     var result = new CrockfordJsMinifier().Minify(text, false, Encoding.UTF8);
 
@@ -460,7 +454,7 @@ namespace MediaBrowser.WebDashboard.Api
                     else
                     {
                         text = result.MinifiedContent;
-						_fileSystem.WriteAllText(file, text, Encoding.UTF8);
+                        _fileSystem.WriteAllText(file, text, Encoding.UTF8);
                     }
                 }
                 catch (Exception ex)
@@ -488,7 +482,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in excludeFiles)
             {
-				_fileSystem.DeleteFile(Path.Combine(destination, file));
+                _fileSystem.DeleteFile(Path.Combine(destination, file));
             }
         }
 
@@ -505,17 +499,17 @@ namespace MediaBrowser.WebDashboard.Api
 
         private void CopyDirectory(string source, string destination)
         {
-			_fileSystem.CreateDirectory(destination);
+            _fileSystem.CreateDirectory(destination);
 
             //Now Create all of the directories
             foreach (string dirPath in Directory.GetDirectories(source, "*",
                 SearchOption.AllDirectories))
-				_fileSystem.CreateDirectory(dirPath.Replace(source, destination));
+                _fileSystem.CreateDirectory(dirPath.Replace(source, destination));
 
             //Copy all the files & Replaces any files with the same name
             foreach (string newPath in Directory.GetFiles(source, "*.*",
                 SearchOption.AllDirectories))
-				_fileSystem.CopyFile(newPath, newPath.Replace(source, destination), true);
+                _fileSystem.CopyFile(newPath, newPath.Replace(source, destination), true);
         }
     }
 
