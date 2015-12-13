@@ -275,7 +275,7 @@
                     return false;
                 });
 
-                $('.btnCancel').on('click', function () {
+                $('.btnCancel', dlg).on('click', function () {
                     paperDialogHelper.close(dlg);
                 });
 

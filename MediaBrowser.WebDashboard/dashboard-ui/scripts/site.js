@@ -428,7 +428,7 @@ var Dashboard = {
         return "ConfigurationPage?name=" + encodeURIComponent(name);
     },
 
-    navigate: function (url, preserveQueryString, transition) {
+    navigate: function (url, preserveQueryString) {
 
         if (!url) {
             throw new Error('url cannot be null or empty');
@@ -440,10 +440,6 @@ var Dashboard = {
         }
 
         var options = {};
-
-        if (transition) {
-            options.transition = transition;
-        }
 
         $.mobile.changePage(url, options);
     },
@@ -1799,6 +1795,18 @@ var AppInfo = {};
             paths.sharingwidget = "components/sharingwidget";
         }
 
+        var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
+        var md5Path = bowerPath + "/cryptojslib/components/md5-min";
+        var shim = {};
+
+        shim[sha1Path] = {
+            deps: [bowerPath + "/cryptojslib/components/core-min"]
+        };
+
+        shim[md5Path] = {
+            deps: [bowerPath + "/cryptojslib/components/core-min"]
+        };
+
         requirejs.config({
             map: {
                 '*': {
@@ -1808,11 +1816,12 @@ var AppInfo = {};
             },
             urlArgs: urlArgs,
 
-            paths: paths
+            paths: paths,
+            shim: shim
         });
 
-        define("cryptojs-sha1", ["apiclient/sha1"]);
-        define("cryptojs-md5", ["apiclient/md5"]);
+        define("cryptojs-sha1", [sha1Path]);
+        define("cryptojs-md5", [md5Path]);
 
         // Done
         define("emby-icons", ["html!" + bowerPath + "/emby-icons/emby-icons.html"]);

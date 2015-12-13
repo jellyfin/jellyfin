@@ -779,6 +779,8 @@
 
             var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
 
+            //localAccessHtml += '<a class="clearLink" href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank"><paper-icon-button icon="info"></paper-icon-button></a>';
+
             $('.localUrl', page).html(localAccessHtml).show().trigger('create');
         } else {
             $('.externalUrl', page).hide();

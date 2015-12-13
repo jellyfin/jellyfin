@@ -1,0 +1,22 @@
+{
+  "name": "cryptojslib",
+  "version": "3.1.2",
+  "main": "**/*.js",
+  "homepage": "https://github.com/sytelus/cryptojs",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sytelus/cryptojs.git"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "_release": "3.1.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.1.2",
+    "commit": "79faa50ca65a0bc302ff93518215c015b4d3004c"
+  },
+  "_source": "git://github.com/sytelus/CryptoJS.git",
+  "_target": "~3.1.2",
+  "_originalSource": "cryptojslib",
+  "_direct": true
+}
