@@ -570,7 +570,7 @@
                     closeMainDrawer();
 
                     // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                    var delay = browserInfo.mobile ? 350 : 150;
+                    var delay = browserInfo.mobile ? 350 : 200;
 
                     setTimeout(function () {
                         if (action) {
@@ -595,7 +595,7 @@
                 closeMainDrawer();
 
                 // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                var delay = browserInfo.mobile ? 350 : 150;
+                var delay = browserInfo.mobile ? 350 : 200;
 
                 setTimeout(function () {
                     Dashboard.logout();
