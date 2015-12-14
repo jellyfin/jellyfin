@@ -39,7 +39,7 @@
                     recordedTvView.ImageTags = {};
                     recordedTvView.icon = 'video-library';
                     recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 2);event.preventDefault();event.stopPropagation();return false;";
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);event.preventDefault();event.stopPropagation();return false;";
                     list.push(recordedTvView);
                 }
             }
