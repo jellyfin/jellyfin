@@ -41,11 +41,6 @@ namespace MediaBrowser.Server.Implementations.Intros
 
         public async Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, User user)
         {
-            if (!user.Configuration.EnableCinemaMode)
-            {
-                return new List<IntroInfo>();
-            }
-
             var config = GetOptions();
 
             if (item is Movie)
