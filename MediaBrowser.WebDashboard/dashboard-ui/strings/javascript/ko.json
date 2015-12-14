@@ -882,7 +882,7 @@
     "ButtonGuide": "\uac00\uc774\ub4dc",
     "ButtonRecordedTv": "TV \ub179\ud654",
     "HeaderDisconnectFromPlayer": "Disconnect from Player",
-    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "ButtonYes": "\uc608",
     "ButtonNo": "\uc544\ub2c8\uc624",
     "ButtonRestorePreviousPurchase": "\uad6c\ub9e4 \ubcf5\uc6d0",

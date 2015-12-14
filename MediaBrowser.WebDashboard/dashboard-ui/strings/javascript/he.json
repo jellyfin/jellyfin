@@ -882,7 +882,7 @@
     "ButtonGuide": "Guide",
     "ButtonRecordedTv": "\u05ea\u05d5\u05db\u05e0\u05d9\u05d5\u05ea \u05de\u05d5\u05e7\u05dc\u05d8\u05d5\u05ea",
     "HeaderDisconnectFromPlayer": "Disconnect from Player",
-    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ConfirmEndPlayerSession": "Would you like to close Emby on the device?",
     "ButtonYes": "\u05db\u05df",
     "ButtonNo": "\u05dc\u05d0",
     "ButtonRestorePreviousPurchase": "Restore Purchase",
