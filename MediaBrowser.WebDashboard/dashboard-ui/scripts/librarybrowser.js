@@ -2884,13 +2884,16 @@
                 document.body.appendChild(dlg);
 
                 var fireCallbackOnClose = false;
+                var delay = browserInfo.animate ? 0 : 100;
 
-                paperDialogHelper.open(dlg).then(function() {
+                setTimeout(function() {
+                    paperDialogHelper.open(dlg).then(function () {
 
-                    if (options.callback && fireCallbackOnClose) {
-                        options.callback();
-                    }
-                });
+                        if (options.callback && fireCallbackOnClose) {
+                            options.callback();
+                        }
+                    });
+                }, delay);
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
 
