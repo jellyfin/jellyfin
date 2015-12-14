@@ -1,3 +1,17 @@
 ﻿paper-fab.keyboard-focus.paper-fab-0 {
     background: #444;
 }
+
+.channelHeaderCell {
+    display: block;
+}
+
+.guideChannelInfo {
+    padding-top: 5px;
+}
+
+.guideChannelImage {
+    position: absolute;
+    top:  0;
+    right: 5px;
+}
