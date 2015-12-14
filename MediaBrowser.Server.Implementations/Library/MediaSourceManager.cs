@@ -68,21 +68,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (stream.IsTextSubtitleStream)
             {
-                return InternalTextStreamSupportsExternalStream(stream);
+                return true;
             }
 
             return false;
-        }
-
-        private bool InternalTextStreamSupportsExternalStream(MediaStream stream)
-        {
-            // These usually have styles and fonts that won't convert to text very well
-            if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         public IEnumerable<MediaStream> GetMediaStreams(string mediaSourceId)
