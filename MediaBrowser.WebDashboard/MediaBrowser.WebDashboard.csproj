@@ -419,9 +419,6 @@
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.structure.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

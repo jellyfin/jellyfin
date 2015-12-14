@@ -1465,21 +1465,17 @@ var Dashboard = {
 
     loadExternalPlayer: function () {
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        require(['scripts/externalplayer.js'], function () {
+            require(['scripts/externalplayer.js'], function () {
 
-            if (Dashboard.isRunningInCordova()) {
-                require(['cordova/externalplayer.js'], function () {
-
-                    deferred.resolve();
-                });
-            } else {
-                deferred.resolve();
-            }
+                if (Dashboard.isRunningInCordova()) {
+                    require(['cordova/externalplayer.js'], resolve);
+                } else {
+                    resolve();
+                }
+            });
         });
-
-        return deferred.promise();
     },
 
     exitOnBack: function () {
@@ -2189,6 +2185,8 @@ var AppInfo = {};
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('apiclient/deferred');
+
+        deps.push('css!css/card.css');
 
         require(deps, function () {
 

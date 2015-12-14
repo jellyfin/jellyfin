@@ -3,16 +3,16 @@
     getApiClient: function () {
 
         var serverId = getParameterByName('serverid');
-        var deferred = DeferredBuilder.Deferred();
 
-        if (serverId) {
-            deferred.resolveWith(null, [ConnectionManager.getOrCreateApiClient(serverId)]);
+        return new Promise(function (resolve, reject) {
 
-        } else {
-            deferred.resolveWith(null, [ApiClient]);
-        }
+            if (serverId) {
+                resolve(ConnectionManager.getOrCreateApiClient(serverId));
 
-        return deferred.promise();
+            } else {
+                resolve(ApiClient);
+            }
+        });
     },
 
     onPageShow: function () {
