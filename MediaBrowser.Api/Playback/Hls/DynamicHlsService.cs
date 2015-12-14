@@ -514,10 +514,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // Main stream
             var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
 
-            if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) == -1)
-            {
-                playlistUrl += queryString;
-            }
+            playlistUrl += queryString;
 
             var request = state.Request;
 
@@ -703,6 +700,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
+
+            if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                queryString = string.Empty;
+            }
 
             var index = 0;
 
