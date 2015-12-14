@@ -26,6 +26,13 @@ namespace MediaBrowser.Common.Net
         string GetMacAddress();
 
         /// <summary>
+        /// Determines whether [is in private address space] [the specified endpoint].
+        /// </summary>
+        /// <param name="endpoint">The endpoint.</param>
+        /// <returns><c>true</c> if [is in private address space] [the specified endpoint]; otherwise, <c>false</c>.</returns>
+        bool IsInPrivateAddressSpace(string endpoint);
+
+        /// <summary>
         /// Gets the network shares.
         /// </summary>
         /// <param name="path">The path.</param>

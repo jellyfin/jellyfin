@@ -116,13 +116,10 @@
     <Content Include="dashboard-ui\apiclient\sync\serversync.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\buttonenabled.js">
+    <Content Include="dashboard-ui\legacy\buttonenabled.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\collectioneditor\collectioneditor.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\components\dialog.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\directorybrowser\directorybrowser.js">
