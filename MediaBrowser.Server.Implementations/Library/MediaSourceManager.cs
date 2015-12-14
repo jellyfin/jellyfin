@@ -68,21 +68,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (stream.IsTextSubtitleStream)
             {
-                return InternalTextStreamSupportsExternalStream(stream);
+                return true;
             }
 
             return false;
-        }
-
-        private bool InternalTextStreamSupportsExternalStream(MediaStream stream)
-        {
-            // These usually have styles and fonts that won't convert to text very well
-            if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         public IEnumerable<MediaStream> GetMediaStreams(string mediaSourceId)
@@ -105,11 +94,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetMediaStreamsForItem(list);
         }
 
-        private int GetMaxAllowedBitrateForExternalSubtitleStream()
-        {
-            return 30000000;
-        }
-
         private IEnumerable<MediaStream> GetMediaStreamsForItem(IEnumerable<MediaStream> streams)
         {
             var list = streams.ToList();
@@ -120,25 +104,9 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (subtitleStreams.Count > 0)
             {
-                var videoStream = list.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                int maxAllowedBitrateForExternalSubtitleStream = GetMaxAllowedBitrateForExternalSubtitleStream();
-
-                var videoBitrate = videoStream == null ? maxAllowedBitrateForExternalSubtitleStream : videoStream.BitRate ?? maxAllowedBitrateForExternalSubtitleStream;
-
                 foreach (var subStream in subtitleStreams)
                 {
-                    var supportsExternalStream = StreamSupportsExternalStream(subStream);
-
-                    if (!subStream.IsExternal)
-                    {
-                        if (supportsExternalStream && videoBitrate >= maxAllowedBitrateForExternalSubtitleStream)
-                        {
-                            supportsExternalStream = false;
-                        }
-                    }
-
-                    subStream.SupportsExternalStream = supportsExternalStream;
+                    subStream.SupportsExternalStream = StreamSupportsExternalStream(subStream);
                 }
             }
 
