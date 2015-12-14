@@ -202,7 +202,8 @@
 
             profile.TranscodingProfiles = [];
 
-            if (canPlayMkv && !isVlc) {
+            // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
+            if (canPlayMkv && !isVlc && !browserInfo.mobile) {
                 profile.TranscodingProfiles.push({
                     Container: 'mkv',
                     Type: 'Video',
