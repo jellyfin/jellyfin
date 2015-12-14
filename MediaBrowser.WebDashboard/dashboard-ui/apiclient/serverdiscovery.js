@@ -1,6 +1,6 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
-    globalScope.ServerDiscovery = {
+    return {
 
         findServers: function (timeoutMs) {
 
@@ -15,4 +15,4 @@
         }
     };
 
-})(window);
+});

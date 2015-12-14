@@ -1,4 +1,4 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
     function send(info) {
 
@@ -8,8 +8,8 @@
         });
     }
 
-    globalScope.WakeOnLan = {
+    return {
         send: send
     };
 
-})(window);
+});

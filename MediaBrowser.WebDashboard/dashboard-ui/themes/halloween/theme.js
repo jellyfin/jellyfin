@@ -59,21 +59,23 @@
 
     function onIconClick() {
 
-        require(['dialog'], function (dialog) {
-            dialog({
+        // todo: switch this to action sheet
 
-                title: "Happy Halloween",
-                message: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
-                callback: function (result) {
+        //require(['dialog'], function (dialog) {
+        //    dialog({
 
-                    if (result == 1) {
-                        destroyTheme();
-                    }
-                },
+        //        title: "Happy Halloween",
+        //        message: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
+        //        callback: function (result) {
 
-                buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo')]
-            });
-        });
+        //            if (result == 1) {
+        //                destroyTheme();
+        //            }
+        //        },
+
+        //        buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo')]
+        //    });
+        //});
     }
 
     function destroyTheme() {

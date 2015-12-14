@@ -54,7 +54,7 @@
                 });
             }
 
-            var page = $(form).parents('.page');
+            var page = $(form).parents('.page')[0];
 
             SupporterKeyPage.load(page);
         });

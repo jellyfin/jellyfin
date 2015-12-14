@@ -70,43 +70,6 @@
 
         var header = document.querySelector('.viewMenuBar');
 
-        var headerSearchButton = header.querySelector('.headerSearchButton');
-        var btnCast = header.querySelector('.btnCast');
-
-        if (user.localUser) {
-            btnCast.classList.remove('hide');
-
-            if (headerSearchButton) {
-                headerSearchButton.classList.remove('hide');
-            }
-
-            requirejs(['voice/voice'], function () {
-
-                if (VoiceInputManager.isSupported()) {
-                    header.querySelector('.headerVoiceButton').classList.remove('hide');
-                } else {
-                    header.querySelector('.headerVoiceButton').classList.add('hide');
-                }
-
-            });
-
-        } else {
-            btnCast.classList.add('hide');
-            header.querySelector('.headerVoiceButton').classList.add('hide');
-            if (headerSearchButton) {
-                headerSearchButton.classList.add('hide');
-            }
-        }
-
-        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
-        if (dashboardEntryHeaderButton) {
-            if (user.canManageServer) {
-                dashboardEntryHeaderButton.classList.remove('hide');
-            } else {
-                dashboardEntryHeaderButton.classList.add('hide');
-            }
-        }
-
         if (user.name) {
             if (user.imageUrl && AppInfo.enableUserImage) {
 
@@ -127,29 +90,59 @@
             }
         }
 
+        updateLocalUser(user.localUser);
         requiresUserRefresh = false;
+    }
+
+    function updateLocalUser(user) {
+
+        var header = document.querySelector('.viewMenuBar');
+
+        var headerSearchButton = header.querySelector('.headerSearchButton');
+        var btnCast = header.querySelector('.btnCast');
+        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
+
+        if (user) {
+            btnCast.classList.remove('hide');
+
+            if (headerSearchButton) {
+                headerSearchButton.classList.remove('hide');
+            }
+
+            if (dashboardEntryHeaderButton) {
+                if (user.Policy.IsAdministrator) {
+                    dashboardEntryHeaderButton.classList.remove('hide');
+                } else {
+                    dashboardEntryHeaderButton.classList.add('hide');
+                }
+            }
+
+            requirejs(['voice/voice'], function () {
+
+                if (VoiceInputManager.isSupported()) {
+                    header.querySelector('.headerVoiceButton').classList.remove('hide');
+                } else {
+                    header.querySelector('.headerVoiceButton').classList.add('hide');
+                }
+
+            });
+
+        } else {
+            btnCast.classList.add('hide');
+            header.querySelector('.headerVoiceButton').classList.add('hide');
+            if (headerSearchButton) {
+                headerSearchButton.classList.add('hide');
+            }
+
+            if (dashboardEntryHeaderButton) {
+                dashboardEntryHeaderButton.classList.add('hide');
+            }
+        }
     }
 
     function removeUserFromHeader() {
         
-        var header = document.querySelector('.viewMenuBar');
-
-        header.querySelector('.headerVoiceButton').classList.add('hide');
-
-        var btnCast = header.querySelector('.btnCast');
-        if (btnCast) {
-            btnCast.classList.add('hide');
-        }
-
-        var headerSearchButton = header.querySelector('.headerSearchButton');
-        if (headerSearchButton) {
-            headerSearchButton.classList.add('hide');
-        }
-
-        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
-        if (dashboardEntryHeaderButton) {
-            dashboardEntryHeaderButton.classList.add('hide');
-        }
+        updateLocalUser(null);
     }
 
     function bindMenuEvents() {
@@ -933,15 +926,19 @@
         initializeApiClient(window.ApiClient);
     }
 
+    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+    mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
+
+    renderHeader();
+
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
-
     });
 
-    Events.on(ConnectionManager, 'localusersignedin', function () {
+    Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
         requiresLibraryMenuRefresh = true;
         requiresDrawerRefresh = true;
-        ConnectionManager.user(window.ApiClient).then(addUserToHeader);
+        ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(addUserToHeader);
     });
 
     Events.on(ConnectionManager, 'localusersignedout', function () {
@@ -953,11 +950,6 @@
     Events.on(MediaController, 'playerchange', function () {
         updateCastIcon();
     });
-
-    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
-    mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
-
-    renderHeader();
 
 })(window, document, jQuery, window.devicePixelRatio);
 

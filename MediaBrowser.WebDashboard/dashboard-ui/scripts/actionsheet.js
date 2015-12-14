@@ -66,7 +66,11 @@
             return o.ironIcon;
         }).length;
 
-        html += '<paper-menu>';
+        if (options.title && !renderIcon) {
+            html += '<paper-menu style="text-align:center;">';
+        } else {
+            html += '<paper-menu>';
+        }
         for (var i = 0, length = options.items.length; i < length; i++) {
 
             var option = options.items[i];

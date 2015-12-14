@@ -84,7 +84,7 @@ namespace MediaBrowser.Common.Implementations.Networking
             return true;
         }
 
-        private bool IsInPrivateAddressSpace(string endpoint)
+        public bool IsInPrivateAddressSpace(string endpoint)
         {
             if (string.Equals(endpoint, "::1", StringComparison.OrdinalIgnoreCase))
             {

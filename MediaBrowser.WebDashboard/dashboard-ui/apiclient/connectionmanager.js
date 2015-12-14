@@ -636,7 +636,6 @@
                     resolve({
                         localUser: localUser,
                         name: connectUser ? connectUser.Name : (localUser ? localUser.Name : null),
-                        canManageServer: localUser ? localUser.Policy.IsAdministrator : false,
                         imageUrl: image.url,
                         supportsImageParams: image.supportsParams
                     });
@@ -851,8 +850,8 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['serverdiscovery'], function () {
-                    ServerDiscovery.findServers(1000).then(function (foundServers) {
+                require(['serverdiscovery'], function (serverDiscovery) {
+                    serverDiscovery.findServers(1000).then(function (foundServers) {
 
                         var servers = foundServers.map(function (foundServer) {
 
@@ -974,12 +973,12 @@
 
         function beginWakeServer(server) {
 
-            require(['wakeonlan'], function () {
+            require(['wakeonlan'], function (wakeonlan) {
                 var infos = server.WakeOnLanInfos || [];
 
                 for (var i = 0, length = infos.length; i < length; i++) {
 
-                    WakeOnLan.send(infos[i]);
+                    wakeonlan.send(infos[i]);
                 }
             });
         }

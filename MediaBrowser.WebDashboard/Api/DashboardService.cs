@@ -310,6 +310,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFilesByExtension(bowerPath, ".md");
             DeleteFilesByExtension(bowerPath, ".json");
             DeleteFilesByExtension(bowerPath, ".gz");
+            DeleteFilesByExtension(bowerPath, ".bat");
             DeleteFilesByName(bowerPath, "copying", true);
             DeleteFilesByName(bowerPath, "license", true);
             DeleteFilesByName(bowerPath, "license-mit", true);
@@ -329,6 +330,8 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(bowerPath, "guides");
             DeleteFoldersByName(bowerPath, "grunt");
             DeleteFoldersByName(bowerPath, "rollups");
+
+            DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));
 
             DeleteFoldersByName(Path.Combine(bowerPath, "jquery"), "src");
             DeleteFoldersByName(Path.Combine(bowerPath, "jstree"), "src");
@@ -355,6 +358,22 @@ namespace MediaBrowser.WebDashboard.Api
             await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
 
             return "";
+        }
+
+        private void DeleteCryptoFiles(string path)
+        {
+            var files = _fileSystem.GetFiles(path)
+                .ToList();
+
+            var keepFiles = new[] { "core-min.js", "md5-min.js", "sha1-min.js" };
+
+            foreach (var file in files)
+            {
+                if (!keepFiles.Contains(file.Name, StringComparer.OrdinalIgnoreCase))
+                {
+                    _fileSystem.DeleteFile(file.FullName);
+                }
+            }
         }
 
         private void DeleteFilesByExtension(string path, string extension)

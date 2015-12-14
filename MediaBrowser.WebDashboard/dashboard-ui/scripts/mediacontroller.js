@@ -392,25 +392,46 @@
 
             if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
 
-                var options = {
-                    callback: function (result) {
+                var menuItems = [];
 
-                        if (result == 0) {
-                            MediaController.getCurrentPlayer().endSession();
-                        }
-
-                        if (result != 2) {
-                            self.setDefaultPlayerActive();
-                        }
-                    },
-                    message: Globalize.translate('ConfirmEndPlayerSession'),
-                    title: Globalize.translate('HeaderDisconnectFromPlayer'),
-                    buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo'), Globalize.translate('ButtonCancel')]
-                };
-
-                require(['dialog'], function (dialog) {
-                    dialog(options);
+                menuItems.push({
+                    name: Globalize.translate('ButtonYes'),
+                    id: 'yes'
                 });
+                menuItems.push({
+                    name: Globalize.translate('ButtonNo'),
+                    id: 'no'
+                });
+                menuItems.push({
+                    name: Globalize.translate('ButtonCancel'),
+                    id: 'cancel'
+                });
+
+                require(['actionsheet'], function () {
+
+                    ActionSheetElement.show({
+                        items: menuItems,
+                        //positionTo: positionTo,
+                        title: Globalize.translate('ConfirmEndPlayerSession'),
+                        callback: function (id) {
+
+                            switch (id) {
+
+                                case 'yes':
+                                    MediaController.getCurrentPlayer().endSession();
+                                    self.setDefaultPlayerActive();
+                                    break;
+                                case 'no':
+                                    self.setDefaultPlayerActive();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    });
+
+                });
+
 
             } else {
 

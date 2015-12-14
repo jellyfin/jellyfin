@@ -1789,10 +1789,14 @@ var AppInfo = {};
             paths.dialog = "cordova/dialog";
             paths.prompt = "cordova/prompt";
             paths.sharingwidget = "cordova/sharingwidget";
+            paths.serverdiscovery = "cordova/serverdiscovery";
+            paths.wakeonlan = "cordova/wakeonlan";
         } else {
             paths.dialog = "components/dialog";
             paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
+            paths.serverdiscovery = "apiclient/serverdiscovery";
+            paths.wakeonlan = "apiclient/wakeonlan";
         }
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
@@ -1904,13 +1908,6 @@ var AppInfo = {};
                 return appStorage;
             });
         }
-        if (Dashboard.isRunningInCordova()) {
-            define("serverdiscovery", ["cordova/serverdiscovery"]);
-            define("wakeonlan", ["cordova/wakeonlan"]);
-        } else {
-            define("serverdiscovery", ["apiclient/serverdiscovery"]);
-            define("wakeonlan", ["apiclient/wakeonlan"]);
-        }
 
         if (Dashboard.isRunningInCordova()) {
             define("localassetmanager", ["cordova/localassetmanager"]);
@@ -1980,7 +1977,7 @@ var AppInfo = {};
             define("fileupload", ["apiclient/fileupload"]);
         }
 
-        define("buttonenabled", ["components/buttonenabled"]);
+        define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
 
