@@ -79,7 +79,6 @@
         }
 
         return height + 'px';
-        return '80px';
     }
 
     function slideDown(elem) {
@@ -97,8 +96,6 @@
             return;
         }
 
-        onfinish();
-        return;
         requestAnimationFrame(function () {
             var keyframes = [
               { height: getHeight(elem), offset: 0 },
@@ -119,7 +116,6 @@
         if (!browserInfo.animate || browserInfo.mobile) {
             return;
         }
-        return;
 
         requestAnimationFrame(function () {
 
