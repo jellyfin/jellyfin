@@ -7,12 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
+
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="paper-input-behavior.html">
+<link rel="import" href="paper-input-char-counter.html">
 <link rel="import" href="paper-input-container.html">
 <link rel="import" href="paper-input-error.html">
-<link rel="import" href="paper-input-char-counter.html">
 
 <!--
 `<paper-textarea>` is a multi-line text field with Material Design styling.
@@ -45,6 +46,7 @@ style this element.
 
       <iron-autogrow-textarea id="input" class="paper-input-input"
         bind-value="{{value}}"
+        disabled$="[[disabled]]"
         autocomplete$="[[autocomplete]]"
         autofocus$="[[autofocus]]"
         inputmode$="[[inputmode]]"
@@ -67,7 +69,6 @@ style this element.
       </template>
 
     </paper-input-container>
-
   </template>
 </dom-module>
 
@@ -122,6 +123,10 @@ style this element.
 
     _ariaDescribedByChanged: function(ariaDescribedBy) {
       this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
-    }
+    },
+
+    get _focusableElement() {
+      return this.$.input.textarea;
+    },
   });
 </script>

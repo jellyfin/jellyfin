@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -8,7 +8,7 @@
         if (systemInfo) {
             deferred.resolveWith(null, [systemInfo]);
         } else {
-            ApiClient.getPublicSystemInfo().done(function (info) {
+            ApiClient.getPublicSystemInfo().then(function (info) {
                 systemInfo = info;
                 deferred.resolveWith(null, [systemInfo]);
             });
@@ -48,15 +48,15 @@
         }
 
         if (!parentPathPromise) {
-            parentPathPromise = $.Deferred();
-            parentPathPromise.resolveWith(null, []);
-            parentPathPromise = parentPathPromise.promise();
+            parentPathPromise = new Promise(function (resolve, reject) {
+                resolve();
+            });
         }
 
-        $.when(promise, parentPathPromise).done(function (response1, response2) {
+        Promise.all([promise, parentPathPromise]).then(function (responses) {
 
-            var folders = response1[0];
-            var parentPath = response2 && response2.length ? response2[0] || '' : '';
+            var folders = responses[0];
+            var parentPath = responses[1] || '';
 
             $('#txtDirectoryPickerPath', page).val(path || "");
 
@@ -84,7 +84,7 @@
 
             Dashboard.hideLoadingMsg();
 
-        }).fail(function () {
+        }, function () {
 
             $('#txtDirectoryPickerPath', page).val("");
             $('.results', page).html('');
@@ -211,63 +211,60 @@
                 fileOptions.includeFiles = options.includeFiles;
             }
 
-            getSystemInfo().done(function (systemInfo) {
+            getSystemInfo().then(function (systemInfo) {
 
-                require(['components/paperdialoghelper'], function () {
-
-                    var dlg = PaperDialogHelper.createDialog({
-                        theme: 'a',
-                        size: 'medium'
-                    });
-
-                    dlg.classList.add('directoryPicker');
-
-                    var html = '';
-                    html += '<h2 class="dialogHeader">';
-                    html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-                    html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
-                    html += '</h2>';
-
-                    html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                    html += getEditorHtml(options, systemInfo);
-                    html += '</div>';
-
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
-
-                    var editorContent = dlg.querySelector('.editorContent');
-                    initEditor(editorContent, options, fileOptions);
-
-                    // Has to be assigned a z-index after the call to .open() 
-                    $(dlg).on('iron-overlay-opened', function () {
-                        this.querySelector('#txtDirectoryPickerPath input').focus();
-                    });
-                    $(dlg).on('iron-overlay-closed', onDialogClosed);
-
-                    PaperDialogHelper.openWithHash(dlg, 'directorybrowser');
-
-                    $('.btnCloseDialog', dlg).on('click', function () {
-
-                        PaperDialogHelper.close(dlg);
-                    });
-
-                    currentDialog = dlg;
-
-                    var txtCurrentPath = $('#txtDirectoryPickerPath', editorContent);
-
-                    if (options.path) {
-                        txtCurrentPath.val(options.path);
-                    }
-
-                    refreshDirectoryBrowser(editorContent, txtCurrentPath.val());
+                var dlg = paperDialogHelper.createDialog({
+                    theme: 'a',
+                    size: 'medium'
                 });
+
+                dlg.classList.add('directoryPicker');
+
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
+                html += '</h2>';
+
+                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+                html += getEditorHtml(options, systemInfo);
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                var editorContent = dlg.querySelector('.editorContent');
+                initEditor(editorContent, options, fileOptions);
+
+                // Has to be assigned a z-index after the call to .open() 
+                $(dlg).on('iron-overlay-opened', function () {
+                    this.querySelector('#txtDirectoryPickerPath input').focus();
+                });
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
+
+                paperDialogHelper.open(dlg);
+
+                $('.btnCloseDialog', dlg).on('click', function () {
+
+                    paperDialogHelper.close(dlg);
+                });
+
+                currentDialog = dlg;
+
+                var txtCurrentPath = $('#txtDirectoryPickerPath', editorContent);
+
+                if (options.path) {
+                    txtCurrentPath.val(options.path);
+                }
+
+                refreshDirectoryBrowser(editorContent, txtCurrentPath.val());
 
             });
         };
 
         self.close = function () {
             if (currentDialog) {
-                PaperDialogHelper.close(currentDialog);
+                paperDialogHelper.close(currentDialog);
             }
         };
 

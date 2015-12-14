@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -67,9 +67,10 @@
             type: "POST",
             url: ApiClient.getUrl("Items/RemoteSearch/" + currentItem.Type),
             data: JSON.stringify(lookupInfo),
-            contentType: "application/json"
+            contentType: "application/json",
+            dataType: 'json'
 
-        }).done(function (results) {
+        }).then(function (results) {
 
             Dashboard.hideLoadingMsg();
             showIdentificationSearchResults(page, results);
@@ -88,7 +89,6 @@
         for (var i = 0, length = results.length; i < length; i++) {
 
             var result = results[i];
-
             html += getSearchResultHtml(result, i);
         }
 
@@ -213,18 +213,18 @@
             data: JSON.stringify(currentSearchResult),
             contentType: "application/json"
 
-        }).done(function () {
+        }).then(function () {
 
             hasChanges = true;
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(document.querySelector('.identifyDialog'));
+            paperDialogHelper.close(document.querySelector('.identifyDialog'));
 
-        }).fail(function () {
+        }, function () {
 
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(document.querySelector('.identifyDialog'));
+            paperDialogHelper.close(document.querySelector('.identifyDialog'));
         });
     }
 
@@ -236,7 +236,7 @@
 
     function showIdentificationForm(page, item) {
 
-        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).done(function (idList) {
+        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
 
             var html = '';
 
@@ -281,18 +281,17 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
 
-            type: 'GET',
-            url: 'components/itemidentifier/itemidentifier.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
+            var template = this.response;
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
 
-                var dlg = PaperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog();
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -310,14 +309,14 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'itemidentifier');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 initEditor(editorContent);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
 
                 dlg.classList.add('identifyDialog');
@@ -325,7 +324,9 @@
                 showIdentificationForm(dlg, item);
                 Dashboard.hideLoadingMsg();
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {
@@ -343,12 +344,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
-
-                showEditor(itemId);
-            });
+            showEditor(itemId);
             return deferred.promise();
         }
     };
-
-})(jQuery, window, document);
+});

@@ -58,24 +58,32 @@
             return serverInfo;
         };
 
-        var currentUserPromise;
+        var currentUser;
         /**
          * Gets or sets the current user id.
          */
         self.getCurrentUser = function () {
 
-            var promise = currentUserPromise;
+            if (currentUser) {
+                return new Promise(function (resolve, reject) {
 
-            if (promise == null) {
-
-                promise = self.getUser(self.getCurrentUserId()).fail(function () {
-                    currentUserPromise = null;
+                    resolve(currentUser);
                 });
-
-                currentUserPromise = promise;
             }
 
-            return promise;
+            var userId = self.getCurrentUserId();
+
+            if (!userId) {
+                return new Promise(function (resolve, reject) {
+
+                    reject();
+                });
+            }
+
+            return self.getUser(userId).then(function (user) {
+                currentUser = user;
+                return user;
+            });
         };
 
         /**
@@ -111,7 +119,7 @@
         };
 
         self.setAuthenticationInfo = function (accessKey, userId) {
-            currentUserPromise = null;
+            currentUser = null;
 
             serverInfo.AccessToken = accessKey;
             serverInfo.UserId = userId;
@@ -123,26 +131,17 @@
             name = name.split('&').join('-');
             name = name.split('?').join('-');
 
-            var val = HttpClient.param({ name: name });
+            var val = paramsToString({ name: name });
             return val.substring(val.indexOf('=') + 1).replace("'", '%27');
         };
 
-        function onRequestFail(e) {
+        function onFetchFail(url, response) {
 
             Events.trigger(self, 'requestfail', [
             {
-                url: this.url,
-                type: this.type,
-                status: e.status,
-                errorCode: e.getResponseHeader("X-Application-Error-Code")
-            }]);
-        }
-
-        function onRetryRequestFail(request) {
-
-            Events.trigger(self, 'requestfail', [
-            {
-                url: request.url
+                url: url,
+                status: response.status,
+                errorCode: response.headers ? response.headers["X-Application-Error-Code"] : null
             }]);
         }
 
@@ -179,20 +178,132 @@
                 throw new Error("Request cannot be null");
             }
 
+            return self.fetch(request, includeAuthorization);
+        };
+
+        function getFetchPromise(request) {
+
+            var headers = request.headers || {};
+
+            if (request.dataType == 'json') {
+                headers.accept = 'application/json';
+            }
+
+            var fetchRequest = {
+                headers: headers,
+                method: request.type
+            };
+
+            var contentType = request.contentType;
+
+            if (request.data) {
+
+                if (typeof request.data === 'string') {
+                    fetchRequest.body = request.data;
+                } else {
+                    fetchRequest.body = paramsToString(request.data);
+
+                    contentType = contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
+                }
+            }
+
+            if (contentType) {
+
+                headers['Content-Type'] = contentType;
+            }
+
+            if (!request.timeout) {
+                return fetch(request.url, fetchRequest);
+            }
+
+            return fetchWithTimeout(request.url, fetchRequest, request.timeout);
+        }
+
+        function fetchWithTimeout(url, options, timeoutMs) {
+
+            return new Promise(function (resolve, reject) {
+
+                var timeout = setTimeout(reject, timeoutMs);
+
+                fetch(url, options).then(function (response) {
+                    clearTimeout(timeout);
+                    resolve(response);
+                }, function (error) {
+                    clearTimeout(timeout);
+                    reject();
+                });
+            });
+        }
+
+        function paramsToString(params) {
+
+            var values = [];
+
+            for (var key in params) {
+
+                var value = params[key];
+
+                if (value !== null && value !== undefined && value !== '') {
+                    values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+                }
+            }
+            return values.join('&');
+        }
+
+        /**
+         * Wraps around jQuery ajax methods to add additional info to the request.
+         */
+        self.fetch = function (request, includeAuthorization) {
+
+            if (!request) {
+                throw new Error("Request cannot be null");
+            }
+
+            request.headers = request.headers || {};
+
             if (includeAuthorization !== false) {
 
-                request.headers = request.headers || {};
                 self.setRequestHeaders(request.headers);
             }
 
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
                 logger.log('Requesting url without automatic networking: ' + request.url);
-                return HttpClient.send(request).fail(onRequestFail);
+
+                return getFetchPromise(request).then(function (response) {
+
+                    if (response.status < 400) {
+
+                        if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                            return response.json();
+                        } else {
+                            return response;
+                        }
+                    } else {
+                        onFetchFail(request.url, response);
+                        return Promise.reject(response);
+                    }
+
+                }, function (error) {
+                    onFetchFail(request.url, {});
+                    throw error;
+                });
             }
 
-            var deferred = DeferredBuilder.Deferred();
-            self.ajaxWithFailover(request, deferred, true);
-            return deferred.promise();
+            return self.fetchWithFailover(request, true);
+        };
+
+        self.getJSON = function (url, includeAuthorization) {
+
+            return self.fetch({
+
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    accept: 'application/json'
+                }
+
+            }, includeAuthorization);
         };
 
         function switchConnectionMode(connectionMode) {
@@ -221,7 +332,7 @@
             return connectionMode;
         }
 
-        function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
+        function tryReconnectInternal(resolve, reject, connectionMode, currentRetryCount) {
 
             connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
@@ -230,24 +341,24 @@
 
             var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
-            HttpClient.send({
+            fetchWithTimeout(url + "/system/info/public", {
 
-                type: "GET",
-                url: url + "/system/info/public",
-                dataType: "json",
+                method: 'GET',
+                accept: 'application/json'
 
-                timeout: timeout
+                // Commenting this out since the fetch api doesn't have a timeout option yet
+                //timeout: timeout
 
-            }).done(function () {
+            }, timeout).then(function () {
 
                 logger.log("Reconnect succeeded to " + url);
 
                 self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
 
-                deferred.resolve();
+                resolve();
 
-            }).fail(function () {
+            }, function () {
 
                 logger.log("Reconnect attempt failed to " + url);
 
@@ -256,68 +367,76 @@
                     var newConnectionMode = switchConnectionMode(connectionMode);
 
                     setTimeout(function () {
-                        tryReconnectInternal(deferred, newConnectionMode, currentRetryCount + 1);
-                    }, 500);
+                        tryReconnectInternal(resolve, reject, newConnectionMode, currentRetryCount + 1);
+                    }, 300);
 
                 } else {
-                    deferred.reject();
+                    reject();
                 }
             });
         }
 
         function tryReconnect() {
 
-            var deferred = DeferredBuilder.Deferred();
-            setTimeout(function () {
-                tryReconnectInternal(deferred, self.serverInfo().LastConnectionMode, 0);
-            }, 500);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                setTimeout(function () {
+                    tryReconnectInternal(resolve, reject, self.serverInfo().LastConnectionMode, 0);
+                }, 300);
+            });
         }
 
-        self.ajaxWithFailover = function (request, deferred, enableReconnection) {
+        self.fetchWithFailover = function (request, enableReconnection) {
 
             logger.log("Requesting " + request.url);
 
             request.timeout = 30000;
 
-            HttpClient.send(request).done(function (response) {
+            return getFetchPromise(request).then(function (response) {
 
-                deferred.resolve(response, 0);
+                if (response.status < 400) {
 
-            }).fail(function (e, textStatus) {
+                    if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                        return response.json();
+                    } else {
+                        return response;
+                    }
+                } else {
+                    onFetchFail(request.url, response);
+                    return Promise.reject(response);
+                }
 
-                logger.log("Request failed with textStatus " + textStatus + " to " + request.url);
+            }, function (error) {
 
-                var statusCode = parseInt(e.status || '0');
-                var isUserErrorCode = statusCode >= 400 && statusCode < 500;
+                logger.log("Request failed to " + request.url);
 
                 // http://api.jquery.com/jQuery.ajax/
-                if (enableReconnection && !isUserErrorCode) {
+                if (enableReconnection) {
 
                     logger.log("Attempting reconnection");
 
                     var previousServerAddress = self.serverAddress();
 
-                    tryReconnect().done(function () {
+                    return tryReconnect().then(function () {
 
                         logger.log("Reconnect succeesed");
                         request.url = request.url.replace(previousServerAddress, self.serverAddress());
 
-                        self.ajaxWithFailover(request, deferred, false);
+                        return self.fetchWithFailover(request, false);
 
-                    }).fail(function () {
+                    }, function (innerError) {
 
                         logger.log("Reconnect failed");
-                        onRetryRequestFail(request);
-                        deferred.reject();
-
+                        onFetchFail(request.url, {});
+                        throw innerError;
                     });
+
                 } else {
 
                     logger.log("Reporting request failure");
 
-                    onRetryRequestFail(request);
-                    deferred.reject();
+                    onFetchFail(request.url, {});
+                    throw error;
                 }
             });
         };
@@ -327,15 +446,6 @@
             return self.ajax({
                 type: "GET",
                 url: url
-            });
-        };
-
-        self.getJSON = function (url) {
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
             });
         };
 
@@ -367,7 +477,7 @@
             url += name;
 
             if (params) {
-                params = HttpClient.param(params);
+                params = paramsToString(params);
                 if (params) {
                     url += "?" + params;
                 }
@@ -411,7 +521,8 @@
                 throw new Error("Cannot open web socket without access token.");
             }
 
-            var url = self.getUrl("socket").replace("/socket", "").replace('http', 'ws');
+            var url = self.getUrl("socket").replace("emby/socket", "embywebsocket").replace('http', 'ws');
+
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;
 
@@ -451,14 +562,14 @@
         function onWebSocketMessage(msg) {
 
             if (msg.MessageType === "UserDeleted") {
-                currentUserPromise = null;
+                currentUser = null;
             }
             else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
 
                 var user = msg.Data;
                 if (user.Id == self.getCurrentUserId()) {
 
-                    currentUserPromise = null;
+                    currentUser = null;
                 }
             }
 
@@ -494,11 +605,7 @@
 
             var url = self.getUrl("News/Product", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDownloadSpeed = function (byteSize) {
@@ -508,54 +615,41 @@
                 Size: byteSize
             });
 
-            var deferred = DeferredBuilder.Deferred();
-
             var now = new Date().getTime();
 
-            self.get(url).done(function () {
+            return self.ajax({
+
+                type: "GET",
+                url: url,
+                timeout: 5000
+
+            }).then(function () {
 
                 var responseTimeSeconds = (new Date().getTime() - now) / 1000;
                 var bytesPerSecond = byteSize / responseTimeSeconds;
                 var bitrate = Math.round(bytesPerSecond * 8);
 
-                deferred.resolveWith(null, [bitrate]);
-
-            }).fail(function () {
-
-                deferred.reject();
+                return bitrate;
             });
-
-            return deferred.promise();
         };
 
         self.detectBitrate = function () {
 
-            var deferred = DeferredBuilder.Deferred();
-
             // First try a small amount so that we don't hang up their mobile connection
-            self.getDownloadSpeed(1000000).done(function (bitrate) {
+            return self.getDownloadSpeed(1000000).then(function (bitrate) {
 
                 if (bitrate < 1000000) {
-                    deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+                    return Math.round(bitrate * .8);
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    self.getDownloadSpeed(2400000).done(function (bitrate) {
+                    return self.getDownloadSpeed(2400000).then(function (bitrate) {
 
-                        deferred.resolveWith(null, [Math.round(bitrate * .8)]);
-
-                    }).fail(function () {
-
-                        deferred.reject();
+                        return Math.round(bitrate * .8);
                     });
                 }
 
-            }).fail(function () {
-
-                deferred.reject();
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -572,11 +666,7 @@
                 self.getUrl("Users/" + userId + "/Items/" + itemId) :
                 self.getUrl("Items/" + itemId);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -590,11 +680,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/Root");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNotificationSummary = function (userId) {
@@ -605,11 +691,7 @@
 
             var url = self.getUrl("Notifications/" + userId + "/Summary");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNotifications = function (userId, options) {
@@ -620,11 +702,7 @@
 
             var url = self.getUrl("Notifications/" + userId, options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.markNotificationsRead = function (userId, idList, isRead) {
@@ -666,13 +744,15 @@
                 return self.ajax({
                     type: "POST",
                     url: url
-                }).always(done);
+
+                }).then(done, done);
             }
 
-            var deferred = DeferredBuilder.Deferred();
-            done();
-            deferred.resolveWith(null, []);
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                done();
+                resolve();
+            });
         };
 
         function getRemoteImagePrefix(options) {
@@ -715,11 +795,7 @@
 
             var url = self.getUrl(urlPrefix + "/RemoteImages/Providers", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getAvailableRemoteImages = function (options) {
@@ -732,11 +808,7 @@
 
             var url = self.getUrl(urlPrefix + "/RemoteImages", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.downloadRemoteImage = function (options) {
@@ -759,22 +831,14 @@
 
             var url = self.getUrl("LiveTv/Info", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvGuideInfo = function (options) {
 
             var url = self.getUrl("LiveTv/GuideInfo", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvChannel = function (id, userId) {
@@ -793,22 +857,14 @@
 
             var url = self.getUrl("LiveTv/Channels/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvChannels = function (options) {
 
             var url = self.getUrl("LiveTv/Channels", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvPrograms = function (options) {
@@ -850,22 +906,14 @@
 
             var url = self.getUrl("LiveTv/Recordings", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecordingGroups = function (options) {
 
             var url = self.getUrl("LiveTv/Recordings/Groups", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecordingGroup = function (id) {
@@ -876,11 +924,7 @@
 
             var url = self.getUrl("LiveTv/Recordings/Groups/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvRecording = function (id, userId) {
@@ -899,11 +943,7 @@
 
             var url = self.getUrl("LiveTv/Recordings/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvProgram = function (id, userId) {
@@ -922,11 +962,7 @@
 
             var url = self.getUrl("LiveTv/Programs/" + id, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.deleteLiveTvRecording = function (id) {
@@ -961,11 +997,7 @@
 
             var url = self.getUrl("LiveTv/Timers", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getLiveTvTimer = function (id) {
@@ -976,11 +1008,7 @@
 
             var url = self.getUrl("LiveTv/Timers/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNewLiveTvTimerDefaults = function (options) {
@@ -989,11 +1017,7 @@
 
             var url = self.getUrl("LiveTv/Timers/Defaults", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.createLiveTvTimer = function (item) {
@@ -1046,22 +1070,14 @@
 
             var url = self.getUrl("LiveTv/SeriesTimers", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getFileOrganizationResults = function (options) {
 
             var url = self.getUrl("Library/FileOrganization", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.deleteOriginalFileFromOrganizationResult = function (id) {
@@ -1112,11 +1128,7 @@
 
             var url = self.getUrl("LiveTv/SeriesTimers/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.cancelLiveTvSeriesTimer = function (id) {
@@ -1169,11 +1181,7 @@
 
             var url = self.getUrl("Registrations/" + feature);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1183,11 +1191,7 @@
 
             var url = self.getUrl("System/Info");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1197,34 +1201,21 @@
 
             var url = self.getUrl("System/Info/Public");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-
-            }, false);
+            return self.getJSON(url, false);
         };
 
         self.getInstantMixFromItem = function (itemId, options) {
 
             var url = self.getUrl("Items/" + itemId + "/InstantMix", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getEpisodes = function (itemId, options) {
 
             var url = self.getUrl("Shows/" + itemId + "/Episodes", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDisplayPreferences = function (id, userId, app) {
@@ -1234,11 +1225,7 @@
                 client: app
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.updateDisplayPreferences = function (id, obj, userId, app) {
@@ -1260,22 +1247,14 @@
 
             var url = self.getUrl("Shows/" + itemId + "/Seasons", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSimilarItems = function (itemId, options) {
 
             var url = self.getUrl("Items/" + itemId + "/Similar", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1285,11 +1264,7 @@
 
             var url = self.getUrl("Localization/cultures");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1299,11 +1274,7 @@
 
             var url = self.getUrl("Localization/countries");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1313,11 +1284,7 @@
 
             var url = self.getUrl("Plugins/SecurityInfo");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1335,11 +1302,7 @@
 
             var url = self.getUrl("Environment/DirectoryContents", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1356,11 +1319,7 @@
 
             var url = self.getUrl("Environment/NetworkShares", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1390,11 +1349,7 @@
 
             var url = self.getUrl("Environment/Drives");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1404,11 +1359,7 @@
 
             var url = self.getUrl("Environment/NetworkDevices");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1516,11 +1467,7 @@
 
             var url = self.getUrl("Packages/" + name, options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1530,11 +1477,7 @@
 
             var url = self.getUrl("Packages/Updates", { PackageType: "System" });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1544,11 +1487,7 @@
 
             var url = self.getUrl("Packages/Updates", { PackageType: "UserInstalled" });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1560,11 +1499,7 @@
 
             url = self.getUrl(url);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1574,11 +1509,7 @@
 
             var url = self.getUrl("Library/PhysicalPaths");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1588,11 +1519,7 @@
 
             var url = self.getUrl("System/Configuration");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1602,11 +1529,7 @@
 
             var url = self.getUrl("System/Configuration/devices");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1618,22 +1541,14 @@
                 DeviceId: self.deviceId()
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNamedConfiguration = function (name) {
 
             var url = self.getUrl("System/Configuration/" + name);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1645,11 +1560,7 @@
 
             var url = self.getUrl("ScheduledTasks", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1680,22 +1591,14 @@
 
             var url = self.getUrl("ScheduledTasks/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getNextUpEpisodes = function (options) {
 
             var url = self.getUrl("Shows/NextUp", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1727,11 +1630,7 @@
 
             var url = self.getUrl("Plugins/" + id + "/Configuration");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -1748,11 +1647,7 @@
 
             var url = self.getUrl("Packages", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2038,11 +1933,7 @@
 
             var url = self.getUrl("Items/" + itemId + "/Images");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getCriticReviews = function (itemId, options) {
@@ -2053,22 +1944,14 @@
 
             var url = self.getUrl("Items/" + itemId + "/CriticReviews", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSessions = function (options) {
 
             var url = self.getUrl("Sessions", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2095,44 +1978,43 @@
                 throw new Error("File must be an image.");
             }
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var reader = new FileReader();
+                var reader = new FileReader();
 
-            reader.onerror = function () {
-                deferred.reject();
-            };
+                reader.onerror = function () {
+                    reject();
+                };
 
-            reader.onabort = function () {
-                deferred.reject();
-            };
+                reader.onabort = function () {
+                    reject();
+                };
 
-            // Closure to capture the file information.
-            reader.onload = function (e) {
+                // Closure to capture the file information.
+                reader.onload = function (e) {
 
-                // Split by a comma to remove the url: prefix
-                var data = e.target.result.split(',')[1];
+                    // Split by a comma to remove the url: prefix
+                    var data = e.target.result.split(',')[1];
 
-                var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
+                    var url = self.getUrl("Users/" + userId + "/Images/" + imageType);
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: data,
-                    contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).done(function (result) {
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: data,
+                        contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
+                    }).then(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }).fail(function () {
-                    deferred.reject();
-                });
-            };
+                    }, function () {
+                        reject();
+                    });
+                };
 
-            // Read in the image file as a data URL.
-            reader.readAsDataURL(file);
-
-            return deferred.promise();
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(file);
+            });
         };
 
         self.uploadItemImage = function (itemId, imageType, file) {
@@ -2157,42 +2039,41 @@
 
             url += "/" + imageType;
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var reader = new FileReader();
+                var reader = new FileReader();
 
-            reader.onerror = function () {
-                deferred.reject();
-            };
+                reader.onerror = function () {
+                    reject();
+                };
 
-            reader.onabort = function () {
-                deferred.reject();
-            };
+                reader.onabort = function () {
+                    reject();
+                };
 
-            // Closure to capture the file information.
-            reader.onload = function (e) {
+                // Closure to capture the file information.
+                reader.onload = function (e) {
 
-                // Split by a comma to remove the url: prefix
-                var data = e.target.result.split(',')[1];
+                    // Split by a comma to remove the url: prefix
+                    var data = e.target.result.split(',')[1];
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: data,
-                    contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
-                }).done(function (result) {
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: data,
+                        contentType: "image/" + file.name.substring(file.name.lastIndexOf('.') + 1)
+                    }).then(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }).fail(function () {
-                    deferred.reject();
-                });
-            };
+                    }, function () {
+                        reject();
+                    });
+                };
 
-            // Read in the image file as a data URL.
-            reader.readAsDataURL(file);
-
-            return deferred.promise();
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(file);
+            });
         };
 
         /**
@@ -2208,11 +2089,7 @@
 
             var url = self.getUrl("Plugins", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2227,11 +2104,7 @@
 
             var url = self.getUrl("Users/" + id);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2246,11 +2119,7 @@
 
             var url = self.getUrl("Users/" + id + "/Offline");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2270,11 +2139,7 @@
 
             var url = self.getUrl("Studios/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2294,11 +2159,7 @@
 
             var url = self.getUrl("Genres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getMusicGenre = function (name, userId) {
@@ -2315,11 +2176,7 @@
 
             var url = self.getUrl("MusicGenres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getGameGenre = function (name, userId) {
@@ -2336,11 +2193,7 @@
 
             var url = self.getUrl("GameGenres/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2360,11 +2213,7 @@
 
             var url = self.getUrl("Artists/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2384,11 +2233,7 @@
 
             var url = self.getUrl("Persons/" + self.encodeName(name), options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getPublicUsers = function () {
@@ -2410,11 +2255,7 @@
 
             var url = self.getUrl("users", options || {});
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -2424,11 +2265,7 @@
 
             var url = self.getUrl("Localization/ParentalRatings");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDefaultImageQuality = function (imageType) {
@@ -2600,43 +2437,39 @@
          */
         self.authenticateUserByName = function (name, password) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!name) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!name) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/authenticatebyname");
+                var url = self.getUrl("Users/authenticatebyname");
 
-            require(["cryptojs-sha1"], function () {
-                var postData = {
-                    password: CryptoJS.SHA1(password || "").toString(),
-                    Username: name
-                };
+                require(["cryptojs-sha1"], function () {
+                    var postData = {
+                        password: CryptoJS.SHA1(password || "").toString(),
+                        Username: name
+                    };
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: JSON.stringify(postData),
-                    dataType: "json",
-                    contentType: "application/json"
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: JSON.stringify(postData),
+                        dataType: "json",
+                        contentType: "application/json"
 
-                }).done(function (result) {
+                    }).then(function (result) {
 
-                    if (self.onAuthenticated) {
-                        self.onAuthenticated(self, result);
-                    }
+                        if (self.onAuthenticated) {
+                            self.onAuthenticated(self, result);
+                        }
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }).fail(function () {
-
-                    deferred.reject();
+                    }, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -2647,35 +2480,27 @@
          */
         self.updateUserPassword = function (userId, currentPassword, newPassword) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!userId) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!userId) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/" + userId + "/Password");
+                var url = self.getUrl("Users/" + userId + "/Password");
 
-            require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1"], function () {
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {
-                        currentPassword: CryptoJS.SHA1(currentPassword).toString(),
-                        newPassword: CryptoJS.SHA1(newPassword).toString()
-                    }
-                }).done(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-
-                }).fail(function () {
-
-                    deferred.reject();
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {
+                            currentPassword: CryptoJS.SHA1(currentPassword).toString(),
+                            newPassword: CryptoJS.SHA1(newPassword).toString()
+                        }
+                    }).then(resolve, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -2685,34 +2510,26 @@
          */
         self.updateEasyPassword = function (userId, newPassword) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!userId) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!userId) {
+                    reject();
+                    return;
+                }
 
-            var url = self.getUrl("Users/" + userId + "/EasyPassword");
+                var url = self.getUrl("Users/" + userId + "/EasyPassword");
 
-            require(["cryptojs-sha1"], function () {
+                require(["cryptojs-sha1"], function () {
 
-                self.ajax({
-                    type: "POST",
-                    url: url,
-                    data: {
-                        newPassword: CryptoJS.SHA1(newPassword).toString()
-                    }
-                }).done(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-
-                }).fail(function () {
-
-                    deferred.reject();
+                    self.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {
+                            newPassword: CryptoJS.SHA1(newPassword).toString()
+                        }
+                    }).then(resolve, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         /**
@@ -2968,11 +2785,7 @@
 
             var url = self.getUrl("Items/" + itemId + "/Ancestors", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3003,11 +2816,7 @@
                 url = self.getUrl("Items", options);
             }
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getChannels = function (query) {
@@ -3021,11 +2830,7 @@
 
             var url = self.getUrl("Users/" + (userId || self.getCurrentUserId()) + "/Views", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3042,11 +2847,7 @@
 
             var url = self.getUrl("Artists", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3063,11 +2864,7 @@
 
             var url = self.getUrl("Artists/AlbumArtists", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3084,11 +2881,7 @@
 
             var url = self.getUrl("Genres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getMusicGenres = function (userId, options) {
@@ -3102,11 +2895,7 @@
 
             var url = self.getUrl("MusicGenres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getGameGenres = function (userId, options) {
@@ -3120,11 +2909,7 @@
 
             var url = self.getUrl("GameGenres", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3141,11 +2926,7 @@
 
             var url = self.getUrl("Persons", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3162,11 +2943,7 @@
 
             var url = self.getUrl("Studios", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3183,11 +2960,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/LocalTrailers");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getAdditionalVideoParts = function (userId, itemId) {
@@ -3204,11 +2977,7 @@
 
             var url = self.getUrl("Videos/" + itemId + "/AdditionalParts", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getThemeMedia = function (userId, itemId, inherit) {
@@ -3227,22 +2996,14 @@
 
             var url = self.getUrl("Items/" + itemId + "/ThemeMedia", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getSearchHints = function (options) {
 
             var url = self.getUrl("Search/Hints", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3259,11 +3020,7 @@
 
             var url = self.getUrl("Users/" + userId + "/Items/" + itemId + "/SpecialFeatures");
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.getDateParamValue = function (date) {
@@ -3385,11 +3142,7 @@
 
             var url = self.getUrl("Items/Counts", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         /**
@@ -3450,14 +3203,12 @@
 
             if (self.isWebSocketOpen()) {
 
-                var deferred = DeferredBuilder.Deferred();
+                return new Promise(function (resolve, reject) {
 
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackProgress", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
+                    var msg = JSON.stringify(options);
+                    self.sendWebSocketMessage("ReportPlaybackProgress", msg);
+                    resolve();
+                });
             }
 
             var url = self.getUrl("Sessions/Playing/Progress");
@@ -3513,11 +3264,7 @@
                 TargetId: deviceId
             });
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
 
         self.reportSyncJobItemTransferred = function (syncJobItemId) {
@@ -3662,14 +3409,8 @@
 
             var url = self.getUrl("Packages/" + packageId + "/Reviews", options);
 
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
+            return self.getJSON(url);
         };
-
-
     };
 
 })(window, window.JSON, window.WebSocket, window.setTimeout, window.devicePixelRatio, window.FileReader);

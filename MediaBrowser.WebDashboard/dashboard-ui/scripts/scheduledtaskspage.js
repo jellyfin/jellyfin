@@ -2,7 +2,7 @@
 
     function reloadList(page) {
 
-        ApiClient.getScheduledTasks({ isHidden: false }).done(function (tasks) {
+        ApiClient.getScheduledTasks({ isHidden: false }).then(function (tasks) {
 
             populateList(page, tasks);
 
@@ -90,6 +90,30 @@
 
         var divScheduledTasks = page.querySelector('.divScheduledTasks');
         divScheduledTasks.innerHTML = html;
+    }
+
+    function humane_elapsed(firstDateStr, secondDateStr) {
+        var dt1 = new Date(firstDateStr);
+        var dt2 = new Date(secondDateStr);
+        var seconds = (dt2.getTime() - dt1.getTime()) / 1000;
+        var numdays = Math.floor((seconds % 31536000) / 86400);
+        var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+        var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+        var numseconds = Math.round((((seconds % 31536000) % 86400) % 3600) % 60);
+
+        var elapsedStr = '';
+        elapsedStr += numdays == 1 ? numdays + ' day ' : '';
+        elapsedStr += numdays > 1 ? numdays + ' days ' : '';
+        elapsedStr += numhours == 1 ? numhours + ' hour ' : '';
+        elapsedStr += numhours > 1 ? numhours + ' hours ' : '';
+        elapsedStr += numminutes == 1 ? numminutes + ' minute ' : '';
+        elapsedStr += numminutes > 1 ? numminutes + ' minutes ' : '';
+        elapsedStr += elapsedStr.length > 0 ? 'and ' : '';
+        elapsedStr += numseconds == 1 ? numseconds + ' second' : '';
+        elapsedStr += numseconds == 0 || numseconds > 1 ? numseconds + ' seconds' : '';
+
+        return elapsedStr;
+
     }
 
     function getTaskProgressHtml(task) {
@@ -231,7 +255,7 @@
 
             var button = this;
             var id = button.getAttribute('data-taskid');
-            ApiClient.startScheduledTask(id).done(function () {
+            ApiClient.startScheduledTask(id).then(function () {
 
                 updateTaskButton(button, "Running");
                 reloadList(page);
@@ -241,7 +265,7 @@
 
             var button = this;
             var id = button.getAttribute('data-taskid');
-            ApiClient.stopScheduledTask(id).done(function () {
+            ApiClient.stopScheduledTask(id).then(function () {
 
                 updateTaskButton(button, "");
                 reloadList(page);
@@ -255,7 +279,10 @@
         Dashboard.showLoadingMsg();
 
         startInterval();
-        reloadList(page);
+
+        require(['paper-fab', 'paper-progress', 'paper-item-body', 'paper-icon-item'], function () {
+            reloadList(page);
+        });
 
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 

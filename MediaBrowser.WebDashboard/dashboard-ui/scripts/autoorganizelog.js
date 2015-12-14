@@ -38,13 +38,13 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.deleteOriginalFileFromOrganizationResult(id).done(function () {
+                ApiClient.deleteOriginalFileFromOrganizationResult(id).then(function () {
 
                     Dashboard.hideLoadingMsg();
 
                     reloadItems(page);
 
-                }).fail(onApiFailure);
+                }, onApiFailure);
             }
 
         });
@@ -59,10 +59,10 @@
             includeItemTypes: 'Series',
             sortBy: 'SortName'
 
-        }).done(function (result) {
+        }).then(function (result) {
             Dashboard.hideLoadingMsg();
             showEpisodeCorrectionPopup(page, item, result.Items);
-        }).fail(onApiFailure);
+        }, onApiFailure);
 
     }
 
@@ -121,13 +121,13 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.performOrganization(id).done(function () {
+                ApiClient.performOrganization(id).then(function () {
 
                     Dashboard.hideLoadingMsg();
 
                     reloadItems(page);
 
-                }).fail(onApiFailure);
+                }, onApiFailure);
             }
 
         });
@@ -149,7 +149,7 @@
             EndingEpisodeNumber: $('#txtEndingEpisode', form).val()
         };
 
-        ApiClient.performEpisodeOrganization(resultId, options).done(function () {
+        ApiClient.performEpisodeOrganization(resultId, options).then(function () {
 
             Dashboard.hideLoadingMsg();
 
@@ -157,20 +157,21 @@
 
             reloadItems(page);
 
-        }).fail(onApiFailure);
+        }, onApiFailure);
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getFileOrganizationResults(query).done(function (result) {
+        ApiClient.getFileOrganizationResults(query).then(function (result) {
 
             currentResult = result;
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-        }).fail(onApiFailure);
+
+        }, onApiFailure);
 
     }
 
@@ -351,9 +352,9 @@
 
         $('.btnClearLog', page).on('click', function () {
 
-            ApiClient.clearOrganizationLog().done(function () {
+            ApiClient.clearOrganizationLog().then(function () {
                 reloadItems(page);
-            }).fail(onApiFailure);
+            }, onApiFailure);
 
         });
 

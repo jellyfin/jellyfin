@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['paper-checkbox', 'paper-input'], function () {
 
     return function (page, providerId, options) {
 
@@ -10,7 +10,7 @@
 
             Dashboard.showLoadingMsg();
 
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 var info = config.ListingProviders.filter(function (i) {
                     return i.Id == providerId;
@@ -35,7 +35,7 @@
 
         function setCountry(info) {
 
-            ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).done(function (result) {
+            ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).then(function (result) {
 
                 var countryList = [];
                 var i, length;
@@ -72,7 +72,7 @@
 
                 $(page.querySelector('.txtZipCode')).trigger('change');
 
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.alert({
                     message: Globalize.translate('ErrorGettingTvLineups')
@@ -106,15 +106,16 @@
                         ValidateLogin: true
                     }),
                     data: JSON.stringify(info),
-                    contentType: "application/json"
+                    contentType: "application/json",
+                    dataType: 'json'
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     Dashboard.processServerConfigurationUpdateResult();
                     providerId = result.Id;
                     reload();
 
-                }).fail(function () {
+                }, function () {
                     Dashboard.alert({
                         message: Globalize.translate('ErrorSavingTvProvider')
                     });
@@ -137,7 +138,7 @@
 
             var id = providerId;
 
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 var info = config.ListingProviders.filter(function (i) {
                     return i.Id == id;
@@ -155,7 +156,7 @@
                     data: JSON.stringify(info),
                     contentType: "application/json"
 
-                }).done(function (result) {
+                }).then(function (result) {
 
                     Dashboard.hideLoadingMsg();
                     if (options.showConfirmation !== false) {
@@ -163,7 +164,7 @@
                     }
                     $(self).trigger('submitted');
 
-                }).fail(function () {
+                }, function () {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
                         message: Globalize.translate('ErrorAddingListingsToSchedulesDirect')
@@ -191,7 +192,7 @@
                 }),
                 dataType: 'json'
 
-            }).done(function (result) {
+            }).then(function (result) {
 
                 $('#selectListing', page).html(result.map(function (o) {
 
@@ -205,7 +206,7 @@
 
                 Dashboard.hideModalLoadingMsg();
 
-            }).fail(function (result) {
+            }, function (result) {
 
                 Dashboard.alert({
                     message: Globalize.translate('ErrorGettingTvLineups')

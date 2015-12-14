@@ -19,136 +19,104 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <title>paper-button demo</title>
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../paper-styles/color.html">
-  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../paper-styles/color.html">
   <link rel="import" href="../paper-button.html">
 
-  <style is="custom-style">
-    .horizontal-section {
-      min-width: 130px;
+  <style is="custom-style" include="demo-pages-shared-styles">
+    .vertical-section-container {
+      max-width: 500px;
     }
-
     paper-button {
-      display: block;
-      margin-bottom: 24px;
+      margin-left: 10px;
+      margin-right: 10px;
     }
-
-    paper-button.colorful {
-      color: #4285f4;
-    }
-
-    paper-button[raised].colorful {
-      background: #4285f4;
-      color: #fff;
-    }
-
-    paper-button[toggles] {
-      transition: all 0.3s;
-    }
-
-    paper-button[toggles][active] {
-      background-color: rgba(0, 0, 0, 0.25);
-    }
-
-    paper-button[toggles][active].colorful {
-      background-color: rgba(66, 133, 244, 0.25);
-    }
-
-    paper-button[toggles][active][raised].colorful {
-      background-color: rgba(66, 133, 244, 0.75);
-    }
-
-    paper-button.blue {
-      color: var(--paper-light-blue-500);
-      --paper-button-flat-focus-color: var(--paper-light-blue-50);
-    }
-    paper-button.blue:hover {
-      background: var(--paper-light-blue-50);
-    }
-    paper-button.red {
-      color: var(--paper-red-500);
-      --paper-button-flat-focus-color: var(--paper-red-50);
-    }
-    paper-button.red:hover {
-      background: var(--paper-red-50);
-    }
-    paper-button.green {
-      color: var(--paper-green-500);
-      --paper-button-flat-focus-color: var(--paper-green-50);
-    }
-    paper-button.green:hover {
-      background: var(--paper-green-50);
-    }
-    paper-button.orange {
-      color: var(--paper-orange-500);
-      --paper-button-flat-focus-color: var(--paper-orange-50);
-    }
-    paper-button.orange:hover {
-      background: var(--paper-orange-50);
-    }
-
-    paper-button.hover:hover {
-      background: #eee;
-    }
-
-    paper-button.ripple {
-      --paper-button-ink-color: var(--paper-pink-a200);
-    }
-
   </style>
-
 </head>
 <body unresolved>
-  <div class="horizontal-section-container">
-    <div>
-      <h4>Flat</h4>
-      <div class="horizontal-section">
-        <paper-button tabindex="0">button</paper-button>
-        <paper-button tabindex="0" class="colorful">colorful</paper-button>
-        <paper-button tabindex="0" disabled>disabled</paper-button>
-        <paper-button tabindex="0" noink>noink</paper-button>
-        <paper-button tabindex="0" class="colorful custom"><iron-icon icon="check"></iron-icon>ok</paper-button>
-        <paper-button tabindex="0" class="custom"><iron-icon icon="clear"></iron-icon>cancel</paper-button>
+  <div class="vertical-section-container centered">
+    <h3>Buttons can be flat, raised, toggleable, or disabled</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-button>link</paper-button>
+        <paper-button raised>raised</paper-button>
+        <paper-button toggles raised>toggles</paper-button>
+        <paper-button disabled>disabled</paper-button>
+      </template>
+    </demo-snippet>
 
-      </div>
-    </div>
+    <h3>Buttons can have icons</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-button><iron-icon icon="check"></iron-icon>link</paper-button>
+        <paper-button raised><iron-icon icon="file-download"></iron-icon>raised</paper-button>
+        <paper-button toggles raised><iron-icon icon="favorite"></iron-icon>toggles</paper-button>
+        <paper-button disabled><iron-icon icon="block"></iron-icon>disabled</paper-button>
+      </template>
+    </demo-snippet>
 
-    <div>
-      <h4>Raised</h4>
-      <div class="horizontal-section">
-        <paper-button tabindex="0" raised>button</paper-button>
-        <paper-button tabindex="0" raised class="colorful">colorful</paper-button>
-        <paper-button tabindex="0" raised disabled>disabled</paper-button>
-        <paper-button tabindex="0" raised noink>noink</paper-button>
-        <paper-button tabindex="0" raised class="colorful custom"><iron-icon icon="check"></iron-icon>ok</paper-button>
-        <paper-button tabindex="0" raised class="custom"><iron-icon icon="clear"></iron-icon>cancel</paper-button>
-      </div>
-    </div>
+    <h3>Buttons can hide the ripple effect using the <i>noink</i> attribute</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-button noink>link</paper-button>
+        <paper-button raised noink>raised</paper-button>
+        <paper-button toggles raised noink>toggles</paper-button>
+        <paper-button disabled noink>disabled</paper-button>
+      </template>
+    </demo-snippet>
 
-    <div>
-      <h4>Toggleable</h4>
-      <div class="horizontal-section">
-        <paper-button tabindex="0" toggles>button</paper-button>
-        <paper-button tabindex="0" toggles raised noink>noink</paper-button>
-        <paper-button tabindex="0" toggles active class="colorful">colorful</paper-button>
-        <paper-button tabindex="0" toggles raised active class="colorful">colorful</paper-button>
-        <paper-button tabindex="0" toggles class="colorful custom"><iron-icon icon="check"></iron-icon>ok</paper-button>
-        <paper-button tabindex="0" toggles class="custom"><iron-icon icon="clear"></iron-icon>cancel</paper-button>
-      </div>
-    </div>
+    <h3>Buttons can be styled using custom properties</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-button class="custom pink">link</paper-button>
+        <paper-button raised class="custom indigo">raised</paper-button>
+        <paper-button toggles raised class="custom green">toggles</paper-button>
+        <paper-button disabled class="custom disabled">disabled</paper-button>
 
-    <div>
-      <h4>Color</h4>
-      <div class="horizontal-section">
-        <paper-button tabindex="0" class="blue ripple">button</paper-button>
-        <paper-button tabindex="0" class="red ripple">noink</paper-button>
-        <paper-button tabindex="0" class="orange ripple">colorful</paper-button>
-        <paper-button tabindex="0" class="green ripple">colorful</paper-button>
-        <paper-button tabindex="0" class="red ripple"><iron-icon icon="check"></iron-icon>ok</paper-button>
-        <paper-button tabindex="0" class="blue ripple"><iron-icon icon="clear"></iron-icon>cancel</paper-button>
-      </div>
-    </div>
+        <style is="custom-style">
+          paper-button.custom {
+            --paper-button-ink-color: var(--paper-pink-a200);
+            /* These could also be individually defined for each of the
+              specific css classes, but we'll just do it once as an example */
+            --paper-button-flat-keyboard-focus: {
+              background-color: var(--paper-pink-a200);
+              color: white !important;
+            };
+            --paper-button-raised-keyboard-focus: {
+              background-color: var(--paper-pink-a200) !important;
+              color: white !important;
+            };
+          }
+          paper-button.custom:hover {
+            background-color: var(--paper-indigo-100);
+          }
+          paper-button.pink {
+            color: var(--paper-pink-a200);
+
+          }
+          paper-button.indigo {
+            background-color: var(--paper-indigo-500);
+            color: white;
+            --paper-button-raised-keyboard-focus: {
+              background-color: var(--paper-pink-a200) !important;
+              color: white !important;
+            };
+          }
+          paper-button.green {
+            background-color: var(--paper-green-500);
+            color: white;
+          }
+          paper-button.green[active] {
+            background-color: var(--paper-red-500);
+          }
+          paper-button.disabled {
+            color: white;
+          }
+        </style>
+      </template>
+    </demo-snippet>
   </div>
 </body>
 </html>

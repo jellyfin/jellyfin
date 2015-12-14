@@ -97,9 +97,9 @@
 
     function showPlaybackOverlay(deferred) {
 
-        require(['components/paperdialoghelper'], function () {
+        require(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
-            var dlg = PaperDialogHelper.createDialog({});
+            var dlg = paperDialogHelper.createDialog({});
 
             var html = '';
             html += '<h2 class="dialogHeader">';
@@ -132,16 +132,16 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function(e) {
+            dlg.addEventListener('iron-overlay-closed', function (e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                 dlg.parentNode.removeChild(dlg);
                 deferred.resolve();
             });
 
-            PaperDialogHelper.openWithHash(dlg, 'premiere');
+            paperDialogHelper.open(dlg);
 
             $('.btnCancelSupporterInfo').on('click', function () {
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
         });
     }
@@ -168,11 +168,15 @@
 
                 Dashboard.alert({
                     message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/premiere" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
-                    title: Globalize.translate('HeaderSync')
+                    title: Globalize.translate('HeaderSync'),
+                    callback: function () {
+                        deferred.reject();
+                    }
                 });
 
             }, function () {
 
+                deferred.reject();
                 Dashboard.hideLoadingMsg();
 
                 Dashboard.alert({
@@ -234,7 +238,12 @@
 
                         var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
 
-                        $.getJSON(url).done(function (dev) {
+                        fetch(url, { mode: 'no-cors' }).then(function (response) {
+
+                            return response.json();
+
+                        }).then(function (dev) {
+
                             if (dev.payPalEmail) {
                                 $('#payPalEmail', page).val(dev.payPalEmail);
 

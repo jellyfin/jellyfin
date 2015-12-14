@@ -9,7 +9,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="paper-input-addon-behavior.html">
 
 <!--
@@ -30,9 +31,9 @@ Custom property | Description | Default
 `--paper-input-container-invalid-color` | The foreground color of the error | `--google-red-500`
 `--paper-input-error`                   | Mixin applied to the error        | `{}`
 -->
+
 <dom-module id="paper-input-error">
   <template>
-
     <style>
       :host {
         display: inline-block;
@@ -43,6 +44,8 @@ Custom property | Description | Default
         @apply(--paper-font-caption);
         @apply(--paper-input-error);
         position: absolute;
+        left:0;
+        right:0;
       }
 
       :host([invalid]) {
@@ -51,7 +54,6 @@ Custom property | Description | Default
     </style>
 
     <content></content>
-    
   </template>
 </dom-module>
 

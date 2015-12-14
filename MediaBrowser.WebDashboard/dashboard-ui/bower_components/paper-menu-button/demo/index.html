@@ -70,7 +70,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h4>Paper Icon Button + Paper Menu</h4>
         <div class="horizontal-section">
           <paper-menu-button>
-            <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+            <paper-icon-button icon="menu" class="dropdown-trigger" alt="menu"></paper-icon-button>
             <paper-menu class="dropdown-content">
               <template is="dom-repeat" items="[[letters]]" as="letter">
                 <paper-item>[[letter]]</paper-item>
@@ -86,7 +86,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h4>Paper Menu with multi selection</h4>
         <div class="horizontal-section">
           <paper-menu-button ignore-select>
-            <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+            <paper-icon-button icon="menu" class="dropdown-trigger" alt="multi select"></paper-icon-button>
             <paper-menu class="dropdown-content" multi>
               <template is="dom-repeat" items="[[letters]]" as="letter">
                 <paper-item>[[letter]]</paper-item>
@@ -102,7 +102,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h4>Disabled</h4>
         <div class="horizontal-section">
           <paper-menu-button disabled>
-            <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+            <paper-icon-button icon="menu" class="dropdown-trigger" alt="menu"></paper-icon-button>
             <paper-menu class="dropdown-content">
               <template is="dom-repeat" items="[[letters]]" as="letter">
                 <paper-item>[[letter]]</paper-item>
@@ -118,7 +118,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h4>Alternate Alignment</h4>
         <div class="horizontal-section">
           <paper-menu-button vertical-align="bottom" horizontal-align="right">
-            <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+            <paper-icon-button icon="menu" class="dropdown-trigger" alt="bottom align"></paper-icon-button>
             <paper-menu class="dropdown-content">
               <template is="dom-repeat" items="[[letters]]" as="letter">
                 <paper-item>[[letter]]</paper-item>
@@ -153,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <h4>Alternate Content</h4>
         <div class="horizontal-section">
           <paper-menu-button vertical-align="bottom">
-            <paper-icon-button class="dropdown-trigger" icon="polymer"></paper-icon-button>
+            <paper-icon-button class="dropdown-trigger" icon="polymer" alt="polymer"></paper-icon-button>
             <iron-image class="dropdown-content" src="../../iron-image/demo/polymer.svg"></iron-image>
           </paper-menu-button>
         </div>

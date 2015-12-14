@@ -8,7 +8,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl('Social/Shares/Public/' + id + '/Item')).done(function (item) {
+        ApiClient.getJSON(ApiClient.getUrl('Social/Shares/Public/' + id + '/Item')).then(function (item) {
 
             reloadFromItem(page, item);
         });

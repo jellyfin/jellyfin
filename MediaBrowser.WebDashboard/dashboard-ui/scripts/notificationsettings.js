@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Notifications/Types")).done(function (list) {
+        ApiClient.getJSON(ApiClient.getUrl("Notifications/Types")).then(function (list) {
 
             var html = '';
 
@@ -66,7 +66,9 @@
 
         var page = this;
 
-        reload(page);
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+            reload(page);
+        });
     });
 
 })(jQuery, window);

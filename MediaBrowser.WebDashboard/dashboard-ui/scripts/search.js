@@ -111,14 +111,14 @@
             searchTerm: searchTerm,
             limit: 30
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             if (currentTimeout == searchHintTimeout) {
                 renderSearchResultsInOverlay(elem, result.SearchHints);
             }
 
             Dashboard.hideLoadingMsg();
-        }).fail(function () {
+        }, function () {
             Dashboard.hideLoadingMsg();
         });
     }
@@ -151,12 +151,14 @@
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
-            elem = $(html).appendTo(document.body).hide()[0];
+            elem = $(html).appendTo(document.body)[0];
             $(elem).createCardMenus();
         }
 
         return elem;
     }
+
+    var isVisible;
 
     function onHeaderSearchChange(val) {
 
@@ -166,8 +168,11 @@
 
             elem = getSearchOverlay(true);
 
-            $(elem).show();
-            elem.style.opacity = '1';
+            if (!isVisible) {
+                fadeIn(elem, 1);
+            }
+            isVisible = true;
+
             document.body.classList.add('bodyWithPopupOpen');
 
             updateSearchOverlay(elem, val);
@@ -176,14 +181,34 @@
             elem = getSearchOverlay(false);
 
             if (elem) {
-                require(["jquery", "velocity"], function ($, Velocity) {
-
-                    $(elem).velocity("fadeOut");
-                    document.body.classList.remove('bodyWithPopupOpen');
-                });
                 updateSearchOverlay(elem, '');
+
+                if (isVisible) {
+                    fadeOut(elem, 1);
+                    isVisible = false;
+                }
+                document.body.classList.remove('bodyWithPopupOpen');
             }
         }
+    }
+
+    function fadeIn(elem, iterations) {
+
+        var keyframes = [
+          { opacity: '0', offset: 0 },
+          { opacity: '1', offset: 1 }];
+        var timing = { duration: 200, iterations: iterations, fill: 'both' };
+        elem.animate(keyframes, timing);
+    }
+
+    function fadeOut(elem, iterations) {
+        var keyframes = [
+          { opacity: '1', offset: 0 },
+          { opacity: '0', offset: 1 }];
+        var timing = { duration: 600, iterations: iterations, fill: 'both' };
+        elem.animate(keyframes, timing).onfinish = function () {
+            elem.parentNode.removeChild(elem);
+        };
     }
 
     function bindSearchEvents() {
@@ -215,9 +240,9 @@
         });
     }
 
-    $(document).on('pagecontainerbeforehide', closeSearchResults);
+    document.addEventListener('pagebeforehide', closeSearchResults);
 
-    $(document).on('headercreated', function () {
+    document.addEventListener('headercreated', function () {
 
         bindSearchEvents();
     });

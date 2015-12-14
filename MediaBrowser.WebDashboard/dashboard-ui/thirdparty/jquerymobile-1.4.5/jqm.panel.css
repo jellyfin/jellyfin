@@ -1,4 +1,16 @@
-﻿/* Panel */
+﻿/* preset breakpoint to switch to stacked grid styles below 35em (560px) */
+@media (max-width: 35em) {
+	.ui-responsive > .ui-block-a,
+	.ui-responsive > .ui-block-b,
+	.ui-responsive > .ui-block-c,
+	.ui-responsive > .ui-block-d,
+	.ui-responsive > .ui-block-e {
+		width: 100%; 
+		float: none; 
+	}
+}
+
+/* Panel */
 .ui-panel {
     width: 17em;
     min-height: 100%;

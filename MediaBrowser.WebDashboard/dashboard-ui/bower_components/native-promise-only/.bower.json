@@ -1,0 +1,15 @@
+{
+  "name": "native-promise-only",
+  "homepage": "https://github.com/getify/native-promise-only",
+  "version": "0.8.0-a",
+  "_release": "0.8.0-a",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.8.0-a",
+    "commit": "d40a2d0197feea4f9b0bf5f8bf3079465ced3758"
+  },
+  "_source": "git://github.com/getify/native-promise-only.git",
+  "_target": "~0.8.0-a",
+  "_originalSource": "native-promise-only",
+  "_direct": true
+}

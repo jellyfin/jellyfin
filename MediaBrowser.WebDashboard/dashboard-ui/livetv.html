@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="jqmpanel,scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
+    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="jqmpanel,scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,neon-animated-pages,paper-checkbox">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
@@ -31,12 +31,12 @@
                     <div class="pageTabContent suggestedTabContent" data-index="0">
                         <div id="activePrograms" class="homePageSection">
                             <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
-                            <div class="activeProgramItems itemsContainer"></div>
+                            <div class="activeProgramItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
                         <div id="upcomingPrograms" class="homePageSection" style="margin-top:1em;">
                             <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
-                            <div class="upcomingProgramItems itemsContainer"></div>
+                            <div class="upcomingProgramItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
                         <div id="upcomingTvMovies" class="homePageSection" style="margin-top:1em;">
@@ -44,7 +44,7 @@
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingMovies}</h1>
                                 <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
-                            <div class="upcomingTvMovieItems itemsContainer"></div>
+                            <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
                         <div id="upcomingSports" class="homePageSection" style="margin-top:1em;">
@@ -52,7 +52,7 @@
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingSports}</h1>
                                 <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
-                            <div class="upcomingSportsItems itemsContainer"></div>
+                            <div class="upcomingSportsItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
                         <div id="upcomingKids" class="homePageSection" style="margin-top:1em;">
@@ -60,7 +60,7 @@
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingForKids}</h1>
                                 <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
-                            <div class="upcomingKidsItems itemsContainer"></div>
+                            <div class="upcomingKidsItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
                     </div>

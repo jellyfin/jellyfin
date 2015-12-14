@@ -8,7 +8,7 @@
         if (!pageData) {
             pageData = data[key] = {
                 query: {
-                    SortBy: "AlbumArtist,SortName",
+                    SortBy: "SortName",
                     SortOrder: "Ascending",
                     IncludeItemTypes: "MusicAlbum",
                     Recursive: true,
@@ -43,7 +43,7 @@
 
         var query = getQuery();
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -131,7 +131,7 @@
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
 
                 if (layout == 'Timeline') {
-                    getQuery().SortBy = 'PremiereDate,SortName';
+                    getQuery().SortBy = 'ProductionYear,PremiereDate,SortName';
                     getQuery().SortOrder = 'Descending';
                 }
 

@@ -14,17 +14,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
   <script src="../../iron-test-helpers/test-helpers.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-input.html">
   <link rel="import" href="letters-only.html">
 
@@ -34,6 +31,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="basic">
     <template>
       <paper-input></paper-input>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="has-tabindex">
+    <template>
+      <paper-input tabindex="0"></paper-input>
     </template>
   </test-fixture>
 
@@ -211,7 +214,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     });
 
-
     suite('validation', function() {
 
       test('invalid attribute updated after calling validate()', function() {
@@ -255,6 +257,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(input.inputElement.getAttribute('aria-describedby'), Polymer.dom(input.root).querySelector('paper-input-error').id + ' ' + Polymer.dom(input.root).querySelector('paper-input-char-counter').id, 'aria-describedby points to the error message and character counter');
       });
 
+      test('focus an input with tabindex', function(done) {
+        var input = fixture('has-tabindex');
+        flush(function() {
+          MockInteractions.focus(input);
+          flush(function() {
+            assert.equal(input.shadowRoot ? input.shadowRoot.activeElement :
+                document.activeElement, input._focusableElement);
+            done();
+          });
+        });
+      });
     });
 
   </script>

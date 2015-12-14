@@ -23,7 +23,7 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
@@ -32,7 +32,7 @@
             config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
             config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -45,7 +45,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 
@@ -57,7 +57,7 @@
 
         $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-        ApiClient.getSystemInfo().done(function (systemInfo) {
+        ApiClient.getSystemInfo().then(function (systemInfo) {
 
             if (systemInfo.SupportsLibraryMonitor) {
                 page.querySelector('.fldLibraryMonitor').classList.remove('hide');

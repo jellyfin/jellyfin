@@ -188,6 +188,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
+      suite('noink attribute', function() {
+        var tabs;
+
+        setup(function () {
+          tabs = fixture('basic');
+        });
+
+        test('noink attribute propagates to all descendant tabs', function() {
+          tabs.noink = true;
+          Array.prototype.slice.apply(tabs.querySelectorAll('paper-tab')).forEach(function(tab) {
+            assert.isTrue(tab.noink);
+          });
+
+          tabs.noink = false;
+          Array.prototype.slice.apply(tabs.querySelectorAll('paper-tab')).forEach(function(tab) {
+            assert.isFalse(tab.noink);
+          });
+        });
+      });
+
     </script>
 
   </body>

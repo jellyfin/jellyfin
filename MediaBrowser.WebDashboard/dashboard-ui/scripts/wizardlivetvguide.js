@@ -8,7 +8,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             var providerId = null;
 
@@ -46,7 +46,7 @@
             type: 'GET',
             url: 'components/tvproviders/' + type + '.template.html'
 
-        }).done(function (html) {
+        }).then(function (html) {
 
             var elem = page.querySelector('.providerTemplate');
             elem.innerHTML = Globalize.translateDocument(html);
@@ -58,7 +58,7 @@
     function skip() {
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Info')).done(function (info) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Info')).then(function (info) {
 
             if (info.SupportsRunningAsService) {
                 Dashboard.navigate('wizardservice.html');

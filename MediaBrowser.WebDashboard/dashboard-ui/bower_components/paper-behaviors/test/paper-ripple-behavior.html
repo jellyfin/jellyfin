@@ -15,13 +15,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../../iron-behaviors/iron-button-state.html">
   <link rel="import" href="../paper-ripple-behavior.html">
+  <link rel="import" href="shadowed-ripple.html">
 </head>
 <body>
 
@@ -45,6 +44,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="basic">
     <template>
       <test-ripple></test-ripple>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="ShadowBasic">
+    <template>
+      <sd-ripple></sd-ripple>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="ShadowText">
+    <template>
+      <sd-ripple>Howdy!</sd-ripple>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="ShadowElement">
+    <template>
+      <sd-ripple>
+        <div id="source">source!</div>
+      </sd-ripple>
     </template>
   </test-fixture>
 
@@ -75,6 +94,240 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         MockInteractions.up(ripple);
       });
 
+      suite('Correct Targeting', function() {
+
+        function assertInteractionCausesRipple(host, node, expected, msg) {
+          var ripple = host.getRipple();
+          Polymer.dom.flush();
+          MockInteractions.down(node);
+          assert.equal(ripple.ripples.length > 0, expected, msg);
+          MockInteractions.up(node);
+        }
+
+        function assertInteractionAtLocationCausesRipple(host, node, location, expected, msg) {
+          var ripple = host.getRipple();
+          Polymer.dom.flush();
+          MockInteractions.down(node, location);
+          assert.equal(ripple.ripples.length > 0, expected, msg);
+          MockInteractions.up(node);
+        }
+
+        suite('basic', function() {
+          suite('container = host', function() {
+
+            setup(function() {
+              ripple = fixture('ShadowBasic');
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, true, 'ripple');
+            });
+            test('tap #wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+            test('tap #separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+          });
+
+          suite('container = wrapper', function() {
+
+            setup(function() {
+              ripple = fixture('ShadowBasic');
+              ripple._rippleContainer = ripple.$.wrapper;
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap #wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+
+            test('tap #separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, false, '#separate')
+            });
+          });
+
+          suite('container = separate', function(done) {
+
+            setup(function() {
+              ripple = fixture('ShadowBasic');
+              ripple._rippleContainer = ripple.$.separate;
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, false, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+          });
+        });
+
+        suite('distributed text', function() {
+          var textLocation;
+
+          function getTextLocation(ripple) {
+            // build a Range to get the BCR of a given text node
+            var r = document.createRange();
+            r.selectNode(Polymer.dom(ripple.$.content).getDistributedNodes()[0]);
+            return MockInteractions.middleOfNode(r);
+          }
+
+          suite('container = host', function() {
+            setup(function() {
+              ripple = fixture('ShadowText');
+              textLocation = getTextLocation(ripple);
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, true, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+
+            test('tap text', function() {
+              assertInteractionAtLocationCausesRipple(ripple, ripple.$.wrapper, textLocation, true, 'text');
+            });
+          });
+
+          suite('container = wrapper', function() {
+            setup(function() {
+              ripple = fixture('ShadowText');
+              ripple._rippleContainer = ripple.$.wrapper;
+              textLocation = getTextLocation(ripple);
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, false, '#separate')
+            });
+
+            test('tap text', function() {
+              assertInteractionAtLocationCausesRipple(ripple, ripple.$.wrapper, textLocation, true, 'text');
+            });
+          });
+
+          suite('container = separate', function() {
+            setup(function() {
+              ripple = fixture('ShadowText');
+              ripple._rippleContainer = ripple.$.separate;
+              textLocation = getTextLocation(ripple);
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, false, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+
+            test('tap text', function() {
+              assertInteractionAtLocationCausesRipple(ripple, ripple.$.wrapper, textLocation, false, 'text');
+            });
+          });
+        });
+
+        suite('distributed element', function() {
+          var source;
+
+          suite('container = host', function() {
+            setup(function() {
+              ripple = fixture('ShadowElement');
+              source = Polymer.dom(ripple).querySelector('#source');
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, true, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+
+            test('tap source', function() {
+              assertInteractionCausesRipple(ripple, source, true, '#source');
+            });
+          });
+
+          suite('container = wrapper', function() {
+            setup(function() {
+              ripple = fixture('ShadowElement');
+              ripple._rippleContainer = ripple.$.wrapper;
+              source = Polymer.dom(ripple).querySelector('#source');
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, true, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, false, '#separate')
+            });
+
+            test('tap source', function() {
+              assertInteractionCausesRipple(ripple, source, true, '#source');
+            });
+          });
+
+          suite('container = separate', function() {
+            setup(function() {
+              ripple = fixture('ShadowElement');
+              ripple._rippleContainer = ripple.$.separate;
+              source = Polymer.dom(ripple).querySelector('#source');
+            });
+
+            test('tap host', function() {
+              assertInteractionCausesRipple(ripple, ripple, false, 'ripple');
+            });
+
+            test('tap wrapper', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.wrapper, false, '#wrapper');
+            });
+
+            test('tap separate', function() {
+              assertInteractionCausesRipple(ripple, ripple.$.separate, true, '#separate')
+            });
+
+            test('tap source', function() {
+              assertInteractionCausesRipple(ripple, source, false, '#source');
+            });
+          });
+        });
+      });
     });
   </script>
 

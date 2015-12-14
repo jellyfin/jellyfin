@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
 <link rel="import" href="../iron-behaviors/iron-button-state.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-behaviors/paper-ripple-behavior.html">
 
 <!--
 `paper-tab` is styled to look like a tab.  It should be used in conjunction with
@@ -36,6 +36,7 @@ Custom property | Description | Default
 `--paper-tab-ink` | Ink color | `--paper-yellow-a100`
 `--paper-tab` | Mixin applied to the tab | `{}`
 `--paper-tab-content` | Mixin applied to the tab content | `{}`
+`--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`
 
 -->
 
@@ -76,6 +77,8 @@ Custom property | Description | Default
 
     :host(:not(.iron-selected)) > .tab-content {
       opacity: 0.8;
+
+      @apply(--paper-tab-content-unselected);
     }
 
     :host(:focus) .tab-content {
@@ -83,9 +86,8 @@ Custom property | Description | Default
       font-weight: 700;
     }
 
-    #ink {
+    paper-ripple {
       color: var(--paper-tab-ink, --paper-yellow-a100);
-      pointer-events: none;
     }
 
     .tab-content > ::content > a {
@@ -106,10 +108,6 @@ Custom property | Description | Default
       <content></content>
     </div>
 
-    <template is="dom-if" if="[[!noink]]">
-      <paper-ripple id="ink" initial-opacity="0.95" opacity-decay-velocity="0.98"></paper-ripple>
-    </template>
-
   </template>
 
 </dom-module>
@@ -122,22 +120,9 @@ Custom property | Description | Default
 
     behaviors: [
       Polymer.IronControlState,
-      Polymer.IronButtonState
+      Polymer.IronButtonState,
+      Polymer.PaperRippleBehavior
     ],
-
-    properties: {
-
-      /**
-       * If true, ink ripple effect is disabled.
-       *
-       * @attribute noink
-       */
-      noink: {
-        type: Boolean,
-        value: false
-      }
-
-    },
 
     hostAttributes: {
       role: 'tab'
@@ -145,6 +130,12 @@ Custom property | Description | Default
 
     listeners: {
       down: '_updateNoink'
+    },
+
+    ready: function() {
+      var ripple = this.getRipple();
+      ripple.initialOpacity = 0.95;
+      ripple.opacityDecayVelocity = 0.98;
     },
 
     attached: function() {

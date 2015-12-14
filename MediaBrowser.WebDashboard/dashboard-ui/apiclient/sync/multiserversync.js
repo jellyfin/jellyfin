@@ -31,11 +31,11 @@
 
             require(['serversync'], function () {
 
-                new MediaBrowser.ServerSync(connectionManager).sync(server, options).done(function () {
+                new MediaBrowser.ServerSync(connectionManager).sync(server, options).then(function () {
 
                     syncNext(servers, index + 1, options, deferred);
 
-                }).fail(function () {
+                }, function () {
 
                     syncNext(servers, index + 1, options, deferred);
                 });

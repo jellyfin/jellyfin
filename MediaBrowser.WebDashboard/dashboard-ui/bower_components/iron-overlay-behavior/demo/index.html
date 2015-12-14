@@ -19,14 +19,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
-    <!-- <link rel="import" href="../core-transition/core-transition-css.html"> -->
+    <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
     <link rel="import" href="simple-overlay.html">
-
-    <link rel="import" href="../../paper-styles/paper-styles.html">
     <link rel="import" href="../../paper-styles/demo-pages.html">
 
-    <style>
+    <style is="custom-style">
 
       .with-margin {
         margin: 24px 40px;
@@ -40,6 +37,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         overflow: auto;
       }
 
+      .vertical {
+        @apply(--layout-vertical);
+      }
+
+      .flex {
+        @apply(--layout-flex);
+      }
     </style>
 
   </head>
@@ -78,7 +82,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <button data-dialog="scrolling-2">scrolling 2</button>
 
-      <simple-overlay id="scrolling-2" class="with-margin full-height layout vertical">
+      <simple-overlay id="scrolling-2" class="with-margin full-height vertical">
         <p>This dialog has a scrolling child.</p>
         <div class="flex scrollable">
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>

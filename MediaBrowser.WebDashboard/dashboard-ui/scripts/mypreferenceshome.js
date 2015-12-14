@@ -143,12 +143,12 @@
         var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
         var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        $.when(promise1, promise2, promise3, promise4).done(function (r1, r2, r3, r4) {
+        Promise.all([promise1, promise2, promise3, promise4]).then(function (responses) {
 
-            renderViews(page, user, r4[0]);
-            renderLatestItems(page, user, r1[0]);
-            renderViewOrder(page, user, r2[0]);
-            renderViewStyles(page, user, r3[0]);
+            renderViews(page, user, responses[3]);
+            renderLatestItems(page, user, responses[0]);
+            renderViewOrder(page, user, responses[1]);
+            renderViewStyles(page, user, responses[2]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -200,9 +200,9 @@
         displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
         displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
 
-        ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).done(function () {
+        ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).then(function () {
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+            ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
                 Dashboard.alert(Globalize.translate('SettingsSaved'));
 
                 loadForm(page, user, displayPreferences);
@@ -218,9 +218,9 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).done(function (displayPreferences) {
+            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (displayPreferences) {
 
                 saveUser(page, user, displayPreferences);
 
@@ -283,9 +283,9 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).done(function (result) {
+            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (result) {
 
                 loadForm(page, user, result);
 

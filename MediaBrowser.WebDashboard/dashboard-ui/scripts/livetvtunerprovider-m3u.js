@@ -5,7 +5,7 @@
         page.querySelector('.txtDevicePath').value = '';
 
         if (providerId) {
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 var info = config.TunerHosts.filter(function (i) {
                     return i.Id == providerId;
@@ -37,12 +37,12 @@
             data: JSON.stringify(info),
             contentType: "application/json"
 
-        }).done(function (result) {
+        }).then(function () {
 
             Dashboard.processServerConfigurationUpdateResult();
             Dashboard.navigate('livetvstatus.html');
 
-        }).fail(function () {
+        }, function () {
             Dashboard.hideLoadingMsg();
             Dashboard.alert({
                 message: Globalize.translate('ErrorSavingTvProvider')

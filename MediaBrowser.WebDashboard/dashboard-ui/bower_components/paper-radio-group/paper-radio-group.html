@@ -9,9 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-selector/iron-selectable.html">
 <link rel="import" href="../paper-radio-button/paper-radio-button.html">
-<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 
 <!--
 Material design: [Radio button](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-radio-button)
@@ -50,20 +50,19 @@ information about `paper-radio-button`.
 -->
 
 <dom-module id="paper-radio-group">
-  <style>
-    :host {
-      display: inline-block;
-    }
-
-    :host ::content > * {
-      padding: 12px;
-    }
-  </style>
-
   <template>
-      <content id="items" select="*"></content>
-  </template>
+    <style>
+      :host {
+        display: inline-block;
+      }
 
+      :host ::content > * {
+        padding: 12px;
+      }
+    </style>
+
+    <content id="items" select="*"></content>
+  </template>
 </dom-module>
 
 <script>
@@ -164,7 +163,7 @@ information about `paper-radio-button`.
         newIndex = (newIndex - 1 + length) % length;
       } while (this.items[newIndex].disabled)
 
-      this.select(this._indexToValue(newIndex));
+      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
     },
 
     /**
@@ -179,7 +178,7 @@ information about `paper-radio-button`.
         newIndex = (newIndex + 1 + length) % length;
       } while (this.items[newIndex].disabled)
 
-      this.select(this._indexToValue(newIndex));
+      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
     },
   });
 </script>

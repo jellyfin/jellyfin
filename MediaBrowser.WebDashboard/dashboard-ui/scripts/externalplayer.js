@@ -93,12 +93,53 @@
             {
                 Condition: 'LessThanEqual',
                 Property: 'VideoLevel',
-                Value: '41'
+                Value: '50'
             }]
         });
 
         // Subtitle profiles
         profile.SubtitleProfiles = [];
+        profile.SubtitleProfiles.push({
+            Format: 'srt',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'subrip',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'ass',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'ssa',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'pgs',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'pgssub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'dvdsub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'vtt',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'sub',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'idx',
+            Method: 'Embed'
+        });
+
         profile.ResponseProfiles = [];
 
         return profile;
@@ -126,7 +167,7 @@
 
     function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, deferred) {
 
-        Dashboard.hideModalLoadingMsg();
+        Dashboard.hideLoadingMsg();
 
         currentItem = item;
         currentMediaSource = mediaSource;
@@ -137,7 +178,7 @@
             }
         };
 
-        MediaPlayer.createStreamInfo('Video', item, mediaSource, startPosition).done(function (streamInfo) {
+        MediaPlayer.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
             var currentSrc = streamInfo.url;
 
@@ -394,9 +435,9 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getItem(userId, itemId).done(function (item) {
+        ApiClient.getItem(userId, itemId).then(function (item) {
 
-            getVideoStreamInfo(item).done(function (streamInfo) {
+            getVideoStreamInfo(item).then(function (streamInfo) {
 
                 setTimeout(function () {
                     ExternalPlayer.showPlayerSelectionMenu(item, streamInfo.url, streamInfo.mimeType);
@@ -419,7 +460,7 @@
 
     function showPlayerSelectionMenu(item, url, mimeType) {
 
-        ExternalPlayer.getExternalPlayers(url, mimeType).done(function (players) {
+        ExternalPlayer.getExternalPlayers(url, mimeType).then(function (players) {
             showMenuForItem(item, players);
         });
     }

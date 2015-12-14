@@ -4,7 +4,7 @@
 
         var html = '';
 
-        var backIcon = $.browser.safari ? 'chevron-left' : 'arrow-back';
+        var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
 
@@ -24,7 +24,6 @@
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
             html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
             html += '</form>';
             html += '</div>';
@@ -38,7 +37,7 @@
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
-        if (!$.browser.mobile && !Dashboard.isConnectMode()) {
+        if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
@@ -53,7 +52,7 @@
 
         ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
-        Events.trigger(document, 'headercreated');
+        document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
     }
 
@@ -70,43 +69,6 @@
     function addUserToHeader(user) {
 
         var header = document.querySelector('.viewMenuBar');
-
-        var headerSearchButton = document.querySelector('.headerSearchButton');
-
-        if (user.localUser) {
-            $('.btnCast', header).visible(true);
-
-            if (headerSearchButton) {
-                headerSearchButton.classList.remove('hide');
-            }
-
-            requirejs(['voice/voice'], function () {
-
-                if (VoiceInputManager.isSupported()) {
-                    document.querySelector('.headerVoiceButton').classList.remove('hide');
-                } else {
-                    document.querySelector('.headerVoiceButton').classList.add('hide');
-                }
-
-            });
-
-        } else {
-            $('.btnCast', header).visible(false);
-            document.querySelector('.headerVoiceButton').classList.add('hide');
-            if (headerSearchButton) {
-                headerSearchButton.classList.add('hide');
-            }
-        }
-
-        var dashboardEntryHeaderButton = document.querySelector('.dashboardEntryHeaderButton');
-
-        if (dashboardEntryHeaderButton) {
-            if (user.canManageServer) {
-                dashboardEntryHeaderButton.classList.remove('hide');
-            } else {
-                dashboardEntryHeaderButton.classList.add('hide');
-            }
-        }
 
         if (user.name) {
             if (user.imageUrl && AppInfo.enableUserImage) {
@@ -127,6 +89,60 @@
                 }
             }
         }
+
+        updateLocalUser(user.localUser);
+        requiresUserRefresh = false;
+    }
+
+    function updateLocalUser(user) {
+
+        var header = document.querySelector('.viewMenuBar');
+
+        var headerSearchButton = header.querySelector('.headerSearchButton');
+        var btnCast = header.querySelector('.btnCast');
+        var dashboardEntryHeaderButton = header.querySelector('.dashboardEntryHeaderButton');
+
+        if (user) {
+            btnCast.classList.remove('hide');
+
+            if (headerSearchButton) {
+                headerSearchButton.classList.remove('hide');
+            }
+
+            if (dashboardEntryHeaderButton) {
+                if (user.Policy.IsAdministrator) {
+                    dashboardEntryHeaderButton.classList.remove('hide');
+                } else {
+                    dashboardEntryHeaderButton.classList.add('hide');
+                }
+            }
+
+            requirejs(['voice/voice'], function () {
+
+                if (VoiceInputManager.isSupported()) {
+                    header.querySelector('.headerVoiceButton').classList.remove('hide');
+                } else {
+                    header.querySelector('.headerVoiceButton').classList.add('hide');
+                }
+
+            });
+
+        } else {
+            btnCast.classList.add('hide');
+            header.querySelector('.headerVoiceButton').classList.add('hide');
+            if (headerSearchButton) {
+                headerSearchButton.classList.add('hide');
+            }
+
+            if (dashboardEntryHeaderButton) {
+                dashboardEntryHeaderButton.classList.add('hide');
+            }
+        }
+    }
+
+    function removeUserFromHeader() {
+        
+        updateLocalUser(null);
     }
 
     function bindMenuEvents() {
@@ -134,40 +150,20 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            if (AppInfo.isTouchPreferred || $.browser.mobile) {
-
-                Events.on(mainDrawerButton, 'click', openMainDrawer);
-
-            } else {
-                $(mainDrawerButton).createHoverTouch().on('hovertouch', openMainDrawer);
-            }
+            mainDrawerButton.addEventListener('click', openMainDrawer);
         }
 
         var headerBackButton = document.querySelector('.headerBackButton');
         if (headerBackButton) {
-            Events.on(headerBackButton, 'click', onBackClick);
+            headerBackButton.addEventListener('click', onBackClick);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
         initHeadRoom(viewMenuBar);
-    }
 
-    function updateViewMenuBarHeadroom(page, viewMenuBar) {
-
-        //if (page.classList.contains('libraryPage')) {
-        //    // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
-        //    setTimeout(reEnableHeadroom, 700);
-        //} else {
-        //    viewMenuBar.classList.add('headroomDisabled');
-        //}
-    }
-
-    function reEnableHeadroom() {
-
-        //var headroomDisabled = document.querySelectorAll('.headroomDisabled');
-        //for (var i = 0, length = headroomDisabled.length; i < length; i++) {
-        //    headroomDisabled[i].classList.remove('headroomDisabled');
-        //}
+        viewMenuBar.querySelector('.btnNotifications').addEventListener('click', function () {
+            Dashboard.navigate('notificationlist.html');
+        });
     }
 
     function getItemHref(item, context) {
@@ -177,6 +173,7 @@
 
     var requiresDrawerRefresh = true;
     var requiresDashboardDrawerRefresh = true;
+    var requiresUserRefresh = true;
     var lastOpenTime = new Date().getTime();
 
     function openMainDrawer() {
@@ -185,9 +182,10 @@
         drawerPanel.openDrawer();
         lastOpenTime = new Date().getTime();
     }
+
     function onMainDrawerOpened() {
 
-        if ($.browser.mobile) {
+        if (browserInfo.mobile) {
             document.body.classList.add('bodyWithPopupOpen');
         }
 
@@ -195,7 +193,7 @@
 
         if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
 
-            ConnectionManager.user(window.ApiClient).done(function (user) {
+            ConnectionManager.user(window.ApiClient).then(function (user) {
 
                 var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
 
@@ -223,14 +221,20 @@
 
         document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
-    function onMainDrawerClosed() {
-
-        document.body.classList.remove('bodyWithPopupOpen');
-        document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
-    }
     function closeMainDrawer() {
 
         document.querySelector('.mainDrawerPanel').closeDrawer();
+    }
+    function onMainDrawerSelect(e) {
+
+        var drawer = e.target;
+
+        if (drawer.selected != 'drawer') {
+            document.body.classList.remove('bodyWithPopupOpen');
+            document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
+        } else {
+            onMainDrawerOpened();
+        }
     }
 
     function ensureDrawerStructure(drawer) {
@@ -261,7 +265,7 @@
 
         var userAtTop = showUserAtTop();
 
-        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
+        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
 
         var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
 
@@ -307,7 +311,6 @@
         var userHeader = drawer.querySelector('.userheader');
 
         userHeader.innerHTML = html;
-
         ImageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
     }
 
@@ -336,10 +339,6 @@
         drawer.querySelector('.dashboardDrawerContent').innerHTML = html;
     }
 
-    function replaceAll(string, find, replace) {
-        return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
-    }
-
     function refreshBottomUserInfoInDrawer(user, drawer) {
 
         var html = '';
@@ -354,7 +353,7 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
-        if (!$.browser.mobile) {
+        if (!browserInfo.mobile) {
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
         }
         html += '</div>';
@@ -370,7 +369,7 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><iron-icon icon="sync" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
@@ -381,7 +380,7 @@
 
         drawer.querySelector('.userFooter').innerHTML = html;
 
-        Events.on(drawer.querySelector('.lnkManageServer'), 'click', onManageServerClicked);
+        drawer.querySelector('.lnkManageServer').addEventListener('click', onManageServerClicked);
     }
 
     function onSidebarLinkClick() {
@@ -395,7 +394,7 @@
 
         var deferred = $.Deferred();
 
-        apiClient.getUserViews({}, userId).done(function (result) {
+        apiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -441,9 +440,9 @@
 
         if (!user) {
 
-            $('.adminMenuOptions').visible(false);
-            $('.lnkMySync').visible(false);
-            $('.userMenuOptions').visible(false);
+            $('.adminMenuOptions').addClass('hide');
+            $('.lnkMySync').addClass('hide');
+            $('.userMenuOptions').addClass('hide');
             return;
         }
 
@@ -451,7 +450,7 @@
 
         var apiClient = window.ApiClient;
 
-        getUserViews(apiClient, userId).done(function (result) {
+        getUserViews(apiClient, userId).then(function (result) {
 
             var items = result;
 
@@ -525,24 +524,23 @@
         });
 
         if (user.Policy.IsAdministrator) {
-            $('.adminMenuOptions').visible(true);
+            $('.adminMenuOptions').removeClass('hide');
         } else {
-            $('.adminMenuOptions').visible(false);
+            $('.adminMenuOptions').addClass('hide');
         }
 
         if (user.Policy.EnableSync) {
-            $('.lnkMySync').visible(true);
+            $('.lnkMySync').removeClass('hide');
         } else {
-            $('.lnkMySync').visible(false);
+            $('.lnkMySync').addClass('hide');
         }
     }
 
     function showUserAtTop() {
-        return Dashboard.isConnectMode() || $.browser.mobile;
+        return Dashboard.isConnectMode() || browserInfo.mobile;
     }
 
     var requiresLibraryMenuRefresh = false;
-    var requiresViewMenuRefresh = false;
 
     function onManageServerClicked() {
 
@@ -571,16 +569,22 @@
                 setTimeout(function () {
                     closeMainDrawer();
 
+                    // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+                    var delay = browserInfo.mobile ? 350 : 150;
+
                     setTimeout(function () {
                         if (action) {
                             action();
                         } else {
                             Dashboard.navigate(link.href);
                         }
-                    }, 400);
+                    }, delay);
+
                 }, 50);
             }
 
+            event.stopPropagation();
+            event.preventDefault();
             return false;
         },
 
@@ -590,9 +594,12 @@
 
                 closeMainDrawer();
 
+                // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+                var delay = browserInfo.mobile ? 350 : 150;
+
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 400);
+                }, delay);
             }
 
             return false;
@@ -635,7 +642,7 @@
             var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
             if (mainDrawerButton) {
-                if (!visible && $.browser.mobile) {
+                if (!visible && browserInfo.mobile) {
                     mainDrawerButton.classList.remove('hide');
                 } else {
                     mainDrawerButton.classList.remove('hide');
@@ -722,7 +729,6 @@
     }
 
     function updateTabLinks(page) {
-        var context = getParameterByName('context');
 
         var elems = page.querySelectorAll('.scopedLibraryViewNav a');
 
@@ -767,36 +773,13 @@
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
         if (page.classList.contains('standalonePage')) {
-            if (viewMenuBar) {
-                viewMenuBar.classList.add('hide');
-            }
-            return;
-        }
-
-        if (requiresViewMenuRefresh) {
-            if (viewMenuBar) {
-                viewMenuBar.parentNode.removeChild(viewMenuBar);
-                viewMenuBar = null;
-            }
-        }
-
-        if (!viewMenuBar) {
-
-            renderHeader();
-            updateViewMenuBarHeadroom(page, document.querySelector('.viewMenuBar'));
-
-            updateCastIcon();
-
-            updateLibraryNavLinks(page);
-            requiresViewMenuRefresh = false;
-
-            ConnectionManager.user(window.ApiClient).done(addUserToHeader);
-
+            viewMenuBar.classList.add('hide');
         } else {
             viewMenuBar.classList.remove('hide');
-            updateLibraryNavLinks(page);
-            updateViewMenuBarHeadroom(page, viewMenuBar);
-            requiresViewMenuRefresh = false;
+        }
+
+        if (requiresUserRefresh) {
+            ConnectionManager.user(window.ApiClient).then(addUserToHeader);
         }
     }
 
@@ -808,63 +791,23 @@
             requiresDashboardDrawerRefresh = true;
         }
 
-        onPageBeforeShowDocumentReady(page);
-
+        buildViewMenuBar(page);
+        updateTabLinks(page);
     });
 
     pageClassOn('pageshow', 'page', function () {
 
         var page = this;
 
-        onPageShowDocumentReady(page);
+        if (!NavHelper.isBack()) {
+            // Scroll back up so in case vertical scroll was messed with
+            window.scrollTo(0, 0);
+        }
 
-    });
-
-    //pageClassOn('pagebeforehide', 'page', function () {
-
-    //    var headroomEnabled = document.querySelectorAll('.headroomEnabled');
-    //    for (var i = 0, length = headroomEnabled.length; i < length; i++) {
-    //        headroomEnabled[i].classList.add('headroomDisabled');
-    //    }
-
-    //});
-
-    function onPageBeforeShowDocumentReady(page) {
-
-        buildViewMenuBar(page);
+        updateTitle(page);
+        updateBackButton(page);
 
         var isLibraryPage = page.classList.contains('libraryPage');
-        var darkDrawer = false;
-
-        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
-
-        if (!title) {
-            var titleKey = getParameterByName('titlekey');
-
-            if (titleKey) {
-                title = Globalize.translate(titleKey);
-            }
-        }
-
-        if (!title) {
-            if (page.classList.contains('type-interior')) {
-                title = Globalize.translate('ButtonHome');
-            }
-        }
-
-        if (title) {
-            LibraryMenu.setTitle(title);
-        }
-
-        var mainDrawerButton = document.querySelector('.mainDrawerButton');
-
-        if (mainDrawerButton) {
-            if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
-                mainDrawerButton.classList.remove('hide');
-            } else {
-                mainDrawerButton.classList.remove('hide');
-            }
-        }
 
         if (isLibraryPage) {
 
@@ -890,7 +833,9 @@
             document.body.classList.add('hideMainDrawer');
         }
 
-        if (!Dashboard.isConnectMode() && !$.browser.mobile) {
+        // Set drawer background color
+        var darkDrawer = false;
+        if (!Dashboard.isConnectMode() && !browserInfo.mobile) {
             darkDrawer = true;
         }
 
@@ -902,8 +847,28 @@
                 drawer.classList.remove('darkDrawer');
             }
         }
+    });
 
-        updateBackButton(page);
+    function updateTitle(page) {
+        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
+
+        if (!title) {
+            var titleKey = getParameterByName('titlekey');
+
+            if (titleKey) {
+                title = Globalize.translate(titleKey);
+            }
+        }
+
+        if (!title) {
+            if (page.classList.contains('type-interior')) {
+                title = Globalize.translate('ButtonHome');
+            }
+        }
+
+        if (title) {
+            LibraryMenu.setTitle(title);
+        }
     }
 
     function updateBackButton(page) {
@@ -927,22 +892,13 @@
         }
     }
 
-    function onPageShowDocumentReady(page) {
-
-        if (!NavHelper.isBack()) {
-            // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
-        }
-        updateTabLinks(page);
-    }
-
     function initHeadRoom(elem) {
 
         if (!AppInfo.enableHeadRoom) {
             return;
         }
 
-        requirejs(["thirdparty/headroom"], function () {
+        requirejs(["headroom"], function () {
 
             // construct an instance of Headroom, passing the element
             var headroom = new Headroom(elem, {
@@ -966,100 +922,47 @@
         Events.on(apiClient, 'websocketmessage', onWebSocketMessage);
     }
 
-    Dashboard.ready(function () {
+    if (window.ApiClient) {
+        initializeApiClient(window.ApiClient);
+    }
 
-        if (window.ApiClient) {
-            initializeApiClient(window.ApiClient);
-        }
+    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+    mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
 
-        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
-            initializeApiClient(apiClient);
+    renderHeader();
 
-        });
+    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
+        initializeApiClient(apiClient);
+    });
 
-        Events.on(ConnectionManager, 'localusersignedin', function () {
-            requiresLibraryMenuRefresh = true;
-            requiresViewMenuRefresh = true;
-            requiresDrawerRefresh = true;
-        });
+    Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
+        requiresLibraryMenuRefresh = true;
+        requiresDrawerRefresh = true;
+        ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(addUserToHeader);
+    });
 
-        Events.on(ConnectionManager, 'localusersignedout', function () {
-            requiresLibraryMenuRefresh = true;
-            requiresViewMenuRefresh = true;
-            requiresDrawerRefresh = true;
-        });
+    Events.on(ConnectionManager, 'localusersignedout', function () {
+        requiresLibraryMenuRefresh = true;
+        requiresDrawerRefresh = true;
+        removeUserFromHeader();
+    });
 
-        Events.on(MediaController, 'playerchange', function () {
-            updateCastIcon();
-        });
-
-        var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
-        Events.on(mainDrawerPanel, 'paper-drawer-panel-open', onMainDrawerOpened);
-        Events.on(mainDrawerPanel, 'paper-drawer-panel-close', onMainDrawerClosed);
+    Events.on(MediaController, 'playerchange', function () {
+        updateCastIcon();
     });
 
 })(window, document, jQuery, window.devicePixelRatio);
-
-$.fn.createHoverTouch = function () {
-
-    var preventHover = false;
-    var timerId;
-
-    function startTimer(elem) {
-
-        stopTimer();
-
-        timerId = setTimeout(function () {
-
-            Events.trigger(elem, 'hovertouch');
-        }, 300);
-    }
-
-    function stopTimer(elem) {
-
-        if (timerId) {
-            clearTimeout(timerId);
-            timerId = null;
-        }
-    }
-
-    return $(this).on('mouseenter', function () {
-
-        if (preventHover === true) {
-            preventHover = false;
-            return;
-        }
-
-        startTimer(this);
-
-    }).on('mouseleave', function () {
-
-        stopTimer(this);
-
-    }).on('touchstart', function () {
-
-        preventHover = true;
-
-    }).on('click', function () {
-
-        preventHover = true;
-
-        if (preventHover) {
-            Events.trigger(this, 'hovertouch');
-            stopTimer(this);
-            preventHover = false;
-        }
-    });
-
-};
 
 (function () {
 
     var isCurrentNavBack = false;
 
-    $(window).on("navigate", function (e, data) {
-        data = data.state || {};
-        isCurrentNavBack = data.direction == 'back';
+    window.addEventListener("navigate", function (e) {
+
+        var data = e.detail.state || {};
+        var direction = data.direction;
+
+        isCurrentNavBack = direction == 'back';
     });
 
     function isBack() {

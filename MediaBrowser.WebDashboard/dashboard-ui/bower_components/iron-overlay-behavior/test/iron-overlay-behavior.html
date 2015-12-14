@@ -20,10 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-
-    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html">
     <link rel="import" href="test-overlay.html">
 
   </head>
@@ -103,11 +100,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(getComputedStyle(overlay).display, 'none', 'overlay starts hidden');
         });
 
-        test('overlay open by default', function() {
+        test('overlay open by default', function(done) {
           overlay = fixture('opened');
-          runAfterOpen(overlay, function() {
+          overlay.addEventListener('iron-overlay-opened', function() {
             assert.isTrue(overlay.opened, 'overlay starts opened');
             assert.notEqual(getComputedStyle(overlay).display, 'none', 'overlay starts showing');
+            done();
+          });
+        });
+
+        test('overlay positioned & sized properly', function(done) {
+          overlay = fixture('opened');
+          overlay.addEventListener('iron-overlay-opened', function() {
+            var s = getComputedStyle(overlay);
+            assert.isTrue(parseFloat(s.left) === (window.innerWidth - overlay.offsetWidth)/2, 'centered horizontally');
+            assert.isTrue(parseFloat(s.top) === (window.innerHeight - overlay.offsetHeight)/2, 'centered vertically');
+            done();
           });
         });
 
@@ -184,7 +192,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             overlay.addEventListener('iron-overlay-canceled', function(event) {
               done();
             });
-            Polymer.Base.fire.call(document, 'click');
+            MockInteractions.tap(document.body);
           });
         });
 
@@ -194,7 +202,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.isTrue(event.detail.canceled, 'overlay is canceled');
               done();
             });
-            Polymer.Base.fire.call(document, 'click');
+            MockInteractions.tap(document.body);
           });
         });
 
@@ -207,7 +215,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               throw new Error('iron-overlay-closed should not fire');
             };
             overlay.addEventListener('iron-overlay-closed', closedListener);
-            Polymer.Base.fire.call(document, 'click');
+            MockInteractions.tap(document.body);
             setTimeout(function() {
               overlay.removeEventListener('iron-overlay-closed', closedListener);
               done();
@@ -244,7 +252,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             overlay.addEventListener('iron-overlay-closed', function() {
               assert('iron-overlay-closed should not fire');
             });
-            Polymer.Base.fire.call(document, 'click');
+            MockInteractions.tap(document.body);
             setTimeout(function() {
               done();
             }, 10);
@@ -285,6 +293,69 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
         });
+
+        test('ESC closes only one opened overlay', function(done) {
+          runAfterOpen(overlays[0], function() {
+            runAfterOpen(overlays[1], function() {
+              // keydown is sync, keyup async (but no need to wait for it).
+              MockInteractions.pressAndReleaseKeyOn(document.body, 27);
+              // Ideally overlays[1] should be closed and overlays[0] still open,
+              // but in this test env overlays[0]._onCaptureKeydown gets called before
+              // overlays[1]._onCaptureKeydown.
+              // TODO investigate if this is because of CustomEvents in MockInteractions.
+              var opened0 = overlays[0].opened && !overlays[1].opened;
+              var opened1 = !overlays[0].opened && overlays[1].opened;
+              assert.isTrue(opened0 || opened1, 'only one overlay is still opened');
+              done();
+            });
+          });
+        });
+      });
+
+      suite('z-ordering', function() {
+
+        var overlays;
+        var originalMinimumZ;
+
+        setup(function() {
+          overlays = fixture('multiple');
+          originalMinimumZ = Polymer.IronOverlayManager._minimumZ;
+        });
+
+        teardown(function() {
+          Polymer.IronOverlayManager._minimumZ = originalMinimumZ;
+        });
+
+        // for iframes
+        test('default z-index is greater than 100', function(done) {
+          runAfterOpen(overlays[0], function() {
+            var styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+            assert.isTrue(styleZ > 100, 'overlays[0] z-index is <= 100');
+            done();
+          });
+        });
+
+        test('ensureMinimumZ() effects z-index', function(done) {
+          Polymer.IronOverlayManager.ensureMinimumZ(1000);
+
+          runAfterOpen(overlays[0], function() {
+            var styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+            assert.isTrue(styleZ > 1000, 'overlays[0] z-index is <= 1000');
+            done();
+          });
+        });
+
+        test('ensureMinimumZ() never decreases the minimum z-index', function(done) {
+          Polymer.IronOverlayManager.ensureMinimumZ(1000);
+          Polymer.IronOverlayManager.ensureMinimumZ(500);
+
+          runAfterOpen(overlays[0], function() {
+            var styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+            assert.isTrue(styleZ > 1000, 'overlays[0] z-index is <= 1000');
+            done();
+          });
+        });
+
       });
 
       suite('overlays with backdrop', function() {

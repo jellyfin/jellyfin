@@ -1,6 +1,6 @@
 {
   "name": "paper-button",
-  "version": "1.0.8",
+  "version": "1.0.11",
   "description": "Material design button",
   "authors": [
     "The Polymer Authors"
@@ -29,12 +29,14 @@
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "web-component-tester": "*",
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
     "iron-icon": "polymerelements/iron-icon#^1.0.0",
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "paper-styles": "polymerelements/paper-styles#^1.0.0"
-  }
+  },
+  "ignore": []
 }

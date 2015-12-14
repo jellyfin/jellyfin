@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configure pin code",
     "HeaderAdultsReadHere": "Adults Read Here!",
     "RegisterWithPayPal": "Register with PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires an Emby Premiere Subscription",
     "HeaderEnjoyDayTrial": "Enjoy a 14 Day Free Trial",
     "LabelSyncTempPath": "Temporary file path:",
     "LabelSyncTempPathHelp": "Specify a custom sync working folder. Converted media created during the sync process will be stored here.",

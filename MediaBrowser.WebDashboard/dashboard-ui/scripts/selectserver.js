@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connectToServer(server).done(function (result) {
+        ConnectionManager.connectToServer(server).then(function (result) {
 
             Dashboard.hideLoadingMsg();
 
@@ -127,12 +127,12 @@
         Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
-        ConnectionManager.acceptServer(id).done(function () {
+        ConnectionManager.acceptServer(id).then(function () {
 
             Dashboard.hideModalLoadingMsg();
             loadPage(page);
 
-        }).fail(function () {
+        }, function () {
 
             showGeneralError();
         });
@@ -143,13 +143,13 @@
         Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
-        ConnectionManager.deleteServer(serverId).done(function () {
+        ConnectionManager.deleteServer(serverId).then(function () {
 
             Dashboard.hideModalLoadingMsg();
 
             loadPage(page);
 
-        }).fail(function () {
+        }, function () {
 
             showGeneralError();
 
@@ -161,13 +161,13 @@
         Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
-        ConnectionManager.rejectServer(id).done(function () {
+        ConnectionManager.rejectServer(id).then(function () {
 
             Dashboard.hideModalLoadingMsg();
 
             loadPage(page);
 
-        }).fail(function () {
+        }, function () {
 
             showGeneralError();
 
@@ -297,7 +297,7 @@
 
         if (ConnectionManager.isLoggedIntoConnect()) {
 
-            ConnectionManager.getUserInvitations().done(function (list) {
+            ConnectionManager.getUserInvitations().then(function (list) {
 
                 renderInvitations(page, list);
 
@@ -314,7 +314,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.getAvailableServers().done(function (servers) {
+        ConnectionManager.getAvailableServers().then(function (servers) {
 
             servers = servers.slice(0);
 
@@ -334,24 +334,24 @@
 
     function updatePageStyle(page) {
 
-        if (ConnectionManager.isLoggedIntoConnect()) {
+        if (getParameterByName('showuser') == '1') {
             $(page).addClass('libraryPage').addClass('noSecondaryNavPage').removeClass('standalonePage');
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
         }
     }
 
-    $(document).on('pageinit pagebeforeshow', "#selectServerPage", function () {
+    pageIdOn('pagebeforeshow', "selectServerPage", function () {
 
         var page = this;
         updatePageStyle(page);
+    });
 
-    }).on('pageshow', "#selectServerPage", function () {
+    pageIdOn('pageshow', "selectServerPage", function () {
 
         var page = this;
 
         loadPage(page);
-
     });
 
 })();

@@ -2,18 +2,18 @@
 
     function loadPage(page, config) {
 
-        $('#chkMovies', page).checked(config.EnableIntrosForMovies).checkboxradio('refresh');
-        $('#chkEpisodes', page).checked(config.EnableIntrosForEpisodes).checkboxradio('refresh');
+        $('.chkMovies', page).checked(config.EnableIntrosForMovies);
+        $('.chkEpisodes', page).checked(config.EnableIntrosForEpisodes);
 
-        $('#chkMyMovieTrailers', page).checked(config.EnableIntrosFromMoviesInLibrary).checkboxradio('refresh');
+        $('.chkMyMovieTrailers', page).checked(config.EnableIntrosFromMoviesInLibrary);
 
-        $('#chkUpcomingTheaterTrailers', page).checked(config.EnableIntrosFromUpcomingTrailers).checkboxradio('refresh');
-        $('#chkUpcomingDvdTrailers', page).checked(config.EnableIntrosFromUpcomingDvdMovies).checkboxradio('refresh');
-        $('#chkUpcomingStreamingTrailers', page).checked(config.EnableIntrosFromUpcomingStreamingMovies).checkboxradio('refresh');
-        $('#chkOtherTrailers', page).checked(config.EnableIntrosFromSimilarMovies).checkboxradio('refresh');
+        $('.chkUpcomingTheaterTrailers', page).checked(config.EnableIntrosFromUpcomingTrailers);
+        $('.chkUpcomingDvdTrailers', page).checked(config.EnableIntrosFromUpcomingDvdMovies);
+        $('.chkUpcomingStreamingTrailers', page).checked(config.EnableIntrosFromUpcomingStreamingMovies);
+        $('.chkOtherTrailers', page).checked(config.EnableIntrosFromSimilarMovies);
 
-        $('#chkUnwatchedOnly', page).checked(!config.EnableIntrosForWatchedContent).checkboxradio('refresh');
-        $('#chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl).checkboxradio('refresh');
+        $('.chkUnwatchedOnly', page).checked(!config.EnableIntrosForWatchedContent);
+        $('.chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl);
 
         $('#txtCustomIntrosPath', page).val(config.CustomIntroPath || '');
         $('#txtNumTrailers', page).val(config.TrailerLimit);
@@ -28,23 +28,23 @@
 
         var page = $(form).parents('.page');
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (config) {
 
             config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
             config.TrailerLimit = $('#txtNumTrailers', page).val();
 
-            config.EnableIntrosForMovies = $('#chkMovies', page).checked();
-            config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();
-            config.EnableIntrosFromMoviesInLibrary = $('#chkMyMovieTrailers', page).checked();
-            config.EnableIntrosForWatchedContent = !$('#chkUnwatchedOnly', page).checked();
-            config.EnableIntrosParentalControl = $('#chkEnableParentalControl', page).checked();
+            config.EnableIntrosForMovies = $('.chkMovies', page).checked();
+            config.EnableIntrosForEpisodes = $('.chkEpisodes', page).checked();
+            config.EnableIntrosFromMoviesInLibrary = $('.chkMyMovieTrailers', page).checked();
+            config.EnableIntrosForWatchedContent = !$('.chkUnwatchedOnly', page).checked();
+            config.EnableIntrosParentalControl = $('.chkEnableParentalControl', page).checked();
 
-            config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
-            config.EnableIntrosFromUpcomingDvdMovies = $('#chkUpcomingDvdTrailers', page).checked();
-            config.EnableIntrosFromUpcomingStreamingMovies = $('#chkUpcomingStreamingTrailers', page).checked();
-            config.EnableIntrosFromSimilarMovies = $('#chkOtherTrailers', page).checked();
+            config.EnableIntrosFromUpcomingTrailers = $('.chkUpcomingTheaterTrailers', page).checked();
+            config.EnableIntrosFromUpcomingDvdMovies = $('.chkUpcomingDvdTrailers', page).checked();
+            config.EnableIntrosFromUpcomingStreamingMovies = $('.chkUpcomingStreamingTrailers', page).checked();
+            config.EnableIntrosFromSimilarMovies = $('.chkOtherTrailers', page).checked();
 
-            ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("cinemamode", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -84,7 +84,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (config) {
 
             loadPage(page, config);
 

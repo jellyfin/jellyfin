@@ -14,7 +14,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvSeriesTimer(id).done(function () {
+                ApiClient.cancelLiveTvSeriesTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageSeriesCancelled'));
 
@@ -102,9 +102,11 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvSeriesTimers(query).done(function (result) {
+        ApiClient.getLiveTvSeriesTimers(query).then(function (result) {
 
-            renderTimers(page, result.Items);
+            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+                renderTimers(page, result.Items);
+            });
 
             LibraryBrowser.setLastRefreshed(page);
         });

@@ -211,7 +211,7 @@
 
         user.Policy.BlockedTags = getBlockedTagsFromPage(page);
 
-        ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
+        ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
             onSaveComplete(page);
         });
     }
@@ -226,7 +226,7 @@
 
             var userId = getParameterByName("userId");
 
-            ApiClient.getUser(userId).done(function (result) {
+            ApiClient.getUser(userId).then(function (result) {
                 saveUser(result, page);
             });
 
@@ -388,28 +388,12 @@
         Dashboard.showLoadingMsg();
 
         var userId = getParameterByName("userId");
-
-        var promise1;
-
-        if (!userId) {
-
-            var deferred = $.Deferred();
-
-            deferred.resolveWith(null, [{
-                Configuration: {}
-            }]);
-
-            promise1 = deferred.promise();
-        } else {
-
-            promise1 = ApiClient.getUser(userId);
-        }
-
+        var promise1 = ApiClient.getUser(userId);
         var promise2 = ApiClient.getParentalRatings();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadUser(page, response1[0] || response1, response2[0]);
+            loadUser(page, responses[0], responses[1]);
 
         });
     });

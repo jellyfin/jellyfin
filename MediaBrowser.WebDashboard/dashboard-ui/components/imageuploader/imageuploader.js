@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItemId;
     var currentFile;
@@ -11,12 +11,12 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate('MessageFileNotFound'));
+                Dashboard.alert(Globalize.translate('MessageFileNotFound'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError(Globalize.translate('MessageFileReadError'));
+                Dashboard.alert(Globalize.translate('MessageFileReadError'));
                 break;
         };
     }
@@ -85,7 +85,7 @@
 
         var imageType = $('#selectImageType', page).val();
 
-        ApiClient.uploadItemImage(currentItemId, imageType, file).done(function () {
+        ApiClient.uploadItemImage(currentItemId, imageType, file).then(function () {
 
             $('#uploadImage', page).val('').trigger('change');
             Dashboard.hideLoadingMsg();
@@ -125,16 +125,15 @@
 
         options = options || {};
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/imageuploader/imageuploader.template.html', true);
 
-            type: 'GET',
-            url: 'components/imageuploader/imageuploader.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             currentItemId = itemId;
 
-            var dlg = PaperDialogHelper.createDialog({
+            var dlg = paperDialogHelper.createDialog({
                 theme: options.theme
             });
 
@@ -154,16 +153,18 @@
             // Has to be assigned a z-index after the call to .open() 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-            PaperDialogHelper.openWithHash(dlg, 'imageuploader');
+            paperDialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                PaperDialogHelper.close(dlg);
+                paperDialogHelper.close(dlg);
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {
@@ -173,7 +174,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ImageUploader = {
+    return {
         show: function (itemId, options) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -181,12 +182,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
-
-                showEditor(itemId, options);
-            });
+            showEditor(itemId, options);
             return deferred.promise();
         }
     };
-
-})(jQuery, window, document);
+});

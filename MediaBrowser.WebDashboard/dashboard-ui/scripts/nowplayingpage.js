@@ -545,7 +545,13 @@
         var item = state.NowPlayingItem;
         var displayName = item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '';
 
-        $('.nowPlayingPageTitle', page).html(displayName).visible(displayName.length > 0);
+        $('.nowPlayingPageTitle', page).html(displayName);
+
+        if (displayName.length > 0) {
+            $('.nowPlayingPageTitle', page).removeClass('hide');
+        } else {
+            $('.nowPlayingPageTitle', page).addClass('hide');
+        }
 
         var url;
         var backdropUrl = null;
@@ -599,9 +605,12 @@
 
             // This should be outside of the IF
             // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
-            Backdrops.setBackdropUrl(page, backdropUrl);
+            if (!browserInfo.safari) {
+                // Exclude from safari because it just doesn't perform well
+                Backdrops.setBackdropUrl(page, backdropUrl);
+            }
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).done(function (fullItem) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {
                 page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
             });
         } else {
@@ -645,7 +654,7 @@
 
         currentPlayer = player;
 
-        player.getPlayerState().done(function (state) {
+        player.getPlayerState().then(function (state) {
 
             if (state.NowPlayingItem) {
                 player.beginPlayerUpdates();
@@ -683,14 +692,14 @@
         //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
         //    Limit: 100
 
-        //}).done(function (result) {
+        //}).then(function (result) {
 
         //    html += LibraryBrowser.getListViewHtml({
         //        items: result.Items,
         //        smallIcon: true
         //    });
 
-        //    $(".playlist", page).html(html).trigger('create').lazyChildren();
+        //    $(".playlist", page).html(html).lazyChildren();
         //});
 
         html += LibraryBrowser.getListViewHtml({
@@ -761,6 +770,7 @@
 
         var page = this;
 
+        Dashboard.importCss('css/nowplaying.css');
         bindEvents(page);
 
         $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);

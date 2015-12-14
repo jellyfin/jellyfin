@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-fab'], function (paperDialogHelper) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();
@@ -33,13 +33,13 @@
             url: url,
             dataType: "json"
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             Dashboard.hideLoadingMsg();
 
             var id = result.Id;
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
             redirectToCollection(id);
 
         });
@@ -49,7 +49,7 @@
 
         var context = getParameterByName('context');
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+        ApiClient.getItem(Dashboard.getCurrentUserId(), id).then(function (item) {
 
             Dashboard.navigate(LibraryBrowser.getHref(item, context));
 
@@ -67,11 +67,11 @@
             type: "POST",
             url: url
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.hideLoadingMsg();
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
 
             Dashboard.alert(Globalize.translate('MessageItemsAdded'));
         });
@@ -98,7 +98,7 @@
             SortBy: "SortName"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             var html = '';
 
@@ -192,39 +192,36 @@
 
             items = items || [];
 
-            require(['components/paperdialoghelper'], function () {
+            var dlg = paperDialogHelper.createDialog({
+                size: 'small'
+            });
 
-                var dlg = PaperDialogHelper.createDialog({
-                    size: 'small'
-                });
+            var html = '';
+            html += '<h2 class="dialogHeader">';
+            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
 
-                var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+            var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
 
-                var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
+            html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
+            html += '</h2>';
 
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
-                html += '</h2>';
+            html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+            html += getEditorHtml();
+            html += '</div>';
 
-                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                html += getEditorHtml();
-                html += '</div>';
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
 
-                dlg.innerHTML = html;
-                document.body.appendChild(dlg);
+            var editorContent = dlg.querySelector('.editorContent');
+            initEditor(editorContent, items);
 
-                var editorContent = dlg.querySelector('.editorContent');
-                initEditor(editorContent, items);
+            $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+            paperDialogHelper.open(dlg);
 
-                PaperDialogHelper.openWithHash(dlg, 'collectioneditor');
+            $('.btnCloseDialog', dlg).on('click', function () {
 
-                $('.btnCloseDialog', dlg).on('click', function () {
-
-                    PaperDialogHelper.close(dlg);
-                });
+                paperDialogHelper.close(dlg);
             });
         };
     }

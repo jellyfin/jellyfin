@@ -4,7 +4,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Dlna/ProfileInfos")).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Dlna/ProfileInfos")).then(function (result) {
 
             renderProfiles(page, result);
 
@@ -92,7 +92,7 @@
                     type: "DELETE",
                     url: ApiClient.getUrl("Dlna/Profiles/" + id)
 
-                }).done(function () {
+                }).then(function () {
 
                     Dashboard.hideLoadingMsg();
 

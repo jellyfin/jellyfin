@@ -411,6 +411,19 @@
 
 
 
+/* Corner styling for dialogs and popups */
+.ui-corner-all > .ui-content:first-child {
+	-webkit-border-top-left-radius: inherit;
+	border-top-left-radius: inherit;
+	-webkit-border-top-right-radius: inherit;
+	border-top-right-radius: inherit;
+}
+.ui-corner-all > .ui-content:last-child {
+	-webkit-border-bottom-left-radius: inherit;
+	border-bottom-left-radius: inherit;
+	-webkit-border-bottom-right-radius: inherit;
+	border-bottom-right-radius: inherit;
+}
 
 
 /* Popup arrow */
@@ -419,4 +432,10 @@
     right: .6em /*{global-radii-blocks}*/;
     top: .6em /*{global-radii-blocks}*/;
     bottom: .6em /*{global-radii-blocks}*/;
+}
+
+
+/* Used for hiding elements by the filterable widget. You can also use this class to hide list items or buttons in controlgroups; this ensures correct corner styling. */
+.ui-screen-hidden {
+	display: none !important;
 }

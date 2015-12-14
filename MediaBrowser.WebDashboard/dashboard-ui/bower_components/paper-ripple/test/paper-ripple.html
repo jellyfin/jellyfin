@@ -17,10 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-ripple.html">
 
   <style>
@@ -120,7 +118,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('tapping does not create a ripple', function () {
-          expect(ripple.keyEventTarget).to.be.equal(ripple);
           expect(ripple.ripples.length).to.be.eql(0);
           MockInteractions.down(ripple);
           expect(ripple.ripples.length).to.be.eql(0);
@@ -133,7 +130,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
-      
+
 
       suite('with the `center` attribute set to true', function () {
         setup(function () {

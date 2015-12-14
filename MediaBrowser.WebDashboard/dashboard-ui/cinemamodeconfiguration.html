@@ -4,7 +4,7 @@
     <title>${TitlePlayback}</title>
 </head>
 <body>
-    <div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration">
+    <div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,60 +19,55 @@
                 <form class="cinemaModeConfigurationForm">
 
                     <p>${CinemaModeConfigurationHelp}</p>
-                    <div style="margin-top:2em;">
-                        <fieldset data-role="controlgroup">
-                            <legend>${LabelEnableCinemaModeFor}</legend>
-                            <label for="chkMovies">${OptionMovies}</label>
-                            <input type="checkbox" id="chkMovies" />
-                            <label for="chkEpisodes">${OptionEpisodes}</label>
-                            <input type="checkbox" id="chkEpisodes" />
-                        </fieldset>
+                    <div style="margin-top: 2em;">
+                        <h3 style="margin-bottom:.5em;">${LabelEnableCinemaModeFor}</h3>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox class="chkMovies">${OptionMovies}</paper-checkbox>
+                            <paper-checkbox class="chkEpisodes">${OptionEpisodes}</paper-checkbox>
+                        </div>
                     </div>
                     <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <fieldset data-role="controlgroup">
-                                <legend>${LabelSelectInternetTrailersForCinemaMode}</legend>
-                                <label for="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</label>
-                                <input type="checkbox" id="chkUpcomingTheaterTrailers" />
-                                <label for="chkUpcomingDvdTrailers">${OptionUpcomingDvdMovies}</label>
-                                <input type="checkbox" id="chkUpcomingDvdTrailers" />
-                                <label for="chkUpcomingStreamingTrailers">${OptionUpcomingStreamingMovies}</label>
-                                <input type="checkbox" id="chkUpcomingStreamingTrailers" />
-                                <label for="chkOtherTrailers">${OptionOtherTrailers}</label>
-                                <input type="checkbox" id="chkOtherTrailers" />
-                            </fieldset>
-                            <div class="fieldDescription">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</div>
-                            <div class="fieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank" style="display:none;">${ButtonLearnMore}</a></div>
-                        </li>
-                        <li>
-                            <label for="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</label>
-                            <input type="checkbox" id="chkMyMovieTrailers" data-mini="true" />
-                            <div class="fieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
-                            <div class="fieldDescription"><a href="http://emby.media/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a></div>
-                        </li>
-                        <li>
-                            <label for="txtCustomIntrosPath">${LabelCustomIntrosPath}</label>
-                            <div>
-                                <input type="text" id="txtCustomIntrosPath" style="display: inline-block; width: 85%;" />
-                                <paper-icon-button id="btnSelectCustomIntrosPath" icon="search"></paper-icon-button>
-                            </div>
-                            <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
-                        </li>
-                        <li>
-                            <label for="txtNumTrailers">${LabelNumberTrailerToPlay}</label>
-                            <input type="number" id="txtNumTrailers" min="1" max="10" step="1" />
-                        </li>
-                        <li>
-                            <label for="chkEnableParentalControl">${LabelEnableIntroParentalControl}</label>
-                            <input type="checkbox" id="chkEnableParentalControl" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableIntroParentalControlHelp}</div>
-                        </li>
-                        <li>
-                            <label for="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</label>
-                            <input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />
-                        </li>
-                    </ul>
+                    <div>
+                        <h3 style="margin-bottom:.5em;">${LabelSelectInternetTrailersForCinemaMode}</h3>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox class="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</paper-checkbox>
+                            <paper-checkbox class="chkUpcomingDvdTrailers">${OptionUpcomingDvdMovies}</paper-checkbox>
+                            <paper-checkbox class="chkUpcomingStreamingTrailers">${OptionUpcomingStreamingMovies}</paper-checkbox>
+                            <paper-checkbox class="chkOtherTrailers">${OptionOtherTrailers}</paper-checkbox>
+                        </div>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</div>
+                        <div class="fieldDescription paperCheckboxFieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank" style="display:none;">${ButtonLearnMore}</a></div>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-checkbox class="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
+                        <div class="fieldDescription paperCheckboxFieldDescription">
+                            <a href="http://emby.media/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a>
+                        </div>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-input type="number" id="txtNumTrailers" min="1" max="10" step="1" label="${LabelNumberTrailerToPlay}"></paper-input>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-checkbox class="chkEnableParentalControl">${LabelEnableIntroParentalControl}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableIntroParentalControlHelp}</div>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-checkbox class="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</paper-checkbox>
+                    </div>
+                    <br />
+                    <div>
+                        <div>
+                            <paper-input type="text" label="${LabelCustomIntrosPath}" id="txtCustomIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
+                            <paper-icon-button id="btnSelectCustomIntrosPath" icon="search"></paper-icon-button>
+                        </div>
+                        <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
+                    </div>
+                    <br />
                     <p>${CinemaModeConfigurationHelp2}</p>
                     <ul data-role="listview" class="ulForm">
                         <li>

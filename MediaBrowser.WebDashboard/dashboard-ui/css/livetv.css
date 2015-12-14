@@ -232,13 +232,15 @@
     height: 42px;
 }
 
-.channelHeaderCellInner {
-    padding: .35em .5em .5em;
-    display: block;
+.channelHeaderCell {
+    padding: 0;
     text-decoration: none;
     font-weight: 400 !important;
     color: #fff !important;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pointerInput .channelHeaderCell:hover {
@@ -307,17 +309,24 @@
     max-width: 110px;
     overflow: hidden;
     white-space: nowrap;
+    margin-left: .5em;
+    margin-right: auto;
 }
 
 .guideChannelImage {
-    width: 60px;
-    height: 35px;
-    position: absolute;
-    right: 7px;
-    top: 7px;
+    width: 70px;
+    height: 44px;
     background-size: contain;
     background-position: right center;
     background-repeat: no-repeat;
+    margin-right: .5em;
+}
+
+.guideChannelName {
+    margin-right: .5em;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 1920px) {
@@ -367,10 +376,6 @@
     .timeslotHeaderInner {
         font-size: 14px;
         padding-top: .8em;
-    }
-
-    .channelHeaderCellInner {
-        padding-top: .6em;
     }
 
     .channelTimeslotHeader a {

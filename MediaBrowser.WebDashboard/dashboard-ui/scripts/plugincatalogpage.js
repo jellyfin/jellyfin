@@ -22,14 +22,14 @@
 
         var promise2 = ApiClient.getInstalledPlugins();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
             populateList({
 
                 catalogElement: $('#pluginTiles', page),
                 noItemsElement: $("#noPlugins", page),
-                availablePlugins: response1[0],
-                installedPlugins: response2[0]
+                availablePlugins: responses[0],
+                installedPlugins: responses[1]
 
             });
         });

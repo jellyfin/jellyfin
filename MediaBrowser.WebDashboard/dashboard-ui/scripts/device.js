@@ -22,9 +22,9 @@
         var promise1 = ApiClient.getJSON(ApiClient.getUrl('Devices/Info', { Id: id }));
         var promise2 = ApiClient.getJSON(ApiClient.getUrl('Devices/Capabilities', { Id: id }));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            load(page, response1[0], response2[0]);
+            load(page, responses[0], responses[1]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -46,7 +46,7 @@
             }),
             contentType: "application/json"
 
-        }).done(Dashboard.processServerConfigurationUpdateResult);
+        }).then(Dashboard.processServerConfigurationUpdateResult);
     }
 
     function onSubmit() {

@@ -1,28 +1,6 @@
-﻿.voiceInputHelp {
-    background-image: url(../css/images/splash.jpg);
-    top: 50px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: fixed;
-    background-position: center center;
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    /* Need to make sure it is on top of content but underneath slideout panels */
-    z-index: 1097;
-}
-
-.voiceInputHelpInner {
-    background: rgba(10,10,10,.8);
-    width: 100%;
-    height: 100%;
-    color: #eee;
-}
-
-.voiceHelpContent {
+﻿.voiceHelpContent {
     max-width: 600px;
     margin: auto;
-    padding: 1em 1em 0;
 }
 
 .exampleCommands {
@@ -33,13 +11,8 @@
     margin: 1em 0;
 }
 
-    .exampleCommand .fa {
-        vertical-align: middle;
-        color: #38c;
-    }
-
 .exampleCommandText {
-    margin: 0 1em;
+    padding-left: .25em;
 }
 
 .defaultVoiceHelp {

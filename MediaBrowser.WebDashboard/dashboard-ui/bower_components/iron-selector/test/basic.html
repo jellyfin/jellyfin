@@ -104,10 +104,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         s2 = fixture('basic');
       });
 
-      test('honors the attrForSelected attribute', function() {
-        assert.equal(s2.attrForSelected, 'id');
-        assert.equal(s2.selected, 'item2');
-        assert.equal(s2.selectedItem, document.querySelector('#item2'));
+      test('honors the attrForSelected attribute', function(done) {
+        Polymer.Base.async(function() {
+          assert.equal(s2.attrForSelected, 'id');
+          assert.equal(s2.selected, 'item2');
+          assert.equal(s2.selectedItem, document.querySelector('#item2'));
+          done();
+        });
       });
 
       test('allows assignment to selected', function() {
@@ -153,10 +156,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             changeCount++;
           });
 
-          s2.appendChild(newItem);
+          Polymer.dom(s2).appendChild(newItem);
 
           Polymer.Base.async(function() {
-            s2.removeChild(newItem);
+            Polymer.dom(s2).removeChild(newItem);
 
             Polymer.Base.async(function() {
               expect(changeCount).to.be.equal(2);

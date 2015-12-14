@@ -16,12 +16,6 @@
     margin: .5em 0;
 }
 
-.headerButton {
-    height: 50px;
-    line-height: 50px;
-    display: inline-block;
-}
-
 .headerUserImage {
     background-size: contain;
     background-repeat: no-repeat;
@@ -93,25 +87,14 @@
 }
 
 .headerButton {
-    margin: 0;
+    margin: 0 5px;
     background-color: transparent;
-    top: 0;
-    bottom: 0;
     vertical-align: middle;
     text-align: center;
     border: 0 !important;
     outline: none;
-    padding: 0 20px;
     cursor: pointer;
-}
-
-    .headerButton img {
-        height: 26px !important;
-        vertical-align: middle;
-    }
-
-.headerButtonLeft {
-    padding: 0 15px;
+    display: inline-block;
 }
 
 .menuArrow {
@@ -123,7 +106,6 @@
 
 .headerButtonRight {
     border-width: 0 !important;
-    padding: 0 15px;
     display: inline-block;
 }
 
@@ -182,6 +164,9 @@
     z-index: 999;
     top: 0;
     border: 0;
+    height: 50px;
+    display: flex;
+    align-items: center;
 }
 
 .hiddenViewMenuBar .viewMenuBar {
@@ -220,7 +205,7 @@
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(18, 18, 18, .60);
+        background-color: rgba(18, 18, 18, .55);
     }
 
 .paperLibraryViewNav {
@@ -262,6 +247,8 @@
     top: 0;
     bottom: 0;
     right: 0;
+    display: flex;
+    align-items: center;
 }
 
 .selectedMediaFolder {
@@ -323,6 +310,19 @@
 
 .fullPaperLibraryTabs .legacyTabs {
     display: none;
+}
+
+.minimumSizeTabs .libraryViewNav .tab-content {
+    display: block !important;
+}
+
+.minimumSizeTabs .libraryViewNav paper-tab {
+    height: auto !important;
+    flex-grow: 0 !important;
+}
+
+.minimumSizeTabs .libraryViewNav #tabsContainer {
+    flex-grow: 0 !important;
 }
 
 @media all and (max-width: 400px) {

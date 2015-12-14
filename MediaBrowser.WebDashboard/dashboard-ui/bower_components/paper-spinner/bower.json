@@ -1,6 +1,6 @@
 {
   "name": "paper-spinner",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A material design spinner",
   "authors": [
     "The Polymer Authors"
@@ -22,12 +22,13 @@
   "dependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
-    "web-component-tester": "*",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
-  }
+  },
+  "main": "paper-spinner.html"
 }

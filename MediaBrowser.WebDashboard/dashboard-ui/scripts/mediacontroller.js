@@ -1,4 +1,4 @@
-﻿(function ($, window) {
+﻿(function (window) {
 
     var currentDisplayInfo;
     function mirrorItem(info) {
@@ -14,9 +14,9 @@
         });
     }
 
-    function mirrorIfEnabled() {
+    function mirrorIfEnabled(info) {
 
-        var info = currentDisplayInfo;
+        info = info || currentDisplayInfo;
 
         if (info && MediaController.enableDisplayMirroring()) {
 
@@ -64,7 +64,7 @@
         });
     }
 
-    function showPlayerSelection() {
+    function showPlayerSelection(button) {
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -73,9 +73,9 @@
             return;
         }
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-        MediaController.getTargets().done(function (targets) {
+        MediaController.getTargets().then(function (targets) {
 
             var menuItems = targets.map(function (t) {
 
@@ -95,11 +95,12 @@
 
             require(['actionsheet'], function () {
 
-                Dashboard.hideModalLoadingMsg();
+                Dashboard.hideLoadingMsg();
 
                 ActionSheetElement.show({
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
+                    positionTo: button,
                     callback: function (id) {
 
                         var target = targets.filter(function (t) {
@@ -116,6 +117,13 @@
     }
 
     function showActivePlayerMenu(playerInfo) {
+
+        require(['paper-checkbox', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function () {
+            showActivePlayerMenuInternal(playerInfo);
+        });
+    }
+
+    function showActivePlayerMenuInternal(playerInfo) {
 
         var id = 'dlg' + new Date().getTime();
         var html = '';
@@ -207,7 +215,7 @@
 
             var player = controller.getCurrentPlayer();
 
-            player.getPlayerState().done(function (result) {
+            player.getPlayerState().then(function (result) {
 
                 var state = result;
 
@@ -238,7 +246,9 @@
 
         var keys = new bindKeys(self);
 
-        $(window).on("keydown", keys.keyBinding).on("keypress", keys.keyPrevent).on("keyup", keys.keyPrevent);
+        window.addEventListener('keydown', keys.keyBinding);
+        window.addEventListener('keypress', keys.keyPrevent);
+        window.addEventListener('keyup', keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 
@@ -253,15 +263,11 @@
         };
 
         function onBeforePlaybackStart(e, state) {
-            $(self).trigger('beforeplaybackstart', [state, this]);
-        }
-
-        function onPlaybackStart(e, state) {
-            $(self).trigger('playbackstart', [state, this]);
+            Events.trigger(self, 'beforeplaybackstart', [state, this]);
         }
 
         function onPlaybackStop(e, state) {
-            $(self).trigger('playbackstop', [state, this]);
+            Events.trigger(self, 'playbackstop', [state, this]);
         }
 
         self.getPlayerInfo = function () {
@@ -282,7 +288,7 @@
 
         function triggerPlayerChange(newPlayer, newTarget) {
 
-            $(self).trigger('playerchange', [newPlayer, newTarget]);
+            Events.trigger(self, 'playerchange', [newPlayer, newTarget]);
         }
 
         self.setActivePlayer = function (player, targetInfo) {
@@ -325,7 +331,7 @@
 
             currentPairingId = targetInfo.id;
 
-            player.tryPair(targetInfo).done(function () {
+            player.tryPair(targetInfo).then(function () {
 
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
@@ -344,7 +350,7 @@
 
             name = normalizeName(name);
 
-            self.getTargets().done(function (result) {
+            self.getTargets().then(function (result) {
 
                 var target = result.filter(function (p) {
                     return normalizeName(p.name) == name;
@@ -386,23 +392,46 @@
 
             if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
 
-                var options = {
-                    callback: function (result) {
+                var menuItems = [];
 
-                        if (result == 0) {
-                            MediaController.getCurrentPlayer().endSession();
+                menuItems.push({
+                    name: Globalize.translate('ButtonYes'),
+                    id: 'yes'
+                });
+                menuItems.push({
+                    name: Globalize.translate('ButtonNo'),
+                    id: 'no'
+                });
+                menuItems.push({
+                    name: Globalize.translate('ButtonCancel'),
+                    id: 'cancel'
+                });
+
+                require(['actionsheet'], function () {
+
+                    ActionSheetElement.show({
+                        items: menuItems,
+                        //positionTo: positionTo,
+                        title: Globalize.translate('ConfirmEndPlayerSession'),
+                        callback: function (id) {
+
+                            switch (id) {
+
+                                case 'yes':
+                                    MediaController.getCurrentPlayer().endSession();
+                                    self.setDefaultPlayerActive();
+                                    break;
+                                case 'no':
+                                    self.setDefaultPlayerActive();
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                    });
 
-                        if (result != 2) {
-                            self.setDefaultPlayerActive();
-                        }
-                    },
-                    message: Globalize.translate('ConfirmEndPlayerSession'),
-                    title: Globalize.translate('HeaderDisconnectFromPlayer'),
-                    buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo'), Globalize.translate('ButtonCancel')]
-                };
+                });
 
-                Dashboard.dialog(options);
 
             } else {
 
@@ -422,13 +451,13 @@
                 return p.getTargets();
             });
 
-            $.when.apply($, promises).done(function () {
+            Promise.all(promises).then(function (responses) {
 
                 var targets = [];
 
-                for (var i = 0; i < arguments.length; i++) {
+                for (var i = 0; i < responses.length; i++) {
 
-                    var subTargets = arguments[i];
+                    var subTargets = responses[i];
 
                     for (var j = 0; j < subTargets.length; j++) {
 
@@ -461,9 +490,38 @@
                 return;
             }
 
-            requirejs(["scripts/registrationservices"], function () {
-                RegistrationServices.validateFeature('playback').done(fn);
+            requirejs(["registrationservices"], function () {
+
+                self.playbackTimeLimitMs = null;
+
+                RegistrationServices.validateFeature('playback').then(fn, function () {
+
+                    self.playbackTimeLimitMs = lockedTimeLimitMs;
+                    startAutoStopTimer();
+                    fn();
+                });
             });
+        }
+
+        var autoStopTimeout;
+        var lockedTimeLimitMs = 60000;
+        function startAutoStopTimer() {
+            stopAutoStopTimer();
+            autoStopTimeout = setTimeout(onAutoStopTimeout, lockedTimeLimitMs);
+        }
+
+        function onAutoStopTimeout() {
+            stopAutoStopTimer();
+            MediaController.stop();
+        }
+
+        function stopAutoStopTimer() {
+
+            var timeout = autoStopTimeout;
+            if (timeout) {
+                clearTimeout(timeout);
+                autoStopTimeout = null;
+            }
         }
 
         self.toggleDisplayMirroring = function () {
@@ -776,7 +834,7 @@
                 var serverInfo = ApiClient.serverInfo();
 
                 if (serverInfo.Id) {
-                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).done(function (localMediaSource) {
+                    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).then(function (localMediaSource) {
                         // Use the local media source if a specific one wasn't requested, or the smae one was requested
                         if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
 
@@ -798,9 +856,9 @@
         }
 
         function getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, deferred) {
-            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+            self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
                 deferred.resolveWith(null, [result]);
-            }).fail(function () {
+            }, function () {
                 deferred.reject();
             });
         }
@@ -891,7 +949,7 @@
 
                     require(['localassetmanager'], function () {
 
-                        LocalAssetManager.fileExists(mediaSource.Path).done(function (exists) {
+                        LocalAssetManager.fileExists(mediaSource.Path).then(function (exists) {
                             Logger.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
                             deferred.resolveWith(null, [exists]);
                         });
@@ -971,8 +1029,7 @@
         $(apiClient).off("websocketmessage", onWebSocketMessageReceived).on("websocketmessage", onWebSocketMessageReceived);
     }
 
-    Dashboard.ready(function () {
-
+    MediaController.init = function () {
         if (window.ApiClient) {
             initializeApiClient(window.ApiClient);
         }
@@ -980,28 +1037,29 @@
         $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
-    });
+    };
 
     function onCastButtonClicked() {
 
-        showPlayerSelection();
+        showPlayerSelection(this);
     }
 
-    $(document).on('headercreated', function () {
+    document.addEventListener('headercreated', function () {
 
         $('.btnCast').off('click', onCastButtonClicked).on('click', onCastButtonClicked);
+    });
 
-    }).on('pagebeforeshow', ".page", function () {
+    pageClassOn('pagebeforeshow', "page", function () {
 
         var page = this;
 
         currentDisplayInfo = null;
+    });
 
-    }).on('displayingitem', ".libraryPage", function (e, info) {
+    pageClassOn('displayingitem', "libraryPage", function (e) {
 
-        currentDisplayInfo = info;
-
+        var info = e.detail;
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window);
+})(this);

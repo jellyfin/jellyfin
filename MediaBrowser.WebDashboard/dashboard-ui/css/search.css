@@ -108,26 +108,20 @@
 }
 
 .headerSearchInput {
-    margin: 0!important;
-    background: #222!important;
-    border: 0!important;
-    color: #ddd!important;
-    border-radius: 3px!important;
-    padding: 4px 0 3px 0!important;
-    text-indent: 50px!important;
+    margin: 0 !important;
+    background: #222 !important;
+    border: 0 !important;
+    color: #eee !important;
+    border-radius: 0 !important;
+    padding: 7px 0 6px 0 !important;
+    text-indent: 10px !important;
     font-size: 16px;
     font-family: inherit;
     outline: none;
     vertical-align: middle;
-    width: 85%!important;
-    display: inline-block!important;
-}
-
-.searchInputIcon {
-    position: absolute;
-    left: 20px;
-    top: 12px;
-    color: #ddd !important;
+    width: 85% !important;
+    display: inline-block !important;
+    height: 100%!important;
 }
 
 .viewMenuSearch {
@@ -163,7 +157,7 @@
 
 .viewMenuSearchForm {
     max-width: none;
-    padding: 10px;
+    padding: 5px;
 }
 
 .searchResultsOverlay {

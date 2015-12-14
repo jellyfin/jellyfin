@@ -15,13 +15,13 @@
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("dlna").done(function (config) {
+        ApiClient.getNamedConfiguration("dlna").then(function (config) {
 
             config.EnablePlayTo = $('#chkEnablePlayTo', form).checked();
             config.EnableDebugLogging = $('#chkEnableDlnaDebugLogging', form).checked();
             config.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
 
-            ApiClient.updateNamedConfiguration("dlna", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("dlna", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -38,7 +38,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("dlna").done(function (config) {
+        ApiClient.getNamedConfiguration("dlna").then(function (config) {
 
             loadPage(page, config);
 

@@ -4,12 +4,12 @@
 
         Dashboard.showModalLoadingMsg();
 
-        ConnectionManager.loginToConnect(username, password).done(function () {
+        ConnectionManager.loginToConnect(username, password).then(function () {
 
             Dashboard.hideModalLoadingMsg();
             Dashboard.navigate('selectserver.html');
 
-        }).fail(function () {
+        }, function () {
 
             Dashboard.hideModalLoadingMsg();
 
@@ -70,7 +70,7 @@
 
         Dashboard.showModalLoadingMsg();
 
-        ConnectionManager.connect().done(function (result) {
+        ConnectionManager.connect().then(function (result) {
 
             handleConnectionResult(page, result);
 
@@ -150,7 +150,7 @@
 
         var page = $(this).parents('.page');
 
-        ConnectionManager.signupForConnect($('#txtSignupEmail', page).val(), $('#txtSignupUsername', page).val(), $('#txtSignupPassword', page).val(), $('#txtSignupPasswordConfirm', page).val()).done(function () {
+        ConnectionManager.signupForConnect($('#txtSignupEmail', page).val(), $('#txtSignupUsername', page).val(), $('#txtSignupPassword', page).val(), $('#txtSignupPasswordConfirm', page).val()).then(function () {
 
             Dashboard.alert({
                 message: Globalize.translate('MessageThankYouForConnectSignUp'),
@@ -159,7 +159,7 @@
                 }
             });
 
-        }).fail(function (result) {
+        }, function (result) {
 
             if (result.errorCode == 'passwordmatch') {
                 Dashboard.alert({
@@ -187,12 +187,12 @@
     }
 
     function requireCaptcha() {
-        return !AppInfo.isNativeApp && getWindowUrl().toLowerCase().indexOf('https') == 0;
+        return !AppInfo.isNativeApp && window.location.href.toLowerCase().indexOf('https') == 0;
     }
 
     function supportInAppSignup() {
-        return AppInfo.isNativeApp;
-        return AppInfo.isNativeApp || getWindowUrl().toLowerCase().indexOf('https') == 0;
+        return true;
+        return AppInfo.isNativeApp || window.location.href.toLowerCase().indexOf('https') == 0;
     }
 
     function initSignup(page) {
@@ -282,11 +282,11 @@
 
         Dashboard.showModalLoadingMsg();
 
-        ConnectionManager.connectToAddress(host).done(function (result) {
+        ConnectionManager.connectToAddress(host).then(function (result) {
 
             handleConnectionResult(page, result);
 
-        }).fail(function () {
+        }, function () {
             handleConnectionResult(page, {
                 State: MediaBrowser.ConnectionState.Unavailable
             });

@@ -17,7 +17,7 @@
                 collectionTypeOptions: getCollectionTypeOptions(),
                 refresh: shouldRefreshLibraryAfterChanges(page)
 
-            }).done(function (hasChanges) {
+            }).then(function (hasChanges) {
 
                 if (hasChanges) {
                     reloadLibrary(page);
@@ -35,7 +35,7 @@
                 refresh: shouldRefreshLibraryAfterChanges(page),
                 library: virtualFolder
 
-            }).done(function (hasChanges) {
+            }).then(function (hasChanges) {
 
                 if (hasChanges) {
                     reloadLibrary(page);
@@ -59,7 +59,7 @@
 
                 var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
-                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).done(function () {
+                ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).then(function () {
                     reloadLibrary(page);
                 });
             }
@@ -80,7 +80,7 @@
 
                         var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
-                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).done(function () {
+                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).then(function () {
                             reloadLibrary(page);
                         });
                     }
@@ -156,7 +156,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getVirtualFolders().done(function (result) {
+        ApiClient.getVirtualFolders().then(function (result) {
             reloadVirtualFolders(page, result);
         });
     }
@@ -207,11 +207,11 @@
                 return;
             }
 
-            require(['components/imageeditor/imageeditor'], function () {
+            require(['components/imageeditor/imageeditor'], function (ImageEditor) {
 
                 ImageEditor.show(virtualFolder.ItemId, {
                     theme: 'a'
-                }).done(function (hasChanged) {
+                }).then(function (hasChanged) {
                     if (hasChanged) {
                         reloadLibrary(page);
                     }
@@ -441,7 +441,7 @@ var WizardLibraryPage = {
             type: "POST",
             url: apiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.hideLoadingMsg();
             Dashboard.navigate('wizardsettings.html');

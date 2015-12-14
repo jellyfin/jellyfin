@@ -14,25 +14,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
   <script src="../../iron-test-helpers/test-helpers.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../paper-textarea.html">
-
 </head>
 <body>
 
   <test-fixture id="basic">
     <template>
       <paper-textarea></paper-textarea>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="has-tabindex">
+    <template>
+      <paper-textarea tabindex="0"></paper-textarea>
     </template>
   </test-fixture>
 
@@ -128,7 +130,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var inputContent = Polymer.dom(container.root).querySelector('.input-content');
         assert.isTrue(inputContent.classList.contains('label-is-floating'), 'label is floating');
       });
-
     });
 
     suite('focus/blur events', function() {
@@ -155,6 +156,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(nBlurEvents >= 1, 'blur event fired')
       });
 
+      test('focus a textarea with tabindex', function(done) {
+        var input = fixture('has-tabindex');
+        flush(function() {
+          assert.notEqual(document.activeElement, input._focusableElement);
+          MockInteractions.focus(input);
+          setTimeout(function() {
+            assert.equal(document.activeElement, input.shadowRoot ? input : input._focusableElement);
+            done();
+          }, 1);
+        })
+      });
     });
 
     suite('a11y', function() {
@@ -185,7 +197,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isTrue(input.inputElement.textarea.hasAttribute('aria-describedby'));
         assert.equal(input.inputElement.textarea.getAttribute('aria-describedby'), Polymer.dom(input.root).querySelector('paper-input-error').id + ' ' + Polymer.dom(input.root).querySelector('paper-input-char-counter').id, 'aria-describedby points to the error message and character counter');
       });
-
 
     });
 

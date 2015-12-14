@@ -137,7 +137,7 @@
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
                 if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
 
-                    var delay = $.browser.safari ? 2500 : 0;
+                    var delay = browserInfo.safari ? 2500 : 0;
                     var element = this;
                     if (delay) {
                         setTimeout(function () {
@@ -160,9 +160,9 @@
                 var requiresControls = !MediaPlayer.canAutoPlayAudio();
 
                 if (requiresControls) {
-                    html += '<div class="mediaPlayerAudioContainer"><div class="mediaPlayerAudioContainerInner">';;
+                    html += '<div class="mediaPlayerAudioContainer" style="position: fixed;top: 40%;text-align: center;left: 0;right: 0;"><div class="mediaPlayerAudioContainerInner">';;
                 } else {
-                    html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
+                    html += '<div class="mediaPlayerAudioContainer" style="display:none;padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
                 }
 
                 html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
@@ -202,10 +202,10 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Safari often displays the poster under the video and it doesn't look good
-            var poster = !$.browser.safari && options.poster ? (' poster="' + options.poster + '"') : '';
+            var poster = !browserInfo.safari && options.poster ? (' poster="' + options.poster + '"') : '';
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+            if (requiresNativeControls && AppInfo.isNativeApp && browserInfo.android) {
                 html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
             }
             else if (requiresNativeControls) {
@@ -219,7 +219,7 @@
 
             html += '</video>';
 
-            var elem = $('#videoElement', '#mediaPlayer').prepend(html);
+            var elem = $('#videoElement', '#videoPlayer').prepend(html);
 
             return $('.itemVideo', elem)
             	.one('.loadedmetadata', onLoadedMetadata)
@@ -321,7 +321,7 @@
                 elem.src = "";
 
                 // When the browser regains focus it may start auto-playing the last video
-                if ($.browser.safari) {
+                if (browserInfo.safari) {
                     elem.src = 'files/dummy.mp4';
                     elem.play();
                 }
@@ -331,7 +331,7 @@
 
             var val = streamInfo.url;
 
-            if (AppInfo.isNativeApp && $.browser.safari) {
+            if (AppInfo.isNativeApp && browserInfo.safari) {
                 val = val.replace('file://', '');
             }
 
@@ -371,7 +371,7 @@
 
                     var hls = new Hls();
                     hls.loadSource(val);
-                    hls.attachVideo(elem);
+                    hls.attachMedia(elem);
                     hls.on(Hls.Events.MANIFEST_PARSED, function () {
                         elem.play();
                     });
@@ -558,7 +558,7 @@
 
         self.enableCustomVideoControls = function () {
 
-            if (AppInfo.isNativeApp && $.browser.safari) {
+            if (AppInfo.isNativeApp && browserInfo.safari) {
 
                 if (navigator.userAgent.toLowerCase().indexOf('iphone') != -1) {
                     return true;
@@ -568,7 +568,7 @@
                 return false;
             }
 
-            return self.canAutoPlayVideo() && !$.browser.mobile;
+            return self.canAutoPlayVideo() && !browserInfo.mobile;
         };
 
         self.canAutoPlayVideo = function () {
@@ -577,7 +577,7 @@
                 return true;
             }
 
-            if ($.browser.mobile) {
+            if (browserInfo.mobile) {
                 return false;
             }
 
@@ -586,20 +586,16 @@
 
         self.init = function () {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (options.type == 'video' && enableHlsPlayer()) {
+                if (options.type == 'video' && enableHlsPlayer()) {
 
-                requireHlsPlayer(function () {
+                    requireHlsPlayer(resolve);
 
-                    deferred.resolve();
-                });
-
-            } else {
-                deferred.resolve();
-            }
-
-            return deferred.promise();
+                } else {
+                    resolve();
+                }
+            });
         };
 
         if (options.type == 'audio') {

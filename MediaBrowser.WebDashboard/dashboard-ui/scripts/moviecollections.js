@@ -44,10 +44,10 @@
         var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
         var promise2 = Dashboard.getCurrentUser();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var result = response1[0];
-            var user = response2[0];
+            var result = responses[0];
+            var user = responses[1];
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -67,7 +67,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
+            }));
 
             if (result.TotalRecordCount) {
 
@@ -202,21 +202,23 @@
         });
     }
 
-    $(document).on('pageinit', "#boxsetsPage", function () {
-
+    pageIdOn('pageinit', 'boxsetsPage', function () {
+        
         var page = this;
 
         var content = page;
 
         initPage(content);
 
-    }).on('pagebeforeshow', "#boxsetsPage", function () {
+    });
+    pageIdOn('pagebeforeshow', 'boxsetsPage', function () {
 
         var page = this;
 
         var content = page;
 
         reloadItems(content);
+
     });
 
     window.MoviesPage = window.MoviesPage || {};

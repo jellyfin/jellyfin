@@ -11,8 +11,6 @@
 
         $('#selectLanguage', page).val(AppSettings.displayLanguage());
 
-        page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -22,13 +20,12 @@
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
         user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
-        AppSettings.enableFullScreen(page.querySelector('.chkEnableFullScreen').checked);
         AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
             loadForm(page, user);
@@ -43,7 +40,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             saveUser(page, user);
 
@@ -67,7 +64,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             loadForm(page, user);
 
@@ -79,12 +76,6 @@
         });
 
         $('.fldEnableBackdrops', page).show();
-
-        if (AppInfo.supportsFullScreen) {
-            $('.fldFullscreen', page).show();
-        } else {
-            $('.fldFullscreen', page).hide();
-        }
 
         if (AppInfo.supportsUserDisplayLanguageSetting) {
             $('.languageSection', page).show();

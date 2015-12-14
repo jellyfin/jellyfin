@@ -24,7 +24,7 @@
 
             var form = this;
 
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
@@ -34,7 +34,7 @@
                 config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
                 config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
 
-                ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
             });
 
             // Disable default form submission
@@ -72,7 +72,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("livetv").done(function (config) {
+        ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
             loadPage(page, config);
 

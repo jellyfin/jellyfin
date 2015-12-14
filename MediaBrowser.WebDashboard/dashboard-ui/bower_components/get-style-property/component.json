@@ -1,8 +1,0 @@
-{
-  "name": "get-style-property",
-  "repo": "desandro/get-style-property",
-  "description": "Quick and dirty CSS property testing",
-  "version": "1.0.4",
-  "scripts": ["get-style-property.js"],
-  "main": "get-style-property.js"
-}

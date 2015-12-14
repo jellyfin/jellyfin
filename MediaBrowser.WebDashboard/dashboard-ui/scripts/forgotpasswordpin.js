@@ -44,7 +44,7 @@
                 Pin: $('#txtPin', page).val()
             }
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             processForgotPasswordResult(page, result);
         });

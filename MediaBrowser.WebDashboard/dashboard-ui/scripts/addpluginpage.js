@@ -58,7 +58,7 @@
 
     function populateReviews(id, page) {
 
-        ApiClient.getPackageReviews(id, null, null, 3).done(function (positive) {
+        ApiClient.getPackageReviews(id, null, null, 3).then(function (positive) {
 
             var html = '';
 
@@ -108,12 +108,12 @@
         $('.pluginName', page).html(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
-            $("#btnInstallDiv", page).visible(true);
+            $("#btnInstallDiv", page).removeClass('hide');
             $("#nonServerMsg", page).hide();
-            $("#pSelectVersion", page).visible(true);
+            $("#pSelectVersion", page).removeClass('hide');
         } else {
-            $("#btnInstallDiv", page).visible(false);
-            $("#pSelectVersion", page).visible(false);
+            $("#btnInstallDiv", page).addClass('hide');
+            $("#pSelectVersion", page).addClass('hide');
 
             var msg = Globalize.translate('MessageInstallPluginFromApp');
             $("#nonServerMsg", page).html(msg).show();
@@ -185,9 +185,9 @@
         var promise2 = ApiClient.getInstalledPlugins();
         var promise3 = ApiClient.getPluginSecurityInfo();
 
-        $.when(promise1, promise2, promise3).done(function (response1, response2, response3) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            renderPackage(response1[0], response2[0], response3[0], page);
+            renderPackage(responses[0], responses[1], responses[2], page);
 
         });
 
@@ -233,12 +233,37 @@
 
     });
 
-    function performInstallation(packageName, guid, updateClass, version) {
+    function performInstallation(page, packageName, guid, updateClass, version) {
 
-        ApiClient.installPlugin(packageName, guid, updateClass, version).done(function () {
+        var developer = $('#developer', page).html().toLowerCase();
+
+        var alertCallback = function (confirmed) {
+
+            if (confirmed) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.installPlugin(packageName, guid, updateClass, version).then(function () {
+
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+        };
+
+        if (developer != 'luke' && developer != 'ebr') {
 
             Dashboard.hideLoadingMsg();
-        });
+
+            var msg = Globalize.translate('MessagePluginInstallDisclaimer');
+            msg += '<br/>';
+            msg += '<br/>';
+            msg += Globalize.translate('PleaseConfirmPluginInstallation');
+
+            Dashboard.confirm(msg, Globalize.translate('HeaderConfirmPluginInstallation'), alertCallback);
+
+        } else {
+            alertCallback(true);
+        }
     }
 
     function addPluginpage() {
@@ -256,7 +281,7 @@
             var name = getParameterByName('name');
             var guid = getParameterByName('guid');
 
-            ApiClient.getInstalledPlugins().done(function (plugins) {
+            ApiClient.getInstalledPlugins().then(function (plugins) {
 
                 var installedPlugin = plugins.filter(function (ip) {
                     return ip.Name == name;
@@ -275,7 +300,7 @@
                         title: Globalize.translate('HeaderPluginInstallation')
                     });
                 } else {
-                    performInstallation(name, guid, vals[1], version);
+                    performInstallation(page, name, guid, vals[1], version);
                 }
             });
 

@@ -14,14 +14,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../iron-input.html">
   <link rel="import" href="letters-only.html">
 
@@ -61,6 +57,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="prevent-invalid-input-has-bind-value">
     <template>
       <input is="iron-input" prevent-invalid-input pattern="[0-9]*" bind-value="foobar">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="automatically-prevent-invalid-input-if-allowed-pattern">
+    <template>
+      <input is="iron-input" allowed-pattern="[0-9]">
     </template>
   </test-fixture>
 
@@ -130,6 +132,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         input.value = '123foo';
         input._onInput();
         assert.equal(input.bindValue, '123');
+      });
+
+      test('prevent invalid input works automatically when allowed pattern is set', function() {
+        var input = fixture('automatically-prevent-invalid-input-if-allowed-pattern');
+        input.value = '123';
+        input._onInput();
+        assert.equal(input.bindValue, '123');
+
+        input.value = '123foo';
+        input._onInput();
+        assert.equal(input.bindValue, '123');
+
+        input.allowedPattern = '';
+        input.value = '#123foo BAR!';
+        input._onInput();
+        assert.equal(input.bindValue, '#123foo BAR!');
+
+        input.allowedPattern = '[a-zA-Z]';
+        input.value = 'foo';
+        input._onInput();
+        input.value = 'bar123';
+        input._onInput();
+        assert.equal(input.bindValue, 'foo');
       });
     });
 

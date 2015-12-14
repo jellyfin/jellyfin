@@ -1,14 +1,15 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
     function send(info) {
 
-        var deferred = DeferredBuilder.Deferred();
-        deferred.resolve();
-        return deferred.promise();
+        return new Promise(function (resolve, reject) {
+
+            resolve();
+        });
     }
 
-    globalScope.WakeOnLan = {
+    return {
         send: send
     };
 
-})(window);
+});

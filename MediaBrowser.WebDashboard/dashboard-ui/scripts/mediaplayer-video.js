@@ -34,7 +34,15 @@
 
         self.resetEnhancements = function () {
 
-            fadeOut(document.querySelector('#mediaPlayer'));
+            if (!initComplete) {
+                return;
+            }
+
+            if (self.isFullScreen()) {
+                self.exitFullScreen();
+            }
+
+            fadeOut(document.querySelector('#videoPlayer'));
             $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
@@ -43,18 +51,6 @@
             document.querySelector('.videoControls .nowPlayingInfo').classList.add('hide');
             document.querySelector('.videoControls').classList.add('hiddenOnIdle');
         };
-
-        function fadeOut(elem) {
-            $(elem).hide();
-            return;
-            var keyframes = [
-              { opacity: '1', offset: 0 },
-              { opacity: '0', offset: 1 }];
-            var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing).onfinish = function () {
-                $(elem).hide();
-            };
-        }
 
         self.exitFullScreen = function () {
 
@@ -420,6 +416,14 @@
             });
         };
 
+        $.fn.lazyChildren = function () {
+
+            for (var i = 0, length = this.length; i < length; i++) {
+                ImageLoader.lazyChildren(this[i]);
+            }
+            return this;
+        };
+
         function getNowPlayingTabsHtml(item) {
 
             var html = '';
@@ -674,10 +678,9 @@
 
         function ensureVideoPlayerElements() {
 
-            var html = '<div id="mediaPlayer" style="display: none;">';
+            var html = '';
 
-            html += '<div class="videoBackdrop">';
-            html += '<div id="videoPlayer">';
+            html += '<div id="videoPlayer" class="hide">';
 
             html += '<div id="videoElement">';
             html += '<div id="play" class="status"></div>';
@@ -722,14 +725,14 @@
 
             html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
-            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider"></paper-slider>';
+            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="display:inline-block;margin-right:2em;"></paper-slider>';
 
             html += '<div class="currentTime">--:--</div>';
 
             html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton" onclick="MediaPlayer.mute();"></paper-icon-button>';
             html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton" onclick="MediaPlayer.unMute();"></paper-icon-button>';
 
-            html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
+            html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;margin-right:2em;display:inline-block;"></paper-slider>';
 
             html += '<paper-icon-button icon="fullscreen" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"></paper-icon-button>';
             html += '<paper-icon-button icon="info" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"></paper-icon-button>';
@@ -739,20 +742,24 @@
             html += '</div>'; // videoControls
 
             html += '</div>'; // videoPlayer
-            html += '</div>'; // videoBackdrop
-            html += '</div>'; // mediaPlayer
 
             var div = document.createElement('div');
             div.innerHTML = html;
             document.body.appendChild(div);
-            $(div).trigger('create');
         }
 
-        Dashboard.ready(function () {
+        var initComplete;
 
+        function initVideoElements() {
+
+            if (initComplete) {
+                return;
+            }
+
+            initComplete = true;
             ensureVideoPlayerElements();
 
-            var parent = $("#mediaPlayer");
+            var parent = $("#videoPlayer");
 
             muteButton = $('.muteButton', parent);
             unmuteButton = $('.unmuteButton', parent);
@@ -782,7 +789,7 @@
                 updateVolumeButtons(vol);
                 self.setVolume(vol);
             })[0];
-        });
+        }
 
         var idleHandlerTimeout;
         function idleHandler() {
@@ -880,9 +887,9 @@
                 var itemVideo = document.querySelector('.itemVideo');
                 if (itemVideo) {
                     //Events.on(itemVideo, 'mousemove', onMouseMove);
-                    Events.on(itemVideo, 'keydown', idleHandler);
-                    Events.on(itemVideo, 'scroll', idleHandler);
-                    Events.on(itemVideo, 'mousedown', idleHandler);
+                    itemVideo.addEventListener('keydown', idleHandler);
+                    itemVideo.addEventListener('scroll', idleHandler);
+                    itemVideo.addEventListener('mousedown', idleHandler);
                     idleHandler();
                 }
             }
@@ -914,41 +921,47 @@
             var itemVideo = document.querySelector('.itemVideo');
             if (itemVideo) {
                 //Events.off(itemVideo, 'mousemove', onMouseMove);
-                Events.off(itemVideo, 'keydown', idleHandler);
-                Events.off(itemVideo, 'scroll', idleHandler);
-                Events.off(itemVideo, 'mousedown', idleHandler);
+                itemVideo.removeEventListener('keydown', idleHandler);
+                itemVideo.removeEventListener('scroll', idleHandler);
+                itemVideo.removeEventListener('mousedown', idleHandler);
             }
         }
 
         // Replace audio version
         self.cleanup = function (mediaRenderer) {
 
-            currentTimeElement.html('--:--');
+            if (currentTimeElement) {
+                currentTimeElement.html('--:--');
+            }
 
             unbindEventsForPlayback(mediaRenderer);
         };
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            requirejs(['videorenderer'], function () {
+            // TODO: remove dependency on nowplayingbar
+            requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'paper-slider'], function () {
 
-                self.createStreamInfo('Video', item, mediaSource, startPosition).done(function (streamInfo) {
+                initVideoElements();
+
+                self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
-                    if ($.browser.safari && !mediaSource.RunTimeTicks) {
+                    if (browserInfo.safari && !mediaSource.RunTimeTicks) {
 
                         Dashboard.showLoadingMsg();
 
                         ApiClient.ajax({
+
                             type: 'GET',
                             url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                        }).always(function () {
 
+                        }).then(function () {
                             Dashboard.hideLoadingMsg();
-
-                        }).done(function () {
                             self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                        }, function () {
+                            Dashboard.hideLoadingMsg();
                         });
 
                     } else {
@@ -958,6 +971,53 @@
             });
         };
 
+        function fadeOut(elem) {
+
+            if (elem.classList.contains('hide')) {
+                return;
+            }
+
+            var onfinish = function () {
+                elem.classList.add('hide');
+            };
+
+            if (!browserInfo.animate) {
+                onfinish();
+                return;
+            }
+
+            requestAnimationFrame(function () {
+                var keyframes = [
+                  { opacity: '1', offset: 0 },
+                  { opacity: '0', offset: 1 }];
+                var timing = { duration: 600, iterations: 1, easing: 'ease-out' };
+                elem.animate(keyframes, timing).onfinish = onfinish;
+            });
+        }
+
+        function fadeIn(elem) {
+
+            if (!elem.classList.contains('hide')) {
+                return;
+            }
+
+            elem.classList.remove('hide');
+
+            if (!browserInfo.animate) {
+                return;
+            }
+
+            requestAnimationFrame(function () {
+
+                var keyframes = [
+                    { transform: 'scale3d(.2, .2, .2)  ', opacity: '.6', offset: 0 },
+                  { transform: 'none', opacity: '1', offset: 1 }
+                ];
+
+                var timing = { duration: 200, iterations: 1, easing: 'ease-out' };
+                elem.animate(keyframes, timing);
+            });
+        }
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
@@ -968,13 +1028,14 @@
             });
 
             // Create video player
-            var mediaPlayerContainer = $("#mediaPlayer").show();
+            var mediaPlayerContainer = document.querySelector('#videoPlayer');
+            fadeIn(mediaPlayerContainer);
             var videoControls = $('.videoControls', mediaPlayerContainer);
 
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('.videoTrackControl').visible(false);
+            $('.videoTrackControl').addClass('hide');
 
             var videoElement = $('#videoElement', mediaPlayerContainer);
 
@@ -1008,11 +1069,11 @@
             }
 
             if (AppInfo.hasPhysicalVolumeButtons) {
-                $(volumeSlider).visible(false);
+                $(volumeSlider).addClass('hide');
                 $('.muteButton', videoControls).addClass('hide');
                 $('.unmuteButton', videoControls).addClass('hide');
             } else {
-                $(volumeSlider).visible(true);
+                $(volumeSlider).removeClass('hide');
                 $('.muteButton', videoControls).removeClass('hide');
                 $('.unmuteButton', videoControls).removeClass('hide');
             }
@@ -1086,7 +1147,7 @@
 
             }).on("click.mediaplayerevent", function (e) {
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
                     if (this.paused()) {
                         self.unpause();
                     } else {
@@ -1096,7 +1157,7 @@
 
             }).on("dblclick.mediaplayerevent", function () {
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
                     self.toggleFullscreen();
                 }
             });
@@ -1112,7 +1173,7 @@
 
             self.updateNowPlayingInfo(item);
 
-            mediaRenderer.init().done(function () {
+            mediaRenderer.init().then(function () {
 
                 self.onBeforePlaybackStart(mediaRenderer, item, mediaSource);
 
@@ -1126,6 +1187,11 @@
         };
 
         self.updatePlaylistUi = function () {
+
+            if (!initComplete) {
+                return;
+            }
+
             var index = self.currentPlaylistIndex(null);
             var length = self.playlist.length;
 
@@ -1136,7 +1202,7 @@
             }
 
             if (length < 2) {
-                $('.videoTrackControl').visible(false);
+                $('.videoTrackControl').addClass('hide');
                 return;
             }
 
@@ -1158,8 +1224,8 @@
                 nextTrackButton.removeAttribute('disabled');
             }
 
-            $(previousTrackButton).visible(true);
-            $(nextTrackButton).visible(true);
+            $(previousTrackButton).removeClass('hide');
+            $(nextTrackButton).removeClass('hide');
         };
     }
 

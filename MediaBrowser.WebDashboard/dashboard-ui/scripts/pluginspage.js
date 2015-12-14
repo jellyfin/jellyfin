@@ -9,7 +9,7 @@
             if (result) {
                 Dashboard.showLoadingMsg();
 
-                ApiClient.uninstallPlugin(uniqueid).done(function () {
+                ApiClient.uninstallPlugin(uniqueid).then(function () {
 
                     reloadList(page);
                 });
@@ -110,7 +110,7 @@
 
     function renderPlugins(page, plugins, showNoPluginsMessage) {
 
-        ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
+        ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").then(function (configPages) {
 
             populateList(page, plugins, configPages, showNoPluginsMessage);
 
@@ -213,7 +213,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getInstalledPlugins().done(function (plugins) {
+        ApiClient.getInstalledPlugins().then(function (plugins) {
 
             renderPlugins(page, plugins, true);
         });

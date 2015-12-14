@@ -2,26 +2,61 @@
 
     var showOverlayTimeout;
 
-    function onHoverOut() {
+    function onHoverOut(e) {
+
+        var elem = e.target;
+
+        if (!elem.classList.contains('card')) {
+            return;
+        }
 
         if (showOverlayTimeout) {
             clearTimeout(showOverlayTimeout);
             showOverlayTimeout = null;
         }
 
-        var elem = this.querySelector('.cardOverlayTarget');
+        elem = elem.querySelector('.cardOverlayTarget');
 
-        if ($(elem).is(':visible')) {
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                Velocity.animate(elem, { "height": "0" },
-                {
-                    complete: function () {
-                        $(elem).hide();
-                    }
-                });
-            });
+        if (elem) {
+            slideDownToHide(elem);
         }
+    }
+
+    function slideDownToHide(elem) {
+
+        if (elem.classList.contains('hide')) {
+            return;
+        }
+
+        requestAnimationFrame(function () {
+            var keyframes = [
+              { height: '100%', offset: 0 },
+              { height: '0', offset: 1 }];
+            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+
+            elem.animate(keyframes, timing).onfinish = function () {
+                elem.classList.add('hide');
+            };
+        });
+    }
+
+    function slideUpToShow(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
+
+        requestAnimationFrame(function () {
+            elem.style.display = 'block';
+
+            var keyframes = [
+              { height: '0', offset: 0 },
+              { height: '100%', offset: 1 }];
+            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            elem.animate(keyframes, timing);
+        });
     }
 
     function getOverlayHtml(item, currentUser, card, commands) {
@@ -42,13 +77,12 @@
 
         html += '<div style="margin-bottom:1em;">';
         var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
-        var maxLogoWidth = isPortrait ? 100 : 200;
         var imgUrl;
 
         if (parentName && item.ParentLogoItemId) {
 
             imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
-                height: logoHeight,
+                maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ParentLogoImageTag
             });
@@ -59,7 +93,7 @@
         else if (item.ImageTags.Logo) {
 
             imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                height: logoHeight,
+                maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ImageTags.Logo
             });
@@ -138,7 +172,7 @@
 
         var id = this.getAttribute('data-itemid');
 
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).done(function (trailers) {
+        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).then(function (trailers) {
             MediaController.play({ items: trailers });
         });
 
@@ -206,7 +240,7 @@
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var items = [];
 
@@ -290,7 +324,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
+                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers()) {
                     items.push({
                         name: Globalize.translate('ButtonPlayExternalPlayer'),
                         id: 'externalplayer',
@@ -475,7 +509,7 @@
                                 MediaController.queue(itemId);
                                 break;
                             case 'trailer':
-                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).done(function (trailers) {
+                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).then(function (trailers) {
                                     MediaController.play({ items: trailers });
                                 });
                                 break;
@@ -620,15 +654,9 @@
             return;
         }
 
-        var buttonParents = $(target).parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
-        if (buttonParents.length) {
-            return;
-        }
-
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             if (items.length == 1) {
-
                 Dashboard.navigate(LibraryBrowser.getHref(items[0], context));
                 return;
             }
@@ -637,234 +665,13 @@
             if (context) {
                 url += '&context=' + context;
             }
+
             Dashboard.navigate(url);
-            return;
-
-            var ids = items.map(function (i) {
-                return i.Id;
-            });
-
-            showItemsOverlay({
-                ids: ids,
-                context: context
-            });
         });
 
+        e.stopPropagation();
         e.preventDefault();
         return false;
-    }
-
-    function getItemsOverlay(ids, context) {
-
-        $('.detailsMenu').remove();
-
-        var html = '<div data-role="popup" class="detailsMenu" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
-
-        html += '<div style="padding:1em 1em;background:rgba(20,20,20,1);margin:0;text-align:center;" class="detailsMenuHeader">';
-        html += '<paper-icon-button icon="keyboard-arrow-left" class="detailsMenuLeftButton"></paper-icon-button>';
-        html += '<h3 style="font-weight:400;margin:.5em 0;"></h3>';
-        html += '<paper-icon-button icon="keyboard-arrow-right" class="detailsMenuRightButton"></paper-icon-button>';
-        html += '</div>';
-
-        html += '<div class="detailsMenuContent" style="background-position:center center;background-repeat:no-repeat;background-size:cover;">';
-        html += '<div style="padding:.5em 1em 1em;background:rgba(10,10,10,.80);" class="detailsMenuContentInner">';
-        html += '</div>';
-        html += '</div>';
-
-        html += '</div>';
-
-        $($.mobile.activePage).append(html);
-
-        var elem = $('.detailsMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-        })[0];
-
-        $('.detailsMenuLeftButton', elem).on('click', function () {
-
-            var overlay = $(this).parents('.detailsMenu')[0];
-            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') - 1, context);
-        });
-
-        $('.detailsMenuRightButton', elem).on('click', function () {
-
-            var overlay = $(this).parents('.detailsMenu')[0];
-            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') + 1, context);
-        });
-
-        return elem;
-    }
-
-    function setItemIntoOverlay(elem, index) {
-
-        var ids = elem.getAttribute('data-ids').split(',');
-        var itemId = ids[index];
-        var userId = Dashboard.getCurrentUserId();
-        var context = elem.getAttribute('data-context');
-
-        elem.setAttribute('data-index', index);
-
-        if (index > 0) {
-            $('.detailsMenuLeftButton', elem).show();
-        } else {
-            $('.detailsMenuLeftButton', elem).hide();
-        }
-
-        if (index < ids.length - 1) {
-            $('.detailsMenuRightButton', elem).show();
-        } else {
-            $('.detailsMenuRightButton', elem).hide();
-        }
-
-        var promise1 = ApiClient.getItem(userId, itemId);
-        var promise2 = Dashboard.getCurrentUser();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var item = response1[0];
-            var user = response2[0];
-
-            var background = 'none';
-
-            if (AppInfo.enableDetailsMenuImages) {
-                var backdropUrl;
-                var screenWidth = $(window).width();
-                var backdropWidth = Math.min(screenWidth, 800);
-
-                if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                    backdropUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        type: "Backdrop",
-                        index: 0,
-                        maxWidth: backdropWidth,
-                        tag: item.BackdropImageTags[0]
-                    });
-                }
-                else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-
-                    backdropUrl = ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
-                        type: 'Backdrop',
-                        index: 0,
-                        tag: item.ParentBackdropImageTags[0],
-                        maxWidth: backdropWidth
-                    });
-                }
-
-                if (backdropUrl) {
-                    background = 'url(' + backdropUrl + ')';
-                }
-            }
-
-            $('.detailsMenuContent', elem).css('backgroundImage', background);
-
-            var headerHtml = LibraryBrowser.getPosterViewDisplayName(item);
-            $('.detailsMenuHeader', elem).removeClass('detailsMenuHeaderWithLogo');
-            if (AppInfo.enableDetailsMenuImages) {
-
-                var logoUrl;
-
-                var logoHeight = 30;
-                if (item.ImageTags && item.ImageTags.Logo) {
-
-                    logoUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        type: "Logo",
-                        index: 0,
-                        height: logoHeight,
-                        tag: item.ImageTags.Logo
-                    });
-                }
-
-                if (logoUrl) {
-                    headerHtml = '<img src="' + logoUrl + '" style="height:' + logoHeight + 'px;" />';
-                    $('.detailsMenuHeader', elem).addClass('detailsMenuHeaderWithLogo');
-                }
-            }
-
-            $('h3', elem).html(headerHtml);
-
-            var contentHtml = '';
-
-            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
-            if (miscInfo) {
-
-                contentHtml += '<p>' + miscInfo + '</p>';
-            }
-
-            var userData = LibraryBrowser.getUserDataIconsHtml(item);
-            if (userData) {
-
-                contentHtml += '<p class="detailsMenuUserData">' + userData + '</p>';
-            }
-
-            var ratingHtml = LibraryBrowser.getRatingHtml(item);
-            if (ratingHtml) {
-
-                contentHtml += '<p>' + ratingHtml + '</p>';
-            }
-
-            if (item.Overview) {
-                contentHtml += '<p class="detailsMenuOverview">' + item.Overview + '</p>';
-            }
-
-            contentHtml += '<div class="detailsMenuButtons">';
-
-            if (MediaController.canPlay(item)) {
-                if (item.MediaType == 'Video' && !item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
-                    contentHtml += '<paper-button raised class="secondary btnResume" style="background-color:#ff8f00;"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonResume') + '</span></paper-button>';
-                }
-
-                contentHtml += '<paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlay') + '</span></paper-button>';
-            }
-
-            contentHtml += '<paper-button data-href="' + LibraryBrowser.getHref(item, context) + '" raised class="submit" style="background-color: #673AB7;" onclick="Dashboard.navigate(this.getAttribute(\'data-href\'));"><iron-icon icon="folder-open"></iron-icon><span>' + Globalize.translate('ButtonOpen') + '</span></paper-button>';
-
-            if (SyncManager.isAvailable(item, user)) {
-                contentHtml += '<paper-button raised class="submit btnSync"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button>';
-            }
-
-            contentHtml += '</div>';
-
-            $('.detailsMenuContentInner', elem).html(contentHtml).trigger('create');
-
-            $('.btnSync', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                SyncManager.showMenu({
-                    items: [item]
-                });
-            });
-
-            $('.btnPlay', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                MediaController.play({
-                    items: [item]
-                });
-            });
-
-            $('.btnResume', elem).on('click', function () {
-
-                $(elem).popup('close');
-
-                MediaController.play({
-                    items: [item],
-                    startPositionTicks: item.UserData.PlaybackPositionTicks
-                });
-            });
-        });
-    }
-
-    function showItemsOverlay(options) {
-
-        var context = options.context;
-
-        require(['jqmpopup'], function () {
-            var elem = getItemsOverlay(options.ids, context);
-
-            setItemIntoOverlay(elem, 0);
-        });
     }
 
     function parentWithClass(elem, className) {
@@ -894,6 +701,13 @@
 
             var innerElem = elem.querySelector('.cardOverlayTarget');
 
+            if (!innerElem) {
+                innerElem = document.createElement('div');
+                innerElem.classList.add('hide');
+                innerElem.classList.add('cardOverlayTarget');
+                parentWithClass(elem, 'cardContent').appendChild(innerElem);
+            }
+
             var dataElement = elem;
             while (dataElement && !dataElement.getAttribute('data-itemid')) {
                 dataElement = dataElement.parentNode;
@@ -905,10 +719,10 @@
             var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
             var promise2 = Dashboard.getCurrentUser();
 
-            $.when(promise1, promise2).done(function (response1, response2) {
+            Promise.all([promise1, promise2]).then(function (responses) {
 
-                var item = response1[0];
-                var user = response2[0];
+                var item = responses[0];
+                var user = responses[1];
 
                 var card = elem;
 
@@ -924,15 +738,17 @@
             });
 
             $(innerElem).show();
-            innerElem.style.height = '0';
 
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                Velocity.animate(innerElem, { "height": "100%" }, "fast");
-            });
+            slideUpToShow(innerElem);
         }
 
         function onHoverIn(e) {
+
+            var elem = e.target;
+
+            if (!elem.classList.contains('cardImage')) {
+                return;
+            }
 
             if (preventHover === true) {
                 preventHover = false;
@@ -944,14 +760,11 @@
                 showOverlayTimeout = null;
             }
 
-            var elem = this;
-
             while (!elem.classList.contains('card')) {
                 elem = elem.parentNode;
             }
 
             showOverlayTimeout = setTimeout(function () {
-
                 onShowTimerExpired(elem);
 
             }, 1000);
@@ -961,31 +774,32 @@
             preventHover = true;
         }
 
-        this.off('click', onCardClick);
-        this.on('click', onCardClick);
-
-        if (AppInfo.isTouchPreferred) {
-            this.off('contextmenu', disableEvent);
-            this.on('contextmenu', disableEvent);
-            //this.off('contextmenu', onContextMenu);
-            //this.on('contextmenu', onContextMenu);
-        }
-        else {
-            this.off('contextmenu', onContextMenu);
-            this.on('contextmenu', onContextMenu);
-
-            this.off('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
-            this.on('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
-
-            this.off('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
-            this.on('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
-
-            this.off("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
-            this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
-        }
-
         for (var i = 0, length = this.length; i < length; i++) {
-            initTapHoldMenus(this[i]);
+
+            var curr = this[i];
+            curr.removeEventListener('click', onCardClick);
+            curr.addEventListener('click', onCardClick);
+
+            if (AppInfo.isTouchPreferred) {
+
+                curr.removeEventListener('contextmenu', disableEvent);
+                curr.addEventListener('contextmenu', disableEvent);
+            }
+            else {
+                curr.removeEventListener('contextmenu', onContextMenu);
+                curr.addEventListener('contextmenu', onContextMenu);
+
+                curr.removeEventListener('mouseenter', onHoverIn);
+                curr.addEventListener('mouseenter', onHoverIn, true);
+
+                curr.removeEventListener('mouseleave', onHoverOut);
+                curr.addEventListener('mouseleave', onHoverOut, true);
+
+                curr.removeEventListener("touchstart", preventTouchHover);
+                curr.addEventListener("touchstart", preventTouchHover);
+            }
+
+            initTapHoldMenus(curr);
         }
 
         return this;
@@ -1011,13 +825,19 @@
             return;
         }
 
+        if (element.classList.contains('hasTapHold')) {
+            return;
+        }
+
         require(['hammer'], function (Hammer) {
 
             var hammertime = new Hammer(element);
+            element.classList.add('hasTapHold');
 
             hammertime.on('press', onTapHold);
             hammertime.on('pressup', onTapHoldUp);
         });
+
         showTapHoldHelp(element);
     }
 
@@ -1049,6 +869,7 @@
 
     function disableEvent(e) {
         e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
@@ -1060,9 +881,16 @@
 
             showSelections(card);
 
+            if (s.stopPropagation) {
+                e.stopPropagation();
+            }
             e.preventDefault();
+            e.stopPropagation();
             return false;
         }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
     }
 
     function onTapHoldUp(e) {
@@ -1077,6 +905,8 @@
                     chkItemSelect.checked = !chkItemSelect.checked;
                 }
             }
+            e.preventDefault();
+            return false;
         }
     }
 
@@ -1094,6 +924,7 @@
         }
 
         e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
@@ -1107,17 +938,19 @@
 
         if (!itemSelectionPanel) {
 
-            itemSelectionPanel = document.createElement('div');
-            itemSelectionPanel.classList.add('itemSelectionPanel');
+            require(['paper-checkbox'], function () {
+                itemSelectionPanel = document.createElement('div');
+                itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent').appendChild(itemSelectionPanel);
+                item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-            var chkItemSelect = document.createElement('paper-checkbox');
-            chkItemSelect.classList.add('chkItemSelect');
+                var chkItemSelect = document.createElement('paper-checkbox');
+                chkItemSelect.classList.add('chkItemSelect');
 
-            $(chkItemSelect).on('change', onSelectionChange);
+                $(chkItemSelect).on('change', onSelectionChange);
 
-            itemSelectionPanel.appendChild(chkItemSelect);
+                itemSelectionPanel.appendChild(chkItemSelect);
+            });
         }
     }
 
@@ -1139,7 +972,7 @@
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="float:right;"></paper-icon-button>';
+            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="margin-left:auto;"></paper-icon-button>';
 
             selectionCommandsPanel.innerHTML = html;
 
@@ -1149,7 +982,7 @@
 
             $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
 
-            if (!$.browser.mobile) {
+            if (!browserInfo.mobile) {
                 shake(btnSelectionPanelOptions, 1);
             }
         }
@@ -1232,7 +1065,7 @@
 
     function showMenuForSelectedItems(e) {
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             var items = [];
 
@@ -1352,7 +1185,7 @@
                     type: "POST",
                     url: ApiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
 
-                }).done(function () {
+                }).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     hideSelections();
@@ -1364,7 +1197,11 @@
 
     function onItemWithActionClick(e) {
 
-        var elem = this;
+        var elem = parentWithClass(e.target, 'itemWithAction');
+
+        if (!elem) {
+            return;
+        }
 
         var action = elem.getAttribute('data-action');
         var elemWithAttributes = elem;
@@ -1396,6 +1233,8 @@
             MediaController.instantMix(itemId);
         }
 
+        e.stopPropagation();
+        e.preventDefault();
         return false;
     }
 
@@ -1420,7 +1259,7 @@
             Fields: 'MediaSources,Chapters',
             Limit: 100
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             MediaController[method]({
                 items: result.Items
@@ -1432,7 +1271,7 @@
 
         var page = this;
 
-        $(page).on('click', '.itemWithAction', onItemWithActionClick);
+        page.addEventListener('click', onItemWithActionClick);
 
         var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {
@@ -1452,19 +1291,27 @@
 
         if (userData.Played) {
 
-            if (!$('.playedIndicator', card).length) {
+            var playedIndicator = card.querySelector('.playedIndicator');
 
-                $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
+            if (!playedIndicator) {
+
+                playedIndicator = document.createElement('div');
+                playedIndicator.classList.add('playedIndicator');
+                card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            $('.playedIndicator', card).html('<iron-icon icon="check"></iron-icon>');
+            playedIndicator.innerHTML = '<iron-icon icon="check"></iron-icon>';
         }
         else if (userData.UnplayedItemCount) {
 
-            if (!$('.playedIndicator', card).length) {
+            var playedIndicator = card.querySelector('.playedIndicator');
 
-                $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
+            if (!playedIndicator) {
+
+                playedIndicator = document.createElement('div');
+                playedIndicator.classList.add('playedIndicator');
+                card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            $('.playedIndicator', card).html(userData.UnplayedItemCount);
+            playedIndicator.innerHTML = userData.UnplayedItemCount;
         }
 
         var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
@@ -1526,18 +1373,15 @@
         $('.hasrefreshtime').removeClass('hasrefreshtime').removeAttr('data-lastrefresh');
     }
 
-    Dashboard.ready(function () {
+    if (window.ApiClient) {
+        initializeApiClient(window.ApiClient);
+    }
 
-        if (window.ApiClient) {
-            initializeApiClient(window.ApiClient);
-        }
-
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-            initializeApiClient(apiClient);
-        });
-
-        Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
-        Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
+    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        initializeApiClient(apiClient);
     });
+
+    Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
+    Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
 })(jQuery, document, window);

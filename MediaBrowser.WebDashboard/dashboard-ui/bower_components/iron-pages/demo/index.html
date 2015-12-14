@@ -18,14 +18,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
-  <link href="../../paper-styles/paper-styles.html" rel="import">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../../paper-styles/typography.html">
   <link rel="import" href="../iron-pages.html">
 
   <style is="custom-style">
+    body {
+      @apply(--layout-fullbleed);
+    }
+
     iron-pages {
       @apply(--layout-fit);
-      
+
       color: white;
       margin: auto;
       cursor: default;
@@ -56,7 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </style>
 </head>
-<body class="fullbleed" unresolved>
+<body unresolved>
 
   <iron-pages selected="0">
     <div>Page One</div>

@@ -50,7 +50,7 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
 
@@ -63,7 +63,7 @@
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
             config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -80,9 +80,9 @@
 
         var promise2 = ApiClient.getSystemInfo();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, responses[0], responses[1]);
 
         });
 

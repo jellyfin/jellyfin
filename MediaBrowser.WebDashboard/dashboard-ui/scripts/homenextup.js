@@ -22,7 +22,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getNextUpEpisodes(query).done(function (result) {
+        ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             if (result.Items.length) {
                 page.querySelector('.noNextUpItems').classList.add('hide');

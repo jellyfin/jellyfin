@@ -5,7 +5,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-require="scripts/mypreferenceslanguages,paperbuttonstyle" data-backbutton="true" data-menubutton="false">
+    <div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-require="scripts/mypreferenceslanguages,paper-checkbox" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
 
@@ -48,7 +48,7 @@
                 </div>
                 <div class="detailSection cinemaModeOptions" style="display:none;">
                     <h1>
-                        ${HeaderCinemaMode}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                        ${HeaderCinemaMode}
                     </h1>
                     <div class="detailSectionContent">
                         <br />
@@ -106,8 +106,8 @@
                             </div>
                         </div>
 
-                        <br />
-                        <div>
+                        <div class="fldExternalPlayer" style="display: none;">
+                            <br />
                             <paper-checkbox class="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</paper-checkbox>
                             <div class="fieldDescription paperCheckboxFieldDescription">
                                 <div style="display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>

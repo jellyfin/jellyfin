@@ -18,10 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
     <link rel="import" href="../iron-pages.html">
-    <link rel="import" href="../../test-fixture/test-fixture.html">
 
   </head>
   <body>
@@ -51,8 +48,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(pages.selected, 'page0');
           });
 
-          test('selected item', function() {
-            assert.equal(pages.selectedItem, pages.items[0]);
+          test('selected item', function(done) {
+            // iron-selector uses observeNodes, which is async.
+            Polymer.Base.async(function() {
+              assert.equal(pages.selectedItem, pages.items[0])
+              done();
+            }, 1);
           });
 
           test('selected item is display:block and all others are display:none', function() {

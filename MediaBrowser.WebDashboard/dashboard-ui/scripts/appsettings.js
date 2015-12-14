@@ -56,6 +56,24 @@
 
             return appStorage.getItem('externalplayers') == 'true';
         },
+        enableCinemaMode: function (val) {
+
+            if (val != null) {
+                update('enableCinemaMode', val.toString());
+            }
+
+            val = appStorage.getItem('enableCinemaMode');
+
+            if (val) {
+                return val != 'false';
+            }
+
+            if (browserInfo.mobile) {
+                return false;
+            }
+
+            return true;
+        },
         enableFullScreen: function (val) {
 
             if (val != null) {
@@ -95,7 +113,7 @@
                 update('displayLanguage', val);
             }
 
-            return appStorage.getItem('displayLanguage') || 'en-US';
+            return appStorage.getItem('displayLanguage') || navigator.language || navigator.userLanguage || 'en-US';
         },
 
         cameraUploadServers: function (val) {

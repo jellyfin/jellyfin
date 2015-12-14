@@ -59,12 +59,13 @@
         return MediaController.getCurrentPlayer();
     }
 
-    Events.on(document, 'thememediadownload', function (e, themeMediaResult) {
+    document.addEventListener('thememediadownload', function (e) {
 
         if (!enabled()) {
             return;
         }
 
+        var themeMediaResult = e.detail.themeMediaResult;
         var ownerId = themeMediaResult.ThemeSongsResult.OwnerId;
 
         if (ownerId != currentOwnerId) {

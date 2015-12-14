@@ -16,17 +16,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../iron-a11y-keys-behavior.html">
 </head>
 <body>
   <test-fixture id="BasicKeys">
     <template>
       <x-a11y-basic-keys></x-a11y-basic-keys>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="NonPropagatingKeys">
+    <template>
+      <x-a11y-basic-keys stop-keyboard-event-propagation></x-a11y-basic-keys>
     </template>
   </test-fixture>
 
@@ -48,6 +52,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="PreventKeys">
+    <template>
+      <x-a11y-prevent-keys></x-a11y-prevent-keys>
+    </template>
+  </test-fixture>
+
   <script>
 suite('Polymer.IronA11yKeysBehavior', function() {
   var keys;
@@ -62,6 +72,18 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       },
 
       _keyHandler: function(event) {
+        this.keyCount++;
+        this.lastEvent = event;
+      },
+
+      // Same as _keyHandler, used to distinguish who's called before who.
+      _keyHandler2: function(event) {
+        this.keyCount++;
+        this.lastEvent = event;
+      },
+
+      _preventDefaultHandler: function(event) {
+        event.preventDefault();
         this.keyCount++;
         this.lastEvent = event;
       }
@@ -87,7 +109,8 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       ],
 
       keyBindings: {
-        'ctrl+shift+a': '_keyHandler'
+        'enter': '_keyHandler2',
+        'ctrl+shift+a shift+enter': '_keyHandler'
       }
     });
 
@@ -118,7 +141,21 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       ],
 
       keyBindings: {
-        'space': '_keyHandler'
+        'enter': '_keyHandler'
+      }
+    });
+
+    Polymer({
+      is: 'x-a11y-prevent-keys',
+
+      behaviors: [
+        KeysTestBehavior,
+        XA11yBehavior
+      ],
+
+      keyBindings: {
+        'space a': '_keyHandler',
+        'enter shift+a': '_preventDefaultHandler'
       }
     });
   });
@@ -131,6 +168,14 @@ suite('Polymer.IronA11yKeysBehavior', function() {
     test('trigger the handler when the specified key is pressed', function() {
       MockInteractions.pressSpace(keys);
 
+      expect(keys.keyCount).to.be.equal(1);
+    });
+
+    test('trigger the handler when the specified key is pressed together with a modifier', function() {
+      var event = new CustomEvent('keydown');
+      event.ctrlKey = true;
+      event.keyCode = event.code = 32;
+      keys.dispatchEvent(event);
       expect(keys.keyCount).to.be.equal(1);
     });
 
@@ -161,10 +206,37 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       expect(keys.keyCount).to.be.equal(1);
     });
 
+    test('allows propagation beyond the key combo handler', function() {
+      var keySpy = sinon.spy();
+      document.addEventListener('keydown', keySpy);
+
+      MockInteractions.pressEnter(keys);
+
+      expect(keySpy.callCount).to.be.equal(1);
+    });
+
     suite('edge cases', function() {
       test('knows that `spacebar` is the same as `space`', function() {
         var event = new CustomEvent('keydown');
         event.key = 'spacebar';
+        expect(keys.keyboardEventMatchesKeys(event, 'space')).to.be.equal(true);
+      });
+
+      test('handles `+`', function() {
+        var event = new CustomEvent('keydown');
+        event.key = '+';
+        expect(keys.keyboardEventMatchesKeys(event, '+')).to.be.equal(true);
+      });
+
+      test('handles `:`', function() {
+        var event = new CustomEvent('keydown');
+        event.key = ':';
+        expect(keys.keyboardEventMatchesKeys(event, ':')).to.be.equal(true);
+      });
+
+      test('handles ` ` (space)', function() {
+        var event = new CustomEvent('keydown');
+        event.key = ' ';
         expect(keys.keyboardEventMatchesKeys(event, 'space')).to.be.equal(true);
       });
     });
@@ -211,6 +283,28 @@ suite('Polymer.IronA11yKeysBehavior', function() {
 
       expect(keys.keyCount).to.be.equal(1);
     });
+
+    test('trigger also bindings without modifiers', function() {
+      var event = new CustomEvent('keydown');
+      // Combo `shift+enter`.
+      event.shiftKey = true;
+      event.keyCode = event.code = 13;
+      keys.dispatchEvent(event);
+      expect(keys.keyCount).to.be.equal(2);
+    });
+
+    test('give precendence to combos with modifiers', function() {
+      var enterSpy = sinon.spy(keys, '_keyHandler2');
+      var shiftEnterSpy = sinon.spy(keys, '_keyHandler');
+      var event = new CustomEvent('keydown');
+      // Combo `shift+enter`.
+      event.shiftKey = true;
+      event.keyCode = event.code = 13;
+      keys.dispatchEvent(event);
+      expect(enterSpy.called).to.be.true;
+      expect(shiftEnterSpy.called).to.be.true;
+      expect(enterSpy.calledAfter(shiftEnterSpy)).to.be.true;
+    });
   });
 
   suite('alternative event keys', function() {
@@ -236,9 +330,50 @@ suite('Polymer.IronA11yKeysBehavior', function() {
 
     test('bindings in other behaviors are transitive', function() {
       MockInteractions.pressEnter(keys);
-      MockInteractions.pressSpace(keys);
-
       expect(keys.keyCount).to.be.equal(2);
+    });
+  });
+
+  suite('stopping propagation automatically', function() {
+    setup(function() {
+      keys = fixture('NonPropagatingKeys');
+    });
+
+    test('does not propagate key events beyond the combo handler', function() {
+      var keySpy = sinon.spy();
+
+      document.addEventListener('keydown', keySpy);
+
+      MockInteractions.pressEnter(keys);
+
+      expect(keySpy.callCount).to.be.equal(0);
+    });
+  });
+
+  suite('prevent default behavior of event', function() {
+    setup(function() {
+      keys = fixture('PreventKeys');
+    });
+
+    test('`defaultPrevented` is correctly set', function() {
+      MockInteractions.pressEnter(keys);
+      expect(keys.lastEvent.defaultPrevented).to.be.equal(true);
+    });
+
+    test('only 1 handler is invoked', function() {
+      var aSpy = sinon.spy(keys, '_keyHandler');
+      var shiftASpy = sinon.spy(keys, '_preventDefaultHandler');
+      var event = new CustomEvent('keydown', {
+        cancelable: true
+      });
+      // Combo `shift+a`.
+      event.shiftKey = true;
+      event.keyCode = event.code = 65;
+      keys.dispatchEvent(event);
+
+      expect(keys.keyCount).to.be.equal(1);
+      expect(shiftASpy.called).to.be.true;
+      expect(aSpy.called).to.be.false;
     });
   });
 

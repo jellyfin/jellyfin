@@ -42,7 +42,7 @@
 
         var query = getQuery();
 
-        ApiClient.getAlbumArtists(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getAlbumArtists(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);

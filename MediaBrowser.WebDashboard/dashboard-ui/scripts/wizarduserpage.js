@@ -45,7 +45,7 @@
             url: apiClient.getUrl('Startup/User'),
             dataType: 'json'
 
-        }).done(onUpdateUserComplete).fail(function () {
+        }).then(onUpdateUserComplete, function () {
 
             var msgKey = form.querySelector('#txtConnectUserName').value ? 'ErrorAddingEmbyConnectAccount' : 'DefaultErrorMessage';
 
@@ -77,7 +77,7 @@
 
         var apiClient = getApiClient();
 
-        apiClient.getJSON(apiClient.getUrl('Startup/User')).done(function (user) {
+        apiClient.getJSON(apiClient.getUrl('Startup/User')).then(function (user) {
 
             page.querySelector('#txtUsername').value = user.Name;
             page.querySelector('#txtConnectUserName').value = user.ConnectUserName;

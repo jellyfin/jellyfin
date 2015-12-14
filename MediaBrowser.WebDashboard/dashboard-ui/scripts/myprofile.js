@@ -8,7 +8,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             $('.username', page).html(user.Name);
             Events.trigger($('#uploadUserImage', page).val('')[0], 'change');
@@ -31,26 +31,34 @@
 
             $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
 
+            var showImageEditing = false;
 
             if (user.ConnectLinkType == 'Guest') {
 
-                $('.newImageForm', page).hide();
-                $('#btnDeleteImage', page).hide();
                 $('.connectMessage', page).show();
             }
             else if (user.PrimaryImageTag) {
 
-                $('#btnDeleteImage', page).show();
                 $('#headerUploadNewImage', page).show();
-                $('.newImageForm', page).show();
+                showImageEditing = true;
                 $('.connectMessage', page).hide();
 
             } else {
-                $('.newImageForm', page).show();
-                $('#btnDeleteImage', page).hide();
+                showImageEditing = true;
                 $('#headerUploadNewImage', page).show();
                 $('.connectMessage', page).hide();
             }
+
+            Dashboard.getCurrentUser().then(function (loggedInUser) {
+
+                if (showImageEditing && AppInfo.supportsFileInput && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.newImageForm', page).show();
+                    $('#btnDeleteImage', page).removeClass('hide');
+                } else {
+                    $('.newImageForm', page).hide();
+                    $('#btnDeleteImage', page).addClass('hide');
+                }
+            });
 
             Dashboard.hideLoadingMsg();
         });
@@ -72,15 +80,15 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.showError(Globalize.translate('FileNotFound'));
+                Dashboard.alert(Globalize.translate('FileNotFound'));
                 break;
             case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.showError(Globalize.translate('FileReadError'));
+                Dashboard.alert(Globalize.translate('FileReadError'));
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.showError(Globalize.translate('FileReadError'));
+                Dashboard.alert(Globalize.translate('FileReadError'));
         };
     }
 
@@ -92,7 +100,7 @@
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
-        Dashboard.showError(Globalize.translate('FileReadCancelled'));
+        Dashboard.alert(Globalize.translate('FileReadCancelled'));
     }
 
     function setFiles(page, files) {
@@ -115,16 +123,14 @@
         reader.onabort = onFileReaderAbort;
 
         // Closure to capture the file information.
-        reader.onload = (function (theFile) {
-            return function (e) {
+        reader.onload = function (e) {
 
-                // Render thumbnail.
-                var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
+            // Render thumbnail.
+            var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(file.name), '"/>'].join('');
 
-                $('#userImageOutput', page).html(html);
-                $('#fldUpload', page).show();
-            };
-        })(file);
+            $('#userImageOutput', page).html(html);
+            $('#fldUpload', page).show();
+        };
 
         // Read in the image file as a data URL.
         reader.readAsDataURL(file);
@@ -168,14 +174,9 @@
 
             var userId = getParameterByName("userId");
 
-            ApiClient.uploadUserImage(userId, 'Primary', file).done(processImageChangeResult);
+            ApiClient.uploadUserImage(userId, 'Primary', file).then(processImageChangeResult);
 
             return false;
-        };
-
-        self.onFileUploadChange = function (fileUpload) {
-
-            setFiles($.mobile.activePage, fileUpload.files);
         };
     }
 
@@ -199,7 +200,7 @@
 
                     var userId = getParameterByName("userId");
 
-                    ApiClient.deleteUserImage(userId, "primary").done(processImageChangeResult);
+                    ApiClient.deleteUserImage(userId, "primary").then(processImageChangeResult);
                 }
 
             });
@@ -207,6 +208,9 @@
 
         $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
 
+        page.querySelector('#uploadUserImage').addEventListener('change', function(e) {
+            setFiles(page, e.target.files);
+        });
     });
 
 
@@ -218,35 +222,49 @@
 
         var userid = getParameterByName("userId");
 
-        ApiClient.getUser(userid).done(function (user) {
+        ApiClient.getUser(userid).then(function (user) {
 
-            Dashboard.setPageTitle(user.Name);
+            Dashboard.getCurrentUser().then(function(loggedInUser) {
+                
+                Dashboard.setPageTitle(user.Name);
 
-            if (user.ConnectLinkType == 'Guest') {
-                $('.localAccessSection', page).hide();
-                $('.passwordSection', page).hide();
-            }
-            else if (user.HasConfiguredPassword) {
-                $('#btnResetPassword', page).show();
-                $('#fldCurrentPassword', page).show();
-                $('.localAccessSection', page).show();
-                $('.passwordSection', page).show();
-            } else {
-                $('#btnResetPassword', page).hide();
-                $('#fldCurrentPassword', page).hide();
-                $('.localAccessSection', page).hide();
-                $('.passwordSection', page).show();
-            }
+                var showPasswordSection = true;
+                var showLocalAccessSection = false;
+                if (user.ConnectLinkType == 'Guest') {
+                    $('.localAccessSection', page).hide();
+                    showPasswordSection = false;
+                }
+                else if (user.HasConfiguredPassword) {
+                    $('#btnResetPassword', page).show();
+                    $('#fldCurrentPassword', page).show();
+                    showLocalAccessSection = true;
+                } else {
+                    $('#btnResetPassword', page).hide();
+                    $('#fldCurrentPassword', page).hide();
+                }
 
-            if (user.HasConfiguredEasyPassword) {
-                $('#txtEasyPassword', page).val('').attr('placeholder', '******');
-                $('#btnResetEasyPassword', page).show();
-            } else {
-                $('#txtEasyPassword', page).val('').attr('placeholder', '');
-                $('#btnResetEasyPassword', page).hide();
-            }
+                if (showPasswordSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.passwordSection', page).show();
+                } else {
+                    $('.passwordSection', page).hide();
+                }
 
-            page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;
+                if (showLocalAccessSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
+                    $('.localAccessSection', page).show();
+                } else {
+                    $('.localAccessSection', page).hide();
+                }
+
+                if (user.HasConfiguredEasyPassword) {
+                    $('#txtEasyPassword', page).val('').attr('placeholder', '******');
+                    $('#btnResetEasyPassword', page).removeClass('hide');
+                } else {
+                    $('#txtEasyPassword', page).val('').attr('placeholder', '');
+                    $('#btnResetEasyPassword', page).addClass('hide');
+                }
+
+                page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;
+            });
         });
 
         $('#txtCurrentPassword', page).val('');
@@ -262,7 +280,7 @@
 
         if (easyPassword) {
 
-            ApiClient.updateEasyPassword(userId, easyPassword).done(function () {
+            ApiClient.updateEasyPassword(userId, easyPassword).then(function () {
 
                 onEasyPasswordSaved(page, userId);
 
@@ -275,11 +293,11 @@
 
     function onEasyPasswordSaved(page, userId) {
 
-        ApiClient.getUser(userId).done(function (user) {
+        ApiClient.getUser(userId).then(function (user) {
 
             user.Configuration.EnableLocalPassword = page.querySelector('.chkEnableLocalEasyPassword').checked;
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+            ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
 
                 Dashboard.hideLoadingMsg();
 
@@ -296,7 +314,7 @@
         var currentPassword = $('#txtCurrentPassword', page).val();
         var newPassword = $('#txtNewPassword', page).val();
 
-        ApiClient.updateUserPassword(userId, currentPassword, newPassword).done(function () {
+        ApiClient.updateUserPassword(userId, currentPassword, newPassword).then(function () {
 
             Dashboard.hideLoadingMsg();
 
@@ -317,7 +335,7 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.showError(Globalize.translate('PasswordMatchError'));
+                Dashboard.alert(Globalize.translate('PasswordMatchError'));
             } else {
 
                 Dashboard.showLoadingMsg();
@@ -356,7 +374,7 @@
 
                     Dashboard.showLoadingMsg();
 
-                    ApiClient.resetUserPassword(userId).done(function () {
+                    ApiClient.resetUserPassword(userId).then(function () {
 
                         Dashboard.hideLoadingMsg();
 
@@ -386,7 +404,7 @@
 
                     Dashboard.showLoadingMsg();
 
-                    ApiClient.resetEasyPassword(userId).done(function () {
+                    ApiClient.resetEasyPassword(userId).then(function () {
 
                         Dashboard.hideLoadingMsg();
 

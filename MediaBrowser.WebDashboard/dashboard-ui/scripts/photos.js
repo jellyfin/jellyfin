@@ -38,7 +38,7 @@
 
         var query = getQuery(tabIndex);
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -117,7 +117,7 @@
         localQuery.Recursive = true;
         localQuery.Filters = "IsNotFolder";
 
-        ApiClient.getItems(userId, localQuery).done(function (result) {
+        ApiClient.getItems(userId, localQuery).then(function (result) {
 
             showSlideshow(page, result.Items, startItemId);
         });
@@ -154,7 +154,7 @@
             index = 0;
         }
 
-        Dashboard.loadSwipebox().done(function () {
+        require(['swipebox'], function () {
 
             $.swipebox(slideshowItems, {
                 initialIndexOnArray: index,
@@ -201,7 +201,7 @@
         }
     }
 
-    $(document).on('pageinit', "#photosPage", function () {
+    pageIdOn('pageinit', "photosPage", function () {
 
         var page = this;
 
@@ -215,8 +215,8 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'), baseUrl);
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        page.querySelector('neon-animated-pages').addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
 
         $(page).on('click', '.mediaItem', onListItemClick);

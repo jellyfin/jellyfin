@@ -1,19 +1,18 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
-    globalScope.ServerDiscovery = {
+    return {
 
         findServers: function (timeoutMs) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var servers = [];
+                var servers = [];
 
-            // Expected server properties
-            // Name, Id, Address, EndpointAddress (optional)
-
-            deferred.resolveWith(null, [servers]);
-            return deferred.promise();
+                // Expected server properties
+                // Name, Id, Address, EndpointAddress (optional)
+                resolve(servers);
+            });
         }
     };
 
-})(window);
+});

@@ -3,16 +3,16 @@
     getApiClient: function () {
 
         var serverId = getParameterByName('serverid');
-        var deferred = DeferredBuilder.Deferred();
 
-        if (serverId) {
-            deferred.resolveWith(null, [ConnectionManager.getOrCreateApiClient(serverId)]);
+        return new Promise(function (resolve, reject) {
 
-        } else {
-            deferred.resolveWith(null, [ApiClient]);
-        }
+            if (serverId) {
+                resolve(ConnectionManager.getOrCreateApiClient(serverId));
 
-        return deferred.promise();
+            } else {
+                resolve(ApiClient);
+            }
+        });
     },
 
     onPageShow: function () {
@@ -21,9 +21,9 @@
 
         var page = this;
 
-        LoginPage.getApiClient().done(function (apiClient) {
+        LoginPage.getApiClient().then(function (apiClient) {
 
-            apiClient.getPublicUsers().done(function (users) {
+            apiClient.getPublicUsers().then(function (users) {
 
                 var showManualForm = !users.length;
 
@@ -40,7 +40,7 @@
                 Dashboard.hideLoadingMsg();
             });
 
-            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).done(function (options) {
+            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
 
                 $('.disclaimer', page).html(options.LoginDisclaimer || '');
             });
@@ -93,7 +93,7 @@
 
         Dashboard.showLoadingMsg();
 
-        apiClient.authenticateUserByName(username, password).done(function (result) {
+        apiClient.authenticateUserByName(username, password).then(function (result) {
 
             var user = result.User;
 
@@ -112,7 +112,7 @@
             Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
             Dashboard.navigate(newUrl);
 
-        }).fail(function () {
+        }, function () {
 
             $('#pw', page).val('');
             $('#txtManualName', page).val('');
@@ -121,7 +121,7 @@
             Dashboard.hideLoadingMsg();
 
             setTimeout(function () {
-                Dashboard.showError(Globalize.translate('MessageInvalidUser'));
+                Dashboard.alert(Globalize.translate('MessageInvalidUser'));
             }, 300);
         });
 
@@ -207,7 +207,7 @@
 
     	var page = $(this).parents('.page');
 
-        LoginPage.getApiClient().done(function (apiClient) {
+        LoginPage.getApiClient().then(function (apiClient) {
             LoginPage.authenticateUserByName(page, apiClient, $('#txtManualName', page).val(), $('#txtManualPassword', page).val());
         });
 

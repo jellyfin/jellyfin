@@ -24,7 +24,7 @@
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("encoding").done(function (config) {
+        ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
             config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
             config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
@@ -34,7 +34,7 @@
             config.EncodingThreadCount = $('#selectThreadCount', form).val();
             config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
 
-            ApiClient.updateNamedConfiguration("encoding", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("encoding", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -77,7 +77,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration("encoding").done(function (config) {
+        ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
             loadPage(page, config);
 

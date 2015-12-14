@@ -14,28 +14,28 @@
                 return syncPromise.promise();
             }
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            require(['multiserversync'], function () {
+                require(['multiserversync'], function () {
 
-                options = options || {};
+                    options = options || {};
 
-                LocalSync.normalizeSyncOptions(options);
+                    LocalSync.normalizeSyncOptions(options);
 
-                options.cameraUploadServers = AppSettings.cameraUploadServers();
+                    options.cameraUploadServers = AppSettings.cameraUploadServers();
 
-                syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).done(function () {
+                    syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).then(function () {
 
-                    syncPromise = null;
-                    deferred.resolve();
+                        syncPromise = null;
+                        resolve();
 
-                }).fail(function () {
+                    }, function () {
 
-                    syncPromise = null;
+                        syncPromise = null;
+                    });
                 });
-            });
 
-            return deferred.promise();
+            });
         },
 
         normalizeSyncOptions: function (options) {

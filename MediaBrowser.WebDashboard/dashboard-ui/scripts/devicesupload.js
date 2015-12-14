@@ -74,10 +74,10 @@
 
         }));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
 
-            load(page, response2[0].Items, response1[0]);
+            load(page, responses[1].Items, responses[0]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -85,7 +85,7 @@
 
     function save(page) {
 
-        ApiClient.getNamedConfiguration("devices").done(function (config) {
+        ApiClient.getNamedConfiguration("devices").then(function (config) {
 
             config.CameraUploadPath = $('#txtUploadPath', page).val();
 
@@ -97,7 +97,7 @@
 
             config.EnableCameraUploadSubfolders = $('#chkSubfolder', page).checked();
 
-            ApiClient.updateNamedConfiguration("devices", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("devices", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
     }

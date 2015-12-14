@@ -15,19 +15,20 @@
 
     function loadTemplate(page, type, providerId) {
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/tvproviders/' + type + '.template.html', true);
 
-            type: 'GET',
-            url: 'components/tvproviders/' + type + '.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (html) {
-
+            var html = this.response;
             var elem = page.querySelector('.providerTemplate');
             elem.innerHTML = Globalize.translateDocument(html);
             $(elem).trigger('create');
 
             init(page, type, providerId);
-        });
+        }
+
+        xhr.send();
     }
 
     $(document).on('pageshow', "#liveTvGuideProviderPage", function () {

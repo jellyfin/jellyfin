@@ -1,4 +1,31 @@
-﻿var LibraryBrowser = (function (window, document, $, screen) {
+﻿var LibraryBrowser = (function (window, document, screen) {
+
+    // Regular Expressions for parsing tags and attributes
+    var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+      // Match everything outside of normal chars and " (quote character)
+      NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
+
+    /**
+     * Escapes all potentially dangerous characters, so that the
+     * resulting string can be safely inserted into attribute or
+     * element text.
+     * @param value
+     * @returns {string} escaped text
+     */
+    function htmlEncode(value) {
+        return value.
+          replace(/&/g, '&amp;').
+          replace(SURROGATE_PAIR_REGEXP, function (value) {
+              var hi = value.charCodeAt(0);
+              var low = value.charCodeAt(1);
+              return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+          }).
+          replace(NON_ALPHANUMERIC_REGEXP, function (value) {
+              return '&#' + value.charCodeAt(0) + ';';
+          }).
+          replace(/</g, '&lt;').
+          replace(/>/g, '&gt;');
+    }
 
     var pageSizeKey = 'pagesize_v4';
 
@@ -21,13 +48,13 @@
 
         getDefaultItemsView: function (view, mobileView) {
 
-            return $.browser.mobile ? mobileView : view;
+            return browserInfo.mobile ? mobileView : view;
 
         },
 
         getSavedQueryKey: function (modifier) {
 
-            return getWindowUrl().split('#')[0] + (modifier || '');
+            return window.location.href.split('#')[0] + (modifier || '');
         },
 
         loadSavedQueryValues: function (key, query) {
@@ -105,10 +132,10 @@
 
             if (AppInfo.isNativeApp) {
                 cacheDuration = 300000;
-            } else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
+            } else if (browserInfo.ipad || browserInfo.iphone || browserInfo.android) {
                 cacheDuration = 10000;
             } else {
-                cacheDuration = 60000;
+                cacheDuration = 30000;
             }
 
             if ((now - last) < cacheDuration) {
@@ -126,6 +153,11 @@
         },
 
         enableFullPaperTabs: function () {
+
+            if (browserInfo.animate && !browserInfo.mobile) {
+                return true;
+            }
+
             return AppInfo.isNativeApp;
         },
 
@@ -135,17 +167,15 @@
                 return false;
             }
 
-            if ($.browser.safari) {
+            if (!browserInfo.animate) {
                 return false;
             }
 
-            if (typeof ($.browser.androidVersion) == 'number' && !isNaN($.browser.androidVersion)) {
-                if ($.browser.androidVersion < 5) {
-                    return false;
-                }
+            if (browserInfo.mobile) {
+                return false;
             }
 
-            return false;
+            return true;
         },
 
         allowSwipe: function (target) {
@@ -174,12 +204,45 @@
             return true;
         },
 
+        getTabsAnimationConfig: function (elem, reverse) {
+
+            if (browserInfo.mobile) {
+
+            }
+
+            return {
+                // scale up
+                'entry': {
+                    name: 'fade-in-animation',
+                    node: elem,
+                    timing: { duration: 160, easing: 'ease-out' }
+                },
+                // fade out
+                'exit': {
+                    name: 'fade-out-animation',
+                    node: elem,
+                    timing: { duration: 200, easing: 'ease-out' }
+                }
+            };
+
+        },
+
         configureSwipeTabs: function (ownerpage, tabs, pages) {
 
             if (LibraryBrowser.animatePaperTabs()) {
-                // Safari doesn't handle the horizontal swiping very well
-                pages.entryAnimation = 'slide-from-right-animation';
-                pages.exitAnimation = 'slide-left-animation';
+                if (browserInfo.mobile) {
+
+                    require(['slide-left-animation', 'slide-from-right-animation'], function () {
+                        pages.entryAnimation = 'slide-from-right-animation';
+                        pages.exitAnimation = 'slide-left-animation';
+                    });
+                } else {
+
+                    require(['fade-in-animation', 'fade-out-animation'], function () {
+                        pages.entryAnimation = 'fade-in-animation';
+                        pages.exitAnimation = 'fade-out-animation';
+                    });
+                }
             }
 
             var pageCount = pages.querySelectorAll('neon-animatable').length;
@@ -221,16 +284,16 @@
             return !LibraryBrowser.enableFullPaperTabs();
         },
 
-        configurePaperLibraryTabs: function (ownerpage, tabs, pages, baseUrl) {
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
 
             // Causing iron-select to not fire in IE and safari
-            if ($.browser.chrome) {
+            if (browserInfo.chrome) {
                 tabs.noink = true;
             }
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
-                if ($.browser.safari) {
+                if (browserInfo.safari) {
                     tabs.noSlide = true;
                     tabs.noBar = true;
                 } else {
@@ -246,9 +309,9 @@
 
                 var legacyTabs = $('.legacyTabs', ownerpage);
 
-                $(pages).on('iron-select', function (e) {
+                pages.addEventListener('iron-select', function (e) {
 
-                    var selected = this.selected;
+                    var selected = pages.selected;
                     $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
                 });
 
@@ -261,24 +324,25 @@
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
                 var pgs = this;
-                var delay = LibraryBrowser.animatePaperTabs() || !tabs.noSlide ? 500 : 0;
+                var delay = LibraryBrowser.animatePaperTabs() || !tabs.noSlide ? 300 : 0;
 
                 setTimeout(function () {
-                    $(pgs).trigger('tabchange');
+                    pgs.dispatchEvent(new CustomEvent("tabchange", {}));
                 }, delay);
             });
 
             function fadeOutLeft(elem, iterations) {
                 var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
                   { opacity: '0', transform: 'translate3d(-100%, 0, 0)', offset: 1 }];
-                var timing = { duration: 400, iterations: iterations };
+                var timing = { duration: 300, iterations: iterations };
                 return elem.animate(keyframes, timing);
             }
             if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                 tabs.addEventListener('iron-select', function () {
 
-                    var animateTab = !$.browser.safari;
+                    var animateTab = !browserInfo.safari;
                     animateTab = false;
+
                     var selected = pages.selected;
                     if (selected != null && animateTab) {
                         var newValue = this.selected;
@@ -361,7 +425,7 @@
                         return;
                     }
                 }
-                Events.trigger(pages, 'tabchange');
+                pages.dispatchEvent(new CustomEvent("tabchange", {}));
             }
         },
 
@@ -377,7 +441,7 @@
             }
 
             var afterNavigate = function () {
-                if (getWindowUrl().toLowerCase().indexOf(url.toLowerCase()) != -1) {
+                if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
                     var pages = this.querySelector('neon-animated-pages');
 
@@ -391,7 +455,7 @@
                         var tabs = this.querySelector('paper-tabs');
 
                         // For some reason the live tv page will not switch tabs in IE and safari
-                        var delay = $.browser.chrome ? 0 : 100;
+                        var delay = browserInfo.chrome ? 0 : 100;
 
                         setTimeout(function () {
                             var noSlide = tabs.noSlide;
@@ -407,7 +471,7 @@
                 }
             };
 
-            if (getWindowUrl().toLowerCase().indexOf(url.toLowerCase()) != -1) {
+            if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
                 afterNavigate.call($($.mobile.activePage)[0]);
             } else {
@@ -434,7 +498,7 @@
 
         playAllFromHere: function (fn, index) {
 
-            fn(index, 100, "MediaSources,Chapters").done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").then(function (result) {
 
                 MediaController.play({
                     items: result.Items
@@ -444,7 +508,7 @@
 
         queueAllFromHere: function (query, index) {
 
-            fn(index, 100, "MediaSources,Chapters").done(function (result) {
+            fn(index, 100, "MediaSources,Chapters").then(function (result) {
 
                 MediaController.queue({
                     items: result.Items
@@ -576,14 +640,14 @@
 
         playInExternalPlayer: function (id) {
 
-            Dashboard.loadExternalPlayer().done(function () {
+            Dashboard.loadExternalPlayer().then(function () {
                 ExternalPlayer.showMenu(id);
             });
         },
 
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
-            var externalPlayers = AppSettings.enableExternalPlayers();
+            var externalPlayers = AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers();
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
@@ -727,7 +791,9 @@
             }
 
             if (item.CanDownload) {
-                commands.push('download');
+                if (AppInfo.supportsDownloading) {
+                    commands.push('download');
+                }
             }
 
             if (LibraryBrowser.canShare(item, user)) {
@@ -787,7 +853,7 @@
 
         editImages: function (itemId) {
 
-            require(['components/imageeditor/imageeditor'], function () {
+            require(['components/imageeditor/imageeditor'], function (ImageEditor) {
 
                 ImageEditor.show(itemId);
             });
@@ -795,7 +861,7 @@
 
         editSubtitles: function (itemId) {
 
-            require(['components/subtitleeditor/subtitleeditor'], function () {
+            require(['components/subtitleeditor/subtitleeditor'], function (SubtitleEditor) {
 
                 SubtitleEditor.show(itemId);
             });
@@ -1202,6 +1268,8 @@
         },
 
         getListViewHtml: function (options) {
+
+            require(['paper-icon-item', 'paper-item-body']);
 
             var outerHtml = "";
 
@@ -1624,7 +1692,7 @@
 
                 var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                if (!$.browser.mobile) {
+                if (!browserInfo.mobile) {
 
                     shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
                 }
@@ -1775,7 +1843,7 @@
             var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
             var coverImage = options.coverImage;
 
-            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
+            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
 
                 width = posterWidth;
                 height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
@@ -2055,8 +2123,6 @@
             }
             html += '</div>';
 
-            html += '<div class="cardOverlayTarget"></div>';
-
             if (item.LocationType == "Virtual" || item.LocationType == "Offline") {
                 if (options.showLocationTypeIndicator !== false) {
                     html += LibraryBrowser.getOfflineIndicatorHtml(item);
@@ -2124,8 +2190,6 @@
         getCardFooterText: function (item, options, showTitle, imgUrl, forceName, footerClass, progressHtml) {
 
             var html = '';
-
-            html += '<div class="' + footerClass + '">';
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
@@ -2239,8 +2303,12 @@
                 }
             }
 
-            //cardFooter
-            html += "</div>";
+            if (html) {
+                html = '<div class="' + footerClass + '">' + html;
+
+                //cardFooter
+                html += "</div>";
+            }
 
             return html;
         },
@@ -2549,7 +2617,7 @@
             Dashboard.setPageTitle(name);
 
             if (linkToElement) {
-                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>').trigger('create');
+                nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>');
             } else {
                 nameElem.html(name);
             }
@@ -2591,7 +2659,7 @@
             }
 
             if (html.length) {
-                parentNameElem.show().html(html.join(' - ')).trigger('create');
+                parentNameElem.show().html(html.join(' - '));
             } else {
                 parentNameElem.hide();
             }
@@ -2622,7 +2690,7 @@
                 html = Globalize.translate('ValueLinks', html);
 
                 linksElem.innerHTML = html;
-                $(linksElem).trigger('create');
+                $(linksElem);
                 $(linksElem).show();
 
             } else {
@@ -2761,83 +2829,92 @@
 
         showSortMenu: function (options) {
 
-            var dlg = document.createElement('paper-dialog');
+            require(['components/paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
 
-            dlg.setAttribute('with-backdrop', 'with-backdrop');
-            dlg.setAttribute('role', 'alertdialog');
+                var dlg = paperDialogHelper.createDialog({
+                    removeOnClose: true,
+                    theme: 'a',
+                    size: 'auto',
+                    modal: false
+                });
 
-            dlg.entryAnimation = 'fade-in-animation';
-            dlg.exitAnimation = 'fade-out-animation';
+                var html = '';
 
-            var html = '';
+                // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
+                // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
+                var isScrollable = false;
+                if (browserInfo.android) {
+                    isScrollable = true;
+                }
 
-            // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-            // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
-            var isScrollable = false;
-            if ($.browser.android) {
-                isScrollable = true;
-            }
+                html += '<h2>';
+                html += Globalize.translate('HeaderSortBy');
+                html += '</h2>';
 
-            html += '<h2>';
-            html += Globalize.translate('HeaderSortBy');
-            html += '</h2>';
+                if (isScrollable) {
+                    html += '<paper-dialog-scrollable>';
+                }
 
-            if (isScrollable) {
-                html += '<paper-dialog-scrollable>';
-            }
+                html += '<paper-radio-group class="groupSortBy" selected="' + (options.query.SortBy || '').replace(',', '_') + '">';
+                for (var i = 0, length = options.items.length; i < length; i++) {
 
-            html += '<paper-radio-group class="groupSortBy" selected="' + (options.query.SortBy || '').replace(',', '_') + '">';
-            for (var i = 0, length = options.items.length; i < length; i++) {
+                    var option = options.items[i];
 
-                var option = options.items[i];
+                    html += '<paper-radio-button class="menuSortBy block" data-id="' + option.id + '" name="' + option.id.replace(',', '_') + '">' + option.name + '</paper-radio-button>';
+                }
+                html += '</paper-radio-group>';
 
-                html += '<paper-radio-button class="menuSortBy block" data-id="' + option.id + '" name="' + option.id.replace(',', '_') + '">' + option.name + '</paper-radio-button>';
-            }
-            html += '</paper-radio-group>';
+                html += '<p style="margin: 1em 0;padding: 0 0 0 1.5em;">';
+                html += Globalize.translate('HeaderSortOrder');
+                html += '</p>';
+                html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';
+                html += '<paper-radio-button name="Ascending" class="menuSortOrder block">' + Globalize.translate('OptionAscending') + '</paper-radio-button>';
+                html += '<paper-radio-button name="Descending" class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
+                html += '</paper-radio-group>';
 
-            html += '<p>';
-            html += Globalize.translate('HeaderSortOrder');
-            html += '</p>';
-            html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';
-            html += '<paper-radio-button name="Ascending" class="menuSortOrder block">' + Globalize.translate('OptionAscending') + '</paper-radio-button>';
-            html += '<paper-radio-button name="Descending" class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
-            html += '</paper-radio-group>';
+                if (isScrollable) {
+                    html += '</paper-dialog-scrollable>';
+                }
 
-            if (isScrollable) {
-                html += '</paper-dialog-scrollable>';
-            }
+                html += '<div class="buttons">';
+                html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
+                html += '</div>';
 
-            html += '<div class="buttons">';
-            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-            html += '</div>';
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
 
-            dlg.innerHTML = html;
-            document.body.appendChild(dlg);
+                var fireCallbackOnClose = false;
 
-            $(dlg).on('iron-overlay-closed', function () {
-                $(this).remove();
-            });
+                paperDialogHelper.open(dlg).then(function() {
 
-            require(['components/paperdialoghelper'], function () {
-
-                PaperDialogHelper.openWithHash(dlg, 'sortmenu');
+                    if (options.callback && fireCallbackOnClose) {
+                        options.callback();
+                    }
+                });
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
-                    options.query.SortBy = this.selected.replace('_', ',');
+
+                    var newValue = this.selected.replace('_', ',');
+                    var changed = options.query.SortBy != newValue;
+
+                    options.query.SortBy = newValue;
                     options.query.StartIndex = 0;
 
-                    if (options.callback) {
-                        options.callback();
+                    if (options.callback && changed) {
+                        fireCallbackOnClose = true;
                     }
                 });
 
                 $('.groupSortOrder', dlg).on('iron-select', function () {
 
-                    options.query.SortOrder = this.selected;
+                    var newValue = this.selected;
+                    var changed = options.query.SortOrder != newValue;
+
+                    options.query.SortOrder = newValue;
                     options.query.StartIndex = 0;
 
-                    if (options.callback) {
-                        options.callback();
+                    if (options.callback && changed) {
+                        fireCallbackOnClose = true;
                     }
                 });
             });
@@ -3175,7 +3252,13 @@
                 elem.classList.remove('squareDetailImageContainer');
             }
 
-            ImageLoader.lazyImage(elem.querySelector('img'), url);
+            var img = elem.querySelector('img');
+            img.onload = function () {
+                if (img.src.indexOf('empty.png') == -1) {
+                    img.classList.add('loaded');
+                }
+            };
+            ImageLoader.lazyImage(img, url);
         },
 
         refreshDetailImageUserData: function (elem, item) {
@@ -3515,26 +3598,6 @@
             }
         },
 
-        renderBudget: function (elem, item) {
-
-            if (item.Budget) {
-
-                elem.show().html(Globalize.translate('ValueBudget', '$' + item.Budget));
-            } else {
-                elem.hide();
-            }
-        },
-
-        renderRevenue: function (elem, item) {
-
-            if (item.Revenue) {
-
-                elem.show().html(Globalize.translate('ValueRevenue', '$' + item.Revenue));
-            } else {
-                elem.hide();
-            }
-        },
-
         renderAwardSummary: function (elem, item) {
             if (item.AwardSummary) {
                 elem.show().html(Globalize.translate('ValueAwards', item.AwardSummary));
@@ -3591,4 +3654,4 @@
 
     return libraryBrowser;
 
-})(window, document, jQuery, screen);
+})(window, document, screen);

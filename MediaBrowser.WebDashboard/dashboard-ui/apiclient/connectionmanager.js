@@ -52,13 +52,12 @@
             return list1;
         }
 
-        function resolveWithFailure(deferred) {
+        function resolveFailure(resolve) {
 
-            deferred.resolveWith(null, [
-            {
+            resolve({
                 State: MediaBrowser.ConnectionState.Unavailable,
                 ConnectUser: self.connectUser()
-            }]);
+            });
         }
 
         function updateServerInfo(server, systemInfo) {
@@ -83,13 +82,123 @@
             return baseUrl + "/emby/" + handler;
         }
 
+        function getFetchPromise(request) {
+
+            var headers = request.headers || {};
+
+            if (request.dataType == 'json') {
+                headers.accept = 'application/json';
+            }
+
+            var fetchRequest = {
+                headers: headers,
+                method: request.type
+            };
+
+            var contentType = request.contentType;
+
+            if (request.data) {
+
+                if (typeof request.data === 'string') {
+                    fetchRequest.body = request.data;
+                } else {
+                    fetchRequest.body = paramsToString(request.data);
+
+                    contentType = contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
+                }
+            }
+
+            if (contentType) {
+
+                headers['Content-Type'] = contentType;
+            }
+
+            if (!request.timeout) {
+                return fetch(request.url, fetchRequest);
+            }
+
+            return fetchWithTimeout(request.url, fetchRequest, request.timeout);
+        }
+
+        function fetchWithTimeout(url, options, timeoutMs) {
+
+            logger.log('fetchWithTimeout: timeoutMs: ' + timeoutMs + ', url: ' + url);
+
+            return new Promise(function (resolve, reject) {
+
+                var timeout = setTimeout(reject, timeoutMs);
+
+                fetch(url, options).then(function (response) {
+                    clearTimeout(timeout);
+
+                    logger.log('fetchWithTimeout: succeeded connecting to url: ' + url);
+
+                    resolve(response);
+                }, function (error) {
+
+                    clearTimeout(timeout);
+
+                    logger.log('fetchWithTimeout: timed out connecting to url: ' + url);
+
+                    reject();
+                });
+            });
+        }
+
+        function paramsToString(params) {
+
+            var values = [];
+
+            for (var key in params) {
+
+                var value = params[key];
+
+                if (value !== null && value !== undefined && value !== '') {
+                    values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+                }
+            }
+            return values.join('&');
+        }
+
+        function ajax(request) {
+
+            if (!request) {
+                throw new Error("Request cannot be null");
+            }
+
+            request.headers = request.headers || {};
+
+            logger.log('ConnectionManager requesting url: ' + request.url);
+
+            return getFetchPromise(request).then(function (response) {
+
+                logger.log('ConnectionManager response status: ' + response.status + ', url: ' + request.url);
+
+                if (response.status < 400) {
+
+                    if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                        return response.json();
+                    } else {
+                        return response;
+                    }
+                } else {
+                    return Promise.reject(response);
+                }
+
+            }, function (err) {
+
+                logger.log('ConnectionManager request failed to url: ' + request.url);
+                throw err;
+            });
+        }
+
         function tryConnect(url, timeout) {
 
             url = getEmbyServerUrl(url, "system/info/public");
 
             logger.log('tryConnect url: ' + url);
 
-            return HttpClient.send({
+            return ajax({
 
                 type: "GET",
                 url: url,
@@ -188,6 +297,9 @@
             var existingServer = existingServers.length ? existingServers[0] : {};
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            if (existingServer.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                existingServer.DateLastLocalConnection = new Date().getTime();
+            }
             existingServer.ManualAddress = apiClient.serverAddress();
             apiClient.serverInfo(existingServer);
 
@@ -207,7 +319,7 @@
                 return;
             }
 
-            apiClient.getPublicSystemInfo().done(function (systemInfo) {
+            apiClient.getPublicSystemInfo().then(function (systemInfo) {
 
                 var credentials = credentialProvider.credentials();
                 existingServer.Id = systemInfo.Id;
@@ -289,6 +401,10 @@
 
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
+
+                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                    server.DateLastLocalConnection = new Date().getTime();
+                }
             }
             server.Id = result.ServerId;
 
@@ -343,30 +459,29 @@
 
         function ensureConnectUser(credentials) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (connectUser && connectUser.Id == credentials.ConnectUserId) {
-                deferred.resolveWith(null, [[]]);
-            }
+                if (connectUser && connectUser.Id == credentials.ConnectUserId) {
+                    resolve();
+                }
 
-            else if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
+                else if (credentials.ConnectUserId && credentials.ConnectAccessToken) {
 
-                connectUser = null;
+                    connectUser = null;
 
-                getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).done(function (user) {
+                    getConnectUser(credentials.ConnectUserId, credentials.ConnectAccessToken).then(function (user) {
 
-                    onConnectUserSignIn(user);
-                    deferred.resolveWith(null, [[]]);
+                        onConnectUserSignIn(user);
+                        resolve();
 
-                }).fail(function () {
-                    deferred.resolveWith(null, [[]]);
-                });
+                    }, function () {
+                        resolve();
+                    });
 
-            } else {
-                deferred.resolveWith(null, [[]]);
-            }
-
-            return deferred.promise();
+                } else {
+                    resolve();
+                }
+            });
         }
 
         function getConnectUser(userId, accessToken) {
@@ -380,7 +495,7 @@
 
             var url = "https://connect.emby.media/service/user?id=" + userId;
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -405,7 +520,7 @@
 
             url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -413,70 +528,71 @@
                     "X-MediaBrowser-Token": server.ExchangeToken
                 }
 
-            }).done(function (auth) {
+            }).then(function (auth) {
 
                 server.UserId = auth.LocalUserId;
                 server.AccessToken = auth.AccessToken;
+                return auth;
 
-            }).fail(function () {
+            }, function () {
 
                 server.UserId = null;
                 server.AccessToken = null;
+                return Promise.reject();
+
             });
         }
 
         function validateAuthentication(server, connectionMode) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+                var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
-            HttpClient.send({
+                ajax({
 
-                type: "GET",
-                url: getEmbyServerUrl(url, "System/Info"),
-                dataType: "json",
-                headers: {
-                    "X-MediaBrowser-Token": server.AccessToken
-                }
+                    type: "GET",
+                    url: getEmbyServerUrl(url, "System/Info"),
+                    dataType: "json",
+                    headers: {
+                        "X-MediaBrowser-Token": server.AccessToken
+                    }
 
-            }).done(function (systemInfo) {
+                }).then(function (systemInfo) {
 
-                updateServerInfo(server, systemInfo);
+                    updateServerInfo(server, systemInfo);
 
-                if (server.UserId) {
+                    if (server.UserId) {
 
-                    HttpClient.send({
+                        ajax({
 
-                        type: "GET",
-                        url: getEmbyServerUrl(url, "users/" + server.UserId),
-                        dataType: "json",
-                        headers: {
-                            "X-MediaBrowser-Token": server.AccessToken
-                        }
+                            type: "GET",
+                            url: getEmbyServerUrl(url, "users/" + server.UserId),
+                            dataType: "json",
+                            headers: {
+                                "X-MediaBrowser-Token": server.AccessToken
+                            }
 
-                    }).done(function (user) {
+                        }).then(function (user) {
 
-                        onLocalUserSignIn(user);
-                        deferred.resolveWith(null, [[]]);
+                            onLocalUserSignIn(user);
+                            resolve();
 
-                    }).fail(function () {
+                        }, function () {
 
-                        server.UserId = null;
-                        server.AccessToken = null;
-                        deferred.resolveWith(null, [[]]);
-                    });
-                }
+                            server.UserId = null;
+                            server.AccessToken = null;
+                            resolve();
+                        });
+                    }
 
-            }).fail(function () {
+                }, function () {
 
-                server.UserId = null;
-                server.AccessToken = null;
-                deferred.resolveWith(null, [[]]);
-
+                    server.UserId = null;
+                    server.AccessToken = null;
+                    resolve();
+                });
             });
-
-            return deferred.promise();
         }
 
         function getImageUrl(localUser) {
@@ -509,44 +625,43 @@
 
         self.user = function (apiClient) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var localUser;
+                var localUser;
 
-            function onLocalUserDone() {
+                function onLocalUserDone(e) {
 
-                var image = getImageUrl(localUser);
+                    var image = getImageUrl(localUser);
 
-                deferred.resolveWith(null, [
-                {
-                    localUser: localUser,
-                    name: connectUser ? connectUser.Name : (localUser ? localUser.Name : null),
-                    canManageServer: localUser && localUser.Policy.IsAdministrator,
-                    imageUrl: image.url,
-                    supportsImageParams: image.supportsParams
-                }]);
-            }
-
-            function onEnsureConnectUserDone() {
-
-                if (apiClient && apiClient.getCurrentUserId()) {
-                    apiClient.getCurrentUser().done(function (u) {
-                        localUser = u;
-                    }).always(onLocalUserDone);
-                } else {
-                    onLocalUserDone();
+                    resolve({
+                        localUser: localUser,
+                        name: connectUser ? connectUser.Name : (localUser ? localUser.Name : null),
+                        imageUrl: image.url,
+                        supportsImageParams: image.supportsParams
+                    });
                 }
-            }
 
-            var credentials = credentialProvider.credentials();
+                function onEnsureConnectUserDone() {
 
-            if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(apiClient && apiClient.getCurrentUserId())) {
-                ensureConnectUser(credentials).always(onEnsureConnectUserDone);
-            } else {
-                onEnsureConnectUserDone();
-            }
+                    if (apiClient && apiClient.getCurrentUserId()) {
+                        apiClient.getCurrentUser().then(function (u) {
+                            localUser = u;
+                            onLocalUserDone();
 
-            return deferred.promise();
+                        }, onLocalUserDone);
+                    } else {
+                        onLocalUserDone();
+                    }
+                }
+
+                var credentials = credentialProvider.credentials();
+
+                if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(apiClient && apiClient.getCurrentUserId())) {
+                    ensureConnectUser(credentials).then(onEnsureConnectUserDone, onEnsureConnectUserDone);
+                } else {
+                    onEnsureConnectUserDone();
+                }
+            });
         };
 
         self.isLoggedIntoConnect = function () {
@@ -572,7 +687,7 @@
                 }
             }
 
-            return DeferredBuilder.when(promises).done(function () {
+            return Promise.all(promises).then(function () {
 
                 var credentials = credentialProvider.credentials();
 
@@ -617,7 +732,10 @@
                 serverId: serverInfo.Id
             };
 
-            return apiClient.logout().always(function () {
+            return apiClient.logout().then(function () {
+
+                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+            }, function () {
 
                 Events.trigger(self, 'localusersignedout', [logoutInfo]);
             });
@@ -627,46 +745,45 @@
 
             logger.log('Begin getConnectServers');
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!credentials.ConnectAccessToken || !credentials.ConnectUserId) {
-                deferred.resolveWith(null, [[]]);
-                return deferred.promise();
-            }
-
-            var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
-
-            HttpClient.send({
-                type: "GET",
-                url: url,
-                dataType: "json",
-                headers: {
-                    "X-Application": appName + "/" + appVersion,
-                    "X-Connect-UserToken": credentials.ConnectAccessToken
+                if (!credentials.ConnectAccessToken || !credentials.ConnectUserId) {
+                    resolve([]);
+                    return;
                 }
 
-            }).done(function (servers) {
+                var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
 
-                servers = servers.map(function (i) {
-                    return {
-                        ExchangeToken: i.AccessKey,
-                        ConnectServerId: i.Id,
-                        Id: i.SystemId,
-                        Name: i.Name,
-                        RemoteAddress: i.Url,
-                        LocalAddress: i.LocalAddress,
-                        UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
-                    };
+                ajax({
+                    type: "GET",
+                    url: url,
+                    dataType: "json",
+                    headers: {
+                        "X-Application": appName + "/" + appVersion,
+                        "X-Connect-UserToken": credentials.ConnectAccessToken
+                    }
+
+                }).then(function (servers) {
+
+                    servers = servers.map(function (i) {
+                        return {
+                            ExchangeToken: i.AccessKey,
+                            ConnectServerId: i.Id,
+                            Id: i.SystemId,
+                            Name: i.Name,
+                            RemoteAddress: i.Url,
+                            LocalAddress: i.LocalAddress,
+                            UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
+                        };
+                    });
+
+                    resolve(servers);
+
+                }, function () {
+                    resolve([]);
+
                 });
-
-                deferred.resolveWith(null, [servers]);
-
-            }).fail(function () {
-                deferred.resolveWith(null, [[]]);
-
             });
-
-            return deferred.promise();
         }
 
         self.getSavedServers = function () {
@@ -689,34 +806,27 @@
             // Clone the array
             var credentials = credentialProvider.credentials();
 
-            var deferred = DeferredBuilder.Deferred();
+            return Promise.all([getConnectServers(credentials), findServers()]).then(function (responses) {
 
-            var connectServersPromise = getConnectServers(credentials);
-            var findServersPromise = findServers();
+                var connectServers = responses[0];
+                var foundServers = responses[1];
 
-            connectServersPromise.done(function (connectServers) {
+                var servers = credentials.Servers.slice(0);
+                mergeServers(servers, foundServers);
+                mergeServers(servers, connectServers);
 
-                findServersPromise.done(function (foundServers) {
+                servers = filterServers(servers, connectServers);
 
-                    var servers = credentials.Servers.slice(0);
-                    mergeServers(servers, foundServers);
-                    mergeServers(servers, connectServers);
-
-                    servers = filterServers(servers, connectServers);
-
-                    servers.sort(function (a, b) {
-                        return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
-                    });
-
-                    credentials.Servers = servers;
-
-                    credentialProvider.credentials(credentials);
-
-                    deferred.resolveWith(null, [servers]);
+                servers.sort(function (a, b) {
+                    return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
                 });
-            });
 
-            return deferred.promise();
+                credentials.Servers = servers;
+
+                credentialProvider.credentials(credentials);
+
+                return servers;
+            });
         };
 
         function filterServers(servers, connectServers) {
@@ -738,30 +848,30 @@
 
         function findServers() {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            require(['serverdiscovery'], function () {
-                ServerDiscovery.findServers(1000).done(function (foundServers) {
+                require(['serverdiscovery'], function (serverDiscovery) {
+                    serverDiscovery.findServers(1000).then(function (foundServers) {
 
-                    var servers = foundServers.map(function (foundServer) {
+                        var servers = foundServers.map(function (foundServer) {
 
-                        var info = {
-                            Id: foundServer.Id,
-                            LocalAddress: foundServer.Address,
-                            Name: foundServer.Name,
-                            ManualAddress: convertEndpointAddressToManualAddress(foundServer),
-                            DateLastLocalConnection: new Date().getTime()
-                        };
+                            var info = {
+                                Id: foundServer.Id,
+                                LocalAddress: foundServer.Address,
+                                Name: foundServer.Name,
+                                ManualAddress: convertEndpointAddressToManualAddress(foundServer),
+                                DateLastLocalConnection: new Date().getTime()
+                            };
 
-                        info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
+                            info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
 
-                        return info;
+                            return info;
+                        });
+                        resolve(servers);
                     });
-                    deferred.resolveWith(null, [servers]);
-                });
 
+                });
             });
-            return deferred.promise();
         }
 
         function convertEndpointAddressToManualAddress(info) {
@@ -789,18 +899,16 @@
 
             logger.log('Begin connect');
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            self.getAvailableServers().done(function (servers) {
+                self.getAvailableServers().then(function (servers) {
 
-                self.connectToServers(servers).done(function (result) {
+                    self.connectToServers(servers).then(function (result) {
 
-                    deferred.resolveWith(null, [result]);
-
+                        resolve(result);
+                    });
                 });
             });
-
-            return deferred.promise();
         };
 
         self.getOffineResult = function () {
@@ -812,92 +920,89 @@
 
             logger.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (servers.length == 1) {
+                if (servers.length == 1) {
 
-                self.connectToServer(servers[0]).done(function (result) {
+                    self.connectToServer(servers[0]).then(function (result) {
 
-                    if (result.State == MediaBrowser.ConnectionState.Unavailable) {
+                        if (result.State == MediaBrowser.ConnectionState.Unavailable) {
 
-                        result.State = result.ConnectUser == null ?
-                            MediaBrowser.ConnectionState.ConnectSignIn :
-                            MediaBrowser.ConnectionState.ServerSelection;
-                    }
-
-                    logger.log('resolving connectToServers with result.State: ' + result.State);
-                    deferred.resolveWith(null, [result]);
-
-                });
-
-            } else {
-
-                var firstServer = servers.length ? servers[0] : null;
-                // See if we have any saved credentials and can auto sign in
-                if (firstServer) {
-                    self.connectToServer(firstServer).done(function (result) {
-
-                        if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-
-                            deferred.resolveWith(null, [result]);
-
-                        } else {
-                            deferred.resolveWith(null, [
-                            {
-                                Servers: servers,
-                                State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
-                                ConnectUser: self.connectUser()
-                            }]);
+                            result.State = result.ConnectUser == null ?
+                                MediaBrowser.ConnectionState.ConnectSignIn :
+                                MediaBrowser.ConnectionState.ServerSelection;
                         }
 
+                        logger.log('resolving connectToServers with result.State: ' + result.State);
+                        resolve(result);
+
                     });
+
                 } else {
 
-                    deferred.resolveWith(null, [
-                    {
-                        Servers: servers,
-                        State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
-                        ConnectUser: self.connectUser()
-                    }]);
-                }
-            }
+                    var firstServer = servers.length ? servers[0] : null;
+                    // See if we have any saved credentials and can auto sign in
+                    if (firstServer) {
+                        self.connectToServer(firstServer).then(function (result) {
 
-            return deferred.promise();
+                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+
+                                resolve(result);
+
+                            } else {
+                                resolve({
+                                    Servers: servers,
+                                    State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                                    ConnectUser: self.connectUser()
+                                });
+                            }
+
+                        });
+                    } else {
+
+                        resolve({
+                            Servers: servers,
+                            State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                            ConnectUser: self.connectUser()
+                        });
+                    }
+                }
+
+            });
         };
 
         function beginWakeServer(server) {
 
-            require(['wakeonlan'], function () {
+            require(['wakeonlan'], function (wakeonlan) {
                 var infos = server.WakeOnLanInfos || [];
 
                 for (var i = 0, length = infos.length; i < length; i++) {
 
-                    WakeOnLan.send(infos[i]);
+                    wakeonlan.send(infos[i]);
                 }
             });
         }
 
         self.connectToServer = function (server, options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var tests = [];
+                var tests = [];
 
-            if (server.LastConnectionMode != null) {
-                //tests.push(server.LastConnectionMode);
-            }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
-            if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
+                if (server.LastConnectionMode != null) {
+                    //tests.push(server.LastConnectionMode);
+                }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
+                if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
 
-            beginWakeServer(server);
+                beginWakeServer(server);
 
-            var wakeOnLanSendTime = new Date().getTime();
+                var wakeOnLanSendTime = new Date().getTime();
 
-            options = options || {};
-            testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
-
-            return deferred.promise();
+                options = options || {};
+                testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, resolve);
+            });
         };
 
         function stringEqualsIgnoreCase(str1, str2) {
@@ -905,12 +1010,12 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
-        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, deferred) {
+        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, resolve) {
 
             if (index >= tests.length) {
 
                 logger.log('Tested all connection modes. Failing server connection.');
-                resolveWithFailure(deferred);
+                resolveFailure(resolve);
                 return;
             }
 
@@ -923,7 +1028,7 @@
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
                 enableRetry = true;
-                timeout = 10000;
+                timeout = 8000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {
@@ -935,18 +1040,18 @@
             }
 
             if (skipTest || !address) {
-                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
                 return;
             }
 
             logger.log('testing connection mode ' + mode + ' with server ' + server.Name);
 
-            tryConnect(address, timeout).done(function (result) {
+            tryConnect(address, timeout).then(function (result) {
 
                 logger.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
-                onSuccessfulConnection(server, result, mode, options, deferred);
+                onSuccessfulConnection(server, result, mode, options, resolve);
 
-            }).fail(function () {
+            }, function () {
 
                 logger.log('test failed for connection mode ' + mode + ' with server ' + server.Name);
 
@@ -956,46 +1061,50 @@
 
                     // TODO: Implement delay and retry
 
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
 
                 } else {
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
 
                 }
             });
         }
 
-        function onSuccessfulConnection(server, systemInfo, connectionMode, options, deferred) {
+        function onSuccessfulConnection(server, systemInfo, connectionMode, options, resolve) {
 
             var credentials = credentialProvider.credentials();
             if (credentials.ConnectAccessToken) {
 
-                ensureConnectUser(credentials).done(function () {
+                ensureConnectUser(credentials).then(function () {
 
                     if (server.ExchangeToken) {
-                        addAuthenticationInfoFromConnect(server, connectionMode, credentials).always(function () {
+                        addAuthenticationInfoFromConnect(server, connectionMode, credentials).then(function () {
 
-                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
+
+                        }, function () {
+
+                            afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
                         });
 
                     } else {
 
-                        afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                        afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
                     }
                 });
             }
             else {
-                afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, deferred);
+                afterConnectValidated(server, credentials, systemInfo, connectionMode, true, options, resolve);
             }
         }
 
-        function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, deferred) {
+        function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, resolve) {
 
             if (verifyLocalAuthentication && server.AccessToken) {
 
-                validateAuthentication(server, connectionMode).done(function () {
+                validateAuthentication(server, connectionMode).then(function () {
 
-                    afterConnectValidated(server, credentials, systemInfo, connectionMode, false, options, deferred);
+                    afterConnectValidated(server, credentials, systemInfo, connectionMode, false, options, resolve);
                 });
 
                 return;
@@ -1003,10 +1112,15 @@
 
             updateServerInfo(server, systemInfo);
 
+            server.LastConnectionMode = connectionMode;
+
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
+
+                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                    server.DateLastLocalConnection = new Date().getTime();
+                }
             }
-            server.LastConnectionMode = connectionMode;
             credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);
 
@@ -1026,7 +1140,7 @@
                 afterConnected(result.ApiClient, options);
             }
 
-            deferred.resolveWith(null, [result]);
+            resolve(result);
 
             Events.trigger(self, 'connected', [result]);
         }
@@ -1049,154 +1163,147 @@
 
         self.connectToAddress = function (address) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!address) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!address) {
+                    reject();
+                    return;
+                }
 
-            address = normalizeAddress(address);
+                address = normalizeAddress(address);
 
-            function onFail() {
-                logger.log('connectToAddress ' + address + ' failed');
-                resolveWithFailure(deferred);
-            }
+                function onFail() {
+                    logger.log('connectToAddress ' + address + ' failed');
+                    resolveFailure(resolve);
+                }
 
-            tryConnect(address, defaultTimeout).done(function (publicInfo) {
+                tryConnect(address, defaultTimeout).then(function (publicInfo) {
 
-                logger.log('connectToAddress ' + address + ' succeeded');
+                    logger.log('connectToAddress ' + address + ' succeeded');
 
-                var server = {
-                    ManualAddress: address,
-                    LastConnectionMode: MediaBrowser.ConnectionMode.Manual
-                };
-                updateServerInfo(server, publicInfo);
+                    var server = {
+                        ManualAddress: address,
+                        LastConnectionMode: MediaBrowser.ConnectionMode.Manual
+                    };
+                    updateServerInfo(server, publicInfo);
 
-                self.connectToServer(server).done(function (result) {
+                    self.connectToServer(server).then(resolve, onFail);
 
-                    deferred.resolveWith(null, [result]);
+                }, onFail);
 
-                }).fail(onFail);
-
-            }).fail(onFail);
-
-            return deferred.promise();
+            });
         };
 
         self.loginToConnect = function (username, password) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!username) {
-                deferred.reject();
-                return deferred.promise();
-            }
-            if (!password) {
-                deferred.reject();
-                return deferred.promise();
-            }
+                if (!username) {
+                    reject();
+                    return;
+                }
+                if (!password) {
+                    reject();
+                    return;
+                }
 
-            require(['connectservice'], function () {
+                require(['connectservice', 'cryptojs-md5'], function () {
 
-                var md5 = self.getConnectPasswordHash(password);
+                    var md5 = self.getConnectPasswordHash(password);
 
-                HttpClient.send({
-                    type: "POST",
-                    url: "https://connect.emby.media/service/user/authenticate",
-                    data: {
-                        nameOrEmail: username,
-                        password: md5
-                    },
-                    dataType: "json",
-                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                    headers: {
-                        "X-Application": appName + "/" + appVersion
-                    }
+                    ajax({
+                        type: "POST",
+                        url: "https://connect.emby.media/service/user/authenticate",
+                        data: {
+                            nameOrEmail: username,
+                            password: md5
+                        },
+                        dataType: "json",
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        headers: {
+                            "X-Application": appName + "/" + appVersion
+                        }
 
-                }).done(function (result) {
+                    }).then(function (result) {
 
-                    var credentials = credentialProvider.credentials();
+                        var credentials = credentialProvider.credentials();
 
-                    credentials.ConnectAccessToken = result.AccessToken;
-                    credentials.ConnectUserId = result.User.Id;
+                        credentials.ConnectAccessToken = result.AccessToken;
+                        credentials.ConnectUserId = result.User.Id;
 
-                    credentialProvider.credentials(credentials);
+                        credentialProvider.credentials(credentials);
 
-                    onConnectUserSignIn(result.User);
+                        onConnectUserSignIn(result.User);
 
-                    deferred.resolveWith(null, [result]);
+                        resolve(result);
 
-                }).fail(function () {
-                    deferred.reject();
+                    }, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         self.signupForConnect = function (email, username, password, passwordConfirm) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            if (!email) {
-                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
-                return deferred.promise();
-            }
-            if (!username) {
-                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
-                return deferred.promise();
-            }
-            if (!password) {
-                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
-                return deferred.promise();
-            }
-            if (!passwordConfirm) {
-                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
-                return deferred.promise();
-            }
-            if (password != passwordConfirm) {
-                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
-                return deferred.promise();
-            }
+                if (!email) {
+                    reject({ errorCode: 'invalidinput' });
+                    return;
+                }
+                if (!username) {
+                    reject({ errorCode: 'invalidinput' });
+                    return;
+                }
+                if (!password) {
+                    reject({ errorCode: 'invalidinput' });
+                    return;
+                }
+                if (!passwordConfirm) {
+                    reject({ errorCode: 'passwordmatch' });
+                    return;
+                }
+                if (password != passwordConfirm) {
+                    reject({ errorCode: 'passwordmatch' });
+                    return;
+                }
 
-            require(['connectservice'], function () {
+                require(['connectservice', 'cryptojs-md5'], function () {
 
-                var md5 = self.getConnectPasswordHash(password);
+                    var md5 = self.getConnectPasswordHash(password);
 
-                HttpClient.send({
-                    type: "POST",
-                    url: "https://connect.emby.media/service/register",
-                    data: {
-                        email: email,
-                        userName: username,
-                        password: md5
-                    },
-                    dataType: "json",
-                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                    headers: {
-                        "X-Application": appName + "/" + appVersion,
-                        "X-CONNECT-TOKEN": "CONNECT-REGISTER"
-                    }
+                    ajax({
+                        type: "POST",
+                        url: "https://connect.emby.media/service/register",
+                        data: {
+                            email: email,
+                            userName: username,
+                            password: md5
+                        },
+                        dataType: "json",
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        headers: {
+                            "X-Application": appName + "/" + appVersion,
+                            "X-CONNECT-TOKEN": "CONNECT-REGISTER"
+                        }
 
-                }).done(function (result) {
+                    }).then(resolve, function (response) {
 
-                    deferred.resolve(null, []);
+                        try {
+                            return response.json();
 
-                }).fail(function (e) {
+                        } catch (err) {
+                            reject();
+                        }
 
-                    try {
+                    }).then(function (result) {
 
-                        var result = JSON.parse(e.responseText);
+                        if (result && result.Status) {
+                            reject({ errorCode: result.Status });
+                        }
 
-                        deferred.rejectWith(null, [{ errorCode: result.Status }]);
-                    } catch (err) {
-                        deferred.rejectWith(null, [{}]);
-                    }
+                    }, reject);
                 });
             });
-
-            return deferred.promise();
         };
 
         self.getConnectPasswordHash = function (password) {
@@ -1236,7 +1343,7 @@
 
             var url = "https://connect.emby.media/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -1259,45 +1366,44 @@
             });
             server = server.length ? server[0] : null;
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            function onDone() {
-                var credentials = credentialProvider.credentials();
+                function onDone() {
+                    var credentials = credentialProvider.credentials();
 
-                credentials.Servers = credentials.Servers.filter(function (s) {
-                    return s.Id != serverId;
-                });
+                    credentials.Servers = credentials.Servers.filter(function (s) {
+                        return s.Id != serverId;
+                    });
 
-                credentialProvider.credentials(credentials);
-                deferred.resolve();
-            }
-
-            if (!server.ConnectServerId) {
-                onDone();
-                return deferred.promise();
-            }
-
-            var connectToken = self.connectToken();
-            var connectUserId = self.connectUserId();
-
-            if (!connectToken || !connectUserId) {
-                onDone();
-                return deferred.promise();
-            }
-
-            var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + server.ConnectServerId + "&userId=" + connectUserId;
-
-            HttpClient.send({
-                type: "DELETE",
-                url: url,
-                headers: {
-                    "X-Connect-UserToken": connectToken,
-                    "X-Application": appName + "/" + appVersion
+                    credentialProvider.credentials(credentials);
+                    resolve();
                 }
 
-            }).always(onDone);
+                if (!server.ConnectServerId) {
+                    onDone();
+                    return;
+                }
 
-            return deferred.promise();
+                var connectToken = self.connectToken();
+                var connectUserId = self.connectUserId();
+
+                if (!connectToken || !connectUserId) {
+                    onDone();
+                    return;
+                }
+
+                var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + server.ConnectServerId + "&userId=" + connectUserId;
+
+                ajax({
+                    type: "DELETE",
+                    url: url,
+                    headers: {
+                        "X-Connect-UserToken": connectToken,
+                        "X-Application": appName + "/" + appVersion
+                    }
+
+                }).then(onDone, onDone);
+            });
         };
 
         self.rejectServer = function (serverId) {
@@ -1316,14 +1422,12 @@
 
             var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return HttpClient.send({
-                type: "DELETE",
-                url: url,
+            return fetch(url, {
+                method: "DELETE",
                 headers: {
                     "X-Connect-UserToken": connectToken,
                     "X-Application": appName + "/" + appVersion
                 }
-
             });
         };
 
@@ -1343,7 +1447,7 @@
 
             var url = "https://connect.emby.media/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return HttpClient.send({
+            return ajax({
                 type: "GET",
                 url: url,
                 headers: {
@@ -1356,43 +1460,53 @@
 
         self.getRegistrationInfo = function (feature, apiClient) {
 
-            var deferred = DeferredBuilder.Deferred();
-
-            self.getAvailableServers().done(function (servers) {
+            return self.getAvailableServers().then(function (servers) {
 
                 var matchedServers = servers.filter(function (s) {
                     return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
                 });
 
                 if (!matchedServers.length) {
-                    deferred.resolveWith(null, [{}]);
-                    return;
+                    return {};
                 }
 
                 var match = matchedServers[0];
 
-                // 31 days
-                if ((new Date().getTime() - (match.DateLastLocalConnection || 0)) > 2678400000) {
-                    deferred.resolveWith(null, [{}]);
-                    return;
+                if (!match.DateLastLocalConnection) {
+
+                    return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
+
+                        if (info.IsInNetwork) {
+
+                            updateDateLastLocalConnection(match.Id);
+                            return apiClient.getRegistrationInfo(feature);
+                        } else {
+                            return {};
+                        }
+
+                    });
+
+                } else {
+                    return apiClient.getRegistrationInfo(feature);
                 }
-
-                apiClient.getRegistrationInfo(feature).done(function (result) {
-
-                    deferred.resolveWith(null, [result]);
-                }).fail(function () {
-
-                    deferred.reject();
-                });
-
-            }).fail(function () {
-
-                deferred.reject();
             });
-
-            return deferred.promise();
         };
 
+        function updateDateLastLocalConnection(serverId) {
+
+            var credentials = credentialProvider.credentials();
+            var servers = credentials.Servers.filter(function (s) {
+                return s.Id == serverId;
+            });
+
+            var server = servers.length ? servers[0] : null;
+
+            if (server) {
+                server.DateLastLocalConnection = new Date().getTime();
+                credentialProvider.addOrUpdateServer(credentials.Servers, server);
+                credentialProvider.credentials(credentials);
+            }
+        }
 
         return self;
     };

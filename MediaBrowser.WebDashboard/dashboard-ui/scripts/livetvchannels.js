@@ -83,7 +83,7 @@
 
         query.UserId = Dashboard.getCurrentUserId();
 
-        ApiClient.getLiveTvChannels(query).done(function (result) {
+        ApiClient.getLiveTvChannels(query).then(function (result) {
 
             renderChannels(page, viewPanel, result);
 

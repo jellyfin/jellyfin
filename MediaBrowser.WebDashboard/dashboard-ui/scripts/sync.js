@@ -2,7 +2,7 @@
 
     var currentDialogOptions;
 
-    function submitJob(panel, userId, syncOptions, form) {
+    function submitJob(dlg, userId, syncOptions, form) {
 
         if (!userId) {
             throw new Error('userId cannot be null');
@@ -49,9 +49,9 @@
             contentType: "application/json",
             dataType: 'json'
 
-        }).done(function () {
+        }).then(function () {
 
-            panel.panel('close');
+            PaperDialogHelper.close(dlg);
             $(window.SyncManager).trigger('jobsubmit');
             Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
@@ -75,6 +75,17 @@
     }
 
     function renderForm(options) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['paper-checkbox', 'paper-input'], function () {
+                renderFormInternal(options);
+                resolve();
+            });
+        });
+    }
+
+    function renderFormInternal(options) {
 
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
@@ -172,7 +183,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html).trigger('create');
+        $(elem).html(html);
 
         $('#selectSyncTarget', elem).on('change', function () {
 
@@ -196,8 +207,8 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["scripts/registrationservices", "jqmcollapsible", "jqmpanel"], function () {
-            RegistrationServices.validateFeature('sync').done(function () {
+        requirejs(["registrationservices"], function () {
+            RegistrationServices.validateFeature('sync').then(function () {
                 showSyncMenuInternal(options);
             });
         });
@@ -205,64 +216,77 @@
 
     function showSyncMenuInternal(options) {
 
-        var userId = Dashboard.getCurrentUserId();
+        require(['components/paperdialoghelper', 'paper-fab'], function (paperDialogHelper) {
 
-        var dialogOptionsQuery = {
-            UserId: userId,
-            ItemIds: (options.items || []).map(function (i) {
-                return i.Id || i;
-            }).join(','),
+            var userId = Dashboard.getCurrentUserId();
 
-            ParentId: options.ParentId,
-            Category: options.Category
-        };
+            var dialogOptionsQuery = {
+                UserId: userId,
+                ItemIds: (options.items || []).map(function (i) {
+                    return i.Id || i;
+                }).join(','),
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).done(function (dialogOptions) {
+                ParentId: options.ParentId,
+                Category: options.Category
+            };
 
-            currentDialogOptions = dialogOptions;
+            ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" class="syncPanel" data-position-fixed="true" data-theme="a">';
+                currentDialogOptions = dialogOptions;
 
-            html += '<div>';
+                var dlg = paperDialogHelper.createDialog({
+                    size: 'small',
+                    theme: 'a',
+                    removeOnClose: true
+                });
 
-            html += '<form class="formSubmitSyncRequest">';
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" mini class="btnCancel"></paper-fab>';
+                html += '</h2>';
 
-            html += '<div style="margin:1em 0 1.5em;">';
-            html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
+                html += '<div>';
 
-            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-            html += '</div>';
+                html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
 
-            html += '<div class="formFields"></div>';
+                html += '<div style="margin:1em 0 1.5em;">';
+                html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
 
-            html += '<p>';
-            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
-            html += '</p>';
+                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
+                html += '</div>';
 
-            html += '</form>';
-            html += '</div>';
-            html += '</div>';
+                html += '<div class="formFields"></div>';
 
-            $(document.body).append(html);
+                html += '<p>';
+                html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
+                html += '</p>';
 
-            var elem = $('.syncPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
-                $(this).off("panelclose").remove();
+                html += '</form>';
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                paperDialogHelper.open(dlg);
+
+                $('form', dlg).on('submit', function () {
+
+                    submitJob(dlg, userId, options, this);
+                    return false;
+                });
+
+                $('.btnCancel', dlg).on('click', function () {
+                    paperDialogHelper.close(dlg);
+                });
+
+                renderForm({
+                    elem: $('.formFields', dlg),
+                    dialogOptions: dialogOptions,
+                    dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
+                });
             });
 
-            $('form', elem).on('submit', function () {
-
-                submitJob(elem, userId, options, this);
-                return false;
-            });
-
-            renderForm({
-                elem: $('.formFields', elem),
-                dialogOptions: dialogOptions,
-                dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
-            });
         });
-
-        require(['jqmicons']);
     }
 
     function getTargetDialogOptionsFn(query) {
@@ -314,7 +338,7 @@
 
     function loadQualityOptions(form, targetId, dialogOptionsFn) {
 
-        dialogOptionsFn(targetId).done(function (options) {
+        dialogOptionsFn(targetId).then(function (options) {
 
             renderTargetDialogOptions(form, options);
         });
@@ -385,9 +409,17 @@
             return;
         }
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
-            $('.categorySyncButton', page).visible(user.Policy.EnableSync);
+            var item = {
+                SupportsSync: true
+            };
+
+            if (isAvailable(item)) {
+                $('.categorySyncButton', page).removeClass('hide');
+            } else {
+                $('.categorySyncButton', page).addClass('hide');
+            }
         });
     }
 

@@ -10,9 +10,9 @@
 
         var promise2 = ApiClient.getInstalledPlugins();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-            renderInstalled(page, response1[0], response2[0]);
-            renderCatalog(page, response1[0], response2[0]);
+        Promise.all([promise1, promise2]).then(function (responses) {
+            renderInstalled(page, responses[0], responses[1]);
+            renderCatalog(page, responses[0], responses[1]);
         });
     }
 

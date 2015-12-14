@@ -22,7 +22,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvPrograms(query).done(function (result) {
+        ApiClient.getLiveTvPrograms(query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -85,7 +85,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvItemsPage", function () {
+    pageIdOn('pagebeforeshow', "liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="jqmcollapsible,scripts/myprofile,paperbuttonstyle" data-backbutton="true" data-menubutton="false">
+    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="jqmcollapsible,scripts/myprofile,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <br />
@@ -14,7 +14,7 @@
                 <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
                     <h2 class="username" style="margin: 0;"></h2>
                     <br />
-                    <paper-button raised class="cancel" id="btnDeleteImage"><iron-icon icon="delete"></iron-icon><span>${ButtonDeleteImage}</span></paper-button>
+                    <paper-button raised class="cancel hide" id="btnDeleteImage"><iron-icon icon="delete"></iron-icon><span>${ButtonDeleteImage}</span></paper-button>
                 </div>
             </div>
 
@@ -30,7 +30,7 @@
                     <div>
                         <div id="fldNewImage">
                             <p>${ImageUploadAspectRatioHelp}</p>
-                            <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="MyProfilePage.onFileUploadChange(this);" />
+                            <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" />
 
                             <div id="userImageDropZone" class="imageDropZone">
                                 <h3>${LabelDropImageHere}</h3>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             </form>
-            <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;">
+            <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;display:none;">
                 <div class="detailSection">
                     <h1>
                         ${HeaderEasyPinCode}
@@ -100,7 +100,7 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-                            <paper-button id="btnResetEasyPassword" style="display:none;" raised class="cancel block" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></paper-button>
+                            <paper-button id="btnResetEasyPassword" raised class="cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></paper-button>
                         </div>
                     </div>
                 </div>

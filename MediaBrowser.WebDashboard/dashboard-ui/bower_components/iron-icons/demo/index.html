@@ -11,16 +11,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
 
-  <title>iron-icons</title>
-
-  <!-- polyfill WebComponents, if needed -->
+  <title>iron-icons demo</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
-  <!-- styles for the demo -->
-  <link href="../../paper-styles/demo-pages.html" rel="import">
-
-  <!-- load layout classes -->
-  <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 
   <!-- load default iconset -->
   <link rel="import" href="../iron-icons.html">
@@ -37,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../social-icons.html">
 
   <style is="custom-style">
-    
+
     h2 {
       text-transform: capitalize;
     }
@@ -55,6 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       margin: auto;
       padding: 1em 0;
       border-bottom: 1px solid silver;
+      @apply(--layout-horizontal);
+      @apply(--layout-wrap);
     }
 
     .set:last-of-type {
@@ -81,6 +78,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       min-width: 10em;
       padding: 1em 0.5em;
       text-align: center;
+      @apply(--layout-vertical);
+      @apply(--layout-center);
+      @apply(--layout-flex-1);
     }
 
     .container > div {
@@ -94,7 +94,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body>
 
-  
   <template is="dom-bind">
 
    <iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
@@ -103,11 +102,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <h2>{{item.name}}</h2>
 
-      <div class="set horizontal wrap layout">
+      <div class="set">
 
         <template is="dom-repeat" items="{{getIconNames(item)}}">
 
-          <span class="container vertical center layout flex-1">
+          <span class="container">
             <iron-icon icon="{{item}}"></iron-icon>
             <div>{{item}}</div>
           </span>

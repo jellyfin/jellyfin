@@ -218,7 +218,7 @@
             html += '</div>';
 
             html += '<div class="detailSectionContent">';
-            html += '<div class="childrenItemsContainer itemsContainer fullWidthItemsContainer" style="text-align: left;">';
+            html += '<div class="childrenItemsContainer itemsContainer" style="text-align: left;">';
             html += '<ul class="itemsListview ui-listview" >';
 
             var l = group.Items.length - 1;
@@ -274,7 +274,7 @@
         var url = "";
 
         url = ApiClient.getUrl("Reports/Headers", query);
-        ApiClient.getJSON(url).done(function (result) {
+        ApiClient.getJSON(url).then(function (result) {
             var selected = "None";
 
             $('#selectReportGroup', page).find('option').remove().end();
@@ -438,7 +438,7 @@
                 break;
         }
 
-        ApiClient.getJSON(url).done(function (result) {
+        ApiClient.getJSON(url).then(function (result) {
             updateFilterControls(page);
             renderItems(page, result);
         });
@@ -1037,7 +1037,7 @@
             ReportView: itemQuery.ReportView
 
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderFilters(page, result);
 
@@ -1053,7 +1053,7 @@
             IncludeItemTypes: itemQuery.IncludeItemTypes,
             ReportView: itemQuery.ReportView
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderColumnss(page, result);
             var filters = "";

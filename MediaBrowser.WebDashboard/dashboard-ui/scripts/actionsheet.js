@@ -2,22 +2,27 @@
 
     function show(options) {
 
+        require(['paper-menu', 'paper-dialog', 'paper-dialog-scrollable', 'scale-up-animation', 'fade-out-animation'], function () {
+            showInternal(options);
+        });
+    }
+
+    function showInternal(options) {
+
         // items
         // positionTo
         // showCancel
         // title
-        var id = 'dlg' + new Date().getTime();
         var html = '';
 
-        var style = "";
-
         var windowHeight = $(window).height();
+        var pos;
 
         // If the window height is under a certain amount, don't bother trying to position
         // based on an element.
         if (options.positionTo && windowHeight >= 540) {
 
-            var pos = $(options.positionTo).offset();
+            pos = $(options.positionTo).offset();
 
             pos.top += $(options.positionTo).innerHeight() / 2;
             pos.left += $(options.positionTo).innerWidth() / 2;
@@ -41,11 +46,7 @@
             // Do some boundary checking
             pos.top = Math.max(pos.top, 0);
             pos.left = Math.max(pos.left, 0);
-
-            style += 'position:fixed;top:' + pos.top + 'px;left:' + pos.left + 'px';
         }
-
-        html += '<paper-dialog id="' + id + '" with-backdrop style="' + style + '">';
 
         if (options.title) {
             html += '<h2>';
@@ -54,7 +55,7 @@
         }
 
         // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-        var isScrollable = !$.browser.safari;
+        var isScrollable = !browserInfo.safari;
 
         if (isScrollable) {
             html += '<paper-dialog-scrollable>';
@@ -65,7 +66,11 @@
             return o.ironIcon;
         }).length;
 
-        html += '<paper-menu>';
+        if (options.title && !renderIcon) {
+            html += '<paper-menu style="text-align:center;">';
+        } else {
+            html += '<paper-menu>';
+        }
         for (var i = 0, length = options.items.length; i < length; i++) {
 
             var option = options.items[i];
@@ -93,39 +98,62 @@
             html += '</div>';
         }
 
-        html += '</paper-dialog>';
+        var dlg = document.createElement('paper-dialog');
+        dlg.setAttribute('with-backdrop', 'with-backdrop');
+        dlg.innerHTML = html;
 
-        $(document.body).append(html);
+        if (pos) {
+            dlg.style.position = 'fixed';
+            dlg.style.left = pos.left + 'px';
+            dlg.style.top = pos.top + 'px';
+        }
+        document.body.appendChild(dlg);
+
+        // The animations flicker in IE
+        if (!browserInfo.msie) {
+            dlg.animationConfig = {
+                // scale up
+                'entry': {
+                    name: 'scale-up-animation',
+                    node: dlg,
+                    timing: { duration: 160, easing: 'ease-out' }
+                },
+                // fade out
+                'exit': {
+                    name: 'fade-out-animation',
+                    node: dlg,
+                    timing: { duration: 200, easing: 'ease-in' }
+                }
+            };
+        }
 
         setTimeout(function () {
-            var dlg = document.getElementById(id);
-
             dlg.open();
+        }, 50);
 
-            // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', function () {
-                $(this).remove();
-            });
+        // Has to be assigned a z-index after the call to .open() 
+        dlg.addEventListener('iron-overlay-closed', function () {
+            dlg.parentNode.removeChild(dlg);
+        });
 
-            // Seeing an issue in some non-chrome browsers where this is requiring a double click
-            var eventName = $.browser.chrome || $.browser.safari ? 'click' : 'mousedown';
+        // Seeing an issue in some non-chrome browsers where this is requiring a double click
+        var eventName = browserInfo.chrome || browserInfo.safari ? 'click' : 'mousedown';
 
-            $('.actionSheetMenuItem', dlg).on(eventName, function () {
+        $('.actionSheetMenuItem', dlg).on(eventName, function () {
 
-                var selectedId = this.getAttribute('data-id');
+            var selectedId = this.getAttribute('data-id');
 
-                // Add a delay here to allow the click animation to finish, for nice effect
-                setTimeout(function () {
+            // Add a delay here to allow the click animation to finish, for nice effect
+            setTimeout(function () {
 
-                    dlg.close();
+                dlg.close();
 
-                    if (options.callback) {
-                        options.callback(selectedId);
-                    }
+                if (options.callback) {
+                    options.callback(selectedId);
+                }
 
-                }, 100);
-            });
-        }, 100);
+            }, 100);
+        });
     }
 
     window.ActionSheetElement = {

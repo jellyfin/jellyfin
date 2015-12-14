@@ -8,11 +8,11 @@
 
             if (result) {
 
-                ApiClient.getServerConfiguration().done(function (config) {
+                ApiClient.getServerConfiguration().then(function (config) {
 
                     config.PathSubstitutions.splice(index, 1);
 
-                    ApiClient.updateServerConfiguration(config).done(function () {
+                    ApiClient.updateServerConfiguration(config).then(function () {
 
                         reload(page);
                     });
@@ -87,7 +87,7 @@
         $('#txtFrom', page).val('');
         $('#txtTo', page).val('');
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 
@@ -100,10 +100,10 @@
         var form = this;
         var page = $(form).parents('.page');
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             addSubstitution(page, config);
-            ApiClient.updateServerConfiguration(config).done(function () {
+            ApiClient.updateServerConfiguration(config).then(function () {
 
                 reload(page);
             });
@@ -123,7 +123,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 

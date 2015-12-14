@@ -8,7 +8,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            LocalAssetManager.getCameraPhotos().done(function (photos) {
+            LocalAssetManager.getCameraPhotos().then(function (photos) {
 
                 if (!photos.length) {
                     deferred.resolve();
@@ -17,7 +17,7 @@
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                apiClient.getContentUploadHistory().done(function (uploadHistory) {
+                apiClient.getContentUploadHistory().then(function (uploadHistory) {
 
                     photos = getFilesToUpload(photos, uploadHistory);
 
@@ -25,11 +25,11 @@
 
                     uploadNext(photos, 0, server, apiClient, deferred);
 
-                }).fail(function () {
+                }, function () {
                     deferred.reject();
                 });
 
-            }).fail(function () {
+            }, function () {
                 deferred.reject();
             });
 
@@ -67,10 +67,10 @@
                 return;
             }
 
-            uploadFile(files[index], apiClient).done(function () {
+            uploadFile(files[index], apiClient).then(function () {
 
                 uploadNext(files, index + 1, server, apiClient, deferred);
-            }).fail(function () {
+            }, function () {
                 uploadNext(files, index + 1, server, apiClient, deferred);
             });
         }
@@ -93,12 +93,12 @@
 
                 Logger.log('Uploading file to ' + url);
 
-                new MediaBrowser.FileUpload().upload(file, name, url).done(function () {
+                new MediaBrowser.FileUpload().upload(file, name, url).then(function () {
 
                     Logger.log('File upload succeeded');
                     deferred.resolve();
 
-                }).fail(function () {
+                }, function () {
 
                     Logger.log('File upload failed');
                     deferred.reject();

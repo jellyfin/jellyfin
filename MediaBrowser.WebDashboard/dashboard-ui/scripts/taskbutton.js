@@ -1,5 +1,4 @@
-﻿
-$.fn.taskButton = function (options) {
+﻿$.fn.taskButton = function (options) {
 
     function pollTasks(button) {
 
@@ -7,7 +6,7 @@ $.fn.taskButton = function (options) {
 
             IsEnabled: true
 
-        }).done(function (tasks) {
+        }).then(function (tasks) {
 
             updateTasks(button, tasks);
         });
@@ -34,7 +33,13 @@ $.fn.taskButton = function (options) {
             return;
         }
 
-        $(button).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
+        if (task.State == 'Idle') {
+            $(button).removeAttr('disabled');
+        } else {
+            $(button).attr('disabled', 'disabled');
+        }
+
+        $(button).attr('data-taskid', task.Id);
 
         var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
@@ -66,7 +71,7 @@ $.fn.taskButton = function (options) {
     }
 
     function onScheduledTaskMessageConfirmed(instance, id) {
-        ApiClient.startScheduledTask(id).done(function () {
+        ApiClient.startScheduledTask(id).then(function () {
 
             pollTasks(instance);
         });

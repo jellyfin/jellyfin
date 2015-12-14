@@ -7,7 +7,7 @@
         var apiClient = ApiClient;
 
         // After saving chapter task, now save server config
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             config.LiveTvTunerType = $('#selectTunerType', page).val();
             config.LiveTvTunerPath = $('.txtDevicePath', page).val();
@@ -18,12 +18,12 @@
                 data: config,
                 url: apiClient.getUrl('Startup/Configuration')
 
-            }).done(function () {
+            }).then(function () {
 
                 Dashboard.hideLoadingMsg();
                 navigateToNextPage(config);
 
-            }).fail(function () {
+            }, function () {
 
                 Dashboard.hideLoadingMsg();
                 Dashboard.alert({
@@ -41,7 +41,7 @@
 
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).then(function (config) {
 
             $('#selectTunerType', page).val(config.LiveTvTunerType || 'hdhomerun');
             page.querySelector('.txtDevicePath').value = config.LiveTvTunerPath || '';
@@ -62,7 +62,7 @@
     function skip() {
         var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('Startup/Info')).done(function (info) {
+        apiClient.getJSON(apiClient.getUrl('Startup/Info')).then(function (info) {
 
             if (info.SupportsRunningAsService) {
                 Dashboard.navigate('wizardservice.html');

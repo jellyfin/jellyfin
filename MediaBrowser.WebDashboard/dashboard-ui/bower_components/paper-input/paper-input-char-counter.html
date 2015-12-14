@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="paper-input-addon-behavior.html">
 
 <!--
@@ -29,9 +29,9 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--paper-input-char-counter` | Mixin applied to the element | `{}`
 -->
+
 <dom-module id="paper-input-char-counter">
   <template>
-
     <style>
       :host {
         display: inline-block;
@@ -40,10 +40,13 @@ Custom property | Description | Default
         @apply(--paper-font-caption);
         @apply(--paper-input-char-counter);
       }
+
+      :host-context([dir="rtl"]) {
+        float: left;
+      }
     </style>
 
     <span>[[_charCounterStr]]</span>
-
   </template>
 </dom-module>
 

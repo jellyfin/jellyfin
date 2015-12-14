@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.14
+// @version 0.7.19
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -1118,6 +1118,24 @@ window.ShadowDOMPolyfill = {};
       stopImmediatePropagationTable.set(this, true);
     }
   };
+  var supportsDefaultPrevented = function() {
+    var e = document.createEvent("Event");
+    e.initEvent("test", true, true);
+    e.preventDefault();
+    return e.defaultPrevented;
+  }();
+  if (!supportsDefaultPrevented) {
+    Event.prototype.preventDefault = function() {
+      if (!this.cancelable) return;
+      unsafeUnwrap(this).preventDefault();
+      Object.defineProperty(this, "defaultPrevented", {
+        get: function() {
+          return true;
+        },
+        configurable: true
+      });
+    };
+  }
   registerWrapper(OriginalEvent, Event, document.createEvent("Event"));
   function unwrapOptions(options) {
     if (!options || !options.relatedTarget) return options;
@@ -2723,7 +2741,7 @@ window.ShadowDOMPolyfill = {};
       enumerable: true
     });
   }
-  [ "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
+  [ "focus", "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
   registerWrapper(OriginalHTMLElement, HTMLElement, document.createElement("b"));
   scope.wrappers.HTMLElement = HTMLElement;
   scope.getInnerHTML = getInnerHTML;
@@ -3346,6 +3364,7 @@ window.ShadowDOMPolyfill = {};
   var setInnerHTML = scope.setInnerHTML;
   var unsafeUnwrap = scope.unsafeUnwrap;
   var unwrap = scope.unwrap;
+  var wrap = scope.wrap;
   var shadowHostTable = new WeakMap();
   var nextOlderShadowTreeTable = new WeakMap();
   function ShadowRoot(hostWrapper) {
@@ -3378,6 +3397,25 @@ window.ShadowDOMPolyfill = {};
     },
     elementFromPoint: function(x, y) {
       return elementFromPoint(this, this.ownerDocument, x, y);
+    },
+    getSelection: function() {
+      return document.getSelection();
+    },
+    get activeElement() {
+      var unwrappedActiveElement = unwrap(this).ownerDocument.activeElement;
+      if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+      var activeElement = wrap(unwrappedActiveElement);
+      while (!this.contains(activeElement)) {
+        while (activeElement.parentNode) {
+          activeElement = activeElement.parentNode;
+        }
+        if (activeElement.host) {
+          activeElement = activeElement.host;
+        } else {
+          return null;
+        }
+      }
+      return activeElement;
     }
   });
   scope.wrappers.ShadowRoot = ShadowRoot;
@@ -3969,7 +4007,7 @@ window.ShadowDOMPolyfill = {};
       unsafeUnwrap(this).removeRange(unwrap(range));
     },
     selectAllChildren: function(node) {
-      unsafeUnwrap(this).selectAllChildren(unwrapIfNeeded(node));
+      unsafeUnwrap(this).selectAllChildren(node instanceof ShadowRoot ? unsafeUnwrap(node.host) : unwrapIfNeeded(node));
     },
     toString: function() {
       return unsafeUnwrap(this).toString();
@@ -4042,6 +4080,7 @@ window.ShadowDOMPolyfill = {};
   var ShadowRoot = scope.wrappers.ShadowRoot;
   var TreeScope = scope.TreeScope;
   var cloneNode = scope.cloneNode;
+  var defineGetter = scope.defineGetter;
   var defineWrapGetter = scope.defineWrapGetter;
   var elementFromPoint = scope.elementFromPoint;
   var forwardMethodsToWrapper = scope.forwardMethodsToWrapper;
@@ -4065,6 +4104,23 @@ window.ShadowDOMPolyfill = {};
   defineWrapGetter(Document, "documentElement");
   defineWrapGetter(Document, "body");
   defineWrapGetter(Document, "head");
+  defineGetter(Document, "activeElement", function() {
+    var unwrappedActiveElement = unwrap(this).activeElement;
+    if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+    var activeElement = wrap(unwrappedActiveElement);
+    while (!this.contains(activeElement)) {
+      var lastHost = activeElement;
+      while (activeElement.parentNode) {
+        activeElement = activeElement.parentNode;
+      }
+      if (activeElement.host) {
+        activeElement = activeElement.host;
+      } else {
+        return null;
+      }
+    }
+    return activeElement;
+  });
   function wrapMethod(name) {
     var original = document[name];
     Document.prototype[name] = function() {

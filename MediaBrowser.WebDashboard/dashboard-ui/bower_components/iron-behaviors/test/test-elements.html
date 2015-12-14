@@ -7,6 +7,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
+<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../iron-control-state.html">
 <link rel="import" href="../iron-button-state.html">
 
@@ -59,6 +60,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     behaviors: [
       Polymer.IronControlState
+    ]
+
+  });
+
+</script>
+
+<dom-module id="test-light-dom">
+
+  <template>
+    <content select="*"></content>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'test-light-dom',
+
+    behaviors: [
+      Polymer.IronControlState,
+      Polymer.IronButtonState
     ]
 
   });

@@ -138,7 +138,7 @@
             IncludeItemTypes: itemQuery.IncludeItemTypes
 
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderFilters(page, result);
 

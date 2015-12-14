@@ -69,11 +69,6 @@
         padding-left: .5em !important;
         padding-right: .5em !important;
     }
-
-    .pageWithAbsoluteTabs .pageTabContent {
-        padding-left: .25em !important;
-        padding-right: .25em !important;
-    }
 }
 
 .libraryPage .currentUsername {
@@ -87,9 +82,16 @@
     line-height: initial;
 }
 
-    .listHeader + paper-button {
-        margin-left: 2em;
+@media all and (max-width: 500px) {
+
+    .listHeader {
+        padding-left: 5px;
     }
+}
+
+.listHeader + paper-button {
+    margin-left: 2em;
+}
 
 .ehsContent, .ehsContent .pageTabContent {
     margin: 0 auto;
@@ -128,14 +130,6 @@
     }
 }
 
-@media all and (min-width: 500px) {
-
-    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 98%;
-        margin: 0 auto;
-    }
-}
-
 @media all and (min-width: 1200px) {
 
     .paddedItemsContainer {
@@ -150,10 +144,10 @@
     }
 }
 
-@media all and (min-width: 1920px) {
+@media all and (min-width: 2560px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 95%;
+        width: 96%;
     }
 }
 
@@ -469,19 +463,24 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .itemDetailImage {
-    -moz-box-shadow: 0px 0 20px #000;
-    -webkit-box-shadow: 0px 0 20px #000;
-    box-shadow: 0px 0 20px #000;
-    border: solid 1px #222;
+    border: solid 1px transparent;
 }
 
+    .itemDetailImage.loaded {
+        -moz-box-shadow: 0px 0 20px #000;
+        -webkit-box-shadow: 0px 0 20px #000;
+        box-shadow: 0px 0 20px #000;
+        border: solid 1px #222;
+    }
+
 .detailImageContainer img {
-    max-width: 280px;
-    max-height: 300px;
+    width: 280px;
+    /* This is just to make sure it always takes up some space */
+    min-height: 140px;
 }
 
 .portraitDetailImageContainer img {
-    max-width: 220px;
+    width: 220px;
 }
 
 .squareDetailImageContainer {
@@ -501,7 +500,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .primaryDetailsContainer {
     float: left;
     padding: .75em 0 0 1.5em;
-    width: 68%;
+    width: 66%;
 }
 
 .portraitDetailImageContainer + .primaryDetailsContainer {
@@ -547,11 +546,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailImageContainer img {
-        max-width: 240px;
+        width: 240px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 120px;
     }
 
     .portraitDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
     }
 }
 
@@ -893,7 +894,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailImageContainer img {
-        max-width: 140px;
+        width: 140px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 140px;
     }
 
     .inlineItemName {
@@ -909,14 +912,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .thumbDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 }
 
 @media all and (max-width: 600px) {
-
-    .primaryDetailsContainer {
-    }
 
     .portraitDetailImageContainer + .primaryDetailsContainer {
         width: 65%;
@@ -926,11 +928,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 500px) {
 
     .detailImageContainer img {
-        max-width: 80px;
+        width: 80px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 
     .thumbDetailImageContainer img {
-        max-width: 180px;
+        width: 180px;
+        /* This is just to make sure it always takes up some space */
+        min-height: 60px;
     }
 }
 
@@ -1220,6 +1226,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: #43A047;
     z-index: 1000;
     padding: 0 .75em 0 .25em;
+    display: flex;
+    align-items: center;
 }
 
     .selectionCommandsPanel paper-icon-button {
@@ -1235,11 +1243,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 1px;
 }
 
-.selectionCommandsPanel paper-icon-button {
-    height: 32px;
-    width: 32px;
-}
-
 @media all and (min-height: 480px) {
 
     .alphabetPicker {
@@ -1247,7 +1250,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 15px;
+        margin-right: 20px;
     }
 }
 
@@ -1454,6 +1457,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemsListview .content-icon {
         width: auto !important;
         padding-right: .7em;
+    }
+
+    .itemsListview.paperList {
+        text-align: left;
     }
 
     .itemsListview paper-item-body {
@@ -1806,3 +1813,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         -ms-transform: rotateZ(360deg);
     }
 }
+
+#criticReviewsContent.hiddenScrollX {
+    white-space: nowrap;
+}
+
+    #criticReviewsContent.hiddenScrollX .paperList {
+        min-width: 240px;
+        width: 90%;
+        max-width: 500px;
+        display: inline-block;
+        vertical-align: top;
+        margin: 0 4px 0 0;
+    }

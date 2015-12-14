@@ -91,7 +91,7 @@
 
         }, query);
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             if (result.Items.length) {
                 createElements();

@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="jqmpanel,jqmcollapsible,scripts/musicrecommended">
+    <div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="jqmpanel,jqmcollapsible,scripts/musicrecommended,paper-tabs,neon-animated-pages,paper-checkbox">
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
                 <paper-tab>${TabSuggestions}</paper-tab>
@@ -13,6 +13,7 @@
                 <paper-tab>${TabArtists}</paper-tab>
                 <paper-tab>${TabSongs}</paper-tab>
                 <paper-tab>${TabGenres}</paper-tab>
+                <paper-tab class="hide">${TabFolders}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs scopedLibraryViewNav">
                 <a href="music.html">${TabSuggestions}</a>
@@ -21,6 +22,7 @@
                 <a href="music.html?tab=3">${TabArtists}</a>
                 <a href="music.html?tab=4">${TabSongs}</a>
                 <a href="music.html?tab=5">${TabGenres}</a>
+                <a href="music.html?tab=6" class="hide">${TabFolders}</a>
             </div>
         </div>
 
@@ -32,30 +34,32 @@
                         <div class="homePageSection">
                             <h1 class="listHeader">${HeaderLatestMusic}</h1>
 
-                            <div id="recentlyAddedSongs" class="itemsContainer fullWidthItemsContainer noautoinit" style="text-align:left;">
+                            <div id="recentlyAddedSongs" class="itemsContainer noautoinit" style="text-align:left;">
                             </div>
                         </div>
 
                         <div id="playlists" style="display: none;" class="homePageSection">
                             <h1 class="listHeader">${HeaderPlaylists}</h1>
 
-                            <div class="itemsContainer fullWidthItemsContainer noautoinit" style="text-align:left;">
+                            <div class="itemsContainer noautoinit" style="text-align:left;">
                             </div>
                         </div>
 
                         <div id="recentlyPlayed" style="display: none;" class="homePageSection">
                             <h1 class="listHeader">${HeaderRecentlyPlayed}</h1>
 
-                            <div id="recentlyPlayedSongs" class="itemsContainer fullWidthItemsContainer noautoinit" style="text-align:left;">
+                            <div id="recentlyPlayedSongs" class="itemsContainer noautoinit" style="text-align:left;">
                             </div>
                         </div>
 
                         <div id="topPlayed" style="display: none;" class="homePageSection">
                             <h1 class="listHeader">${HeaderFrequentlyPlayed}</h1>
 
-                            <div id="topPlayedSongs" class="itemsContainer fullWidthItemsContainer noautoinit" style="text-align:left;">
+                            <div id="topPlayedSongs" class="itemsContainer noautoinit" style="text-align: left;">
                             </div>
                         </div>
+
+                        <div class="favoriteSections homePageSection"></div>
                     </div>
                 </neon-animatable>
                 <neon-animatable>
@@ -102,6 +106,15 @@
                 </neon-animatable>
                 <neon-animatable>
                     <div class="pageTabContent" data-index="5">
+                        <div class="viewSettings">
+                            <div class="listTopPaging">
+                            </div>
+                        </div>
+                        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent" data-index="6">
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>

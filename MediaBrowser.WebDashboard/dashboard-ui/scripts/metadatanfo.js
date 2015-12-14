@@ -24,7 +24,7 @@
 
         var form = this;
 
-        ApiClient.getNamedConfiguration(metadataKey).done(function (config) {
+        ApiClient.getNamedConfiguration(metadataKey).then(function (config) {
 
             config.UserId = $('#selectUser', form).val() || null;
             config.ReleaseDateFormat = $('#selectReleaseDateFormat', form).val();
@@ -32,7 +32,7 @@
             config.EnablePathSubstitution = $('#chkEnablePathSubstitution', form).checked();
             config.EnableExtraThumbsDuplication = $('#chkEnableExtraThumbs', form).checked();
 
-            ApiClient.updateNamedConfiguration(metadataKey, config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration(metadataKey, config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -52,9 +52,9 @@
         var promise1 = ApiClient.getUsers();
         var promise2 = ApiClient.getNamedConfiguration(metadataKey);
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, response2[0], response1[0]);
+            loadPage(page, responses[0], responses[0]);
         });
     });
 

@@ -8,7 +8,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvTimer(id).done(function () {
+                ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
@@ -21,25 +21,25 @@
 
     function renderTimers(page, timers) {
 
-        var html = LiveTvHelpers.getTimersHtml(timers);
+        LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+            var elem = $('#items', page).html(html);
 
-        var elem = $('#items', page).html(html);
+            $('.btnDeleteTimer', elem).on('click', function () {
 
-        $('.btnDeleteTimer', elem).on('click', function () {
+                var id = this.getAttribute('data-timerid');
 
-            var id = this.getAttribute('data-timerid');
+                deleteTimer(page, id);
+            });
 
-            deleteTimer(page, id);
+            Dashboard.hideLoadingMsg();
         });
-
-        Dashboard.hideLoadingMsg();
     }
 
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvTimers().done(function (result) {
+        ApiClient.getLiveTvTimers().then(function (result) {
 
             renderTimers(page, result.Items);
         });

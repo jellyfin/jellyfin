@@ -23,73 +23,76 @@
 
     function getSampleCommands() {
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        var commands = [];
+            var commands = [];
 
-        //commands.push('show my movies');
-        //commands.push('pull up my tv shows');
+            //commands.push('show my movies');
+            //commands.push('pull up my tv shows');
 
-        commands.push('play my latest episodes');
-        commands.push('play next up');
-        commands.push('shuffle my favorite songs');
+            commands.push('play my latest episodes');
+            commands.push('play next up');
+            commands.push('shuffle my favorite songs');
 
-        commands.push('show my tv guide');
-        commands.push('pull up my recordings');
-        commands.push('control chromecast');
-        commands.push('control [device name]');
-        commands.push('turn on display mirroring');
-        commands.push('turn off display mirroring');
-        commands.push('toggle display mirroring');
+            commands.push('show my tv guide');
+            commands.push('pull up my recordings');
+            commands.push('control chromecast');
+            commands.push('control [device name]');
+            commands.push('turn on display mirroring');
+            commands.push('turn off display mirroring');
+            commands.push('toggle display mirroring');
 
-        deferred.resolveWith(null, [shuffleArray(commands)]);
-
-        return deferred.promise();
+            resolve(shuffleArray(commands));
+        });
     }
 
     function processText(text) {
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        require(['voice/textprocessor-en-us.js'], function (parseText) {
+            require(['voice/textprocessor-en-us.js'], function (parseText) {
 
-            var result = parseText(text);
+                var result = parseText(text);
 
-            switch (result.action) {
+                switch (result.action) {
 
-                case 'show':
-                    showCommand(result);
-                    break;
-                case 'play':
-                    playCommand(result);
-                    break;
-                case 'shuffle':
-                    playCommand(result, true);
-                    break;
-                case 'search':
-                    playCommand(result);
-                    break;
-                case 'control':
-                    controlCommand(result);
-                    break;
-                case 'enable':
-                    enableCommand(result);
-                    break;
-                case 'disable':
-                    disableCommand(result);
-                    break;
-                case 'toggle':
-                    toggleCommand(result);
-                    break;
-                default:
-                    deferred.reject();
-                    return;
-            }
+                    case 'show':
+                        showCommand(result);
+                        break;
+                    case 'play':
+                        playCommand(result);
+                        break;
+                    case 'shuffle':
+                        playCommand(result, true);
+                        break;
+                    case 'search':
+                        playCommand(result);
+                        break;
+                    case 'control':
+                        controlCommand(result);
+                        break;
+                    case 'enable':
+                        enableCommand(result);
+                        break;
+                    case 'disable':
+                        disableCommand(result);
+                        break;
+                    case 'toggle':
+                        toggleCommand(result);
+                        break;
+                    default:
+                        reject();
+                        return;
+                }
 
-            deferred.resolve();
+                var dlg = currentDialog;
+                if (dlg) {
+                    PaperDialogHelper.close(dlg);
+                }
+
+                resolve();
+            });
         });
-
-        return deferred.promise();
     }
 
     function showCommand(result) {
@@ -148,7 +151,7 @@
 
         if (result.category == 'nextup') {
 
-            ApiClient.getNextUpEpisodes(query).done(function (queryResult) {
+            ApiClient.getNextUpEpisodes(query).then(function (queryResult) {
 
                 playItems(queryResult.Items, shuffle);
 
@@ -178,7 +181,7 @@
             query.IncludeItemTypes = result.itemType;
         }
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (queryResult) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (queryResult) {
 
             playItems(queryResult.Items, shuffle);
         });
@@ -216,31 +219,29 @@
 
         commands = commands.map(function (c) {
 
-            return '<div class="exampleCommand"><i class="fa fa-quote-left"></i><span class="exampleCommandText">' + c + '</span><i class="fa fa-quote-right"></i></div>';
+            return '<div class="exampleCommand"><span class="exampleCommandText">"' + c + '"</span></div>';
 
         }).join('');
 
         $('.exampleCommands', elem).html(commands);
     }
 
-    function showVoiceHelp() {
+    var currentDialog;
+    function showVoiceHelp(paperDialogHelper) {
 
-        var elem = $('.voiceInputHelp');
-
-        if (elem.length) {
-            $('.unrecognizedCommand').hide();
-            $('.defaultVoiceHelp').show();
-            return;
-        }
-
-        require(['fontawesome']);
+        var dlg = paperDialogHelper.createDialog({
+            size: 'medium',
+            removeOnClose: true
+        });
 
         var html = '';
+        html += '<h2 class="dialogHeader">';
+        html += '<paper-fab icon="arrow-back" mini class="btnCancelVoiceInput"></paper-fab>';
+        html += '</h2>';
+
+        html += '<div>';
 
         var getCommandsPromise = getSampleCommands();
-
-        html += '<div class="voiceInputHelp">';
-        html += '<div class="voiceInputHelpInner">';
 
         html += '<div class="voiceHelpContent">';
 
@@ -265,27 +266,37 @@
 
         html += '</div>';
 
-        html += '<paper-button raised class="block btnCancel" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
+        html += '<paper-button raised class="block btnCancelVoiceInput" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
 
         // voiceHelpContent
         html += '</div>';
 
-        // voiceInputHelpInner
         html += '</div>';
 
-        // voiceInputHelp
-        html += '</div>';
+        dlg.innerHTML = html;
+        document.body.appendChild(dlg);
 
-        $(document.body).append(html);
+        paperDialogHelper.open(dlg);
+        currentDialog = dlg;
 
-        elem = $('.voiceInputHelp');
-
-        getCommandsPromise.done(function (commands) {
-            renderSampleCommands(elem, commands);
+        dlg.addEventListener('iron-overlay-closed', function () {
+            currentDialog = null;
         });
 
-        $('.btnCancel', elem).on('click', cancelListener);
-        $('.btnRetry', elem).on('click', startListening);
+        $('.btnCancelVoiceInput', dlg).on('click', function () {
+            destroyCurrentRecognition();
+            paperDialogHelper.close(dlg);
+        });
+
+        $('.btnRetry', dlg).on('click', function () {
+            $('.unrecognizedCommand').hide();
+            $('.defaultVoiceHelp').show();
+            startListening(false);
+        });
+
+        getCommandsPromise.then(function (commands) {
+            renderSampleCommands(dlg.querySelector('.voiceHelpContent'), commands);
+        });
     }
 
     function showUnrecognizedCommandHelp() {
@@ -294,27 +305,17 @@
         $('.defaultVoiceHelp').hide();
     }
 
-    function hideVoiceHelp() {
-
-        $('.voiceInputHelp').remove();
-    }
-
-    function cancelListener() {
-
-        destroyCurrentRecognition();
-        hideVoiceHelp();
-    }
-
     function destroyCurrentRecognition() {
 
         var recognition = currentRecognition;
         if (recognition) {
+            recognition.cancelled = true;
             recognition.abort();
             currentRecognition = null;
         }
     }
 
-    function processTranscript(text) {
+    function processTranscript(text, isCancelled) {
 
         $('.voiceInputText').html(text);
 
@@ -324,18 +325,16 @@
             $('.blockedMessage').show();
         }
 
-        processText(text).done(hideVoiceHelp).fail(showUnrecognizedCommandHelp);
+        if (text) {
+            processText(text).catch(showUnrecognizedCommandHelp);
+        } else if (!isCancelled) {
+            showUnrecognizedCommandHelp();
+        }
     }
 
-    function startListening() {
+    function startListening(createUI) {
 
         destroyCurrentRecognition();
-
-        Dashboard.importCss('voice/voice.css');
-        startListeningInternal();
-    }
-
-    function startListeningInternal() {
 
         var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
@@ -349,21 +348,31 @@
         };
 
         recognition.onerror = function () {
-            processTranscript('');
+            processTranscript('', recognition.cancelled);
         };
 
         recognition.onnomatch = function () {
-            processTranscript('');
+            processTranscript('', recognition.cancelled);
         };
 
         recognition.start();
         currentRecognition = recognition;
-        showVoiceHelp();
+
+        if (createUI !== false) {
+            require(['components/paperdialoghelper', 'paper-fab', 'css!voice/voice.css'], showVoiceHelp);
+        }
     }
 
     window.VoiceInputManager = {
 
         isSupported: function () {
+
+            if (AppInfo.isNativeApp) {
+                // Crashes on some amazon devices
+                if (window.device && (device.platform || '').toLowerCase().indexOf('amazon') != -1) {
+                    return false;
+                }
+            }
 
             return window.SpeechRecognition || window.webkitSpeechRecognition;
         },

@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentDeferred;
     var hasChanges;
@@ -24,14 +24,14 @@
             type = null;
         }
 
-        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).done(function () {
+        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths).then(function () {
 
             hasChanges = true;
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
 
-        }).fail(function () {
+        }, function () {
 
-            Dashboard.showError(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
         });
 
         return false;
@@ -186,56 +186,53 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'components/medialibrarycreator/medialibrarycreator.template.html', true);
 
-                HttpClient.send({
+            xhr.onload = function (e) {
 
-                    type: 'GET',
-                    url: 'components/medialibrarycreator/medialibrarycreator.template.html'
+                var template = this.response;
+                var dlg = paperDialogHelper.createDialog({
+                    size: 'small',
+                    theme: 'a',
 
-                }).done(function (template) {
-
-                    var dlg = PaperDialogHelper.createDialog({
-                        size: 'small',
-                        theme: 'a',
-
-                        // In (at least) chrome this is causing the text field to not be editable
-                        modal: false
-                    });
-
-                    var html = '';
-                    html += '<h2 class="dialogHeader">';
-                    html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-
-                    var title = Globalize.translate('ButtonAddMediaLibrary');
-
-                    html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
-                    html += '</h2>';
-
-                    html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                    html += Globalize.translateDocument(template);
-                    html += '</div>';
-
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
-
-                    var editorContent = dlg.querySelector('.editorContent');
-                    initEditor(editorContent, options.collectionTypeOptions);
-
-                    $(dlg).on('iron-overlay-closed', onDialogClosed);
-
-                    PaperDialogHelper.openWithHash(dlg, 'medialibrarycreator');
-
-                    $('.btnCloseDialog', dlg).on('click', function () {
-
-                        PaperDialogHelper.close(dlg);
-                    });
-
-                    paths = [];
-                    renderPaths(editorContent);
+                    // In (at least) chrome this is causing the text field to not be editable
+                    modal: false
                 });
 
-            });
+                var html = '';
+                html += '<h2 class="dialogHeader">';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+
+                var title = Globalize.translate('ButtonAddMediaLibrary');
+
+                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
+                html += '</h2>';
+
+                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
+                html += Globalize.translateDocument(template);
+                html += '</div>';
+
+                dlg.innerHTML = html;
+                document.body.appendChild(dlg);
+
+                var editorContent = dlg.querySelector('.editorContent');
+                initEditor(editorContent, options.collectionTypeOptions);
+
+                $(dlg).on('iron-overlay-closed', onDialogClosed);
+
+                paperDialogHelper.open(dlg);
+
+                $('.btnCloseDialog', dlg).on('click', function () {
+
+                    paperDialogHelper.close(dlg);
+                });
+
+                paths = [];
+                renderPaths(editorContent);
+            }
+
+            xhr.send();
 
             return deferred.promise();
         };

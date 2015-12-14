@@ -7,7 +7,7 @@
             url: ApiClient.getUrl('Startup/Complete'),
             type: 'POST'
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.navigate('dashboard.html');
         });

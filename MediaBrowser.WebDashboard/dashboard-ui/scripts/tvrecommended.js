@@ -44,7 +44,7 @@
 
         query.ParentId = LibraryMenu.getTopParentId();
 
-        ApiClient.getNextUpEpisodes(query).done(function (result) {
+        ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             if (result.Items.length) {
                 $('.noNextUpItems', page).hide();
@@ -94,7 +94,7 @@
     }
 
     function enableScrollX() {
-        return $.browser.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {
@@ -122,7 +122,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -270,7 +270,7 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
-        $(pages).on('tabchange', function () {
+        pages.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(this.selected));
         });
     });
@@ -285,7 +285,7 @@
 
             if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
                     page.setAttribute('data-title', item.Name);
                     LibraryMenu.setTitle(item.Name);
@@ -313,7 +313,7 @@
             var page = $($.mobile.activePage)[0];
             var pages = page.querySelector('neon-animated-pages');
 
-            $(pages).trigger('tabchange');
+            pages.dispatchEvent(new CustomEvent("tabchange", {}));
         }
     }
 

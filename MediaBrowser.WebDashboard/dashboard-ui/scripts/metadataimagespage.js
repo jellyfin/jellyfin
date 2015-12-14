@@ -29,10 +29,10 @@
         var promise1 = ApiClient.getServerConfiguration();
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataPlugins"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var config = response1[0];
-            var metadataPlugins = response2[0];
+            var config = responses[0];
+            var metadataPlugins = responses[1];
 
             config = config.MetadataOptions.filter(function (c) {
                 return c.ItemType == type;
@@ -46,7 +46,7 @@
 
             } else {
 
-                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultConfig) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).then(function (defaultConfig) {
 
 
                     config = defaultConfig;
@@ -175,7 +175,7 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0 0;">';
+                html += '<div>';
 
                 if (i > 0) {
                     html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
@@ -299,7 +299,7 @@
 
             for (i = 0, length = plugins.length; i < length; i++) {
 
-                html += '<div style="margin:6px 0 0;">';
+                html += '<div>';
 
                 if (i > 0) {
                     html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
@@ -490,7 +490,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             var type = currentType;
 
@@ -501,16 +501,16 @@
             if (metadataOptions) {
 
                 saveSettingsIntoConfig(form, metadataOptions);
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
 
             } else {
 
-                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).done(function (defaultOptions) {
+                ApiClient.getJSON(ApiClient.getUrl("System/Configuration/MetadataOptions/Default")).then(function (defaultOptions) {
 
                     defaultOptions.ItemType = type;
                     config.MetadataOptions.push(defaultOptions);
                     saveSettingsIntoConfig(form, defaultOptions);
-                    ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+                    ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
 
                 });
             }

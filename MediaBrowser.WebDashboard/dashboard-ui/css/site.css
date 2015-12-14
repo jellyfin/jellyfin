@@ -660,21 +660,8 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-205%);
-    transform: translateY(-205%);
-}
-
-.largePanel {
-    width: 270px !important;
-}
-
-/* Make panels larger */
-.largePanelModalOpen.ui-panel-dismiss-position-right {
-    right: 270px !important;
-}
-
-.largePanelModalOpen.ui-panel-dismiss-position-left {
-    left: 270px !important;
+    -webkit-transform: translateY(-240%);
+    transform: translateY(-240%);
 }
 
 .checkboxContainer {
@@ -695,22 +682,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
         display: inline-block;
         padding: .7em .5em;
     }
-
-@media all and (min-width: 340px) {
-
-    .largePanel {
-        width: 300px !important;
-    }
-
-    /* Make panels larger */
-    .largePanelModalOpen.ui-panel-dismiss-position-right {
-        right: 300px !important;
-    }
-
-    .largePanelModalOpen.ui-panel-dismiss-position-left {
-        left: 300px !important;
-    }
-}
 
 textarea {
     width: 100%;
@@ -844,7 +815,7 @@ h1 .imageLink {
 }
 
 .paperCheckboxFieldDescription {
-    padding-left: 34px;
+    padding-left: 31px;
     padding-top: 5px;
 }
 
@@ -1575,7 +1546,7 @@ progress {
     z-index: 9999998;
 }
 
-.nativeApp * {
+.nativeApp *:not(input):not(select):not(textarea) {
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
@@ -1589,14 +1560,6 @@ progress {
     -moz-user-drag: none;
     -ms-user-drag: none;
     user-drag: none;
-}
-
-.nativeApp input {
-    -webkit-user-select: auto !important;
-    -khtml-user-select: auto !important;
-    -moz-user-select: auto !important;
-    -ms-user-select: auto !important;
-    user-select: auto !important;
 }
 
 .supporterMembershipDisabled .tabSupporterMembership {
@@ -1651,3 +1614,13 @@ progress {
     .scheduledTaskPaperIconItem paper-progress {
         display: inline-block;
     }
+
+.imageDropZone {
+    border: 2px dashed #bbb;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 25px;
+    text-align: center;
+    color: #bbb;
+}

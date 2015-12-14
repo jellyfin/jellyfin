@@ -11,7 +11,7 @@
     }
 
     function enableScrollX() {
-        return $.browser.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function getPortraitShape() {
@@ -36,7 +36,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var view = getView();
             var html = '';
@@ -93,7 +93,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        ApiClient.getItems(userId, options).then(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -132,7 +132,9 @@
                 });
             }
 
-            $('#resumableItems', page).html(html).lazyChildren();
+            var resumableItems = page.querySelector('#resumableItems');
+            resumableItems.innerHTML = html;
+            ImageLoader.lazyChildren(resumableItems);
 
         });
     }
@@ -216,7 +218,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });
 
-        ApiClient.getJSON(url).done(function (recommendations) {
+        ApiClient.getJSON(url).then(function (recommendations) {
 
             if (!recommendations.length) {
 
@@ -340,12 +342,12 @@
 
         LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
-        $(pages).on('tabchange', function () {
-            loadTab(page, parseInt(this.selected));
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.target.selected));
         });
     });
 
-    pageIdOn('pageshow', "moviesPage", function () {
+    pageIdOn('pagebeforeshow', "moviesPage", function () {
 
         var page = this;
 
@@ -355,7 +357,7 @@
 
             if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
                     page.setAttribute('data-title', item.Name);
                     LibraryMenu.setTitle(item.Name);
@@ -383,7 +385,7 @@
             var page = $($.mobile.activePage)[0];
             var pages = page.querySelector('neon-animated-pages');
 
-            $(pages).trigger('tabchange');
+            pages.dispatchEvent(new CustomEvent("tabchange", {}));
         }
     }
 

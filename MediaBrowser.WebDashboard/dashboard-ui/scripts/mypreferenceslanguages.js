@@ -18,7 +18,7 @@
 
     function loadForm(page, user, loggedInUser, allCulturesPromise) {
 
-        allCulturesPromise.done(function (allCultures) {
+        allCulturesPromise.then(function (allCultures) {
 
             populateLanguages($('#selectAudioLanguage', page), allCultures);
             populateLanguages($('#selectSubtitleLanguage', page), allCultures);
@@ -30,7 +30,7 @@
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
-        page.querySelector('.chkEnableCinemaMode').checked = user.Configuration.EnableCinemaMode || false;
+        page.querySelector('.chkEnableCinemaMode').checked = AppSettings.enableCinemaMode();
         page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
         page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
@@ -67,13 +67,13 @@
 
         var allCulturesPromise = ApiClient.getCultures();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadForm(page, response1[0] || response1, response2[0], allCulturesPromise);
+            loadForm(page, responses[1], responses[0], allCulturesPromise);
 
         });
 
-        ApiClient.getNamedConfiguration("cinemamode").done(function (cinemaConfig) {
+        ApiClient.getNamedConfiguration("cinemamode").then(function (cinemaConfig) {
 
             if (cinemaConfig.EnableIntrosForMovies || cinemaConfig.EnableIntrosForEpisodes) {
                 $('.cinemaModeOptions', page).show();
@@ -90,12 +90,15 @@
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
-        user.Configuration.EnableCinemaMode = page.querySelector('.chkEnableCinemaMode').checked;
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
+        AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
+
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
+
+            Dashboard.hideLoadingMsg();
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
-        }).always(function () {
+        }, function () {
             Dashboard.hideLoadingMsg();
         });
     }
@@ -120,7 +123,7 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).done(function (result) {
+        ApiClient.getUser(userId).then(function (result) {
 
             saveUser(page, result);
 
@@ -147,7 +150,13 @@
 
         var page = this;
 
-        if (AppInfo.hasKnownExternalPlayerSupport) {
+        if (AppInfo.supportsExternalPlayers) {
+            $('.fldExternalPlayer', page).show();
+        } else {
+            $('.fldExternalPlayer', page).hide();
+        }
+
+        if (AppInfo.supportsExternalPlayerMenu) {
             $('.labelNativeExternalPlayers', page).show();
             $('.labelGenericExternalPlayers', page).hide();
         } else {

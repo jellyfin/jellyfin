@@ -29,7 +29,7 @@
 
     function refreshPageTitle(page) {
 
-        ApiClient.getSystemInfo().done(function (systemInfo) {
+        ApiClient.getSystemInfo().then(function (systemInfo) {
 
             Dashboard.setPageTitle(systemInfo.ServerName);
         });
@@ -41,7 +41,7 @@
         var form = this;
         var page = $(form).parents('.page');
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.ServerName = form.querySelector('#txtServerName').value;
             config.UICulture = $('#selectLocalizationLanguage', form).val();
@@ -52,18 +52,18 @@
                 Dashboard.showDashboardRefreshNotification();
             }
 
-            ApiClient.updateServerConfiguration(config).done(function () {
+            ApiClient.updateServerConfiguration(config).then(function () {
 
                 refreshPageTitle(page);
 
-                ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
+                ApiClient.getNamedConfiguration(brandingConfigKey).then(function (brandingConfig) {
 
                     brandingConfig.LoginDisclaimer = form.querySelector('#txtLoginDisclaimer').value;
                     brandingConfig.CustomCss = form.querySelector('#txtCustomCss').value;
 
                     var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
 
-                    ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
+                    ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).then(Dashboard.processServerConfigurationUpdateResult);
 
                     if (cssChanged) {
                         Dashboard.showDashboardRefreshNotification();
@@ -116,13 +116,13 @@
 
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, responses[0], responses[1]);
 
         });
 
-        ApiClient.getNamedConfiguration(brandingConfigKey).done(function (config) {
+        ApiClient.getNamedConfiguration(brandingConfigKey).then(function (config) {
 
             currentBrandingOptions = config;
 

@@ -1,6 +1,6 @@
 {
   "name": "webcomponents.js",
-  "version": "0.7.14",
+  "version": "0.7.19",
   "description": "webcomponents.js",
   "main": "webcomponents.js",
   "directories": {
@@ -11,10 +11,7 @@
     "url": "https://github.com/webcomponents/webcomponentsjs.git"
   },
   "author": "The Polymer Authors",
-  "license": {
-    "type": "BSD-3-Clause",
-    "url": "http://polymer.github.io/LICENSE.txt"
-  },
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/webcomponents/webcomponentsjs/issues"
   },
@@ -26,6 +23,6 @@
     "gulp-header": "^1.1.1",
     "gulp-uglify": "^1.0.1",
     "run-sequence": "^1.0.1",
-    "web-component-tester": "*"
+    "web-component-tester": "^3"
   }
 }

@@ -50,7 +50,7 @@
 
         function reloadGuide(page) {
 
-            Dashboard.showModalLoadingMsg();
+            Dashboard.showLoadingMsg();
 
             channelQuery.UserId = Dashboard.getCurrentUserId();
 
@@ -67,7 +67,7 @@
             var nextDay = new Date(date.getTime() + msPerDay - 2000);
 
             Logger.log(nextDay);
-            channelsPromise.done(function (channelsResult) {
+            channelsPromise.then(function (channelsResult) {
 
                 ApiClient.getLiveTvPrograms({
                     UserId: Dashboard.getCurrentUserId(),
@@ -80,11 +80,11 @@
                     EnableImages: false,
                     SortBy: "StartDate"
 
-                }).done(function (programsResult) {
+                }).then(function (programsResult) {
 
                     renderGuide(page, date, channelsResult.Items, programsResult.Items);
 
-                    Dashboard.hideModalLoadingMsg();
+                    Dashboard.hideLoadingMsg();
 
                     LibraryBrowser.setLastRefreshed(page);
 
@@ -305,28 +305,28 @@
 
                 html += '<div class="channelHeaderCellContainer">';
 
-                html += '<div class="channelHeaderCell">';
-                html += '<a class="channelHeaderCellInner" href="itemdetails.html?id=' + channel.Id + '">';
+                html += '<a class="channelHeaderCell" href="itemdetails.html?id=' + channel.Id + '">';
 
                 var hasChannelImage = channel.ImageTags.Primary;
                 var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';
 
-                html += '<div class="' + cssClass + '">' + channel.Name + '<br/>' + channel.Number + '</div>';
+                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
 
                 if (hasChannelImage) {
 
                     var url = ApiClient.getScaledImageUrl(channel.Id, {
-                        maxHeight: 35,
-                        maxWidth: 60,
+                        maxHeight: 44,
+                        maxWidth: 70,
                         tag: channel.ImageTags.Primary,
                         type: "Primary"
                     });
 
                     html += '<div class="guideChannelImage lazy" data-src="' + url + '"></div>';
+                } else {
+                    html += '<div class="guideChannelName">' + channel.Name + '</div>';
                 }
 
                 html += '</a>';
-                html += '</div>';
 
                 html += '</div>';
             }
@@ -424,7 +424,7 @@
 
             channelLimit = limit;
 
-            ApiClient.getLiveTvGuideInfo().done(function (guideInfo) {
+            ApiClient.getLiveTvGuideInfo().then(function (guideInfo) {
 
                 setDateRange(page, guideInfo);
             });
@@ -434,13 +434,13 @@
 
             $('.guideRequiresUnlock', page).hide();
 
-            RegistrationServices.validateFeature('livetv').done(function () {
-                Dashboard.showModalLoadingMsg();
+            RegistrationServices.validateFeature('livetv').then(function () {
+                Dashboard.showLoadingMsg();
 
                 reloadPageAfterValidation(page, 1000);
-            }).fail(function () {
+            }, function () {
 
-                Dashboard.showModalLoadingMsg();
+                Dashboard.showLoadingMsg();
 
                 var limit = 5;
                 $('.guideRequiresUnlock', page).show();
@@ -469,13 +469,12 @@
             });
         }
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/tvguide/tvguide.template.html', true);
 
-            type: 'GET',
-            url: 'components/tvguide/tvguide.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
-
+            var template = this.response;
             var tabContent = options.element;
             tabContent.innerHTML = Globalize.translateDocument(template);
 
@@ -484,20 +483,20 @@
                 onProgramGridScroll(tabContent, this);
             });
 
-            if ($.browser.mobile) {
+            if (browserInfo.mobile) {
                 tabContent.querySelector('.tvGuide').classList.add('mobileGuide');
             } else {
 
                 tabContent.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-                Events.on(tabContent.querySelector('.timeslotHeaders'), 'scroll', function () {
+                tabContent.querySelector('.timeslotHeaders').addEventListener('scroll', function (e) {
 
-                    onTimeslotHeadersScroll(tabContent, this);
+                    onTimeslotHeadersScroll(tabContent, e.target);
                 });
             }
 
             if (AppInfo.enableHeadRoom && options.enableHeadRoom) {
-                requirejs(["thirdparty/headroom"], function () {
+                requirejs(["headroom"], function () {
 
                     // construct an instance of Headroom, passing the element
                     var headroom = new Headroom(tabContent.querySelector('.tvGuideHeader'));
@@ -517,6 +516,8 @@
             });
 
             self.refresh();
-        });
+        }
+
+        xhr.send();
     };
 });

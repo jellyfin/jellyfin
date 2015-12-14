@@ -13,6 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="animations/opaque-animation.html">
 
 <!--
+Material design: [Meaningful transitions](https://www.google.com/design/spec/animation/meaningful-transitions.html)
+
 `neon-animated-pages` manages a set of pages and runs an animation when switching between them. Its
 children pages should implement `Polymer.NeonAnimatableBehavior` and define `entry` and `exit`
 animations to be run when switching to or switching out of the page.
@@ -133,6 +135,7 @@ animations to be run when switching to or switching out of the page.
           this._squelchNextFinishEvent = true;
           this.cancelAnimation();
           this._completeSelectedChanged();
+          this._squelchNextFinishEvent = false;
         }
 
         // configure the animation.

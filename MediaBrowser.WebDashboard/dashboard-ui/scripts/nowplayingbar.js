@@ -20,8 +20,7 @@
 
         var html = '';
 
-        // add return false because on iOS clicking the bar often ends up clicking the content underneath. 
-        html += '<div class="nowPlayingBar" style="display:none;">';
+        html += '<div class="nowPlayingBar hide">';
 
         html += '<div class="nowPlayingBarPositionContainer">';
         html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
@@ -52,7 +51,7 @@
         html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
         html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
 
-        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;"></paper-slider>';
+        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
 
         html += '<paper-icon-button icon="repeat" class="mediaButton toggleRepeatButton"></paper-icon-button>';
 
@@ -71,16 +70,73 @@
         return html;
     }
 
+    var height;
+
+    function getHeight(elem) {
+
+        if (!height) {
+            height = elem.offsetHeight;
+        }
+
+        return height + 'px';
+        return '80px';
+    }
+
+    function slideDown(elem) {
+
+        if (elem.classList.contains('hide')) {
+            return;
+        }
+
+        var onfinish = function () {
+            elem.classList.add('hide');
+        };
+
+        if (!browserInfo.animate || browserInfo.mobile) {
+            onfinish();
+            return;
+        }
+
+        onfinish();
+        return;
+        requestAnimationFrame(function () {
+            var keyframes = [
+              { height: getHeight(elem), offset: 0 },
+              { height: '0', display: 'none', offset: 1 }];
+            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
+            elem.animate(keyframes, timing).onfinish = onfinish;
+        });
+    }
+
+    function slideUp(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
+
+        if (!browserInfo.animate || browserInfo.mobile) {
+            return;
+        }
+        return;
+
+        requestAnimationFrame(function () {
+
+            var keyframes = [
+              { height: '0', offset: 0 },
+              { height: getHeight(elem), offset: 1 }];
+            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
+            elem.animate(keyframes, timing);
+        });
+    }
+
     function bindEvents(elem) {
 
         currentTimeElement = $('.nowPlayingBarCurrentTime', elem);
         nowPlayingImageElement = $('.nowPlayingImage', elem);
         nowPlayingTextElement = $('.nowPlayingBarText', elem);
         nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
-
-        $(elem).on('swipeup', function () {
-            Dashboard.navigate('nowplaying.html');
-        });
 
         unmuteButton = $('.unmuteButton', elem).on('click', function () {
 
@@ -197,25 +253,36 @@
         }, 300);
     }
 
+    var nowPlayingBarElement;
     function getNowPlayingBar() {
 
-        var elem = document.querySelector('.nowPlayingBar');
+        return new Promise(function (resolve, reject) {
 
-        if (elem) {
-            return elem;
-        }
+            if (nowPlayingBarElement) {
+                resolve(nowPlayingBarElement);
+                return;
+            }
 
-        elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications')[0];
+            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
 
-        if (($.browser.safari || !AppInfo.isNativeApp) && $.browser.mobile) {
-            // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
-            elem.classList.add('noMediaProgress');
-        }
+                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-        bindEvents(elem);
-        $.mobile.loadPage('nowplaying.html');
+                if (nowPlayingBarElement) {
+                    resolve(nowPlayingBarElement);
+                    return;
+                }
 
-        return elem;
+                nowPlayingBarElement = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
+
+                if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
+                    // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
+                    nowPlayingBarElement.classList.add('noMediaProgress');
+                }
+
+                bindEvents(nowPlayingBarElement);
+                resolve(nowPlayingBarElement);
+            });
+        });
     }
 
     function showButton(button) {
@@ -230,12 +297,24 @@
 
     function updatePlayerState(event, state) {
 
-        if (state.NowPlayingItem) {
-            showNowPlayingBar();
-        } else {
+        if (!state.NowPlayingItem) {
             hideNowPlayingBar();
             return;
         }
+
+        if (nowPlayingBarElement) {
+            updatePlayerStateInternal(event, state);
+            return;
+        }
+
+        getNowPlayingBar().then(function () {
+            updatePlayerStateInternal(event, state);
+        });
+    }
+
+    function updatePlayerStateInternal(event, state) {
+
+        showNowPlayingBar();
 
         if (event.type == 'positionchange') {
             // Try to avoid hammering the document with changes
@@ -248,10 +327,6 @@
         }
 
         lastPlayerState = state;
-
-        if (!muteButton) {
-            getNowPlayingBar();
-        }
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -308,10 +383,6 @@
     function updatePlayerVolumeState(state, playerInfo) {
 
         playerInfo = playerInfo || MediaController.getPlayerInfo();
-
-        if (!muteButton) {
-            getNowPlayingBar();
-        }
 
         var playState = state.PlayState || {};
         var supportedCommands = playerInfo.supportedCommands;
@@ -378,7 +449,12 @@
 
         // See bindEvents for why this is necessary
         if (volumeSlider) {
-            $(volumeSlider).visible(showVolumeSlider);
+
+            if (showVolumeSlider) {
+                volumeSlider.classList.remove('hide');
+            } else {
+                volumeSlider.classList.add('hide');
+            }
 
             if (!volumeSlider.dragging) {
                 volumeSlider.value = playState.VolumeLevel || 0;
@@ -455,7 +531,7 @@
         nowPlayingImageElement.html(imgHtml);
 
         if (nowPlayingItem.Id) {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
                 nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
             });
         } else {
@@ -476,9 +552,7 @@
 
     function showNowPlayingBar() {
 
-        var nowPlayingBar = getNowPlayingBar();
-
-        $(nowPlayingBar).show();
+        getNowPlayingBar().then(slideUp);
     }
 
     function hideNowPlayingBar() {
@@ -489,7 +563,7 @@
         // Don't call getNowPlayingBar here because we don't want to end up creating it just to hide it
         var elem = document.getElementsByClassName('nowPlayingBar')[0];
         if (elem) {
-            elem.style.display = 'none';
+            slideDown(elem);
         }
     }
 
@@ -536,7 +610,9 @@
 
         var player = this;
 
-        player.getPlayerState().done(function (state) {
+        Promise.all([player.getPlayerState(), getNowPlayingBar()]).then(function (responses) {
+
+            var state = responses[0];
 
             if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
                 return;
@@ -552,7 +628,7 @@
 
         currentPlayer = player;
 
-        player.getPlayerState().done(function (state) {
+        player.getPlayerState().then(function (state) {
 
             if (state.NowPlayingItem) {
                 player.beginPlayerUpdates();
@@ -568,14 +644,11 @@
             .on('positionchange', onStateChanged);
     }
 
-    Dashboard.ready(function () {
-
-        Events.on(MediaController, 'playerchange', function () {
-
-            bindToPlayer(MediaController.getCurrentPlayer());
-        });
+    Events.on(MediaController, 'playerchange', function () {
 
         bindToPlayer(MediaController.getCurrentPlayer());
     });
+
+    bindToPlayer(MediaController.getCurrentPlayer());
 
 })(window, document, jQuery, setTimeout, clearTimeout);

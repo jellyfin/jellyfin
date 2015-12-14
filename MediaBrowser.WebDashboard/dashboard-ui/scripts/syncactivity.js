@@ -14,7 +14,7 @@
                     url: ApiClient.getUrl('Sync/Jobs/' + id),
                     type: 'DELETE'
 
-                }).done(function () {
+                }).then(function () {
 
                     reloadData(page);
                 });
@@ -218,6 +218,14 @@
         }
     }
 
+    $.fn.lazyChildren = function () {
+
+        for (var i = 0, length = this.length; i < length; i++) {
+            ImageLoader.lazyChildren(this[i]);
+        }
+        return this;
+    };
+
     function refreshData(page, jobs) {
 
         for (var i = 0, length = jobs.length; i < length; i++) {
@@ -315,7 +323,7 @@
 
         var options = {};
 
-        Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().then(function (user) {
 
             if ($(page).hasClass('mySyncPage')) {
                 options.UserId = Dashboard.getCurrentUserId();
@@ -325,7 +333,7 @@
                 }
             }
 
-            ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).done(function (response) {
+            ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
 
                 loadData(page, response.Items);
                 Dashboard.hideLoadingMsg();
@@ -380,8 +388,8 @@
 
         $('.btnSyncSupporter', page).on('click', function () {
 
-            requirejs(["scripts/registrationservices"], function () {
-                RegistrationServices.validateFeature('sync').done(function () {
+            requirejs(["registrationservices"], function () {
+                RegistrationServices.validateFeature('sync').then(function () {
                 });
             });
         });
@@ -391,7 +399,7 @@
 
         var page = this;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
                 $('.supporterPromotionContainer', page).hide();

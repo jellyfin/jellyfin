@@ -16,15 +16,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
-  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../paper-styles/color.html">
   <link rel="import" href="../paper-slider.html">
 
   <style is="custom-style">
     body {
       padding: 40px;
     }
-    
+
     paper-slider {
       width: 100%;
     }
@@ -63,7 +64,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </head>
 <body unresolved>
-  <div class="vertical center-justified layout">
+  <div class="vertical-section-container">
     <h4>Default</h4>
     <div class="vertical-section">
       <div>Oxygen</div>
@@ -75,24 +76,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>Nitrogen</div>
       <paper-slider value="78" secondary-progress="85"></paper-slider><br><br>
       <div>Sprinkles</div>
-      <paper-slider disabled value="33" secondary-progress="66"></paper-slider>
+      <paper-slider disabled value="33"></paper-slider>
     </div>
 
     <h4>Editable</h4>
     <div class="vertical-section">
-      <div class="center horizontal layout">
+      <div>
         <div>R</div>
         <paper-slider class="red" value="23" max="255" editable></paper-slider>
       </div>
-      <div class="center horizontal layout">
+      <div>
         <div>G</div>
         <paper-slider class="green" value="183" max="255" editable></paper-slider>
       </div>
-      <div class="center horizontal layout">
+      <div>
         <div>B</div>
         <paper-slider class="blue" value="211" max="255" editable></paper-slider>
       </div>
-      <div class="center horizontal layout">
+      <div>
       <div>&alpha;</div>
       <paper-slider max="1.0" step="0.01" editable></paper-slider>
       </div>
@@ -103,7 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>Brightness</div><br>
       <paper-slider pin value="20" class="orange"></paper-slider>
       <div>Ratings: <span id="ratingsLabel" class="caption"></span></div><br>
-      <paper-slider id="ratings" pin snaps max="10" step="1" value="5" class="orange"></paper-slider>
+      <paper-slider id="ratings" pin snaps max="10" max-markers="10" step="1" value="5" class="orange"></paper-slider>
       <div>Grade: <span id="gradeLabel" class="caption"></span></div><br>
       <paper-slider id="grade" pin value="20" secondary-progress="70" class="blue"></paper-slider>
     </div>
@@ -120,11 +121,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     grade.addEventListener('value-change', function() {
       var label = (grade.value < grade.secondaryProgress) ? "Fail" : "Pass" ;
       document.querySelector('#gradeLabel').textContent = grade.value + " (" + label + ")";
-    });
-
-    var test = document.querySelector("#test");
-    test.addEventListener('value-changed', function(e) {
-      console.log(e);
     });
 
   </script>

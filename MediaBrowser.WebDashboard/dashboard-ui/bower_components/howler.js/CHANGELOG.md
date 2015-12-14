@@ -1,3 +1,6 @@
+## 1.1.28 (October 22, 2015)
+- `FIXED`: Fixed typo with iOS enabler that was preventing it from working.
+
 ## 1.1.27 (October 2, 2015)
 - `FIXED`: Fixed automatic audio unlocking on iOS 9 by switching to `touchend` from `touchstart`.
 

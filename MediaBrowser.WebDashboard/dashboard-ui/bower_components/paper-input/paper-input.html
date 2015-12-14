@@ -7,15 +7,18 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
+
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="paper-input-behavior.html">
+<link rel="import" href="paper-input-char-counter.html">
 <link rel="import" href="paper-input-container.html">
 <link rel="import" href="paper-input-error.html">
-<link rel="import" href="paper-input-char-counter.html">
 
 <!--
+Material design: [Text fields](https://www.google.com/design/spec/components/text-fields.html)
+
 `<paper-input>` is a single-line text field with Material Design styling.
 
     <paper-input label="Input label"></paper-input>
@@ -35,9 +38,10 @@ for `suffix`).
       <paper-icon-button suffix icon="clear"></paper-icon-button>
     </paper-input>
 
-A `paper-input` can use the native `type=search` features. However, since
-we can't control the native styling of the input, it's recommended to use
-a placeholder text, or `always-float-label`, as to not overlap the native search icon.
+A `paper-input` can use the native `type=search` or `type=file` features.
+However, since we can't control the native styling of the input, in these cases
+it's recommended to use a placeholder text, or `always-float-label`,
+as to not overlap the native UI (search icon, file button, etc.).
 
     <paper-input label="search!" type="search"
         placeholder="search for cats" autosave="test" results="5">
@@ -45,10 +49,16 @@ a placeholder text, or `always-float-label`, as to not overlap the native search
 
 See `Polymer.PaperInputBehavior` for more API docs.
 
+### Focus
+
+To focus a paper-input, you can call the native `focus()` method as long as the
+paper input has a tab index.
+
 ### Styling
 
 See `Polymer.PaperInputContainer` for a list of custom properties used to
 style this element.
+
 
 @group Paper Elements
 @element paper-input
@@ -58,7 +68,6 @@ style this element.
 
 <dom-module id="paper-input">
   <template>
-
     <style>
       :host {
         display: block;
@@ -115,8 +124,11 @@ style this element.
         autocapitalize$="[[autocapitalize]]"
         autocorrect$="[[autocorrect]]"
         on-change="_onChange"
-        autosave$="[[autosave]]",
-        results$="[[results]]">
+        tabindex$="[[tabindex]]"
+        autosave$="[[autosave]]"
+        results$="[[results]]"
+        accept$="[[accept]]"
+        multiple$="[[multiple]]">
 
       <content select="[suffix]"></content>
 
@@ -129,7 +141,6 @@ style this element.
       </template>
 
     </paper-input-container>
-
   </template>
 </dom-module>
 
@@ -139,8 +150,7 @@ style this element.
 
     behaviors: [
       Polymer.IronFormElementBehavior,
-      Polymer.PaperInputBehavior,
-      Polymer.IronControlState
+      Polymer.PaperInputBehavior
     ]
   });
 </script>

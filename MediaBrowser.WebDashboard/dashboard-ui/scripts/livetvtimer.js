@@ -10,7 +10,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvTimer(id).done(function () {
+                ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
@@ -72,12 +72,12 @@
 
         var form = this;
 
-        ApiClient.getLiveTvTimer(currentItem.Id).done(function (item) {
+        ApiClient.getLiveTvTimer(currentItem.Id).then(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
 
-            ApiClient.updateLiveTvTimer(item).done(function () {
+            ApiClient.updateLiveTvTimer(item).then(function () {
                 Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
@@ -94,7 +94,7 @@
 
         var id = getParameterByName('id');
 
-        ApiClient.getLiveTvTimer(id).done(function (result) {
+        ApiClient.getLiveTvTimer(id).then(function (result) {
 
             renderTimer(page, result);
 

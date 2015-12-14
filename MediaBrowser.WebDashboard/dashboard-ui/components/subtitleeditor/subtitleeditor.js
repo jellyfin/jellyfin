@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentItem;
 
@@ -11,7 +11,12 @@
 
         var url = 'Videos/' + currentItem.Id + '/Subtitles/' + index;
 
-        $.get(ApiClient.getUrl(url)).done(function (result) {
+        ApiClient.ajax({
+
+            type: 'GET',
+            url: url
+
+        }).then(function (result) {
 
             $('.subtitleContent', page).html(result);
 
@@ -30,7 +35,7 @@
 
         var url = 'Providers/Subtitles/Subtitles/' + id;
 
-        ApiClient.get(ApiClient.getUrl(url)).done(function (result) {
+        ApiClient.get(ApiClient.getUrl(url)).then(function (result) {
 
             $('.subtitleContent', page).html(result);
 
@@ -49,7 +54,7 @@
             type: "POST",
             url: ApiClient.getUrl(url)
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.alert(Globalize.translate('MessageDownloadQueued'));
         });
@@ -73,7 +78,7 @@
                     type: "DELETE",
                     url: ApiClient.getUrl(url)
 
-                }).done(function () {
+                }).then(function () {
 
                     reload(page, itemId);
                 });
@@ -184,7 +189,7 @@
         }
         else {
 
-            Dashboard.getCurrentUser().done(function (user) {
+            Dashboard.getCurrentUser().then(function (user) {
 
                 var lang = user.Configuration.SubtitleLanguagePreference;
 
@@ -286,7 +291,7 @@
 
         var url = ApiClient.getUrl('Items/' + currentItem.Id + '/RemoteSearch/Subtitles/' + language);
 
-        ApiClient.getJSON(url).done(function (results) {
+        ApiClient.getJSON(url).then(function (results) {
 
             renderSearchResults(page, results);
         });
@@ -305,7 +310,7 @@
         }
 
         if (typeof itemId == 'string') {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(onGetItem);
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(onGetItem);
         }
         else {
             onGetItem(itemId);
@@ -326,16 +331,15 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/subtitleeditor/subtitleeditor.template.html', true);
 
-            type: 'GET',
-            url: 'components/subtitleeditor/subtitleeditor.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
+            var template = this.response;
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-
-                var dlg = PaperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog();
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -355,22 +359,24 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'subtitleeditor');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
-                ApiClient.getCultures().done(function (languages) {
+                ApiClient.getCultures().then(function (languages) {
 
                     fillLanguages(editorContent, languages);
                 });
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 });
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {
@@ -379,14 +385,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    window.SubtitleEditor = {
-        show: function (itemId) {
-
-            require(['components/paperdialoghelper'], function () {
-
-                showEditor(itemId);
-            });
-        }
+    return {
+        show: showEditor
     };
-
-})(jQuery, window, document);
+});

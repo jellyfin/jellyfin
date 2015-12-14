@@ -67,7 +67,9 @@ Custom property | Description | Default
   <template strip-whitespace>
     <style>
       :host {
-        display: inline-block;
+        @apply(--layout);
+        @apply(--layout-justified);
+        @apply(--layout-center);
         width: 200px;
         cursor: default;
         -webkit-user-select: none;
@@ -88,8 +90,10 @@ Custom property | Description | Default
 
       #sliderContainer {
         position: relative;
-        width: calc(100% - 32px);
-        height: 32px;
+        width: 100%;
+        height: calc(30px + var(--paper-slider-height, 2px));
+        margin-left: calc(15px + var(--paper-slider-height, 2px)/2);
+        margin-right: calc(15px + var(--paper-slider-height, 2px)/2);
       }
 
       #sliderContainer:focus {
@@ -97,70 +101,67 @@ Custom property | Description | Default
       }
 
       #sliderContainer.editable {
-        float: left;
-        width: calc(100% - 72px);
-        margin: 12px 0;
+        margin-top: 12px;
+        margin-bottom: 12px;
       }
 
       .bar-container {
         position: absolute;
         top: 0;
-        left: 16px;
-        height: 100%;
-        width: 100%;
+        bottom: 0;
+        left: 0;
+        right: 0;
         overflow: hidden;
       }
 
       .ring > .bar-container {
-        left: 20px;
-        width: calc(100% - 4px);
+        left: calc(5px + var(--paper-slider-height, 2px)/2);
         transition: left 0.18s ease, width 0.18s ease;
-      }
-
-      .ring.expand:not(.pin) > .bar-container {
-        left: 30px;
-        width: calc(100% - 14px);
       }
 
       .ring.expand.dragging > .bar-container {
         transition: none;
       }
 
+      .ring.expand:not(.pin) > .bar-container {
+        left: calc(15px + var(--paper-slider-height, 2px)/2);
+      }
+
       #sliderBar {
-        position: absolute;
-        top: 15px;
-        left: 0;
+        padding: 15px 0;
         width: 100%;
-        padding: 8px 0;
-        margin: -8px 0;
         background-color: var(--paper-slider-bar-color, transparent);
         --paper-progress-height: var(--paper-slider-height, 2px);
       }
 
       .ring #sliderBar {
-        left: -4px;
-        width: calc(100% + 4px);
+        margin-left: calc(-5px - var(--paper-slider-height, 2px)/2);
+        width: calc(100% + 5px + var(--paper-slider-height, 2px)/2);
       }
-
       .ring.expand:not(.pin) #sliderBar {
-        left: -14px;
-        width: calc(100% + 14px);
+        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
+        width: calc(100% + 15px + var(--paper-slider-height, 2px)/2);
       }
 
       .slider-markers {
         position: absolute;
-        top: 15px;
-        left: 15px;
-        height: 2px;
-        width: calc(100% + 2px);
+        top: calc(14px + var(--paper-slider-height,2px)/2);
+        height: var(--paper-slider-height, 2px);
+        left: 0;
+        right: -1px;
         box-sizing: border-box;
         pointer-events: none;
+        @apply(--layout-horizontal);
       }
 
+      .slider-marker {
+        @apply(--layout-flex);
+      }
       .slider-markers::after,
       .slider-marker::after {
         content: "";
         display: block;
+        margin-left: -1px;
         width: 2px;
         height: 2px;
         border-radius: 50%;
@@ -168,15 +169,12 @@ Custom property | Description | Default
       }
 
       #sliderKnob {
-        @apply(--layout-center-justified);
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
-
         position: absolute;
         left: 0;
         top: 0;
-        width: 32px;
-        height: 32px;
+        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
+        width: calc(30px + var(--paper-slider-height, 2px));
+        height: calc(30px + var(--paper-slider-height, 2px));
       }
 
       .transiting > #sliderKnob {
@@ -197,20 +195,22 @@ Custom property | Description | Default
       }
 
       #sliderKnobInner {
-        width: 12px;
-        height: 12px;
+        margin: 10px;
+        width: calc(100% - 20px);
+        height: calc(100% - 20px);
         border-radius: 50%;
         background-color: var(--paper-slider-knob-color, --google-blue-700);
 
         -moz-box-sizing: border-box;
         box-sizing: border-box;
 
-        transition-property: height, width, background-color, border;
+        transition-property: margin, height, width, background-color, border;
         transition-duration: 0.1s;
         transition-timing-function: ease;
       }
 
       .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+        margin: 0;
         width: 100%;
         height: 100%;
 
@@ -231,10 +231,10 @@ Custom property | Description | Default
         content: "";
         position: absolute;
         top: 0;
-        left: 0;
+        left: 50%;
+        margin-left: -13px;
         width: 26px;
         height: 26px;
-        margin-left: 3px;
         border-radius: 50% 50% 50% 0;
 
         -webkit-transform: rotate(-45deg) scale(0) translate(0);
@@ -260,7 +260,8 @@ Custom property | Description | Default
         content: attr(value);
         position: absolute;
         top: 0;
-        left: 0;
+        left: 50%;
+        margin-left: -16px;
         width: 32px;
         height: 26px;
         text-align: center;
@@ -279,7 +280,6 @@ Custom property | Description | Default
       /* paper-input */
       .slider-input {
         width: 50px;
-        float: right;
         overflow: hidden;
         --paper-input-container-input: {
           text-align: center;
@@ -291,9 +291,14 @@ Custom property | Description | Default
         pointer-events: none;
       }
 
+      .disabled > #sliderKnob {
+        top: 2px;
+        margin-left: calc(-13px - var(--paper-slider-height, 2px)/2);
+        width: calc(26px + var(--paper-slider-height, 2px));
+        height: calc(26px + var(--paper-slider-height, 2px));
+      }
+
       .disabled > #sliderKnob > #sliderKnobInner {
-        width: 8px;
-        height: 8px;
         background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
       }
 
@@ -326,15 +331,14 @@ Custom property | Description | Default
       </div>
 
       <template is="dom-if" if="[[snaps]]">
-        <div class="slider-markers horizontal layout">
+        <div class="slider-markers">
           <template is="dom-repeat" items="[[markers]]">
-            <div class="slider-marker flex"></div>
+            <div class="slider-marker"></div>
           </template>
         </div>
       </template>
 
       <div id="sliderKnob"
-        class="center-justified center horizontal layout"
         on-down="_knobdown"
         on-up="_resetKnob"
         on-track="_onTrack"
@@ -589,6 +593,9 @@ Custom property | Description | Default
       this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
       this._setPinValue(immediateValue);
     },
+    _setPinValue: function (value) {
+        this.pinValue = value;
+    },
 
     _trackEnd: function() {
       var s = this.$.sliderKnob.style;
@@ -601,9 +608,6 @@ Custom property | Description | Default
       s.transform = s.webkitTransform = '';
 
       this.fire('change');
-    },
-    _setPinValue: function (value) {
-        this.pinValue = value;
     },
 
     _knobdown: function(event) {
@@ -651,12 +655,14 @@ Custom property | Description | Default
     },
 
     _maxMarkersChanged: function(maxMarkers) {
-      var l = (this.max - this.min) / this.step;
-      if (!this.snaps && l > maxMarkers) {
+      if (!this.snaps) {
         this._setMarkers([]);
-      } else {
-        this._setMarkers(new Array(l));
       }
+      var steps = Math.floor((this.max - this.min) / this.step);
+      if (steps > maxMarkers) {
+        steps = maxMarkers;
+      }
+      this._setMarkers(new Array(steps));
     },
 
     _mergeClasses: function(classes) {

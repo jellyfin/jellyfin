@@ -41,7 +41,7 @@
 
         query.UserId = Dashboard.getCurrentUserId();
 
-        ApiClient.getJSON(ApiClient.getUrl('Playlists/' + item.Id + '/Items', query)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl('Playlists/' + item.Id + '/Items', query)).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -101,6 +101,7 @@
             }
 
             ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
 
             $(elem).off('needsrefresh').on('needsrefresh', function () {
 
@@ -141,11 +142,11 @@
 
             type: 'POST'
 
-        }).done(function () {
+        }).then(function () {
 
             Dashboard.hideLoadingMsg();
 
-        }).fail(function () {
+        }, function () {
 
             Dashboard.hideLoadingMsg();
             reloadItems(page, item);
@@ -162,7 +163,7 @@
 
             type: 'DELETE'
 
-        }).done(function () {
+        }).then(function () {
 
             reloadItems(page, item);
         });

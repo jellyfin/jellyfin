@@ -23,7 +23,7 @@
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("dlna").done(function (config) {
+        ApiClient.getNamedConfiguration("dlna").then(function (config) {
 
             config.EnableServer = $('#chkEnableServer', form).checked();
             config.BlastAliveMessages = $('#chkBlastAliveMessages', form).checked();
@@ -32,7 +32,7 @@
 
             config.EnableMovieFolders = $('#chkEnableMovieFolders', form).checked();
 
-            ApiClient.updateNamedConfiguration("dlna", config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("dlna", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -52,9 +52,9 @@
         var promise1 = ApiClient.getNamedConfiguration("dlna");
         var promise2 = ApiClient.getUsers();
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, responses[0], responses[1]);
 
         });
 

@@ -81,7 +81,7 @@
     function onSubmit() {
         var form = this;
 
-        ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
+        ApiClient.getNamedConfiguration('autoorganize').then(function (config) {
 
             var tvOptions = config.TvOptions;
 
@@ -103,7 +103,7 @@
 
             tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
 
-            ApiClient.updateNamedConfiguration('autoorganize', config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration('autoorganize', config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         return false;
@@ -160,7 +160,7 @@
 
         var page = this;
 
-        ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
+        ApiClient.getNamedConfiguration('autoorganize').then(function (config) {
             loadPage(page, config);
         });
     });

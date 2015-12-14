@@ -36,7 +36,7 @@
 
         var channelId = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features")).done(function (features) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Features")).then(function (features) {
 
             if (features.CanFilter) {
 
@@ -68,7 +68,7 @@
 
     function reloadItems(page) {
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         var channelId = getParameterByName('id');
         var folderId = getParameterByName('folderId');
@@ -78,14 +78,14 @@
 
         if (folderId) {
 
-            ApiClient.getItem(query.UserId, folderId).done(function (item) {
+            ApiClient.getItem(query.UserId, folderId).then(function (item) {
 
                 LibraryMenu.setTitle(item.Name);
             });
 
         } else {
 
-            ApiClient.getItem(query.UserId, channelId).done(function (item) {
+            ApiClient.getItem(query.UserId, channelId).then(function (item) {
 
                 LibraryMenu.setTitle(item.Name);
             });
@@ -93,7 +93,7 @@
 
         query.folderId = folderId;
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -145,9 +145,11 @@
                 showSortMenu(page);
             });
 
-        }).always(function () {
+            Dashboard.hideLoadingMsg();
 
-            Dashboard.hideModalLoadingMsg();
+        }, function () {
+
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -223,7 +225,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
-    $(document).on('pageinit', "#channelItemsPage", function () {
+    pageIdOn('pageinit', "channelItemsPage", function () {
 
         var page = this;
 
@@ -261,7 +263,9 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#channelItemsPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "channelItemsPage", function () {
 
         var page = this;
         reloadFeatures(page);

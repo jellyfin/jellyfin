@@ -25,43 +25,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <link rel="import" href="../paper-tabs.html">
     <link rel="import" href="../paper-tab.html">
-    <style is="custom-style">
-      :root {
-        --paper-toolbar-background: #00bcd4;
-      }
 
-      body {
-        font-family: sans-serif;
-        margin: 0;
-        padding: 24px;
-        color: #333;
-      }
+    <link rel="import" href="tabs-with-content-example.html">
+    <link rel="import" href="paper-tabs-demo-styles.html">
 
-      paper-tabs, paper-toolbar {
-        background-color: #00bcd4;
-        color: #fff;
-        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-      }
-
-      paper-toolbar paper-tabs {
-        box-shadow: none;
-      }
-
-      paper-tabs[noink][no-bar] paper-tab.iron-selected {
-        color: #ffff8d;
-      }
-
-      paper-tabs[align-bottom] {
-        box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
-      }
-
-      h3 {
-        font-size: 16px;
-        font-weight: 400;
-        padding-top: 20px;
-      }
-
-    </style>
+    <style is="custom-style" include="paper-tabs-demo-styles"></style>
 
   </head>
   <body unresolved>
@@ -125,7 +93,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </paper-tabs>
 
-    <h3>F. Link Tabs</h3>
+    <h3>F. Scrollable tabs within right-to-left region</h3>
+
+    <div dir="rtl">
+      <paper-tabs selected="0" scrollable>
+
+        <paper-tab>NUMBER ONE ITEM</paper-tab>
+        <paper-tab>ITEM TWO</paper-tab>
+        <paper-tab>THE THIRD ITEM</paper-tab>
+        <paper-tab>THE ITEM FOUR</paper-tab>
+        <paper-tab>FIFTH</paper-tab>
+        <paper-tab>THE SIXTH TAB</paper-tab>
+        <paper-tab>NUMBER SEVEN</paper-tab>
+        <paper-tab>EIGHT</paper-tab>
+        <paper-tab>NUMBER NINE</paper-tab>
+        <paper-tab>THE TENTH</paper-tab>
+        <paper-tab>THE ITEM ELEVEN</paper-tab>
+        <paper-tab>TWELFTH ITEM</paper-tab>
+
+      </paper-tabs>
+    </div>
+
+    <h3>G. Link Tabs</h3>
 
     <paper-tabs selected="0">
 
@@ -135,7 +124,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </paper-tabs>
 
-    <h3>G. Tabs in Toolbar</h3>
+    <h3>H. Tabs in Toolbar</h3>
 
     <paper-toolbar class="tall">
 
@@ -150,7 +139,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </paper-toolbar>
 
-    <h3>H. Tabs aligned to bottom</h3>
+    <h3>I. Tabs aligned to bottom</h3>
 
     <paper-tabs selected="0" align-bottom>
 
@@ -160,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </paper-tabs>
 
-    <h3>I. Bound Selection</h3>
+    <h3>J. Bound Selection</h3>
 
     <template is="dom-bind">
       <h2>Current Tab: <span>[[selected]]</span></h2>
@@ -172,6 +161,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </paper-tabs>
     </template>
+
+    <h3>J. Controlling content</h3>
+
+    <tabs-with-content-example></tabs-with-content-example>
 
   </body>
 </html>

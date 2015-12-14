@@ -17,11 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
-
     <link rel="import" href="../iron-media-query.html">
-    <link rel="import" href="../../test-fixture/test-fixture.html">
-
+    
   </head>
   <body>
 
@@ -64,6 +61,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           test('automatically wrap with parens', function() {
             mq.query = 'min-width: 1px';
             assert.equal(mq.queryMatches, true);
+          });
+
+          suite('`full` attribute', function() {
+            test('media features without wrapping parentheses no longer match', function() {
+              mq.full = true;
+              mq.query = 'min-width: 1px';
+              assert.equal(mq.queryMatches, false);
+            });
+
+            test('media queries with both types and features match', function() {
+              mq.full = true;
+              mq.query = 'all and (min-width: 1px)';
+              assert.equal(mq.queryMatches, true);
+            });
           });
 
           suite('query does not activate on empty string or null', function() {

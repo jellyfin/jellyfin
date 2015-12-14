@@ -22,7 +22,7 @@
 
         var form = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             config.HttpServerPortNumber = $('#txtPortNumber', form).val();
             config.PublicPort = $('#txtPublicPort', form).val();
@@ -33,7 +33,7 @@
             config.WanDdns = $('#txtDdns', form).val();
             config.CertificatePath = $('#txtCertificatePath', form).val();
 
-            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission
@@ -46,7 +46,7 @@
 
         var page = this;
 
-        ApiClient.getServerConfiguration().done(function (config) {
+        ApiClient.getServerConfiguration().then(function (config) {
 
             loadPage(page, config);
 

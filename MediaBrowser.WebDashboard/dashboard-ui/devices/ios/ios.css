@@ -86,9 +86,13 @@ body {
         flex-grow: 0 !important;
     }
 
-.ui-body-b .paperList {
+.ui-body-b .paperList:not(.criticReviewPaperList) {
     background-color: transparent;
     box-shadow: none;
+}
+
+.criticReviewPaperList {
+    background-color: #262626;
 }
 
 .settingsMenuHeader {

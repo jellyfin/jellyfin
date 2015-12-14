@@ -64,7 +64,7 @@
                 ParentId: parentId
             };
 
-            apiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+            apiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
                 var images = result.Items.map(function (i) {
                     return {
@@ -99,7 +99,7 @@
             return;
         }
 
-        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).done(function (images) {
+        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).then(function (images) {
 
             if (images.length) {
 

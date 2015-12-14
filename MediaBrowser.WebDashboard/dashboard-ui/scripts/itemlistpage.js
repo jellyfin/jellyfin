@@ -53,11 +53,11 @@
 
         var itemsPromise = ApiClient.getItems(userId, query);
 
-        $.when(parentItemPromise, itemsPromise).done(function (r1, r2) {
+        Promise.all([parentItemPromise, itemsPromise]).then(function (responses) {
 
-            var item = r1[0];
+            var item = responses[0];
             currentItem = item;
-            var result = r2[0];
+            var result = responses[1];
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -75,7 +75,7 @@
                 currentLayout: view,
                 viewIcon: 'filter-list',
                 sortButton: true,
-                layouts: 'Poster,PosterCard'
+                layouts: 'Poster,PosterCard,Thumb'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -88,7 +88,8 @@
                 items: result.Items,
                 shape: "auto",
                 centerText: true,
-                lazy: true
+                lazy: true,
+                coverImage: item.Type == 'PhotoAlbum'
             };
 
             if (view == "Backdrop") {
@@ -195,10 +196,12 @@
 
             LibraryMenu.setTitle(name);
 
-            $(page).trigger('displayingitem', [{
-
-                item: item
-            }]);
+            page.dispatchEvent(new CustomEvent("displayingitem", {
+                detail: {
+                    item: item
+                },
+                bubbles: true
+            }));
 
             LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
@@ -235,7 +238,7 @@
         }
     }
 
-    $(document).on('pageinit', "#itemListPage", function () {
+    pageIdOn('pageinit', "itemListPage", function () {
 
         var page = this;
 
@@ -275,7 +278,9 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pagebeforeshow', "#itemListPage", function () {
+    });
+
+    pageIdOn('pagebeforeshow', "itemListPage", function () {
 
         var page = this;
 
@@ -283,7 +288,9 @@
         updateFilterControls(page);
         LibraryMenu.setBackButtonVisible(getParameterByName('context'));
 
-    }).on('pagebeforehide', "#itemListPage", function () {
+    });
+
+    pageIdOn('pagebeforehide', "itemListPage", function () {
 
         currentItem = null;
 

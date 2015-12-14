@@ -11,7 +11,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvRecordings(query).done(function (result) {
+        ApiClient.getLiveTvRecordings(query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -107,7 +107,7 @@
 
         if (query.GroupId) {
 
-            ApiClient.getLiveTvRecordingGroup(query.GroupId).done(function (group) {
+            ApiClient.getLiveTvRecordingGroup(query.GroupId).then(function (group) {
                 $('.listName', page).html(group.Name);
             });
 

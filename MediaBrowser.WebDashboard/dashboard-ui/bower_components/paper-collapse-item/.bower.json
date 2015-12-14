@@ -1,0 +1,45 @@
+{
+  "name": "paper-collapse-item",
+  "version": "1.0.6",
+  "authors": [
+    "collaborne"
+  ],
+  "description": "A Material Design item with header and collapsible content (Polymer 1.x)",
+  "main": "paper-collapse-item.html",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "paper",
+    "material design",
+    "lists",
+    "item"
+  ],
+  "license": "Apache 2",
+  "homepage": "https://github.com/collaborne/paper-collapse-item",
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
+    "iron-icons": "PolymerElements/iron-icons#^1.0.0",
+    "iron-collapse": "PolymerElements/iron-collapse#^1.0.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0",
+    "paper-item": "PolymerElements/paper-item#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
+  },
+  "devDependencies": {
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "_release": "1.0.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.6",
+    "commit": "1f809936cb13108bffd49ff2280baf8690f38ab1"
+  },
+  "_source": "git://github.com/Collaborne/paper-collapse-item.git",
+  "_target": "~1.0.5",
+  "_originalSource": "paper-collapse-item"
+}

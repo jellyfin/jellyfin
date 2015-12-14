@@ -28,7 +28,7 @@
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
@@ -82,7 +82,7 @@
 
     reloadSystemInfo: function (page) {
 
-        ApiClient.getSystemInfo().done(function (systemInfo) {
+        ApiClient.getSystemInfo().then(function (systemInfo) {
 
             Dashboard.setPageTitle(systemInfo.ServerName);
             Dashboard.updateSystemInfo(systemInfo);
@@ -95,7 +95,11 @@
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
             }
 
-            $('.btnRestartContainer', page).visible(systemInfo.CanSelfRestart);
+            if (systemInfo.CanSelfRestart) {
+                $('.btnRestartContainer', page).removeClass('hide');
+            } else {
+                $('.btnRestartContainer', page).addClass('hide');
+            }
 
             DashboardPage.renderUrls(page, systemInfo);
             DashboardPage.renderPendingInstallations(page, systemInfo);
@@ -120,7 +124,7 @@
             Limit: 7
         };
 
-        ApiClient.getProductNews(query).done(function (result) {
+        ApiClient.getProductNews(query).then(function (result) {
 
             var html = result.Items.map(function (item) {
 
@@ -242,11 +246,11 @@
             return;
         }
 
-        apiClient.getSessions().done(function (sessions) {
+        apiClient.getSessions().then(function (sessions) {
 
             DashboardPage.renderInfo(page, sessions, forceUpdate);
         });
-        apiClient.getScheduledTasks().done(function (tasks) {
+        apiClient.getScheduledTasks().then(function (tasks) {
 
             DashboardPage.renderRunningTasks(page, tasks);
         });
@@ -641,15 +645,6 @@
             if (device.indexOf('chrome') != -1) {
                 imgUrl = 'css/images/clients/chrome.png';
             }
-            else if (device.indexOf('firefox') != -1) {
-                imgUrl = 'css/images/clients/firefox.png';
-            }
-            else if (device.indexOf('internet explorer') != -1) {
-                imgUrl = 'css/images/clients/ie.png';
-            }
-            else if (device.indexOf('safari') != -1) {
-                imgUrl = 'css/images/clients/safari.png';
-            }
             else {
                 imgUrl = 'css/images/clients/html5.png';
             }
@@ -669,10 +664,6 @@
         if (clientLowered == "roku") {
 
             return "<img src='css/images/clients/roku.jpg' />";
-        }
-        if (clientLowered == "windows rt") {
-
-            return "<img src='css/images/clients/windowsrt.png' />";
         }
         if (clientLowered == "windows phone") {
 
@@ -788,6 +779,8 @@
 
             var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
 
+            //localAccessHtml += '<a class="clearLink" href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank"><paper-icon-button icon="info"></paper-icon-button></a>';
+
             $('.localUrl', page).html(localAccessHtml).show().trigger('create');
         } else {
             $('.externalUrl', page).hide();
@@ -838,7 +831,7 @@
 
             DashboardPage.lastAppUpdateCheck = new Date().getTime();
 
-            ApiClient.getAvailableApplicationUpdate().done(function (packageInfo) {
+            ApiClient.getAvailableApplicationUpdate().then(function (packageInfo) {
 
                 var version = packageInfo[0];
 
@@ -896,7 +889,7 @@
 
         DashboardPage.lastPluginUpdateCheck = new Date().getTime();
 
-        ApiClient.getAvailablePluginUpdates().done(function (updates) {
+        ApiClient.getAvailablePluginUpdates().then(function (updates) {
 
             var elem = $('#pPluginUpdates', page);
 
@@ -936,7 +929,7 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.installPlugin(name, guid, classification, version).done(function () {
+        ApiClient.installPlugin(name, guid, classification, version).then(function () {
 
             Dashboard.hideLoadingMsg();
         });
@@ -949,14 +942,14 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getScheduledTasks().done(function (tasks) {
+        ApiClient.getScheduledTasks().then(function (tasks) {
 
             var task = tasks.filter(function (t) {
 
                 return t.Key == DashboardPage.systemUpdateTaskKey;
             })[0];
 
-            ApiClient.startScheduledTask(task.Id).done(function () {
+            ApiClient.startScheduledTask(task.Id).then(function () {
 
                 DashboardPage.pollForInfo(page);
 
@@ -969,7 +962,7 @@
 
         var page = $.mobile.activePage;
 
-        ApiClient.stopScheduledTask(id).done(function () {
+        ApiClient.stopScheduledTask(id).then(function () {
 
             DashboardPage.pollForInfo(page);
         });
@@ -1180,7 +1173,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             limit: limit,
             minDate: minDate.toISOString()
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             elem.setAttribute('data-activitystartindex', startIndex);
             elem.setAttribute('data-activitylimit', limit);
@@ -1280,7 +1273,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function dismissWelcome(page, userId) {
 
-        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').then(function (result) {
 
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
@@ -1293,7 +1286,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
         var userId = Dashboard.getCurrentUserId();
 
-        apiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+        apiClient.getDisplayPreferences('dashboard', userId, 'dashboard').then(function (result) {
 
             if (result.CustomPrefs[welcomeTourKey] == welcomeDismissValue) {
                 $('.welcomeMessage', page).hide();
@@ -1317,7 +1310,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function takeTour(page, userId) {
 
-        Dashboard.loadSwipebox().done(function () {
+        require(['swipebox'], function () {
 
             $.swipebox([
                     { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
@@ -1370,13 +1363,16 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
         var page = this;
 
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (!$('.customSupporterPromotion', page).length) {
                 $('.supporterPromotion', page).remove();
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
-                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
+
+                    var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
+
+                    $('.content-primary', page).append(html);
                 }
             }
 

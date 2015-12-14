@@ -2,8 +2,6 @@
 
     function renderJob(page, job, dialogOptions) {
 
-        require(['paperbuttonstyle']);
-
         var html = '';
 
         html += '<div>';
@@ -18,15 +16,16 @@
         html += '<paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></paper-button>';
         html += '</button>';
 
-        $('.syncJobForm', page).html(html).trigger('create');
+        $('.syncJobForm', page).html(html);
         SyncManager.renderForm({
             elem: $('.formFields', page),
             dialogOptions: dialogOptions,
             dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
             showName: true,
             readOnlySyncTarget: true
+        }).then(function () {
+            fillJobValues(page, job, dialogOptions);
         });
-        fillJobValues(page, job, dialogOptions);
     }
 
     function getTargetDialogOptionsFn(dialogOptions) {
@@ -102,6 +101,14 @@
         return html;
     }
 
+    $.fn.lazyChildren = function () {
+
+        for (var i = 0, length = this.length; i < length; i++) {
+            ImageLoader.lazyChildren(this[i]);
+        }
+        return this;
+    };
+
     function renderJobItems(page, items) {
 
         var html = '';
@@ -119,7 +126,7 @@
 
         html += '</div>';
 
-        var elem = $('.jobItems', page).html(html).trigger('create').lazyChildren();
+        var elem = $('.jobItems', page).html(html).lazyChildren();
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);
@@ -213,7 +220,7 @@
             type: "DELETE",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId)
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -227,7 +234,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/MarkForRemoval')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -240,7 +247,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/UnmarkForRemoval')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -253,7 +260,7 @@
             type: "POST",
             url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/Enable')
 
-        }).done(function () {
+        }).then(function () {
 
             loadJob(page);
         });
@@ -261,7 +268,11 @@
 
     function fillJobValues(page, job, editOptions) {
 
-        $('#txtSyncJobName', page).val(job.Name);
+        var txtSyncJobName = page.querySelector('#txtSyncJobName');
+        if (txtSyncJobName) {
+            txtSyncJobName.value = job.Name;
+        }
+
         $('#selectProfile', page).val(job.Profile || '').trigger('change');
         $('#selectQuality', page).val(job.Quality || '').trigger('change');
         $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly);
@@ -288,7 +299,7 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
 
@@ -299,7 +310,7 @@
                 Category: job.Category,
                 TargetId: job.TargetId
 
-            })).done(function (options) {
+            })).then(function (options) {
 
                 _jobOptions = options;
                 renderJob(page, job, options);
@@ -312,7 +323,7 @@
             JobId: id,
             AddMetadata: true
 
-        })).done(function (result) {
+        })).then(function (result) {
 
             renderJobItems(page, result.Items);
             Dashboard.hideLoadingMsg();
@@ -331,7 +342,7 @@
         Dashboard.showLoadingMsg();
         var id = getParameterByName('id');
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).done(function (job) {
+        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             SyncManager.setJobValues(job, page);
 
@@ -342,7 +353,7 @@
                 data: JSON.stringify(job),
                 contentType: "application/json"
 
-            }).done(function () {
+            }).then(function () {
 
                 Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('SettingsSaved'));

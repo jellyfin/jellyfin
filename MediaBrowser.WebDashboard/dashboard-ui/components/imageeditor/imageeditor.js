@@ -1,4 +1,4 @@
-﻿(function ($, document, window, FileReader, escape) {
+﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -21,7 +21,7 @@
             reloadItem(page, item);
         }
         else {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).done(function (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).then(function (item) {
                 reloadItem(page, item);
             });
         }
@@ -31,7 +31,7 @@
 
         currentItem = item;
 
-        ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
+        ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).then(function (providers) {
 
             if (providers.length) {
                 $('.btnBrowseAllImages', page).removeClass('hide');
@@ -39,7 +39,7 @@
                 $('.btnBrowseAllImages', page).addClass('hide');
             }
 
-            ApiClient.getItemImageInfos(currentItem.Id).done(function (imageInfos) {
+            ApiClient.getItemImageInfos(currentItem.Id).then(function (imageInfos) {
 
                 renderStandardImages(page, item, imageInfos, providers);
                 renderBackdrops(page, item, imageInfos, providers);
@@ -122,7 +122,7 @@
             Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('HeaderDeleteImage'), function (result) {
 
                 if (result) {
-                    ApiClient.deleteItemImage(currentItem.Id, type, index).done(function () {
+                    ApiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
 
                         hasChanges = true;
                         reload(page);
@@ -137,7 +137,7 @@
             var type = this.getAttribute('data-imagetype');
             var index = parseInt(this.getAttribute('data-index'));
             var newIndex = parseInt(this.getAttribute('data-newindex'));
-            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).done(function () {
+            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
 
                 hasChanges = true;
                 reload(page);
@@ -190,9 +190,9 @@
     }
 
     function showImageDownloader(page, imageType) {
-        require(['components/imagedownloader/imagedownloader'], function () {
+        require(['components/imagedownloader/imagedownloader'], function (ImageDownloader) {
 
-            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).done(function (hasChanged) {
+            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).then(function (hasChanged) {
 
                 if (hasChanged) {
                     hasChanges = true;
@@ -206,13 +206,13 @@
 
         $('.btnOpenUploadMenu', page).on('click', function () {
 
-            require(['components/imageuploader/imageuploader'], function () {
+            require(['components/imageuploader/imageuploader'], function (imageUploader) {
 
-                ImageUploader.show(currentItem.Id, {
-                    
+                imageUploader.show(currentItem.Id, {
+
                     theme: options.theme
 
-                }).done(function (hasChanged) {
+                }).then(function (hasChanged) {
 
                     if (hasChanged) {
                         hasChanges = true;
@@ -233,16 +233,15 @@
 
         Dashboard.showLoadingMsg();
 
-        HttpClient.send({
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'components/imageeditor/imageeditor.template.html', true);
 
-            type: 'GET',
-            url: 'components/imageeditor/imageeditor.template.html'
+        xhr.onload = function (e) {
 
-        }).done(function (template) {
+            var template = this.response;
+            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).done(function (item) {
-
-                var dlg = PaperDialogHelper.createDialog({
+                var dlg = paperDialogHelper.createDialog({
                     theme: options.theme
                 });
 
@@ -264,17 +263,19 @@
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', onDialogClosed);
 
-                PaperDialogHelper.openWithHash(dlg, 'imageeditor');
+                paperDialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
-                $('.btnCloseDialog', dlg).on('click', function() {
-                    
-                    PaperDialogHelper.close(dlg);
+                $('.btnCloseDialog', dlg).on('click', function () {
+
+                    paperDialogHelper.close(dlg);
                 });
             });
-        });
+        }
+
+        xhr.send();
     }
 
     function onDialogClosed() {
@@ -284,7 +285,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ImageEditor = {
+    return {
         show: function (itemId, options) {
 
             var deferred = DeferredBuilder.Deferred();
@@ -292,13 +293,8 @@
             currentDeferred = deferred;
             hasChanges = false;
 
-            require(['components/paperdialoghelper'], function () {
-
-                Dashboard.importCss('css/metadataeditor.css');
-                showEditor(itemId, options);
-            });
+            showEditor(itemId, options);
             return deferred.promise();
         }
     };
-
-})(jQuery, document, window, window.FileReader, escape);
+});

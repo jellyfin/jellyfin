@@ -1,6 +1,6 @@
 {
   "name": "paper-slider",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A material design-style slider",
   "license": "http://polymer.github.io/LICENSE.txt",
   "authors": "The Polymer Authors",
@@ -10,13 +10,12 @@
     "slider",
     "control"
   ],
-  "main": [
-    "paper-slider.html"
-  ],
+  "main": "paper-slider.html",
   "repository": {
     "type": "git",
     "url": "git://github.com/PolymerElements/paper-slider.git"
   },
+  "ignore": [],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
     "paper-input": "PolymerElements/paper-input#^1.0.0",
@@ -33,15 +32,15 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
-    "web-component-tester": "*",
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "homepage": "https://github.com/PolymerElements/paper-slider",
-  "_release": "1.0.7",
+  "_release": "1.0.8",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.7",
-    "commit": "087c9ecdfca14f4a3faf45006203de08a8910995"
+    "tag": "v1.0.8",
+    "commit": "5cad377a1321656a2bdc65644b1ad26ab76f1ecb"
   },
   "_source": "git://github.com/PolymerElements/paper-slider.git",
   "_target": "~1.0.3",

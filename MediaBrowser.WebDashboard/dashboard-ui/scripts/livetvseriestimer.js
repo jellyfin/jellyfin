@@ -10,7 +10,7 @@
 
                 Dashboard.showLoadingMsg();
 
-                ApiClient.cancelLiveTvTimer(id).done(function () {
+                ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
@@ -103,7 +103,7 @@
 
         var form = this;
 
-        ApiClient.getLiveTvSeriesTimer(currentItem.Id).done(function (item) {
+        ApiClient.getLiveTvSeriesTimer(currentItem.Id).then(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
@@ -114,7 +114,7 @@
 
             item.Days = getDays(form);
 
-            ApiClient.updateLiveTvSeriesTimer(item).done(function () {
+            ApiClient.updateLiveTvSeriesTimer(item).then(function () {
                 Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
         });
@@ -141,15 +141,15 @@
 
         var timers = result.Items;
 
-        var html = LiveTvHelpers.getTimersHtml(timers);
+        LiveTvHelpers.getTimersHtml(timers).then(function(html) {
+            var elem = $('.scheduleTab', page).html(html);
 
-        var elem = $('.scheduleTab', page).html(html);
+            $('.btnDeleteTimer', elem).on('click', function () {
 
-        $('.btnDeleteTimer', elem).on('click', function () {
+                var id = this.getAttribute('data-timerid');
 
-            var id = this.getAttribute('data-timerid');
-
-            deleteTimer(page, id);
+                deleteTimer(page, id);
+            });
         });
     }
 
@@ -159,7 +159,7 @@
 
         var id = getParameterByName('id');
 
-        ApiClient.getLiveTvSeriesTimer(id).done(function (result) {
+        ApiClient.getLiveTvSeriesTimer(id).then(function (result) {
 
             renderTimer(page, result);
 
@@ -170,7 +170,7 @@
             userId: Dashboard.getCurrentUserId(),
             seriesTimerId: id
 
-        }).done(function (recordingResult) {
+        }).then(function (recordingResult) {
 
             renderRecordings(page, recordingResult);
 
@@ -180,7 +180,7 @@
 
             seriesTimerId: id
 
-        }).done(function (timerResult) {
+        }).then(function (timerResult) {
 
             renderSchedule(page, timerResult);
 

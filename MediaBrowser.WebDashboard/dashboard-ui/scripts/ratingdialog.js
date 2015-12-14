@@ -101,7 +101,7 @@
                     Logger.log(review);
                     dialog.close();
 
-                    ApiClient.createPackageReview(review).done(function () {
+                    ApiClient.createPackageReview(review).then(function () {
                         Dashboard.alert({
                             message: Globalize.translate('MessageThankYouForYourReview'),
                             title: Globalize.translate('HeaderThankYou')

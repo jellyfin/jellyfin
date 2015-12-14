@@ -20,14 +20,14 @@
 
             ProgramId: programId,
             Feature: 'seriesrecordings'
-        })).done(function (result) {
+        })).then(function (result) {
 
             lastRegId = programId;
             registrationInfo = result;
             deferred.resolveWith(null, [registrationInfo]);
             Dashboard.hideLoadingMsg();
 
-        }).fail(function () {
+        }, function () {
 
             deferred.resolveWith(null, [
             {
@@ -84,10 +84,10 @@
         var promise1 = ApiClient.getNewLiveTvTimerDefaults({ programId: programId });
         var promise2 = ApiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
 
-        $.when(promise1, promise2).done(function (response1, response2) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            var defaults = response1[0];
-            var program = response2[0];
+            var defaults = responses[0];
+            var program = responses[1];
 
             renderRecording(page, defaults, program);
         });
@@ -142,7 +142,7 @@
 
         var programId = getParameterByName('programid');
 
-        ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).done(function (item) {
+        ApiClient.getNewLiveTvTimerDefaults({ programId: programId }).then(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
@@ -155,7 +155,7 @@
 
             if ($('#chkRecordSeries', form).checked()) {
 
-                ApiClient.createLiveTvSeriesTimer(item).done(function () {
+                ApiClient.createLiveTvSeriesTimer(item).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetv.html');
@@ -163,7 +163,7 @@
                 });
 
             } else {
-                ApiClient.createLiveTvTimer(item).done(function () {
+                ApiClient.createLiveTvTimer(item).then(function () {
 
                     Dashboard.hideLoadingMsg();
                     Dashboard.navigate('livetv.html');
@@ -187,7 +187,7 @@
         $('#seriesFields', page).show();
         page.querySelector('.btnSubmitContainer').classList.remove('hide');
 
-        getRegistration(getParameterByName('programid')).done(function (regInfo) {
+        getRegistration(getParameterByName('programid')).then(function (regInfo) {
 
             if (regInfo.IsValid) {
                 page.querySelector('.btnSubmitContainer').classList.remove('hide');

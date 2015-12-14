@@ -40,7 +40,7 @@
         Dashboard.showLoadingMsg();
 
         var query = getQuery();
-        ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
+        ApiClient.getGenres(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -58,7 +58,7 @@
                 addLayoutButton: true,
                 currentLayout: view
 
-            })).trigger('create');
+            }));
 
             if (view == "List") {
 

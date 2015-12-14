@@ -19,43 +19,65 @@
 
     function loadDictionary(name, culture) {
 
-        var deferred = DeferredBuilder.Deferred();
+        return new Promise(function (resolve, reject) {
 
-        if (getDictionary(name, culture)) {
-            deferred.resolve();
-        } else {
+            if (getDictionary(name, culture)) {
+                resolve();
+                return;
+            }
 
             var url = getUrl(name, culture);
-            var requestUrl = url + "?v=" + window.dashboardVersion;
 
-            $.getJSON(requestUrl).done(function (dictionary) {
+            var requestUrl = url + "?v=" + AppInfo.appVersion;
 
-                dictionaries[url] = dictionary;
-                deferred.resolve();
+            Logger.log('Requesting ' + requestUrl);
 
-            }).fail(function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', requestUrl, true);
 
-                // If there's no dictionary for that language, grab English
-                $.getJSON(getUrl(name, 'en-US')).done(function (dictionary) {
+            var onError = function () {
 
-                    dictionaries[url] = dictionary;
-                    deferred.resolve();
+                Logger.log('Dictionary not found. Reverting to english');
 
-                });
-            });
-        }
+                // Grab the english version
+                var xhr2 = new XMLHttpRequest();
+                xhr2.open('GET', getUrl(name, 'en-US'), true);
 
-        return deferred.promise();
+                xhr2.onload = function (e) {
+                    dictionaries[url] = JSON.parse(this.response);
+                    resolve();
+                };
+
+                xhr2.send();
+            };
+
+            xhr.onload = function (e) {
+
+                Logger.log('Globalize response status: ' + this.status);
+
+                if (this.status < 400) {
+
+                    dictionaries[url] = JSON.parse(this.response);
+                    resolve();
+
+                } else {
+                    onError();
+                }
+            };
+
+            xhr.onerror = onError;
+
+            xhr.send();
+        });
     }
 
     var currentCulture = 'en-US';
     function setCulture(value) {
 
         Logger.log('Setting culture to ' + value);
-
         currentCulture = value;
 
-        return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
+        return Promise.all([loadDictionary('html', value), loadDictionary('javascript', value)]);
     }
 
     function normalizeLocaleName(culture) {
@@ -74,43 +96,25 @@
     }
 
     function getDeviceCulture() {
-        var deferred = DeferredBuilder.Deferred();
 
-        var culture;
+        return new Promise(function (resolve, reject) {
 
-        if (navigator.globalization && navigator.globalization.getLocaleName) {
+            if (AppInfo.isNativeApp) {
 
-            Logger.log('Calling navigator.globalization.getLocaleName');
+                resolve(navigator.language || navigator.userLanguage);
 
-            navigator.globalization.getLocaleName(function (locale) {
+            } else if (AppInfo.supportsUserDisplayLanguageSetting) {
 
-                culture = normalizeLocaleName(locale.value || '');
-                Logger.log('Device culture is ' + culture);
-                deferred.resolveWith(null, [culture]);
+                Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
 
-            }, function () {
+                resolve(AppSettings.displayLanguage());
 
-                Logger.log('navigator.globalization.getLocaleName failed');
+            } else {
 
-                deferred.resolveWith(null, [null]);
-            });
-
-        } else if (AppInfo.supportsUserDisplayLanguageSetting) {
-
-            Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
-
-            culture = AppSettings.displayLanguage();
-            deferred.resolveWith(null, [culture]);
-
-        } else {
-
-            Logger.log('Getting culture from document');
-
-            culture = document.documentElement.getAttribute('data-culture');
-            deferred.resolveWith(null, [culture]);
-        }
-
-        return deferred.promise();
+                Logger.log('Getting culture from document');
+                resolve(document.documentElement.getAttribute('data-culture'));
+            }
+        });
     }
 
 
@@ -118,20 +122,12 @@
 
         Logger.log('Entering Globalize.ensure');
 
-        var deferred = DeferredBuilder.Deferred();
+        return getDeviceCulture().then(function (culture) {
 
-        getDeviceCulture().done(function (culture) {
+            culture = normalizeLocaleName(culture || 'en-US');
 
-            if (!culture) {
-                culture = 'en-US';
-            }
-
-            setCulture(culture).done(function () {
-                deferred.resolve();
-            });
+            return setCulture(culture);
         });
-
-        return deferred.promise();
     }
 
     function translateDocument(html, dictionaryName) {

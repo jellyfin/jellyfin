@@ -16,11 +16,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
   <link rel="import" href="../paper-button.html">
-  <link rel="import" href="../../test-fixture/test-fixture.html">
 
 </head>
 <body>
@@ -51,6 +49,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           } catch (e) {
             done(e);
           }
+        }, 1);
+      });
+
+      test('can be unraised after being raised imperatively', function(done) {
+        button.raised = true;
+        expect(button.hasAttribute('raised')).to.be.eql(true);
+
+        Polymer.Base.async(function() {
+          expect(button.elevation).to.be.eql(1);
+
+          button.raised = false;
+          expect(button.hasAttribute('raised')).to.be.eql(false);
+          Polymer.Base.async(function() {
+            expect(button.elevation).to.be.eql(0);
+            done();
+          }, 1);
         }, 1);
       });
 
@@ -85,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('has aria role "button"', function() {
         expect(button.getAttribute('role')).to.be.eql('button');
       });
-      
+
       a11ySuite('TrivialButton');
     });
 

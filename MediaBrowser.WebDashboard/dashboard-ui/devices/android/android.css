@@ -1,17 +1,13 @@
 ﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
-    background-color: #101010;
+    background-color: #080808;
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(15, 15, 15, .45);
+        background-color: rgba(15, 15, 15, .3);
     }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background: #202020;
-}
-
-.backdropContainer .pageBackground {
-    background-color: rgba(20, 20,20, .94) !important;
+    background-color: #1b1b1b;
 }
 
 .defaultBackground .cardImage {

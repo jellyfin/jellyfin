@@ -233,7 +233,7 @@
 
         query = getQuery(query, item);
 
-        getItemsFunction(query, item)(query.StartIndex, query.Limit, query.Fields).done(function (result) {
+        getItemsFunction(query, item)(query.StartIndex, query.Limit, query.Fields).then(function (result) {
 
             var html = '';
 

@@ -17,8 +17,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
-    <link rel="import" href="../../paper-styles/paper-styles.html">
     <link rel="import" href="../../paper-styles/demo-pages.html">
     <link rel="import" href="../iron-media-query.html">
 
@@ -29,17 +27,67 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <h1>&lt;iron-media-query&gt;</h1>
 
     <template is="dom-bind">
-      <iron-media-query query="(min-width: 600px)" query-matches="{{queryMatches}}"></iron-media-query>
+      <style>
+        .item {
+          margin: 8px;
+          border: 1px solid #ddd;
+        }
 
-      <template is="dom-if" if="{{queryMatches}}">
-        <p>The viewport’s width is greater than <code>600px</code></p>
-      </template>
+        .item .title {
+          font-weight: bold;
+          font-size: 1.2em;
+          background-color: #eee;
+          padding: 8px;
+        }
 
-      <template is="dom-if" if="{{!queryMatches}}">
-        <p>The viewport’s width is less than <code>600px</code></p>
-      </template>
+        .item[wide-layout] .title {
+          float: left;
+          margin: 0 8px 4px 0;
+          font-size: 1.4em;
+        }
+
+        .item .description {
+          padding: 8px;
+        }
+
+        .item::after {
+          content: '';
+          display: block;
+          clear: both;
+        }
+      </style>
+
+      <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+      <iron-media-query full query="print" query-matches="{{print}}"></iron-media-query>
+
+      <div class="item" wide-layout$="{{wide}}">
+        <div class="title">Resize the window</div>
+        <div class="description">
+          <template is="dom-if" if="{{!wide}}">
+            The viewport is less than 600px wide, so the items' titles will
+            not float.
+          </template>
+          <template is="dom-if" if="{{wide}}">
+            The viewport is at least 600px, so the items' titles will float
+            to the left.
+          </template>
+          Here's another sentence; it's not very long.
+        </div>
+      </div>
+      <div class="item" wide-layout$="{{wide}}">
+        <div class="title"><code>print</code> example</div>
+        <div class="description">
+          <a href="http://polymer-project.org">
+            This link's destination is visible when this page is printed.
+          </a>
+          <template is="dom-if" if="{{print}}">
+            (http://polymer-project.org)
+          </template>
+          This is another sentence which is meant to help fill this box.
+        </div>
+      </div>
     </template>
-    </div>
+  </div>
 
   </body>
 </html>

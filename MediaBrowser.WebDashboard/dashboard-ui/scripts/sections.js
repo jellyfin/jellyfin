@@ -4,7 +4,7 @@
 
         var deferred = $.Deferred();
 
-        ApiClient.getUserViews({}, userId).done(function (result) {
+        ApiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -14,20 +14,24 @@
 
                 var view = items[i];
 
+                if (AppInfo.isNativeApp && browserInfo.safari && view.CollectionType == 'livetv') {
+                    continue;
+                }
+
                 list.push(view);
 
                 if (view.CollectionType == 'livetv') {
 
                     view.ImageTags = {};
                     view.icon = 'live-tv';
-                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);return false;";
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);event.preventDefault();event.stopPropagation();return false;";
 
                     var guideView = $.extend({}, view);
                     guideView.Name = Globalize.translate('ButtonGuide');
                     guideView.ImageTags = {};
                     guideView.icon = 'dvr';
                     guideView.url = 'livetv.html?tab=1';
-                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);return false;";
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);event.preventDefault();event.stopPropagation();return false;";
                     list.push(guideView);
 
                     var recordedTvView = $.extend({}, view);
@@ -35,7 +39,7 @@
                     recordedTvView.ImageTags = {};
                     recordedTvView.icon = 'video-library';
                     recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);return false;";
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);event.preventDefault();event.stopPropagation();return false;";
                     list.push(recordedTvView);
                 }
             }
@@ -48,7 +52,7 @@
 
     function enableScrollX() {
 
-        return $.browser.mobile && AppInfo.enableAppLayouts;
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {
@@ -156,7 +160,7 @@
 
     function loadlibraryButtons(elem, userId, index) {
 
-        return getUserViews(userId).done(function (items) {
+        return getUserViews(userId).then(function (items) {
 
             var html = '<br/>';
 
@@ -187,7 +191,7 @@
             EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -235,7 +239,7 @@
             IncludeItemTypes: "Movie"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -278,7 +282,7 @@
             IncludeItemTypes: "Episode"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
 
             var html = '';
 
@@ -323,7 +327,7 @@
             UserId: userId
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 
@@ -351,7 +355,7 @@
 
     function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
 
-        return getUserViews(user.Id).done(function (items) {
+        return getUserViews(user.Id).then(function (items) {
 
             var html = '';
 
@@ -370,7 +374,7 @@
 
                 html += '</div>';
 
-                var scrollX = enableScrollX() && $.browser.safari && screenWidth > 800;
+                var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
 
                 if (scrollX) {
                     html += '<div class="hiddenScrollX itemsContainer homeTopViews">';
@@ -425,7 +429,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        return ApiClient.getItems(userId, options).done(function (result) {
+        return ApiClient.getItems(userId, options).then(function (result) {
 
             var html = '';
 
@@ -470,7 +474,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getNextUpEpisodes(query).done(function (result) {
+        ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             var html = '';
 
@@ -528,7 +532,7 @@
             SupportsLatestItems: true
         });
 
-        return ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels", options)).then(function (result) {
 
             var channels = result.Items;
 
@@ -563,7 +567,7 @@
             ChannelIds: channel.Id
         };
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).then(function (result) {
 
             var html = '';
 
@@ -608,7 +612,7 @@
             limit: 5,
             IsInProgress: false
 
-        }).done(function (result) {
+        }).then(function (result) {
 
             var html = '';
 
