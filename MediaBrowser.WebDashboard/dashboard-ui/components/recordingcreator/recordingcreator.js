@@ -290,7 +290,7 @@
                 var template = this.response;
                 var dlg = paperDialogHelper.createDialog({
                     removeOnClose: true,
-                    theme: 'b'
+                    size: 'small'
                 });
 
                 dlg.classList.add('formDialog');
