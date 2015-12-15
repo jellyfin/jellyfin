@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input'], function (paperDialogHelper) {
+﻿define(['components/paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
 
     var currentProgramId;
     var currentDialog;
@@ -33,7 +33,7 @@
     }
 
     function hideSeriesRecordingFields(context) {
-        $('#seriesFields', context).hide();
+        slideUpToHide(context.querySelector('#seriesFields'));
         context.querySelector('.btnSubmitContainer').classList.remove('hide');
         context.querySelector('.supporterContainer').classList.add('hide');
     }
@@ -113,7 +113,7 @@
     }
 
     function showSeriesRecordingFields(context) {
-        $('#seriesFields', context).show();
+        slideDownToShow(context.querySelector('#seriesFields'));
         context.querySelector('.btnSubmitContainer').classList.remove('hide');
 
         getRegistration(getParameterByName('programid')).then(function (regInfo) {
@@ -147,6 +147,49 @@
         });
     }
 
+    function slideDownToShow(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
+
+        elem.style.overflow = 'hidden';
+
+        requestAnimationFrame(function () {
+
+            elem.animate([{
+                height: 0
+            }, {
+                height: elem.offsetHeight + 'px'
+
+            }], { duration: 400, easing: 'ease' }).onfinish = function () {
+                elem.classList.remove('hide');
+            };
+        });
+    }
+
+    function slideUpToHide(elem) {
+
+        if (elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.style.overflow = 'hidden';
+
+        requestAnimationFrame(function () {
+
+            elem.animate([{
+                height: elem.offsetHeight + 'px'
+            }, {
+                height: 0
+            }], { duration: 400, easing: 'ease' }).onfinish = function () {
+                elem.classList.add('hide');
+            };
+        });
+    }
+
     function init(context) {
 
         $('#chkRecordSeries', context).on('change', function () {
@@ -161,6 +204,20 @@
         $('.btnCancel', context).on('click', function () {
 
             closeDialog(false);
+        });
+
+        context.querySelector('.chkAdvanced').addEventListener('change', function (e) {
+
+            var elems = context.querySelectorAll('.advancedToggle');
+            var isChecked = e.target.checked;
+
+            for (var i = 0, length = elems.length; i < length; i++) {
+                if (isChecked) {
+                    slideDownToShow(elems[i]);
+                } else {
+                    slideUpToHide(elems[i]);
+                }
+            }
         });
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);

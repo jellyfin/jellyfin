@@ -595,21 +595,8 @@ paper-dialog.popupEditor {
     padding-bottom: 100px;
 }
 
-.paperToggleContainer {
-    padding: .5em 0;
-}
-
-    .paperToggleContainer paper-toggle-button {
-        vertical-align: middle;
-    }
-
-    .paperToggleContainer > span {
-        vertical-align: middle;
-        margin-left: 1em;
-    }
-
-paper-toggle-button #toggleBar {
-    background-color: #080808;
+.paper-toggle-button-0 .toggle-label.paper-toggle-button {
+    color: inherit;
 }
 
 paper-toggle-button #toggleButton, paper-toggle-button[checked] #toggleBar {
