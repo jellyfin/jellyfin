@@ -2,8 +2,7 @@
 
     var currentProgramId;
     var currentDialog;
-    var currentResolve;
-    var currentReject;
+    var recordingCreated = false;
 
     function getDaysOfWeek() {
 
@@ -40,13 +39,8 @@
 
     function closeDialog(isSubmitted) {
 
+        recordingCreated = isSubmitted;
         paperDialogHelper.close(currentDialog);
-
-        if (isSubmitted) {
-            currentResolve();
-        } else {
-            currentReject();
-        }
     }
 
     function onSubmit() {
@@ -276,9 +270,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            currentResolve = resolve;
-            currentReject = reject;
-
+            recordingCreated = false;
             currentProgramId = itemId;
             Dashboard.showLoadingMsg();
 
@@ -305,6 +297,16 @@
                 paperDialogHelper.open(dlg);
 
                 currentDialog = dlg;
+
+                dlg.addEventListener('iron-overlay-closed', function () {
+
+                    if (recordingCreated) {
+                        Dashboard.alert(Globalize.translate('MessageRecordingScheduled'));
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
 
                 hideSeriesRecordingFields(dlg);
                 init(dlg);

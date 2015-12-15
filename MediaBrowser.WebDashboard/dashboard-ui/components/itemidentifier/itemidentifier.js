@@ -291,7 +291,9 @@
 
                 currentItem = item;
 
-                var dlg = paperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog({
+                    size: 'medium'
+                });
 
                 var html = '';
                 html += Globalize.translateDocument(template);
