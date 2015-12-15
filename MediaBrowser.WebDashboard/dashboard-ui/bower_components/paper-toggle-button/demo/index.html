@@ -17,101 +17,71 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../../paper-styles/demo-pages.html">
     <link rel="import" href="../paper-toggle-button.html">
 
-    <style is="custom-style">
+    <style is="custom-style" include="demo-pages-shared-styles">
+      .vertical-section-container {
+        max-width: 600px;
+      }
+
       paper-toggle-button {
-        margin-bottom: 40px;
-        display: block;
-      }
-
-      paper-toggle-button:last-child {
-        margin-bottom: 0;
-      }
-
-      paper-toggle-button.blue {
-        --paper-toggle-button-checked-bar-color:  var(--paper-light-blue-500);
-        --paper-toggle-button-checked-button-color:  var(--paper-light-blue-500);
-        --paper-toggle-button-checked-ink-color: var(--paper-light-blue-500);
-        --paper-toggle-button-unchecked-bar-color:  var(--paper-light-blue-900);
-        --paper-toggle-button-unchecked-button-color:  var(--paper-light-blue-900);
-        --paper-toggle-button-unchecked-ink-color: var(--paper-light-blue-900);
-      }
-
-      paper-toggle-button.red {
-        --paper-toggle-button-checked-bar-color:  var(--paper-red-500);
-        --paper-toggle-button-checked-button-color:  var(--paper-red-500);
-        --paper-toggle-button-checked-ink-color: var(--paper-red-500);
-        --paper-toggle-button-unchecked-bar-color:  var(--paper-red-900);
-        --paper-toggle-button-unchecked-button-color:  var(--paper-red-900);
-        --paper-toggle-button-unchecked-ink-color: var(--paper-red-900);
-      }
-
-      paper-toggle-button.green {
-        --paper-toggle-button-checked-bar-color:  var(--paper-green-500);
-        --paper-toggle-button-checked-button-color:  var(--paper-green-500);
-        --paper-toggle-button-checked-ink-color: var(--paper-green-500);
-        --paper-toggle-button-unchecked-bar-color:  var(--paper-green-900);
-        --paper-toggle-button-unchecked-button-color:  var(--paper-green-900);
-        --paper-toggle-button-unchecked-ink-color: var(--paper-green-900);
-      }
-
-      paper-toggle-button.orange {
-        --paper-toggle-button-checked-bar-color:  var(--paper-orange-500);
-        --paper-toggle-button-checked-button-color:  var(--paper-orange-500);
-        --paper-toggle-button-checked-ink-color: var(--paper-orange-500);
-        --paper-toggle-button-unchecked-bar-color:  var(--paper-orange-900);
-        --paper-toggle-button-unchecked-button-color:  var(--paper-orange-900);
-        --paper-toggle-button-unchecked-ink-color: var(--paper-orange-900);
+        margin-left: 10px;
+        margin-right: 10px;
       }
     </style>
   </head>
   <body unresolved>
-    <div class="horizontal-section-container">
-      <div>
-        <h4>Enabled</h4>
-        <div class="horizontal-section">
-          <paper-toggle-button>Oxygen</paper-toggle-button>
-          <paper-toggle-button>Carbon</paper-toggle-button>
-          <paper-toggle-button checked>Hydrogen</paper-toggle-button>
-          <paper-toggle-button checked>Nitrogen</paper-toggle-button>
-          <paper-toggle-button checked>Calcium</paper-toggle-button>
-        </div>
-      </div>
+    <div class="vertical-section-container centered">
+      <h3>Toggle buttons can be checked and disabled</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <paper-toggle-button>Toggle</paper-toggle-button>
+          <paper-toggle-button checked>Toggle</paper-toggle-button>
+          <paper-toggle-button disabled>Disabled</paper-toggle-button>
+        </template>
+      </demo-snippet>
+    </div>
 
-      <div>
-        <h4>Disabled</h4>
-        <div class="horizontal-section">
-          <paper-toggle-button disabled>Oxygen</paper-toggle-button>
-          <paper-toggle-button disabled>Carbon</paper-toggle-button>
-          <paper-toggle-button checked disabled>Hydrogen</paper-toggle-button>
-          <paper-toggle-button checked disabled>Nitrogen</paper-toggle-button>
-          <paper-toggle-button checked disabled>Calcium</paper-toggle-button>
-        </div>
-      </div>
+    <div class="vertical-section-container centered">
+      <h3>Toggle buttons can hide the ripple effect using the <i>noink</i> attribute</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <paper-toggle-button noink>Toggle</paper-toggle-button>
+        </template>
+      </demo-snippet>
+    </div>
 
-      <div>
-        <h4>Color</h4>
-        <div class="horizontal-section">
-          <paper-toggle-button class="blue">Oxygen</paper-toggle-button>
-          <paper-toggle-button class="red">Carbon</paper-toggle-button>
-          <paper-toggle-button checked class="orange">Hydrogen</paper-toggle-button>
-          <paper-toggle-button checked class="green">Nitrogen</paper-toggle-button>
-          <paper-toggle-button checked class="blue">Calcium</paper-toggle-button>
-        </div>
-      </div>
+    <div class="vertical-section-container centered">
+      <h3>Toggle buttons can be styled using custom properties</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <style is="custom-style">
+            paper-toggle-button.green {
+              --paper-toggle-button-checked-bar-color:  var(--paper-green-500);
+              --paper-toggle-button-checked-button-color:  var(--paper-green-500);
+              --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+              --paper-toggle-button-unchecked-bar-color:  var(--paper-teal-500);
+              --paper-toggle-button-unchecked-button-color:  var(--paper-teal-500);
+              --paper-toggle-button-unchecked-ink-color: var(--paper-teal-500);
+            }
+            paper-toggle-button.pink {
+              --paper-toggle-button-checked-bar-color:  var(--paper-pink-500);
+              --paper-toggle-button-checked-button-color:  var(--paper-pink-500);
+              --paper-toggle-button-checked-ink-color: var(--paper-pink-500);
+              --paper-toggle-button-unchecked-bar-color:  var(--paper-indigo-900);
+              --paper-toggle-button-unchecked-button-color:  var(--paper-indigo-900);
+              --paper-toggle-button-unchecked-ink-color: var(--paper-indigo-900);
+            }
+          </style>
 
-      <div>
-        <h4>Noink</h4>
-        <div class="horizontal-section">
-          <paper-toggle-button noink>Oxygen</paper-toggle-button>
-          <paper-toggle-button noink>Carbon</paper-toggle-button>
-          <paper-toggle-button checked noink>Hydrogen</paper-toggle-button>
-          <paper-toggle-button checked noink>Nitrogen</paper-toggle-button>
-          <paper-toggle-button checked noink>Calcium</paper-toggle-button>
-        </div>
-      </div>
+          <paper-toggle-button class="green">Toggle</paper-toggle-button>
+          <paper-toggle-button checked class="pink">Toggle</paper-toggle-button>
+        </template>
+      </demo-snippet>
     </div>
   </body>
 </html>

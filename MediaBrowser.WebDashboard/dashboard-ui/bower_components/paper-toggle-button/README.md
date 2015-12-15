@@ -1,26 +1,47 @@
-paper-toggle-button
-===================
+
+<!---
+
+This README is automatically generated from the comments in these files:
+paper-toggle-button.html
+
+Edit those files, and our readme bot will duplicate them over here!
+Edit this file, and the bot will squash your changes :)
+
+-->
+
+[![Build Status](https://travis-ci.org/PolymerElements/paper-toggle-button.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-toggle-button)
+
+_[Demo and API Docs](https://elements.polymer-project.org/elements/paper-toggle-button)_
+
+
+##&lt;paper-toggle-button&gt;
+
+
+Material design: [Switch](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-switch)
 
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
-by tapping or by dragging the swtich.
+by tapping or by dragging the switch.
 
 Example:
 
-```html
-<paper-toggle-button></paper-toggle-button>
-```
+    <paper-toggle-button></paper-toggle-button>
 
-Styling toggle-button:
+### Styling
 
-```html
-<style is="custom-style">
-  * {
-    --paper-toggle-button-unchecked-bar-color: #FF4081;
-    --paper-toggle-button-unchecked-button-color: #9c27b0;
-    --paper-toggle-button-unchecked-ink-color: #009688;
-    --paper-toggle-button-checked-bar-color: #5677fc;
-    --paper-toggle-button-checked-button-color: #ff4081;
-    --paper-toggle-button-checked-ink-color: #ff4081;
-  }
-</style>
-```
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toggle-button-unchecked-bar-color` | Slider color when the input is not checked | `#000000`
+`--paper-toggle-button-unchecked-button-color` | Button color when the input is not checked | `--paper-grey-50`
+`--paper-toggle-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--dark-primary-color`
+`--paper-toggle-button-checked-bar-color` | Slider button color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-checked-button-color` | Button color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-toggle-button-unchecked-bar` | Mixin applied to the slider when the input is not checked | `{}`
+`--paper-toggle-button-unchecked-button` | Mixin applied to the slider button when the input is not checked | `{}`
+`--paper-toggle-button-checked-bar` | Mixin applied to the slider when the input is checked | `{}`
+`--paper-toggle-button-checked-button` | Mixin applied to the slider button when the input is checked | `{}`
+`--paper-toggle-button-label-color` | Label color | `--primary-text-color`
+
+

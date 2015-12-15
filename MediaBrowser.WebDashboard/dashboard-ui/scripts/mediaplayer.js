@@ -474,6 +474,10 @@
                         Format: 'idx',
                         Method: 'Embed'
                     });
+                    profile.SubtitleProfiles.push({
+                        Format: 'smi',
+                        Method: 'Embed'
+                    });
                 } else {
                     profile.SubtitleProfiles.push({
                         Format: 'vtt',
