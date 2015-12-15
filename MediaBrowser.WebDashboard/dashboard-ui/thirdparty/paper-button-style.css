@@ -572,7 +572,7 @@ paper-dialog paper-radio-group paper-radio-button {
 
 div.dialogHeader {
     margin: 0 0 2.5em!important;
-    padding: .35em 1em;
+    padding: .35em .5em;
     background-color: #101010;
     display: flex;
     align-items: center;

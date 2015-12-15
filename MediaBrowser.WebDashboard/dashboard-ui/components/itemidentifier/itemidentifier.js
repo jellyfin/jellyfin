@@ -7,7 +7,7 @@
 
     function onIdentificationFormSubmitted() {
 
-        var page = $(this).parents('.editorContent');
+        var page = $(this).parents('paper-dialog');
 
         searchForIdentificationResults(page);
         return false;
@@ -193,7 +193,7 @@
 
     function onIdentificationOptionsSubmit() {
 
-        var page = $(this).parents('.editorContent');
+        var page = $(this).parents('paper-dialog');
 
         submitIdentficationResult(page);
         return false;
@@ -273,7 +273,7 @@
 
             $('.identifyProviderIds', page).html(html).trigger('create');
 
-            $('.identificationHeader', page).html(Globalize.translate('HeaderIdentify'));
+            page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
         });
     }
 
@@ -294,14 +294,7 @@
                 var dlg = paperDialogHelper.createDialog();
 
                 var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderIdentifyItem') + '</div>';
-                html += '</h2>';
-
-                html += '<div class="editorContent">';
                 html += Globalize.translateDocument(template);
-                html += '</div>';
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -311,10 +304,9 @@
 
                 paperDialogHelper.open(dlg);
 
-                var editorContent = dlg.querySelector('.editorContent');
-                initEditor(editorContent);
+                initEditor(dlg);
 
-                $('.btnCloseDialog', dlg).on('click', function () {
+                $('.btnCancel', dlg).on('click', function () {
 
                     paperDialogHelper.close(dlg);
                 });

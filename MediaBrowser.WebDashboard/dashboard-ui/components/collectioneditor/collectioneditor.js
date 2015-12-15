@@ -119,12 +119,9 @@
 
         var html = '';
 
-        html += '<form class="newCollectionForm" style="max-width:100%;">';
-
-        html += '<br />';
+        html += '<form class="newCollectionForm" style="margin:auto;">';
 
         html += '<div class="fldSelectCollection">';
-        html += '<br />';
         html += '<label for="selectCollectionToAddTo">' + Globalize.translate('LabelSelectCollection') + '</label>';
         html += '<select id="selectCollectionToAddTo" data-mini="true"></select>';
         html += '</div>';
@@ -197,29 +194,27 @@
             });
 
             var html = '';
-            html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-
             var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
 
-            html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + title + '</div>';
-            html += '</h2>';
-
-            html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-            html += getEditorHtml();
+            html += '<div class="dialogHeader">';
+            html += '<paper-icon-button icon="close" class="btnCancel"></paper-icon-button>';
+            html += '<div class="dialogHeaderTitle">';
+            html += title;
             html += '</div>';
+            html += '</div>';
+
+            html += getEditorHtml();
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
 
-            var editorContent = dlg.querySelector('.editorContent');
-            initEditor(editorContent, items);
+            initEditor(dlg, items);
 
             $(dlg).on('iron-overlay-closed', onDialogClosed);
 
             paperDialogHelper.open(dlg);
 
-            $('.btnCloseDialog', dlg).on('click', function () {
+            $('.btnCancel', dlg).on('click', function () {
 
                 paperDialogHelper.close(dlg);
             });
