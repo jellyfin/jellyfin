@@ -41,6 +41,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       elementIsScrollLocked: function(element) {
         var currentLockingElement = this.currentLockingElement;
+
+        if (currentLockingElement === undefined)
+          return false;
+
         var scrollLocked;
 
         if (this._hasCachedLockedElement(element)) {

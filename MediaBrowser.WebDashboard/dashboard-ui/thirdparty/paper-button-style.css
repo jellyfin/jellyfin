@@ -570,7 +570,21 @@ paper-dialog paper-radio-group paper-radio-button {
     }
 }
 
-paper-dialog.popupEditor .dialogHeader {
+div.dialogHeader {
+    margin: 0 0 2.5em!important;
+    padding: .35em 1em;
+    background-color: #101010;
+    display: flex;
+    align-items: center;
+    line-height: normal;
+    font-size: 110%;
+}
+
+.dialogHeaderTitle {
+    margin-left: .75em;
+}
+
+paper-dialog.popupEditor h2.dialogHeader {
     font-weight: inherit !important;
     line-height: 36px;
     padding: 0 1em;
@@ -612,4 +626,8 @@ paper-toggle-button paper-ripple {
 
 paper-progress.mini #progressContainer {
     height: 3px !important;
+}
+
+.formDialog.background-theme-b {
+    background-color: #202020;
 }

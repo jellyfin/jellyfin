@@ -75,7 +75,6 @@
         var list = DashboardPage.sessionsList;
 
         if (list) {
-            Logger.log('refreshSessionsLocally');
             DashboardPage.renderActiveConnections($.mobile.activePage, list);
         }
     },

@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/shadow.html">
+<link rel="import" href="paper-material-shared-styles.html">
 
 <!--
 Material design: [Cards](https://www.google.com/design/spec/components/cards.html)
@@ -29,34 +30,10 @@ Example:
 
 <dom-module id="paper-material">
   <template>
+    <style include="paper-material-shared-styles"></style>
     <style>
-      :host {
-        display: block;
-        position: relative;
-      }
-
       :host([animated]) {
         @apply(--shadow-transition);
-      }
-
-      :host([elevation="1"]) {
-        @apply(--shadow-elevation-2dp);
-      }
-
-      :host([elevation="2"]) {
-        @apply(--shadow-elevation-4dp);
-      }
-
-      :host([elevation="3"]) {
-        @apply(--shadow-elevation-6dp);
-      }
-
-      :host([elevation="4"]) {
-        @apply(--shadow-elevation-8dp);
-      }
-
-      :host([elevation="5"]) {
-        @apply(--shadow-elevation-16dp);
       }
     </style>
 

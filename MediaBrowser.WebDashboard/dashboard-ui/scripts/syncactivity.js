@@ -389,8 +389,7 @@
         $('.btnSyncSupporter', page).on('click', function () {
 
             requirejs(["registrationservices"], function () {
-                RegistrationServices.validateFeature('sync').then(function () {
-                });
+                RegistrationServices.validateFeature('sync');
             });
         });
         $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));

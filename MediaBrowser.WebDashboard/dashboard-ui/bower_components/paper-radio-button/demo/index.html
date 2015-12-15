@@ -16,89 +16,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../paper-styles/demo-pages.html">
+
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../paper-radio-button.html">
 
-  <style is="custom-style">
+  <style is="custom-style" include="demo-pages-shared-styles">
+    .vertical-section-container {
+      max-width: 630px;
+    }
+
     paper-radio-button {
-      display: block;
-      margin-bottom: 40px;
-    }
-
-    paper-radio-button.blue {
-      --paper-radio-button-checked-color: var(--paper-light-blue-500);
-      --paper-radio-button-checked-ink-color: var(--paper-light-blue-500);
-      --paper-radio-button-unchecked-color: var(--paper-light-blue-900);
-      --paper-radio-button-unchecked-ink-color: var(--paper-light-blue-900);
-    }
-
-    paper-radio-button.red {
-      --paper-radio-button-checked-color: var(--paper-red-500);
-      --paper-radio-button-checked-ink-color: var(--paper-red-500);
-      --paper-radio-button-unchecked-color: var(--paper-red-900);
-      --paper-radio-button-unchecked-ink-color: var(--paper-red-900);
-    }
-
-    paper-radio-button.green {
-      --paper-radio-button-checked-color: var(--paper-green-500);
-      --paper-radio-button-checked-ink-color: var(--paper-green-500);
-      --paper-radio-button-unchecked-color: var(--paper-green-900);
-      --paper-radio-button-unchecked-ink-color: var(--paper-green-900);
-    }
-
-    paper-radio-button.orange {
-      --paper-radio-button-checked-color: var(--paper-orange-500);
-      --paper-radio-button-checked-ink-color: var(--paper-orange-500);
-      --paper-radio-button-unchecked-color: var(--paper-orange-900);
-      --paper-radio-button-unchecked-ink-color: var(--paper-orange-900);
+      margin-right: 24px;
     }
   </style>
 </head>
 <body unresolved>
-  <div class="horizontal-section-container">
-    <div>
-      <h4>Enabled</h4>
-      <div class="horizontal-section">
-        <paper-radio-button>Oxygen</paper-radio-button>
-        <paper-radio-button>Carbon</paper-radio-button>
-        <paper-radio-button checked>Hydrogen</paper-radio-button>
-        <paper-radio-button checked>Nitrogen</paper-radio-button>
-        <paper-radio-button checked>Calcium</paper-radio-button>
-      </div>
-    </div>
+  <div class="vertical-section-container centered">
+    <h3>Radio buttons can be checked or unchecked, or disabled entirely</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-radio-button>Radio</paper-radio-button>
+        <paper-radio-button checked>Radio</paper-radio-button>
+        <paper-radio-button disabled>Disabled</paper-radio-button>
+      </template>
+    </demo-snippet>
 
-    <div>
-      <h4>Disabled</h4>
-      <div class="horizontal-section">
-        <paper-radio-button disabled>Oxygen</paper-radio-button>
-        <paper-radio-button disabled>Carbon</paper-radio-button>
-        <paper-radio-button checked disabled>Hydrogen</paper-radio-button>
-        <paper-radio-button checked disabled>Nitrogen</paper-radio-button>
-        <paper-radio-button checked disabled>Calcium</paper-radio-button>
-      </div>
-    </div>
+    <h3>Radio buttons can hide the ripple effect using the <i>noink</i> attribute</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-radio-button noink>Radio</paper-radio-button>
+      </template>
+    </demo-snippet>
 
-    <div>
-      <h4>Color</h4>
-      <div class="horizontal-section">
-        <paper-radio-button class="blue" checked>Oxygen</paper-radio-button>
-        <paper-radio-button class="red" checked>Carbon</paper-radio-button>
-        <paper-radio-button class="orange" checked>Hydrogen</paper-radio-button>
-        <paper-radio-button class="green" checked>Nitrogen</paper-radio-button>
-        <paper-radio-button class="blue" checked>Calcium</paper-radio-button>
-      </div>
-    </div>
+    <h3>Radio buttons can be styled using custom properties</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <style is="custom-style">
+          paper-radio-button.red {
+            --paper-radio-button-checked-color: var(--paper-red-500);
+            --paper-radio-button-checked-ink-color: var(--paper-red-500);
+            --paper-radio-button-unchecked-color: var(--paper-red-900);
+            --paper-radio-button-unchecked-ink-color: var(--paper-red-900);
+            --paper-radio-button-label-color: var(--paper-red-500);
+          }
+          paper-radio-button.green {
+            --paper-radio-button-checked-color: var(--paper-green-500);
+            --paper-radio-button-checked-ink-color: var(--paper-green-500);
+            --paper-radio-button-unchecked-color: var(--paper-green-900);
+            --paper-radio-button-unchecked-ink-color: var(--paper-green-900);
+            --paper-radio-button-label-color: var(--paper-green-500);
+          }
+        </style>
 
-    <div>
-      <h4>Noink </h4>
-      <div class="horizontal-section">
-        <paper-radio-button noink>Oxygen</paper-radio-button>
-        <paper-radio-button noink>Carbon</paper-radio-button>
-        <paper-radio-button checked noink>Hydrogen</paper-radio-button>
-        <paper-radio-button checked noink>Nitrogen</paper-radio-button>
-        <paper-radio-button checked noink>Calcium</paper-radio-button>
-      </div>
-    </div>
+        <paper-radio-button class="red">Radio</paper-radio-button>
+        <paper-radio-button checked class="green">Radio</paper-radio-button>
+      </template>
+    </demo-snippet>
   </div>
 </body>
 </html>

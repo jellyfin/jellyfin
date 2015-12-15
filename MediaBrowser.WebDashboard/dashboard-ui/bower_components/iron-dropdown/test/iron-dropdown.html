@@ -23,6 +23,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../test-fixture/test-fixture.html">
 
 </head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+</style>
 <body>
 
   <test-fixture id="TrivialDropdown">
@@ -35,8 +41,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="NonLockingDropdown">
     <template>
-      <iron-dropdown>
-        <div class="dropdown-content" allow-outside-scroll>I don't lock scroll!</div>
+      <iron-dropdown allow-outside-scroll>
+        <div class="dropdown-content">I don't lock scroll!</div>
       </iron-dropdown>
     </template>
   </test-fixture>
@@ -51,6 +57,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <!-- Absolutely position the dropdown so that it has enough space to move around -->
+  <test-fixture id="OffsetDropdownTopLeft">
+    <template>
+      <div style="display: block; position: absolute; top: 40px; left: 40px; width: 100px; height: 100px;">
+        <iron-dropdown>
+          <div class="dropdown-content">Hello!</div>
+        </iron-dropdown>
+      </div>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="OffsetDropdownBottomRight">
+    <template>
+      <div style="display: block; position: absolute; top: 40px; left: 40px; width: 100px; height: 100px;">
+        <iron-dropdown horizontal-align="right" vertical-align="bottom">
+          <div class="dropdown-content">Hello!</div>
+        </iron-dropdown>
+      </div>
+    </template>
+  </test-fixture>
+
   <test-fixture id="FocusableContentDropdown">
     <template>
       <iron-dropdown>
@@ -58,6 +85,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <div class="subcontent" tabindex="0"></div>
         </div>
       </iron-dropdown>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="RTLDropdownLeft">
+    <template>
+      <div dir="rtl" style="display: block; position: relative; width: 100px; height: 100px;">
+        <iron-dropdown>
+          <div class="dropdown-content">Hello!</div>
+        </iron-dropdown>
+      </div>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="RTLDropdownRight">
+    <template>
+      <div dir="rtl" style="display: block; position: relative; width: 100px; height: 100px;">
+        <iron-dropdown horizontal-align="right">
+          <div class="dropdown-content">Hello!</div>
+        </iron-dropdown>
+      </div>
     </template>
   </test-fixture>
 
@@ -100,13 +147,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           Polymer.Base.async(function() {
             expect(elementIsVisible(content)).to.be.equal(true);
 
-            MockInteractions.downAndUp(document.body, function() {
-
+            // The document capture-click listeners are set async.
+            // Note(noms): I think this bit in iron-overlay-behavior is pretty
+            // brittle, so if the tests start failing in the future, make sure
+            // _toggleListeners is getting called at the right time.
+            Polymer.Base.async(function() {
+              MockInteractions.tap(dropdown.parentNode);
               Polymer.Base.async(function() {
                 expect(elementIsVisible(content)).to.be.equal(false);
                 done();
               }, 100);
-            });
+            }, 1);
           });
         });
 
@@ -146,11 +197,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           dropdown = fixture('NonLockingDropdown');
         });
 
-        test('can be disabled with `allowOutsideScroll`', function() {
+        test('can be disabled with `allowOutsideScroll`', function(done) {
           dropdown.open();
 
-          expect(Polymer.IronDropdownScrollManager.elementIsScrollLocked(document.body))
-            .to.be.equal(false);
+          Polymer.Base.async(function() {
+            expect(Polymer.IronDropdownScrollManager.elementIsScrollLocked(document.body))
+              .to.be.equal(false);
+            done();
+          });
         });
       });
 
@@ -197,28 +251,135 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           }, 1);
         });
+      });
 
-        suite('with an offset', function() {
-          test('is offset by the offset value when open', function() {
-            var dropdownRect;
-            var offsetDropdownRect;
+      suite('when align is left/top, with an offset', function() {
+        var dropdownRect;
+        var offsetDropdownRect;
+        var dropdown;
+        setup(function() {
+          var parent = fixture('OffsetDropdownTopLeft');
+          dropdown = parent.querySelector('iron-dropdown');
+        });
 
-            dropdown.opened = true;
+        test('can be offset towards the bottom right', function(done) {
+          dropdown.opened = true;
 
-            Polymer.Base.async(function() {
-              dropdownRect = dropdown.getBoundingClientRect();
+          Polymer.Base.async(function() {
+            dropdownRect = dropdown.getBoundingClientRect();
 
-              dropdownRect.verticalOffset = 10;
-              dropdownRect.horizontalOffset = -10;
+            dropdown.verticalOffset = 10;
+            dropdown.horizontalOffset = 10;
+            offsetDropdownRect = dropdown.getBoundingClientRect();
 
-              offsetDropdownRect = dropdown.getBoundingClientRect();
+            // verticalAlign is top, so a positive offset moves down.
+            expect(dropdownRect.top + 10).to.be.closeTo(offsetDropdownRect.top, 0.1);
+            // horizontalAlign is left, so a positive offset moves to the right.
+            expect(dropdownRect.left + 10).to.be.closeTo(offsetDropdownRect.left, 0.1);
+            done();
+          }, 1);
+        });
 
-              expect(dropdownRect.top).to.be.equal(offsetDropdownRect.top - 10);
-              expect(dropdownRect.left).to.be.equal(offsetDropdownRect.left + 10);
-            }, 1);
+        test('can be offset towards the top left', function(done) {
+          dropdown.opened = true;
+
+          Polymer.Base.async(function() {
+            dropdownRect = dropdown.getBoundingClientRect();
+
+            dropdown.verticalOffset = -10;
+            dropdown.horizontalOffset = -10;
+            offsetDropdownRect = dropdown.getBoundingClientRect();
+
+            // verticalAlign is top, so a negative offset moves up.
+            expect(dropdownRect.top - 10).to.be.closeTo(offsetDropdownRect.top, 0.1);
+            // horizontalAlign is left, so a negative offset moves to the left.
+            expect(dropdownRect.left - 10).to.be.closeTo(offsetDropdownRect.left, 0.1);
+            done();
+          }, 1);
+        });
+      });
+
+      suite('when align is right/bottom, with an offset', function() {
+        var dropdownRect;
+        var offsetDropdownRect;
+        var dropdown;
+        setup(function() {
+          var parent = fixture('OffsetDropdownBottomRight');
+          dropdown = parent.querySelector('iron-dropdown');
+        });
+
+        test('can be offset towards the top left', function(done) {
+          dropdown.opened = true;
+
+          Polymer.Base.async(function() {
+            dropdownRect = dropdown.getBoundingClientRect();
+
+            dropdown.verticalOffset = 10;
+            dropdown.horizontalOffset = 10;
+            offsetDropdownRect = dropdown.getBoundingClientRect();
+
+            // verticalAlign is bottom, so a positive offset moves up.
+            expect(dropdownRect.bottom - 10).to.be.closeTo(offsetDropdownRect.bottom, 0.1);
+            // horizontalAlign is right, so a positive offset moves to the left.
+            expect(dropdownRect.right - 10).to.be.closeTo(offsetDropdownRect.right, 0.1);
+            done();
+          }, 1);
+        });
+
+        test('can be offset towards the bottom right', function(done) {
+          dropdown.opened = true;
+
+          Polymer.Base.async(function() {
+            dropdownRect = dropdown.getBoundingClientRect();
+
+            dropdown.verticalOffset = -10;
+            dropdown.horizontalOffset = -10;
+            offsetDropdownRect = dropdown.getBoundingClientRect();
+
+            // verticalAlign is bottom, so a negative offset moves down.
+            expect(dropdownRect.bottom + 10).to.be.closeTo(offsetDropdownRect.bottom, 0.1);
+            // horizontalAlign is right, so a positive offset moves to the right.
+            expect(dropdownRect.right + 10).to.be.closeTo(offsetDropdownRect.right, 0.1);
+            done();
+          }, 1);
+        });
+      });
+
+      suite('RTL', function() {
+        var dropdown;
+        var dropdownRect;
+
+        test('with horizontalAlign=left', function(done) {
+          var parent = fixture('RTLDropdownLeft');
+          dropdown = parent.querySelector('iron-dropdown');
+          dropdown.open();
+
+          Polymer.Base.async(function() {
+            // In RTL, if `horizontalAlign` is "left", that's the same as
+            // being right-aligned in LTR. So the dropdown should be in the top
+            // right corner.
+            dropdownRect = dropdown.getBoundingClientRect();
+            expect(dropdownRect.top).to.be.equal(0);
+            expect(dropdownRect.right).to.be.equal(100);
+            done();
           });
         });
 
+        test('with horizontalAlign=right', function(done) {
+          var parent = fixture('RTLDropdownRight');
+          dropdown = parent.querySelector('iron-dropdown');
+          dropdown.open();
+
+          Polymer.Base.async(function() {
+            // In RTL, if `horizontalAlign` is "right", that's the same as
+            // being left-aligned in LTR. So the dropdown should be in the top
+            // left corner.
+            dropdownRect = dropdown.getBoundingClientRect();
+            expect(dropdownRect.top).to.be.equal(0);
+            expect(dropdownRect.left).to.be.equal(0);
+            done();
+          });
+        });
       });
     });
   </script>

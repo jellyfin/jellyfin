@@ -494,7 +494,9 @@
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
                                 break;
                             case 'record':
-                                Dashboard.navigate('livetvnewrecording.html?programid=' + itemId);
+                                require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
+                                    recordingcreator.show(itemId);
+                                });
                                 break;
                             case 'artist':
                                 Dashboard.navigate('itemdetails.html?context=music&id=' + artistid);
