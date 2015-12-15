@@ -176,6 +176,7 @@
     "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
     "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "MessageRecordingCancelled": "Recording cancelled.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Confirm Series Cancellation",
     "MessageConfirmSeriesCancellation": "Are you sure you wish to cancel this series?",
     "MessageSeriesCancelled": "Series cancelled.",
