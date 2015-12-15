@@ -1540,5 +1540,6 @@
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
-    "HeaderNewRecording":  "New Recording"
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced":  "Advanced"
 }

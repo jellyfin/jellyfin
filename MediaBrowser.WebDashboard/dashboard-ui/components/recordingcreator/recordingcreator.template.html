@@ -7,13 +7,16 @@
 
 <form class="liveTvNewRecordingForm" style="margin: 0 auto;">
 
+    <div style="text-align: right;">
+        <paper-toggle-button class="chkAdvanced">${ButtonAdvanced}</paper-toggle-button>
+    </div>
     <div style="display: none;" id="eligibleForSeriesFields">
         <div>
             <paper-checkbox id="chkRecordSeries">${OptionRecordSeries}</paper-checkbox>
         </div>
         <br />
 
-        <div id="seriesFields" style="display: none;">
+        <div id="seriesFields" class="hide">
             <div>
                 <h1>${HeaderDays}</h1>
             </div>
@@ -38,7 +41,7 @@
         <br />
     </div>
 
-    <div>
+    <div class="advancedToggle hide">
         <div>
             <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
         </div>
