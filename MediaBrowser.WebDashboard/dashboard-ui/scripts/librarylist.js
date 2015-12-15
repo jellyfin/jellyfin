@@ -620,6 +620,13 @@
             return false;
         }
 
+        var overlayTarget = parentWithClass(e.target, 'cardOverlayTarget');
+        if (overlayTarget) {
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+        }
+
         var card = parentWithClass(e.target, 'card');
 
         if (card) {
