@@ -1991,8 +1991,11 @@
         $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
-
-            Dashboard.navigate('livetvnewrecording.html?programid=' + id);
+            require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
+                recordingcreator.show(id).then(function () {
+                    reload(page);
+                });
+            });
 
         });
 

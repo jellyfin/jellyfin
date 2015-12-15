@@ -245,7 +245,10 @@
     function onRecordClick() {
         hideOverlay();
 
-        Dashboard.navigate('livetvnewrecording.html?programid=' + this.getAttribute('data-id'));
+        var programId = this.getAttribute('data-id');
+        require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
+            recordingcreator.show(programId);
+        });
     }
 
     function showOverlay(elem, item) {
