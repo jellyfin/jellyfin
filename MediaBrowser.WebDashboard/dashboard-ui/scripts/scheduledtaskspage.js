@@ -284,13 +284,15 @@
             reloadList(page);
         });
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
+        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.on(ApiClient, "websocketopen", onWebSocketConnectionOpen);
 
     }).on('pagebeforehide', "#scheduledTasksPage", function () {
 
         var page = this;
 
-        $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionOpen);
+        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.off(ApiClient, "websocketopen", onWebSocketConnectionOpen);
         stopInterval();
     });
 

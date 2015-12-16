@@ -843,7 +843,7 @@
 
         MediaController.registerPlayer(new chromecastPlayer());
 
-        $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
+        Events.on(MediaController, 'playerchange', function (e, newPlayer, newTarget) {
             if (newPlayer.name == PlayerName) {
                 if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
                     castPlayer.launchApp();

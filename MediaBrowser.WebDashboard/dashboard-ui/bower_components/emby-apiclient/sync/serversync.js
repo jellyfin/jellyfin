@@ -6,13 +6,13 @@
 
         self.sync = function (server, options) {
 
-            var deferred = DeferredBuilder.Deferred();
-
             if (!server.AccessToken && !server.ExchangeToken) {
 
-                Logger.log('Skipping sync to server ' + server.Id + ' because there is no saved authentication information.');
-                deferred.resolve();
-                return deferred.promise();
+                console.log('Skipping sync to server ' + server.Id + ' because there is no saved authentication information.');
+                return new Promise(function (resolve, reject) {
+
+                    resolve();
+                });
             }
 
             var connectionOptions = {
@@ -21,31 +21,25 @@
                 reportCapabilities: false
             };
 
-            connectionManager.connectToServer(server, connectionOptions).then(function (result) {
+            return connectionManager.connectToServer(server, connectionOptions).then(function (result) {
 
                 if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-                    performSync(server, options, deferred);
+                    return performSync(server, options);
                 } else {
-                    Logger.log('Unable to connect to server id: ' + server.Id);
-                    deferred.reject();
+                    console.log('Unable to connect to server id: ' + server.Id);
+                    return Promise.reject();
                 }
 
-            }, function () {
+            }, function (err) {
 
-                Logger.log('Unable to connect to server id: ' + server.Id);
-                deferred.reject();
+                console.log('Unable to connect to server id: ' + server.Id);
+                throw err;
             });
-
-            return deferred.promise();
         };
 
-        function performSync(server, options, deferred) {
+        function performSync(server, options) {
 
-            Logger.log("Creating ContentUploader to server: " + server.Id);
-
-            var nextAction = function () {
-                syncOfflineUsers(server, options, deferred);
-            };
+            console.log("Creating ContentUploader to server: " + server.Id);
 
             options = options || {};
 
@@ -56,70 +50,77 @@
             }
 
             if (!uploadPhotos) {
-                nextAction();
-                return;
+                return syncOfflineUsers(server, options);
             }
 
-            require(['contentuploader'], function () {
+            return new Promise(function (resolve, reject) {
 
-                new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).then(function () {
+                require(['contentuploader'], function () {
 
-                    Logger.log("ContentUploaded succeeded to server: " + server.Id);
+                    new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).then(function () {
 
-                    nextAction();
+                        console.log("ContentUploaded succeeded to server: " + server.Id);
 
-                }, function () {
+                        syncOfflineUsers(server, options).then(resolve, reject);
 
-                    Logger.log("ContentUploaded failed to server: " + server.Id);
+                    }, function () {
 
-                    nextAction();
+                        console.log("ContentUploaded failed to server: " + server.Id);
+
+                        syncOfflineUsers(server, options).then(resolve, reject);
+                    });
                 });
             });
         }
 
-        function syncOfflineUsers(server, options, deferred) {
+        function syncOfflineUsers(server, options) {
 
             if (options.syncOfflineUsers === false) {
-                syncMedia(server, options, deferred);
-                return;
+                return syncMedia(server, options);
             }
 
-            require(['offlineusersync'], function () {
+            return new Promise(function (resolve, reject) {
 
-                var apiClient = connectionManager.getApiClient(server.Id);
+                require(['offlineusersync'], function () {
 
-                new MediaBrowser.OfflineUserSync().sync(apiClient, server).then(function () {
+                    var apiClient = connectionManager.getApiClient(server.Id);
 
-                    Logger.log("OfflineUserSync succeeded to server: " + server.Id);
+                    new MediaBrowser.OfflineUserSync().sync(apiClient, server).then(function () {
 
-                    syncMedia(server, options, deferred);
+                        console.log("OfflineUserSync succeeded to server: " + server.Id);
 
-                }, function () {
+                        syncMedia(server, options).then(resolve, reject);
 
-                    Logger.log("OfflineUserSync failed to server: " + server.Id);
+                    }, function () {
 
-                    deferred.reject();
+                        console.log("OfflineUserSync failed to server: " + server.Id);
+
+                        reject();
+                    });
                 });
             });
         }
 
-        function syncMedia(server, options, deferred) {
+        function syncMedia(server, options) {
 
-            require(['mediasync'], function () {
+            return new Promise(function (resolve, reject) {
 
-                var apiClient = connectionManager.getApiClient(server.Id);
+                require(['mediasync'], function () {
 
-                new MediaBrowser.MediaSync().sync(apiClient, server, options).then(function () {
+                    var apiClient = connectionManager.getApiClient(server.Id);
 
-                    Logger.log("MediaSync succeeded to server: " + server.Id);
+                    new MediaBrowser.MediaSync().sync(apiClient, server, options).then(function () {
 
-                    deferred.resolve();
+                        console.log("MediaSync succeeded to server: " + server.Id);
 
-                }, function () {
+                        resolve();
 
-                    Logger.log("MediaSync failed to server: " + server.Id);
+                    }, function () {
 
-                    deferred.reject();
+                        console.log("MediaSync failed to server: " + server.Id);
+
+                        reject();
+                    });
                 });
             });
         }

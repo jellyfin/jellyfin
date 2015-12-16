@@ -448,28 +448,28 @@
 
                 if (elem.tagName == 'AUDIO') {
 
-                    Events.off(elem, 'timeupdate', onTimeUpdate);
-                    Events.off(elem, 'ended', onEnded);
-                    Events.off(elem, 'volumechange', onVolumeChange);
-                    Events.off(elem, 'playing', onOneAudioPlaying);
-                    Events.off(elem, 'play', onPlay);
-                    Events.off(elem, 'pause', onPause);
-                    Events.off(elem, 'playing', onPlaying);
-                    Events.off(elem, 'error', onError);
+                    elem.removeEventListener('timeupdate', onTimeUpdate);
+                    elem.removeEventListener('ended', onEnded);
+                    elem.removeEventListener('volumechange', onVolumeChange);
+                    elem.removeEventListener('playing', onOneAudioPlaying);
+                    elem.removeEventListener('play', onPlay);
+                    elem.removeEventListener('pause', onPause);
+                    elem.removeEventListener('playing', onPlaying);
+                    elem.removeEventListener('error', onError);
 
                 } else {
 
-                    Events.off(elem, 'loadedmetadata', onLoadedMetadata);
-                    Events.off(elem, 'playing', onOneVideoPlaying);
-                    Events.off(elem, 'timeupdate', onTimeUpdate);
-                    Events.off(elem, 'ended', onEnded);
-                    Events.off(elem, 'volumechange', onVolumeChange);
-                    Events.off(elem, 'play', onPlay);
-                    Events.off(elem, 'pause', onPause);
-                    Events.off(elem, 'playing', onPlaying);
-                    Events.off(elem, 'click', onClick);
-                    Events.off(elem, 'dblclick', onDblClick);
-                    Events.off(elem, 'error', onError);
+                    elem.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    elem.removeEventListener('playing', onOneVideoPlaying);
+                    elem.removeEventListener('timeupdate', onTimeUpdate);
+                    elem.removeEventListener('ended', onEnded);
+                    elem.removeEventListener('volumechange', onVolumeChange);
+                    elem.removeEventListener('play', onPlay);
+                    elem.removeEventListener('pause', onPause);
+                    elem.removeEventListener('playing', onPlaying);
+                    elem.removeEventListener('click', onClick);
+                    elem.removeEventListener('dblclick', onDblClick);
+                    elem.removeEventListener('error', onError);
                 }
 
                 if (elem.tagName.toLowerCase() != 'audio') {

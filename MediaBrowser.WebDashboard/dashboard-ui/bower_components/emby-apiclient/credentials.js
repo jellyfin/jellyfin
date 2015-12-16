@@ -1,10 +1,6 @@
-﻿(function (globalScope, JSON) {
+﻿define(['events'], function (Events) {
 
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.CredentialProvider = function (key) {
+    return function (key) {
 
         var self = this;
         var credentials = null;
@@ -16,7 +12,7 @@
 
                 var json = appStorage.getItem(key) || '{}';
 
-                Logger.log('credentials initialized with: ' + json);
+                console.log('credentials initialized with: ' + json);
                 credentials = JSON.parse(json);
                 credentials.Servers = credentials.Servers || [];
             }
@@ -127,5 +123,4 @@
             }
         };
     };
-
-})(window, window.JSON);
+});

@@ -8,7 +8,6 @@ This is a port of the [Java version](https://github.com/MediaBrowser/Emby.ApiCli
 # Notes #
 
 - this library depends on the native fetch and promise api's. These will be expected to be polyfilled if used in a browser that doesn't support them.
-- events.js depends on jQuery events. It is a to-do item to remove this dependency. For now you can optionally provide your own version that matches the same signature.
 
 # Examples #
 

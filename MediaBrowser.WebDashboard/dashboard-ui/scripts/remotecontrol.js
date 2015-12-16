@@ -385,14 +385,15 @@
     }
 
     function initializeApiClient(apiClient) {
-        $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.on(apiClient, "websocketopen", onWebSocketConnectionChange);
     }
 
     if (window.ApiClient) {
         initializeApiClient(window.ApiClient);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
     });
 

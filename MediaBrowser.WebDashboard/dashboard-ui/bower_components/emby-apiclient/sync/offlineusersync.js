@@ -6,62 +6,51 @@
 
         self.sync = function (apiClient, server) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var users = server.Users || [];
-            syncNext(users, 0, deferred, apiClient, server);
-
-            return deferred.promise();
+                var users = server.Users || [];
+                syncNext(users, 0, resolve, reject, apiClient, server);
+            });
         };
 
-        function syncNext(users, index, deferred, apiClient, server) {
+        function syncNext(users, index, resolve, reject, apiClient, server) {
 
             var length = users.length;
 
             if (index >= length) {
 
-                deferred.resolve();
+                resolve();
                 return;
             }
 
-            syncUser(users[index], apiClient).then(function () {
+            var onFinish = function() {
+                syncNext(users, index + 1, resolve, reject, apiClient, server);
+            };
 
-                syncNext(users, index + 1, deferred, apiClient, server);
-            }, function () {
-                syncNext(users, index + 1, deferred, apiClient, server);
-            });
+            syncUser(users[index], apiClient).then(onFinish, onFinish);
         }
 
         function syncUser(user, apiClient) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            apiClient.getOfflineUser(user.Id).then(function (result) {
+                apiClient.getOfflineUser(user.Id).then(function (result) {
 
-                require(['localassetmanager'], function () {
+                    require(['localassetmanager'], function () {
 
-                    LocalAssetManager.saveOfflineUser(result).then(function () {
-                        deferred.resolve();
-                    }, function () {
-                        deferred.resolve();
+                        LocalAssetManager.saveOfflineUser(result).then(resolve, resolve);
                     });
-                });
 
-            }, function () {
+                }, function () {
 
-                // TODO: We should only delete if there's a 401 response
+                    // TODO: We should only delete if there's a 401 response
 
-                require(['localassetmanager'], function () {
+                    require(['localassetmanager'], function () {
 
-                    LocalAssetManager.deleteOfflineUser(user.Id).then(function () {
-                        deferred.resolve();
-                    }, function () {
-                        deferred.resolve();
+                        LocalAssetManager.deleteOfflineUser(user.Id).then(resolve, resolve);
                     });
                 });
             });
-
-            return deferred.promise();
         }
 
     }

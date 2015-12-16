@@ -589,11 +589,11 @@
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('playbackstart', onPlaybackStart)
-                .off('playbackstop', onPlaybackStopped)
-                .off('volumechange', onVolumeChanged)
-                .off('playstatechange', onStateChanged)
-                .off('positionchange', onStateChanged);
+            Events.off(currentPlayer, 'playbackstart', onPlaybackStart);
+            Events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
+            Events.off(currentPlayer, 'volumechange', onStateChanged);
+            Events.off(currentPlayer, 'playstatechange', onVolumeChanged);
+            Events.off(currentPlayer, 'positionchange', onStateChanged);
 
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
@@ -633,11 +633,11 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        $(player).on('playbackstart', onPlaybackStart)
-            .on('playbackstop', onPlaybackStopped)
-            .on('volumechange', onVolumeChanged)
-            .on('playstatechange', onStateChanged)
-            .on('positionchange', onStateChanged);
+        Events.on(player, 'playbackstart', onPlaybackStart);
+        Events.on(player, 'playbackstop', onPlaybackStopped);
+        Events.on(player, 'volumechange', onStateChanged);
+        Events.on(player, 'playstatechange', onVolumeChanged);
+        Events.on(player, 'positionchange', onStateChanged);
     }
 
     Events.on(MediaController, 'playerchange', function () {

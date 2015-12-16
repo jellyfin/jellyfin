@@ -1,8 +1,4 @@
-﻿(function (globalScope, JSON, WebSocket, setTimeout, devicePixelRatio, FileReader) {
-
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
+﻿define(['events'], function (Events) {
 
     /**
      * Creates a new api client instance
@@ -10,17 +6,17 @@
      * @param {String} clientName s
      * @param {String} applicationVersion 
      */
-    globalScope.MediaBrowser.ApiClient = function (logger, serverAddress, clientName, applicationVersion, deviceName, deviceId) {
+    return function (serverAddress, clientName, applicationVersion, deviceName, deviceId, devicePixelRatio) {
 
         if (!serverAddress) {
             throw new Error("Must supply a serverAddress");
         }
 
-        logger.log('ApiClient serverAddress: ' + serverAddress);
-        logger.log('ApiClient clientName: ' + clientName);
-        logger.log('ApiClient applicationVersion: ' + applicationVersion);
-        logger.log('ApiClient deviceName: ' + deviceName);
-        logger.log('ApiClient deviceId: ' + deviceId);
+        console.log('ApiClient serverAddress: ' + serverAddress);
+        console.log('ApiClient clientName: ' + clientName);
+        console.log('ApiClient applicationVersion: ' + applicationVersion);
+        console.log('ApiClient deviceName: ' + deviceName);
+        console.log('ApiClient deviceId: ' + deviceId);
 
         var self = this;
         var webSocket;
@@ -267,7 +263,7 @@
             }
 
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
-                logger.log('Requesting url without automatic networking: ' + request.url);
+                console.log('Requesting url without automatic networking: ' + request.url);
 
                 return getFetchPromise(request).then(function (response) {
 
@@ -337,7 +333,7 @@
             connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
 
-            logger.log("Attempting reconnection to " + url);
+            console.log("Attempting reconnection to " + url);
 
             var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
@@ -351,7 +347,7 @@
 
             }, timeout).then(function () {
 
-                logger.log("Reconnect succeeded to " + url);
+                console.log("Reconnect succeeded to " + url);
 
                 self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
@@ -360,7 +356,7 @@
 
             }, function () {
 
-                logger.log("Reconnect attempt failed to " + url);
+                console.log("Reconnect attempt failed to " + url);
 
                 if (currentRetryCount < 5) {
 
@@ -388,7 +384,7 @@
 
         self.fetchWithFailover = function (request, enableReconnection) {
 
-            logger.log("Requesting " + request.url);
+            console.log("Requesting " + request.url);
 
             request.timeout = 30000;
 
@@ -408,32 +404,32 @@
 
             }, function (error) {
 
-                logger.log("Request failed to " + request.url);
+                console.log("Request failed to " + request.url);
 
                 // http://api.jquery.com/jQuery.ajax/
                 if (enableReconnection) {
 
-                    logger.log("Attempting reconnection");
+                    console.log("Attempting reconnection");
 
                     var previousServerAddress = self.serverAddress();
 
                     return tryReconnect().then(function () {
 
-                        logger.log("Reconnect succeesed");
+                        console.log("Reconnect succeesed");
                         request.url = request.url.replace(previousServerAddress, self.serverAddress());
 
                         return self.fetchWithFailover(request, false);
 
                     }, function (innerError) {
 
-                        logger.log("Reconnect failed");
+                        console.log("Reconnect failed");
                         onFetchFail(request.url, {});
                         throw innerError;
                     });
 
                 } else {
 
-                    logger.log("Reporting request failure");
+                    console.log("Reporting request failure");
 
                     onFetchFail(request.url, {});
                     throw error;
@@ -496,7 +492,7 @@
                 throw new Error('connectionMode cannot be null');
             }
 
-            logger.log('Begin updateServerInfo. connectionMode: ' + connectionMode);
+            console.log('Begin updateServerInfo. connectionMode: ' + connectionMode);
 
             self.serverInfo(server);
 
@@ -505,7 +501,7 @@
             if (!serverUrl) {
                 throw new Error('serverUrl cannot be null. serverInfo: ' + JSON.stringify(server));
             }
-            logger.log('Setting server address to ' + serverUrl);
+            console.log('Setting server address to ' + serverUrl);
             self.serverAddress(serverUrl);
         };
 
@@ -536,7 +532,7 @@
 
             webSocket.onopen = function () {
 
-                logger.log('web socket connection opened');
+                console.log('web socket connection opened');
                 setTimeout(function () {
                     Events.trigger(self, 'websocketopen');
                 }, 0);
@@ -578,7 +574,7 @@
 
         self.sendWebSocketMessage = function (name, data) {
 
-            logger.log('Sending web socket message: ' + name);
+            console.log('Sending web socket message: ' + name);
 
             var msg = { MessageType: name };
 
@@ -3412,5 +3408,4 @@
             return self.getJSON(url);
         };
     };
-
-})(window, window.JSON, window.WebSocket, window.setTimeout, window.devicePixelRatio, window.FileReader);
+});

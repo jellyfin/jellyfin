@@ -41,7 +41,7 @@
 
         picker.innerHTML = getPickerHtml();
 
-        Events.on(picker, 'click', 'a', function () {
+        $(picker).on('click', 'a', function () {
 
             var elem = this;
 
@@ -52,9 +52,9 @@
             if (!isSelected) {
 
                 elem.classList.add('selectedCharacter');
-                Events.trigger(picker, 'alphaselect', [this.innerHTML]);
+                $(picker).trigger('alphaselect', [this.innerHTML]);
             } else {
-                Events.trigger(picker, 'alphaclear');
+                $(picker).trigger('alphaclear');
             }
         });
     }

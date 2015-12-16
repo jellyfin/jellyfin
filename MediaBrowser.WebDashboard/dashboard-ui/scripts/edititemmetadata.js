@@ -1098,12 +1098,12 @@
 
     function bindItemChanged(page) {
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
+        Events.on(ApiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     function unbindItemChanged(page) {
 
-        $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
+        Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     function onItemDeleted(e, itemId) {
@@ -1221,13 +1221,13 @@
 
         var page = this;
 
-        $(LibraryBrowser).on('itemdeleting', onItemDeleted);
+        Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
         reload(page);
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
         var page = this;
-        $(LibraryBrowser).off('itemdeleting', onItemDeleted);
+        Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
     });

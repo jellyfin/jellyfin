@@ -11,7 +11,8 @@
   "license": "https://github.com/MediaBrowser/Emby.ApiClient.Javascript/blob/master/LICENSE",
   "homepage": "https://github.com/MediaBrowser/Emby.ApiClient.Javascript",
   "dependencies": {
-    "cryptojslib": "cryptojslib#^3.1.2"
+    "cryptojslib": "cryptojslib#^3.1.2",
+    "requirejs": "requirejs#^2.1.22"
   },
   "devDependencies": {
     

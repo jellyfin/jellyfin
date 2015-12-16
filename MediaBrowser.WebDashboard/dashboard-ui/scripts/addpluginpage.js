@@ -91,7 +91,7 @@
                 html += "</div>";
             }
 
-            Events.trigger($('#latestReviews', page).html(html)[0], 'create');
+            $('#latestReviews', page).html(html).trigger('create');
         });
     }
 

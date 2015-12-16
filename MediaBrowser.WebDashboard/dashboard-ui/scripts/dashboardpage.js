@@ -22,8 +22,8 @@
         DashboardPage.pollForInfo(page);
         DashboardPage.startInterval(apiClient);
 
-        $(apiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
-            .on("websocketopen", DashboardPage.onWebSocketOpen);
+        Events.on(apiClient, 'websocketmessage', DashboardPage.onWebSocketMessage);
+        Events.on(apiClient, 'websocketopen', DashboardPage.onWebSocketOpen);
 
         DashboardPage.lastAppUpdateCheck = null;
         DashboardPage.lastPluginUpdateCheck = null;
@@ -53,7 +53,8 @@
         var apiClient = ApiClient;
 
         if (apiClient) {
-            $(apiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+            Events.off(apiClient, 'websocketmessage', DashboardPage.onWebSocketMessage);
+            Events.off(apiClient, 'websocketopen', DashboardPage.onWebSocketOpen);
             DashboardPage.stopInterval(apiClient);
         }
 
@@ -1195,7 +1196,8 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             return;
         }
 
-        $(apiClient).on('websocketmessage', onSocketMessage).on('websocketopen', onSocketOpen);
+        Events.on(apiClient, 'websocketopen', onSocketOpen);
+        Events.on(apiClient, 'websocketmessage', onSocketMessage);
     }
 
     function startListening(apiClient) {
@@ -1239,7 +1241,8 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
         var apiClient = ApiClient;
 
         if (apiClient) {
-            $(apiClient).off('websocketopen', onSocketOpen).off('websocketmessage', onSocketOpen);
+            Events.off(apiClient, 'websocketopen', onSocketOpen);
+            Events.off(apiClient, 'websocketmessage', onSocketMessage);
 
             stopListening(apiClient);
         }

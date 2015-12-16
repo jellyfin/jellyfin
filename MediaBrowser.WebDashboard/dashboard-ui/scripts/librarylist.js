@@ -1375,7 +1375,8 @@
     }
 
     function initializeApiClient(apiClient) {
-        $(apiClient).off('websocketmessage', onWebSocketMessage).on('websocketmessage', onWebSocketMessage);
+        Events.off(apiClient, "websocketmessage", onWebSocketMessage);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessage);
     }
 
     function clearRefreshTimes() {
@@ -1386,7 +1387,7 @@
         initializeApiClient(window.ApiClient);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
     });
 

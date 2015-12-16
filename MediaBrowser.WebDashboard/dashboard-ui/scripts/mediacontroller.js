@@ -1026,7 +1026,8 @@
     }
 
     function initializeApiClient(apiClient) {
-        $(apiClient).off("websocketmessage", onWebSocketMessageReceived).on("websocketmessage", onWebSocketMessageReceived);
+        Events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     MediaController.init = function () {
@@ -1034,7 +1035,7 @@
             initializeApiClient(window.ApiClient);
         }
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
     };

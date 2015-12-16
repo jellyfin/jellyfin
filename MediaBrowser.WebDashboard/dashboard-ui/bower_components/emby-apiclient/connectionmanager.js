@@ -1,10 +1,6 @@
-﻿(function (globalScope) {
+﻿define(['events', 'apiclient'], function (Events, apiClientFactory) {
 
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.ConnectionState = {
+    var ConnectionState = {
         Unavailable: 0,
         ServerSelection: 1,
         ServerSignIn: 2,
@@ -12,22 +8,22 @@
         ConnectSignIn: 4
     };
 
-    globalScope.MediaBrowser.ConnectionMode = {
+    var ConnectionMode = {
         Local: 0,
         Remote: 1,
         Manual: 2
     };
 
-    globalScope.MediaBrowser.ServerInfo = {
+    var ServerInfo = {
 
         getServerAddress: function (server, mode) {
 
             switch (mode) {
-                case MediaBrowser.ConnectionMode.Local:
+                case ConnectionMode.Local:
                     return server.LocalAddress;
-                case MediaBrowser.ConnectionMode.Manual:
+                case ConnectionMode.Manual:
                     return server.ManualAddress;
-                case MediaBrowser.ConnectionMode.Remote:
+                case ConnectionMode.Remote:
                     return server.RemoteAddress;
                 default:
                     return server.ManualAddress || server.LocalAddress || server.RemoteAddress;
@@ -35,9 +31,9 @@
         }
     };
 
-    globalScope.MediaBrowser.ConnectionManager = function (logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
+    var ConnectionManager = function (credentialProvider, appName, appVersion, deviceName, deviceId, capabilities, devicePixelRatio) {
 
-        logger.log('Begin MediaBrowser.ConnectionManager constructor');
+        console.log('Begin ConnectionManager constructor');
 
         var self = this;
         var apiClients = [];
@@ -55,7 +51,7 @@
         function resolveFailure(resolve) {
 
             resolve({
-                State: MediaBrowser.ConnectionState.Unavailable,
+                State: ConnectionState.Unavailable,
                 ConnectUser: self.connectUser()
             });
         }
@@ -122,7 +118,7 @@
 
         function fetchWithTimeout(url, options, timeoutMs) {
 
-            logger.log('fetchWithTimeout: timeoutMs: ' + timeoutMs + ', url: ' + url);
+            console.log('fetchWithTimeout: timeoutMs: ' + timeoutMs + ', url: ' + url);
 
             return new Promise(function (resolve, reject) {
 
@@ -131,14 +127,14 @@
                 fetch(url, options).then(function (response) {
                     clearTimeout(timeout);
 
-                    logger.log('fetchWithTimeout: succeeded connecting to url: ' + url);
+                    console.log('fetchWithTimeout: succeeded connecting to url: ' + url);
 
                     resolve(response);
                 }, function (error) {
 
                     clearTimeout(timeout);
 
-                    logger.log('fetchWithTimeout: timed out connecting to url: ' + url);
+                    console.log('fetchWithTimeout: timed out connecting to url: ' + url);
 
                     reject();
                 });
@@ -168,11 +164,11 @@
 
             request.headers = request.headers || {};
 
-            logger.log('ConnectionManager requesting url: ' + request.url);
+            console.log('ConnectionManager requesting url: ' + request.url);
 
             return getFetchPromise(request).then(function (response) {
 
-                logger.log('ConnectionManager response status: ' + response.status + ', url: ' + request.url);
+                console.log('ConnectionManager response status: ' + response.status + ', url: ' + request.url);
 
                 if (response.status < 400) {
 
@@ -187,7 +183,7 @@
 
             }, function (err) {
 
-                logger.log('ConnectionManager request failed to url: ' + request.url);
+                console.log('ConnectionManager request failed to url: ' + request.url);
                 throw err;
             });
         }
@@ -196,7 +192,7 @@
 
             url = getEmbyServerUrl(url, "system/info/public");
 
-            logger.log('tryConnect url: ' + url);
+            console.log('tryConnect url: ' + url);
 
             return ajax({
 
@@ -296,8 +292,8 @@
 
             var existingServer = existingServers.length ? existingServers[0] : {};
             existingServer.DateLastAccessed = new Date().getTime();
-            existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
-            if (existingServer.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+            existingServer.LastConnectionMode = ConnectionMode.Manual;
+            if (existingServer.LastConnectionMode == ConnectionMode.Local) {
                 existingServer.DateLastLocalConnection = new Date().getTime();
             }
             existingServer.ManualAddress = apiClient.serverAddress();
@@ -332,7 +328,7 @@
 
         self.clearData = function () {
 
-            logger.log('connection manager clearing data');
+            console.log('connection manager clearing data');
 
             connectUser = null;
             var credentials = credentialProvider.credentials();
@@ -354,9 +350,9 @@
 
             if (!apiClient) {
 
-                var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+                var url = ServerInfo.getServerAddress(server, connectionMode);
 
-                apiClient = new MediaBrowser.ApiClient(logger, url, appName, appVersion, deviceName, deviceId);
+                apiClient = new apiClientFactory(url, appName, appVersion, deviceName, deviceId, devicePixelRatio);
 
                 apiClients.push(apiClient);
 
@@ -369,7 +365,7 @@
                 Events.trigger(self, 'apiclientcreated', [apiClient]);
             }
 
-            logger.log('returning instance from getOrAddApiClient');
+            console.log('returning instance from getOrAddApiClient');
             return apiClient;
         }
 
@@ -402,7 +398,7 @@
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
 
-                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                if (server.LastConnectionMode == ConnectionMode.Local) {
                     server.DateLastLocalConnection = new Date().getTime();
                 }
             }
@@ -445,7 +441,7 @@
 
             if (options.enableWebSocket !== false) {
                 if (!apiClient.isWebSocketOpenOrConnecting && apiClient.isWebSocketSupported()) {
-                    logger.log('calling apiClient.openWebSocket');
+                    console.log('calling apiClient.openWebSocket');
 
                     apiClient.openWebSocket();
                 }
@@ -516,7 +512,7 @@
                 throw new Error("credentials.ConnectUserId cannot be null");
             }
 
-            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+            var url = ServerInfo.getServerAddress(server, connectionMode);
 
             url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
@@ -547,7 +543,7 @@
 
             return new Promise(function (resolve, reject) {
 
-                var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+                var url = ServerInfo.getServerAddress(server, connectionMode);
 
                 ajax({
 
@@ -675,7 +671,7 @@
 
         self.logout = function () {
 
-            Logger.log('begin connectionManager loguot');
+            console.log('begin connectionManager loguot');
             var promises = [];
 
             for (var i = 0, length = apiClients.length; i < length; i++) {
@@ -743,7 +739,7 @@
 
         function getConnectServers(credentials) {
 
-            logger.log('Begin getConnectServers');
+            console.log('Begin getConnectServers');
 
             return new Promise(function (resolve, reject) {
 
@@ -801,7 +797,7 @@
 
         self.getAvailableServers = function () {
 
-            logger.log('Begin getAvailableServers');
+            console.log('Begin getAvailableServers');
 
             // Clone the array
             var credentials = credentialProvider.credentials();
@@ -863,7 +859,7 @@
                                 DateLastLocalConnection: new Date().getTime()
                             };
 
-                            info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
+                            info.LastConnectionMode = info.ManualAddress ? ConnectionMode.Manual : ConnectionMode.Local;
 
                             return info;
                         });
@@ -897,7 +893,7 @@
 
         self.connect = function () {
 
-            logger.log('Begin connect');
+            console.log('Begin connect');
 
             return new Promise(function (resolve, reject) {
 
@@ -918,7 +914,7 @@
 
         self.connectToServers = function (servers) {
 
-            logger.log('Begin connectToServers, with ' + servers.length + ' servers');
+            console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
             return new Promise(function (resolve, reject) {
 
@@ -926,14 +922,14 @@
 
                     self.connectToServer(servers[0]).then(function (result) {
 
-                        if (result.State == MediaBrowser.ConnectionState.Unavailable) {
+                        if (result.State == ConnectionState.Unavailable) {
 
                             result.State = result.ConnectUser == null ?
-                                MediaBrowser.ConnectionState.ConnectSignIn :
-                                MediaBrowser.ConnectionState.ServerSelection;
+                                ConnectionState.ConnectSignIn :
+                                ConnectionState.ServerSelection;
                         }
 
-                        logger.log('resolving connectToServers with result.State: ' + result.State);
+                        console.log('resolving connectToServers with result.State: ' + result.State);
                         resolve(result);
 
                     });
@@ -945,14 +941,14 @@
                     if (firstServer) {
                         self.connectToServer(firstServer).then(function (result) {
 
-                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+                            if (result.State == ConnectionState.SignedIn) {
 
                                 resolve(result);
 
                             } else {
                                 resolve({
                                     Servers: servers,
-                                    State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                                    State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
                                     ConnectUser: self.connectUser()
                                 });
                             }
@@ -962,7 +958,7 @@
 
                         resolve({
                             Servers: servers,
-                            State: (!servers.length && !self.connectUser()) ? MediaBrowser.ConnectionState.ConnectSignIn : MediaBrowser.ConnectionState.ServerSelection,
+                            State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
                             ConnectUser: self.connectUser()
                         });
                     }
@@ -992,9 +988,9 @@
                 if (server.LastConnectionMode != null) {
                     //tests.push(server.LastConnectionMode);
                 }
-                if (tests.indexOf(MediaBrowser.ConnectionMode.Manual) == -1) { tests.push(MediaBrowser.ConnectionMode.Manual); }
-                if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
-                if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
+                if (tests.indexOf(ConnectionMode.Manual) == -1) { tests.push(ConnectionMode.Manual); }
+                if (tests.indexOf(ConnectionMode.Local) == -1) { tests.push(ConnectionMode.Local); }
+                if (tests.indexOf(ConnectionMode.Remote) == -1) { tests.push(ConnectionMode.Remote); }
 
                 beginWakeServer(server);
 
@@ -1014,24 +1010,24 @@
 
             if (index >= tests.length) {
 
-                logger.log('Tested all connection modes. Failing server connection.');
+                console.log('Tested all connection modes. Failing server connection.');
                 resolveFailure(resolve);
                 return;
             }
 
             var mode = tests[index];
-            var address = MediaBrowser.ServerInfo.getServerAddress(server, mode);
+            var address = ServerInfo.getServerAddress(server, mode);
             var enableRetry = false;
             var skipTest = false;
             var timeout = defaultTimeout;
 
-            if (mode == MediaBrowser.ConnectionMode.Local) {
+            if (mode == ConnectionMode.Local) {
 
                 enableRetry = true;
                 timeout = 8000;
             }
 
-            else if (mode == MediaBrowser.ConnectionMode.Manual) {
+            else if (mode == ConnectionMode.Manual) {
 
                 if (stringEqualsIgnoreCase(address, server.LocalAddress) ||
                         stringEqualsIgnoreCase(address, server.RemoteAddress)) {
@@ -1044,16 +1040,16 @@
                 return;
             }
 
-            logger.log('testing connection mode ' + mode + ' with server ' + server.Name);
+            console.log('testing connection mode ' + mode + ' with server ' + server.Name);
 
             tryConnect(address, timeout).then(function (result) {
 
-                logger.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
+                console.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
                 onSuccessfulConnection(server, result, mode, options, resolve);
 
             }, function () {
 
-                logger.log('test failed for connection mode ' + mode + ' with server ' + server.Name);
+                console.log('test failed for connection mode ' + mode + ' with server ' + server.Name);
 
                 if (enableRetry) {
 
@@ -1117,7 +1113,7 @@
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
 
-                if (server.LastConnectionMode == MediaBrowser.ConnectionMode.Local) {
+                if (server.LastConnectionMode == ConnectionMode.Local) {
                     server.DateLastLocalConnection = new Date().getTime();
                 }
             }
@@ -1130,13 +1126,13 @@
 
             result.ApiClient = getOrAddApiClient(server, connectionMode);
             result.State = server.AccessToken ?
-                MediaBrowser.ConnectionState.SignedIn :
-                MediaBrowser.ConnectionState.ServerSignIn;
+                ConnectionState.SignedIn :
+                ConnectionState.ServerSignIn;
 
             result.Servers.push(server);
             result.ApiClient.updateServerInfo(server, connectionMode);
 
-            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+            if (result.State == ConnectionState.SignedIn) {
                 afterConnected(result.ApiClient, options);
             }
 
@@ -1173,17 +1169,17 @@
                 address = normalizeAddress(address);
 
                 function onFail() {
-                    logger.log('connectToAddress ' + address + ' failed');
+                    console.log('connectToAddress ' + address + ' failed');
                     resolveFailure(resolve);
                 }
 
                 tryConnect(address, defaultTimeout).then(function (publicInfo) {
 
-                    logger.log('connectToAddress ' + address + ' succeeded');
+                    console.log('connectToAddress ' + address + ' succeeded');
 
                     var server = {
                         ManualAddress: address,
-                        LastConnectionMode: MediaBrowser.ConnectionMode.Manual
+                        LastConnectionMode: ConnectionMode.Manual
                     };
                     updateServerInfo(server, publicInfo);
 
@@ -1207,9 +1203,9 @@
                     return;
                 }
 
-                require(['connectservice', 'cryptojs-md5'], function () {
+                require(['connectservice', 'cryptojs-md5'], function (connectservice) {
 
-                    var md5 = self.getConnectPasswordHash(password);
+                    var md5 = getConnectPasswordHash(connectservice, password);
 
                     ajax({
                         type: "POST",
@@ -1267,9 +1263,9 @@
                     return;
                 }
 
-                require(['connectservice', 'cryptojs-md5'], function () {
+                require(['connectservice', 'cryptojs-md5'], function (connectservice) {
 
-                    var md5 = self.getConnectPasswordHash(password);
+                    var md5 = getConnectPasswordHash(connectservice, password);
 
                     ajax({
                         type: "POST",
@@ -1306,12 +1302,12 @@
             });
         };
 
-        self.getConnectPasswordHash = function (password) {
+        function getConnectPasswordHash(connectService, password) {
 
-            password = globalScope.MediaBrowser.ConnectService.cleanPassword(password);
+            password = connectService.cleanPassword(password);
 
             return CryptoJS.MD5(password).toString();
-        };
+        }
 
         self.getApiClient = function (item) {
 
@@ -1511,4 +1507,10 @@
         return self;
     };
 
-})(window, window.Logger);
+    return {
+        ConnectionState: ConnectionState,
+        ConnectionMode: ConnectionMode,
+        ServerInfo: ServerInfo,
+        ConnectionManager: ConnectionManager
+    };
+});
