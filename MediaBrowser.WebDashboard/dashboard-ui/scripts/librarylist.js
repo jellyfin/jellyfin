@@ -622,8 +622,8 @@
             return false;
         }
 
-        var overlayTarget = parentWithClass(e.target, 'cardOverlayTarget');
-        if (overlayTarget) {
+        var button = parentWithClass(e.target, 'btnUserItemRating');
+        if (button) {
             e.stopPropagation();
             e.preventDefault();
             return false;

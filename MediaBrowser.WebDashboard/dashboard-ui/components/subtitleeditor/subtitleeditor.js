@@ -339,13 +339,18 @@
             var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-                var dlg = paperDialogHelper.createDialog();
+                var dlg = paperDialogHelper.createDialog({
+                    size: 'small',
+                    removeOnClose: true
+                });
 
                 var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
-                html += '</h2>';
+                html += '<div class="dialogHeader">';
+                html += '<paper-icon-button icon="arrow-back" class="btnCancel"></paper-icon-button>';
+                html += '<div class="dialogHeaderTitle">';
+                html += item.Name;
+                html += '</div>';
+                html += '</div>';
 
                 html += '<div class="editorContent">';
                 html += Globalize.translateDocument(template);
@@ -355,9 +360,6 @@
                 document.body.appendChild(dlg);
 
                 $('.subtitleSearchForm', dlg).off('submit', onSearchSubmit).on('submit', onSearchSubmit);
-
-                // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 
@@ -369,7 +371,7 @@
                     fillLanguages(editorContent, languages);
                 });
 
-                $('.btnCloseDialog', dlg).on('click', function () {
+                $('.btnCancel', dlg).on('click', function () {
 
                     paperDialogHelper.close(dlg);
                 });
@@ -377,12 +379,6 @@
         }
 
         xhr.send();
-    }
-
-    function onDialogClosed() {
-
-        $(this).remove();
-        Dashboard.hideLoadingMsg();
     }
 
     return {

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script src="../dist/hls.js"></script>
+<video id="video" controls></video>
+<script>
+    /* get stream from query string */
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    var stream = getParameterByName('stream') || 'http://www.streambox.fr/playlists/x36xhzz/url_9/193039199_mp4_h264_aac_fhd_7.m3u8';
+</script>
+<script>
+    if(Hls.isSupported()) {
+        var video = document.getElementById('video');
+        var hls = new Hls();
+        hls.loadSource(stream);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+            video.play();
+        });
+    }
+</script>
+<script>
+var video = document.getElementById('video');
+    window.onload = function(){
+        var i=0;
+        var el = document.getElementById('update');
+        function foo(){
+            i++;
+            el.innerHTML = 'animation:' + i+',decoded:' + video.webkitDecodedFrameCount + ',dropped:' + video.webkitDroppedFrameCount;
+            window.requestAnimationFrame(foo);
+        }
+        foo();
+    };
+</script>
+<div id="update"></div>
+</body>
+</html>

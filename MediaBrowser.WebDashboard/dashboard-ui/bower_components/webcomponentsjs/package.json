@@ -1,6 +1,6 @@
 {
   "name": "webcomponents.js",
-  "version": "0.7.19",
+  "version": "0.7.20",
   "description": "webcomponents.js",
   "main": "webcomponents.js",
   "directories": {
@@ -15,6 +15,9 @@
   "bugs": {
     "url": "https://github.com/webcomponents/webcomponentsjs/issues"
   },
+  "scripts": {
+    "test": "wct"
+  },
   "homepage": "http://webcomponents.org",
   "devDependencies": {
     "gulp": "^3.8.8",
@@ -23,6 +26,6 @@
     "gulp-header": "^1.1.1",
     "gulp-uglify": "^1.0.1",
     "run-sequence": "^1.0.1",
-    "web-component-tester": "^3"
+    "web-component-tester": "^4.0.1"
   }
 }

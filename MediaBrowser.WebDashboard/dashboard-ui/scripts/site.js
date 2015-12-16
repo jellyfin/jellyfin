@@ -1756,6 +1756,7 @@ var AppInfo = {};
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
 
         var bowerPath = "bower_components";
+        var apiClientBowerPath = "bower_components/emby-apiclient";
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
@@ -1781,6 +1782,8 @@ var AppInfo = {};
             fastclick: bowerPath + '/fastclick/lib/fastclick'
         };
 
+        paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
+
         if (Dashboard.isRunningInCordova()) {
             paths.dialog = "cordova/dialog";
             paths.prompt = "cordova/prompt";
@@ -1791,8 +1794,8 @@ var AppInfo = {};
             paths.dialog = "components/dialog";
             paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
-            paths.serverdiscovery = "apiclient/serverdiscovery";
-            paths.wakeonlan = "apiclient/wakeonlan";
+            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
+            paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
         }
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
@@ -1894,6 +1897,29 @@ var AppInfo = {};
         } else {
             define('registrationservices', ['scripts/registrationservices']);
         }
+
+        if (Dashboard.isRunningInCordova()) {
+            define("localassetmanager", ["cordova/localassetmanager"]);
+            define("fileupload", ["cordova/fileupload"]);
+        } else {
+            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
+            define("fileupload", [apiClientBowerPath + "/fileupload"]);
+        }
+
+        define("connectservice", [apiClientBowerPath + "/connectservice"]);
+        define("apiclient-store", [apiClientBowerPath + "/store"]);
+        define("apiclient-events", [apiClientBowerPath + "/events"]);
+        define("apiclient-logger", [apiClientBowerPath + "/logger"]);
+        define("apiclient-credentials", [apiClientBowerPath + "/credentials"]);
+        define("apiclient-deferred", [apiClientBowerPath + "/deferred"]);
+        define("apiclient", [apiClientBowerPath + "/apiclient"]);
+        define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
+
+        define("contentuploader", [apiClientBowerPath + "/sync/contentuploader"]);
+        define("serversync", [apiClientBowerPath + "/sync/serversync"]);
+        define("multiserversync", [apiClientBowerPath + "/sync/multiserversync"]);
+        define("offlineusersync", [apiClientBowerPath + "/sync/offlineusersync"]);
+        define("mediasync", [apiClientBowerPath + "/sync/mediasync"]);
     }
 
     function init(hostingAppInfo) {
@@ -1904,12 +1930,6 @@ var AppInfo = {};
             define('appstorage', [], function () {
                 return appStorage;
             });
-        }
-
-        if (Dashboard.isRunningInCordova()) {
-            define("localassetmanager", ["cordova/localassetmanager"]);
-        } else {
-            define("localassetmanager", ["apiclient/localassetmanager"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
@@ -1936,8 +1956,6 @@ var AppInfo = {};
             define("localsync", ["scripts/localsync"]);
         }
 
-        define("connectservice", ["apiclient/connectservice"]);
-
         define("livetvcss", [], function () {
             Dashboard.importCss('css/livetv.css');
             return {};
@@ -1962,18 +1980,6 @@ var AppInfo = {};
             define("searchmenu", ["scripts/searchmenu"]);
         }
 
-        define("contentuploader", ["apiclient/sync/contentuploader"]);
-        define("serversync", ["apiclient/sync/serversync"]);
-        define("multiserversync", ["apiclient/sync/multiserversync"]);
-        define("offlineusersync", ["apiclient/sync/offlineusersync"]);
-        define("mediasync", ["apiclient/sync/mediasync"]);
-
-        if (Dashboard.isRunningInCordova()) {
-            define("fileupload", ["cordova/fileupload"]);
-        } else {
-            define("fileupload", ["apiclient/fileupload"]);
-        }
-
         define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
@@ -1984,7 +1990,7 @@ var AppInfo = {};
 
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
-        deps.push('apiclient/events');
+        deps.push('apiclient-events');
 
         deps.push('jQuery');
 
@@ -2034,9 +2040,9 @@ var AppInfo = {};
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
-        deps.push('apiclient/apiclient');
-        deps.push('apiclient/connectionmanager');
-        deps.push('apiclient/credentials');
+        deps.push('apiclient');
+        deps.push('connectionmanager');
+        deps.push('apiclient-credentials');
 
         require(deps, function () {
 
@@ -2185,7 +2191,7 @@ var AppInfo = {};
         deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
-        deps.push('apiclient/deferred');
+        deps.push('apiclient-deferred');
 
         deps.push('css!css/card.css');
 
@@ -2411,8 +2417,8 @@ var AppInfo = {};
     var initialDependencies = [];
 
     initialDependencies.push('isMobile');
-    initialDependencies.push('apiclient/logger');
-    initialDependencies.push('apiclient/store');
+    initialDependencies.push('apiclient-logger');
+    initialDependencies.push('apiclient-store');
     initialDependencies.push('scripts/extensions');
 
     var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
