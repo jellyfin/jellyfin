@@ -1,0 +1,52 @@
+{
+  "name": "hls.js",
+  "version": "0.3.11",
+  "description": "Media Source Extension - HLS library, by/for Dailymotion",
+  "homepage": "https://github.com/dailymotion/hls.js",
+  "authors": "Guillaume du Pontavice <guillaume.dupontavice@dailymotion.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dailymotion/hls.js"
+  },
+  "bugs": {
+    "url": "https://github.com/dailymotion/hls.js/issues"
+  },
+  "main": "src/hls.js",
+  "private": true,
+  "scripts": {
+    "clean": "find dist -mindepth 1 -delete",
+    "prebuild": "npm run clean & npm run test",
+    "build": "browserify -s Hls src/hls.js --debug | exorcist dist/hls.js.map -b . > dist/hls.js",
+    "postbuild": "npm run minify",
+    "minify": "uglifyjs dist/hls.js -c sequences=true,dead_code=true,conditionals=true,booleans=true,unused=true,if_return=true,join_vars=true,drop_console=true -m sort --screw-ie8 > dist/hls.min.js",
+    "watch": "watchify --debug -s Hls src/hls.js -o dist/hls.js",
+    "pretest": "npm run lint",
+    "test": "mocha --recursive tests/unit",
+    "lint": "jshint src/",
+    "serve": "http-server -p 8000 .",
+    "open": "opener http://localhost:8000/demo/",
+    "live-reload": "live-reload --port 8001 dist/",
+    "dev": "npm run open -s & parallelshell 'npm run live-reload -s' 'npm run serve -s' 'npm run watch -s'"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "dependencies": {
+    "babelify": "^6.1.2",
+    "webworkify": "^1.0.2"
+  },
+  "devDependencies": {
+    "browserify": "^8.1.1",
+    "exorcist": "^0.4.0",
+    "http-server": "^0.7.4",
+    "jshint": "^2.5.11",
+    "live-reload": "^0.2.0",
+    "mocha": "^2.1.0",
+    "opener": "^1.4.0",
+    "parallelshell": "^1.0.3",
+    "uglify-js": "^2.4.23",
+    "watchify": "^2.2.1"
+  }
+}

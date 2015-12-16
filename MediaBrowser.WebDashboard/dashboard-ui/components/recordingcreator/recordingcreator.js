@@ -232,6 +232,16 @@
 
     function renderRecording(context, defaultTimer, program) {
 
+        $('.itemName', context).html(program.Name);
+
+        $('.itemEpisodeName', context).html(program.EpisodeTitle || '');
+
+        $('.itemMiscInfo', context).html(LibraryBrowser.getMiscInfoHtml(program));
+
+        $('.itemMiscInfo a').each(function() {
+            $(this).replaceWith(this.innerHTML);
+        });
+
         $('#chkNewOnly', context).checked(defaultTimer.RecordNewOnly);
         $('#chkAllChannels', context).checked(defaultTimer.RecordAnyChannel);
         $('#chkAnyTime', context).checked(defaultTimer.RecordAnyTime);

@@ -1,0 +1,18 @@
+{
+  "folders":
+  [
+    {
+      "path": ".",
+      "folder_exclude_patterns": [
+        ".git",
+        "node_modules",
+        "dist"
+        ],
+      "file_exclude_patterns": [
+        ".gitignore",
+        "hls.js.sublime-project",
+        "hls.js.sublime-workspace"
+      ]
+    }
+  ]
+}
