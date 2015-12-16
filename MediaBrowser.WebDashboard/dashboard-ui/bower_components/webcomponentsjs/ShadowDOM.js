@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.19
+// @version 0.7.20
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -306,6 +306,7 @@ window.ShadowDOMPolyfill = {};
       });
     });
   }
+  scope.addForwardingProperties = addForwardingProperties;
   scope.assert = assert;
   scope.constructorTable = constructorTable;
   scope.defineGetter = defineGetter;
@@ -3295,6 +3296,7 @@ window.ShadowDOMPolyfill = {};
 
 (function(scope) {
   "use strict";
+  var addForwardingProperties = scope.addForwardingProperties;
   var mixin = scope.mixin;
   var registerWrapper = scope.registerWrapper;
   var setWrapper = scope.setWrapper;
@@ -3319,6 +3321,10 @@ window.ShadowDOMPolyfill = {};
       unsafeUnwrap(this).texSubImage2D.apply(unsafeUnwrap(this), arguments);
     }
   });
+  var OriginalWebGLRenderingContextBase = Object.getPrototypeOf(OriginalWebGLRenderingContext.prototype);
+  if (OriginalWebGLRenderingContextBase !== Object.prototype) {
+    addForwardingProperties(OriginalWebGLRenderingContextBase, WebGLRenderingContext.prototype);
+  }
   var instanceProperties = /WebKit/.test(navigator.userAgent) ? {
     drawingBufferHeight: null,
     drawingBufferWidth: null
@@ -3405,7 +3411,10 @@ window.ShadowDOMPolyfill = {};
       var unwrappedActiveElement = unwrap(this).ownerDocument.activeElement;
       if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
       var activeElement = wrap(unwrappedActiveElement);
-      while (!this.contains(activeElement)) {
+      if (activeElement === this.host) {
+        return null;
+      }
+      while (!this.contains(activeElement) && !this.host.contains(activeElement)) {
         while (activeElement.parentNode) {
           activeElement = activeElement.parentNode;
         }
@@ -4109,7 +4118,6 @@ window.ShadowDOMPolyfill = {};
     if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
     var activeElement = wrap(unwrappedActiveElement);
     while (!this.contains(activeElement)) {
-      var lastHost = activeElement;
       while (activeElement.parentNode) {
         activeElement = activeElement.parentNode;
       }
