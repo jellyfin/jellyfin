@@ -194,7 +194,7 @@
 
 .nowPlayingBarPositionSlider #sliderContainer {
     width: 100%;
-    margin-left: -15px;
+    margin-left: 0 !important;
 }
 
 .nowPlayingBarPositionSlider #sliderKnob {
