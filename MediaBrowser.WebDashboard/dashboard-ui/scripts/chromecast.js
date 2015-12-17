@@ -483,7 +483,7 @@
             }
         };
 
-        $(castPlayer).on("connect", function (e) {
+        Events.on(castPlayer, "connect", function (e) {
 
             MediaController.setActivePlayer(PlayerName, self.getCurrentTargetInfo());
 
@@ -492,7 +492,7 @@
             self.lastPlayerData = {};
         });
 
-        $(castPlayer).on("playbackstart", function (e, data) {
+        Events.on(castPlayer, "playbackstart", function (e, data) {
 
             Logger.log('cc: playbackstart');
 
@@ -502,7 +502,7 @@
             Events.trigger(self, "playbackstart", [state]);
         });
 
-        $(castPlayer).on("playbackstop", function (e, data) {
+        Events.on(castPlayer, "playbackstop", function (e, data) {
 
             Logger.log('cc: playbackstop');
             var state = self.getPlayerStateInternal(data);
@@ -513,7 +513,7 @@
             self.lastPlayerData = {};
         });
 
-        $(castPlayer).on("playbackprogress", function (e, data) {
+        Events.on(castPlayer, "playbackprogress", function (e, data) {
 
             Logger.log('cc: positionchange');
             var state = self.getPlayerStateInternal(data);

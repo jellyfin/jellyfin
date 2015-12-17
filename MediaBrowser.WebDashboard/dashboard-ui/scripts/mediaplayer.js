@@ -543,6 +543,10 @@
 
         self.playNextAfterEnded = function () {
 
+            console.log('playNextAfterEnded');
+
+            Events.off(this, 'ended', self.playNextAfterEnded);
+
             self.nextTrack();
         };
 
@@ -661,16 +665,18 @@
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
             Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-            $(mediaRenderer).one("play", function () {
+            function onPlayingOnce() {
 
+                Events.off(this, "play", onPlayingOnce);
                 Events.on(this, 'ended', self.onPlaybackStopped);
 
-                $(this).one('ended', self.playNextAfterEnded);
+                Events.on(this, 'ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
+            }
 
-            });
+            Events.on(mediaRenderer, "play", onPlayingOnce);
 
             if (self.currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings(playSessionId).then(function () {
@@ -1550,25 +1556,23 @@
 
             if (mediaRenderer) {
 
-                mediaRenderer.stop();
-
                 Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                $(mediaRenderer).one("ended", function () {
-
-                    $(this).off('.mediaplayerevent');
-
-                    this.cleanup(destroyRenderer);
-
-                    self.currentMediaRenderer = null;
-                    self.currentItem = null;
-                    self.currentMediaSource = null;
-                    self.currentSubtitleStreamIndex = null;
-                    self.streamInfo = {};
-
-                });
+                mediaRenderer.stop();
 
                 Events.trigger(mediaRenderer, "ended");
+                //self.onPlaybackStopped.call(mediaRenderer);
+
+                // TODO: Unbind video events
+                unBindAudioEvents(mediaRenderer);
+
+                mediaRenderer.cleanup(destroyRenderer);
+
+                self.currentMediaRenderer = null;
+                self.currentItem = null;
+                self.currentMediaSource = null;
+                self.currentSubtitleStreamIndex = null;
+                self.streamInfo = {};
 
             } else {
                 self.currentMediaRenderer = null;
@@ -1582,6 +1586,14 @@
                 self.resetEnhancements();
             }
         };
+
+        function unBindAudioEvents(mediaRenderer) {
+            
+            Events.off(mediaRenderer, "volumechange", onVolumeChange);
+            Events.off(mediaRenderer, "pause", onPause);
+            Events.off(mediaRenderer, "playing", onPlaying);
+            Events.off(mediaRenderer, "timeupdate", onTimeUpdate);
+        }
 
         self.isPlaying = function () {
             return self.playlist.length > 0;
@@ -1767,8 +1779,8 @@
 
             var mediaRenderer = this;
 
-            Events.off(mediaRenderer, '.mediaplayerevent');
-
+            // TODO: Unbind other events
+            unBindAudioEvents(mediaRenderer);
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
 
             var item = self.currentItem;
@@ -1789,6 +1801,8 @@
         };
 
         self.onPlaystateChange = function (mediaRenderer) {
+
+            console.log('mediaplayer onPlaystateChange');
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
@@ -1939,44 +1953,24 @@
                     poster: self.getPosterUrl(item)
                 });
 
-                Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
+                function onPlayingOnce() {
 
-                    Logger.log('audio element event: volumechange');
-
-                    self.onVolumeChanged(this);
-
-                });
-
-                $(mediaRenderer).one("playing.mediaplayerevent", function () {
+                    Events.off(mediaRenderer, "playing", onPlayingOnce);
 
                     Logger.log('audio element event: playing');
 
                     // For some reason this is firing at the start, so don't bind until playback has begun
-                    Events.on(this, 'ended', self.onPlaybackStopped);
+                    Events.on(mediaRenderer, 'ended', self.onPlaybackStopped);
+                    Events.on(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                    $(this).one('ended', self.playNextAfterEnded);
+                    self.onPlaybackStart(mediaRenderer, item, mediaSource);
+                }
 
-                    self.onPlaybackStart(this, item, mediaSource);
-
-                }).on("pause.mediaplayerevent", function () {
-
-                    Logger.log('audio element event: pause');
-
-                    self.onPlaystateChange(this);
-
-                    // In the event timeupdate isn't firing, at least we can update when this happens
-                    self.setCurrentTime(self.getCurrentTicks());
-
-                }).on("playing.mediaplayerevent", function () {
-
-                    Logger.log('audio element event: playing');
-
-                    self.onPlaystateChange(this);
-
-                    // In the event timeupdate isn't firing, at least we can update when this happens
-                    self.setCurrentTime(self.getCurrentTicks());
-
-                }).on("timeupdate.mediaplayerevent", onTimeUpdate);
+                Events.on(mediaRenderer, "volumechange", onVolumeChange);
+                Events.on(mediaRenderer, "playing", onPlayingOnce);
+                Events.on(mediaRenderer, "pause", onPause);
+                Events.on(mediaRenderer, "playing", onPlaying);
+                Events.on(mediaRenderer, "timeupdate", onTimeUpdate);
 
                 self.currentMediaRenderer = mediaRenderer;
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
@@ -1992,6 +1986,34 @@
                     self.streamInfo = streamInfo;
                 });
             });
+        }
+
+        function onVolumeChange() {
+            Logger.log('audio element event: pause');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
+        }
+
+        function onPause() {
+
+            Logger.log('audio element event: pause');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
+        }
+
+        function onPlaying() {
+            Logger.log('audio element event: playing');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
         }
 
         var getItemFields = "MediaSources,Chapters";

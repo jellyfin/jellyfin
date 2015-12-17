@@ -2,22 +2,20 @@
 
     function getCallbacks(obj, name) {
 
-        ensureCallbacks(obj, name);
-
-        return obj._callbacks[name];
-    }
-
-    function ensureCallbacks(obj, name) {
-
         if (!obj) {
             throw new Error("obj cannot be null!");
         }
 
         obj._callbacks = obj._callbacks || {};
 
-        if (!obj._callbacks[name]) {
+        var list = obj._callbacks[name];
+
+        if (!list) {
             obj._callbacks[name] = [];
+            list = obj._callbacks[name];
         }
+
+        return list;
     }
 
     return {
@@ -26,17 +24,17 @@
 
             var list = getCallbacks(obj, eventName);
 
-            if (list.indexOf(fn) == -1) {
-                list.push(fn);
-            }
+            list.push(fn);
         },
 
         off: function (obj, eventName, fn) {
 
             var list = getCallbacks(obj, eventName);
-            obj._callbacks[name] = list.filter(function (i) {
-                return i != fn;
-            });
+
+            var i = list.indexOf(fn);
+            if (i != -1) {
+                list.splice(i, 1);
+            }
         },
 
         trigger: function (obj, eventName) {
@@ -53,7 +51,9 @@
                 eventArgs.push(additionalArgs[i]);
             }
 
-            getCallbacks(obj, eventName).forEach(function (c) {
+            var callbacks = getCallbacks(obj, eventName).slice(0);
+
+            callbacks.forEach(function (c) {
                 c.apply(obj, eventArgs);
             });
         }

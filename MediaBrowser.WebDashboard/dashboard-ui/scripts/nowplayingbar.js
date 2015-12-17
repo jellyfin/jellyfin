@@ -591,8 +591,8 @@
 
             Events.off(currentPlayer, 'playbackstart', onPlaybackStart);
             Events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
-            Events.off(currentPlayer, 'volumechange', onStateChanged);
-            Events.off(currentPlayer, 'playstatechange', onVolumeChanged);
+            Events.off(currentPlayer, 'volumechange', onVolumeChanged);
+            Events.off(currentPlayer, 'playstatechange', onStateChanged);
             Events.off(currentPlayer, 'positionchange', onStateChanged);
 
             currentPlayer.endPlayerUpdates();
@@ -635,8 +635,8 @@
 
         Events.on(player, 'playbackstart', onPlaybackStart);
         Events.on(player, 'playbackstop', onPlaybackStopped);
-        Events.on(player, 'volumechange', onStateChanged);
-        Events.on(player, 'playstatechange', onVolumeChanged);
+        Events.on(player, 'volumechange', onVolumeChanged);
+        Events.on(player, 'playstatechange', onStateChanged);
         Events.on(player, 'positionchange', onStateChanged);
     }
 

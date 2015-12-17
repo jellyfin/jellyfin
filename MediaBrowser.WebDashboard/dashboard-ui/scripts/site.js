@@ -2047,10 +2047,6 @@ var AppInfo = {};
         deps.push('connectionmanagerfactory');
         deps.push('credentialprovider');
 
-        if (AppInfo.isNativeApp && browserInfo.android) {
-            require(['cordova/android/logging']);
-        }
-
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
