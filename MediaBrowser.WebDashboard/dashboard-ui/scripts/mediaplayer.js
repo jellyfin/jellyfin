@@ -207,7 +207,7 @@
                 profile.TranscodingProfiles.push({
                     Container: 'mkv',
                     Type: 'Video',
-                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : '') + (canPlayMp3 ? ',mp3' : ''),
                     VideoCodec: 'h264',
                     Context: 'Streaming'
                 });
@@ -335,7 +335,7 @@
 
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
-                Codec: 'aac',
+                Codec: 'aac,mp3',
                 Conditions: [
                     {
                         Condition: 'LessThanEqual',
