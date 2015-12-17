@@ -701,10 +701,10 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
-            if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                queryString = string.Empty;
-            }
+            //if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
+            //{
+            //    queryString = string.Empty;
+            //}
 
             var index = 0;
 
