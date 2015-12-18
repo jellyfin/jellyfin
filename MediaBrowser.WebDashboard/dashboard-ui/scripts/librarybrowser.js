@@ -784,7 +784,10 @@
                 commands.push('editimages');
             }
 
-            commands.push('refresh');
+            if (user.Policy.IsAdministrator) {
+
+                commands.push('refresh');
+            }
 
             if (SyncManager.isAvailable(item, user)) {
                 commands.push('sync');
