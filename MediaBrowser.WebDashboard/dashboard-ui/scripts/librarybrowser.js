@@ -810,7 +810,10 @@
                 item.Type == "MusicAlbum" ||
                 item.Type == "MusicArtist") {
 
-                commands.push('identify');
+                if (user.Policy.IsAdministrator) {
+
+                    commands.push('identify');
+                }
             }
 
             return commands;
