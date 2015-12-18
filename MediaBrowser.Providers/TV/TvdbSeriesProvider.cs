@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.TV
 
         private const string SeriesSearchUrl = "http://www.thetvdb.com/api/GetSeries.php?seriesname={0}&language={1}";
         private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
-        private const string SeriesGetZipByImdbId = "http://www.thetvdb.com/api/{0}/GetSeriesByRemoteID.php?imdbid={1}&language={2}";
+        private const string GetSeriesByImdbId = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -219,9 +219,12 @@ namespace MediaBrowser.Providers.TV
                 throw new ArgumentNullException("seriesId");
             }
 
-            var url = string.Equals(idType, "tvdb", StringComparison.OrdinalIgnoreCase) ?
-                string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage) :
-                string.Format(SeriesGetZipByImdbId, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
+            if (!string.Equals(idType, "tvdb", StringComparison.OrdinalIgnoreCase))
+            {
+                seriesId = await GetSeriesByRemoteId(seriesId, idType, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+            }
+
+            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
 
             using (var zipStream = await _httpClient.Get(new HttpRequestOptions
             {
@@ -260,6 +263,39 @@ namespace MediaBrowser.Providers.TV
             }
 
             await ExtractEpisodes(seriesDataPath, downloadLangaugeXmlFile, lastTvDbUpdateTime).ConfigureAwait(false);
+        }
+
+        private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
+        {
+            var url = string.Format(GetSeriesByImdbId, id, language);
+
+            using (var result = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = TvDbResourcePool,
+                CancellationToken = cancellationToken
+
+            }).ConfigureAwait(false))
+            {
+                var doc = new XmlDocument();
+                doc.Load(result);
+
+                if (doc.HasChildNodes)
+                {
+                    var node = doc.SelectSingleNode("//Series/seriesid");
+
+                    if (node != null)
+                    {
+                        var idResult = node.InnerText;
+
+                        _logger.Info("Tvdb GetSeriesByRemoteId produced id of {0}", idResult ?? string.Empty);
+
+                        return idResult;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public TvdbOptions GetTvDbOptions()
