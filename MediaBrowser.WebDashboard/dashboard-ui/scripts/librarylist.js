@@ -268,28 +268,30 @@
                 });
             }
 
-            if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonEdit'),
-                    id: 'edit',
-                    ironIcon: 'mode-edit'
-                });
-            }
+            if (user.Policy.IsAdministrator) {
+                if (commands.indexOf('edit') != -1) {
+                    items.push({
+                        name: Globalize.translate('ButtonEdit'),
+                        id: 'edit',
+                        ironIcon: 'mode-edit'
+                    });
+                }
 
-            if (commands.indexOf('editimages') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonEditImages'),
-                    id: 'editimages',
-                    ironIcon: 'photo'
-                });
-            }
+                if (commands.indexOf('editimages') != -1) {
+                    items.push({
+                        name: Globalize.translate('ButtonEditImages'),
+                        id: 'editimages',
+                        ironIcon: 'photo'
+                    });
+                }
 
-            if (commands.indexOf('editsubtitles') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonEditSubtitles'),
-                    id: 'editsubtitles',
-                    ironIcon: 'closed-caption'
-                });
+                if (commands.indexOf('editsubtitles') != -1) {
+                    items.push({
+                        name: Globalize.translate('ButtonEditSubtitles'),
+                        id: 'editsubtitles',
+                        ironIcon: 'closed-caption'
+                    });
+                }
             }
 
             if (commands.indexOf('instantmix') != -1) {
