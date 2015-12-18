@@ -434,13 +434,13 @@
         function afterConnected(apiClient, options) {
 
             options = options || {};
-
             if (options.reportCapabilities !== false) {
                 apiClient.reportCapabilities(capabilities);
             }
 
             if (options.enableWebSocket !== false) {
-                if (!apiClient.isWebSocketOpenOrConnecting && apiClient.isWebSocketSupported()) {
+                if (!apiClient.isWebSocketOpenOrConnecting() && apiClient.isWebSocketSupported()) {
+
                     console.log('calling apiClient.openWebSocket');
 
                     apiClient.openWebSocket();

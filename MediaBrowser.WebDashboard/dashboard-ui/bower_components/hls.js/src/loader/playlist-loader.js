@@ -94,7 +94,7 @@ class PlaylistLoader {
     if (avcdata.length > 2) {
       result = avcdata.shift() + '.';
       result += parseInt(avcdata.shift()).toString(16);
-      result += ('00' + parseInt(avcdata.shift()).toString(16)).substr(-4);
+      result += ('000' + parseInt(avcdata.shift()).toString(16)).substr(-4);
     } else {
       result = codec;
     }

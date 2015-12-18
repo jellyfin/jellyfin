@@ -79,7 +79,7 @@ import {ErrorTypes, ErrorDetails} from '../errors';
         break;
       }
     }
-    this.remuxer.remux(this._aacTrack,{samples : []}, {samples : []}, timeOffset);
+    this.remuxer.remux(this._aacTrack,{samples : []}, {samples : [ { pts: pts, dts : pts, unit : id3.payload} ]}, timeOffset);
   }
 
   _ADTStoAudioConfig(data, offset, audioCodec) {

@@ -1,6 +1,6 @@
 {
   "name": "iron-checked-element-behavior",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Implements an element that has a checked attribute and can be added to a form",
   "authors": "The Polymer Authors",
   "keywords": [

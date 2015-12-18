@@ -311,6 +311,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFilesByExtension(bowerPath, ".json");
             DeleteFilesByExtension(bowerPath, ".gz");
             DeleteFilesByExtension(bowerPath, ".bat");
+            DeleteFilesByExtension(bowerPath, ".sh");
             DeleteFilesByName(bowerPath, "copying", true);
             DeleteFilesByName(bowerPath, "license", true);
             DeleteFilesByName(bowerPath, "license-mit", true);
