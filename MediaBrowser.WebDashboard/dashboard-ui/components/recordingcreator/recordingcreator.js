@@ -98,6 +98,7 @@
         }, function () {
 
             Dashboard.hideLoadingMsg();
+
             return {
                 TrialVersion: true,
                 IsValid: true,
@@ -110,7 +111,7 @@
         slideDownToShow(context.querySelector('#seriesFields'));
         context.querySelector('.btnSubmitContainer').classList.remove('hide');
 
-        getRegistration(getParameterByName('programid')).then(function (regInfo) {
+        getRegistration(currentProgramId).then(function (regInfo) {
 
             if (regInfo.IsValid) {
                 context.querySelector('.btnSubmitContainer').classList.remove('hide');
@@ -238,7 +239,7 @@
 
         $('.itemMiscInfo', context).html(LibraryBrowser.getMiscInfoHtml(program));
 
-        $('.itemMiscInfo a').each(function() {
+        $('.itemMiscInfo a').each(function () {
             $(this).replaceWith(this.innerHTML);
         });
 
