@@ -358,6 +358,21 @@
                         }
                     ]
                 });
+
+            } else {
+                
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Conditions: [
+                        {
+                            Condition: 'Equals',
+                            Property: 'IsSecondaryAudio',
+                            Value: 'false',
+                            IsRequired: 'false'
+                        }
+                    ]
+                });
+
             }
 
             if (isVlc) {
