@@ -144,10 +144,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
-      <Link>MediaInfo\osx\libmediainfo.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
       <Link>libsqlite3.0.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -158,9 +154,6 @@
     </None>
     <None Include="app.config" />
     <None Include="ImageMagickSharp.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="MediaBrowser.MediaInfo.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
