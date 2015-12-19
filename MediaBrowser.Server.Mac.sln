@@ -17,8 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.LocalMetadata"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaInfo", "MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj", "{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
@@ -172,20 +170,6 @@ Global
 		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Release|x86.ActiveCfg = Release|Any CPU
 		{5624B7B5-B5A7-41D8-9F10-CC5611109619}.Release|x86.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.AppStore|Any CPU.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|x86.Build.0 = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|Any CPU.Build.0 = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|x86.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|x86.Build.0 = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|x86.Build.0 = Release|Any CPU
 		{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
 		{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}.AppStore|Any CPU.Build.0 = Release|Any CPU
 		{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
