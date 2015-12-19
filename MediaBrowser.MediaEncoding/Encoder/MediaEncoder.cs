@@ -262,7 +262,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
-                    await DetectInterlaced(mediaInfo, inputPath, probeSizeArgument).ConfigureAwait(false);
+                    var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+                    if (videoStream != null)
+                    {
+                        var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
+
+                        if (isInterlaced)
+                        {
+                            videoStream.IsInterlaced = true;
+                        }
+                    }
 
                     if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                     {
@@ -306,20 +316,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
         }
 
-        private async Task DetectInterlaced(MediaSourceInfo video, string inputPath, string probeSizeArgument)
+        private async Task<bool> DetectInterlaced(MediaSourceInfo video, MediaStream videoStream, string inputPath, string probeSizeArgument)
         {
-            var videoStream = video.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-            if (video.Protocol != MediaProtocol.File || videoStream == null)
+            if (video.Protocol != MediaProtocol.File)
             {
-                return;
+                return false;
             }
 
+            var formats = (video.Container ?? string.Empty).Split(',').ToList();
+
             // Take a shortcut and limit this to containers that are likely to have interlaced content
-            if (!string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase))
+            if (!formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("wtv", StringComparer.OrdinalIgnoreCase))
             {
-                //return;
+                return false;
             }
 
             var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
@@ -346,6 +357,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             };
 
             _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            var idetFoundInterlaced = false;
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
@@ -366,11 +378,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     using (var reader = new StreamReader(process.StandardError.BaseStream))
                     {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        while (!reader.EndOfStream)
+                        {
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        File.WriteAllText("D:\\\\1.txt", result);
+                            if (line.StartsWith("[Parsed_idet", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var idetResult = AnalyzeIdetResult(line);
+
+                                if (idetResult.HasValue)
+                                {
+                                    if (!idetResult.Value)
+                                    {
+                                        return false;
+                                    }
+
+                                    idetFoundInterlaced = true;
+                                }
+                            }
+                        }
                     }
-                    
+
                 }
                 catch
                 {
@@ -379,6 +407,90 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw;
                 }
             }
+
+            return idetFoundInterlaced;
+        }
+
+        private bool? AnalyzeIdetResult(string line)
+        {
+            // As you can see, the filter only guessed one frame as progressive. 
+            // Results like this are pretty typical. So if less than 30% of the detections are in the "Undetermined" category, then I only consider the video to be interlaced if at least 65% of the identified frames are in either the TFF or BFF category. 
+            // In this case (310 + 311)/(622) = 99.8% which is well over the 65% metric. I may refine that number with more testing but I honestly do not believe I will need to.
+            // http://awel.domblogger.net/videoTranscode/interlace.html
+            var index = line.IndexOf("detection:", StringComparison.OrdinalIgnoreCase);
+
+            if (index == -1)
+            {
+                return null;
+            }
+
+            line = line.Substring(index).Trim();
+            var parts = line.Split(' ').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => i.Trim()).ToList();
+
+            if (parts.Count < 2)
+            {
+                return null;
+            }
+            double tff = 0;
+            double bff = 0;
+            double progressive = 0;
+            double undetermined = 0;
+            double total = 0;
+
+            for (var i = 0; i < parts.Count - 1; i++)
+            {
+                var part = parts[i];
+
+                if (string.Equals(part, "tff:", StringComparison.OrdinalIgnoreCase))
+                {
+                    tff = GetNextPart(parts, i);
+                    total += tff;
+                }
+                else if (string.Equals(part, "bff:", StringComparison.OrdinalIgnoreCase))
+                {
+                    bff = GetNextPart(parts, i);
+                    total += tff;
+                }
+                else if (string.Equals(part, "progressive:", StringComparison.OrdinalIgnoreCase))
+                {
+                    progressive = GetNextPart(parts, i);
+                    total += progressive;
+                }
+                else if (string.Equals(part, "undetermined:", StringComparison.OrdinalIgnoreCase))
+                {
+                    undetermined = GetNextPart(parts, i);
+                    total += undetermined;
+                }
+            }
+
+            if (total == 0)
+            {
+                return null;
+            }
+
+            if ((undetermined / total) >= .3)
+            {
+                return false;
+            }
+
+            if (((tff + bff) / total) >= .65)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private int GetNextPart(List<string> parts, int index)
+        {
+            var next = parts[index + 1];
+
+            int value;
+            if (int.TryParse(next, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+            {
+                return value;
+            }
+            return 0;
         }
 
         private bool EnableKeyframeExtraction(MediaSourceInfo mediaSource, MediaStream videoStream)
