@@ -135,7 +135,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
+            var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
+
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters, extractKeyFrameInterval,
                 GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
         }
 
@@ -169,16 +171,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="primaryPath">The primary path.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
+        /// <param name="extractKeyFrameInterval">if set to <c>true</c> [extract key frame interval].</param>
         /// <param name="probeSizeArgument">The probe size argument.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="videoType">Type of the video.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
-        /// <exception cref="System.ApplicationException">ffprobe failed - streams and format are both null.</exception>
+        /// <exception cref="System.ApplicationException"></exception>
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath,
             string primaryPath,
             MediaProtocol protocol,
             bool extractChapters,
+            bool extractKeyFrameInterval,
             string probeSizeArgument,
             bool isAudio,
             VideoType videoType,
@@ -258,6 +262,43 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
+                    var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+                    if (videoStream != null)
+                    {
+                        var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
+
+                        if (isInterlaced)
+                        {
+                            videoStream.IsInterlaced = true;
+                        }
+                    }
+
+                    if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    {
+                        if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
+                        {
+                            foreach (var stream in mediaInfo.MediaStreams)
+                            {
+                                if (EnableKeyframeExtraction(mediaInfo, stream))
+                                {
+                                    try
+                                    {
+                                        stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
+                                    }
+                                    catch (OperationCanceledException)
+                                    {
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.ErrorException("Error getting key frame interval", ex);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     return mediaInfo;
                 }
                 catch
@@ -271,8 +312,309 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _ffProbeResourcePool.Release();
                 }
             }
+
+            throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
         }
 
+        private async Task<bool> DetectInterlaced(MediaSourceInfo video, MediaStream videoStream, string inputPath, string probeSizeArgument)
+        {
+            if (video.Protocol != MediaProtocol.File)
+            {
+                return false;
+            }
+
+            var formats = (video.Container ?? string.Empty).Split(',').ToList();
+
+            // Take a shortcut and limit this to containers that are likely to have interlaced content
+            if (!formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("wtv", StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    FileName = FFMpegPath,
+                    Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
+
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            var idetFoundInterlaced = false;
+
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            {
+                try
+                {
+                    StartProcess(processWrapper);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error starting ffprobe", ex);
+
+                    throw;
+                }
+
+                try
+                {
+                    process.BeginOutputReadLine();
+
+                    using (var reader = new StreamReader(process.StandardError.BaseStream))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.StartsWith("[Parsed_idet", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var idetResult = AnalyzeIdetResult(line);
+
+                                if (idetResult.HasValue)
+                                {
+                                    if (!idetResult.Value)
+                                    {
+                                        return false;
+                                    }
+
+                                    idetFoundInterlaced = true;
+                                }
+                            }
+                        }
+                    }
+
+                }
+                catch
+                {
+                    StopProcess(processWrapper, 100, true);
+
+                    throw;
+                }
+            }
+
+            return idetFoundInterlaced;
+        }
+
+        private bool? AnalyzeIdetResult(string line)
+        {
+            // As you can see, the filter only guessed one frame as progressive. 
+            // Results like this are pretty typical. So if less than 30% of the detections are in the "Undetermined" category, then I only consider the video to be interlaced if at least 65% of the identified frames are in either the TFF or BFF category. 
+            // In this case (310 + 311)/(622) = 99.8% which is well over the 65% metric. I may refine that number with more testing but I honestly do not believe I will need to.
+            // http://awel.domblogger.net/videoTranscode/interlace.html
+            var index = line.IndexOf("detection:", StringComparison.OrdinalIgnoreCase);
+
+            if (index == -1)
+            {
+                return null;
+            }
+
+            line = line.Substring(index).Trim();
+            var parts = line.Split(' ').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => i.Trim()).ToList();
+
+            if (parts.Count < 2)
+            {
+                return null;
+            }
+            double tff = 0;
+            double bff = 0;
+            double progressive = 0;
+            double undetermined = 0;
+            double total = 0;
+
+            for (var i = 0; i < parts.Count - 1; i++)
+            {
+                var part = parts[i];
+
+                if (string.Equals(part, "tff:", StringComparison.OrdinalIgnoreCase))
+                {
+                    tff = GetNextPart(parts, i);
+                    total += tff;
+                }
+                else if (string.Equals(part, "bff:", StringComparison.OrdinalIgnoreCase))
+                {
+                    bff = GetNextPart(parts, i);
+                    total += tff;
+                }
+                else if (string.Equals(part, "progressive:", StringComparison.OrdinalIgnoreCase))
+                {
+                    progressive = GetNextPart(parts, i);
+                    total += progressive;
+                }
+                else if (string.Equals(part, "undetermined:", StringComparison.OrdinalIgnoreCase))
+                {
+                    undetermined = GetNextPart(parts, i);
+                    total += undetermined;
+                }
+            }
+
+            if (total == 0)
+            {
+                return null;
+            }
+
+            if ((undetermined / total) >= .3)
+            {
+                return false;
+            }
+
+            if (((tff + bff) / total) >= .65)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private int GetNextPart(List<string> parts, int index)
+        {
+            var next = parts[index + 1];
+
+            int value;
+            if (int.TryParse(next, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+            {
+                return value;
+            }
+            return 0;
+        }
+
+        private bool EnableKeyframeExtraction(MediaSourceInfo mediaSource, MediaStream videoStream)
+        {
+            if (videoStream.Type == MediaStreamType.Video && string.Equals(videoStream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
+                !videoStream.IsInterlaced &&
+                !(videoStream.IsAnamorphic ?? false))
+            {
+                var audioStreams = mediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
+
+                // If it has aac audio then it will probably direct stream anyway, so don't bother with this
+                if (audioStreams.Count == 1 && string.Equals(audioStreams[0].Codec, "aac", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
+        {
+            inputPath = inputPath.Split(new[] { ':' }, 2).Last().Trim('"');
+
+            const string args = "-show_packets -print_format compact -select_streams v:{1} -show_entries packet=flags -show_entries packet=pts_time \"{0}\"";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    FileName = FFProbePath,
+                    Arguments = string.Format(args, inputPath, videoStreamIndex.ToString(CultureInfo.InvariantCulture)).Trim(),
+
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            using (process)
+            {
+                var start = DateTime.UtcNow;
+
+                process.Start();
+
+                var lines = new List<int>();
+
+                try
+                {
+                    process.BeginErrorReadLine();
+
+                    await StartReadingOutput(process.StandardOutput.BaseStream, lines, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                }
+
+                process.WaitForExit();
+
+                _logger.Info("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
+                //_logger.Debug("Found keyframes {0}", string.Join(",", lines.ToArray()));
+                return lines;
+            }
+        }
+
+        private async Task StartReadingOutput(Stream source, List<int> keyframes, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using (var reader = new StreamReader(source))
+                {
+                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    var lines = StringHelper.RegexSplit(text, "[\r\n]+");
+                    foreach (var line in lines)
+                    {
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        var values = line.Split('|')
+                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                            .Select(i => i.Split('='))
+                            .Where(i => i.Length == 2)
+                            .ToDictionary(i => i[0], i => i[1]);
+
+                        string flags;
+                        if (values.TryGetValue("flags", out flags) && string.Equals(flags, "k", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string pts_time;
+                            double frameSeconds;
+                            if (values.TryGetValue("pts_time", out pts_time) && double.TryParse(pts_time, NumberStyles.Any, CultureInfo.InvariantCulture, out frameSeconds))
+                            {
+                                var ms = frameSeconds * 1000;
+                                keyframes.Add(Convert.ToInt32(ms));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reading ffprobe output", ex);
+            }
+        }
         /// <summary>
         /// The us culture
         /// </summary>
