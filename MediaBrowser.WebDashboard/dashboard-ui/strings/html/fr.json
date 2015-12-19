@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configurer le code PIN",
     "HeaderAdultsReadHere": "Section r\u00e9serv\u00e9e aux adultes!",
     "RegisterWithPayPal": "S'enregistrer avec PayPal",
-    "HeaderSyncRequiresSupporterMembership": "La synchronisation n\u00e9cessite un abonnement comme supporteur",
     "HeaderEnjoyDayTrial": "Profitez d'une p\u00e9riode d'essai de 14 jours",
     "LabelSyncTempPath": "R\u00e9pertoire de fichiers temporaires :",
     "LabelSyncTempPathHelp": "Sp\u00e9cifiez un r\u00e9pertoire de travail pour la synchronisation. Les fichiers r\u00e9sultant de la conversion de m\u00e9dias au cours du processus de synchronisation seront stock\u00e9s ici.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Modifier les images",
     "LabelFolder": "Dossier :",
     "HeadersFolders": "Dossiers",
-    "LabelDisplayName": "Nom d'affichage :"
+    "LabelDisplayName": "Nom d'affichage :",
+    "HeaderNewRecording": "Nouvel enregistrement",
+    "ButtonAdvanced": "Avanc\u00e9"
 }

@@ -22,7 +22,7 @@
     "LabelYourFirstName": "Keresztneved:",
     "MoreUsersCanBeAddedLater": "T\u00f6bb felhaszn\u00e1l\u00f3t a vez\u00e9rl\u0151pultban adhatsz hozz\u00e1.",
     "UserProfilesIntro": "Emby includes built-in support for user profiles, enabling each user to have their own display settings, playstate and parental controls.",
-    "LabelWindowsService": "Windows Service",
+    "LabelWindowsService": "Windows szolg\u00e1ltat\u00e1s",
     "AWindowsServiceHasBeenInstalled": "A Windows szolg\u00e1ltat\u00e1s telep\u00edtve lett.",
     "WindowsServiceIntro1": "Emby Server normally runs as a desktop application with a tray icon, but if you prefer to run it as a background service, it can be started from the windows services control panel instead.",
     "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. Please note that at this time the service is unable to self-update, so new versions will require manual interaction.",
@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Pin k\u00f3d be\u00e1ll\u00edt\u00e1sa",
     "HeaderAdultsReadHere": "Adults Read Here!",
     "RegisterWithPayPal": "Regisztr\u00e1ci\u00f3 PayPal haszn\u00e1lat\u00e1val",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Enjoy a 14 Day Free Trial",
     "LabelSyncTempPath": "Ideiglenes f\u00e1jlok \u00fatvonala:",
     "LabelSyncTempPathHelp": "Specify a custom sync working folder. Converted media created during the sync process will be stored here.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

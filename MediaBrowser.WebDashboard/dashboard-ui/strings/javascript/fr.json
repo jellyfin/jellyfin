@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Confirmer l'annulation de l'enregistrement.",
     "MessageConfirmRecordingCancellation": "\u00cates-vous s\u00fbr de vouloir annuler cet enregistrement?",
     "MessageRecordingCancelled": "Enregistrement annul\u00e9.",
+    "MessageRecordingScheduled": "Enregistrement planifi\u00e9.",
     "HeaderConfirmSeriesCancellation": "Confirmez l'annulation de la s\u00e9rie",
     "MessageConfirmSeriesCancellation": "\u00cates-vous s\u00fbr de vouloir annuler cette s\u00e9rie?",
     "MessageSeriesCancelled": "S\u00e9rie annul\u00e9e",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Profiter d'un acc\u00e8s gratuit \u00e0 certaines applications Emby sur votre appareil.",
     "HeaderCinemaMode": "Mode cin\u00e9ma",
     "CinemaModeFeatureDescription": "Le mode Cin\u00e9ma, vous donne l'exp\u00e9rience d'une vraie salle, avec des bandes annonces, et des introductions avant le film.",
-    "CoverArt": "Pochette"
+    "CoverArt": "Pochette",
+    "ButtonOff": "Off"
 }

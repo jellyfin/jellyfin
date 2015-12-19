@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configure pin code",
     "HeaderAdultsReadHere": "Adults Read Here!",
     "RegisterWithPayPal": "Register with PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Enjoy a 14 Day Free Trial",
     "LabelSyncTempPath": "Temporary file path:",
     "LabelSyncTempPathHelp": "Specify a custom sync working folder. Converted media created during the sync process will be stored here.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

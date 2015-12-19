@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Konfigurier de Pin Code",
     "HeaderAdultsReadHere": "Erwachseni bitte do lese!",
     "RegisterWithPayPal": "Registrier di mit PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Gn\u00fcss diin 14-T\u00e4g gratis Ziit zum teste",
     "LabelSyncTempPath": "Pfad f\u00f6r tempor\u00e4ri Date:",
     "LabelSyncTempPathHelp": "Gib en eigene Arbetsordner f\u00f6r d'Synchronisierig a. Konvertierti Medie werded w\u00e4hrend em Sync-Prozess det gspeichered.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

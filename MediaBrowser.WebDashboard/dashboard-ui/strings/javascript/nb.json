@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Bekreft Avbryt Opptak",
     "MessageConfirmRecordingCancellation": "Er du sikker p\u00e5 at du vil avbryte dette opptaket?",
     "MessageRecordingCancelled": "Opptak er Avbrutt.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Bekreft Serier kansellering",
     "MessageConfirmSeriesCancellation": "Er du sikker p\u00e5 at du vil kansellere denne serien?",
     "MessageSeriesCancelled": "Serie kansellert.",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "Kino Modus",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

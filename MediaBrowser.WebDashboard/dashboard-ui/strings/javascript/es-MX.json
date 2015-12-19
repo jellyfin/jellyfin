@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Confirmar Cancelaci\u00f3n de la Grabaci\u00f3n",
     "MessageConfirmRecordingCancellation": "\u00bfEst\u00e1 seguro de querer cancelar esta grabaci\u00f3n?",
     "MessageRecordingCancelled": "Grabaci\u00f3n cancelada.",
+    "MessageRecordingScheduled": "Grabaci\u00f3n programada.",
     "HeaderConfirmSeriesCancellation": "Confirmar Cancelaci\u00f3n de Serie",
     "MessageConfirmSeriesCancellation": "\u00bfEst\u00e1 seguro de querer cancelar esta serie?",
     "MessageSeriesCancelled": "Serie cancelada",
@@ -882,7 +883,7 @@
     "ButtonGuide": "Gu\u00eda",
     "ButtonRecordedTv": "Grabaciones de TV",
     "HeaderDisconnectFromPlayer": "Desconectar del Reproductor",
-    "ConfirmEndPlayerSession": "\u00bfDesea detener la app en el dispositivo remoto?",
+    "ConfirmEndPlayerSession": "\u00bfDesea cerrar Emby en el dispositivo?",
     "ButtonYes": "Si",
     "ButtonNo": "No",
     "ButtonRestorePreviousPurchase": "Restaurar Compra",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Disfrute acceso gratuito para elegir aplicaciones Emby para sus dispositivos.",
     "HeaderCinemaMode": "Modo cine",
     "CinemaModeFeatureDescription": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la funci\u00f3n.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

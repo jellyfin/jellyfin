@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "PIN \ucf54\ub4dc \uc124\uc815",
     "HeaderAdultsReadHere": "Adults Read Here!",
     "RegisterWithPayPal": "PayPal\ub85c \ub4f1\ub85d\ud558\uae30",
-    "HeaderSyncRequiresSupporterMembership": "\ub3d9\uae30\ud654\ub294 \uc11c\ud3ec\ud130 \uba64\ubc84\uc2ed\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
     "HeaderEnjoyDayTrial": "14\uc77c \ubb34\ub8cc \uccb4\ud5d8\ud558\uae30",
     "LabelSyncTempPath": "\uc784\uc2dc \ud30c\uc77c \uacbd\ub85c:",
     "LabelSyncTempPathHelp": "\uc0ac\uc6a9\uc790 \ub3d9\uae30\ud654 \uc791\uc5c5 \ud3f4\ub354\ub97c \uc9c0\uc815\ud569\ub2c8\ub2e4. \ub3d9\uae30\ud654 \uacfc\uc815\uc5d0\uc11c \ub9cc\ub4e4\uc5b4\uc9c4 \ubcc0\ud658\ub41c \ubbf8\ub514\uc5b4\uac00 \uc5ec\uae30\uc5d0 \uc800\uc7a5\ub429\ub2c8\ub2e4.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "\uc774\ubbf8\uc9c0 \ud3b8\uc9d1",
     "LabelFolder": "\ud3f4\ub354:",
     "HeadersFolders": "\ud3f4\ub354",
-    "LabelDisplayName": "\ud45c\uc2dc \uc774\ub984:"
+    "LabelDisplayName": "\ud45c\uc2dc \uc774\ub984:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

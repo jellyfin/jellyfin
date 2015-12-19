@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Best\u00e4tige Aufzeichnungsabbruch",
     "MessageConfirmRecordingCancellation": "Bis du dir sicher, diese Aufzeichnung abzubrechen?",
     "MessageRecordingCancelled": "Aufzeichnung abgebrochen.",
+    "MessageRecordingScheduled": "Aufnahme geplant.",
     "HeaderConfirmSeriesCancellation": "Best\u00e4tige Serienabbruch",
     "MessageConfirmSeriesCancellation": "Bis du dir sicher, diese Serie abzubrechen?",
     "MessageSeriesCancelled": "Serie abgebrochen.",
@@ -882,7 +883,7 @@
     "ButtonGuide": "TV Guide",
     "ButtonRecordedTv": "TV Aufnahmen",
     "HeaderDisconnectFromPlayer": "Trenne von Player",
-    "ConfirmEndPlayerSession": "M\u00f6chten Sie die App auf dem entfernten Ger\u00e4t beenden?",
+    "ConfirmEndPlayerSession": "M\u00f6chten Sie Emby auf dem Ger\u00e4t schlie\u00dfen?",
     "ButtonYes": "Ja",
     "ButtonNo": "Nein",
     "ButtonRestorePreviousPurchase": "Kauf wiederherstellen",
@@ -911,7 +912,7 @@
     "TryDragAndDropMessage": "Um Titel in der Playlist neu zu arrangieren, verwenden Sie einfach Drag an Drop. Versuchen Sie es!",
     "HeaderTryMicrosoftEdge": "Versuche Microsoft Edge",
     "MessageTryMicrosoftEdge": "F\u00fcr ein besseres Erlebnis mit Windows 10, probieren Sie den neuen Microsoft Edge Browser.",
-    "HeaderTryModernBrowser": "Try a Modern Web Browser",
+    "HeaderTryModernBrowser": "Versuchen Sie einen modernen Browser",
     "MessageTryModernBrowser": "F\u00fcr eine bessere Darstellung unter Windows probieren Sie mal einen modernen Browser wie z.B. Google Chrome, Firefox oder Opera.",
     "ErrorAddingListingsToSchedulesDirect": "Ein Fehler trat beim hinzuf\u00fcgen Ihrer Zusammenstellung zu Ihrem Schedules Direct Konto auf. Schedules Direct erlaubt nur eine begrenzte Anzahl von Zusammenstellungen je Account.  Sie sollten sich auf der Website in Ihrem Schedules-Direct Konto einloggen und ein paar Zusammenstellungen von Ihrem Konto l\u00f6schen bevor Sie fortfahren.",
     "PleaseAddAtLeastOneFolder": "Bitte f\u00fcgen Sie mindestens ein Verzeichniss zur Bibliothek durch Klicken der \"Hinzuf\u00fcgen\"-Schaltfl\u00e4che hinzu.",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Genie\u00dfen Sie Zugriff auf kostenlose Emby Apps f\u00fcr Ihre Ger\u00e4te",
     "HeaderCinemaMode": "Kino-Modus",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

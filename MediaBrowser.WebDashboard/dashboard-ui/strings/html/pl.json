@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Konfiguruj kod pin",
     "HeaderAdultsReadHere": "Doro\u015bli czyta\u0107!",
     "RegisterWithPayPal": "Zarejestruj z PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Synchronizacja wymaga cz\u0142onkowstwa Supporter",
     "HeaderEnjoyDayTrial": "Mi\u0142ego 14 dniowego okresu pr\u00f3bnego",
     "LabelSyncTempPath": "\u015acie\u017cka do plik\u00f3w tymczasowych:",
     "LabelSyncTempPathHelp": "Okre\u015b w\u0142asny folder synchronizacji. Utworzone skonwertowane media podczas synchronizacji b\u0119d\u0105 zapisywane tutaj.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edytuj Obrazy",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Foldery",
-    "LabelDisplayName": "Wy\u015bwietlaj nazw\u0119:"
+    "LabelDisplayName": "Wy\u015bwietlaj nazw\u0119:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

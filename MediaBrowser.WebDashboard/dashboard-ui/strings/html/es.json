@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configurar contrase\u00f1a",
     "HeaderAdultsReadHere": "Adultos Leer Aqui!",
     "RegisterWithPayPal": "Registrese con PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Disfrute 14 Dias Gratis de Prueba",
     "LabelSyncTempPath": "Localizaci\u00f3n del archivo temporal:",
     "LabelSyncTempPathHelp": "Especificar una carpeta personalizada para achivos en sincronizaci\u00f3n. Medios convertidos creados durante el proceso de sincronizaci\u00f3n ser\u00e1n guardados aqu\u00ed.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

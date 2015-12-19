@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configureaza codul pin",
     "HeaderAdultsReadHere": "Adultii Cititi Aici!",
     "RegisterWithPayPal": "Inregistreaza-te cu PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Bucurati-va de 14 zile de Incercare Gratuita",
     "LabelSyncTempPath": "Cale fisier temporara",
     "LabelSyncTempPathHelp": "Specifica\u021bi un dosar de sincronizare personalizat de lucru. Media convertite create \u00een timpul procesului de sincronizare vor fi stocate aici.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }
