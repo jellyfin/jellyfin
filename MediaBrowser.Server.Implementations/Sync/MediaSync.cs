@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // Do the data sync twice so the server knows what was removed from the device
             await SyncData(provider, dataProvider, serverId, target, cancellationToken).ConfigureAwait(false);
-            
+
             progress.Report(100);
         }
 
@@ -330,6 +330,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                     _logger.Debug("Removing {0} from {1}.", file, target.Name);
                     await provider.DeleteFile(file, target, cancellationToken).ConfigureAwait(false);
                 }
+
+                _logger.Debug("Removing {0} from {1}.", localItem.FileId, target.Name);
+                await provider.DeleteFile(localItem.FileId, target, cancellationToken).ConfigureAwait(false);
 
                 await dataProvider.Delete(target, localItem.Id).ConfigureAwait(false);
             }
