@@ -99,10 +99,6 @@
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj">
-      <Project>{6e4145e4-c6d4-4e4d-94f2-87188db6e239}</Project>
-      <Name>MediaBrowser.MediaInfo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
