@@ -258,17 +258,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
-                    //var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+                    var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                    //if (videoStream != null)
-                    //{
-                    //    var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
+                    if (videoStream != null)
+                    {
+                        var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
 
-                    //    if (isInterlaced)
-                    //    {
-                    //        videoStream.IsInterlaced = true;
-                    //    }
-                    //}
+                        if (isInterlaced)
+                        {
+                            videoStream.IsInterlaced = true;
+                        }
+                    }
 
                     return mediaInfo;
                 }
@@ -294,14 +294,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var formats = (video.Container ?? string.Empty).Split(',').ToList();
 
-            // Take a shortcut and limit this to containers that are likely to have interlaced content
-            if (!formats.Contains("vob", StringComparer.OrdinalIgnoreCase) &&
-                !formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) &&
-                !formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
-                !formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
-                !formats.Contains("wtv", StringComparer.OrdinalIgnoreCase))
+            // If the video codec is not some form of mpeg, then take a shortcut and limit this to containers that are likely to have interlaced content
+            if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                return false;
+                if (!formats.Contains("vob", StringComparer.OrdinalIgnoreCase) &&
+                    !formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) &&
+                    !formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
+                    !formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
+                    !formats.Contains("wtv", StringComparer.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
             }
 
             var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
