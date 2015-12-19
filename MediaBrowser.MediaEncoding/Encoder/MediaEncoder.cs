@@ -258,17 +258,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
-                    var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+                    //var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                    if (videoStream != null)
-                    {
-                        var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
+                    //if (videoStream != null)
+                    //{
+                    //    var isInterlaced = await DetectInterlaced(mediaInfo, videoStream, inputPath, probeSizeArgument).ConfigureAwait(false);
 
-                        if (isInterlaced)
-                        {
-                            videoStream.IsInterlaced = true;
-                        }
-                    }
+                    //    if (isInterlaced)
+                    //    {
+                    //        videoStream.IsInterlaced = true;
+                    //    }
+                    //}
 
                     return mediaInfo;
                 }
