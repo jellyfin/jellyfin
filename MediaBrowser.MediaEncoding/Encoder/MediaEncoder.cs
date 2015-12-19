@@ -295,7 +295,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var formats = (video.Container ?? string.Empty).Split(',').ToList();
 
             // Take a shortcut and limit this to containers that are likely to have interlaced content
-            if (!formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
+            if (!formats.Contains("vob", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) &&
+                !formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
                 !formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
                 !formats.Contains("wtv", StringComparer.OrdinalIgnoreCase))
             {
