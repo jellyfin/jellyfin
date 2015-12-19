@@ -325,7 +325,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
             var idetFoundInterlaced = false;
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
