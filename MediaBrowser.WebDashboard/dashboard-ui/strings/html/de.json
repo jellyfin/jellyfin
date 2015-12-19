@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "PIN Code festlegen",
     "HeaderAdultsReadHere": "Eltern, bitte lesen!",
     "RegisterWithPayPal": "Registrieren mit PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Synchronisation ben\u00f6tigt eine Unterst\u00fctzer-Mitgliedschaft",
     "HeaderEnjoyDayTrial": "Genie\u00dfen Sie eine 14 Tage Testversion",
     "LabelSyncTempPath": "Verzeichnis f\u00fcr tempor\u00e4re Dateien",
     "LabelSyncTempPathHelp": "Legen Sie ein eigenes Synchronisations-Arbeits Verzeichnis fest. Konvertierte Medien werden w\u00e4hrend der Synchronisation hier gespeichert.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Bild bearbeiten",
     "LabelFolder": "Verzeichnis:",
     "HeadersFolders": "Verzeichnisse",
-    "LabelDisplayName": "Anzeige Name:"
+    "LabelDisplayName": "Anzeige Name:",
+    "HeaderNewRecording": "Neue Aufnahme",
+    "ButtonAdvanced": "Erweitert"
 }

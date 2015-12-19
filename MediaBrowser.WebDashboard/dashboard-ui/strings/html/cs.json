@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Konfigurace pin code",
     "HeaderAdultsReadHere": "Pro dosp\u011bl\u00e9 - \u010dt\u011bte zde!",
     "RegisterWithPayPal": "Zaregistrujte se pomoc\u00ed PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Synchronizace vy\u017eaduje \u010dlenstv\u00ed v podpo\u0159e (supporter membership) ",
     "HeaderEnjoyDayTrial": "U\u017eijte si 14 denn\u00ed zku\u0161ebn\u00ed verzi zdarma",
     "LabelSyncTempPath": "Adres\u00e1\u0159 pro do\u010dasn\u00e9 soubory:",
     "LabelSyncTempPathHelp": "Zadejte vlastn\u00ed synchroniza\u010dn\u00ed pracovn\u00ed slo\u017eku. P\u0159eveden\u00e9 m\u00e9dia vytvo\u0159en\u00e9 b\u011bhem synchroniza\u010dn\u00edho procesu zde budou ulo\u017eeny.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Editace obr\u00e1zk\u016f",
     "LabelFolder": "Slo\u017eka:",
     "HeadersFolders": "Slo\u017eky",
-    "LabelDisplayName": "Zobrazovan\u00e9 jm\u00e9no:"
+    "LabelDisplayName": "Zobrazovan\u00e9 jm\u00e9no:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

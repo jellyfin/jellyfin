@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Confirmar la cancelaci\u00f3n de la grabaci\u00f3n",
     "MessageConfirmRecordingCancellation": "\u00bfEst\u00e1 seguro que desea cancelar esta grabaci\u00f3n?",
     "MessageRecordingCancelled": "Grabaci\u00f3n cancelada.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Confirmar cancelaci\u00f3n de serie",
     "MessageConfirmSeriesCancellation": "\u00bfEst\u00e1 seguro que desea cancelar esta serie?",
     "MessageSeriesCancelled": "Serie cancelada",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "Cinema Mode",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

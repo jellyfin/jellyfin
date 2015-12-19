@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Bekr\u00e4fta avbrott av inspelning",
     "MessageConfirmRecordingCancellation": "\u00c4r du s\u00e4ker p\u00e5 att du vill avbryta denna inspelning?",
     "MessageRecordingCancelled": "Inspelning avbruten.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Bekr\u00e4fta avbokning av serieinspelning",
     "MessageConfirmSeriesCancellation": "Vill du verkligen avboka denna serieinspelning?",
     "MessageSeriesCancelled": "Serieinspelningen har avbokats.",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "Biol\u00e4ge",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

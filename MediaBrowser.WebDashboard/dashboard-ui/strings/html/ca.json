@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configura codi pin",
     "HeaderAdultsReadHere": "Adults Llegiu Aqu\u00ed!",
     "RegisterWithPayPal": "Registra amb PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync requereix una membresia de col\u00b7laborador",
     "HeaderEnjoyDayTrial": "Gaudiu una Prova Gratu\u00efta de 14 Dies",
     "LabelSyncTempPath": "Directori de fitxers temporals:",
     "LabelSyncTempPathHelp": "Especifica un directori de treball personalitzat per al sync. Els multim\u00e8dia convertits durant el proc\u00e9s de sincronitzaci\u00f3 es desaran aqu\u00ed.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Directoris",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

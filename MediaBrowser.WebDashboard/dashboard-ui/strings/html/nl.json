@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Configureer pincode",
     "HeaderAdultsReadHere": "Volwassenen Lees hier!",
     "RegisterWithPayPal": "Registreer met PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Synchroniseren vereist een Supporter Lidmaatschap",
     "HeaderEnjoyDayTrial": "Geniet van een 14-daagse gratis proefversie",
     "LabelSyncTempPath": "Pad voor tijdelijke bestanden:",
     "LabelSyncTempPathHelp": "Geef een afwijkende sync werk directory op. Tijdens het sync proces aangemaakte geconverteerde media zal hier opgeslagen worden.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Bewerk afbeeldingen",
     "LabelFolder": "Map:",
     "HeadersFolders": "Mappen",
-    "LabelDisplayName": "Weergave naam:"
+    "LabelDisplayName": "Weergave naam:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Geavanceerd"
 }

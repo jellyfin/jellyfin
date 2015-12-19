@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "Konfigurer pinkode",
     "HeaderAdultsReadHere": "Voksne l\u00e6s her!",
     "RegisterWithPayPal": "Registrer med PayPal",
-    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
     "HeaderEnjoyDayTrial": "Nyd en 14-dages gratis pr\u00f8veperiode",
     "LabelSyncTempPath": "Sti for midlertidige filer:",
     "LabelSyncTempPathHelp": "Specificer en brugerdefineret synkroniserings arbejds-mappe. Konverterede filer vil under synkroniseringsprocessen blive gemt her.",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

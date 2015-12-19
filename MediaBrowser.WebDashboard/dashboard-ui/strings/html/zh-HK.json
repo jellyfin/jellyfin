@@ -75,7 +75,6 @@
     "ButtonConfigurePinCode": "\u8a2d\u7f6e PIN \u78bc",
     "HeaderAdultsReadHere": "\u6210\u4eba\u89c0\u8cde\uff01",
     "RegisterWithPayPal": "\u7531 PayPal \u8a3b\u518a",
-    "HeaderSyncRequiresSupporterMembership": "\u540c\u6b65\u9700\u8981\u6703\u54e1",
     "HeaderEnjoyDayTrial": "\u4eab\u53d7\u514d\u8cbb14\u5929\u8a66\u7528\u671f",
     "LabelSyncTempPath": "\u81e8\u6642\u6587\u4ef6\u7684\u8def\u5f91\uff1a",
     "LabelSyncTempPathHelp": "\u9078\u64c7\u81ea\u5b9a\u540c\u6b65\u5de5\u4f5c\u7684\u6587\u4ef6\u593e\u3002\u5728\u540c\u6b65\u904e\u7a0b\u4e2d\u5efa\u7acb\u7684\u8f49\u63db\u5a92\u9ad4\u5c07\u88ab\u5b58\u653e\u5230\u9019\u88e1\u3002",
@@ -1524,5 +1523,7 @@
     "ButtonEditImages": "Edit Images",
     "LabelFolder": "Folder:",
     "HeadersFolders": "Folders",
-    "LabelDisplayName": "Display name:"
+    "LabelDisplayName": "Display name:",
+    "HeaderNewRecording": "New Recording",
+    "ButtonAdvanced": "Advanced"
 }

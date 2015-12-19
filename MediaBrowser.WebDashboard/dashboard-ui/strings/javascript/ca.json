@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
     "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "MessageRecordingCancelled": "Recording cancelled.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Confirm Series Cancellation",
     "MessageConfirmSeriesCancellation": "Are you sure you wish to cancel this series?",
     "MessageSeriesCancelled": "Series cancelled.",
@@ -882,7 +883,7 @@
     "ButtonGuide": "Guia",
     "ButtonRecordedTv": "Recorded TV",
     "HeaderDisconnectFromPlayer": "Disconnect from Player",
-    "ConfirmEndPlayerSession": "Vols apagar l'aplicaci\u00f3 al dispositiu remot?",
+    "ConfirmEndPlayerSession": "Vols apagar l'emby al dispositiu?",
     "ButtonYes": "S\u00ed",
     "ButtonNo": "No",
     "ButtonRestorePreviousPurchase": "Restaurar la compra",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "Mode Cinema",
     "CinemaModeFeatureDescription": "El Mode Cinema li d\u00f3na la veritable experi\u00e8ncia de cinema amb tr\u00e0ilers i intros perzonalitzats abans de la funci\u00f3.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

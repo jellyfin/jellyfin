@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "\u786e\u8ba4\u53d6\u6d88\u5f55\u5236",
     "MessageConfirmRecordingCancellation": "\u4f60\u786e\u5b9a\u5e0c\u671b\u53d6\u6d88\u5f55\u5236\uff1f",
     "MessageRecordingCancelled": "\u5f55\u5236\u5df2\u53d6\u6d88\u3002",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "\u786e\u8ba4\u7535\u89c6\u5267\u53d6\u6d88",
     "MessageConfirmSeriesCancellation": "\u4f60\u786e\u5b9a\u5e0c\u671b\u53d6\u6d88\u6b64\u7535\u89c6\u5267\uff1f",
     "MessageSeriesCancelled": "\u7535\u89c6\u5267\u5df2\u53d6\u6d88",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "\u5f71\u9662\u6a21\u5f0f",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }

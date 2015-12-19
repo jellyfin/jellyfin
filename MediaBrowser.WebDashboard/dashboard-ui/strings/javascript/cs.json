@@ -175,6 +175,7 @@
     "HeaderConfirmRecordingCancellation": "Potvrzen\u00ed zru\u0161en\u00ed nahr\u00e1v\u00e1n\u00ed",
     "MessageConfirmRecordingCancellation": "Jste si jisti, \u017ee chcete zru\u0161it tuto nahr\u00e1vku?",
     "MessageRecordingCancelled": "Nahr\u00e1v\u00e1n\u00ed zru\u0161eno.",
+    "MessageRecordingScheduled": "Recording scheduled.",
     "HeaderConfirmSeriesCancellation": "Potvrdit zru\u0161en\u00ed nahr\u00e1v\u00e1n\u00ed seri\u00e1l\u016f",
     "MessageConfirmSeriesCancellation": "Jste si jisti, \u017ee chcete zru\u0161it tento seri\u00e1l?",
     "MessageSeriesCancelled": "S\u00e9rie zru\u0161ena.",
@@ -936,5 +937,6 @@
     "FreeAppsFeatureDescription": "Enjoy free access to select Emby apps for your devices.",
     "HeaderCinemaMode": "Cinema M\u00f3d",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
-    "CoverArt": "Cover Art"
+    "CoverArt": "Cover Art",
+    "ButtonOff": "Off"
 }
