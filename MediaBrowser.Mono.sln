@@ -31,8 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.LocalMetadata"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaInfo", "MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj", "{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Startup.Common", "MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj", "{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
@@ -187,15 +185,6 @@ Global
 		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{23499896-B135-4527-8574-C26E926EA99E}.Release|x86.ActiveCfg = Release|Any CPU
 		{23499896-B135-4527-8574-C26E926EA99E}.Release|x86.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|Any CPU.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release Mono|x86.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E4145E4-C6D4-4E4D-94F2-87188DB6E239}.Release|x86.ActiveCfg = Release|Any CPU
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}.Debug|x86.ActiveCfg = Debug|Any CPU
