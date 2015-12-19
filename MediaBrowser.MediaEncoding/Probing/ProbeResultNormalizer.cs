@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.MediaInfo;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
@@ -26,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             _fileSystem = fileSystem;
         }
 
-        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType videoType, bool isAudio, string path, MediaProtocol protocol)
+        public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType videoType, bool isAudio, string path, MediaProtocol protocol)
         {
             var info = new Model.MediaInfo.MediaInfo
             {
@@ -109,7 +108,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (videoStream != null && videoType == VideoType.VideoFile)
                 {
-                    UpdateFromMediaInfo(info, videoStream);
+                    DetectInterlaced(info, videoStream);
                 }
             }
 
@@ -934,29 +933,18 @@ namespace MediaBrowser.MediaEncoding.Probing
             return TransportStreamTimestamp.None;
         }
 
-        private void UpdateFromMediaInfo(MediaSourceInfo video, MediaStream videoStream)
+        private void DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
         {
-            if (video.Protocol == MediaProtocol.File && videoStream != null)
+            if (video.Protocol != MediaProtocol.File || videoStream == null)
             {
-                try
-                {
-                    _logger.Debug("Running MediaInfo against {0}", video.Path);
+                return;
+            }
 
-                    var result = new MediaInfoLib().GetVideoInfo(video.Path);
-
-                    videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
-                    videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
-                    videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
-                    videoStream.RefFrames = result.RefFrames ?? videoStream.RefFrames;
-                }
-                catch (TypeLoadException)
-                {
-                    // This is non-essential. Don't spam the log
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error running MediaInfo on {0}", ex, video.Path);
-                }
+            // Take a shortcut and limit this to containers that are likely to have interlaced content
+            if (!string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
             }
         }
     }
