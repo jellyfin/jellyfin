@@ -262,6 +262,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
+                    await DetectInterlaced(mediaInfo, inputPath, probeSizeArgument).ConfigureAwait(false);
+
                     if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                     {
                         if (ConfigurationManager.Configuration.EnableVideoFrameByFrameAnalysis && mediaInfo.Size.HasValue)
@@ -302,6 +304,81 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+        }
+
+        private async Task DetectInterlaced(MediaSourceInfo video, string inputPath, string probeSizeArgument)
+        {
+            var videoStream = video.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+            if (video.Protocol != MediaProtocol.File || videoStream == null)
+            {
+                return;
+            }
+
+            // Take a shortcut and limit this to containers that are likely to have interlaced content
+            if (!string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase))
+            {
+                //return;
+            }
+
+            var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    FileName = FFMpegPath,
+                    Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
+
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            {
+                try
+                {
+                    StartProcess(processWrapper);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error starting ffprobe", ex);
+
+                    throw;
+                }
+
+                try
+                {
+                    process.BeginOutputReadLine();
+
+                    using (var reader = new StreamReader(process.StandardError.BaseStream))
+                    {
+                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                        File.WriteAllText("D:\\\\1.txt", result);
+                    }
+                    
+                }
+                catch
+                {
+                    StopProcess(processWrapper, 100, true);
+
+                    throw;
+                }
+            }
         }
 
         private bool EnableKeyframeExtraction(MediaSourceInfo mediaSource, MediaStream videoStream)
