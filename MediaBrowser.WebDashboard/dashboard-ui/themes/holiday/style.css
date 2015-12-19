@@ -1,0 +1,28 @@
+﻿.ui-body-b h1, .ui-body-b h2 {
+    color: #cc3333;
+}
+
+.viewMenuBar, .holidayInfoButton {
+    color: #cc3333 !important;
+}
+
+.barsMenuButton {
+    color: #cc3333 !important;
+}
+
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #cc3333 !important;
+    color: #cc3333 !important;
+}
+
+paper-button[raised].more {
+    background: #cc3333;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #cc3333 !important;
+}
+
+.channelTimeslotHeader {
+    border-right-color: #cc3333 !important;
+}

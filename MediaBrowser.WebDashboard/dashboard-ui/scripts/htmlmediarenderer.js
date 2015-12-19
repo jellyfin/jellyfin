@@ -3,6 +3,7 @@
     var supportsTextTracks;
     var hlsPlayer;
     var requiresSettingStartTimeOnStart;
+    var subtitleTrackIndexToSetOnPlaying;
 
     function htmlMediaRenderer(options) {
 
@@ -133,6 +134,8 @@
 
             var element = e.target;
             element.removeEventListener('playing', onOneVideoPlaying);
+
+            self.setCurrentTrackElement(subtitleTrackIndexToSetOnPlaying);
 
             var requiresNativeControls = !self.enableCustomVideoControls();
 
@@ -384,6 +387,15 @@
 
                 tracks = tracks || [];
 
+                var currentTrackIndex = -1;
+                for (var i = 0, length = tracks.length; i < length; i++) {
+                    if (tracks[i].isDefault) {
+                        currentTrackIndex = i;
+                        break;
+                    }
+                }
+                subtitleTrackIndexToSetOnPlaying = currentTrackIndex;
+
                 if (enableHlsPlayer(val)) {
 
                     setTracks(elem, tracks);
@@ -405,14 +417,6 @@
 
                     elem.addEventListener("loadedmetadata", onLoadedMetadata);
                     playNow = true;
-                }
-
-                var currentTrackIndex = -1;
-                for (var i = 0, length = tracks.length; i < length; i++) {
-                    if (tracks[i].isDefault) {
-                        currentTrackIndex = i;
-                        break;
-                    }
                 }
 
                 self.setCurrentTrackElement(currentTrackIndex);

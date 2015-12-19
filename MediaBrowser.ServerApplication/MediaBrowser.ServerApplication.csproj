@@ -177,13 +177,6 @@
       <Link>x86\SQLite.Interop.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\ThirdParty\MediaInfo\windows\x64\MediaInfo.dll">
-      <Link>x64\MediaInfo.dll</Link>
-    </Content>
-    <Content Include="..\ThirdParty\MediaInfo\windows\x86\MediaInfo.dll">
-      <Link>x86\MediaInfo.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="x64\CORE_RL_bzlib_.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
