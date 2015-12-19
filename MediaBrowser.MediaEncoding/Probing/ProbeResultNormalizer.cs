@@ -103,13 +103,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 ExtractTimestamp(info);
-
-                var videoStream = info.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-
-                if (videoStream != null && videoType == VideoType.VideoFile)
-                {
-                    DetectInterlaced(info, videoStream);
-                }
             }
 
             return info;
@@ -931,21 +924,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return TransportStreamTimestamp.None;
-        }
-
-        private void DetectInterlaced(MediaSourceInfo video, MediaStream videoStream)
-        {
-            if (video.Protocol != MediaProtocol.File || videoStream == null)
-            {
-                return;
-            }
-
-            // Take a shortcut and limit this to containers that are likely to have interlaced content
-            if (!string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(video.Container, "wtv", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
         }
     }
 }
