@@ -21,17 +21,23 @@
                 setBackdrop(page);
             }
 
-            if (lastSound == 0) {
-                //playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/monsterparadefade.mp3', .1);
-            } else if ((new Date().getTime() - lastSound) > 30000) {
-                playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/sleighbells.wav');
-            }
+            playThemeMusic();
 
             addSnowflakes();
 
             addIcon();
 
             setBodyClass();
+        }
+    }
+
+    function playThemeMusic() {
+        if (lastSound == 0) {
+            if (getHolidayTheme() == 'christmas') {
+                playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/christmas.wav', .1);
+            }
+        } else if (getHolidayTheme() != 'off' && (new Date().getTime() - lastSound) > 30000) {
+            playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/sleighbells.wav');
         }
     }
 
@@ -85,7 +91,7 @@
         }
     }
 
-    var holidayThemeKey = 'holidaytheme4';
+    var holidayThemeKey = 'holidaytheme5';
     function getHolidayTheme() {
         return appStorage.getItem(holidayThemeKey);
     }
@@ -93,6 +99,7 @@
     function setHolidayTheme(value) {
         appStorage.setItem(holidayThemeKey, value);
         setBodyClass();
+        playThemeMusic();
     }
 
     function setBodyClass() {
