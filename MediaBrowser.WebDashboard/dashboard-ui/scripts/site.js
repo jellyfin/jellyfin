@@ -1749,6 +1749,11 @@ var AppInfo = {};
             require(['themes/halloween/theme']);
             return;
         }
+
+        if (month == 11 && day >= 21 && day <= 26) {
+            require(['themes/holiday/theme']);
+            return;
+        }
     }
 
     function initRequire() {
