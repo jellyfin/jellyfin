@@ -49,9 +49,9 @@
         }
 
         if (options.title) {
-            html += '<h2>';
+            html += '<h3>';
             html += options.title;
-            html += '</h2>';
+            html += '</h3>';
         }
 
         // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
@@ -61,12 +61,15 @@
             html += '<paper-dialog-scrollable>';
         }
 
-        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
-        var renderIcon = options.items.filter(function (o) {
+        var itemsWithIcons = options.items.filter(function(o) {
             return o.ironIcon;
-        }).length;
+        });
 
-        if (options.title && !renderIcon) {
+        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
+        var renderIcon = itemsWithIcons.length;
+        var center = options.title && (!itemsWithIcons.length || itemsWithIcons.length != options.items.length);
+
+        if (center) {
             html += '<paper-menu style="text-align:center;">';
         } else {
             html += '<paper-menu>';
@@ -78,9 +81,13 @@
             html += '<paper-menu-item class="actionSheetMenuItem" data-id="' + option.id + '" style="display:block;">';
 
             if (option.ironIcon) {
-                html += '<iron-icon icon="' + option.ironIcon + '"></iron-icon>';
+                if (center) {
+                    html += '<iron-icon style="margin-right:.5em;" icon="' + option.ironIcon + '"></iron-icon>';
+                } else {
+                    html += '<iron-icon icon="' + option.ironIcon + '"></iron-icon>';
+                }
             }
-            else if (renderIcon) {
+            else if (renderIcon && !center) {
                 html += '<iron-icon></iron-icon>';
             }
             html += '<span>' + option.name + '</span>';
