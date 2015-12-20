@@ -32,9 +32,14 @@
     }
 
     function playThemeMusic() {
+
+        if (getHolidayTheme() == 'off') {
+            return;
+        }
+
         if (lastSound == 0) {
             playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/christmas.wav', .1);
-        } else if (getHolidayTheme() != 'off' && (new Date().getTime() - lastSound) > 30000) {
+        } else if ((new Date().getTime() - lastSound) > 30000) {
             playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/sleighbells.wav');
         }
     }
