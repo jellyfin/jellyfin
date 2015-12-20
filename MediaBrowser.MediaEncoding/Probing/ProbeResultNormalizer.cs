@@ -876,7 +876,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void ExtractTimestamp(Model.MediaInfo.MediaInfo video)
+        private void ExtractTimestamp(MediaInfo video)
         {
             if (video.VideoType == VideoType.VideoFile)
             {
