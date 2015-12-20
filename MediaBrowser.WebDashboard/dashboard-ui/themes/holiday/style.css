@@ -1,0 +1,64 @@
+﻿.ui-body-b h1, .ui-body-b h2 {
+    color: #E53A35;
+}
+
+.holidayInfoButton {
+    color: #E53A35 !important;
+}
+
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #AC3326 !important;
+    color: #AC3326 !important;
+}
+
+paper-button[raised].more {
+    background: #AC3326;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #cc3333 !important;
+}
+
+.channelTimeslotHeader {
+    border-right-color: #cc3333 !important;
+}
+
+paper-tabs #selectionBar, .playedIndicator {
+    background-color: #cc3333 !important;
+}
+
+.darkDrawer .sidebarLink:hover {
+    background: #AC3326;
+}
+
+.darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
+    background: #AC3326 !important;
+}
+
+#snowflakeContainer {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.snowflake {
+    padding-left: 15px;
+    font-family: Cambria, Georgia, serif;
+    font-size: 14px;
+    line-height: 24px;
+    position: fixed;
+    color: #FFFFFF;
+    user-select: none;
+    z-index: 1000;
+}
+
+    .snowflake:hover {
+        cursor: default;
+    }
+
+.christmas .mainDrawer {
+    background-image: url(https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/themes/holiday/drawer.jpg);
+    background-size: cover;
+    background-position: 60% center;
+    background-repeat: no-repeat;
+}
