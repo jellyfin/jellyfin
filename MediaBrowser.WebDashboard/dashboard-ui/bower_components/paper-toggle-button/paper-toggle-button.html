@@ -41,6 +41,7 @@ Custom property | Description | Default
 `--paper-toggle-button-checked-bar` | Mixin applied to the slider when the input is checked | `{}`
 `--paper-toggle-button-checked-button` | Mixin applied to the slider button when the input is checked | `{}`
 `--paper-toggle-button-label-color` | Label color | `--primary-text-color`
+`--paper-toggle-button-label-spacing` | Spacing between the label and the button | `8px`
 
 @group Paper Elements
 @element paper-toggle-button
@@ -148,7 +149,7 @@ Custom property | Description | Default
         top: -2px;
         display: inline-block;
         vertical-align: middle;
-        margin-left: 10px;
+        padding-left: var(--paper-toggle-button-label-spacing, 8px);
         white-space: normal;
         pointer-events: none;
         color: var(--paper-toggle-button-label-color, --primary-text-color);

@@ -360,7 +360,7 @@
                 });
 
             } else {
-                
+
                 profile.CodecProfiles.push({
                     Type: 'VideoAudio',
                     Conditions: [
@@ -979,13 +979,9 @@
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
-                            if (mediaSource.RunTimeTicks) {
-                                // Reports of stuttering with h264 stream copy in IE
-                                mediaUrl += '&EnableAutoStreamCopy=false';
-                            }
-
                             mediaUrl += seekParam;
                             contentType = 'application/x-mpegURL';
+
                         } else {
 
                             // Reports of stuttering with h264 stream copy in IE
@@ -1603,7 +1599,7 @@
         };
 
         function unBindAudioEvents(mediaRenderer) {
-            
+
             Events.off(mediaRenderer, "volumechange", onVolumeChange);
             Events.off(mediaRenderer, "pause", onPause);
             Events.off(mediaRenderer, "playing", onPlaying);
