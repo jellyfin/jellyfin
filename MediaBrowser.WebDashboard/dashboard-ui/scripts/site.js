@@ -1761,13 +1761,14 @@ var AppInfo = {};
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
 
         var bowerPath = "bower_components";
-        var apiClientBowerPath = "bower_components/emby-apiclient";
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
         if (!Dashboard.isRunningInCordova()) {
             bowerPath += window.dashboardVersion;
         }
+
+        var apiClientBowerPath = bowerPath + "/emby-apiclient";
 
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
