@@ -391,26 +391,30 @@ class MSEMediaController {
               this.appendError = 0;
             } catch(err) {
               // in case any error occured while appending, put back segment in mp4segments table
-              //logger.error(`error while trying to append buffer:${err.message},try appending later`);
+              logger.error(`error while trying to append buffer:${err.message},try appending later`);
               this.mp4segments.unshift(segment);
-              if (this.appendError) {
-                this.appendError++;
-              } else {
-                this.appendError = 1;
-              }
-              var event = {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_APPEND_ERROR, frag: this.fragCurrent};
-              /* with UHD content, we could get loop of quota exceeded error until
-                browser is able to evict some data from sourcebuffer. retrying help recovering this
-              */
-              if (this.appendError > this.config.appendErrorMaxRetry) {
-                logger.log(`fail ${this.config.appendErrorMaxRetry} times to append segment in sourceBuffer`);
-                event.fatal = true;
-                hls.trigger(Event.ERROR, event);
-                this.state = State.ERROR;
-                return;
-              } else {
-                event.fatal = false;
-                hls.trigger(Event.ERROR, event);
+                // just discard QuotaExceededError for now, and wait for the natural browser buffer eviction
+              //http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
+              if(err.code !== 22) {
+                if (this.appendError) {
+                  this.appendError++;
+                } else {
+                  this.appendError = 1;
+                }
+                var event = {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_APPEND_ERROR, frag: this.fragCurrent};
+                /* with UHD content, we could get loop of quota exceeded error until
+                  browser is able to evict some data from sourcebuffer. retrying help recovering this
+                */
+                if (this.appendError > this.config.appendErrorMaxRetry) {
+                  logger.log(`fail ${this.config.appendErrorMaxRetry} times to append segment in sourceBuffer`);
+                  event.fatal = true;
+                  hls.trigger(Event.ERROR, event);
+                  this.state = State.ERROR;
+                  return;
+                } else {
+                  event.fatal = false;
+                  hls.trigger(Event.ERROR, event);
+                }
               }
             }
             this.state = State.APPENDING;
