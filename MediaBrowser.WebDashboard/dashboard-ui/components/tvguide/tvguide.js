@@ -66,7 +66,7 @@
             // Subtract to avoid getting programs that are starting when the grid ends
             var nextDay = new Date(date.getTime() + msPerDay - 2000);
 
-            Logger.log(nextDay);
+            console.log(nextDay);
             channelsPromise.then(function (channelsResult) {
 
                 ApiClient.getLiveTvPrograms({

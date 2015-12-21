@@ -537,7 +537,7 @@
 
     function onPlaybackStart(e, state) {
 
-        Logger.log('nowplaying event: ' + e.type);
+        console.log('nowplaying event: ' + e.type);
 
         var player = this;
 
@@ -565,7 +565,7 @@
 
     function onPlaybackStopped(e, state) {
 
-        Logger.log('nowplaying event: ' + e.type);
+        console.log('nowplaying event: ' + e.type);
         var player = this;
 
         player.endPlayerUpdates();
@@ -575,7 +575,7 @@
 
     function onStateChanged(e, state) {
 
-        //Logger.log('nowplaying event: ' + e.type);
+        //console.log('nowplaying event: ' + e.type);
         var player = this;
 
         if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {

@@ -85,7 +85,7 @@
 
             var elem = e.target;
             var errorCode = elem.error ? elem.error.code : '';
-            Logger.log('Media element error code: ' + errorCode);
+            console.log('Media element error code: ' + errorCode);
 
             showStatusBar();
             Events.trigger(self, 'error');
@@ -296,7 +296,7 @@
                         hlsPlayer.destroy();
                     }
                     catch (err) {
-                        Logger.log(err);
+                        console.log(err);
                     }
 
                     hlsPlayer = null;
@@ -515,7 +515,7 @@
 
         self.setCurrentTrackElement = function (trackIndex) {
 
-            Logger.log('Setting new text track index to: ' + trackIndex);
+            console.log('Setting new text track index to: ' + trackIndex);
 
             var allTracks = mediaElement.textTracks; // get list of tracks
 
@@ -531,7 +531,7 @@
                     mode = 0; // hide all other tracks
                 }
 
-                Logger.log('Setting track ' + i + ' mode to: ' + mode);
+                console.log('Setting track ' + i + ' mode to: ' + mode);
 
                 // Safari uses integers for the mode property
                 // http://www.jwplayer.com/html5/scripting/
@@ -568,7 +568,7 @@
                         track.removeCue(track.cues[0]);
                     }
                 } catch (e) {
-                    Logger.log('Error removing cue from textTrack');
+                    console.log('Error removing cue from textTrack');
                 }
             }
 

@@ -1061,7 +1061,7 @@
                     LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
 
                         resultInfo.url = path;
-                        Logger.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
+                        console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
                         deferred.resolveWith(null, [resultInfo]);
                     });
                 });
@@ -1103,7 +1103,7 @@
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
-                    Logger.log('Max bitrate auto detected to ' + bitrate);
+                    console.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
 
@@ -1312,7 +1312,7 @@
 
             if (newItem) {
 
-                Logger.log('playing next track');
+                console.log('playing next track');
 
                 self.playInternal(newItem, 0, function () {
                     self.setPlaylistState(newIndex);
@@ -1450,7 +1450,7 @@
 
             if (self.currentMediaRenderer) {
 
-                Logger.log('MediaPlayer toggling mute');
+                console.log('MediaPlayer toggling mute');
 
                 if (self.volume()) {
                     self.mute();
@@ -1479,7 +1479,7 @@
 
             if (self.currentMediaRenderer) {
 
-                Logger.log('MediaPlayer setting volume to ' + val);
+                console.log('MediaPlayer setting volume to ' + val);
                 self.currentMediaRenderer.volume(val / 100);
 
                 self.onVolumeChanged(self.currentMediaRenderer);
@@ -1784,7 +1784,7 @@
 
         self.onPlaybackStopped = function () {
 
-            Logger.log('playback stopped');
+            console.log('playback stopped');
 
             document.body.classList.remove('bodyWithPopupOpen');
 
@@ -1968,7 +1968,7 @@
 
                     Events.off(mediaRenderer, "playing", onPlayingOnce);
 
-                    Logger.log('audio element event: playing');
+                    console.log('audio element event: playing');
 
                     // For some reason this is firing at the start, so don't bind until playback has begun
                     Events.on(mediaRenderer, 'ended', self.onPlaybackStopped);
@@ -2000,7 +2000,7 @@
         }
 
         function onVolumeChange() {
-            Logger.log('audio element event: pause');
+            console.log('audio element event: pause');
 
             self.onPlaystateChange(this);
 
@@ -2010,7 +2010,7 @@
 
         function onPause() {
 
-            Logger.log('audio element event: pause');
+            console.log('audio element event: pause');
 
             self.onPlaystateChange(this);
 
@@ -2019,7 +2019,7 @@
         }
 
         function onPlaying() {
-            Logger.log('audio element event: playing');
+            console.log('audio element event: playing');
 
             self.onPlaystateChange(this);
 

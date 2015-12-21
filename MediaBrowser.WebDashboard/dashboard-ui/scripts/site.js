@@ -1060,7 +1060,7 @@ var Dashboard = {
             case 'SetRepeatMode':
                 break;
             default:
-                Logger.log('Unrecognized command: ' + cmd.Name);
+                console.log('Unrecognized command: ' + cmd.Name);
                 break;
         }
     },
@@ -2577,7 +2577,7 @@ pageClassOn('pageshow', "page", function () {
 
         if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('forgotPasswordPinPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
-            Logger.log('Not logged into server. Redirecting to login.');
+            console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
             return;
         }
@@ -2604,7 +2604,7 @@ window.addEventListener("beforeunload", function () {
         });
 
         if (!localActivePlayers.length) {
-            Logger.log('Sending close web socket command');
+            console.log('Sending close web socket command');
             apiClient.closeWebSocket();
         }
     }

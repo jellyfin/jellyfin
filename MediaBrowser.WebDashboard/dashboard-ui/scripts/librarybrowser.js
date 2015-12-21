@@ -123,7 +123,7 @@
             }
 
             if (NavHelper.isBack()) {
-                Logger.log('Not refreshing data because IsBack=true');
+                console.log('Not refreshing data because IsBack=true');
                 return false;
             }
 
@@ -139,7 +139,7 @@
             }
 
             if ((now - last) < cacheDuration) {
-                Logger.log('Not refreshing data due to age');
+                console.log('Not refreshing data due to age');
                 return false;
             }
 
@@ -385,11 +385,11 @@
 
             if (isFirstLoad) {
 
-                Logger.log('selected tab is null, checking query string');
+                console.log('selected tab is null, checking query string');
 
                 var selected = parseInt(getParameterByName('tab') || '0');
 
-                Logger.log('selected tab will be ' + selected);
+                console.log('selected tab will be ' + selected);
 
                 if (LibraryBrowser.enableFullPaperTabs()) {
 
@@ -3364,7 +3364,7 @@
                         miscInfo.push(text);
                     }
                     catch (e) {
-                        Logger.log("Error parsing date: " + item.PremiereDate);
+                        console.log("Error parsing date: " + item.PremiereDate);
                     }
                 }
             }
@@ -3383,7 +3383,7 @@
                     }
                 }
                 catch (e) {
-                    Logger.log("Error parsing date: " + item.PremiereDate);
+                    console.log("Error parsing date: " + item.PremiereDate);
                 }
             }
 
@@ -3409,7 +3409,7 @@
 
                         }
                         catch (e) {
-                            Logger.log("Error parsing date: " + item.EndDate);
+                            console.log("Error parsing date: " + item.EndDate);
                         }
                     }
 
@@ -3430,7 +3430,7 @@
                         miscInfo.push(text);
                     }
                     catch (e) {
-                        Logger.log("Error parsing date: " + item.PremiereDate);
+                        console.log("Error parsing date: " + item.PremiereDate);
                     }
                 }
             }

@@ -30,14 +30,14 @@
 
             var requestUrl = url + "?v=" + AppInfo.appVersion;
 
-            Logger.log('Requesting ' + requestUrl);
+            console.log('Requesting ' + requestUrl);
 
             var xhr = new XMLHttpRequest();
             xhr.open('GET', requestUrl, true);
 
             var onError = function () {
 
-                Logger.log('Dictionary not found. Reverting to english');
+                console.log('Dictionary not found. Reverting to english');
 
                 // Grab the english version
                 var xhr2 = new XMLHttpRequest();
@@ -53,7 +53,7 @@
 
             xhr.onload = function (e) {
 
-                Logger.log('Globalize response status: ' + this.status);
+                console.log('Globalize response status: ' + this.status);
 
                 if (this.status < 400) {
 
@@ -74,7 +74,7 @@
     var currentCulture = 'en-US';
     function setCulture(value) {
 
-        Logger.log('Setting culture to ' + value);
+        console.log('Setting culture to ' + value);
         currentCulture = value;
 
         return Promise.all([loadDictionary('html', value), loadDictionary('javascript', value)]);
@@ -105,13 +105,13 @@
 
             } else if (AppInfo.supportsUserDisplayLanguageSetting) {
 
-                Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
+                console.log('AppInfo.supportsUserDisplayLanguageSetting is true');
 
                 resolve(AppSettings.displayLanguage());
 
             } else {
 
-                Logger.log('Getting culture from document');
+                console.log('Getting culture from document');
                 resolve(document.documentElement.getAttribute('data-culture'));
             }
         });
@@ -120,7 +120,7 @@
 
     function ensure() {
 
-        Logger.log('Entering Globalize.ensure');
+        console.log('Entering Globalize.ensure');
 
         return getDeviceCulture().then(function (culture) {
 

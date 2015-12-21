@@ -360,7 +360,7 @@
         }
         else if (msg.MessageType === "SessionEnded") {
 
-            Logger.log("Server reports another session ended");
+            console.log("Server reports another session ended");
 
             if (MediaController.getPlayerInfo().id == msg.Data.Id) {
                 MediaController.setDefaultPlayerActive();

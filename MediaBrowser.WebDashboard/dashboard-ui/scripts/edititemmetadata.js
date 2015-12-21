@@ -1090,7 +1090,7 @@
 
                 var page = $.mobile.activePage;
 
-                Logger.log('Item updated - reloading metadata');
+                console.log('Item updated - reloading metadata');
                 reload(page);
             }
         }

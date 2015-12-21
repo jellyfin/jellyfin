@@ -82,7 +82,7 @@
           this.sessionListener.bind(this),
           this.receiverListener.bind(this));
 
-        Logger.log('chromecast.initialize');
+        console.log('chromecast.initialize');
 
         chrome.cast.initialize(apiConfig, this.onInitSuccess.bind(this), this.errorHandler);
 
@@ -93,14 +93,14 @@
      */
     CastPlayer.prototype.onInitSuccess = function () {
         this.isInitialized = true;
-        Logger.log("chromecast init success");
+        console.log("chromecast init success");
     };
 
     /**
      * Generic error callback function 
      */
     CastPlayer.prototype.onError = function () {
-        Logger.log("chromecast error");
+        console.log("chromecast error");
     };
 
     /**
@@ -115,7 +115,7 @@
         this.session = e;
         if (this.session) {
 
-            Logger.log('sessionListener ' + JSON.stringify(e));
+            console.log('sessionListener ' + JSON.stringify(e));
 
             if (this.session.media[0]) {
                 this.onMediaDiscovered('activeSession', this.session.media[0]);
@@ -165,11 +165,11 @@
     CastPlayer.prototype.receiverListener = function (e) {
 
         if (e === 'available') {
-            Logger.log("chromecast receiver found");
+            console.log("chromecast receiver found");
             this.hasReceivers = true;
         }
         else {
-            Logger.log("chromecast receiver list empty");
+            console.log("chromecast receiver list empty");
             this.hasReceivers = false;
         }
     };
@@ -179,7 +179,7 @@
      */
     CastPlayer.prototype.sessionUpdateListener = function (isAlive) {
 
-        Logger.log('sessionUpdateListener alive: ' + isAlive);
+        console.log('sessionUpdateListener alive: ' + isAlive);
 
         if (isAlive) {
         }
@@ -188,7 +188,7 @@
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
 
-            Logger.log('sessionUpdateListener: setting currentMediaSession to null');
+            console.log('sessionUpdateListener: setting currentMediaSession to null');
             this.currentMediaSession = null;
 
             MediaController.removeActivePlayer(PlayerName);
@@ -201,7 +201,7 @@
      * session request in opt_sessionRequest. 
      */
     CastPlayer.prototype.launchApp = function () {
-        Logger.log("chromecast launching app...");
+        console.log("chromecast launching app...");
         chrome.cast.requestSession(this.onRequestSessionSuccess.bind(this), this.onLaunchError.bind(this));
     };
 
@@ -211,7 +211,7 @@
      */
     CastPlayer.prototype.onRequestSessionSuccess = function (e) {
 
-        Logger.log("chromecast session success: " + e.sessionId);
+        console.log("chromecast session success: " + e.sessionId);
         this.onSessionConnected(e);
     };
 
@@ -238,7 +238,7 @@
      */
     CastPlayer.prototype.sessionMediaListener = function (e) {
 
-        Logger.log('sessionMediaListener');
+        console.log('sessionMediaListener');
         this.currentMediaSession = e;
         this.currentMediaSession.addUpdateListener(this.mediaStatusUpdateHandler);
     };
@@ -247,7 +247,7 @@
      * Callback function for launch error
      */
     CastPlayer.prototype.onLaunchError = function () {
-        Logger.log("chromecast launch error");
+        console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
 
         //Dashboard.alert({
@@ -276,11 +276,11 @@
      * Callback function for stop app success 
      */
     CastPlayer.prototype.onStopAppSuccess = function (message) {
-        Logger.log(message);
+        console.log(message);
         this.deviceState = DEVICE_STATE.IDLE;
         this.castPlayerState = PLAYER_STATE.IDLE;
 
-        Logger.log('onStopAppSuccess: setting currentMediaSession to null');
+        console.log('onStopAppSuccess: setting currentMediaSession to null');
         this.currentMediaSession = null;
     };
 
@@ -291,7 +291,7 @@
     CastPlayer.prototype.loadMedia = function (options, command) {
 
         if (!this.session) {
-            Logger.log("no session");
+            console.log("no session");
             return;
         }
 
@@ -370,13 +370,13 @@
     CastPlayer.prototype.sendMessageInternal = function (message) {
 
         message = JSON.stringify(message);
-        //Logger.log(message);
+        //console.log(message);
 
         this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
     };
 
     CastPlayer.prototype.onPlayCommandSuccess = function () {
-        Logger.log('Message was sent to receiver ok.');
+        console.log('Message was sent to receiver ok.');
     };
 
     /**
@@ -385,7 +385,7 @@
      */
     CastPlayer.prototype.onMediaDiscovered = function (how, mediaSession) {
 
-        Logger.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
+        console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
 
         if (how == 'loadMedia') {
@@ -408,7 +408,7 @@
         if (e == false) {
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
-        Logger.log("chromecast updating media: " + e);
+        console.log("chromecast updating media: " + e);
     };
 
     /**
@@ -418,7 +418,7 @@
     CastPlayer.prototype.setReceiverVolume = function (mute, vol) {
 
         if (!this.currentMediaSession) {
-            Logger.log('this.currentMediaSession is null');
+            console.log('this.currentMediaSession is null');
             return;
         }
 
@@ -446,7 +446,7 @@
      * Callback function for media command success 
      */
     CastPlayer.prototype.mediaCommandSuccessCallback = function (info, e) {
-        Logger.log(info);
+        console.log(info);
     };
 
     // Create Cast Player
@@ -487,14 +487,14 @@
 
             MediaController.setActivePlayer(PlayerName, self.getCurrentTargetInfo());
 
-            Logger.log('cc: connect');
+            console.log('cc: connect');
             // Reset this so the next query doesn't make it appear like content is playing.
             self.lastPlayerData = {};
         });
 
         Events.on(castPlayer, "playbackstart", function (e, data) {
 
-            Logger.log('cc: playbackstart');
+            console.log('cc: playbackstart');
 
             castPlayer.initializeCastPlayer();
 
@@ -504,7 +504,7 @@
 
         Events.on(castPlayer, "playbackstop", function (e, data) {
 
-            Logger.log('cc: playbackstop');
+            console.log('cc: playbackstop');
             var state = self.getPlayerStateInternal(data);
 
             Events.trigger(self, "playbackstop", [state]);
@@ -515,7 +515,7 @@
 
         Events.on(castPlayer, "playbackprogress", function (e, data) {
 
-            Logger.log('cc: positionchange');
+            console.log('cc: positionchange');
             var state = self.getPlayerStateInternal(data);
 
             Events.trigger(self, "positionchange", [state]);
@@ -825,7 +825,7 @@
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
 
-            Logger.log(JSON.stringify(data));
+            console.log(JSON.stringify(data));
             return data;
         };
 

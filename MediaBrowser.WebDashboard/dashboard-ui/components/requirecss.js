@@ -69,7 +69,7 @@ define(function () {
 
                 var stylesheet = stylesheets[i];
 
-                Logger.log('Unloading stylesheet: ' + stylesheet.href);
+                console.log('Unloading stylesheet: ' + stylesheet.href);
                 stylesheet.parentNode.removeChild(stylesheet);
                 removeFromLoadHistory(stylesheet.href);
             }
