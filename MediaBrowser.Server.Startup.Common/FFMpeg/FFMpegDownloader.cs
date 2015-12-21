@@ -111,6 +111,16 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
             DeleteOlderFolders(Path.GetDirectoryName(versionedDirectoryPath), excludeFromDeletions);
 
+            // Allow just one of these to be overridden, if desired.
+            if (!string.IsNullOrWhiteSpace(customffMpegPath))
+            {
+                info.EncoderPath = customffMpegPath;
+            }
+            if (!string.IsNullOrWhiteSpace(customffProbePath))
+            {
+                info.EncoderPath = customffProbePath;
+            }
+
             return info;
         }
 
