@@ -40,7 +40,7 @@
         if (lastSound == 0) {
             playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/christmas.wav', .1);
         } else if ((new Date().getTime() - lastSound) > 30000) {
-            playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/sleighbells.wav');
+            playSound('https://github.com/MediaBrowser/Emby.Resources/raw/master/themes/holiday/sleighbells.wav', .25);
         }
     }
 

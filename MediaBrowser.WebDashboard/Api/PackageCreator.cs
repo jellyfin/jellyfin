@@ -434,11 +434,18 @@ namespace MediaBrowser.WebDashboard.Api
 
             var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
-            var files = new List<string>
+            var files = new List<string>();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                "bower_components/requirejs/require.js" + versionString,
-                "scripts/site.js" + versionString
-            };
+                files.Add("bower_components/requirejs/require.js");
+            }
+            else
+            {
+                files.Add("bower_components" + version + "/requirejs/require.js");
+            }
+
+            files.Add("scripts/site.js" + versionString);
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
