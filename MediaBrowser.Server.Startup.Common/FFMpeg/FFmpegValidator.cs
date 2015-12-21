@@ -90,12 +90,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 "libx265",
                 "mpeg4",
                 "msmpeg4",
-                "libvpx",
+                //"libvpx",
                 //"libvpx-vp9",
                 "aac",
                 "ac3",
                 "libmp3lame",
-                "libvorbis",
+                //"libvorbis",
                 "srt"
             };
 
