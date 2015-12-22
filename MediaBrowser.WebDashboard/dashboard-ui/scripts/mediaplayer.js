@@ -311,40 +311,6 @@
                 }]
             });
 
-            if (!isVlc) {
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac',
-                    Container: 'mkv,mov',
-                    Conditions: [
-                        {
-                            Condition: 'NotEquals',
-                            Property: 'AudioProfile',
-                            Value: 'HE-AAC'
-                        }
-                        // Disabling this is going to require us to learn why it was disabled in the first place
-                        //,
-                        //{
-                        //    Condition: 'NotEquals',
-                        //    Property: 'AudioProfile',
-                        //    Value: 'LC'
-                        //}
-                    ]
-                });
-            }
-
-            profile.CodecProfiles.push({
-                Type: 'VideoAudio',
-                Codec: 'aac,mp3',
-                Conditions: [
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'AudioChannels',
-                        Value: '6'
-                    }
-                ]
-            });
-
             // These don't play very well
             if (isVlc) {
                 profile.CodecProfiles.push({
@@ -359,7 +325,50 @@
                     ]
                 });
 
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac,mp3',
+                    Conditions: [
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
+                        }
+                    ]
+                });
+
             } else {
+
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac',
+                    Container: 'mkv,mov',
+                    Conditions: [
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'HE-AAC'
+                        },
+                        {
+                            Condition: 'Equals',
+                            Property: 'IsSecondaryAudio',
+                            Value: 'false',
+                            IsRequired: 'false'
+                        },
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
+                        }
+                        // Disabling this is going to require us to learn why it was disabled in the first place
+                        //,
+                        //{
+                        //    Condition: 'NotEquals',
+                        //    Property: 'AudioProfile',
+                        //    Value: 'LC'
+                        //}
+                    ]
+                });
 
                 profile.CodecProfiles.push({
                     Type: 'VideoAudio',
@@ -369,6 +378,11 @@
                             Property: 'IsSecondaryAudio',
                             Value: 'false',
                             IsRequired: 'false'
+                        },
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
                         }
                     ]
                 });
