@@ -18,6 +18,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.People
 {
@@ -68,7 +69,7 @@ namespace MediaBrowser.Providers.People
                     Name = info.name,
 
                     SearchProviderName = Name,
-                    
+
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].file_path)
                 };
 
@@ -100,7 +101,7 @@ namespace MediaBrowser.Providers.People
             var result = new RemoteSearchResult
             {
                 SearchProviderName = Name,
-                
+
                 Name = i.Name,
 
                 ImageUrl = string.IsNullOrEmpty(i.Profile_Path) ? null : (baseImageUrl + i.Profile_Path)
@@ -125,7 +126,19 @@ namespace MediaBrowser.Providers.People
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
-                await EnsurePersonInfo(tmdbId, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await EnsurePersonInfo(tmdbId, cancellationToken).ConfigureAwait(false);
+                }
+                catch (HttpException ex)
+                {
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        return result;
+                    }
+
+                    throw;
+                }
 
                 var dataFilePath = GetPersonDataFilePath(_configurationManager.ApplicationPaths, tmdbId);
 
@@ -201,7 +214,7 @@ namespace MediaBrowser.Providers.People
 
             }).ConfigureAwait(false))
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
                 using (var fs = _fileSystem.GetFileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
