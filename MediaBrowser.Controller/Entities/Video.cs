@@ -304,8 +304,6 @@ namespace MediaBrowser.Controller.Entities
             return base.IsValidFromResolver(newItem);
         }
 
-        public string MainFeaturePlaylistName { get; set; }
-
         /// <summary>
         /// Gets the playable stream files.
         /// </summary>
