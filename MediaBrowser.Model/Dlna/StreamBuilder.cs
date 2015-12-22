@@ -445,7 +445,7 @@ namespace MediaBrowser.Model.Dlna
                 List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec, transcodingProfile.Container))
+                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(playlistItem.AudioCodec, transcodingProfile.Container))
                     {
                         foreach (ProfileCondition c in i.Conditions)
                         {
