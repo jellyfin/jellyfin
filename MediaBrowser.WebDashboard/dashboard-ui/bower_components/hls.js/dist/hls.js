@@ -532,7 +532,8 @@ var LevelController = (function () {
           i,
           bitrateSet = {},
           videoCodecFound = false,
-          audioCodecFound = false;
+          audioCodecFound = false,
+          hls = this.hls;
 
       // regroup redundant level together
       data.levels.forEach(function (level) {
@@ -575,22 +576,26 @@ var LevelController = (function () {
         return (!audioCodec || checkSupported(audioCodec)) && (!videoCodec || checkSupported(videoCodec));
       });
 
-      // start bitrate is the first bitrate of the manifest
-      bitrateStart = levels[0].bitrate;
-      // sort level on bitrate
-      levels.sort(function (a, b) {
-        return a.bitrate - b.bitrate;
-      });
-      this._levels = levels;
-      // find index of first level in sorted levels
-      for (i = 0; i < levels.length; i++) {
-        if (levels[i].bitrate === bitrateStart) {
-          this._firstLevel = i;
-          _utilsLogger.logger.log('manifest loaded,' + levels.length + ' level(s) found, first bitrate:' + bitrateStart);
-          break;
+      if (levels.length) {
+        // start bitrate is the first bitrate of the manifest
+        bitrateStart = levels[0].bitrate;
+        // sort level on bitrate
+        levels.sort(function (a, b) {
+          return a.bitrate - b.bitrate;
+        });
+        this._levels = levels;
+        // find index of first level in sorted levels
+        for (i = 0; i < levels.length; i++) {
+          if (levels[i].bitrate === bitrateStart) {
+            this._firstLevel = i;
+            _utilsLogger.logger.log('manifest loaded,' + levels.length + ' level(s) found, first bitrate:' + bitrateStart);
+            break;
+          }
         }
+        hls.trigger(_events2['default'].MANIFEST_PARSED, { levels: this._levels, firstLevel: this._firstLevel, stats: data.stats });
+      } else {
+        hls.trigger(_events2['default'].ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.MANIFEST_PARSING_ERROR, fatal: true, url: hls.url, reason: 'no compatible level found in manifest' });
       }
-      this.hls.trigger(_events2['default'].MANIFEST_PARSED, { levels: this._levels, firstLevel: this._firstLevel, stats: data.stats });
       return;
     }
   }, {
@@ -648,7 +653,8 @@ var LevelController = (function () {
       }
       /* try to switch to a redundant stream if any available.
        * if no redundant stream available, emergency switch down (if in auto mode and current level not 0)
-       * otherwise, we cannot recover this network error ....
+       * otherwise, we cannot recover this network error ...
+       * don't raise FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT as fatal, as it is handled by mediaController
        */
       if (levelId !== undefined) {
         level = this._levels[levelId];
@@ -664,18 +670,19 @@ var LevelController = (function () {
             hls.abrController.nextAutoLevel = 0;
           } else if (level && level.details && level.details.live) {
             _utilsLogger.logger.warn('level controller,' + details + ' on live stream, discard');
-          } else {
-            _utilsLogger.logger.error('cannot recover ' + details + ' error');
-            this._level = undefined;
-            // stopping live reloading timer if any
-            if (this.timer) {
-              clearInterval(this.timer);
-              this.timer = null;
+            // FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT are handled by mediaController
+          } else if (details !== _errors.ErrorDetails.FRAG_LOAD_ERROR && details !== _errors.ErrorDetails.FRAG_LOAD_TIMEOUT) {
+              _utilsLogger.logger.error('cannot recover ' + details + ' error');
+              this._level = undefined;
+              // stopping live reloading timer if any
+              if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+              }
+              // redispatch same error but with fatal set to true
+              data.fatal = true;
+              hls.trigger(event, data);
             }
-            // redispatch same error but with fatal set to true
-            data.fatal = true;
-            hls.trigger(event, data);
-          }
         }
       }
     }
@@ -1811,6 +1818,7 @@ var MSEMediaController = (function () {
           this.demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
         }
       }
+      this.fragLoadError = 0;
     }
   }, {
     key: 'onInitSegment',
@@ -1909,6 +1917,24 @@ var MSEMediaController = (function () {
         // abort fragment loading on errors
         case _errors.ErrorDetails.FRAG_LOAD_ERROR:
         case _errors.ErrorDetails.FRAG_LOAD_TIMEOUT:
+          var loadError = this.fragLoadError;
+          if (loadError) {
+            loadError++;
+          } else {
+            loadError = 1;
+          }
+          if (loadError <= this.config.fragLoadingMaxRetry) {
+            this.fragLoadError = loadError;
+            // retry loading
+            this.state = State.IDLE;
+          } else {
+            _utilsLogger.logger.error('mediaController: ' + data.details + ' reaches max retry, redispatch as fatal ...');
+            // redispatch same error but with fatal set to true
+            data.fatal = true;
+            this.hls.trigger(event, data);
+            this.state = State.ERROR;
+          }
+          break;
         case _errors.ErrorDetails.FRAG_LOOP_LOADING_ERROR:
         case _errors.ErrorDetails.LEVEL_LOAD_ERROR:
         case _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT:
@@ -4756,7 +4782,7 @@ var Hls = (function () {
       enableWorker: true,
       enableSoftwareAES: true,
       fragLoadingTimeOut: 20000,
-      fragLoadingMaxRetry: 1,
+      fragLoadingMaxRetry: 6,
       fragLoadingRetryDelay: 1000,
       fragLoadingLoopThreshold: 3,
       manifestLoadingTimeOut: 10000,
@@ -5048,7 +5074,7 @@ var FragmentLoader = (function () {
       this.frag.loaded = 0;
       var config = this.hls.config;
       frag.loader = this.loader = typeof config.fLoader !== 'undefined' ? new config.fLoader(config) : new config.loader(config);
-      this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, config.fragLoadingMaxRetry, config.fragLoadingRetryDelay, this.loadprogress.bind(this), frag);
+      this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 1, config.fragLoadingRetryDelay, this.loadprogress.bind(this), frag);
     }
   }, {
     key: 'loadsuccess',

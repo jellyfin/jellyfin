@@ -46,7 +46,7 @@ class Hls {
       enableWorker: true,
       enableSoftwareAES: true,
       fragLoadingTimeOut: 20000,
-      fragLoadingMaxRetry: 1,
+      fragLoadingMaxRetry: 6,
       fragLoadingRetryDelay: 1000,
       fragLoadingLoopThreshold: 3,
       manifestLoadingTimeOut: 10000,

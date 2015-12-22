@@ -1004,6 +1004,7 @@ class MSEMediaController {
         this.demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
       }
     }
+    this.fragLoadError = 0;
   }
 
   onInitSegment(event, data) {
@@ -1099,6 +1100,24 @@ class MSEMediaController {
       // abort fragment loading on errors
       case ErrorDetails.FRAG_LOAD_ERROR:
       case ErrorDetails.FRAG_LOAD_TIMEOUT:
+      var loadError = this.fragLoadError;
+        if(loadError) {
+          loadError++;
+        } else {
+          loadError=1;
+        }
+        if (loadError <= this.config.fragLoadingMaxRetry) {
+          this.fragLoadError = loadError;
+          // retry loading
+          this.state = State.IDLE;
+        } else {
+          logger.error(`mediaController: ${data.details} reaches max retry, redispatch as fatal ...`);
+          // redispatch same error but with fatal set to true
+          data.fatal = true;
+          this.hls.trigger(event, data);
+          this.state = State.ERROR;
+        }
+        break;
       case ErrorDetails.FRAG_LOOP_LOADING_ERROR:
       case ErrorDetails.LEVEL_LOAD_ERROR:
       case ErrorDetails.LEVEL_LOAD_TIMEOUT:
