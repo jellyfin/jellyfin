@@ -2,14 +2,9 @@
   "name": "hammerjs",
   "title": "Hammer.JS",
   "description": "A javascript library for multi-touch gestures",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "homepage": "http://hammerjs.github.io/",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/hammerjs/hammer.js/blob/master/LICENSE.md"
-    }
-  ],
+  "license": "MIT",
   "keywords": [
     "touch",
     "gestures"
@@ -35,9 +30,9 @@
     "grunt-contrib-qunit": "^0.5.1",
     "grunt-contrib-uglify": "0.4.x",
     "grunt-contrib-watch": "0.6.x",
-    "grunt-jscs-checker": "^0.4.1",
+    "grunt-jscs": "^0.8.0",
     "grunt-string-replace": "^0.2.7",
-    "hammer-jquery": "git://github.com/hammerjs/jquery.hammer.js#master",
+    "jquery-hammerjs": "2.0.x",
     "hammer-simulator": "git://github.com/hammerjs/simulator#master"
   },
   "main": "hammer.js",
