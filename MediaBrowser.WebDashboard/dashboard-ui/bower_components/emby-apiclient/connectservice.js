@@ -1,5 +1,10 @@
 ﻿define([], function () {
 
+    function replaceAll(str, find, replace) {
+
+        return str.split(find).join(replace);
+    }
+
     return {
 
         cleanPassword: function (password) {
