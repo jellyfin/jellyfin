@@ -1,0 +1,19 @@
+{
+  "name": "emby-webcomponents",
+  "authors": [
+    "The Emby Authors"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/MediaBrowser/emby-webcomponents.git"
+  },
+  "license": "https://github.com/MediaBrowser/emby-webcomponents/blob/master/LICENSE",
+  "homepage": "https://github.com/MediaBrowser/emby-webcomponents",
+  "dependencies": {
+    "requirejs": "requirejs#^2.1.22"
+  },
+  "devDependencies": {
+    
+  },
+  "ignore": []
+}
