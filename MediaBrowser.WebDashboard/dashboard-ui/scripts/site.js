@@ -1835,7 +1835,7 @@ var AppInfo = {};
             map: {
                 '*': {
                     'css': 'components/requirecss',
-                    'html': 'components/requirehtml'
+                    'html': bowerPath + '/emby-webcomponents/requirehtml'
                 }
             },
             urlArgs: urlArgs,
