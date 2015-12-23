@@ -1,6 +1,6 @@
 {
   "name": "iron-checked-element-behavior",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Implements an element that has a checked attribute and can be added to a form",
   "authors": "The Polymer Authors",
   "keywords": [
@@ -31,11 +31,11 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.3",
+  "_release": "1.0.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.3",
-    "commit": "5a0520d20eb8883076ce64117f2726ba209ebc97"
+    "tag": "v1.0.4",
+    "commit": "cc30263ec2871ae8f8f944948f44299d3f3cdf0d"
   },
   "_source": "git://github.com/PolymerElements/iron-checked-element-behavior.git",
   "_target": "^1.0.0",

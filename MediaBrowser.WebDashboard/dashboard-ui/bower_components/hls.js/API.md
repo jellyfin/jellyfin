@@ -197,7 +197,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       manifestLoadingRetryDelay : 500,
       fpsDroppedMonitoringPeriod : 5000,
       fpsDroppedMonitoringThreshold : 0.2,
-      appendErrorMaxRetry : 200,
+      appendErrorMaxRetry : 3,
       loader : customLoader,
       fLoader: customFragmentLoader,
       pLoader: customPlaylistLoader,
@@ -275,7 +275,7 @@ any I/O error will trigger retries every 500ms,1s,2s,4s,8s, ... capped to 64s (e
 
 max nb of append retry
 #### ```appendErrorMaxRetry```
-(default 200)
+(default 3)
 
 max number of sourceBuffer.appendBuffer() retry upon error.
 such error could happen in loop with UHD streams, when internal buffer is full. (Quota Exceeding Error will be triggered). in that case we need to wait for the browser to evict some data before being able to append buffer correctly.

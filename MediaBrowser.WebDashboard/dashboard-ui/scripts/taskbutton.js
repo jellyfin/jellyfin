@@ -156,7 +156,8 @@
     if (options.mode == 'off') {
 
         this.off('click', onButtonClick);
-        $(ApiClient).off("websocketmessage", onSocketMessage).off('websocketopen', onSocketOpen);
+        Events.off(ApiClient, 'websocketmessage', onSocketMessage);
+        Events.off(ApiClient, 'websocketopen', onSocketOpen);
         stopInterval();
 
     } else if (this.length) {
@@ -167,7 +168,8 @@
 
         startInterval();
 
-        $(ApiClient).on("websocketmessage", onSocketMessage).on('websocketopen', onSocketOpen);
+        Events.on(ApiClient, 'websocketmessage', onSocketMessage);
+        Events.on(ApiClient, 'websocketopen', onSocketOpen);
     }
 
     return this;

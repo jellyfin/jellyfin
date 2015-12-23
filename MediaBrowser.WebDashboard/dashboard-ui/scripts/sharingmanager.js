@@ -2,7 +2,7 @@
 
     function onSharingSuccess(options) {
 
-        Logger.log('share success. shareId: ' + options.share.Id);
+        console.log('share success. shareId: ' + options.share.Id);
 
     }
 
@@ -10,7 +10,7 @@
 
         var shareId = options.share.Id;
 
-        Logger.log('share cancelled. shareId: ' + shareId);
+        console.log('share cancelled. shareId: ' + shareId);
 
         // Delete the share since it was cancelled
         ApiClient.ajax({

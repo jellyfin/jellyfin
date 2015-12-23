@@ -383,7 +383,7 @@
 
                 $('.sliderValue', elem).html(tooltext);
 
-                Logger.log("slidin", pct, self.currentDurationTicks, time);
+                console.log("slidin", pct, self.currentDurationTicks, time);
 
             });
         });

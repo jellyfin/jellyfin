@@ -91,7 +91,7 @@
 
         function downloadToFile(url, dir, filename, callback, errorCallback) {
 
-            Logger.log('Downloading ' + url);
+            console.log('Downloading ' + url);
 
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
@@ -146,7 +146,7 @@
                 };
 
                 var errorCallback = function (e) {
-                    Logger.log('Imagestore error: ' + e.name);
+                    console.log('Imagestore error: ' + e.name);
                     reject();
                 };
 

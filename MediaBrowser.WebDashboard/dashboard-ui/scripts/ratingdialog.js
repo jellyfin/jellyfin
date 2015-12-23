@@ -74,7 +74,7 @@
                     };
 
                     options.callback(review);
-                } else Logger.log("No callback function provided");
+                } else console.log("No callback function provided");
 
                 return false;
             });
@@ -98,7 +98,7 @@
                 id: id,
                 rating: rating,
                 callback: function (review) {
-                    Logger.log(review);
+                    console.log(review);
                     dialog.close();
 
                     ApiClient.createPackageReview(review).then(function () {

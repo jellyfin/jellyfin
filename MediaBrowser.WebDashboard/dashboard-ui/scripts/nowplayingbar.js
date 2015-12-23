@@ -79,7 +79,6 @@
         }
 
         return height + 'px';
-        return '80px';
     }
 
     function slideDown(elem) {
@@ -97,8 +96,6 @@
             return;
         }
 
-        onfinish();
-        return;
         requestAnimationFrame(function () {
             var keyframes = [
               { height: getHeight(elem), offset: 0 },
@@ -119,7 +116,6 @@
         if (!browserInfo.animate || browserInfo.mobile) {
             return;
         }
-        return;
 
         requestAnimationFrame(function () {
 
@@ -541,7 +537,7 @@
 
     function onPlaybackStart(e, state) {
 
-        Logger.log('nowplaying event: ' + e.type);
+        console.log('nowplaying event: ' + e.type);
 
         var player = this;
 
@@ -569,7 +565,7 @@
 
     function onPlaybackStopped(e, state) {
 
-        Logger.log('nowplaying event: ' + e.type);
+        console.log('nowplaying event: ' + e.type);
         var player = this;
 
         player.endPlayerUpdates();
@@ -579,7 +575,7 @@
 
     function onStateChanged(e, state) {
 
-        //Logger.log('nowplaying event: ' + e.type);
+        //console.log('nowplaying event: ' + e.type);
         var player = this;
 
         if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
@@ -593,11 +589,11 @@
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('playbackstart', onPlaybackStart)
-                .off('playbackstop', onPlaybackStopped)
-                .off('volumechange', onVolumeChanged)
-                .off('playstatechange', onStateChanged)
-                .off('positionchange', onStateChanged);
+            Events.off(currentPlayer, 'playbackstart', onPlaybackStart);
+            Events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
+            Events.off(currentPlayer, 'volumechange', onVolumeChanged);
+            Events.off(currentPlayer, 'playstatechange', onStateChanged);
+            Events.off(currentPlayer, 'positionchange', onStateChanged);
 
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
@@ -637,11 +633,11 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        $(player).on('playbackstart', onPlaybackStart)
-            .on('playbackstop', onPlaybackStopped)
-            .on('volumechange', onVolumeChanged)
-            .on('playstatechange', onStateChanged)
-            .on('positionchange', onStateChanged);
+        Events.on(player, 'playbackstart', onPlaybackStart);
+        Events.on(player, 'playbackstop', onPlaybackStopped);
+        Events.on(player, 'volumechange', onVolumeChanged);
+        Events.on(player, 'playstatechange', onStateChanged);
+        Events.on(player, 'positionchange', onStateChanged);
     }
 
     Events.on(MediaController, 'playerchange', function () {

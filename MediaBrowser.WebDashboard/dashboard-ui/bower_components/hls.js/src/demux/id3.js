@@ -41,6 +41,7 @@ import {logger} from '../utils/logger';
                           logger.warn('ID3 tag found, but no timestamp');
                       }
                       this._length = len;
+                      this._payload = data.subarray(0,len);
                   }
               return;
           }
@@ -115,6 +116,10 @@ import {logger} from '../utils/logger';
 
   get length() {
     return this._length;
+  }
+
+  get payload() {
+    return this._payload;
   }
 
 }

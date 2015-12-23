@@ -189,7 +189,8 @@ paper-tab {
         padding: 0;
     }
 
-.cardBox {
+/* Need the div specifier to gain preference over the value in card.css */
+div.cardBox {
     margin: 5px;
 }
 

@@ -72,8 +72,9 @@ header {
       <div id="customButtons"></div>
       <select id="streamSelect" class="innerControls"><option value="" selected>(Enter custom URL below)</option></select>
       <input id="streamURL" class="innerControls" type=text value=""/>
-      <label class="innerControls"><input id="enableStream" type=checkbox checked/> Enable Streaming</label>
+      <label class="innerControls"><input id="enableStreaming" type=checkbox checked/> Enable Streaming</label>
       <label class="innerControls"><input id="autoRecoverError" type=checkbox checked/> Auto-Recover Media Error</label>
+      <label class="innerControls"><input id="enableWorker" type=checkbox checked/> Enable Worker</label>
       <div id="StreamPermalink" class="innerControls"></div>
       <div>
         <select id="videoSize" style="float:left">
@@ -201,21 +202,25 @@ $(document).ready(function() {
    $("#StatsDisplay").hide();
    $('#metricsButtonWindow').toggle(windowSliding);
    $('#metricsButtonFixed').toggle(!windowSliding);
-   $('#enableStream').click(function()      { enableStreaming = this.checked; loadStream($('#streamURL').val());});
-   $('#autoRecoverError').prop( "checked", true );
-   $('#autoRecoverError').click(function()  { autoRecoverError = this.checked; });
+   $('#enableStreaming').click(function()      { enableStreaming = this.checked; loadStream($('#streamURL').val()); });
+   $('#autoRecoverError').click(function()  { autoRecoverError = this.checked; updatePermalink();});
+   $('#enableWorker').click(function()  { enableWorker = this.checked; updatePermalink();});
+   $('#enableStreaming').prop( "checked", enableStreaming );
+   $('#autoRecoverError').prop( "checked", autoRecoverError );
+   $('#enableWorker').prop( "checked", enableWorker );
 });
 
+
   'use strict';
-  var hls,events, stats, enableStreaming = true, autoRecoverError = true;
+  var hls,events, stats,
+      enableStreaming = JSON.parse(getURLParam('enableStreaming',true))
+      autoRecoverError = JSON.parse(getURLParam('autoRecoverError',true)),
+      enableWorker = JSON.parse(getURLParam('enableWorker',true));
   var video = $('#video')[0];
   video.volume = 0.05;
 
-  var manifest = decodeURIComponent(location.search.split('src=')[1]);
-  if(manifest === 'undefined') {
-    manifest = 'http://www.streambox.fr/playlists/x36xhzz/x36xhzz.m3u8';
-  }
-  loadStream(manifest);
+  loadStream(decodeURIComponent(getURLParam('src','http://www.streambox.fr/playlists/x36xhzz/x36xhzz.m3u8')));
+
 
   function loadStream(url) {
     hideCanvas();
@@ -230,10 +235,7 @@ $(document).ready(function() {
        }
 
       $('#streamURL').val(url);
-      var hlsLink = document.URL.split('?')[0] +  '?src=' + encodeURIComponent(url);
-      var description = 'permalink: ' + "<a href=\"" + hlsLink + "\">" + hlsLink + "</a>";
-      $("#StreamPermalink").html(description);
-
+      updatePermalink();
       if(!enableStreaming) {
         $("#HlsStatus").text("Streaming disabled");
         return;
@@ -242,7 +244,7 @@ $(document).ready(function() {
       $("#HlsStatus").text('loading ' + url);
        events = { url : url, t0 : performance.now(), load : [], buffer : [], video : [], level : [], bitrate : []};
        recoverDecodingErrorDate = recoverSwapAudioCodecDate = null;
-       hls = new Hls({debug:true});
+       hls = new Hls({debug:true, enableWorker : enableWorker});
        $("#HlsStatus").text('loading manifest and attaching video element...');
        hls.loadSource(url);
        hls.attachMedia(video);
@@ -470,6 +472,7 @@ $(document).ready(function() {
               hls.destroy();
               break;
           }
+          console.log($("#HlsStatus").text());
         }
         if(!stats) stats = {};
         // track all errors independently
@@ -906,6 +909,25 @@ function timeRangesToString(r) {
           }
       }
     }
+  }
+
+  function getURLParam(sParam, defaultValue) {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+    for (var i = 0; i < sURLVariables.length; i++) {
+      var sParameterName = sURLVariables[i].split('=');
+      if (sParameterName[0] == sParam) {
+        return sParameterName[1];
+      }
+    }
+    return defaultValue;
+  }
+
+  function updatePermalink() {
+      var url = $('#streamURL').val();
+      var hlsLink = document.URL.split('?')[0] +  '?src=' + encodeURIComponent(url) + '&enableStreaming=' + enableStreaming + '&autoRecoverError=' + autoRecoverError + '&enableWorker=' + enableWorker;
+      var description = 'permalink: ' + "<a href=\"" + hlsLink + "\">" + hlsLink + "</a>";
+      $("#StreamPermalink").html(description);
   }
 
   </script>

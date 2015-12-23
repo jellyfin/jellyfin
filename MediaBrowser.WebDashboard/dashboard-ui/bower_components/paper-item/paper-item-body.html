@@ -11,8 +11,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/typography.html">
+
 <!--
 Use `<paper-item-body>` in a `<paper-item>` or `<paper-icon-item>` to make two- or
 three- line items. It is a flex item that is a vertical flexbox.
@@ -58,14 +58,15 @@ Custom property | Description | Default
       }
 
       :host > ::content > * {
-        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       :host > ::content [secondary] {
-        color: var(--paper-item-body-secondary-color, --secondary-text-color);
         @apply(--paper-font-body1);
+
+        color: var(--paper-item-body-secondary-color, --secondary-text-color);
 
         @apply(--paper-item-body-secondary);
       }

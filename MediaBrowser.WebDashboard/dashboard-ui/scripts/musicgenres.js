@@ -66,7 +66,6 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'music',
                     showItemCounts: true,
                     lazy: true,
                     centerText: true,
@@ -79,11 +78,19 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'music',
                     showItemCounts: true,
                     cardLayout: true,
                     lazy: true,
                     showTitle: true
+                });
+            }
+            else if (view == "Poster") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    centerText: true,
+                    showItemCounts: true,
+                    lazy: true
                 });
             }
 

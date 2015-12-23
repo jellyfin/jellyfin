@@ -12,6 +12,13 @@
 
 })();
 
+// Compatibility
+window.Logger = {
+    log: function(msg) {
+        console.log(msg);
+    }
+};
+
 var Dashboard = {
 
     filterHtml: function (html) {
@@ -888,7 +895,6 @@ var Dashboard = {
             html += '</div>';
 
             $('.content-primary', page).before(html);
-            Events.trigger(page, 'create');
         }
     },
 
@@ -1054,7 +1060,7 @@ var Dashboard = {
             case 'SetRepeatMode':
                 break;
             default:
-                Logger.log('Unrecognized command: ' + cmd.Name);
+                console.log('Unrecognized command: ' + cmd.Name);
                 break;
         }
     },
@@ -1605,18 +1611,20 @@ var AppInfo = {};
         apiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
-        $(apiClient).off("websocketmessage", Dashboard.onWebSocketMessageReceived).off('requestfail', Dashboard.onRequestFail);
+        Events.off(apiClient, 'websocketmessage', Dashboard.onWebSocketMessageReceived);
+        Events.on(apiClient, 'websocketmessage', Dashboard.onWebSocketMessageReceived);
 
-        $(apiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived).on('requestfail', Dashboard.onRequestFail);
+        Events.off(apiClient, 'requestfail', Dashboard.onRequestFail);
+        Events.on(apiClient, 'requestfail', Dashboard.onRequestFail);
     }
 
     //localStorage.clear();
-    function createConnectionManager(capabilities) {
+    function createConnectionManager(credentialProviderFactory, capabilities) {
 
         var credentialKey = Dashboard.isConnectMode() ? null : 'servercredentials4';
-        var credentialProvider = new MediaBrowser.CredentialProvider(credentialKey);
+        var credentialProvider = new credentialProviderFactory(credentialKey);
 
-        window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities);
+        window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
 
         if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
             window.ConnectionManager.clearData();
@@ -1653,12 +1661,14 @@ var AppInfo = {};
 
             } else {
 
-                var apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId);
-                apiClient.enableAutomaticNetworking = false;
-                ConnectionManager.addApiClient(apiClient);
-                Dashboard.importCss(apiClient.getUrl('Branding/Css'));
-                window.ApiClient = apiClient;
-                resolve();
+                require(['apiclient'], function(apiClientFactory) {
+                    var apiClient = new apiClientFactory(Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, window.devicePixelRatio);
+                    apiClient.enableAutomaticNetworking = false;
+                    ConnectionManager.addApiClient(apiClient);
+                    Dashboard.importCss(apiClient.getUrl('Branding/Css'));
+                    window.ApiClient = apiClient;
+                    resolve();
+                });
             }
         });
     }
@@ -1785,7 +1795,12 @@ var AppInfo = {};
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             jQuery: bowerPath + '/jquery/dist/jquery.min',
-            fastclick: bowerPath + '/fastclick/lib/fastclick'
+            fastclick: bowerPath + '/fastclick/lib/fastclick',
+            events: apiClientBowerPath + '/events',
+            credentialprovider: apiClientBowerPath + '/credentials',
+            apiclient: apiClientBowerPath + '/apiclient',
+            connectionmanagerfactory: apiClientBowerPath + '/connectionmanager',
+            connectservice: apiClientBowerPath + '/connectservice'
         };
 
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
@@ -1912,13 +1927,8 @@ var AppInfo = {};
             define("fileupload", [apiClientBowerPath + "/fileupload"]);
         }
 
-        define("connectservice", [apiClientBowerPath + "/connectservice"]);
         define("apiclient-store", [apiClientBowerPath + "/store"]);
-        define("apiclient-events", [apiClientBowerPath + "/events"]);
-        define("apiclient-logger", [apiClientBowerPath + "/logger"]);
-        define("apiclient-credentials", [apiClientBowerPath + "/credentials"]);
-        define("apiclient-deferred", [apiClientBowerPath + "/deferred"]);
-        define("apiclient", [apiClientBowerPath + "/apiclient"]);
+        define("apiclient-deferred", ["legacy/deferred"]);
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
         define("contentuploader", [apiClientBowerPath + "/sync/contentuploader"]);
@@ -1989,6 +1999,7 @@ var AppInfo = {};
         define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
+        deps.push('events');
 
         if (!window.fetch) {
             deps.push('fetch');
@@ -1996,13 +2007,14 @@ var AppInfo = {};
 
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
-        deps.push('apiclient-events');
 
         deps.push('jQuery');
 
         deps.push('paper-drawer-panel');
 
-        require(deps, function () {
+        require(deps, function (events) {
+
+            window.Events = events;
 
             for (var i in hostingAppInfo) {
                 AppInfo[i] = hostingAppInfo[i];
@@ -2038,19 +2050,19 @@ var AppInfo = {};
         }
 
         var deps = [];
-
-        if (AppInfo.isNativeApp && browserInfo.android) {
-            require(['cordova/android/logging']);
-        }
+        deps.push('connectionmanagerfactory');
+        deps.push('credentialprovider');
 
         deps.push('appstorage');
         deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
-        deps.push('apiclient');
-        deps.push('connectionmanager');
-        deps.push('apiclient-credentials');
 
-        require(deps, function () {
+        require(deps, function (connectionManagerExports, credentialProviderFactory) {
+
+            window.MediaBrowser = window.MediaBrowser || {};
+            for (var i in connectionManagerExports) {
+                MediaBrowser[i] = connectionManagerExports[i];
+            }
 
             // TODO: This needs to be deprecated, but it's used heavily
             $.fn.checked = function (value) {
@@ -2100,8 +2112,7 @@ var AppInfo = {};
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
-            promises.push(createConnectionManager(capabilities));
-
+            promises.push(createConnectionManager(credentialProviderFactory, capabilities));
 
             Promise.all(promises).then(function () {
 
@@ -2423,7 +2434,6 @@ var AppInfo = {};
     var initialDependencies = [];
 
     initialDependencies.push('isMobile');
-    initialDependencies.push('apiclient-logger');
     initialDependencies.push('apiclient-store');
     initialDependencies.push('scripts/extensions');
 
@@ -2567,7 +2577,7 @@ pageClassOn('pageshow', "page", function () {
 
         if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('forgotPasswordPinPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
-            Logger.log('Not logged into server. Redirecting to login.');
+            console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
             return;
         }
@@ -2594,7 +2604,7 @@ window.addEventListener("beforeunload", function () {
         });
 
         if (!localActivePlayers.length) {
-            Logger.log('Sending close web socket command');
+            console.log('Sending close web socket command');
             apiClient.closeWebSocket();
         }
     }

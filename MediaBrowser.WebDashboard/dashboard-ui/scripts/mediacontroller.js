@@ -192,7 +192,7 @@
 
             if (bypass()) return;
 
-            Logger.log("keyCode", e.keyCode);
+            console.log("keyCode", e.keyCode);
 
             if (keyResult[e.keyCode]) {
                 e.preventDefault();
@@ -307,7 +307,7 @@
             currentPlayer = player;
             currentTargetInfo = targetInfo;
 
-            Logger.log('Active player: ' + JSON.stringify(currentTargetInfo));
+            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
             triggerPlayerChange(player, targetInfo);
         };
@@ -336,7 +336,7 @@
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
 
-                Logger.log('Active player: ' + JSON.stringify(currentTargetInfo));
+                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
                 triggerPlayerChange(player, targetInfo);
             });
@@ -720,7 +720,7 @@
 
             // Full list
             // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-            Logger.log('MediaController received command: ' + cmd.Name);
+            console.log('MediaController received command: ' + cmd.Name);
             switch (cmd.Name) {
 
                 case 'SetRepeatMode':
@@ -950,7 +950,7 @@
                     require(['localassetmanager'], function () {
 
                         LocalAssetManager.fileExists(mediaSource.Path).then(function (exists) {
-                            Logger.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
+                            console.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
                             deferred.resolveWith(null, [exists]);
                         });
                     });
@@ -1026,7 +1026,8 @@
     }
 
     function initializeApiClient(apiClient) {
-        $(apiClient).off("websocketmessage", onWebSocketMessageReceived).on("websocketmessage", onWebSocketMessageReceived);
+        Events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     MediaController.init = function () {
@@ -1034,7 +1035,7 @@
             initializeApiClient(window.ApiClient);
         }
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
     };

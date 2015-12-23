@@ -286,13 +286,13 @@
     pageIdOn('pageshow', "indexPage", function () {
 
         var page = this;
-        $(MediaController).on('playbackstop', onPlaybackStop);
+        Events.on(MediaController, 'playbackstop', onPlaybackStop);
     });
 
     pageIdOn('pagebeforehide', "indexPage", function () {
 
         var page = this;
-        $(MediaController).off('playbackstop', onPlaybackStop);
+        Events.off(MediaController, 'playbackstop', onPlaybackStop);
     });
 
     function onPlaybackStop(e, state) {

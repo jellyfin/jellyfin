@@ -204,7 +204,7 @@
                     refreshLibraryInfoInDrawer(user, drawer);
                     refreshBottomUserInfoInDrawer(user, drawer);
 
-                    Events.trigger(document, 'libraryMenuCreated');
+                    document.dispatchEvent(new CustomEvent("libraryMenuCreated", {}));
                     updateLibraryMenu(user.localUser);
                 }
 

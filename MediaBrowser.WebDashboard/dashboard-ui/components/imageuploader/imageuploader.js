@@ -42,7 +42,7 @@
         };
         reader.onabort = function () {
             Dashboard.hideLoadingMsg();
-            Logger.log('File read cancelled');
+            console.log('File read cancelled');
         };
 
         // Closure to capture the file information.

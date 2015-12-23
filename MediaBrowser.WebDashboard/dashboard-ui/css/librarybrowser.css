@@ -140,7 +140,7 @@
 @media all and (min-width: 1200px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 95%;
+        width: 96%;
     }
 }
 

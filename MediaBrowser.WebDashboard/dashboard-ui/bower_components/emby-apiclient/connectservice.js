@@ -1,15 +1,6 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    function replaceAll(str, find, replace) {
-
-        return str.split(find).join(replace);
-    }
-
-    var connectService = {
+    return {
 
         cleanPassword: function (password) {
 
@@ -26,9 +17,5 @@
 
             return password;
         }
-
     };
-
-    globalScope.MediaBrowser.ConnectService = connectService;
-
-})(window);
+});

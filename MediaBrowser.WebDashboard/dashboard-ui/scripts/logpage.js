@@ -43,7 +43,7 @@
 
             html += '</ul>';
 
-            Events.trigger($('.serverLogs', page).html(html)[0], 'create');
+            $('.serverLogs', page).html(html).trigger('create');
 
         });
     });

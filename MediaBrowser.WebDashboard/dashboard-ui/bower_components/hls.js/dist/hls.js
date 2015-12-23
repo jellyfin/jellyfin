@@ -532,7 +532,8 @@ var LevelController = (function () {
           i,
           bitrateSet = {},
           videoCodecFound = false,
-          audioCodecFound = false;
+          audioCodecFound = false,
+          hls = this.hls;
 
       // regroup redundant level together
       data.levels.forEach(function (level) {
@@ -565,32 +566,36 @@ var LevelController = (function () {
       }
 
       // only keep level with supported audio/video codecs
-      levels0 = levels0.filter(function (level) {
+      levels = levels.filter(function (level) {
         var checkSupported = function checkSupported(codec) {
           return MediaSource.isTypeSupported('video/mp4;codecs=' + codec);
         };
         var audioCodec = level.audioCodec,
             videoCodec = level.videoCodec;
 
-        return (audioCodec && checkSupported(audioCodec) || !audioCodec) && (videoCodec && checkSupported(videoCodec) || !videoCodec);
+        return (!audioCodec || checkSupported(audioCodec)) && (!videoCodec || checkSupported(videoCodec));
       });
 
-      // start bitrate is the first bitrate of the manifest
-      bitrateStart = levels[0].bitrate;
-      // sort level on bitrate
-      levels.sort(function (a, b) {
-        return a.bitrate - b.bitrate;
-      });
-      this._levels = levels;
-      // find index of first level in sorted levels
-      for (i = 0; i < levels.length; i++) {
-        if (levels[i].bitrate === bitrateStart) {
-          this._firstLevel = i;
-          _utilsLogger.logger.log('manifest loaded,' + levels.length + ' level(s) found, first bitrate:' + bitrateStart);
-          break;
+      if (levels.length) {
+        // start bitrate is the first bitrate of the manifest
+        bitrateStart = levels[0].bitrate;
+        // sort level on bitrate
+        levels.sort(function (a, b) {
+          return a.bitrate - b.bitrate;
+        });
+        this._levels = levels;
+        // find index of first level in sorted levels
+        for (i = 0; i < levels.length; i++) {
+          if (levels[i].bitrate === bitrateStart) {
+            this._firstLevel = i;
+            _utilsLogger.logger.log('manifest loaded,' + levels.length + ' level(s) found, first bitrate:' + bitrateStart);
+            break;
+          }
         }
+        hls.trigger(_events2['default'].MANIFEST_PARSED, { levels: this._levels, firstLevel: this._firstLevel, stats: data.stats });
+      } else {
+        hls.trigger(_events2['default'].ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.MANIFEST_PARSING_ERROR, fatal: true, url: hls.url, reason: 'no compatible level found in manifest' });
       }
-      this.hls.trigger(_events2['default'].MANIFEST_PARSED, { levels: this._levels, firstLevel: this._firstLevel, stats: data.stats });
       return;
     }
   }, {
@@ -648,7 +653,8 @@ var LevelController = (function () {
       }
       /* try to switch to a redundant stream if any available.
        * if no redundant stream available, emergency switch down (if in auto mode and current level not 0)
-       * otherwise, we cannot recover this network error ....
+       * otherwise, we cannot recover this network error ...
+       * don't raise FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT as fatal, as it is handled by mediaController
        */
       if (levelId !== undefined) {
         level = this._levels[levelId];
@@ -664,18 +670,19 @@ var LevelController = (function () {
             hls.abrController.nextAutoLevel = 0;
           } else if (level && level.details && level.details.live) {
             _utilsLogger.logger.warn('level controller,' + details + ' on live stream, discard');
-          } else {
-            _utilsLogger.logger.error('cannot recover ' + details + ' error');
-            this._level = undefined;
-            // stopping live reloading timer if any
-            if (this.timer) {
-              clearInterval(this.timer);
-              this.timer = null;
+            // FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT are handled by mediaController
+          } else if (details !== _errors.ErrorDetails.FRAG_LOAD_ERROR && details !== _errors.ErrorDetails.FRAG_LOAD_TIMEOUT) {
+              _utilsLogger.logger.error('cannot recover ' + details + ' error');
+              this._level = undefined;
+              // stopping live reloading timer if any
+              if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+              }
+              // redispatch same error but with fatal set to true
+              data.fatal = true;
+              hls.trigger(event, data);
             }
-            // redispatch same error but with fatal set to true
-            data.fatal = true;
-            hls.trigger(event, data);
-          }
         }
       }
     }
@@ -1194,26 +1201,30 @@ var MSEMediaController = (function () {
                     this.appendError = 0;
                   } catch (err) {
                     // in case any error occured while appending, put back segment in mp4segments table
-                    //logger.error(`error while trying to append buffer:${err.message},try appending later`);
+                    _utilsLogger.logger.error('error while trying to append buffer:' + err.message + ',try appending later');
                     this.mp4segments.unshift(segment);
-                    if (this.appendError) {
-                      this.appendError++;
-                    } else {
-                      this.appendError = 1;
-                    }
-                    var event = { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_APPEND_ERROR, frag: this.fragCurrent };
-                    /* with UHD content, we could get loop of quota exceeded error until
-                      browser is able to evict some data from sourcebuffer. retrying help recovering this
-                    */
-                    if (this.appendError > this.config.appendErrorMaxRetry) {
-                      _utilsLogger.logger.log('fail ' + this.config.appendErrorMaxRetry + ' times to append segment in sourceBuffer');
-                      event.fatal = true;
-                      hls.trigger(_events2['default'].ERROR, event);
-                      this.state = State.ERROR;
-                      return;
-                    } else {
-                      event.fatal = false;
-                      hls.trigger(_events2['default'].ERROR, event);
+                    // just discard QuotaExceededError for now, and wait for the natural browser buffer eviction
+                    //http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
+                    if (err.code !== 22) {
+                      if (this.appendError) {
+                        this.appendError++;
+                      } else {
+                        this.appendError = 1;
+                      }
+                      var event = { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_APPEND_ERROR, frag: this.fragCurrent };
+                      /* with UHD content, we could get loop of quota exceeded error until
+                        browser is able to evict some data from sourcebuffer. retrying help recovering this
+                      */
+                      if (this.appendError > this.config.appendErrorMaxRetry) {
+                        _utilsLogger.logger.log('fail ' + this.config.appendErrorMaxRetry + ' times to append segment in sourceBuffer');
+                        event.fatal = true;
+                        hls.trigger(_events2['default'].ERROR, event);
+                        this.state = State.ERROR;
+                        return;
+                      } else {
+                        event.fatal = false;
+                        hls.trigger(_events2['default'].ERROR, event);
+                      }
                     }
                   }
                   this.state = State.APPENDING;
@@ -1807,6 +1818,7 @@ var MSEMediaController = (function () {
           this.demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
         }
       }
+      this.fragLoadError = 0;
     }
   }, {
     key: 'onInitSegment',
@@ -1905,6 +1917,24 @@ var MSEMediaController = (function () {
         // abort fragment loading on errors
         case _errors.ErrorDetails.FRAG_LOAD_ERROR:
         case _errors.ErrorDetails.FRAG_LOAD_TIMEOUT:
+          var loadError = this.fragLoadError;
+          if (loadError) {
+            loadError++;
+          } else {
+            loadError = 1;
+          }
+          if (loadError <= this.config.fragLoadingMaxRetry) {
+            this.fragLoadError = loadError;
+            // retry loading
+            this.state = State.IDLE;
+          } else {
+            _utilsLogger.logger.error('mediaController: ' + data.details + ' reaches max retry, redispatch as fatal ...');
+            // redispatch same error but with fatal set to true
+            data.fatal = true;
+            this.hls.trigger(event, data);
+            this.state = State.ERROR;
+          }
+          break;
         case _errors.ErrorDetails.FRAG_LOOP_LOADING_ERROR:
         case _errors.ErrorDetails.LEVEL_LOAD_ERROR:
         case _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT:
@@ -2691,7 +2721,7 @@ var AACDemuxer = (function () {
           break;
         }
       }
-      this.remuxer.remux(this._aacTrack, { samples: [] }, { samples: [] }, timeOffset);
+      this.remuxer.remux(this._aacTrack, { samples: [] }, { samples: [{ pts: pts, dts: pts, unit: id3.payload }] }, timeOffset);
     }
   }, {
     key: '_ADTStoAudioConfig',
@@ -3513,7 +3543,7 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-    value: true
+  value: true
 });
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -3525,130 +3555,136 @@ var _utilsLogger = require('../utils/logger');
 //import Hex from '../utils/hex';
 
 var ID3 = (function () {
-    function ID3(data) {
-        _classCallCheck(this, ID3);
+  function ID3(data) {
+    _classCallCheck(this, ID3);
 
-        this._hasTimeStamp = false;
-        var offset = 0,
-            byte1,
-            byte2,
-            byte3,
-            byte4,
-            tagSize,
-            endPos,
-            header,
-            len;
-        do {
-            header = this.readUTF(data, offset, 3);
-            offset += 3;
-            // first check for ID3 header
-            if (header === 'ID3') {
-                // skip 24 bits
-                offset += 3;
-                // retrieve tag(s) length
-                byte1 = data[offset++] & 0x7f;
-                byte2 = data[offset++] & 0x7f;
-                byte3 = data[offset++] & 0x7f;
-                byte4 = data[offset++] & 0x7f;
-                tagSize = (byte1 << 21) + (byte2 << 14) + (byte3 << 7) + byte4;
-                endPos = offset + tagSize;
-                //logger.log(`ID3 tag found, size/end: ${tagSize}/${endPos}`);
+    this._hasTimeStamp = false;
+    var offset = 0,
+        byte1,
+        byte2,
+        byte3,
+        byte4,
+        tagSize,
+        endPos,
+        header,
+        len;
+    do {
+      header = this.readUTF(data, offset, 3);
+      offset += 3;
+      // first check for ID3 header
+      if (header === 'ID3') {
+        // skip 24 bits
+        offset += 3;
+        // retrieve tag(s) length
+        byte1 = data[offset++] & 0x7f;
+        byte2 = data[offset++] & 0x7f;
+        byte3 = data[offset++] & 0x7f;
+        byte4 = data[offset++] & 0x7f;
+        tagSize = (byte1 << 21) + (byte2 << 14) + (byte3 << 7) + byte4;
+        endPos = offset + tagSize;
+        //logger.log(`ID3 tag found, size/end: ${tagSize}/${endPos}`);
 
-                // read ID3 tags
-                this._parseID3Frames(data, offset, endPos);
-                offset = endPos;
-            } else if (header === '3DI') {
-                // http://id3.org/id3v2.4.0-structure chapter 3.4.   ID3v2 footer
-                offset += 7;
-                _utilsLogger.logger.log('3DI footer found, end: ' + offset);
-            } else {
-                offset -= 3;
-                len = offset;
-                if (len) {
-                    //logger.log(`ID3 len: ${len}`);
-                    if (!this.hasTimeStamp) {
-                        _utilsLogger.logger.warn('ID3 tag found, but no timestamp');
-                    }
-                    this._length = len;
-                }
-                return;
-            }
-        } while (true);
+        // read ID3 tags
+        this._parseID3Frames(data, offset, endPos);
+        offset = endPos;
+      } else if (header === '3DI') {
+        // http://id3.org/id3v2.4.0-structure chapter 3.4.   ID3v2 footer
+        offset += 7;
+        _utilsLogger.logger.log('3DI footer found, end: ' + offset);
+      } else {
+        offset -= 3;
+        len = offset;
+        if (len) {
+          //logger.log(`ID3 len: ${len}`);
+          if (!this.hasTimeStamp) {
+            _utilsLogger.logger.warn('ID3 tag found, but no timestamp');
+          }
+          this._length = len;
+          this._payload = data.subarray(0, len);
+        }
+        return;
+      }
+    } while (true);
+  }
+
+  _createClass(ID3, [{
+    key: 'readUTF',
+    value: function readUTF(data, start, len) {
+
+      var result = '',
+          offset = start,
+          end = start + len;
+      do {
+        result += String.fromCharCode(data[offset++]);
+      } while (offset < end);
+      return result;
     }
+  }, {
+    key: '_parseID3Frames',
+    value: function _parseID3Frames(data, offset, endPos) {
+      var tagId, tagLen, tagStart, tagFlags, timestamp;
+      while (offset + 8 <= endPos) {
+        tagId = this.readUTF(data, offset, 4);
+        offset += 4;
 
-    _createClass(ID3, [{
-        key: 'readUTF',
-        value: function readUTF(data, start, len) {
+        tagLen = data[offset++] << 24 + data[offset++] << 16 + data[offset++] << 8 + data[offset++];
 
-            var result = '',
-                offset = start,
-                end = start + len;
-            do {
-                result += String.fromCharCode(data[offset++]);
-            } while (offset < end);
-            return result;
-        }
-    }, {
-        key: '_parseID3Frames',
-        value: function _parseID3Frames(data, offset, endPos) {
-            var tagId, tagLen, tagStart, tagFlags, timestamp;
-            while (offset + 8 <= endPos) {
-                tagId = this.readUTF(data, offset, 4);
-                offset += 4;
+        tagFlags = data[offset++] << 8 + data[offset++];
 
-                tagLen = data[offset++] << 24 + data[offset++] << 16 + data[offset++] << 8 + data[offset++];
+        tagStart = offset;
+        //logger.log("ID3 tag id:" + tagId);
+        switch (tagId) {
+          case 'PRIV':
+            //logger.log('parse frame:' + Hex.hexDump(data.subarray(offset,endPos)));
+            // owner should be "com.apple.streaming.transportStreamTimestamp"
+            if (this.readUTF(data, offset, 44) === 'com.apple.streaming.transportStreamTimestamp') {
+              offset += 44;
+              // smelling even better ! we found the right descriptor
+              // skip null character (string end) + 3 first bytes
+              offset += 4;
 
-                tagFlags = data[offset++] << 8 + data[offset++];
+              // timestamp is 33 bit expressed as a big-endian eight-octet number, with the upper 31 bits set to zero.
+              var pts33Bit = data[offset++] & 0x1;
+              this._hasTimeStamp = true;
 
-                tagStart = offset;
-                //logger.log("ID3 tag id:" + tagId);
-                switch (tagId) {
-                    case 'PRIV':
-                        //logger.log('parse frame:' + Hex.hexDump(data.subarray(offset,endPos)));
-                        // owner should be "com.apple.streaming.transportStreamTimestamp"
-                        if (this.readUTF(data, offset, 44) === 'com.apple.streaming.transportStreamTimestamp') {
-                            offset += 44;
-                            // smelling even better ! we found the right descriptor
-                            // skip null character (string end) + 3 first bytes
-                            offset += 4;
+              timestamp = ((data[offset++] << 23) + (data[offset++] << 15) + (data[offset++] << 7) + data[offset++]) / 45;
 
-                            // timestamp is 33 bit expressed as a big-endian eight-octet number, with the upper 31 bits set to zero.
-                            var pts33Bit = data[offset++] & 0x1;
-                            this._hasTimeStamp = true;
-
-                            timestamp = ((data[offset++] << 23) + (data[offset++] << 15) + (data[offset++] << 7) + data[offset++]) / 45;
-
-                            if (pts33Bit) {
-                                timestamp += 47721858.84; // 2^32 / 90
-                            }
-                            timestamp = Math.round(timestamp);
-                            _utilsLogger.logger.trace('ID3 timestamp found: ' + timestamp);
-                            this._timeStamp = timestamp;
-                        }
-                        break;
-                    default:
-                        break;
-                }
+              if (pts33Bit) {
+                timestamp += 47721858.84; // 2^32 / 90
+              }
+              timestamp = Math.round(timestamp);
+              _utilsLogger.logger.trace('ID3 timestamp found: ' + timestamp);
+              this._timeStamp = timestamp;
             }
+            break;
+          default:
+            break;
         }
-    }, {
-        key: 'hasTimeStamp',
-        get: function get() {
-            return this._hasTimeStamp;
-        }
-    }, {
-        key: 'timeStamp',
-        get: function get() {
-            return this._timeStamp;
-        }
-    }, {
-        key: 'length',
-        get: function get() {
-            return this._length;
-        }
-    }]);
+      }
+    }
+  }, {
+    key: 'hasTimeStamp',
+    get: function get() {
+      return this._hasTimeStamp;
+    }
+  }, {
+    key: 'timeStamp',
+    get: function get() {
+      return this._timeStamp;
+    }
+  }, {
+    key: 'length',
+    get: function get() {
+      return this._length;
+    }
+  }, {
+    key: 'payload',
+    get: function get() {
+      return this._payload;
+    }
+  }]);
 
-    return ID3;
+  return ID3;
 })();
 
 exports['default'] = ID3;
@@ -4746,7 +4782,7 @@ var Hls = (function () {
       enableWorker: true,
       enableSoftwareAES: true,
       fragLoadingTimeOut: 20000,
-      fragLoadingMaxRetry: 1,
+      fragLoadingMaxRetry: 6,
       fragLoadingRetryDelay: 1000,
       fragLoadingLoopThreshold: 3,
       manifestLoadingTimeOut: 10000,
@@ -4754,7 +4790,7 @@ var Hls = (function () {
       manifestLoadingRetryDelay: 1000,
       // fpsDroppedMonitoringPeriod: 5000,
       // fpsDroppedMonitoringThreshold: 0.2,
-      appendErrorMaxRetry: 200,
+      appendErrorMaxRetry: 3,
       loader: _utilsXhrLoader2['default'],
       fLoader: undefined,
       pLoader: undefined,
@@ -5038,7 +5074,7 @@ var FragmentLoader = (function () {
       this.frag.loaded = 0;
       var config = this.hls.config;
       frag.loader = this.loader = typeof config.fLoader !== 'undefined' ? new config.fLoader(config) : new config.loader(config);
-      this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, config.fragLoadingMaxRetry, config.fragLoadingRetryDelay, this.loadprogress.bind(this), frag);
+      this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 1, config.fragLoadingRetryDelay, this.loadprogress.bind(this), frag);
     }
   }, {
     key: 'loadsuccess',
@@ -5301,7 +5337,7 @@ var PlaylistLoader = (function () {
       if (avcdata.length > 2) {
         result = avcdata.shift() + '.';
         result += parseInt(avcdata.shift()).toString(16);
-        result += ('00' + parseInt(avcdata.shift()).toString(16)).substr(-4);
+        result += ('000' + parseInt(avcdata.shift()).toString(16)).substr(-4);
       } else {
         result = codec;
       }
@@ -5651,6 +5687,7 @@ var MP4 = (function () {
       var payload = Array.prototype.slice.call(arguments, 1),
           size = 0,
           i = payload.length,
+          len = i,
           result,
           view;
       // calculate the total size we need to allocate
@@ -5662,7 +5699,7 @@ var MP4 = (function () {
       view.setUint32(0, result.byteLength);
       result.set(type, 4);
       // copy the payload into the result
-      for (i = 0, size = 8; i < payload.length; i++) {
+      for (i = 0, size = 8; i < len; i++) {
         result.set(payload[i], size);
         size += payload[i].byteLength;
       }
@@ -5818,7 +5855,10 @@ var MP4 = (function () {
       0xfc | 3, // lengthSizeMinusOne, hard-coded to 4 bytes
       0xE0 | track.sps.length // 3bit reserved (111) + numOfSequenceParameterSets
       ].concat(sps).concat([track.pps.length // numOfPictureParameterSets
-      ]).concat(pps))); // "PPS"
+      ]).concat(pps))),
+          // "PPS"
+      width = track.width,
+          height = track.height;
       //console.log('avcc:' + Hex.hexDump(avcc));
       return MP4.box(MP4.types.avc1, new Uint8Array([0x00, 0x00, 0x00, // reserved
       0x00, 0x00, 0x00, // reserved
@@ -5826,8 +5866,8 @@ var MP4 = (function () {
       0x00, 0x00, // pre_defined
       0x00, 0x00, // reserved
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // pre_defined
-      track.width >> 8 & 0xFF, track.width & 0xff, // width
-      track.height >> 8 & 0xFF, track.height & 0xff, // height
+      width >> 8 & 0xFF, width & 0xff, // width
+      height >> 8 & 0xFF, height & 0xff, // height
       0x00, 0x48, 0x00, 0x00, // horizresolution
       0x00, 0x48, 0x00, 0x00, // vertresolution
       0x00, 0x00, 0x00, 0x00, // reserved
@@ -5843,16 +5883,17 @@ var MP4 = (function () {
   }, {
     key: 'esds',
     value: function esds(track) {
+      var configlen = track.config.length;
       return new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
 
       0x03, // descriptor_type
-      0x17 + track.config.length, // length
+      0x17 + configlen, // length
       0x00, 0x01, //es_id
       0x00, // stream_priority
 
       0x04, // descriptor_type
-      0x0f + track.config.length, // length
+      0x0f + configlen, // length
       0x40, //codec : mpeg4_audio
       0x15, // stream_type
       0x00, 0x00, 0x00, // buffer_size
@@ -5860,11 +5901,12 @@ var MP4 = (function () {
       0x00, 0x00, 0x00, 0x00, // avgBitrate
 
       0x05 // descriptor_type
-      ].concat([track.config.length]).concat(track.config).concat([0x06, 0x01, 0x02])); // GASpecificConfig)); // length + audio config descriptor
+      ].concat([configlen]).concat(track.config).concat([0x06, 0x01, 0x02])); // GASpecificConfig)); // length + audio config descriptor
     }
   }, {
     key: 'mp4a',
     value: function mp4a(track) {
+      var audiosamplerate = track.audiosamplerate;
       return MP4.box(MP4.types.mp4a, new Uint8Array([0x00, 0x00, 0x00, // reserved
       0x00, 0x00, 0x00, // reserved
       0x00, 0x01, // data_reference_index
@@ -5872,7 +5914,7 @@ var MP4 = (function () {
       0x00, track.channelCount, // channelcount
       0x00, 0x10, // sampleSize:16bits
       0x00, 0x00, 0x00, 0x00, // reserved2
-      track.audiosamplerate >> 8 & 0xFF, track.audiosamplerate & 0xff, //
+      audiosamplerate >> 8 & 0xFF, audiosamplerate & 0xff, //
       0x00, 0x00]), MP4.box(MP4.types.esds, MP4.esds(track)));
     }
   }, {
@@ -5887,30 +5929,35 @@ var MP4 = (function () {
   }, {
     key: 'tkhd',
     value: function tkhd(track) {
+      var id = track.id,
+          duration = track.duration,
+          width = track.width,
+          height = track.height;
       return MP4.box(MP4.types.tkhd, new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x07, // flags
       0x00, 0x00, 0x00, 0x00, // creation_time
       0x00, 0x00, 0x00, 0x00, // modification_time
-      track.id >> 24 & 0xFF, track.id >> 16 & 0xFF, track.id >> 8 & 0xFF, track.id & 0xFF, // track_ID
+      id >> 24 & 0xFF, id >> 16 & 0xFF, id >> 8 & 0xFF, id & 0xFF, // track_ID
       0x00, 0x00, 0x00, 0x00, // reserved
-      track.duration >> 24, track.duration >> 16 & 0xFF, track.duration >> 8 & 0xFF, track.duration & 0xFF, // duration
+      duration >> 24, duration >> 16 & 0xFF, duration >> 8 & 0xFF, duration & 0xFF, // duration
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // reserved
       0x00, 0x00, // layer
       0x00, 0x00, // alternate_group
       0x00, 0x00, // non-audio track volume
       0x00, 0x00, // reserved
       0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, // transformation: unity matrix
-      track.width >> 8 & 0xFF, track.width & 0xFF, 0x00, 0x00, // width
-      track.height >> 8 & 0xFF, track.height & 0xFF, 0x00, 0x00 // height
+      width >> 8 & 0xFF, width & 0xFF, 0x00, 0x00, // width
+      height >> 8 & 0xFF, height & 0xFF, 0x00, 0x00 // height
       ]));
     }
   }, {
     key: 'traf',
     value: function traf(track, baseMediaDecodeTime) {
-      var sampleDependencyTable = MP4.sdtp(track);
+      var sampleDependencyTable = MP4.sdtp(track),
+          id = track.id;
       return MP4.box(MP4.types.traf, MP4.box(MP4.types.tfhd, new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
-      track.id >> 24, track.id >> 16 & 0XFF, track.id >> 8 & 0XFF, track.id & 0xFF])), // track_ID
+      id >> 24, id >> 16 & 0XFF, id >> 8 & 0XFF, id & 0xFF])), // track_ID
       MP4.box(MP4.types.tfdt, new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
       baseMediaDecodeTime >> 24, baseMediaDecodeTime >> 16 & 0XFF, baseMediaDecodeTime >> 8 & 0XFF, baseMediaDecodeTime & 0xFF])), // baseMediaDecodeTime
@@ -5937,9 +5984,10 @@ var MP4 = (function () {
   }, {
     key: 'trex',
     value: function trex(track) {
+      var id = track.id;
       return MP4.box(MP4.types.trex, new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
-      track.id >> 24, track.id >> 16 & 0XFF, track.id >> 8 & 0XFF, track.id & 0xFF, // track_ID
+      id >> 24, id >> 16 & 0XFF, id >> 8 & 0XFF, id & 0xFF, // track_ID
       0x00, 0x00, 0x00, 0x01, // default_sample_description_index
       0x00, 0x00, 0x00, 0x00, // default_sample_duration
       0x00, 0x00, 0x00, 0x00, // default_sample_size
@@ -5949,21 +5997,32 @@ var MP4 = (function () {
   }, {
     key: 'trun',
     value: function trun(track, offset) {
-      var samples, sample, i, array;
-      samples = track.samples || [];
-      array = new Uint8Array(12 + 16 * samples.length);
-      offset += 8 + array.byteLength;
+      var samples = track.samples || [],
+          len = samples.length,
+          arraylen = 12 + 16 * len,
+          array = new Uint8Array(arraylen),
+          i,
+          sample,
+          duration,
+          size,
+          flags,
+          cts;
+      offset += 8 + arraylen;
       array.set([0x00, // version 0
       0x00, 0x0f, 0x01, // flags
-      samples.length >>> 24 & 0xFF, samples.length >>> 16 & 0xFF, samples.length >>> 8 & 0xFF, samples.length & 0xFF, // sample_count
+      len >>> 24 & 0xFF, len >>> 16 & 0xFF, len >>> 8 & 0xFF, len & 0xFF, // sample_count
       offset >>> 24 & 0xFF, offset >>> 16 & 0xFF, offset >>> 8 & 0xFF, offset & 0xFF // data_offset
       ], 0);
-      for (i = 0; i < samples.length; i++) {
+      for (i = 0; i < len; i++) {
         sample = samples[i];
-        array.set([sample.duration >>> 24 & 0xFF, sample.duration >>> 16 & 0xFF, sample.duration >>> 8 & 0xFF, sample.duration & 0xFF, // sample_duration
-        sample.size >>> 24 & 0xFF, sample.size >>> 16 & 0xFF, sample.size >>> 8 & 0xFF, sample.size & 0xFF, // sample_size
-        sample.flags.isLeading << 2 | sample.flags.dependsOn, sample.flags.isDependedOn << 6 | sample.flags.hasRedundancy << 4 | sample.flags.paddingValue << 1 | sample.flags.isNonSync, sample.flags.degradPrio & 0xF0 << 8, sample.flags.degradPrio & 0x0F, // sample_flags
-        sample.cts >>> 24 & 0xFF, sample.cts >>> 16 & 0xFF, sample.cts >>> 8 & 0xFF, sample.cts & 0xFF // sample_composition_time_offset
+        duration = sample.duration;
+        size = sample.size;
+        flags = sample.flags;
+        cts = sample.cts;
+        array.set([duration >>> 24 & 0xFF, duration >>> 16 & 0xFF, duration >>> 8 & 0xFF, duration & 0xFF, // sample_duration
+        size >>> 24 & 0xFF, size >>> 16 & 0xFF, size >>> 8 & 0xFF, size & 0xFF, // sample_size
+        flags.isLeading << 2 | sample.flags.dependsOn, flags.isDependedOn << 6 | flags.hasRedundancy << 4 | flags.paddingValue << 1 | flags.isNonSync, flags.degradPrio & 0xF0 << 8, flags.degradPrio & 0x0F, // sample_flags
+        cts >>> 24 & 0xFF, cts >>> 16 & 0xFF, cts >>> 8 & 0xFF, cts & 0xFF // sample_composition_time_offset
         ], 12 + 16 * i);
       }
       return MP4.box(MP4.types.trun, array);

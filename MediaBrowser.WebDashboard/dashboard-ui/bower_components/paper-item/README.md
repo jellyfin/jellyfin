@@ -38,13 +38,13 @@ items.
 
 The following custom properties and mixins are available for styling:
 
-Custom property               | Description                                    | Default
-------------------------------|------------------------------------------------|----------
-`--paper-item-min-height`     | Minimum height of the item                     | `48px`
-`--paper-item`                | Mixin applied to the item                      | `{}`
-`--paper-item-selected-weight`| The font weight of a selected item             | `bold`
-`--paper-item-selected`       | Mixin applied to selected paper-items                | `{}`
-`--paper-item-disabled-color` | The color for disabled paper-items             | `--disabled-text-color`
+Custom property               | Description                                  | Default
+------------------------------|----------------------------------------------|----------
+`--paper-item-min-height`     | Minimum height of the item                   | `48px`
+`--paper-item`                | Mixin applied to the item                    | `{}`
+`--paper-item-selected-weight`| The font weight of a selected item           | `bold`
+`--paper-item-selected`       | Mixin applied to selected paper-items        | `{}`
+`--paper-item-disabled-color` | The color for disabled paper-items           | `--disabled-text-color`
 `--paper-item-disabled`       | Mixin applied to disabled paper-items        | `{}`
 `--paper-item-focused`        | Mixin applied to focused paper-items         | `{}`
 `--paper-item-focused-before` | Mixin applied to :before focused paper-items | `{}`

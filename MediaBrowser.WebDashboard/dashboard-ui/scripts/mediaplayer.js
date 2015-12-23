@@ -207,7 +207,7 @@
                 profile.TranscodingProfiles.push({
                     Container: 'mkv',
                     Type: 'Video',
-                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : '') + (canPlayMp3 ? ',mp3' : ''),
                     VideoCodec: 'h264',
                     Context: 'Streaming'
                 });
@@ -311,40 +311,6 @@
                 }]
             });
 
-            if (!isVlc) {
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac',
-                    Container: 'mkv,mov',
-                    Conditions: [
-                        {
-                            Condition: 'NotEquals',
-                            Property: 'AudioProfile',
-                            Value: 'HE-AAC'
-                        }
-                        // Disabling this is going to require us to learn why it was disabled in the first place
-                        //,
-                        //{
-                        //    Condition: 'NotEquals',
-                        //    Property: 'AudioProfile',
-                        //    Value: 'LC'
-                        //}
-                    ]
-                });
-            }
-
-            profile.CodecProfiles.push({
-                Type: 'VideoAudio',
-                Codec: 'aac',
-                Conditions: [
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'AudioChannels',
-                        Value: '6'
-                    }
-                ]
-            });
-
             // These don't play very well
             if (isVlc) {
                 profile.CodecProfiles.push({
@@ -358,6 +324,69 @@
                         }
                     ]
                 });
+
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac,mp3',
+                    Conditions: [
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
+                        }
+                    ]
+                });
+
+            } else {
+
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac',
+                    Container: 'mkv,mov',
+                    Conditions: [
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'HE-AAC'
+                        },
+                        {
+                            Condition: 'Equals',
+                            Property: 'IsSecondaryAudio',
+                            Value: 'false',
+                            IsRequired: 'false'
+                        },
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
+                        }
+                        // Disabling this is going to require us to learn why it was disabled in the first place
+                        //,
+                        //{
+                        //    Condition: 'NotEquals',
+                        //    Property: 'AudioProfile',
+                        //    Value: 'LC'
+                        //}
+                    ]
+                });
+
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Conditions: [
+                        {
+                            Condition: 'Equals',
+                            Property: 'IsSecondaryAudio',
+                            Value: 'false',
+                            IsRequired: 'false'
+                        },
+                        {
+                            Condition: 'LessThanEqual',
+                            Property: 'AudioChannels',
+                            Value: '6'
+                        }
+                    ]
+                });
+
             }
 
             if (isVlc) {
@@ -543,6 +572,10 @@
 
         self.playNextAfterEnded = function () {
 
+            console.log('playNextAfterEnded');
+
+            Events.off(this, 'ended', self.playNextAfterEnded);
+
             self.nextTrack();
         };
 
@@ -661,16 +694,18 @@
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
             Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-            $(mediaRenderer).one("play", function () {
+            function onPlayingOnce() {
 
+                Events.off(this, "play", onPlayingOnce);
                 Events.on(this, 'ended', self.onPlaybackStopped);
 
-                $(this).one('ended', self.playNextAfterEnded);
+                Events.on(this, 'ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
+            }
 
-            });
+            Events.on(mediaRenderer, "play", onPlayingOnce);
 
             if (self.currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings(playSessionId).then(function () {
@@ -958,13 +993,9 @@
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
-                            if (mediaSource.RunTimeTicks) {
-                                // Reports of stuttering with h264 stream copy in IE
-                                mediaUrl += '&EnableAutoStreamCopy=false';
-                            }
-
                             mediaUrl += seekParam;
                             contentType = 'application/x-mpegURL';
+
                         } else {
 
                             // Reports of stuttering with h264 stream copy in IE
@@ -1044,7 +1075,7 @@
                     LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
 
                         resultInfo.url = path;
-                        Logger.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
+                        console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
                         deferred.resolveWith(null, [resultInfo]);
                     });
                 });
@@ -1086,7 +1117,7 @@
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
-                    Logger.log('Max bitrate auto detected to ' + bitrate);
+                    console.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
 
@@ -1295,7 +1326,7 @@
 
             if (newItem) {
 
-                Logger.log('playing next track');
+                console.log('playing next track');
 
                 self.playInternal(newItem, 0, function () {
                     self.setPlaylistState(newIndex);
@@ -1433,7 +1464,7 @@
 
             if (self.currentMediaRenderer) {
 
-                Logger.log('MediaPlayer toggling mute');
+                console.log('MediaPlayer toggling mute');
 
                 if (self.volume()) {
                     self.mute();
@@ -1462,7 +1493,7 @@
 
             if (self.currentMediaRenderer) {
 
-                Logger.log('MediaPlayer setting volume to ' + val);
+                console.log('MediaPlayer setting volume to ' + val);
                 self.currentMediaRenderer.volume(val / 100);
 
                 self.onVolumeChanged(self.currentMediaRenderer);
@@ -1550,25 +1581,23 @@
 
             if (mediaRenderer) {
 
-                mediaRenderer.stop();
-
                 Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                $(mediaRenderer).one("ended", function () {
-
-                    $(this).off('.mediaplayerevent');
-
-                    this.cleanup(destroyRenderer);
-
-                    self.currentMediaRenderer = null;
-                    self.currentItem = null;
-                    self.currentMediaSource = null;
-                    self.currentSubtitleStreamIndex = null;
-                    self.streamInfo = {};
-
-                });
+                mediaRenderer.stop();
 
                 Events.trigger(mediaRenderer, "ended");
+                //self.onPlaybackStopped.call(mediaRenderer);
+
+                // TODO: Unbind video events
+                unBindAudioEvents(mediaRenderer);
+
+                mediaRenderer.cleanup(destroyRenderer);
+
+                self.currentMediaRenderer = null;
+                self.currentItem = null;
+                self.currentMediaSource = null;
+                self.currentSubtitleStreamIndex = null;
+                self.streamInfo = {};
 
             } else {
                 self.currentMediaRenderer = null;
@@ -1582,6 +1611,14 @@
                 self.resetEnhancements();
             }
         };
+
+        function unBindAudioEvents(mediaRenderer) {
+
+            Events.off(mediaRenderer, "volumechange", onVolumeChange);
+            Events.off(mediaRenderer, "pause", onPause);
+            Events.off(mediaRenderer, "playing", onPlaying);
+            Events.off(mediaRenderer, "timeupdate", onTimeUpdate);
+        }
 
         self.isPlaying = function () {
             return self.playlist.length > 0;
@@ -1761,14 +1798,14 @@
 
         self.onPlaybackStopped = function () {
 
-            Logger.log('playback stopped');
+            console.log('playback stopped');
 
             document.body.classList.remove('bodyWithPopupOpen');
 
             var mediaRenderer = this;
 
-            Events.off(mediaRenderer, '.mediaplayerevent');
-
+            // TODO: Unbind other events
+            unBindAudioEvents(mediaRenderer);
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
 
             var item = self.currentItem;
@@ -1789,6 +1826,8 @@
         };
 
         self.onPlaystateChange = function (mediaRenderer) {
+
+            console.log('mediaplayer onPlaystateChange');
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
@@ -1939,44 +1978,24 @@
                     poster: self.getPosterUrl(item)
                 });
 
-                Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
+                function onPlayingOnce() {
 
-                    Logger.log('audio element event: volumechange');
+                    Events.off(mediaRenderer, "playing", onPlayingOnce);
 
-                    self.onVolumeChanged(this);
-
-                });
-
-                $(mediaRenderer).one("playing.mediaplayerevent", function () {
-
-                    Logger.log('audio element event: playing');
+                    console.log('audio element event: playing');
 
                     // For some reason this is firing at the start, so don't bind until playback has begun
-                    Events.on(this, 'ended', self.onPlaybackStopped);
+                    Events.on(mediaRenderer, 'ended', self.onPlaybackStopped);
+                    Events.on(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                    $(this).one('ended', self.playNextAfterEnded);
+                    self.onPlaybackStart(mediaRenderer, item, mediaSource);
+                }
 
-                    self.onPlaybackStart(this, item, mediaSource);
-
-                }).on("pause.mediaplayerevent", function () {
-
-                    Logger.log('audio element event: pause');
-
-                    self.onPlaystateChange(this);
-
-                    // In the event timeupdate isn't firing, at least we can update when this happens
-                    self.setCurrentTime(self.getCurrentTicks());
-
-                }).on("playing.mediaplayerevent", function () {
-
-                    Logger.log('audio element event: playing');
-
-                    self.onPlaystateChange(this);
-
-                    // In the event timeupdate isn't firing, at least we can update when this happens
-                    self.setCurrentTime(self.getCurrentTicks());
-
-                }).on("timeupdate.mediaplayerevent", onTimeUpdate);
+                Events.on(mediaRenderer, "volumechange", onVolumeChange);
+                Events.on(mediaRenderer, "playing", onPlayingOnce);
+                Events.on(mediaRenderer, "pause", onPause);
+                Events.on(mediaRenderer, "playing", onPlaying);
+                Events.on(mediaRenderer, "timeupdate", onTimeUpdate);
 
                 self.currentMediaRenderer = mediaRenderer;
                 self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
@@ -1992,6 +2011,34 @@
                     self.streamInfo = streamInfo;
                 });
             });
+        }
+
+        function onVolumeChange() {
+            console.log('audio element event: pause');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
+        }
+
+        function onPause() {
+
+            console.log('audio element event: pause');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
+        }
+
+        function onPlaying() {
+            console.log('audio element event: playing');
+
+            self.onPlaystateChange(this);
+
+            // In the event timeupdate isn't firing, at least we can update when this happens
+            self.setCurrentTime(self.getCurrentTicks());
         }
 
         var getItemFields = "MediaSources,Chapters";

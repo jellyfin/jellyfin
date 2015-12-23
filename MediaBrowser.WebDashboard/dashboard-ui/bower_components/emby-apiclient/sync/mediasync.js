@@ -34,7 +34,7 @@
 
         function reportOfflineActions(apiClient, serverInfo) {
 
-            Logger.log('Begin reportOfflineActions');
+            console.log('Begin reportOfflineActions');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -65,7 +65,7 @@
 
         function syncData(apiClient, serverInfo, syncUserItemAccess) {
 
-            Logger.log('Begin syncData');
+            console.log('Begin syncData');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -93,7 +93,7 @@
 
         function afterSyncData(apiClient, serverInfo, enableSyncUserItemAccess, syncDataResult, deferred) {
 
-            Logger.log('Begin afterSyncData');
+            console.log('Begin afterSyncData');
 
             removeLocalItems(syncDataResult, serverInfo.Id).then(function (result) {
 
@@ -115,7 +115,7 @@
 
         function removeLocalItems(syncDataResult, serverId) {
 
-            Logger.log('Begin removeLocalItems');
+            console.log('Begin removeLocalItems');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -144,7 +144,7 @@
 
         function removeLocalItem(itemId, serverId) {
 
-            Logger.log('Begin removeLocalItem');
+            console.log('Begin removeLocalItem');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -162,7 +162,7 @@
 
         function getNewMedia(apiClient, serverInfo, options) {
 
-            Logger.log('Begin getNewMedia');
+            console.log('Begin getNewMedia');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -199,7 +199,7 @@
 
         function getNewItem(jobItem, apiClient, serverInfo, options) {
 
-            Logger.log('Begin getNewItem');
+            console.log('Begin getNewItem');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -239,7 +239,7 @@
 
         function downloadMedia(apiClient, jobItem, localItem, options) {
 
-            Logger.log('Begin downloadMedia');
+            console.log('Begin downloadMedia');
             var deferred = DeferredBuilder.Deferred();
 
             require(['localassetmanager'], function () {
@@ -250,7 +250,7 @@
 
                 var localPath = localItem.LocalPath;
 
-                Logger.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
+                console.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
 
                 options = options || {};
 
@@ -275,7 +275,7 @@
 
         function getImages(apiClient, jobItem, localItem) {
 
-            Logger.log('Begin getImages');
+            console.log('Begin getImages');
             var deferred = DeferredBuilder.Deferred();
 
             getNextImage(0, apiClient, localItem, deferred);
@@ -285,7 +285,7 @@
 
         function getNextImage(index, apiClient, localItem, deferred) {
 
-            Logger.log('Begin getNextImage');
+            console.log('Begin getNextImage');
             if (index >= 4) {
 
                 deferred.resolve();
@@ -347,7 +347,7 @@
 
         function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
 
-            Logger.log('Begin downloadImage');
+            console.log('Begin downloadImage');
             var deferred = DeferredBuilder.Deferred();
 
             require(['localassetmanager'], function () {
@@ -379,13 +379,13 @@
 
         function getSubtitles(apiClient, jobItem, localItem) {
 
-            Logger.log('Begin getSubtitles');
+            console.log('Begin getSubtitles');
             var deferred = DeferredBuilder.Deferred();
 
             require(['localassetmanager'], function () {
 
                 if (!jobItem.Item.MediaSources.length) {
-                    logger.Error("Cannot download subtitles because video has no media source info.");
+                    console.log("Cannot download subtitles because video has no media source info.");
                     deferred.resolve();
                     return;
                 }
@@ -423,7 +423,7 @@
 
         function getItemSubtitle(file, apiClient, jobItem, localItem, mediaSource) {
 
-            Logger.log('Begin getItemSubtitle');
+            console.log('Begin getItemSubtitle');
             var deferred = DeferredBuilder.Deferred();
 
             var subtitleStream = mediaSource.MediaStreams.filter(function (m) {
@@ -433,7 +433,7 @@
             if (!subtitleStream) {
 
                 // We shouldn't get in here, but let's just be safe anyway
-                Logger.log("Cannot download subtitles because matching stream info wasn't found.");
+                console.log("Cannot download subtitles because matching stream info wasn't found.");
                 deferred.reject();
                 return;
             }
@@ -459,7 +459,7 @@
         }
 
         function syncUserItemAccess(syncDataResult, serverId) {
-            Logger.log('Begin syncUserItemAccess');
+            console.log('Begin syncUserItemAccess');
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -492,7 +492,7 @@
         }
 
         function syncUserAccessForItem(itemId, syncDataResult) {
-            Logger.log('Begin syncUserAccessForItem');
+            console.log('Begin syncUserAccessForItem');
 
             var deferred = DeferredBuilder.Deferred();
 

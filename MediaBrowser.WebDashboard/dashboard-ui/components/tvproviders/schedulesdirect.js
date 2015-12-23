@@ -162,7 +162,7 @@
                     if (options.showConfirmation !== false) {
                         Dashboard.processServerConfigurationUpdateResult();
                     }
-                    $(self).trigger('submitted');
+                    Events.trigger(self, 'submitted');
 
                 }, function () {
                     Dashboard.hideLoadingMsg();

@@ -21,7 +21,7 @@
 
                     photos = getFilesToUpload(photos, uploadHistory);
 
-                    Logger.log('Found ' + photos.length + ' files to upload');
+                    console.log('Found ' + photos.length + ' files to upload');
 
                     uploadNext(photos, 0, server, apiClient, deferred);
 
@@ -91,16 +91,16 @@
                     api_key: apiClient.accessToken()
                 });
 
-                Logger.log('Uploading file to ' + url);
+                console.log('Uploading file to ' + url);
 
                 new MediaBrowser.FileUpload().upload(file, name, url).then(function () {
 
-                    Logger.log('File upload succeeded');
+                    console.log('File upload succeeded');
                     deferred.resolve();
 
                 }, function () {
 
-                    Logger.log('File upload failed');
+                    console.log('File upload failed');
                     deferred.reject();
                 });
             });

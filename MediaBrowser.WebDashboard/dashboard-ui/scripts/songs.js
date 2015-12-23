@@ -74,8 +74,6 @@
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
 
-            Events.trigger(elem, 'create');
-
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
                 reloadItems(page, viewPanel);
