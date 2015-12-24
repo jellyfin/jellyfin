@@ -129,6 +129,7 @@
             var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
             var canPlayAac = supportedFormats.indexOf('aac') != -1;
             var canPlayMp3 = supportedFormats.indexOf('mp3') != -1;
+            var canPlayOpus = supportedFormats.indexOf('opus') != -1;
             var canPlayMkv = supportedFormats.indexOf('mkv') != -1;
 
             var profile = {};
@@ -166,19 +167,15 @@
                 });
             }
 
-            if (canPlayMp3) {
-                profile.DirectPlayProfiles.push({
-                    Container: 'mp3',
-                    Type: 'Audio'
-                });
-            }
+            ['opus', 'mp3', 'aac'].forEach(function(audioFormat){
 
-            if (canPlayAac) {
-                profile.DirectPlayProfiles.push({
-                    Container: 'aac',
-                    Type: 'Audio'
-                });
-            }
+            	if (supportedFormats.indexOf(audioFormat) != -1) {
+	            	profile.DirectPlayProfiles.push({
+	                    Container: audioFormat,
+	                    Type: 'Audio'
+                	});
+            	}
+            });
 
             var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
 
@@ -264,40 +261,25 @@
                 Protocol: 'http'
             });
 
-            if (canPlayAac && browserInfo.safari) {
+            ['opus', 'mp3', 'aac'].forEach(function(audioFormat){
 
-                profile.TranscodingProfiles.push({
-                    Container: 'aac',
-                    Type: 'Audio',
-                    AudioCodec: 'aac',
-                    Context: 'Streaming',
-                    Protocol: 'http'
-                });
-
-                profile.TranscodingProfiles.push({
-                    Container: 'aac',
-                    Type: 'Audio',
-                    AudioCodec: 'aac',
-                    Context: 'Static',
-                    Protocol: 'http'
-                });
-
-            } else {
-                profile.TranscodingProfiles.push({
-                    Container: 'mp3',
-                    Type: 'Audio',
-                    AudioCodec: 'mp3',
-                    Context: 'Streaming',
-                    Protocol: 'http'
-                });
-                profile.TranscodingProfiles.push({
-                    Container: 'mp3',
-                    Type: 'Audio',
-                    AudioCodec: 'mp3',
-                    Context: 'Static',
-                    Protocol: 'http'
-                });
-            }
+            	if (supportedFormats.indexOf(audioFormat) != -1) {
+	            	profile.TranscodingProfiles.push({
+	                    Container: audioFormat,
+	                    Type: 'Audio',
+	                    AudioCodec: audioFormat,
+	                    Context: 'Streaming',
+	                    Protocol: 'http'
+	                });
+	                profile.TranscodingProfiles.push({
+	                    Container: audioFormat,
+	                    Type: 'Audio',
+	                    AudioCodec: audioFormat,
+	                    Context: 'Static',
+	                    Protocol: 'http'
+	                });
+            	}
+            });
 
             profile.ContainerProfiles = [];
 
@@ -1917,6 +1899,9 @@
             }
             if (document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '')) {
                 list.push('mp3');
+            }
+            if (document.createElement('audio').canPlayType('audio/opus').replace(/no/, '')) {
+                list.push('opus');
             }
 
             if (browserInfo.chrome) {
