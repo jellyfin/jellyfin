@@ -175,19 +175,24 @@ namespace MediaBrowser.Dlna.Didl
             {
                 if (subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
                 {
-                    AddSubtitleElement(container, subtitle);
+                    var subtitleAdded = AddSubtitleElement(container, subtitle);
+
+					if (subtitleAdded && _profile.EnableSingleSubtitleLimit) 
+					{
+						break;
+					}
                 }
             }
         }
 
-        private void AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
+		private bool AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
         {
             var subtitleProfile = _profile.SubtitleProfiles
                 .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase) && i.Method == SubtitleDeliveryMethod.External);
 
             if (subtitleProfile == null)
             {
-                return;
+                return false;
             }
 
             var subtitleMode = subtitleProfile.DidlMode;
@@ -226,6 +231,8 @@ namespace MediaBrowser.Dlna.Didl
 
                 container.AppendChild(res);
             }
+
+			return true;
         }
 
         private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
