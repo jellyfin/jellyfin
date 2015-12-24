@@ -269,7 +269,7 @@ namespace MediaBrowser.Model.Dlna
             // HLS will preserve timestamps so we can just grab the full subtitle stream
             long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
                 ? 0
-                : StartPositionTicks;
+				: (this.PlayMethod == PlayMethod.Transcode ? StartPositionTicks : 0);
 
             // First add the selected track
             if (SubtitleStreamIndex.HasValue)
