@@ -70,6 +70,9 @@
 
         var header = document.querySelector('.viewMenuBar');
 
+        var headerUserButton = header.querySelector('.headerUserButton');
+        var hasImage;
+               
         if (user.name) {
             if (user.imageUrl && AppInfo.enableUserImage) {
 
@@ -81,13 +84,19 @@
                     url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                var headerUserButton = header.querySelector('.headerUserButton');
                 if (headerUserButton) {
                     headerUserButton.icon = null;
                     headerUserButton.src = url;
                     headerUserButton.classList.add('headerUserButtonRound');
+                    hasImage = true;
                 }
             }
+        }
+
+        if (hasUserButton && !hasImage) {
+        	headerUserButton.icon = 'person';
+            headerUserButton.src = null;
+            headerUserButton.classList.remove('headerUserButtonRound');
         }
 
         updateLocalUser(user.localUser);
