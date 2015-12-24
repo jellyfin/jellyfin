@@ -14,14 +14,29 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(1280, 2500000)
             };
 
-        public static ResolutionOptions Normalize(int maxBitrate,
-            string codec,
+        public static ResolutionOptions Normalize(int? inputBitrate,
+			int outputBitrate,
+			string inputCodec,
+            string outputCodec,
             int? maxWidth,
             int? maxHeight)
         {
-            foreach (var config in Configurations)
+			// If the bitrate isn't changing, then don't downlscale the resolution
+			if (inputBitrate.HasValue && outputBitrate >= inputBitrate.Value) 
+			{
+				if (maxWidth.HasValue || maxHeight.HasValue) 
+				{
+					return new ResolutionOptions
+					{
+						MaxWidth = maxWidth,
+						MaxHeight = maxHeight
+					};
+				}
+			}
+
+			foreach (var config in Configurations)
             {
-                if (maxBitrate <= config.MaxBitrate)
+				if (outputBitrate <= config.MaxBitrate)
                 {
                     var originvalValue = maxWidth;
 

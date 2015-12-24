@@ -82,7 +82,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (state.OutputVideoBitrate.HasValue)
                 {
-                    var resolution = ResolutionNormalizer.Normalize(state.OutputVideoBitrate.Value,
+                    var resolution = ResolutionNormalizer.Normalize(
+						state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
+						state.OutputVideoBitrate.Value,
+						state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
                         request.MaxWidth,
                         request.MaxHeight);
