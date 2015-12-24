@@ -222,6 +222,17 @@ namespace MediaBrowser.Providers.Subtitles
             });
         }
 
+		private string NormalizeLanguage(string language)
+		{
+			// Problem with Greek subtitle download #1349
+			if (string.Equals (language, "gre", StringComparison.OrdinalIgnoreCase)) {
+			
+				return "ell";
+			}
+
+			return language;
+		}
+
         public async Task<IEnumerable<RemoteSubtitleInfo>> Search(SubtitleSearchRequest request, CancellationToken cancellationToken)
         {
             var imdbIdText = request.GetProviderId(MetadataProviders.Imdb);
@@ -258,7 +269,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             await Login(cancellationToken).ConfigureAwait(false);
 
-            var subLanguageId = request.Language;
+			var subLanguageId = NormalizeLanguage(request.Language);
             var hash = Utilities.ComputeHash(request.MediaPath);
             var fileInfo = new FileInfo(request.MediaPath);
             var movieByteSize = fileInfo.Length;
