@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Providers
         public int? Year { get; set; }
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
+		public DateTime? PremiereDate { get; set; }
 
         public ItemLookupInfo()
         {
