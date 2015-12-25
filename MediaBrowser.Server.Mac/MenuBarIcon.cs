@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Mac
 			quitMenuItem.Title = localization.GetLocalizedString("LabelExit");
 			communityMenuItem.Title = localization.GetLocalizedString("LabelVisitCommunity");
 			browseMenuItem.Title = localization.GetLocalizedString("LabelBrowseLibrary");
-			configureMenuItem.Title = localization.GetLocalizedString("LabelConfigureMediaBrowser");
+			configureMenuItem.Title = localization.GetLocalizedString("LabelConfigureServer");
 		}
 	}
 }
