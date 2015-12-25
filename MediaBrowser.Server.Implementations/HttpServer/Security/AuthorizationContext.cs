@@ -175,11 +175,22 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
                 if (param.Length == 2)
                 {
-                    result.Add(param[0], param[1].Trim(new[] { '"' }));
+					var value = NormalizeValue (param[1].Trim(new[] { '"' }));
+                    result.Add(param[0], value);
                 }
             }
 
             return result;
         }
+
+		private string NormalizeValue(string value)
+		{
+			if (string.IsNullOrWhiteSpace (value)) 
+			{
+				return value;
+			}
+
+			return System.Net.WebUtility.HtmlEncode(value);
+		}
     }
 }
