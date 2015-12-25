@@ -161,9 +161,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-            var seriesXmlFilename = metadataLanguage.ToLower() + ".xml";
-
-            var seriesXmlPath = Path.Combine(seriesDataPath, seriesXmlFilename);
+			var seriesXmlPath = GetSeriesXmlPath (seriesProviderIds, metadataLanguage);
             var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
 
             FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
@@ -1277,6 +1275,15 @@ namespace MediaBrowser.Providers.TV
 
             return null;
         }
+
+		public string GetSeriesXmlPath(Dictionary<string, string> seriesProviderIds, string language)
+		{
+			var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+
+			var seriesXmlFilename = language.ToLower() + ".xml";
+
+			return Path.Combine (seriesDataPath, seriesXmlFilename);
+		}
 
         /// <summary>
         /// Gets the series data path.
