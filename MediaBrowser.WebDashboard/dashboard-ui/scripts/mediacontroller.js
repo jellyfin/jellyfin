@@ -286,9 +286,9 @@
             };
         };
 
-        function triggerPlayerChange(newPlayer, newTarget) {
+        function triggerPlayerChange(newPlayer, newTarget, previousPlayer) {
 
-            Events.trigger(self, 'playerchange', [newPlayer, newTarget]);
+            Events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
         }
 
         self.setActivePlayer = function (player, targetInfo) {
@@ -303,13 +303,15 @@
                 throw new Error('null player');
             }
 
+            var previousPlayer = currentPlayer;
+
             currentPairingId = null;
             currentPlayer = player;
             currentTargetInfo = targetInfo;
 
             console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
-            triggerPlayerChange(player, targetInfo);
+            triggerPlayerChange(player, targetInfo, previousPlayer);
         };
 
         var currentPairingId = null;
@@ -333,12 +335,14 @@
 
             player.tryPair(targetInfo).then(function () {
 
+                var previousPlayer = currentPlayer;
+
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
 
                 console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
-                triggerPlayerChange(player, targetInfo);
+                triggerPlayerChange(player, targetInfo, previousPlayer);
             });
         };
 
