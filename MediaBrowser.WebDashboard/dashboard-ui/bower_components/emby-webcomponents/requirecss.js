@@ -26,16 +26,16 @@ define(function () {
     requireCss.load = function (cssId, req, load, config) {
 
         // Somehow if the url starts with /css, require will get all screwed up since this extension is also called css
-        cssId = cssId.replace('components/requirecss', 'css');
+        var srch = '/emby-webcomponents/requirecss';
+        var index = cssId.indexOf(srch);
+
+        if (index != -1) {
+            cssId = 'css' + cssId.substring(index + srch.length);
+        }
+
         var url = cssId + '.css';
 
         var packageName = '';
-
-        // TODO: handle any value before the #
-        if (url.indexOf('theme#') != -1) {
-            url = url.replace('theme#', '');
-            packageName = 'theme';
-        }
 
         if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
             url = config.baseUrl + url;

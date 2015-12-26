@@ -1,4 +1,4 @@
-/*! Hammer.JS - v2.0.4 - 2015-12-22
+/*! Hammer.JS - v2.0.6 - 2015-12-23
  * http://hammerjs.github.io/
  *
  * Copyright (c) 2015 Jorik Tangelder;
@@ -72,14 +72,68 @@ function each(obj, iterator, context) {
 }
 
 /**
+ * wrap a method with a deprecation warning and stack trace
+ * @param {Function} method
+ * @param {String} name
+ * @param {String} message
+ * @returns {Function} A new function wrapping the supplied method.
+ */
+function deprecate(method, name, message) {
+    var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
+    return function() {
+        var e = new Error('get-stack-trace');
+        var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+            .replace(/^\s+at\s+/gm, '')
+            .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@') : 'Unknown Stack Trace';
+
+        var log = window.console && (window.console.warn || window.console.log);
+        if (log) {
+            log.call(window.console, deprecationMessage, stack);
+        }
+        return method.apply(this, arguments);
+    };
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param {Object} target
+ * @param {...Object} objects_to_assign
+ * @returns {Object} target
+ */
+var assign;
+if (typeof Object.assign !== 'function') {
+    assign = function assign(target) {
+        if (target === undefined || target === null) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        var output = Object(target);
+        for (var index = 1; index < arguments.length; index++) {
+            var source = arguments[index];
+            if (source !== undefined && source !== null) {
+                for (var nextKey in source) {
+                    if (source.hasOwnProperty(nextKey)) {
+                        output[nextKey] = source[nextKey];
+                    }
+                }
+            }
+        }
+        return output;
+    };
+} else {
+    assign = Object.assign;
+}
+
+/**
  * extend object.
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean} [merge]
+ * @param {Boolean=false} [merge]
  * @returns {Object} dest
  */
-function extend(dest, src, merge) {
+var extend = deprecate(function extend(dest, src, merge) {
     var keys = Object.keys(src);
     var i = 0;
     while (i < keys.length) {
@@ -89,7 +143,7 @@ function extend(dest, src, merge) {
         i++;
     }
     return dest;
-}
+}, 'extend', 'Use `assign`.');
 
 /**
  * merge the values from src in the dest.
@@ -98,9 +152,9 @@ function extend(dest, src, merge) {
  * @param {Object} src
  * @returns {Object} dest
  */
-function merge(dest, src) {
+var merge = deprecate(function merge(dest, src) {
     return extend(dest, src, true);
-}
+}, 'merge', 'Use `assign`.');
 
 /**
  * simple class inheritance
@@ -117,7 +171,7 @@ function inherit(child, base, properties) {
     childP._super = baseP;
 
     if (properties) {
-        extend(childP, properties);
+        assign(childP, properties);
     }
 }
 
@@ -1284,13 +1338,11 @@ var STATE_FAILED = 32;
  * @param {Object} options
  */
 function Recognizer(options) {
-    // make sure, options are copied over to a new object to prevent leaking it outside
-    options = extend({}, options || {});
+    this.options = assign({}, this.defaults, options || {});
 
     this.id = uniqueId();
 
     this.manager = null;
-    this.options = merge(options, this.defaults);
 
     // default is enable true
     this.options.enable = ifUndefined(this.options.enable, true);
@@ -1314,7 +1366,7 @@ Recognizer.prototype = {
      * @return {Recognizer}
      */
     set: function(options) {
-        extend(this.options, options);
+        assign(this.options, options);
 
         // also update the touchAction, in case something changed about the directions/enabled state
         this.manager && this.manager.touchAction.update();
@@ -1475,7 +1527,7 @@ Recognizer.prototype = {
     recognize: function(inputData) {
         // make a new copy of the inputData
         // so we can change the inputData without messing up the other recognizers
-        var inputDataClone = extend({}, inputData);
+        var inputDataClone = assign({}, inputData);
 
         // is is enabled and allow recognizing?
         if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
@@ -2040,7 +2092,7 @@ function Hammer(element, options) {
 /**
  * @const {string}
  */
-Hammer.VERSION = '2.0.4';
+Hammer.VERSION = '2.0.6';
 
 /**
  * default settings
@@ -2164,8 +2216,7 @@ var FORCED_STOP = 2;
  * @constructor
  */
 function Manager(element, options) {
-    var newOptions = options ? extend({}, options) : {};
-    this.options = merge(newOptions, Hammer.defaults);
+    this.options = assign({}, Hammer.defaults, options || {});
 
     this.options.inputTarget = this.options.inputTarget || element;
 
@@ -2193,7 +2244,7 @@ Manager.prototype = {
      * @returns {Manager}
      */
     set: function(options) {
-        extend(this.options, options);
+        assign(this.options, options);
 
         // Options that need a little more setup
         if (options.touchAction) {
@@ -2446,7 +2497,7 @@ function triggerDomEvent(event, data) {
     data.target.dispatchEvent(gestureEvent);
 }
 
-extend(Hammer, {
+assign(Hammer, {
     INPUT_START: INPUT_START,
     INPUT_MOVE: INPUT_MOVE,
     INPUT_END: INPUT_END,
@@ -2493,6 +2544,7 @@ extend(Hammer, {
     each: each,
     merge: merge,
     extend: extend,
+    assign: assign,
     inherit: inherit,
     bindFn: bindFn,
     prefixed: prefixed

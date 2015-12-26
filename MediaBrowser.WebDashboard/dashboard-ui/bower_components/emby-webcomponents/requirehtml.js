@@ -1,46 +1,46 @@
 define(function () {
-    var cssAPI = {};
-
-    cssAPI.normalize = function (name, normalize) {
-        if (name.substr(name.length - 5, 5) == '.html')
-            name = name.substr(0, name.length - 5);
-
-        return normalize(name);
-    }
 
     var importedFiles = [];
 
-    cssAPI.load = function (cssId, req, load, config) {
+    return {
 
-        // Somehow if the url starts with /css, require will get all screwed up since this extension is also called css
-        cssId = cssId.replace('js/requirehtml', 'html');
+        load: function (cssId, req, load, config) {
 
-        var url = cssId + '.html';
+            // Somehow if the url starts with /html, require will get all screwed up since this extension is also called html
+            cssId = cssId.replace('js/requirehtml', 'html');
 
-        if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
-            url = config.baseUrl + url;
-        }
+            var url = cssId + '.html';
 
-        if (importedFiles.indexOf(url) == -1) {
-            importedFiles.push(url);
-
-            var link = document.createElement('link');
-            link.rel = 'import';
-
-            if (url.toLowerCase().indexOf('bower_') == -1) {
-                url = url + "?" + config.urlArgs;
+            if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
+                url = config.baseUrl + url;
             }
 
-            link.onload = load;
-            link.href = url;
+            if (importedFiles.indexOf(url) == -1) {
+                importedFiles.push(url);
 
-            document.head.appendChild(link);
+                var link = document.createElement('link');
+                link.rel = 'import';
 
-            return;
+                if (url.toLowerCase().indexOf('bower_') == -1) {
+                    url = url + "?" + config.urlArgs;
+                }
+
+                link.onload = load;
+                link.href = url;
+
+                document.head.appendChild(link);
+
+                return;
+            }
+
+            load();
+        },
+
+        normalize: function (name, normalize) {
+            if (name.substr(name.length - 5, 5) == '.html')
+                name = name.substr(0, name.length - 5);
+
+            return normalize(name);
         }
-
-        load();
-    }
-
-    return cssAPI;
+    };
 });

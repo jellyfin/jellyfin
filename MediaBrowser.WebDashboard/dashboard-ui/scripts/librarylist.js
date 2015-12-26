@@ -892,11 +892,10 @@
 
             showSelections(card);
 
-            if (s.stopPropagation) {
+            if (e.stopPropagation) {
                 e.stopPropagation();
             }
             e.preventDefault();
-            e.stopPropagation();
             return false;
         }
         e.preventDefault();
@@ -949,19 +948,17 @@
 
         if (!itemSelectionPanel) {
 
-            require(['paper-checkbox'], function () {
-                itemSelectionPanel = document.createElement('div');
-                itemSelectionPanel.classList.add('itemSelectionPanel');
+            itemSelectionPanel = document.createElement('div');
+            itemSelectionPanel.classList.add('itemSelectionPanel');
 
-                item.querySelector('.cardContent').appendChild(itemSelectionPanel);
+            item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-                var chkItemSelect = document.createElement('paper-checkbox');
-                chkItemSelect.classList.add('chkItemSelect');
+            var chkItemSelect = document.createElement('paper-checkbox');
+            chkItemSelect.classList.add('chkItemSelect');
 
-                $(chkItemSelect).on('change', onSelectionChange);
+            $(chkItemSelect).on('change', onSelectionChange);
 
-                itemSelectionPanel.appendChild(chkItemSelect);
-            });
+            itemSelectionPanel.appendChild(chkItemSelect);
         }
     }
 
@@ -1018,14 +1015,16 @@
 
     function showSelections(initialCard) {
 
-        var cards = document.querySelectorAll('.card');
-        for (var i = 0, length = cards.length; i < length; i++) {
-            showSelection(cards[i]);
-        }
+        require(['paper-checkbox'], function() {
+            var cards = document.querySelectorAll('.card');
+            for (var i = 0, length = cards.length; i < length; i++) {
+                showSelection(cards[i]);
+            }
 
-        showSelectionCommands();
-        initialCard.querySelector('.chkItemSelect').checked = true;
-        updateItemSelection(initialCard, true);
+            showSelectionCommands();
+            initialCard.querySelector('.chkItemSelect').checked = true;
+            updateItemSelection(initialCard, true);
+        });
     }
 
     function hideSelections() {
