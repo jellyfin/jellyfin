@@ -129,7 +129,6 @@
             var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
             var canPlayAac = supportedFormats.indexOf('aac') != -1;
             var canPlayMp3 = supportedFormats.indexOf('mp3') != -1;
-            var canPlayOpus = supportedFormats.indexOf('opus') != -1;
             var canPlayMkv = supportedFormats.indexOf('mkv') != -1;
 
             var profile = {};
@@ -1900,7 +1899,8 @@
             if (document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '')) {
                 list.push('mp3');
             }
-            if (document.createElement('audio').canPlayType('audio/opus').replace(/no/, '')) {
+
+            if (document.createElement('audio').canPlayType('audio/ogg; codecs="opus"').replace(/no/, '')) {
                 list.push('opus');
             }
 
