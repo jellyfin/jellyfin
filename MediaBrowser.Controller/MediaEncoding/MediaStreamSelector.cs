@@ -50,6 +50,22 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (mode == SubtitlePlaybackMode.Default)
             {
+                // Prefer embedded metadata over smart logic
+
+                stream = streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                    streams.FirstOrDefault(s => s.IsForced) ??
+                    streams.FirstOrDefault(s => s.IsDefault);
+
+                // if the audio language is not understood by the user, load their preferred subs, if there are any
+                if (stream == null && !ContainsOrdinal(preferredLanguages, audioTrackLanguage))
+                {
+                    stream = streams.Where(s => !s.IsForced).FirstOrDefault(s => ContainsOrdinal(preferredLanguages, s.Language));
+                }
+            }
+            else if (mode == SubtitlePlaybackMode.Smart)
+            {
+                // Prefer smart logic over embedded metadata
+
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (!ContainsOrdinal(preferredLanguages, audioTrackLanguage))
                 {
@@ -60,6 +76,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // always load the most suitable full subtitles
                 stream = streams.FirstOrDefault(s => !s.IsForced);
+            }
+            else if (mode == SubtitlePlaybackMode.OnlyForced)
+            {
+                // always load the most suitable full subtitles
+                stream = streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                    streams.FirstOrDefault(s => s.IsForced);
             }
 
             // load forced subs if we have found no suitable full subtitles
@@ -112,6 +134,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (mode == SubtitlePlaybackMode.Default)
             {
+                // Prefer embedded metadata over smart logic
+
+                filteredStreams = streams.Where(s => s.IsForced || s.IsDefault)
+                    .ToList();
+            }
+            else if (mode == SubtitlePlaybackMode.Smart)
+            {
+                // Prefer smart logic over embedded metadata
+
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (!ContainsOrdinal(preferredLanguages, audioTrackLanguage))
                 {
@@ -124,6 +155,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // always load the most suitable full subtitles
                 filteredStreams = streams.Where(s => !s.IsForced)
                     .ToList();
+            }
+            else if (mode == SubtitlePlaybackMode.OnlyForced)
+            {
+                // always load the most suitable full subtitles
+                filteredStreams = streams.Where(s => s.IsForced).ToList();
             }
 
             // load forced subs if we have found no suitable full subtitles
@@ -148,6 +184,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             values.Add(index == -1 ? 0 : 100 - index);
 
+            values.Add(stream.IsForced ? 1 : 0);
             values.Add(stream.IsDefault ? 1 : 0);
             values.Add(stream.SupportsExternalStream ? 1 : 0);
             values.Add(stream.IsTextSubtitleStream ? 1 : 0);
