@@ -11,7 +11,7 @@ namespace MediaBrowser.Common.Net
         /// Gets the machine's local ip address
         /// </summary>
         /// <returns>IPAddress.</returns>
-        IEnumerable<string> GetLocalIpAddresses();
+		IEnumerable<IPAddress> GetLocalIpAddresses();
 
         /// <summary>
         /// Gets a random port number that is currently available

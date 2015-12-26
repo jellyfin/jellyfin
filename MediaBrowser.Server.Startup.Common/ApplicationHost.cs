@@ -1154,6 +1154,7 @@ namespace MediaBrowser.Server.Startup.Common
             get
             {
                 var localAddresses = NetworkManager.GetLocalIpAddresses()
+					.Select(i => i.ToString())
                     .ToList();
 
                 var httpServerAddresses = HttpServer.LocalEndPoints
