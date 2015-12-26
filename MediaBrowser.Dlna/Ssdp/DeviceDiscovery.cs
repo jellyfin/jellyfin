@@ -11,6 +11,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
@@ -54,16 +55,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
 				try
 				{
-					_logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
+					_logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
 					var properties = network.GetIPProperties();
-					var ipV4 = properties.GetIPv4Properties();
-					if (null == ipV4)
-						return new List<IPAddress>();
 
 					return properties.UnicastAddresses
-						.Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(i.Address))
-						.Select(i => i.Address)
+                        .Select(i => i.Address)
+						.Where(i => i.AddressFamily == AddressFamily.InterNetwork)
 						.ToList();
 				}
 				catch (Exception ex)
@@ -73,7 +71,7 @@ namespace MediaBrowser.Dlna.Ssdp
 				}
 
 			})
-				.Distinct()
+                .DistinctBy(i => i.ToString())
 				.ToList();
 		}
 
