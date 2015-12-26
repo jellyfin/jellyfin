@@ -62,9 +62,9 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.5824.30558, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SocketHttpListener, Version=1.0.5838.2396, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SocketHttpListener.1.0.0.17\lib\net45\SocketHttpListener.dll</HintPath>
+      <HintPath>..\packages\SocketHttpListener.1.0.0.19\lib\net45\SocketHttpListener.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -163,6 +163,7 @@
     <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\SocketSharp\HttpUtility.cs" />
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
