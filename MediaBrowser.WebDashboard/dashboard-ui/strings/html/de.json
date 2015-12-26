@@ -1,4 +1,6 @@
 {
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -895,7 +897,7 @@
     "OptionMyMediaButtons": "Meine Medien (Schaltfl\u00e4chen)",
     "OptionMyMedia": "Meine Medien",
     "OptionMyMediaSmall": "Meine Medien (Klein)",
-    "OptionResumablemedia": "Wiederhole",
+    "OptionResumablemedia": "Fortsetzen",
     "OptionLatestMedia": "Neuste Medien",
     "OptionLatestChannelMedia": "Neueste Channel Inhalte:",
     "HeaderLatestChannelItems": "Neueste Channel Inhalte:",
