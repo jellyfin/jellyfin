@@ -336,24 +336,6 @@
         });
     };
 
-    var endpointInfo;
-    function getEndpointInfo() {
-
-        if (endpointInfo) {
-
-            return new Promise(function (resolve, reject) {
-
-                resolve(endpointInfo);
-            });
-        }
-
-        return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
-
-            endpointInfo = info;
-            return info;
-        });
-    }
-
     CastPlayer.prototype.sendMessage = function (message) {
 
         var player = this;
@@ -376,17 +358,12 @@
             supportsAc3: AppSettings.enableChromecastAc3()
         });
 
-        getEndpointInfo().then(function (endpoint) {
+        require(['chromecasthelpers'], function (chromecasthelpers) {
 
-            if (endpoint.IsInNetwork) {
-                ApiClient.getPublicSystemInfo().then(function (info) {
-
-                    message.serverAddress = info.LocalAddress;
-                    player.sendMessageInternal(message);
-                });
-            } else {
+            chromecasthelpers.getServerAddress(ApiClient).then(function (serverAddress) {
+                message.serverAddress = serverAddress;
                 player.sendMessageInternal(message);
-            }
+            });
         });
     };
 
