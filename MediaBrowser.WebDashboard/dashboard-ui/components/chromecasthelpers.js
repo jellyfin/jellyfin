@@ -270,7 +270,7 @@
             });
         }
 
-        var cachedValue = cache[serverAddress];
+        var cachedValue = getCachedValue(serverAddress);
         if (cachedValue) {
             return new Promise(function (resolve, reject) {
 
@@ -281,11 +281,11 @@
         return apiClient.getJSON(apiClient.getUrl('System/Endpoint')).then(function (endpoint) {
             if (endpoint.IsInNetwork) {
                 return apiClient.getPublicSystemInfo().then(function (info) {
-                    cache[serverAddress] = info.LocalAddress;
+                    addToCache(serverAddress, info.LocalAddress);
                     return info.LocalAddress;
                 });
             } else {
-                cache[serverAddress] = serverAddress;
+                addToCache(serverAddress, serverAddress);
                 return serverAddress;
             }
         });
@@ -295,9 +295,26 @@
         cache = {};
     }
 
+    function addToCache(key, value) {
+        cache[key] = {
+            value: value,
+            time: new Date().getTime()
+        };
+    }
+
+    function getCachedValue(key) {
+
+        var obj = cache[key];
+
+        if (obj && (new Date().getTime() - obj.time) < 180000) {
+            return obj.value;
+        }
+
+        return null;
+    }
+
     Events.on(ConnectionManager, 'localusersignedin', clearCache);
     Events.on(ConnectionManager, 'localusersignedout', clearCache);
-    setInterval(clearCache, 180000);
 
     return {
         getServerAddress: getServerAddress
