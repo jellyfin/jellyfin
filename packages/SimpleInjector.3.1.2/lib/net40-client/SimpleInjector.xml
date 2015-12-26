@@ -4478,7 +4478,8 @@
         <member name="T:SimpleInjector.Scope">
             <summary>Implements a cache for <see cref="T:SimpleInjector.ScopedLifestyle"/> implementations.</summary>
             <remarks>
-            <see cref="T:SimpleInjector.Scope"/> is thread-safe can be used over multiple threads concurrently.
+            <see cref="T:SimpleInjector.Scope"/> is thread-safe can be used over multiple threads concurrently, but note that the
+            cached instances might not be thread-safe.
             </remarks>
         </member>
         <member name="M:SimpleInjector.Scope.WhenScopeEnds(System.Action)">
