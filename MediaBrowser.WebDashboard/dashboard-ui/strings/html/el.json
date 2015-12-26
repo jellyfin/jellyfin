@@ -1,4 +1,6 @@
 {
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "\u0388\u03be\u03bf\u03b4\u03bf\u03c2",
     "LabelVisitCommunity": "\u039a\u03bf\u03b9\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1",
     "LabelGithub": "Github",
@@ -139,7 +141,7 @@
     "OptionOnlyForcedSubtitles": "Only forced subtitles",
     "OptionAlwaysPlaySubtitles": "\u03a0\u03ac\u03bd\u03c4\u03b1 \u03b1\u03bd\u03b1\u03c0\u03b1\u03c1\u03b1\u03b3\u03c9\u03b3\u03ae \u03a5\u03c0\u03bf\u03c4\u03af\u03c4\u03bb\u03c9\u03bd",
     "OptionNoSubtitles": "\u03a7\u03c9\u03c1\u03af\u03c2 \u03a5\u03c0\u03cc\u03c4\u03b9\u03c4\u03bb\u03bf\u03c5\u03c2",
-    "OptionDefaultSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
+    "OptionDefaultSubtitlesHelp": "Subtitles are loaded based on the default and forced flags in the embedded metadata. Language preferences are considered when multiple options are available.",
     "OptionOnlyForcedSubtitlesHelp": "Only subtitles marked as forced will be loaded.",
     "OptionAlwaysPlaySubtitlesHelp": "Subtitles matching the language preference will be loaded regardless of the audio language.",
     "OptionNoSubtitlesHelp": "Subtitles will not be loaded by default.",

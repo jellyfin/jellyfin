@@ -1,4 +1,6 @@
 {
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "\uc885\ub8cc",
     "LabelVisitCommunity": "\ucee4\ubba4\ub2c8\ud2f0 \ubc29\ubb38",
     "LabelGithub": "Github",

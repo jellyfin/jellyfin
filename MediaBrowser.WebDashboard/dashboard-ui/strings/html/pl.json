@@ -1,4 +1,6 @@
 {
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -1072,7 +1074,7 @@
     "OptionPrimary": "Priorytetowy",
     "OptionArt": "Art",
     "OptionBox": "Pude\u0142ko",
-    "OptionBoxRear": "Box rear",
+    "OptionBoxRear": "Ty pudeka",
     "OptionDisc": "Dysk",
     "OptionIcon": "Ikona",
     "OptionLogo": "Logo",
@@ -1286,7 +1288,7 @@
     "OptionTrailersFromMyMoviesHelp": "Wymaga ustawienia lokalnych trailer\u00f3w.",
     "LabelCustomIntrosPath": "W\u0142asna \u015bcie\u017cka do intra:",
     "LabelCustomIntrosPathHelp": "Folder zawieraj\u0105cy pliki wideo. Film zostanie losowo wybrany i odtworzony po zagraniu zapowiedzi.",
-    "ValueSpecialEpisodeName": "Special - {0}",
+    "ValueSpecialEpisodeName": "Specjalny - {0}",
     "LabelSelectInternetTrailersForCinemaMode": "Zwiastuny internetowe:",
     "OptionUpcomingDvdMovies": "Do\u0142\u0105cz zwiastuny z nowych i nadchodz\u0105cych film\u00f3w DVD i Blu-Ray",
     "OptionUpcomingStreamingMovies": "Do\u0142\u0105cz zwiastuny z nowych i nadchodz\u0105cych film\u00f3w z Netflix",
@@ -1355,7 +1357,7 @@
     "MessageGuestSharingPermissionsHelp": "Wi\u0119kszo\u015b\u0107 opcji jest wst\u0119pnie nieaktywna dla go\u015bci ale mo\u017ce zosta\u0107 aktywowana wedle potrzeby.",
     "HeaderInvitations": "Zaproszenia",
     "LabelForgotPasswordUsernameHelp": "Podaj nazw\u0119 u\u017cytkownika, je\u015bli pami\u0119tasz.",
-    "HeaderForgotPassword": "Forgot Password",
+    "HeaderForgotPassword": "Zapomnia\u0142e\u015b has\u0142o",
     "TitleForgotPassword": "Zapomnia\u0142-(am\/em) has\u0142a",
     "TitlePasswordReset": "Zresetuj has\u0142o",
     "LabelPasswordRecoveryPinCode": "Kod pin:",
@@ -1524,6 +1526,6 @@
     "LabelFolder": "Folder:",
     "HeadersFolders": "Foldery",
     "LabelDisplayName": "Wy\u015bwietlaj nazw\u0119:",
-    "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "HeaderNewRecording": "Nowe nagranie",
+    "ButtonAdvanced": "Zaawansowane"
 }

@@ -1,4 +1,6 @@
 {
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "Izlaz",
     "LabelVisitCommunity": "Posjeti zajednicu",
     "LabelGithub": "Github",
@@ -139,7 +141,7 @@
     "OptionOnlyForcedSubtitles": "Only forced subtitles",
     "OptionAlwaysPlaySubtitles": "Always play subtitles",
     "OptionNoSubtitles": "Nema titlova",
-    "OptionDefaultSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
+    "OptionDefaultSubtitlesHelp": "Subtitles are loaded based on the default and forced flags in the embedded metadata. Language preferences are considered when multiple options are available.",
     "OptionOnlyForcedSubtitlesHelp": "Only subtitles marked as forced will be loaded.",
     "OptionAlwaysPlaySubtitlesHelp": "Subtitles matching the language preference will be loaded regardless of the audio language.",
     "OptionNoSubtitlesHelp": "Subtitles will not be loaded by default.",
