@@ -2267,6 +2267,8 @@ var AppInfo = {};
                 postInitDependencies.push('cordova/ios/tabbar');
             }
 
+            postInitDependencies.push('components/remotecontrolautoplay');
+
             require(postInitDependencies);
         });
     }
