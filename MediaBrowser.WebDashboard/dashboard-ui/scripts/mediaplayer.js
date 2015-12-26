@@ -166,11 +166,11 @@
                 });
             }
 
-            ['opus', 'mp3', 'aac'].forEach(function(audioFormat){
+            ['opus', 'mp3', 'aac', 'webma'].forEach(function(audioFormat){
 
             	if (supportedFormats.indexOf(audioFormat) != -1) {
 	            	profile.DirectPlayProfiles.push({
-	                    Container: audioFormat,
+	            	    Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
 	                    Type: 'Audio'
                 	});
             	}
@@ -189,10 +189,6 @@
                 profile.DirectPlayProfiles.push({
                     Container: 'webm',
                     Type: 'Video'
-                });
-                profile.DirectPlayProfiles.push({
-                    Container: 'webm,webma',
-                    Type: 'Audio'
                 });
             }
 
@@ -1902,6 +1898,10 @@
 
             if (document.createElement('audio').canPlayType('audio/ogg; codecs="opus"').replace(/no/, '')) {
                 list.push('opus');
+            }
+
+            if (document.createElement('audio').canPlayType('audio/webm').replace(/no/, '')) {
+                list.push('webma');
             }
 
             if (browserInfo.chrome) {
