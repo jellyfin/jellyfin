@@ -33,12 +33,14 @@ namespace MediaBrowser.Providers.MediaInfo
             var streams = new List<MediaStream>();
 
             var videoFileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(video.Path);
+            videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoFileNameWithoutExtension);
 
             foreach (var file in files)
             {
                 var fullName = file.FullName;
 
                 var fileNameWithoutExtension = _fileSystem.GetFileNameWithoutExtension(file);
+                fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fileNameWithoutExtension);
 
                 var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
 
@@ -58,6 +60,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var isForced = fullName.IndexOf(".forced.", StringComparison.OrdinalIgnoreCase) != -1 ||
                         fullName.IndexOf(".foreign.", StringComparison.OrdinalIgnoreCase) != -1;
+
+                    var isDefault = fullName.IndexOf(".default.", StringComparison.OrdinalIgnoreCase) != -1;
 
                     // Support xbmc naming conventions - 300.spanish.srt
                     var language = fileNameWithoutExtension
@@ -84,12 +88,25 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = fullName,
                         Codec = codec,
                         Language = language,
-                        IsForced = isForced
+                        IsForced = isForced,
+                        IsDefault = isDefault
                     });
                 }
             }
 
             return streams;
+        }
+
+        private string NormalizeFilenameForSubtitleComparison(string filename)
+        {
+            // Try to account for sloppy file naming
+            filename = filename.Replace("-", string.Empty);
+            filename = filename.Replace("_", string.Empty);
+            filename = filename.Replace(" ", string.Empty);
+
+            //filename = filename.Replace(".", string.Empty);
+
+            return filename;
         }
 
         private static IEnumerable<string> SubtitleExtensions
