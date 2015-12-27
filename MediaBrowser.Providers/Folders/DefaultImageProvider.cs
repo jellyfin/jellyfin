@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "tv.jpg";
+                //return urlPrefix + "tv.jpg";
             }
             if (string.Equals(viewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "movies.jpg";
+                //return urlPrefix + "movies.jpg";
             }
             if (string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
