@@ -122,10 +122,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitle = await GetSubtitleStream(itemId, mediaSourceId, subtitleStreamIndex, cancellationToken)
                         .ConfigureAwait(false);
 
+            var inputFormat = subtitle.Item2;
+
+            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase) && TryGetWriter(outputFormat) == null)
+            {
+                return subtitle.Item1;
+            }
+
             using (var stream = subtitle.Item1)
             {
-                var inputFormat = subtitle.Item2;
-
                 return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -288,7 +293,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return null;
         }
 
-        private ISubtitleWriter GetWriter(string format)
+        private ISubtitleWriter TryGetWriter(string format)
         {
             if (string.IsNullOrEmpty(format))
             {
@@ -310,6 +315,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
             {
                 return new TtmlWriter();
+            }
+
+            return null;
+        }
+
+        private ISubtitleWriter GetWriter(string format)
+        {
+            var writer = TryGetWriter(format);
+
+            if (writer != null)
+            {
+                return writer;
             }
 
             throw new ArgumentException("Unsupported format: " + format);
