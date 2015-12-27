@@ -436,7 +436,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, "Emby", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, "Emby", "web/index.html");
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -1146,6 +1146,7 @@ namespace MediaBrowser.Server.Startup.Common
             get
             {
                 var localAddresses = NetworkManager.GetLocalIpAddresses()
+                    .Select(i => i.ToString())
                     .ToList();
 
                 var httpServerAddresses = HttpServer.LocalEndPoints

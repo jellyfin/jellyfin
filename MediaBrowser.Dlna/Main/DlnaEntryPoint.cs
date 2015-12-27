@@ -150,11 +150,12 @@ namespace MediaBrowser.Dlna.Main
         {
             foreach (var address in _network.GetLocalIpAddresses())
             {
-                var guid = address.GetMD5();
+				var addressString = address.ToString ();
+				var guid = addressString.GetMD5();
 
                 var descriptorURI = "/dlna/" + guid.ToString("N") + "/description.xml";
 
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorURI);
+				var uri = new Uri(_appHost.GetLocalApiUrl(addressString) + descriptorURI);
 
                 var services = new List<string>
                 {
@@ -166,7 +167,7 @@ namespace MediaBrowser.Dlna.Main
                     "uuid:" + guid.ToString("N")
                 };
                 
-                _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address), services);
+				_ssdpHandler.RegisterNotification(guid, uri, address, services);
 
                 _registeredServerIds.Add(guid.ToString("N"));
             }
