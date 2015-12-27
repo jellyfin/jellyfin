@@ -233,8 +233,5 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>null</c> if [is cabac] contains no value, <c>true</c> if [is cabac]; otherwise, <c>false</c>.</value>
         public bool? IsCabac { get; set; }
-
-        [IgnoreDataMember]
-        public List<int> KeyFrames { get; set; }
     }
 }
