@@ -164,6 +164,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.BitDepth = streamInfo.bits_per_sample;
                 }
+                else if (streamInfo.bits_per_raw_sample > 0)
+                {
+                    stream.BitDepth = streamInfo.bits_per_raw_sample;
+                }
             }
             else if (string.Equals(streamInfo.codec_type, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
@@ -185,6 +189,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (streamInfo.bits_per_sample > 0)
                 {
                     stream.BitDepth = streamInfo.bits_per_sample;
+                }
+                else if (streamInfo.bits_per_raw_sample > 0)
+                {
+                    stream.BitDepth = streamInfo.bits_per_raw_sample;
                 }
 
                 //stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
