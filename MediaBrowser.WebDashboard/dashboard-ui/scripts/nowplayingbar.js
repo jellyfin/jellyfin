@@ -91,10 +91,10 @@
             elem.classList.add('hide');
         };
 
-        //if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             onfinish();
             return;
-        //}
+        }
 
         requestAnimationFrame(function () {
             var keyframes = [
@@ -113,9 +113,9 @@
 
         elem.classList.remove('hide');
 
-        //if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             return;
-        //}
+        }
 
         requestAnimationFrame(function () {
 
