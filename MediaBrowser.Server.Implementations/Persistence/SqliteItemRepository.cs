@@ -2220,14 +2220,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
 
-                    if (stream.KeyFrames == null || stream.KeyFrames.Count == 0)
-                    {
-                        _saveStreamCommand.GetParameter(index++).Value = null;
-                    }
-                    else
-                    {
-                        _saveStreamCommand.GetParameter(index++).Value = string.Join(",", stream.KeyFrames.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray());
-                    }
+                    _saveStreamCommand.GetParameter(index++).Value = null;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
@@ -2386,7 +2379,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var frames = reader.GetString(26);
                 if (!string.IsNullOrWhiteSpace(frames))
                 {
-                    item.KeyFrames = frames.Split(',').Select(i => int.Parse(i, CultureInfo.InvariantCulture)).ToList();
                 }
             }
 
