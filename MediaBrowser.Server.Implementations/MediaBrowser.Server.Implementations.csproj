@@ -52,8 +52,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.Naming.1.0.0.41\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
-    <Reference Include="MoreLinq, Version=1.4.18916.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
@@ -122,9 +121,9 @@
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
-    <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
+    <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\ActivityLogEntryPoint.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
