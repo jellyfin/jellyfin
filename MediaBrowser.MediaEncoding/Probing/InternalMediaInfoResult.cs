@@ -145,6 +145,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         public int bits_per_sample { get; set; }
 
         /// <summary>
+        /// Gets or sets the bits_per_raw_sample.
+        /// </summary>
+        /// <value>The bits_per_raw_sample.</value>
+        public int bits_per_raw_sample { get; set; }
+        
+        /// <summary>
         /// Gets or sets the r_frame_rate.
         /// </summary>
         /// <value>The r_frame_rate.</value>
