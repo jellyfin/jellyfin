@@ -11,7 +11,7 @@ namespace MediaBrowser.Common.Net
         /// Gets the machine's local ip address
         /// </summary>
         /// <returns>IPAddress.</returns>
-        IEnumerable<string> GetLocalIpAddresses();
+		IEnumerable<IPAddress> GetLocalIpAddresses();
 
         /// <summary>
         /// Gets a random port number that is currently available
@@ -24,6 +24,13 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>[string] MAC Address</returns>
         string GetMacAddress();
+
+        /// <summary>
+        /// Determines whether [is in private address space] [the specified endpoint].
+        /// </summary>
+        /// <param name="endpoint">The endpoint.</param>
+        /// <returns><c>true</c> if [is in private address space] [the specified endpoint]; otherwise, <c>false</c>.</returns>
+        bool IsInPrivateAddressSpace(string endpoint);
 
         /// <summary>
         /// Gets the network shares.

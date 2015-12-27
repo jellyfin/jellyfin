@@ -11,6 +11,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
@@ -36,40 +37,60 @@ namespace MediaBrowser.Dlna.Ssdp
             _appHost = appHost;
         }
 
+		private List<IPAddress> GetLocalIpAddresses()
+		{
+			NetworkInterface[] interfaces;
+
+			try
+			{
+				interfaces = NetworkInterface.GetAllNetworkInterfaces();
+			}
+			catch (Exception ex)
+			{
+				_logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
+				return new List<IPAddress>();
+			}
+
+			return interfaces.SelectMany(network => {
+
+				try
+				{
+					_logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
+
+					var properties = network.GetIPProperties();
+
+					return properties.UnicastAddresses
+                        .Select(i => i.Address)
+						.Where(i => i.AddressFamily == AddressFamily.InterNetwork)
+						.ToList();
+				}
+				catch (Exception ex)
+				{
+					_logger.ErrorException("Error querying network interface", ex);
+					return new List<IPAddress>();
+				}
+
+			})
+                .DistinctBy(i => i.ToString())
+				.ToList();
+		}
+
         public void Start(SsdpHandler ssdpHandler)
         {
             _ssdpHandler = ssdpHandler;
             _ssdpHandler.MessageReceived += _ssdpHandler_MessageReceived;
 
-            foreach (var network in GetNetworkInterfaces())
-            {
-                _logger.Debug("Found interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
-
-                if (!network.SupportsMulticast || OperationalStatus.Up != network.OperationalStatus || !network.GetIPProperties().MulticastAddresses.Any())
-                    continue;
-
-                var properties = network.GetIPProperties();
-                var ipV4 = properties.GetIPv4Properties();
-                if (null == ipV4)
-                    continue;
-
-                var localIps = properties.UnicastAddresses
-                    .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork)
-                    .Select(i => i.Address)
-                    .ToList();
-
-                foreach (var localIp in localIps)
-                {
-                    try
-                    {
-                        CreateListener(localIp);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.ErrorException("Failed to Initilize Socket", e);
-                    }
-                }
-            }
+            foreach (var localIp in GetLocalIpAddresses())
+			{
+				try
+				{
+					CreateListener(localIp);
+				}
+				catch (Exception e)
+				{
+					_logger.ErrorException("Failed to Initilize Socket", e);
+				}
+			}
         }
 
         void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
@@ -107,29 +128,17 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        private IEnumerable<NetworkInterface> GetNetworkInterfaces()
-        {
-            try
-            {
-                return NetworkInterface.GetAllNetworkInterfaces();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
-                return new List<NetworkInterface>();
-            }
-        }
         private void CreateListener(IPAddress localIp)
         {
             Task.Factory.StartNew(async (o) =>
             {
                 try
                 {
-                    var endPoint = new IPEndPoint(localIp, 1900);
+					_logger.Info("Creating SSDP listener on {0}", localIp);
+
+					var endPoint = new IPEndPoint(localIp, 1900);
 
                     var socket = GetMulticastSocket(localIp, endPoint);
-
-                    _logger.Info("Creating SSDP listener on {0}", localIp);
 
                     var receiveBuffer = new byte[64000];
 

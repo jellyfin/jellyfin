@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -46,6 +47,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public string CertificatePath { get; private set; }
 
         private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// Gets the local end points.
@@ -69,10 +71,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, params Assembly[] assembliesWithServices)
+            string defaultRedirectPath, INetworkManager networkManager, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
+            _networkManager = networkManager;
             _config = config;
 
             _logger = logManager.GetLogger("HttpServer");
@@ -175,11 +178,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void OnRequestReceived(string localEndPoint)
         {
-            var ignore = localEndPoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
-
-                localEndPoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
-                localEndPoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
-                localEndPoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
+            var ignore = _networkManager.IsInPrivateAddressSpace(localEndPoint);
 
             if (ignore)
             {
@@ -188,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (_localEndpointLock.TryEnterWriteLock(100))
             {
-                var list = _localEndpoints.ToList();
+                var list = _localEndpoints;
 
                 list.Remove(localEndPoint);
                 list.Insert(0, localEndPoint);
