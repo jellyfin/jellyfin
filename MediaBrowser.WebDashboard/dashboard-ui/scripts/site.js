@@ -1835,7 +1835,7 @@ var AppInfo = {};
         requirejs.config({
             map: {
                 '*': {
-                    'css': 'components/requirecss',
+                    'css': bowerPath + '/emby-webcomponents/requirecss',
                     'html': bowerPath + '/emby-webcomponents/requirehtml'
                 }
             },
