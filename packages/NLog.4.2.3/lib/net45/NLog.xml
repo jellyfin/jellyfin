@@ -17814,6 +17814,16 @@
             This value disables file archiving based on the size. 
             </summary>
         </member>
+        <member name="F:NLog.Targets.FileTarget.DirectorySeparatorChars">
+            <summary>
+            Cached directory separator char array to avoid memory allocation on each method call.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileTarget.InvalidFileNameChars">
+            <summary>
+            Cached invalid filenames char array to avoid memory allocation everytime Path.GetInvalidFileNameChars() is called.
+            </summary>
+        </member>
         <member name="F:NLog.Targets.FileTarget.initializedFiles">
             <summary>
             Holds the initialised files each given time by the <see cref="T:NLog.Targets.FileTarget"/> instance. Against each file, the last write time is stored. 
@@ -17845,6 +17855,16 @@
             <summary>
             It holds the file names of existing archives in order for the oldest archives to be removed when the list of
             filenames becomes too long.
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileTarget.fileName">
+            <summary>
+            The filename as target
+            </summary>
+        </member>
+        <member name="F:NLog.Targets.FileTarget.cachedCleanedFileNamed">
+            <summary>
+            The filename if <see cref="P:NLog.Targets.FileTarget.FileName"/> is a fixed string
             </summary>
         </member>
         <member name="M:NLog.Targets.FileTarget.#ctor">
@@ -18229,6 +18249,12 @@
             You can combine as many of the layout renderers as you want to produce an arbitrary log file name.
             </example>
             <docgen category='Output Options' order='1' />
+        </member>
+        <member name="P:NLog.Targets.FileTarget.CleanupFileName">
+            <summary>
+            Cleanup invalid values in a filename, e.g. slashes in a filename. If set to <c>true</c>, this can impact the performance of massive writes. 
+            If set to <c>false</c>, nothing gets written when the filename is wrong.
+            </summary>
         </member>
         <member name="P:NLog.Targets.FileTarget.CreateDirs">
             <summary>

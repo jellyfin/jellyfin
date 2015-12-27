@@ -56,7 +56,7 @@
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.4.2.2\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
