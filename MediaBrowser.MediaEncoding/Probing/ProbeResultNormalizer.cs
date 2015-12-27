@@ -159,6 +159,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 stream.ChannelLayout = ParseChannelLayout(streamInfo.channel_layout);
+
+                if (streamInfo.bits_per_sample > 0)
+                {
+                    stream.BitDepth = streamInfo.bits_per_sample;
+                }
             }
             else if (string.Equals(streamInfo.codec_type, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
@@ -177,7 +182,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.avg_frame_rate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.r_frame_rate);
 
-                stream.BitDepth = GetBitDepth(stream.PixelFormat);
+                if (streamInfo.bits_per_sample > 0)
+                {
+                    stream.BitDepth = streamInfo.bits_per_sample;
+                }
 
                 //stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
@@ -234,34 +242,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             return stream;
-        }
-
-        private int? GetBitDepth(string pixelFormat)
-        {
-            var eightBit = new List<string>
-            {
-                "yuv420p",
-                "yuv411p",
-                "yuvj420p",
-                "uyyvyy411",
-                "nv12",
-                "nv21",
-                "rgb444le",
-                "rgb444be",
-                "bgr444le",
-                "bgr444be",
-                "yuvj411p"            
-            };
-
-            if (!string.IsNullOrEmpty(pixelFormat))
-            {
-                if (eightBit.Contains(pixelFormat, StringComparer.OrdinalIgnoreCase))
-                {
-                    return 8;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>
