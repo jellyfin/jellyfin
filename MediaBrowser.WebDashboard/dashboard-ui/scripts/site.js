@@ -2098,6 +2098,7 @@ var AppInfo = {};
 
         deps.push('appstorage');
         deps.push('scripts/appsettings');
+        deps.push('scripts/extensions');
 
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
@@ -2247,7 +2248,6 @@ var AppInfo = {};
         deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
-        deps.push('apiclient-deferred');
 
         deps.push('css!css/card.css');
 
@@ -2270,6 +2270,7 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
+            postInitDependencies.push('apiclient-deferred');
 
             if (Dashboard.isRunningInCordova()) {
 
@@ -2414,7 +2415,6 @@ var AppInfo = {};
 
     initialDependencies.push('browser');
     initialDependencies.push('apiclient-store');
-    initialDependencies.push('scripts/extensions');
 
     var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
 
