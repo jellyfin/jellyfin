@@ -366,14 +366,27 @@ namespace MediaBrowser.Providers.Movies
             return mainResult;
         }
 
+        private static long _lastRequestTicks;
+        private static int requestIntervalMs = 100;
+
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
-        internal Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
+        internal async Task<Stream> GetMovieDbResponse(HttpRequestOptions options)
         {
-            options.ResourcePool = MovieDbResourcePool;
+            var delayTicks = (requestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
+            var delayMs = Math.Min(delayTicks / 10000, requestIntervalMs);
 
-            return _httpClient.Get(options);
+            if (delayMs > 0)
+            {
+                _logger.Debug("Throttling Tmdb by {0} ms", delayMs);
+                await Task.Delay(Convert.ToInt32(delayMs)).ConfigureAwait(false);
+            }
+
+            options.ResourcePool = MovieDbResourcePool;
+            _lastRequestTicks = DateTime.UtcNow.Ticks;
+
+            return await _httpClient.Get(options).ConfigureAwait(false);
         }
 
         public TheMovieDbOptions GetTheMovieDbOptions()
