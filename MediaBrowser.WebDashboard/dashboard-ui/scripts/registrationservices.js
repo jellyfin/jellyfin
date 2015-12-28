@@ -235,10 +235,11 @@
                         $('#amount', page).val(pkg.price);
 
                         $('#regPrice', page).html("<h3>" + Globalize.translate('ValuePriceUSD').replace('{0}', "$" + pkg.price.toFixed(2)) + "</h3>");
+                        $('#ppButton', page).hide();
 
                         var url = "http://mb3admin.com/admin/service/user/getPayPalEmail?id=" + pkg.owner;
 
-                        fetch(url, { mode: 'no-cors' }).then(function (response) {
+                        fetch(url).then(function (response) {
 
                             return response.json();
 
@@ -246,9 +247,8 @@
 
                             if (dev.payPalEmail) {
                                 $('#payPalEmail', page).val(dev.payPalEmail);
+                                $('#ppButton', page).show();
 
-                            } else {
-                                $('#ppButton', page).hide();
                             }
                         });
 
