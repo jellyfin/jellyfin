@@ -32,6 +32,12 @@ namespace MediaBrowser.Api.System
 
     }
 
+    [Route("/System/Ping", "POST")]
+    public class PingSystem : IReturnVoid
+    {
+
+    }
+
     /// <summary>
     /// Class RestartApplication
     /// </summary>
@@ -115,6 +121,11 @@ namespace MediaBrowser.Api.System
             var result = await _security.GetSupporterInfo().ConfigureAwait(false);
 
             return ToOptimizedResult(result);
+        }
+
+        public void Post(PingSystem request)
+        {
+            
         }
 
         public object Get(GetServerLogs request)
