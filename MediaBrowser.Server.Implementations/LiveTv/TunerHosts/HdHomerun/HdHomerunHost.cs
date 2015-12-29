@@ -252,7 +252,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 height = 1080;
                 isInterlaced = false;
                 videoCodec = "h264";
-                videoBitrate = 8000000;
+                videoBitrate = 15000000;
             }
             else if (string.Equals(profile, "internet720", StringComparison.OrdinalIgnoreCase))
             {
@@ -260,7 +260,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 height = 720;
                 isInterlaced = false;
                 videoCodec = "h264";
-                videoBitrate = 5000000;
+                videoBitrate = 8000000;
             }
             else if (string.Equals(profile, "internet540", StringComparison.OrdinalIgnoreCase))
             {
@@ -326,12 +326,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1,
                                 Codec = "ac3",
-                                BitRate = 128000
+                                BitRate = 192000
                             }
                         },
                 RequiresOpening = false,
                 RequiresClosing = false,
-                BufferMs = 1000,
+                BufferMs = 0,
                 Container = "ts",
                 Id = profile,
                 SupportsDirectPlay = true,
