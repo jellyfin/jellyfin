@@ -486,24 +486,66 @@ namespace MediaBrowser.Providers.TV
 								break;
 							}
 
-						case "DVD_season":
-							{
-								var val = reader.ReadElementContentAsString();
+                        case "DVD_season":
+                            {
+                                var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									float num;
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    float num;
 
-									if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
-									{
-										item.DvdSeasonNumber = Convert.ToInt32(num);
-									}
-								}
+                                    if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                    {
+                                        item.DvdSeasonNumber = Convert.ToInt32(num);
+                                    }
+                                }
 
-								break;
-							}
+                                break;
+                            }
 
-						case "absolute_number":
+                        case "EpisodeNumber":
+                            {
+                                if (!item.IndexNumber.HasValue)
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
+
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            item.IndexNumber = rval;
+                                        }
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "SeasonNumber":
+                            {
+                                if (!item.ParentIndexNumber.HasValue)
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
+
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            item.ParentIndexNumber = rval;
+                                        }
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        case "absolute_number":
 							{
 								var val = reader.ReadElementContentAsString();
 
