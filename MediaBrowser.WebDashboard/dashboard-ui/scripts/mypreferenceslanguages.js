@@ -34,25 +34,28 @@
         page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
         page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
-        var bitrateOptions = MediaPlayer.getVideoQualityOptions().map(function (i) {
+        require(['qualityoptions'], function (qualityoptions) {
 
-            return '<option value="' + i.bitrate + '">' + i.name + '</option>';
+            var bitrateOptions = qualityoptions.getVideoQualityOptions(AppSettings.maxStreamingBitrate()).map(function (i) {
 
-        }).join('');
+                return '<option value="' + i.bitrate + '">' + i.name + '</option>';
 
-        bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
+            }).join('');
 
-        $('#selectMaxBitrate', page).html(bitrateOptions);
+            bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
 
-        if (AppSettings.enableAutomaticBitrateDetection()) {
-            $('#selectMaxBitrate', page).val('');
-        } else {
-            $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate());
-        }
+            $('#selectMaxBitrate', page).html(bitrateOptions);
 
-        $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate());
+            if (AppSettings.enableAutomaticBitrateDetection()) {
+                $('#selectMaxBitrate', page).val('');
+            } else {
+                $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate());
+            }
 
-        Dashboard.hideLoadingMsg();
+            $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate());
+
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function loadPage(page) {

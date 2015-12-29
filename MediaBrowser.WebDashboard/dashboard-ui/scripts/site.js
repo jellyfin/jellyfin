@@ -1804,6 +1804,7 @@ var AppInfo = {};
             connectionmanagerfactory: apiClientBowerPath + '/connectionmanager',
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
+            qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice'
         };
 

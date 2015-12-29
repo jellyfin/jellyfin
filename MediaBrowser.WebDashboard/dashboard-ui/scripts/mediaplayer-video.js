@@ -140,41 +140,40 @@
 
         self.showQualityFlyout = function () {
 
-            var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
-            var isStatic = currentSrc.indexOf('static=true') != -1;
+            require(['qualityoptions', 'actionsheet'], function (qualityoptions) {
 
-            var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
-                return stream.Type == "Video";
-            })[0];
-            var videoWidth = videoStream ? videoStream.Width : null;
-            var videoHeight = videoStream ? videoStream.Height : null;
+                var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
+                var isStatic = currentSrc.indexOf('static=true') != -1;
 
-            var options = self.getVideoQualityOptions(videoWidth, videoHeight);
+                var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
+                    return stream.Type == "Video";
+                })[0];
+                var videoWidth = videoStream ? videoStream.Width : null;
 
-            if (isStatic) {
-                options[0].name = "Direct";
-            }
+                var options = qualityoptions.getVideoQualityOptions(AppSettings.maxStreamingBitrate(), videoWidth);
 
-            var menuItems = options.map(function (o) {
-
-                var opt = {
-                    name: o.name,
-                    id: o.bitrate
-                };
-
-                if (o.selected) {
-                    opt.ironIcon = "check";
+                if (isStatic) {
+                    options[0].name = "Direct";
                 }
 
-                return opt;
-            });
+                var menuItems = options.map(function (o) {
 
-            var selectedId = options.filter(function (o) {
-                return o.selected;
-            });
-            selectedId = selectedId.length ? selectedId[0].bitrate : null;
-            require(['actionsheet'], function () {
+                    var opt = {
+                        name: o.name,
+                        id: o.bitrate
+                    };
 
+                    if (o.selected) {
+                        opt.ironIcon = "check";
+                    }
+
+                    return opt;
+                });
+
+                var selectedId = options.filter(function (o) {
+                    return o.selected;
+                });
+                selectedId = selectedId.length ? selectedId[0].bitrate : null;
                 ActionSheetElement.show({
                     items: menuItems,
                     positionTo: $('.videoQualityButton')[0],
