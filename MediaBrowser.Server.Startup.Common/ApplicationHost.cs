@@ -1180,7 +1180,6 @@ namespace MediaBrowser.Server.Startup.Common
                 using (var response = HttpClient.SendAsync(new HttpRequestOptions
                 {
                     Url = apiUrl,
-                    BufferContent = false,
                     LogErrorResponseBody = false,
                     LogErrors = false
 
