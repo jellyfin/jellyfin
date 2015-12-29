@@ -124,16 +124,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var channels = channelResult.Items;
 
-                var embeddedChannels = channels
-                    .Where(i => user.Configuration.DisplayChannelsInline || user.Configuration.DisplayChannelsWithinViews.Contains(i.Id.ToString("N")))
-                    .ToList();
-
-                list.AddRange(embeddedChannels);
-
-                if (channels.Length > embeddedChannels.Count)
-                {
-                    list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
-                }
+                list.AddRange(channels);
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {

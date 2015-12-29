@@ -29,8 +29,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool GroupMoviesIntoBoxSets { get; set; }
 
-        public string[] DisplayChannelsWithinViews { get; set; }
-
         public string[] ExcludeFoldersFromGrouping { get; set; }
         public string[] GroupedFolders { get; set; }
 
@@ -50,7 +48,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
-        public bool DisplayChannelsInline { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
@@ -62,8 +59,6 @@ namespace MediaBrowser.Model.Configuration
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };
-            DisplayChannelsWithinViews = new string[] { };
-            DisplayChannelsInline = true;
 
             PlainFolderViews = new string[] { };
 
