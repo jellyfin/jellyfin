@@ -260,6 +260,16 @@
                 });
             }
 
+            if (user.Policy.EnableContentDownloading) {
+                if (mediaType) {
+                    items.push({
+                        name: Globalize.translate('ButtonDownload'),
+                        id: 'download',
+                        ironIcon: 'file-download'
+                    });
+                }
+            }
+
             if (commands.indexOf('delete') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonDelete'),
