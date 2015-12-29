@@ -1173,17 +1173,27 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     Url = apiUrl,
                     LogErrorResponseBody = false,
-                    LogErrors = false
+                    LogErrors = false,
+                    LogRequest = false
 
                 }, "POST").Result)
                 {
-                    _validAddressResults.AddOrUpdate(apiUrl, true, (k, v) => true);
-                    return true;
+                    using (var reader = new StreamReader(response.Content))
+                    {
+                        var result = reader.ReadToEnd();
+                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+
+                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
+                        Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                        return valid;
+                    }
                 }
             }
             catch
             {
-                _validAddressResults.AddOrUpdate(apiUrl, true, (k, v) => false);
+                Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, false);
+
+                _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
             }
         }

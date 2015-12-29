@@ -123,9 +123,9 @@ namespace MediaBrowser.Api.System
             return ToOptimizedResult(result);
         }
 
-        public void Post(PingSystem request)
+        public object Post(PingSystem request)
         {
-            
+            return _appHost.Name;
         }
 
         public object Get(GetServerLogs request)
