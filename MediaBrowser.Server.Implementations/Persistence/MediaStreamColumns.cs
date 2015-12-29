@@ -27,6 +27,38 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddIsCabacColumn();
             AddKeyFramesColumn();
             AddRefFramesCommand();
+            AddCodecTagColumn();
+        }
+
+        private void AddCodecTagColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "CodecTag", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column CodecTag TEXT");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
         private void AddPixelFormatColumnCommand()

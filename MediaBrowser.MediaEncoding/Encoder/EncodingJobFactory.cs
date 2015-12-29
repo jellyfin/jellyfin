@@ -505,7 +505,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return "libx264";
             }
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 return "libx265";
             }

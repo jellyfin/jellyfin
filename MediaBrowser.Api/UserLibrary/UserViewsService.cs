@@ -26,6 +26,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool? IncludeExternalContent { get; set; }
+
+        public string PresetViews { get; set; }
     }
 
     [Route("/Users/{UserId}/SpecialViewOptions", "GET")]
@@ -75,9 +77,24 @@ namespace MediaBrowser.Api.UserLibrary
                 query.IncludeExternalContent = request.IncludeExternalContent.Value;
             }
 
+            if (!string.IsNullOrWhiteSpace(request.PresetViews))
+            {
+                query.PresetViews = request.PresetViews.Split(',');
+            }
+
+            var app = AuthorizationContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
+            if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
+            }
+            //query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
+
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(request);
+            dtoOptions.Fields = new List<ItemFields>();
+            dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
+            dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
 
             var user = _userManager.GetUserById(request.UserId);
 
@@ -123,7 +140,7 @@ namespace MediaBrowser.Api.UserLibrary
             var views = user.RootFolder
                 .GetChildren(user, true)
                 .OfType<Folder>()
-                .Where(i => !UserView.IsExcludedFromGrouping(i))
+                .Where(UserView.IsEligibleForGrouping)
                 .ToList();
 
             var list = views
@@ -141,9 +158,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         private bool IsEligibleForSpecialView(ICollectionFolder view)
         {
-            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Games, CollectionType.Music, CollectionType.Photos };
-
-            return types.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            return UserView.IsEligibleForEnhancedView(view.CollectionType);
         }
     }
 

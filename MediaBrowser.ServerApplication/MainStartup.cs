@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonIO.Windows;
+using ImageMagickSharp;
 using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.ServerApplication
@@ -29,6 +30,10 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         private static bool _isRunningAsService = false;
+        private static bool _appHostDisposed;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -41,6 +46,11 @@ namespace MediaBrowser.ServerApplication
             var currentProcess = Process.GetCurrentProcess();
 
             var applicationPath = currentProcess.MainModule.FileName;
+            var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+
+            Wand.SetMagickCoderModulePath(architecturePath);
+
+            var success = SetDllDirectory(architecturePath);
 
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
@@ -329,7 +339,7 @@ namespace MediaBrowser.ServerApplication
         {
             _logger.Info("Shutting down");
 
-            _appHost.Dispose();
+            DisposeAppHost();
         }
 
         /// <summary>
@@ -500,14 +510,15 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                DisposeAppHost();
+
                 ShutdownWindowsApplication();
             }
         }
 
         public static void Restart()
         {
-            _logger.Info("Disposing app host");
-            _appHost.Dispose();
+            DisposeAppHost();
 
             if (!_isRunningAsService)
             {
@@ -522,10 +533,23 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private static void DisposeAppHost()
+        {
+            if (!_appHostDisposed)
+            {
+                _logger.Info("Disposing app host");
+
+                _appHostDisposed = true;
+                _appHost.Dispose();
+            }
+        }
+
         private static void ShutdownWindowsApplication()
         {
             _logger.Info("Calling Application.Exit");
             Application.Exit();
+
+            Environment.Exit(0);
 
             _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
             ApplicationTaskCompletionSource.SetResult(true);
