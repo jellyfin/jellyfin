@@ -14,7 +14,7 @@
 
 // Compatibility
 window.Logger = {
-    log: function(msg) {
+    log: function (msg) {
         console.log(msg);
     }
 };
@@ -310,6 +310,10 @@ var Dashboard = {
 
     showServerRestartWarning: function (systemInfo) {
 
+        if (AppInfo.isNativeApp) {
+            return;
+        }
+
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
@@ -328,6 +332,10 @@ var Dashboard = {
     },
 
     showDashboardRefreshNotification: function () {
+
+        if (AppInfo.isNativeApp) {
+            return;
+        }
 
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
@@ -363,10 +371,6 @@ var Dashboard = {
     },
 
     showFooterNotification: function (options) {
-
-        if (!AppInfo.enableFooterNotifications) {
-            return;
-        }
 
         var removeOnHide = !options.id;
 
@@ -1039,8 +1043,32 @@ var Dashboard = {
                 {
                     var args = cmd.Arguments;
 
-                    if (args.TimeoutMs) {
-                        Dashboard.showFooterNotification({ html: "<div><b>" + args.Header + "</b></div>" + args.Text, timeout: args.TimeoutMs });
+                    if (args.TimeoutMs && window.Notification && Notification.permission === "granted") {
+
+                        var notification = {
+                            title: args.Header,
+                            body: args.Text,
+                            vibrate: true,
+                            timeout: args.TimeoutMs
+                        };
+
+                        var notif = new Notification(notification.title, notification);
+
+                        if (notif.show) {
+                            notif.show();
+                        }
+
+                        if (notification.timeout) {
+                            setTimeout(function () {
+
+                                if (notif.close) {
+                                    notif.close();
+                                }
+                                else if (notif.cancel) {
+                                    notif.cancel();
+                                }
+                            }, notification.timeout);
+                        }
                     }
                     else {
                         Dashboard.alert({ title: args.Header, message: args.Text });
@@ -1168,6 +1196,10 @@ var Dashboard = {
 
     showPackageInstallNotification: function (installation, status) {
 
+        if (AppInfo.isNativeApp) {
+            return;
+        }
+
         var html = '';
 
         if (status == 'completed') {
@@ -1229,7 +1261,7 @@ var Dashboard = {
 
         var newItems = data.ItemsAdded;
 
-        if (!newItems.length || AppInfo.isNativeApp || !window.Notification) {
+        if (!newItems.length || AppInfo.isNativeApp || !window.Notification || Notification.permission !== "granted") {
             return;
         }
 
@@ -1254,8 +1286,14 @@ var Dashboard = {
                 var notification = {
                     title: "New " + item.Type,
                     body: item.Name,
-                    timeout: 5000,
-                    vibrate: true
+                    timeout: 15000,
+                    vibrate: true,
+
+                    data: {
+                        options: {
+                            url: LibraryBrowser.getHref(item)
+                        }
+                    }
                 };
 
                 var imageTags = item.ImageTags || {};
@@ -1269,25 +1307,22 @@ var Dashboard = {
                     });
                 }
 
-                if (Notification.permission === "granted") {
+                var notif = new Notification(notification.title, notification);
 
-                    var notif = new Notification(notification.title, notification);
+                if (notif.show) {
+                    notif.show();
+                }
 
-                    if (notif.show) {
-                        notif.show();
-                    }
+                if (notification.timeout) {
+                    setTimeout(function () {
 
-                    if (notification.timeout) {
-                        setTimeout(function () {
-
-                            if (notif.close) {
-                                notif.close();
-                            }
-                            else if (notif.cancel) {
-                                notif.cancel();
-                            }
-                        }, notification.timeout);
-                    }
+                        if (notif.close) {
+                            notif.close();
+                        }
+                        else if (notif.cancel) {
+                            notif.cancel();
+                        }
+                    }, notification.timeout);
                 }
             }
         });
@@ -1572,7 +1607,6 @@ var AppInfo = {};
             }
         }
         else {
-            AppInfo.enableFooterNotifications = true;
             AppInfo.enableSupporterMembership = true;
 
             if (!isAndroid && !isIOS) {
@@ -1618,24 +1652,34 @@ var AppInfo = {};
         Events.on(apiClient, 'requestfail', Dashboard.onRequestFail);
     }
 
+    function getSyncProfile() {
+
+        return getRequirePromise(['scripts/mediaplayer']).then(function () {
+            return MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+        });
+    }
+
+    function onApiClientCreated(e, newApiClient) {
+        initializeApiClient(newApiClient);
+    }
+
     //localStorage.clear();
     function createConnectionManager(credentialProviderFactory, capabilities) {
 
         var credentialKey = Dashboard.isConnectMode() ? null : 'servercredentials4';
         var credentialProvider = new credentialProviderFactory(credentialKey);
 
-        window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
+        return getSyncProfile().then(function (deviceProfile) {
 
-        if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
-            window.ConnectionManager.clearData();
-        }
+            capabilities.DeviceProfile = deviceProfile;
 
-        Events.on(ConnectionManager, 'apiclientcreated', function (e, newApiClient) {
+            window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
 
-            initializeApiClient(newApiClient);
-        });
+            if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
+                window.ConnectionManager.clearData();
+            }
 
-        return new Promise(function (resolve, reject) {
+            Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
             if (Dashboard.isConnectMode()) {
 
@@ -1646,28 +1690,23 @@ var AppInfo = {};
                     if (server && server.UserId && server.AccessToken) {
                         Dashboard.showLoadingMsg();
 
-                        ConnectionManager.connectToServer(server).then(function (result) {
+                        return ConnectionManager.connectToServer(server).then(function (result) {
                             Dashboard.showLoadingMsg();
 
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;
                             }
-                            resolve();
                         });
-                        return;
                     }
                 }
-                resolve();
 
             } else {
-
-                require(['apiclient'], function(apiClientFactory) {
+                return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
                     var apiClient = new apiClientFactory(Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, window.devicePixelRatio);
                     apiClient.enableAutomaticNetworking = false;
                     ConnectionManager.addApiClient(apiClient);
                     Dashboard.importCss(apiClient.getUrl('Branding/Css'));
                     window.ApiClient = apiClient;
-                    resolve();
                 });
             }
         });
@@ -2059,8 +2098,8 @@ var AppInfo = {};
         deps.push('credentialprovider');
 
         deps.push('appstorage');
-        deps.push('scripts/mediaplayer');
         deps.push('scripts/appsettings');
+        deps.push('scripts/extensions');
 
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
@@ -2102,12 +2141,9 @@ var AppInfo = {};
                 }
             }
 
-            var capabilities = Dashboard.capabilities();
-
-            capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-
             var promises = [];
             deps = [];
+            deps.push('scripts/mediaplayer');
             deps.push('thirdparty/jquery.unveil-custom.js');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
@@ -2117,7 +2153,7 @@ var AppInfo = {};
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
-            promises.push(createConnectionManager(credentialProviderFactory, capabilities));
+            promises.push(createConnectionManager(credentialProviderFactory, Dashboard.capabilities()));
 
             Promise.all(promises).then(function () {
 
@@ -2213,7 +2249,6 @@ var AppInfo = {};
         deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
-        deps.push('apiclient-deferred');
 
         deps.push('css!css/card.css');
 
@@ -2236,6 +2271,7 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
+            postInitDependencies.push('apiclient-deferred');
 
             if (Dashboard.isRunningInCordova()) {
 
@@ -2376,47 +2412,36 @@ var AppInfo = {};
 
     initRequire();
 
-    var initialDependencies = [];
+    function onWebComponentsReady() {
 
-    initialDependencies.push('browser');
-    initialDependencies.push('apiclient-store');
-    initialDependencies.push('scripts/extensions');
+        var initialDependencies = [];
 
-    var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
+        initialDependencies.push('browser');
+        initialDependencies.push('apiclient-store');
 
-    if (!supportsNativeWebComponents) {
-        initialDependencies.push('webcomponentsjs');
-    }
+        if (!window.Promise) {
+            initialDependencies.push('native-promise-only');
+        }
 
-    if (!window.Promise) {
-        initialDependencies.push('native-promise-only');
-    }
+        require(initialDependencies, function (browser) {
 
-    require(initialDependencies, function (browser) {
+            window.browserInfo = browser;
+            setAppInfo();
+            setDocumentClasses();
 
-        window.browserInfo = browser;
-
-        function onWebComponentsReady() {
-
-            var polymerDependencies = [];
-
-            require(polymerDependencies, function () {
-
-                getHostingAppInfo().then(function (hostingAppInfo) {
-                    init(hostingAppInfo);
-                });
+            getHostingAppInfo().then(function (hostingAppInfo) {
+                init(hostingAppInfo);
             });
-        }
+        });
+    }
 
-        setAppInfo();
-        setDocumentClasses();
-
-        if (supportsNativeWebComponents) {
-            onWebComponentsReady();
-        } else {
-            document.addEventListener('WebComponentsReady', onWebComponentsReady);
-        }
-    });
+    if ('registerElement' in document && 'content' in document.createElement('template')) {
+        // Native web components support
+        onWebComponentsReady();
+    } else {
+        document.addEventListener('WebComponentsReady', onWebComponentsReady);
+        require(['webcomponentsjs']);
+    }
 
 })();
 
