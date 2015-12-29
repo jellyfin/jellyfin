@@ -1654,7 +1654,7 @@ var AppInfo = {};
 
     function getSyncProfile() {
 
-        return getRequirePromise(['scripts/mediaplayer']).then(function() {
+        return getRequirePromise(['scripts/mediaplayer']).then(function () {
             return MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
         });
     }
@@ -1670,7 +1670,7 @@ var AppInfo = {};
         var credentialProvider = new credentialProviderFactory(credentialKey);
 
         return getSyncProfile().then(function (deviceProfile) {
-            
+
             capabilities.DeviceProfile = deviceProfile;
 
             window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
@@ -2412,46 +2412,36 @@ var AppInfo = {};
 
     initRequire();
 
-    var initialDependencies = [];
+    function onWebComponentsReady() {
 
-    initialDependencies.push('browser');
-    initialDependencies.push('apiclient-store');
+        var initialDependencies = [];
 
-    var supportsNativeWebComponents = 'registerElement' in document && 'content' in document.createElement('template');
+        initialDependencies.push('browser');
+        initialDependencies.push('apiclient-store');
 
-    if (!supportsNativeWebComponents) {
-        initialDependencies.push('webcomponentsjs');
-    }
+        if (!window.Promise) {
+            initialDependencies.push('native-promise-only');
+        }
 
-    if (!window.Promise) {
-        initialDependencies.push('native-promise-only');
-    }
+        require(initialDependencies, function (browser) {
 
-    require(initialDependencies, function (browser) {
+            window.browserInfo = browser;
+            setAppInfo();
+            setDocumentClasses();
 
-        window.browserInfo = browser;
-
-        function onWebComponentsReady() {
-
-            var polymerDependencies = [];
-
-            require(polymerDependencies, function () {
-
-                getHostingAppInfo().then(function (hostingAppInfo) {
-                    init(hostingAppInfo);
-                });
+            getHostingAppInfo().then(function (hostingAppInfo) {
+                init(hostingAppInfo);
             });
-        }
+        });
+    }
 
-        setAppInfo();
-        setDocumentClasses();
-
-        if (supportsNativeWebComponents) {
-            onWebComponentsReady();
-        } else {
-            document.addEventListener('WebComponentsReady', onWebComponentsReady);
-        }
-    });
+    if ('registerElement' in document && 'content' in document.createElement('template')) {
+        // Native web components support
+        onWebComponentsReady();
+    } else {
+        document.addEventListener('WebComponentsReady', onWebComponentsReady);
+        require(['webcomponentsjs']);
+    }
 
 })();
 
