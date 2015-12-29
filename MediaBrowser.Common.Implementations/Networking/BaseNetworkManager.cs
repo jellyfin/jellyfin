@@ -69,7 +69,7 @@ namespace MediaBrowser.Common.Implementations.Networking
 				list.AddRange(GetLocalIpAddressesFallback());
             }
 
-			return list.Where(i => !IPAddress.IsLoopback(i)).Where(FilterIpAddress).DistinctBy(i => i.ToString());
+			return list.Where(FilterIpAddress).DistinctBy(i => i.ToString());
         }
 
 		private bool FilterIpAddress(IPAddress address)
@@ -232,7 +232,7 @@ namespace MediaBrowser.Common.Implementations.Networking
 
 					return properties.UnicastAddresses
                         .Select(i => i.Address)
-                        .Where(i => i.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(i))
+                        .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
 						.ToList();
 				}
 				catch (Exception ex)

@@ -91,10 +91,12 @@ using MediaBrowser.Server.Startup.Common.Migrations;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -207,6 +209,7 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly string _remotePackageName;
 
         internal INativeApp NativeApp { get; set; }
+        private Timer _ipAddressCacheTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -230,6 +233,8 @@ namespace MediaBrowser.Server.Startup.Common
             NativeApp = nativeApp;
 
             SetBaseExceptionMessage();
+
+            _ipAddressCacheTimer = new Timer(OnCacheClearTimerFired, null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
         }
 
         private Version _version;
@@ -1108,14 +1113,14 @@ namespace MediaBrowser.Server.Startup.Common
                 try
                 {
                     // Return the first matched address, if found, or the first known local address
-                    var address = LocalIpAddress;
+                    var address = LocalIpAddresses.FirstOrDefault(i => !IPAddress.IsLoopback(i));
 
-                    if (!string.IsNullOrWhiteSpace(address))
+                    if (address != null)
                     {
-                        address = GetLocalApiUrl(address);
+                        return GetLocalApiUrl(address.ToString());
                     }
 
-                    return address;
+                    return null;
                 }
                 catch (Exception ex)
                 {
@@ -1133,39 +1138,60 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public string LocalIpAddress
-        {
-            get
-            {
-                return HttpServerIpAddresses.FirstOrDefault();
-            }
-        }
-
-        private IEnumerable<string> HttpServerIpAddresses
+        public List<IPAddress> LocalIpAddresses
         {
             get
             {
                 var localAddresses = NetworkManager.GetLocalIpAddresses()
-                    .Select(i => i.ToString())
+                    .Where(IsIpAddressValid)
                     .ToList();
 
-                var httpServerAddresses = HttpServer.LocalEndPoints
-                    .Select(i => i.Split(':').FirstOrDefault())
-                    .Where(i => !string.IsNullOrEmpty(i))
-                    .ToList();
-
-                // Cross-check the local ip addresses with addresses that have been received on with the http server
-                var matchedAddresses = httpServerAddresses
-                    .Where(i => localAddresses.Contains(i, StringComparer.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (matchedAddresses.Count == 0)
-                {
-                    return localAddresses;
-                }
-
-                return matchedAddresses;
+                return localAddresses;
             }
+        }
+
+        private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        private bool IsIpAddressValid(IPAddress address)
+        {
+            if (IPAddress.IsLoopback(address))
+            {
+                return true;
+            }
+
+            var apiUrl = GetLocalApiUrl(address.ToString());
+            apiUrl += "/system/ping";
+
+            bool cachedResult;
+            if (_validAddressResults.TryGetValue(apiUrl, out cachedResult))
+            {
+                return cachedResult;
+            }
+
+            try
+            {
+                using (var response = HttpClient.SendAsync(new HttpRequestOptions
+                {
+                    Url = apiUrl,
+                    BufferContent = false,
+                    LogErrorResponseBody = false,
+                    LogErrors = false
+
+                }, "POST").Result)
+                {
+                    _validAddressResults.AddOrUpdate(apiUrl, true, (k, v) => true);
+                    return true;
+                }
+            }
+            catch
+            {
+                _validAddressResults.AddOrUpdate(apiUrl, true, (k, v) => false);
+                return false;
+            }
+        }
+
+        private void OnCacheClearTimerFired(object state)
+        {
+            _validAddressResults.Clear();
         }
 
         public string FriendlyName
