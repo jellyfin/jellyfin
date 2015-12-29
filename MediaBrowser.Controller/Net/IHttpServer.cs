@@ -29,12 +29,6 @@ namespace MediaBrowser.Controller.Net
         void StartServer(IEnumerable<string> urlPrefixes, string certificatePath);
 
         /// <summary>
-        /// Gets the local end points.
-        /// </summary>
-        /// <value>The local end points.</value>
-        IEnumerable<string> LocalEndPoints { get; }
-
-        /// <summary>
         /// Stops this instance.
         /// </summary>
         void Stop();

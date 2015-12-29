@@ -40,32 +40,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
         public event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
 
-        private readonly List<string> _localEndpoints = new List<string>();
-
-        private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
-
         public string CertificatePath { get; private set; }
 
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
-
-        /// <summary>
-        /// Gets the local end points.
-        /// </summary>
-        /// <value>The local end points.</value>
-        public IEnumerable<string> LocalEndPoints
-        {
-            get
-            {
-                _localEndpointLock.EnterReadLock();
-
-                var list = _localEndpoints.ToList();
-
-                _localEndpointLock.ExitReadLock();
-
-                return list;
-            }
-        }
 
         public HttpListenerHost(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -178,22 +156,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void OnRequestReceived(string localEndPoint)
         {
-            var ignore = _networkManager.IsInPrivateAddressSpace(localEndPoint);
-
-            if (ignore)
-            {
-                return;
-            }
-
-            if (_localEndpointLock.TryEnterWriteLock(100))
-            {
-                var list = _localEndpoints;
-
-                list.Remove(localEndPoint);
-                list.Insert(0, localEndPoint);
-
-                _localEndpointLock.ExitWriteLock();
-            }
         }
 
         /// <summary>
