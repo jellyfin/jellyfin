@@ -188,28 +188,15 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             var serverConfig = (ServerConfiguration)newConfig;
 
-            var certPath = serverConfig.CertificatePath;
+            var newPath = serverConfig.CertificatePath;
 
-            if (!string.IsNullOrWhiteSpace(certPath))
+            if (!string.IsNullOrWhiteSpace(newPath)
+                && !string.Equals(Configuration.CertificatePath ?? string.Empty, newPath))
             {
                 // Validate
-                if (!File.Exists(certPath))
+                if (!FileSystem.FileExists(newPath))
                 {
-                    throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", certPath));
-                }
-
-                try
-                {
-                    var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(certPath);
-
-                    if (cert.PrivateKey == null)
-                    {
-                        throw new ArgumentException("Certificate does not contain a private key!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException(string.Format("Exception loading certificate: '{0}' - {1}", certPath, ex.Message));
+                    throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", newPath));
                 }
             }
         }
