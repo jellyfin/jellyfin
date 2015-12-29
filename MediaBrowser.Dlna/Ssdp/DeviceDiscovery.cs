@@ -110,8 +110,11 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (e.LocalEndPoint == null)
                 {
-                    var ip = _appHost.LocalIpAddress;
-                    e.LocalEndPoint = new IPEndPoint(IPAddress.Parse(ip), 0);
+                    var ip = _appHost.LocalIpAddresses.FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                    if (ip != null)
+                    {
+                        e.LocalEndPoint = new IPEndPoint(ip, 0);
+                    }
                 }
 
                 if (e.LocalEndPoint != null)
