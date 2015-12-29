@@ -316,6 +316,8 @@
 
             } else {
 
+                var videoAudioChannels = browserInfo.safari ? '2' : '6';
+
                 profile.CodecProfiles.push({
                     Type: 'VideoAudio',
                     Codec: 'aac',
@@ -335,7 +337,7 @@
                         {
                             Condition: 'LessThanEqual',
                             Property: 'AudioChannels',
-                            Value: '6'
+                            Value: videoAudioChannels
                         }
                         // Disabling this is going to require us to learn why it was disabled in the first place
                         //,
@@ -359,7 +361,7 @@
                         {
                             Condition: 'LessThanEqual',
                             Property: 'AudioChannels',
-                            Value: '6'
+                            Value: videoAudioChannels
                         }
                     ]
                 });
