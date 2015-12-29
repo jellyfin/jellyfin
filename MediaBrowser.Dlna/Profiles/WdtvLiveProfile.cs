@@ -232,6 +232,35 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External
+                },
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+                new SubtitleProfile
+                {
+                    Format = "subrip",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+                new SubtitleProfile
+                {
+                    Format = "idx",
+                    Method = SubtitleDeliveryMethod.Embed
+                }
+            };
         }
     }
 }
