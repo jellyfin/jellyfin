@@ -217,7 +217,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void LibraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.Parent is AggregateFolder)
+            if (e.Item.GetParent() is AggregateFolder)
             {
                 StopWatchingPath(e.Item.Path);
             }
@@ -230,7 +230,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void LibraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.Parent is AggregateFolder)
+            if (e.Item.GetParent() is AggregateFolder)
             {
                 StartWatchingPath(e.Item.Path);
             }
@@ -532,9 +532,16 @@ namespace MediaBrowser.Server.Implementations.IO
                 return false;
             }
 
+            // In order to determine if the file is being written to, we have to request write access
+            // But if the server only has readonly access, this is going to cause this entire algorithm to fail
+            // So we'll take a best guess about our access level
+            var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
+                ? FileAccess.ReadWrite
+                : FileAccess.Read;
+
             try
             {
-                using (_fileSystem.GetFileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (_fileSystem.GetFileStream(path, FileMode.Open, requestedFileAccess, FileShare.ReadWrite))
                 {
                     if (_updateTimer != null)
                     {
@@ -651,7 +658,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 // If the item has been deleted find the first valid parent that still exists
 				while (!_fileSystem.DirectoryExists(item.Path) && !_fileSystem.FileExists(item.Path))
                 {
-                    item = item.Parent;
+                    item = item.GetParent();
 
                     if (item == null)
                     {

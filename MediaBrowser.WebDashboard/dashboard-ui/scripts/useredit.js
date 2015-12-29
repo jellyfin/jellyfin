@@ -115,7 +115,7 @@
 
                 Dashboard.alert({
 
-                    message: Globalize.translate('ErrorAddingEmbyConnectAccount')
+                    message: Globalize.translate('ErrorAddingEmbyConnectAccount', 'apps@emby.media')
 
                 });
             });

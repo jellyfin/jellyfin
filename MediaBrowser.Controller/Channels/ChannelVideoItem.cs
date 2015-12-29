@@ -42,9 +42,9 @@ namespace MediaBrowser.Controller.Channels
             return ExternalId;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
+            return UnratedItem.ChannelContent;
         }
 
         [IgnoreDataMember]
