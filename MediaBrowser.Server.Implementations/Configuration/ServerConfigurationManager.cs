@@ -171,10 +171,47 @@ namespace MediaBrowser.Server.Implementations.Configuration
             ValidateItemByNamePath(newConfig);
             ValidatePathSubstitutions(newConfig);
             ValidateMetadataPath(newConfig);
+            ValidateSslCertificate(newConfig);
 
             EventHelper.FireEventIfNotNull(ConfigurationUpdating, this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig }, Logger);
 
             base.ReplaceConfiguration(newConfiguration);
+        }
+
+
+        /// <summary>
+        /// Validates the SSL certificate.
+        /// </summary>
+        /// <param name="newConfig">The new configuration.</param>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        private void ValidateSslCertificate(BaseApplicationConfiguration newConfig)
+        {
+            var serverConfig = (ServerConfiguration)newConfig;
+
+            var certPath = serverConfig.CertificatePath;
+
+            if (!string.IsNullOrWhiteSpace(certPath))
+            {
+                // Validate
+                if (!File.Exists(certPath))
+                {
+                    throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", certPath));
+                }
+
+                try
+                {
+                    var cert = new System.Security.Cryptography.X509Certificates.X509Certificate2(certPath);
+
+                    if (cert.PrivateKey == null)
+                    {
+                        throw new ArgumentException("Certificate does not contain a private key!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException(string.Format("Exception loading certificate: '{0}' - {1}", certPath, ex.Message));
+                }
+            }
         }
 
         private void ValidatePathSubstitutions(ServerConfiguration newConfig)
