@@ -92,7 +92,8 @@
             showTitle: true,
             centerImage: true,
             centerText: true,
-            textLines: getAdditionalTextLines
+            textLines: getAdditionalTextLines,
+            overlayPlayButton: true
         });
 
         var itemsContainer = elem.querySelector('.itemsContainer');
