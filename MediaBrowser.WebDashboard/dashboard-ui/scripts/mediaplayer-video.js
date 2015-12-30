@@ -972,14 +972,15 @@
                     if (browserInfo.safari && !mediaSource.RunTimeTicks) {
 
                         Dashboard.showLoadingMsg();
-
+                        var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
                         ApiClient.ajax({
 
                             type: 'GET',
-                            url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
+                            url: hlsPlaylistUrl
 
                         }).then(function () {
                             Dashboard.hideLoadingMsg();
+                            streamInfo.url = hlsPlaylistUrl;
                             self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                         }, function () {
                             Dashboard.hideLoadingMsg();
@@ -1002,10 +1003,10 @@
                 elem.classList.add('hide');
             };
 
-            if (!browserInfo.animate) {
+            //if (!browserInfo.animate) {
                 onfinish();
                 return;
-            }
+            //}
 
             requestAnimationFrame(function () {
                 var keyframes = [
