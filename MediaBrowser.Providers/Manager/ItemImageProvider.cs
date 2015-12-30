@@ -362,6 +362,12 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var image in item.GetImages(type).ToList())
             {
+                if (!image.IsLocalFile)
+                {
+                    // TODO: Need to get this image removed
+                    continue;
+                }
+
                 // Delete the source file
                 var currentFile = new FileInfo(image.Path);
 
