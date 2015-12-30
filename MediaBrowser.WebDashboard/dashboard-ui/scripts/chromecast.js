@@ -34,7 +34,7 @@
         'IDLE': 0,
         'ACTIVE': 1,
         'WARNING': 2,
-        'ERROR': 3,
+        'ERROR': 3
     };
 
     /**
@@ -52,10 +52,11 @@
     };
 
     var applicationID = "2D4B1DA3";
-    var messageNamespace = 'urn:x-cast:com.connectsdk';
 
-    //var applicationID = "F4EB2E8E";
-    //var messageNamespace = 'urn:x-cast:com.google.cast.mediabrowser.v3';
+    // This is the beta version used for testing new changes
+    //applicationID = '27C4EB5B';
+
+    var messageNamespace = 'urn:x-cast:com.connectsdk';
 
     var CastPlayer = function () {
 

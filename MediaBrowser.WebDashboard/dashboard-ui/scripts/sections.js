@@ -336,7 +336,6 @@
                 html += '<div class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    preferThumb: true,
                     shape: 'auto',
                     showTitle: true,
                     centerText: true,

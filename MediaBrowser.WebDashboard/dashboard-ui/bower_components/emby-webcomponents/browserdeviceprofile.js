@@ -225,6 +225,8 @@
             }]
         });
 
+        var videoAudioChannels = browser.safari ? '2' : '6';
+
         profile.CodecProfiles.push({
             Type: 'VideoAudio',
             Codec: 'aac',
@@ -234,6 +236,17 @@
                     Condition: 'NotEquals',
                     Property: 'AudioProfile',
                     Value: 'HE-AAC'
+                },
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'AudioChannels',
+                    Value: videoAudioChannels
+                },
+                {
+                    Condition: 'Equals',
+                    Property: 'IsSecondaryAudio',
+                    Value: 'false',
+                    IsRequired: 'false'
                 }
                 // Disabling this is going to require us to learn why it was disabled in the first place
                 //,
@@ -252,7 +265,13 @@
                 {
                     Condition: 'LessThanEqual',
                     Property: 'AudioChannels',
-                    Value: '6'
+                    Value: videoAudioChannels
+                },
+                {
+                    Condition: 'Equals',
+                    Property: 'IsSecondaryAudio',
+                    Value: 'false',
+                    IsRequired: 'false'
                 }
             ]
         });
@@ -260,6 +279,11 @@
         profile.CodecProfiles.push({
             Type: 'VideoAudio',
             Conditions: [
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'AudioChannels',
+                    Value: videoAudioChannels
+                },
                 {
                     Condition: 'Equals',
                     Property: 'IsSecondaryAudio',

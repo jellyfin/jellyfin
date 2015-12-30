@@ -260,6 +260,16 @@
                 });
             }
 
+            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+                if (mediaType) {
+                    items.push({
+                        name: Globalize.translate('ButtonDownload'),
+                        id: 'download',
+                        ironIcon: 'file-download'
+                    });
+                }
+            }
+
             if (commands.indexOf('delete') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonDelete'),
@@ -1090,6 +1100,14 @@
                 id: 'playlist',
                 ironIcon: 'playlist-add'
             });
+
+            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+                //items.push({
+                //    name: Globalize.translate('ButtonDownload'),
+                //    id: 'download',
+                //    ironIcon: 'file-download'
+                //});
+            }
 
             items.push({
                 name: Globalize.translate('HeaderGroupVersions'),

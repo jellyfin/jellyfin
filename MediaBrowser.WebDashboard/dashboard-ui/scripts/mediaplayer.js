@@ -36,477 +36,410 @@
             return targets;
         };
 
-        self.getVideoQualityOptions = function (videoWidth, videoHeight) {
-
-            var bitrateSetting = AppSettings.maxStreamingBitrate();
-
-            var maxAllowedWidth = videoWidth || 4096;
-            var maxAllowedHeight = videoHeight || 2304;
-
-            var options = [];
-
-            // Some 1080- videos are reported as 1912?
-            if (maxAllowedWidth >= 1900) {
-
-                options.push({ name: '1080p - 40Mbps', maxHeight: 1080, bitrate: 40000000 });
-                options.push({ name: '1080p - 35Mbps', maxHeight: 1080, bitrate: 35000000 });
-                options.push({ name: '1080p - 30Mbps', maxHeight: 1080, bitrate: 30000000 });
-                options.push({ name: '1080p - 25Mbps', maxHeight: 1080, bitrate: 25000000 });
-                options.push({ name: '1080p - 20Mbps', maxHeight: 1080, bitrate: 20000000 });
-                options.push({ name: '1080p - 15Mbps', maxHeight: 1080, bitrate: 15000000 });
-                options.push({ name: '1080p - 10Mbps', maxHeight: 1080, bitrate: 10000001 });
-                options.push({ name: '1080p - 8Mbps', maxHeight: 1080, bitrate: 8000001 });
-                options.push({ name: '1080p - 6Mbps', maxHeight: 1080, bitrate: 6000001 });
-                options.push({ name: '1080p - 5Mbps', maxHeight: 1080, bitrate: 5000001 });
-                options.push({ name: '1080p - 4Mbps', maxHeight: 1080, bitrate: 4000002 });
-
-            } else if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 10Mbps', maxHeight: 720, bitrate: 10000000 });
-                options.push({ name: '720p - 8Mbps', maxHeight: 720, bitrate: 8000000 });
-                options.push({ name: '720p - 6Mbps', maxHeight: 720, bitrate: 6000000 });
-                options.push({ name: '720p - 5Mbps', maxHeight: 720, bitrate: 5000000 });
-
-            } else if (maxAllowedWidth >= 700) {
-                options.push({ name: '480p - 4Mbps', maxHeight: 480, bitrate: 4000001 });
-                options.push({ name: '480p - 3Mbps', maxHeight: 480, bitrate: 3000001 });
-                options.push({ name: '480p - 2.5Mbps', maxHeight: 480, bitrate: 2500000 });
-                options.push({ name: '480p - 2Mbps', maxHeight: 480, bitrate: 2000001 });
-                options.push({ name: '480p - 1.5Mbps', maxHeight: 480, bitrate: 1500001 });
-            }
-
-            if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 4Mbps', maxHeight: 720, bitrate: 4000000 });
-                options.push({ name: '720p - 3Mbps', maxHeight: 720, bitrate: 3000000 });
-                options.push({ name: '720p - 2Mbps', maxHeight: 720, bitrate: 2000000 });
-
-                // The extra 1 is because they're keyed off the bitrate value
-                options.push({ name: '720p - 1.5Mbps', maxHeight: 720, bitrate: 1500000 });
-                options.push({ name: '720p - 1Mbps', maxHeight: 720, bitrate: 1000001 });
-            }
-
-            options.push({ name: '480p - 1.0Mbps', maxHeight: 480, bitrate: 1000000 });
-            options.push({ name: '480p - 720kbps', maxHeight: 480, bitrate: 720000 });
-            options.push({ name: '480p - 420kbps', maxHeight: 480, bitrate: 420000 });
-            options.push({ name: '360p', maxHeight: 360, bitrate: 400000 });
-            options.push({ name: '240p', maxHeight: 240, bitrate: 320000 });
-            options.push({ name: '144p', maxHeight: 144, bitrate: 192000 });
-
-            var i, length, option;
-            var selectedIndex = -1;
-            for (i = 0, length = options.length; i < length; i++) {
-
-                option = options[i];
-
-                if (selectedIndex == -1 && option.bitrate <= bitrateSetting) {
-                    selectedIndex = i;
-                }
-            }
-
-            if (selectedIndex == -1) {
-
-                selectedIndex = options.length - 1;
-            }
-
-            options[selectedIndex].selected = true;
-
-            return options;
-        };
-
         self.getDeviceProfile = function (maxHeight) {
 
-            if (!maxHeight) {
-                maxHeight = self.getVideoQualityOptions().filter(function (q) {
-                    return q.selected;
-                })[0].maxHeight;
-            }
+            return new Promise(function (resolve, reject) {
 
-            var isVlc = AppInfo.isNativeApp && browserInfo.android;
-            var bitrateSetting = AppSettings.maxStreamingBitrate();
+                require(['qualityoptions'], function (qualityoptions) {
 
-            var supportedFormats = getSupportedFormats();
+                    var bitrateSetting = AppSettings.maxStreamingBitrate();
 
-            var canPlayWebm = supportedFormats.indexOf('webm') != -1;
-            var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
-            var canPlayAac = supportedFormats.indexOf('aac') != -1;
-            var canPlayMp3 = supportedFormats.indexOf('mp3') != -1;
-            var canPlayMkv = supportedFormats.indexOf('mkv') != -1;
+                    if (!maxHeight) {
+                        maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
+                            return q.selected;
+                        })[0].maxHeight;
+                    }
 
-            var profile = {};
+                    var isVlc = AppInfo.isNativeApp && browserInfo.android;
 
-            profile.MaxStreamingBitrate = bitrateSetting;
-            profile.MaxStaticBitrate = 8000000;
-            profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
+                    var supportedFormats = getSupportedFormats();
 
-            profile.DirectPlayProfiles = [];
+                    var canPlayWebm = supportedFormats.indexOf('webm') != -1;
+                    var canPlayAc3 = supportedFormats.indexOf('ac3') != -1;
+                    var canPlayAac = supportedFormats.indexOf('aac') != -1;
+                    var canPlayMp3 = supportedFormats.indexOf('mp3') != -1;
+                    var canPlayMkv = supportedFormats.indexOf('mkv') != -1;
 
-            if (supportedFormats.indexOf('h264') != -1) {
-                profile.DirectPlayProfiles.push({
-                    Container: 'mp4,m4v',
-                    Type: 'Video',
-                    VideoCodec: 'h264',
-                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
-                });
-            }
+                    var profile = {};
 
-            if (canPlayMkv) {
-                profile.DirectPlayProfiles.push({
-                    Container: 'mkv,mov',
-                    Type: 'Video',
-                    VideoCodec: 'h264',
-                    AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
-                });
-            }
+                    profile.MaxStreamingBitrate = bitrateSetting;
+                    profile.MaxStaticBitrate = 8000000;
+                    profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
-            var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
+                    profile.DirectPlayProfiles = [];
 
-            if (directPlayVideoContainers && directPlayVideoContainers.length) {
-                profile.DirectPlayProfiles.push({
-                    Container: directPlayVideoContainers.join(','),
-                    Type: 'Video'
-                });
-            }
+                    if (supportedFormats.indexOf('h264') != -1) {
+                        profile.DirectPlayProfiles.push({
+                            Container: 'mp4,m4v',
+                            Type: 'Video',
+                            VideoCodec: 'h264',
+                            AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                        });
+                    }
 
-            ['opus', 'mp3', 'aac', 'webma'].forEach(function(audioFormat){
+                    if (canPlayMkv) {
+                        profile.DirectPlayProfiles.push({
+                            Container: 'mkv,mov',
+                            Type: 'Video',
+                            VideoCodec: 'h264',
+                            AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                        });
+                    }
 
-            	if (supportedFormats.indexOf(audioFormat) != -1) {
-	            	profile.DirectPlayProfiles.push({
-	            	    Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
-	                    Type: 'Audio'
-                	});
-            	}
-            });
+                    var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
 
-            var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
+                    if (directPlayVideoContainers && directPlayVideoContainers.length) {
+                        profile.DirectPlayProfiles.push({
+                            Container: directPlayVideoContainers.join(','),
+                            Type: 'Video'
+                        });
+                    }
 
-            if (directPlayAudioContainers && directPlayAudioContainers.length) {
-                profile.DirectPlayProfiles.push({
-                    Container: directPlayAudioContainers.join(','),
-                    Type: 'Audio'
-                });
-            }
+                    ['opus', 'mp3', 'aac', 'webma'].forEach(function (audioFormat) {
 
-            if (canPlayWebm) {
-                profile.DirectPlayProfiles.push({
-                    Container: 'webm',
-                    Type: 'Video'
-                });
-            }
+                        if (supportedFormats.indexOf(audioFormat) != -1) {
+                            profile.DirectPlayProfiles.push({
+                                Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
+                                Type: 'Audio'
+                            });
+                        }
+                    });
 
-            profile.TranscodingProfiles = [];
+                    var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
 
-            // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-            if (canPlayMkv && !isVlc && !browserInfo.mobile) {
-                profile.TranscodingProfiles.push({
-                    Container: 'mkv',
-                    Type: 'Video',
-                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : '') + (canPlayMp3 ? ',mp3' : ''),
-                    VideoCodec: 'h264',
-                    Context: 'Streaming'
-                });
-            }
+                    if (directPlayAudioContainers && directPlayAudioContainers.length) {
+                        profile.DirectPlayProfiles.push({
+                            Container: directPlayAudioContainers.join(','),
+                            Type: 'Audio'
+                        });
+                    }
 
-            if (self.canPlayHls()) {
-                profile.TranscodingProfiles.push({
-                    Container: 'ts',
-                    Type: 'Video',
-                    AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
-                    VideoCodec: 'h264',
-                    Context: 'Streaming',
-                    Protocol: 'hls'
-                });
+                    if (canPlayWebm) {
+                        profile.DirectPlayProfiles.push({
+                            Container: 'webm',
+                            Type: 'Video'
+                        });
+                    }
 
-                if (canPlayAac && browserInfo.safari && !AppInfo.isNativeApp) {
+                    profile.TranscodingProfiles = [];
+
+                    // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
+                    if (canPlayMkv && !isVlc && !browserInfo.mobile) {
+                        profile.TranscodingProfiles.push({
+                            Container: 'mkv',
+                            Type: 'Video',
+                            AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : '') + (canPlayMp3 ? ',mp3' : ''),
+                            VideoCodec: 'h264',
+                            Context: 'Streaming'
+                        });
+                    }
+
+                    if (self.canPlayHls()) {
+                        profile.TranscodingProfiles.push({
+                            Container: 'ts',
+                            Type: 'Video',
+                            AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                            VideoCodec: 'h264',
+                            Context: 'Streaming',
+                            Protocol: 'hls'
+                        });
+
+                        if (canPlayAac && browserInfo.safari && !AppInfo.isNativeApp) {
+                            profile.TranscodingProfiles.push({
+                                Container: 'ts',
+                                Type: 'Audio',
+                                AudioCodec: 'aac',
+                                Context: 'Streaming',
+                                Protocol: 'hls'
+                            });
+                        }
+                    }
+
+                    if (canPlayWebm) {
+
+                        profile.TranscodingProfiles.push({
+                            Container: 'webm',
+                            Type: 'Video',
+                            AudioCodec: 'vorbis',
+                            VideoCodec: 'vpx',
+                            Context: 'Streaming',
+                            Protocol: 'http'
+                        });
+                    }
+
                     profile.TranscodingProfiles.push({
-                        Container: 'ts',
-                        Type: 'Audio',
+                        Container: 'mp4',
+                        Type: 'Video',
                         AudioCodec: 'aac',
+                        VideoCodec: 'h264',
                         Context: 'Streaming',
-                        Protocol: 'hls'
+                        Protocol: 'http'
                     });
-                }
-            }
 
-            if (canPlayWebm) {
+                    profile.TranscodingProfiles.push({
+                        Container: 'mp4',
+                        Type: 'Video',
+                        AudioCodec: 'aac',
+                        VideoCodec: 'h264',
+                        Context: 'Static',
+                        Protocol: 'http'
+                    });
 
-                profile.TranscodingProfiles.push({
-                    Container: 'webm',
-                    Type: 'Video',
-                    AudioCodec: 'vorbis',
-                    VideoCodec: 'vpx',
-                    Context: 'Streaming',
-                    Protocol: 'http'
-                });
-            }
+                    ['opus', 'mp3', 'aac'].forEach(function (audioFormat) {
 
-            profile.TranscodingProfiles.push({
-                Container: 'mp4',
-                Type: 'Video',
-                AudioCodec: 'aac',
-                VideoCodec: 'h264',
-                Context: 'Streaming',
-                Protocol: 'http'
-            });
+                        if (supportedFormats.indexOf(audioFormat) != -1) {
+                            profile.TranscodingProfiles.push({
+                                Container: audioFormat,
+                                Type: 'Audio',
+                                AudioCodec: audioFormat,
+                                Context: 'Streaming',
+                                Protocol: 'http'
+                            });
+                            profile.TranscodingProfiles.push({
+                                Container: audioFormat,
+                                Type: 'Audio',
+                                AudioCodec: audioFormat,
+                                Context: 'Static',
+                                Protocol: 'http'
+                            });
+                        }
+                    });
 
-            profile.TranscodingProfiles.push({
-                Container: 'mp4',
-                Type: 'Video',
-                AudioCodec: 'aac',
-                VideoCodec: 'h264',
-                Context: 'Static',
-                Protocol: 'http'
-            });
+                    profile.ContainerProfiles = [];
 
-            ['opus', 'mp3', 'aac'].forEach(function(audioFormat){
-
-            	if (supportedFormats.indexOf(audioFormat) != -1) {
-	            	profile.TranscodingProfiles.push({
-	                    Container: audioFormat,
-	                    Type: 'Audio',
-	                    AudioCodec: audioFormat,
-	                    Context: 'Streaming',
-	                    Protocol: 'http'
-	                });
-	                profile.TranscodingProfiles.push({
-	                    Container: audioFormat,
-	                    Type: 'Audio',
-	                    AudioCodec: audioFormat,
-	                    Context: 'Static',
-	                    Protocol: 'http'
-	                });
-            	}
-            });
-
-            profile.ContainerProfiles = [];
-
-            profile.CodecProfiles = [];
-            profile.CodecProfiles.push({
-                Type: 'Audio',
-                Conditions: [{
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: '2'
-                }]
-            });
-
-            // These don't play very well
-            if (isVlc) {
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'dca',
-                    Conditions: [
-                        {
+                    profile.CodecProfiles = [];
+                    profile.CodecProfiles.push({
+                        Type: 'Audio',
+                        Conditions: [{
                             Condition: 'LessThanEqual',
                             Property: 'AudioChannels',
-                            Value: 6
+                            Value: '2'
+                        }]
+                    });
+
+                    // These don't play very well
+                    if (isVlc) {
+                        profile.CodecProfiles.push({
+                            Type: 'VideoAudio',
+                            Codec: 'dca',
+                            Conditions: [
+                                {
+                                    Condition: 'LessThanEqual',
+                                    Property: 'AudioChannels',
+                                    Value: 6
+                                }
+                            ]
+                        });
+
+                        profile.CodecProfiles.push({
+                            Type: 'VideoAudio',
+                            Codec: 'aac,mp3',
+                            Conditions: [
+                                {
+                                    Condition: 'LessThanEqual',
+                                    Property: 'AudioChannels',
+                                    Value: '6'
+                                }
+                            ]
+                        });
+
+                    } else {
+
+                        var videoAudioChannels = browserInfo.safari ? '2' : '6';
+
+                        profile.CodecProfiles.push({
+                            Type: 'VideoAudio',
+                            Codec: 'aac',
+                            Container: 'mkv,mov',
+                            Conditions: [
+                                {
+                                    Condition: 'NotEquals',
+                                    Property: 'AudioProfile',
+                                    Value: 'HE-AAC'
+                                },
+                                {
+                                    Condition: 'Equals',
+                                    Property: 'IsSecondaryAudio',
+                                    Value: 'false',
+                                    IsRequired: 'false'
+                                },
+                                {
+                                    Condition: 'LessThanEqual',
+                                    Property: 'AudioChannels',
+                                    Value: videoAudioChannels
+                                }
+                                // Disabling this is going to require us to learn why it was disabled in the first place
+                                //,
+                                //{
+                                //    Condition: 'NotEquals',
+                                //    Property: 'AudioProfile',
+                                //    Value: 'LC'
+                                //}
+                            ]
+                        });
+
+                        profile.CodecProfiles.push({
+                            Type: 'VideoAudio',
+                            Conditions: [
+                                {
+                                    Condition: 'Equals',
+                                    Property: 'IsSecondaryAudio',
+                                    Value: 'false',
+                                    IsRequired: 'false'
+                                },
+                                {
+                                    Condition: 'LessThanEqual',
+                                    Property: 'AudioChannels',
+                                    Value: videoAudioChannels
+                                }
+                            ]
+                        });
+
+                    }
+
+                    if (isVlc) {
+                        profile.CodecProfiles.push({
+                            Type: 'Video',
+                            Codec: 'h264',
+                            Conditions: [
+                            {
+                                Condition: 'EqualsAny',
+                                Property: 'VideoProfile',
+                                Value: 'high|main|baseline|constrained baseline'
+                            },
+                            {
+                                Condition: 'LessThanEqual',
+                                Property: 'VideoLevel',
+                                Value: '41'
+                            }]
+                        });
+                    } else {
+                        profile.CodecProfiles.push({
+                            Type: 'Video',
+                            Codec: 'h264',
+                            Conditions: [
+                            {
+                                Condition: 'NotEquals',
+                                Property: 'IsAnamorphic',
+                                Value: 'true',
+                                IsRequired: false
+                            },
+                            {
+                                Condition: 'EqualsAny',
+                                Property: 'VideoProfile',
+                                Value: 'high|main|baseline|constrained baseline'
+                            },
+                            {
+                                Condition: 'LessThanEqual',
+                                Property: 'VideoLevel',
+                                Value: '41'
+                            },
+                            {
+                                Condition: 'LessThanEqual',
+                                Property: 'Height',
+                                Value: maxHeight
+                            }]
+                        });
+                    }
+
+                    if (!isVlc) {
+                        profile.CodecProfiles.push({
+                            Type: 'Video',
+                            Codec: 'vpx',
+                            Conditions: [
+                            {
+                                Condition: 'NotEquals',
+                                Property: 'IsAnamorphic',
+                                Value: 'true',
+                                IsRequired: false
+                            },
+                            {
+                                Condition: 'LessThanEqual',
+                                Property: 'Height',
+                                Value: maxHeight
+                            }]
+                        });
+                    }
+
+                    // Subtitle profiles
+                    // External vtt or burn in
+                    profile.SubtitleProfiles = [];
+                    if (self.supportsTextTracks()) {
+
+                        if (isVlc) {
+                            profile.SubtitleProfiles.push({
+                                Format: 'srt',
+                                Method: 'External'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'srt',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'subrip',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'ass',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'ssa',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'pgs',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'pgssub',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'dvdsub',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'vtt',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'sub',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'idx',
+                                Method: 'Embed'
+                            });
+                            profile.SubtitleProfiles.push({
+                                Format: 'smi',
+                                Method: 'Embed'
+                            });
+                        } else {
+                            profile.SubtitleProfiles.push({
+                                Format: 'vtt',
+                                Method: 'External'
+                            });
                         }
-                    ]
+                    }
+
+                    profile.ResponseProfiles = [];
+
+                    profile.ResponseProfiles.push({
+                        Type: 'Video',
+                        Container: 'm4v',
+                        MimeType: 'video/mp4'
+                    });
+
+                    profile.ResponseProfiles.push({
+                        Type: 'Video',
+                        Container: 'mov',
+                        MimeType: 'video/webm'
+                    });
+
+                    resolve(profile);
                 });
-
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac,mp3',
-                    Conditions: [
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: '6'
-                        }
-                    ]
-                });
-
-            } else {
-
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac',
-                    Container: 'mkv,mov',
-                    Conditions: [
-                        {
-                            Condition: 'NotEquals',
-                            Property: 'AudioProfile',
-                            Value: 'HE-AAC'
-                        },
-                        {
-                            Condition: 'Equals',
-                            Property: 'IsSecondaryAudio',
-                            Value: 'false',
-                            IsRequired: 'false'
-                        },
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: '6'
-                        }
-                        // Disabling this is going to require us to learn why it was disabled in the first place
-                        //,
-                        //{
-                        //    Condition: 'NotEquals',
-                        //    Property: 'AudioProfile',
-                        //    Value: 'LC'
-                        //}
-                    ]
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Conditions: [
-                        {
-                            Condition: 'Equals',
-                            Property: 'IsSecondaryAudio',
-                            Value: 'false',
-                            IsRequired: 'false'
-                        },
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: '6'
-                        }
-                    ]
-                });
-
-            }
-
-            if (isVlc) {
-                profile.CodecProfiles.push({
-                    Type: 'Video',
-                    Codec: 'h264',
-                    Conditions: [
-                    {
-                        Condition: 'EqualsAny',
-                        Property: 'VideoProfile',
-                        Value: 'high|main|baseline|constrained baseline'
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'VideoLevel',
-                        Value: '41'
-                    }]
-                });
-            } else {
-                profile.CodecProfiles.push({
-                    Type: 'Video',
-                    Codec: 'h264',
-                    Conditions: [
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'IsAnamorphic',
-                        Value: 'true',
-                        IsRequired: false
-                    },
-                    {
-                        Condition: 'EqualsAny',
-                        Property: 'VideoProfile',
-                        Value: 'high|main|baseline|constrained baseline'
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'VideoLevel',
-                        Value: '41'
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'Height',
-                        Value: maxHeight
-                    }]
-                });
-            }
-
-            if (!isVlc) {
-                profile.CodecProfiles.push({
-                    Type: 'Video',
-                    Codec: 'vpx',
-                    Conditions: [
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'IsAnamorphic',
-                        Value: 'true',
-                        IsRequired: false
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'Height',
-                        Value: maxHeight
-                    }]
-                });
-            }
-
-            // Subtitle profiles
-            // External vtt or burn in
-            profile.SubtitleProfiles = [];
-            if (self.supportsTextTracks()) {
-
-                if (isVlc) {
-                    profile.SubtitleProfiles.push({
-                        Format: 'srt',
-                        Method: 'External'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'srt',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'subrip',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'ass',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'ssa',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'pgs',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'pgssub',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'dvdsub',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'vtt',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'sub',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'idx',
-                        Method: 'Embed'
-                    });
-                    profile.SubtitleProfiles.push({
-                        Format: 'smi',
-                        Method: 'Embed'
-                    });
-                } else {
-                    profile.SubtitleProfiles.push({
-                        Format: 'vtt',
-                        Method: 'External'
-                    });
-                }
-            }
-
-            profile.ResponseProfiles = [];
-
-            profile.ResponseProfiles.push({
-                Type: 'Video',
-                Container: 'm4v',
-                MimeType: 'video/mp4'
             });
-
-            profile.ResponseProfiles.push({
-                Type: 'Video',
-                Container: 'mov',
-                MimeType: 'video/webm'
-            });
-
-            return profile;
         };
 
         var supportsTextTracks;
@@ -631,36 +564,37 @@
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
-            var deviceProfile = self.getDeviceProfile();
-
-            var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
-            if (typeof (audioStreamIndex) == 'string') {
-                audioStreamIndex = parseInt(audioStreamIndex);
-            }
-
-            var subtitleStreamIndex = params.SubtitleStreamIndex == null ? (getParameterByName('SubtitleStreamIndex', currentSrc) || null) : params.SubtitleStreamIndex;
-            if (typeof (subtitleStreamIndex) == 'string') {
-                subtitleStreamIndex = parseInt(subtitleStreamIndex);
-            }
-
-            MediaController.getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
-
-                if (validatePlaybackInfoResult(result)) {
-
-                    self.currentMediaSource = result.MediaSources[0];
-                    self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks).then(function (streamInfo) {
-
-                        if (!streamInfo.url) {
-                            MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
-                            self.stop();
-                            return;
-                        }
-
-                        self.currentSubtitleStreamIndex = subtitleStreamIndex;
-
-                        changeStreamToUrl(mediaRenderer, playSessionId, streamInfo);
-                    });
+            self.getDeviceProfile().then(function (deviceProfile) {
+                
+                var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
+                if (typeof (audioStreamIndex) == 'string') {
+                    audioStreamIndex = parseInt(audioStreamIndex);
                 }
+
+                var subtitleStreamIndex = params.SubtitleStreamIndex == null ? (getParameterByName('SubtitleStreamIndex', currentSrc) || null) : params.SubtitleStreamIndex;
+                if (typeof (subtitleStreamIndex) == 'string') {
+                    subtitleStreamIndex = parseInt(subtitleStreamIndex);
+                }
+
+                MediaController.getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
+
+                    if (validatePlaybackInfoResult(result)) {
+
+                        self.currentMediaSource = result.MediaSources[0];
+                        self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks).then(function (streamInfo) {
+
+                            if (!streamInfo.url) {
+                                MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
+                                self.stop();
+                                return;
+                            }
+
+                            self.currentSubtitleStreamIndex = subtitleStreamIndex;
+
+                            changeStreamToUrl(mediaRenderer, playSessionId, streamInfo);
+                        });
+                    }
+                });
             });
         };
 
@@ -1087,6 +1021,12 @@
                 return;
             }
 
+            var onBitrateDetected = function() {
+                self.getDeviceProfile().then(function(deviceProfile) {
+                    playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
+                });
+            };
+
             var bitrateDetectionKey = ApiClient.serverAddress();
 
             if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
@@ -1098,15 +1038,12 @@
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     AppSettings.maxStreamingBitrate(bitrate);
 
-                    playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
+                    onBitrateDetected();
 
-                }, function () {
-
-                    playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
-                });
+                }, onBitrateDetected);
 
             } else {
-                playOnDeviceProfileCreated(self.getDeviceProfile(), item, startPosition, callback);
+                onBitrateDetected();
             }
         };
 
