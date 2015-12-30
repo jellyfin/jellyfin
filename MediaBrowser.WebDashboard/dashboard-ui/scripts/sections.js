@@ -2,9 +2,7 @@
 
     function getUserViews(userId) {
 
-        var deferred = $.Deferred();
-
-        ApiClient.getUserViews({}, userId).then(function (result) {
+        return ApiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -44,10 +42,8 @@
                 }
             }
 
-            deferred.resolveWith(null, [list]);
+            return list;
         });
-
-        return deferred.promise();
     }
 
     function enableScrollX() {

@@ -1004,8 +1004,8 @@
             };
 
             //if (!browserInfo.animate) {
-                onfinish();
-                return;
+            onfinish();
+            return;
             //}
 
             requestAnimationFrame(function () {
@@ -1025,7 +1025,7 @@
 
             elem.classList.remove('hide');
 
-            if (!browserInfo.animate) {
+            if (!browserInfo.animate || browserInfo.mobile) {
                 return;
             }
 
