@@ -24,6 +24,14 @@
 
         self.getTargets = function () {
 
+            return new Promise(function (resolve, reject) {
+
+                resolve(self.getTargetsInternal());
+            });
+        };
+
+        self.getTargetsInternal = function () {
+
             var targets = [{
                 name: Globalize.translate('MyDevice'),
                 id: AppInfo.deviceId,
@@ -565,7 +573,7 @@
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
             self.getDeviceProfile().then(function (deviceProfile) {
-                
+
                 var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
                 if (typeof (audioStreamIndex) == 'string') {
                     audioStreamIndex = parseInt(audioStreamIndex);
@@ -823,13 +831,11 @@
 
         function getOptimalMediaSource(mediaType, versions) {
 
-            var deferred = $.Deferred();
-
             var promises = versions.map(function (v) {
                 return MediaController.supportsDirectPlay(v);
             });
 
-            Promise.all(promises).then(function (responses) {
+            return Promise.all(promises).then(function (responses) {
 
                 for (var i = 0, length = versions.length; i < length; i++) {
                     versions[i].enableDirectPlay = responses[i] || false;
@@ -852,10 +858,8 @@
                     return s.SupportsTranscoding;
                 })[0];
 
-                deferred.resolveWith(null, [optimalVersion]);
+                return optimalVersion;
             });
-
-            return deferred.promise();
         }
 
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
@@ -1021,8 +1025,8 @@
                 return;
             }
 
-            var onBitrateDetected = function() {
-                self.getDeviceProfile().then(function(deviceProfile) {
+            var onBitrateDetected = function () {
+                self.getDeviceProfile().then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
                 });
             };
@@ -1540,13 +1544,11 @@
 
         self.getPlayerState = function () {
 
-            var deferred = $.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var result = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
-
-            deferred.resolveWith(null, [result]);
-
-            return deferred.promise();
+                var result = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
+                resolve(result);
+            });
         };
 
         self.getPlayerStateInternal = function (mediaRenderer, item, mediaSource) {
@@ -1967,16 +1969,17 @@
 
         self.tryPair = function (target) {
 
-            var deferred = $.Deferred();
-            deferred.resolve();
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+
+                resolve();
+            });
         };
     }
 
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
 
 
 })(document, setTimeout, clearTimeout, screen, setInterval, window);

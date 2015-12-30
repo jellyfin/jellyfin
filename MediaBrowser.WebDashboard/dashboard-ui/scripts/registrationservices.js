@@ -2,12 +2,12 @@
 
     var supporterPlaybackKey = 'lastSupporterPlaybackMessage4';
 
-    function validatePlayback(deferred) {
+    function validatePlayback(resolve, reject) {
 
         Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
-                deferred.resolve();
+                resolve();
             } else {
 
                 var lastMessage = parseInt(appStorage.getItem(supporterPlaybackKey) || '0');
@@ -16,13 +16,13 @@
 
                     // Don't show on the very first playback attempt
                     appStorage.setItem(supporterPlaybackKey, new Date().getTime());
-                    deferred.resolve();
+                    resolve();
                 }
                 else if ((new Date().getTime() - lastMessage) > 345600000) {
 
-                    showPlaybackOverlay(deferred);
+                    showPlaybackOverlay(resolve, reject);
                 } else {
-                    deferred.resolve();
+                    resolve();
                 }
             }
         });
@@ -95,7 +95,7 @@
         return html;
     }
 
-    function showPlaybackOverlay(deferred) {
+    function showPlaybackOverlay(resolve, reject) {
 
         require(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
@@ -135,7 +135,7 @@
             dlg.addEventListener('iron-overlay-closed', function (e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                 dlg.parentNode.removeChild(dlg);
-                deferred.resolve();
+                resolve();
             });
 
             paperDialogHelper.open(dlg);
@@ -146,12 +146,12 @@
         });
     }
 
-    function validateSync(deferred) {
+    function validateSync(resolve, reject) {
 
         Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter) {
-                deferred.resolve();
+                resolve();
                 return;
             }
 
@@ -162,21 +162,19 @@
                 Dashboard.hideLoadingMsg();
 
                 if (registrationInfo.IsRegistered) {
-                    deferred.resolve();
+                    resolve();
                     return;
                 }
 
                 Dashboard.alert({
                     message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/premiere" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
                     title: Globalize.translate('HeaderSync'),
-                    callback: function () {
-                        deferred.reject();
-                    }
+                    callback: reject
                 });
 
             }, function () {
 
-                deferred.reject();
+                reject();
                 Dashboard.hideLoadingMsg();
 
                 Dashboard.alert({
@@ -279,19 +277,17 @@
 
         validateFeature: function (name) {
 
-            var deferred = DeferredBuilder.Deferred();
-
-            if (name == 'playback') {
-                validatePlayback(deferred);
-            } else if (name == 'livetv') {
-                deferred.resolve();
-            } else if (name == 'sync') {
-                validateSync(deferred);
-            } else {
-                deferred.resolve();
-            }
-
-            return deferred.promise();
+            return new Promise(function (resolve, reject) {
+                if (name == 'playback') {
+                    validatePlayback(resolve, reject);
+                } else if (name == 'livetv') {
+                    resolve();
+                } else if (name == 'sync') {
+                    validateSync(resolve, reject);
+                } else {
+                    resolve();
+                }
+            });
         }
     };
 

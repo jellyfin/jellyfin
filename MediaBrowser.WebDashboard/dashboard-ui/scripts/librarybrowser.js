@@ -107,11 +107,11 @@
 
         getSavedViewSetting: function (key) {
 
-            var deferred = $.Deferred();
-            var val = LibraryBrowser.getSavedView(key);
+            return new Promise(function (resolve, reject) {
 
-            deferred.resolveWith(null, [val]);
-            return deferred.promise();
+                var val = LibraryBrowser.getSavedView(key);
+                resolve(val);
+            });
         },
 
         needsRefresh: function (elem) {
