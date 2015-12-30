@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _httpClient, _userManager)
+                await new UsageReporter(_applicationHost, _httpClient, _userManager, _logger)
                     .ReportAppUsage(client, CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             try
             {
-                await new UsageReporter(_applicationHost, _httpClient, _userManager)
+                await new UsageReporter(_applicationHost, _httpClient, _userManager, _logger)
                     .ReportServerUsage(CancellationToken.None)
                     .ConfigureAwait(false);
             }
