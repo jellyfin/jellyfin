@@ -70,14 +70,17 @@
     border-radius: 2px;
 }
 
-.cardOverlayMoreButton, .cardOverlayPlayButton {
+.cardOverlayButtonContainer {
     position: absolute;
     bottom: 0;
     right: 0;
+    padding: 1em .5em .5em 1em;
+}
+
+.cardOverlayMoreButton, .cardOverlayPlayButton {
     color: #333;
     background-color: rgba(210,210,210,.9);
     border-radius: 500px;
-    margin: 0 .3em .3em 0;
     padding: 5px;
     width: 36px;
     height: 36px;
