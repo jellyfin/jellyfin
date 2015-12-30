@@ -404,9 +404,7 @@
 
     function getUserViews(apiClient, userId) {
 
-        var deferred = $.Deferred();
-
-        apiClient.getUserViews({}, userId).then(function (result) {
+        return apiClient.getUserViews({}, userId).then(function (result) {
 
             var items = result.Items;
 
@@ -442,10 +440,8 @@
                 }
             }
 
-            deferred.resolveWith(null, [list]);
+            return list;
         });
-
-        return deferred.promise();
     }
 
     function updateLibraryMenu(user) {

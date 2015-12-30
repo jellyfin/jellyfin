@@ -675,14 +675,16 @@
 
         self.getTargets = function () {
 
-            var targets = [];
+            return new Promise(function (resolve, reject) {
 
-            if (castPlayer.hasReceivers) {
-                targets.push(self.getCurrentTargetInfo());
-            }
+                var targets = [];
 
-            return targets;
+                if (castPlayer.hasReceivers) {
+                    targets.push(self.getCurrentTargetInfo());
+                }
 
+                resolve(targets);
+            });
         };
 
         self.getCurrentTargetInfo = function () {
