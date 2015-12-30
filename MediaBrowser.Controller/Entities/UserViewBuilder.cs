@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Entities
             list.Add(await GetUserView(SpecialFolder.MusicPlaylists, "1", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.MusicAlbums, "2", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, "3", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicArtists, "4", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.MusicSongs, "5", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.MusicGenres, "6", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.MusicFavorites, "7", parent).ConfigureAwait(false));
