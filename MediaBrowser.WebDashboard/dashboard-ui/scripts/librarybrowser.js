@@ -2171,10 +2171,10 @@
             html += '</a>';
 
             if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program')) {
-                html += '<paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button>';
+                html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button></div>';
             }
             if (options.overlayMoreButton) {
-                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
+                html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button></div>';
             }
 
             // cardScalable
