@@ -113,11 +113,7 @@
 
             }, function () {
 
-                Dashboard.alert({
-
-                    message: Globalize.translate('ErrorAddingEmbyConnectAccount', 'apps@emby.media')
-
-                });
+                showEmbyConnectErrorMessage('.');
             });
 
         } else {
@@ -125,7 +121,26 @@
                 noActionCallback();
             }
         }
+    } function showEmbyConnectErrorMessage(username) {
+
+        var msg;
+
+        if (username) {
+
+            msg = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
+            msg += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+
+        } else {
+            msg = Globalize.translate('DefaultErrorMessage');
+        }
+
+        Dashboard.alert({
+
+            message: msg
+
+        });
     }
+
 
     function onSaveComplete(page, user) {
 

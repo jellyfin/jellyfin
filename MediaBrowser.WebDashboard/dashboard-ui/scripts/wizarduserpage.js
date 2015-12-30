@@ -47,13 +47,27 @@
 
         }).then(onUpdateUserComplete, function () {
 
-            var msgKey = form.querySelector('#txtConnectUserName').value ? 'ErrorAddingEmbyConnectAccount' : 'DefaultErrorMessage';
+            showEmbyConnectErrorMessage(form.querySelector('#txtConnectUserName').value);
+        });
+    }
 
-            Dashboard.alert({
+    function showEmbyConnectErrorMessage(username) {
 
-                message: Globalize.translate(msgKey)
+        var msg;
 
-            });
+        if (username) {
+
+            msg = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
+            msg += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+
+        } else {
+            msg = Globalize.translate('DefaultErrorMessage');
+        }
+
+        Dashboard.alert({
+
+            message: msg
+
         });
     }
 
@@ -84,7 +98,6 @@
 
             Dashboard.hideLoadingMsg();
         });
-
     });
 
 })(jQuery, document, window);
