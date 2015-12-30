@@ -54,7 +54,7 @@
 
         Promise.all([promise1, promise2]).then(function (responses) {
 
-            loadPage(page, responses[0], responses[0]);
+            loadPage(page, responses[1], responses[0]);
         });
     });
 
