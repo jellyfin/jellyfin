@@ -850,24 +850,27 @@
 
             return new Promise(function (resolve, reject) {
 
+                var onFinish = function (foundServers) {
+                    var servers = foundServers.map(function (foundServer) {
+
+                        var info = {
+                            Id: foundServer.Id,
+                            LocalAddress: foundServer.Address,
+                            Name: foundServer.Name,
+                            ManualAddress: convertEndpointAddressToManualAddress(foundServer),
+                            DateLastLocalConnection: new Date().getTime()
+                        };
+
+                        info.LastConnectionMode = info.ManualAddress ? ConnectionMode.Manual : ConnectionMode.Local;
+
+                        return info;
+                    });
+                    resolve(servers);
+                };
+
                 require(['serverdiscovery'], function (serverDiscovery) {
-                    serverDiscovery.findServers(1000).then(function (foundServers) {
-
-                        var servers = foundServers.map(function (foundServer) {
-
-                            var info = {
-                                Id: foundServer.Id,
-                                LocalAddress: foundServer.Address,
-                                Name: foundServer.Name,
-                                ManualAddress: convertEndpointAddressToManualAddress(foundServer),
-                                DateLastLocalConnection: new Date().getTime()
-                            };
-
-                            info.LastConnectionMode = info.ManualAddress ? ConnectionMode.Manual : ConnectionMode.Local;
-
-                            return info;
-                        });
-                        resolve(servers);
+                    serverDiscovery.findServers(1000).then(onFinish, function () {
+                        onFinish([]);
                     });
 
                 });
