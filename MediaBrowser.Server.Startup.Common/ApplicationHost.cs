@@ -321,6 +321,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             await base.RunStartupTasks().ConfigureAwait(false);
 
+            Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
 
