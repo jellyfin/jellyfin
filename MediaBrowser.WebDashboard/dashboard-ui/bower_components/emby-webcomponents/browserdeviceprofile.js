@@ -113,7 +113,7 @@
             });
         }
 
-        if (browser.chrome) {
+        if (canPlayMkv) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv,mov',
                 Type: 'Video',
