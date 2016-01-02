@@ -32,6 +32,12 @@ namespace MediaBrowser.Api.System
 
     }
 
+    [Route("/System/Ping", "POST")]
+    public class PingSystem : IReturnVoid
+    {
+
+    }
+
     /// <summary>
     /// Class RestartApplication
     /// </summary>
@@ -102,6 +108,11 @@ namespace MediaBrowser.Api.System
             _fileSystem = fileSystem;
             _network = network;
             _security = security;
+        }
+
+        public object Post(PingSystem request)
+        {
+            return _appHost.Name;
         }
 
         public object Get(GetServerLogs request)
