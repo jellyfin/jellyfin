@@ -875,12 +875,12 @@
 
         editMetadata: function (itemId) {
 
-            //Dashboard.navigate('edititemmetadata.html?id=' + itemId);
-            //return;
-            require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+            Dashboard.navigate('edititemmetadata.html?id=' + itemId);
 
-                metadataeditor.show(itemId);
-            });
+            //require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+
+            //    metadataeditor.show(itemId);
+            //});
         },
 
         showMoreCommands: function (positionTo, itemId, commands) {
