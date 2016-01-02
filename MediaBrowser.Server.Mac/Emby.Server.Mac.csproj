@@ -1115,6 +1115,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\bower.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\browser.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\browser.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\requirecss.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\requirecss.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\requirehtml.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\requirehtml.js</Link>
     </BundleResource>
@@ -1160,29 +1169,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\.bower.json</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.bowerrc">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\.bowerrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.jscsrc">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\.jscsrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.jshintrc">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\.jshintrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\.travis.yml">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\.travis.yml</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\CHANGELOG.md">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\CHANGELOG.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\CONTRIBUTING.md">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\CONTRIBUTING.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\Gruntfile.coffee">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\Gruntfile.coffee</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\LICENSE.md">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\LICENSE.md</Link>
@@ -1193,8 +1184,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\bower.json">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\bower.json</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\component.json">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\component.json</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\changelog.js">
+      <Link>Resources\dashboard-ui\bower_components\hammerjs\changelog.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.js">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.js</Link>
@@ -1204,9 +1195,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\hammer.min.map">
       <Link>Resources\dashboard-ui\bower_components\hammerjs\hammer.min.map</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hammerjs\package.json">
-      <Link>Resources\dashboard-ui\bower_components\hammerjs\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\headroom.js\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\headroom.js\.bower.json</Link>
@@ -4169,6 +4157,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js">
       <Link>Resources\dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\chromecasthelpers.js">
+      <Link>Resources\dashboard-ui\components\chromecasthelpers.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\humanedate.js">
       <Link>Resources\dashboard-ui\components\humanedate.js</Link>
     </BundleResource>
@@ -4181,8 +4172,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\prompt.js">
       <Link>Resources\dashboard-ui\components\prompt.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\requirecss.js">
-      <Link>Resources\dashboard-ui\components\requirecss.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\remotecontrolautoplay.js">
+      <Link>Resources\dashboard-ui\components\remotecontrolautoplay.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\sharingwidget.js">
       <Link>Resources\dashboard-ui\components\sharingwidget.js</Link>
