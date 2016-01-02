@@ -1514,6 +1514,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 if (channel != null)
                 {
                     dto.ChannelName = channel.Name;
+                    dto.MediaType = channel.MediaType;
 
                     if (channel.HasImage(ImageType.Primary))
                     {
