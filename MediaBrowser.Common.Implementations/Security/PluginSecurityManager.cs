@@ -153,66 +153,6 @@ namespace MediaBrowser.Common.Implementations.Security
             }
         }
 
-        public async Task<SupporterInfo> GetSupporterInfo()
-        {
-            var key = SupporterKey;
-
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                return new SupporterInfo();
-            }
-
-            var data = new Dictionary<string, string>
-                {
-                    { "key", key }, 
-                };
-
-            var url = MbAdmin.HttpsUrl + "/service/supporter/retrieve";
-
-            using (var stream = await _httpClient.Post(url, data, CancellationToken.None).ConfigureAwait(false))
-            {
-                var response = _jsonSerializer.DeserializeFromStream<SuppporterInfoResponse>(stream);
-
-                var info = new SupporterInfo
-                {
-                    Email = response.email,
-                    PlanType = response.planType,
-                    SupporterKey = response.supporterKey,
-                    IsActiveSupporter = IsMBSupporter
-                };
-
-                if (!string.IsNullOrWhiteSpace(response.expDate))
-                {
-                    DateTime parsedDate;
-                    if (DateTime.TryParse(response.expDate, out parsedDate))
-                    {
-                        info.ExpirationDate = parsedDate;
-                    }
-                    else
-                    {
-                        _logger.Error("Failed to parse expDate: {0}", response.expDate);
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(response.regDate))
-                {
-                    DateTime parsedDate;
-                    if (DateTime.TryParse(response.regDate, out parsedDate))
-                    {
-                        info.RegistrationDate = parsedDate;
-                    }
-                    else
-                    {
-                        _logger.Error("Failed to parse regDate: {0}", response.regDate);
-                    }
-                }
-
-                info.IsExpiredSupporter = info.ExpirationDate.HasValue && info.ExpirationDate < DateTime.UtcNow && !string.IsNullOrWhiteSpace(info.SupporterKey);
-
-                return info;
-            }
-        }
-
         /// <summary>
         /// Register an app store sale with our back-end.  It will validate the transaction with the store
         /// and then register the proper feature and then fill in the supporter key on success.
