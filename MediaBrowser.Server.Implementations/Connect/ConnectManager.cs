@@ -1073,11 +1073,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<ConnectSupporterSummary> GetConnectSupporterSummary()
         {
-            if (!_securityManager.IsMBSupporter)
-            {
-                return new ConnectSupporterSummary();
-            }
-
             var url = GetConnectUrl("keyAssociation");
 
             var options = new HttpRequestOptions
@@ -1106,11 +1101,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task AddConnectSupporter(string id)
         {
-            if (!_securityManager.IsMBSupporter)
-            {
-                throw new InvalidOperationException();
-            }
-
             var url = GetConnectUrl("keyAssociation");
 
             var options = new HttpRequestOptions
@@ -1139,11 +1129,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task RemoveConnectSupporter(string id)
         {
-            if (!_securityManager.IsMBSupporter)
-            {
-                throw new InvalidOperationException();
-            }
-
             var url = GetConnectUrl("keyAssociation");
 
             var options = new HttpRequestOptions
