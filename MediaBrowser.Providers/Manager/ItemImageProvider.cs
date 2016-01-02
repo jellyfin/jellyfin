@@ -359,13 +359,12 @@ namespace MediaBrowser.Providers.Manager
         private void ClearImages(IHasImages item, ImageType type)
         {
             var deleted = false;
-            var deletedImages = new List<ItemImageInfo>();
 
             foreach (var image in item.GetImages(type).ToList())
             {
                 if (!image.IsLocalFile)
                 {
-                    deletedImages.Add(image);
+                    // TODO: Need to get this image removed
                     continue;
                 }
 
@@ -383,11 +382,6 @@ namespace MediaBrowser.Providers.Manager
                     _fileSystem.DeleteFile(currentFile.FullName);
                     deleted = true;
                 }
-            }
-
-            foreach (var image in deletedImages)
-            {
-                item.RemoveImage(image);
             }
 
             if (deleted)
