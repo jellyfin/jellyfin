@@ -185,7 +185,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             }
         }
 
-        private Tuple<List<PackageInfo>, DateTime> _lastPackageListResult;
+        private DateTime _lastPackageUpdateTime;
 
         /// <summary>
         /// Gets all available packages.
@@ -194,40 +194,89 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
-            if (_lastPackageListResult != null)
+            using (var stream = await GetCachedPackages(cancellationToken).ConfigureAwait(false))
             {
-                TimeSpan cacheLength;
+                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
 
-                switch (_config.CommonConfiguration.SystemUpdateLevel)
+                if ((DateTime.UtcNow - _lastPackageUpdateTime) > GetCacheLength())
                 {
-                    case PackageVersionClass.Beta:
-                        cacheLength = TimeSpan.FromMinutes(30);
-                        break;
-                    case PackageVersionClass.Dev:
-                        cacheLength = TimeSpan.FromMinutes(3);
-                        break;
-                    default:
-                        cacheLength = TimeSpan.FromHours(24);
-                        break;
+                    UpdateCachedPackages(CancellationToken.None, false);
                 }
 
-                if ((DateTime.UtcNow - _lastPackageListResult.Item2) < cacheLength)
-                {
-                    return _lastPackageListResult.Item1;
-                }
+                return packages;
+            }
+        }
+
+        private string PackageCachePath
+        {
+            get { return Path.Combine(_appPaths.CachePath, "serverpackages.json"); }
+        }
+
+        private async Task<Stream> GetCachedPackages(CancellationToken cancellationToken)
+        {
+            try
+            {
+                return _fileSystem.OpenRead(PackageCachePath);
+            }
+            catch (Exception)
+            {
+
             }
 
-            using (var json = await _httpClient.Get(MbAdmin.HttpUrl + "service/MB3Packages.json", cancellationToken).ConfigureAwait(false))
+            await UpdateCachedPackages(cancellationToken, true).ConfigureAwait(false);
+            return _fileSystem.OpenRead(PackageCachePath);
+        }
+
+        private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
+        private async Task UpdateCachedPackages(CancellationToken cancellationToken, bool throwErrors)
+        {
+            await _updateSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if ((DateTime.UtcNow - _lastPackageUpdateTime) < GetCacheLength())
+                {
+                    return;
+                }
 
-                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+                var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+                {
+                    Url = MbAdmin.HttpUrl + "service/MB3Packages.json",
+                    CancellationToken = cancellationToken,
+                    Progress = new Progress<Double>()
 
-                packages = FilterPackages(packages).ToList();
+                }).ConfigureAwait(false);
 
-                _lastPackageListResult = new Tuple<List<PackageInfo>, DateTime>(packages, DateTime.UtcNow);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(PackageCachePath));
 
-                return _lastPackageListResult.Item1;
+                _fileSystem.CopyFile(tempFile, PackageCachePath, true);
+                _lastPackageUpdateTime = DateTime.UtcNow;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error updating package cache", ex);
+
+                if (throwErrors)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                _updateSemaphore.Release();
+            }
+        }
+
+        private TimeSpan GetCacheLength()
+        {
+            switch (_config.CommonConfiguration.SystemUpdateLevel)
+            {
+                case PackageVersionClass.Beta:
+                    return TimeSpan.FromMinutes(30);
+                case PackageVersionClass.Dev:
+                    return TimeSpan.FromMinutes(3);
+                default:
+                    return TimeSpan.FromHours(24);
             }
         }
 
@@ -554,7 +603,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             if (packageChecksum != Guid.Empty) // support for legacy uploads for now
             {
                 using (var crypto = new MD5CryptoServiceProvider())
-				using (var stream = new BufferedStream(_fileSystem.OpenRead(tempFile), 100000))
+                using (var stream = new BufferedStream(_fileSystem.OpenRead(tempFile), 100000))
                 {
                     var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
                     if (check != packageChecksum)
@@ -569,12 +618,12 @@ namespace MediaBrowser.Common.Implementations.Updates
             // Success - move it to the real target 
             try
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(target));
-				_fileSystem.CopyFile(tempFile, target, true);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(target));
+                _fileSystem.CopyFile(tempFile, target, true);
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-					File.WriteAllText(target + ".ver", package.versionStr);
+                    File.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
             catch (IOException e)
