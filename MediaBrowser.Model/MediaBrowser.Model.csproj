@@ -144,7 +144,6 @@
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
-    <Compile Include="Entities\SupporterInfo.cs" />
     <Compile Include="Entities\TrailerType.cs" />
     <Compile Include="Extensions\BoolHelper.cs" />
     <Compile Include="Extensions\FloatHelper.cs" />
