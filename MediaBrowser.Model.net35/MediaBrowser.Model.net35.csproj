@@ -573,9 +573,6 @@
     <Compile Include="..\MediaBrowser.Model\Entities\SortOrder.cs">
       <Link>Entities\SortOrder.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\SupporterInfo.cs">
-      <Link>Entities\SupporterInfo.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\TrailerType.cs">
       <Link>Entities\TrailerType.cs</Link>
     </Compile>

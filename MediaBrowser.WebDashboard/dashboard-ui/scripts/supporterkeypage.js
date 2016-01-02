@@ -254,9 +254,9 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
     function loadUserInfo(page) {
 
-        ApiClient.getJSON(ApiClient.getUrl('System/SupporterInfo')).then(function (info) {
+        Dashboard.getPluginSecurityInfo().then(function (info) {
 
-            if (info.IsActiveSupporter) {
+            if (info.IsMBSupporter) {
                 $('.supporterContainer', page).addClass('hide');
             } else {
                 $('.supporterContainer', page).removeClass('hide');

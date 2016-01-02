@@ -130,7 +130,6 @@
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
     <Compile Include="EntryPoints\Notifications\Notifications.cs" />
-    <Compile Include="EntryPoints\Notifications\RemoteNotifications.cs" />
     <Compile Include="EntryPoints\Notifications\WebSocketNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />

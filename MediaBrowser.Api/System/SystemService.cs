@@ -72,12 +72,6 @@ namespace MediaBrowser.Api.System
         public string Name { get; set; }
     }
 
-    [Route("/System/SupporterInfo", "GET")]
-    [Authenticated]
-    public class GetSupporterInfo : IReturn<SupporterInfo>
-    {
-    }
-
     /// <summary>
     /// Class SystemInfoService
     /// </summary>
@@ -108,13 +102,6 @@ namespace MediaBrowser.Api.System
             _fileSystem = fileSystem;
             _network = network;
             _security = security;
-        }
-
-        public async Task<object> Get(GetSupporterInfo request)
-        {
-            var result = await _security.GetSupporterInfo().ConfigureAwait(false);
-
-            return ToOptimizedResult(result);
         }
 
         public object Get(GetServerLogs request)

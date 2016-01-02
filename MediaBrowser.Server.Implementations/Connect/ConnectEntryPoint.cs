@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
 
@@ -40,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public void Run()
         {
-            LoadCachedAddress();
+            Task.Run(() => LoadCachedAddress());
 
             _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
