@@ -101,6 +101,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Implementations.Updates;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -1300,6 +1301,16 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel != PackageVersionClass.Dev)
+            {
+                var includePreRelease = ConfigurationManager.CommonConfiguration.SystemUpdateLevel != PackageVersionClass.Release;
+
+                var cacheLength = TimeSpan.FromHours(1);
+
+                return await new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
+                    .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, "emby.windows.zip", "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
+            }
+
             var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
 
             var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, _remotePackageName, null, ApplicationVersion, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
@@ -1331,7 +1342,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         public override async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
+            await InstallationManager.InstallPackage(package, false, progress, cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = false;
 
