@@ -207,7 +207,7 @@ namespace MediaBrowser.Server.Startup.Common
         private IPlaylistManager PlaylistManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
-        private readonly string _remotePackageName;
+        private readonly string _releaseAssetFilename;
 
         internal INativeApp NativeApp { get; set; }
         private Timer _ipAddressCacheTimer;
@@ -219,18 +219,18 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="logManager">The log manager.</param>
         /// <param name="options">The options.</param>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="remotePackageName">Name of the remote package.</param>
+        /// <param name="releaseAssetFilename">The release asset filename.</param>
         /// <param name="nativeApp">The native application.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
-            string remotePackageName,
+            string releaseAssetFilename,
             INativeApp nativeApp)
             : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
-            _remotePackageName = remotePackageName;
+            _releaseAssetFilename = releaseAssetFilename;
             NativeApp = nativeApp;
 
             SetBaseExceptionMessage();
@@ -1309,36 +1309,31 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel != PackageVersionClass.Dev)
+            var includePreRelease = false;
+            var cacheLength = TimeSpan.FromHours(12);
+            var excludeSuffixes = new List<string>();
+
+            if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Release)
             {
-                var includePreRelease = ConfigurationManager.CommonConfiguration.SystemUpdateLevel != PackageVersionClass.Release;
-
-                var cacheLength = TimeSpan.FromHours(1);
-
-                return await new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
-                    .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, "emby.windows.zip", "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
+                // Shouldn't actually be needed due to the prerelease filter
+                excludeSuffixes.Add("-beta");
+                excludeSuffixes.Add("-dev");
+            }
+            else if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Beta)
+            {
+                excludeSuffixes.Add("-dev");
+                cacheLength = TimeSpan.FromHours(1);
+                includePreRelease = true;
+            }
+            else if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev)
+            {
+                excludeSuffixes.Add("-dev");
+                cacheLength = TimeSpan.FromMinutes(5);
+                includePreRelease = true;
             }
 
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
-
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, _remotePackageName, null, ApplicationVersion, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
-
-            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
-
-            var isUpdateAvailable = versionObject != null && versionObject > ApplicationVersion;
-
-            var result = versionObject != null ?
-                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
-                new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
-
-            HasUpdateAvailable = result.IsUpdateAvailable;
-
-            if (result.IsUpdateAvailable)
-            {
-                Logger.Info("New application version is available: {0}", result.AvailableVersion);
-            }
-
-            return result;
+            return await new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
+                .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, excludeSuffixes.ToArray(), _releaseAssetFilename, "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
