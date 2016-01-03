@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 try
                 {
-                    await _installationManager.InstallPackage(i, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    await _installationManager.InstallPackage(i, true, new Progress<double>(), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

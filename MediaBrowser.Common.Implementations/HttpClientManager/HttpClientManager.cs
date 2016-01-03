@@ -150,7 +150,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             request.Method = method;
             request.Timeout = options.TimeoutMs;
-
+            
             if (httpWebRequest != null)
             {
                 if (!string.IsNullOrEmpty(options.Host))
