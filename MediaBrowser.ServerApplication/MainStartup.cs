@@ -215,7 +215,7 @@ namespace MediaBrowser.ServerApplication
                 logManager,
                 options,
                 fileSystem,
-                "MBServer",
+                "emby.windows.zip",
                 nativeApp);
 
             var initProgress = new Progress<double>();
