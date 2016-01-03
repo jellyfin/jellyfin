@@ -721,14 +721,14 @@ namespace MediaBrowser.Api.Playback
 
             if (request.MaxAudioChannels.HasValue)
             {
+                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
+                   ? 2
+                   : 6;
+
                 if (inputChannels.HasValue)
                 {
-                    return Math.Min(request.MaxAudioChannels.Value, inputChannels.Value);
+                    channelLimit = Math.Min(channelLimit, inputChannels.Value);
                 }
-
-                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
-                    ? 2
-                    : 6;
 
                 // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
                 return Math.Min(request.MaxAudioChannels.Value, channelLimit);
