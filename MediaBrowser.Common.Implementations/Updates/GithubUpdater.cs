@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             _cacheLength = cacheLength;
         }
 
-        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, bool includePrerelease, string assetFilename, string packageName, string targetFilename, CancellationToken cancellationToken)
+        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, bool includePrerelease, string[] excludeSuffixes, string assetFilename, string packageName, string targetFilename, CancellationToken cancellationToken)
         {
             var url = string.Format("https://api.github.com/repos/{0}/{1}/releases", organzation, repository);
 
@@ -55,7 +55,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             {
                 var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
 
-                var availableUpdate = CheckForUpdateResult(obj, minVersion, includePrerelease, assetFilename, packageName, targetFilename);
+                var availableUpdate = CheckForUpdateResult(obj, minVersion, includePrerelease, excludeSuffixes, assetFilename, packageName, targetFilename);
 
                 return availableUpdate ?? new CheckForUpdateResult
                 {
@@ -64,11 +64,16 @@ namespace MediaBrowser.Common.Implementations.Updates
             }
         }
 
-        private CheckForUpdateResult CheckForUpdateResult(RootObject[] obj, Version minVersion, bool includePrerelease, string assetFilename, string packageName, string targetFilename)
+        private CheckForUpdateResult CheckForUpdateResult(RootObject[] obj, Version minVersion, bool includePrerelease, string[] excludeSuffixes, string assetFilename, string packageName, string targetFilename)
         {
             if (!includePrerelease)
             {
                 obj = obj.Where(i => !i.prerelease).ToArray();
+            }
+
+            if (excludeSuffixes.Length > 0)
+            {
+                obj = obj.Where(i => !excludeSuffixes.Any(e => i.name.EndsWith(e, StringComparison.OrdinalIgnoreCase))).ToArray();
             }
 
             // TODO:
