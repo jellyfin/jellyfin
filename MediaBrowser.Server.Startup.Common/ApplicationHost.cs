@@ -1327,7 +1327,6 @@ namespace MediaBrowser.Server.Startup.Common
             }
             else if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev)
             {
-                excludeSuffixes.Add("-dev");
                 cacheLength = TimeSpan.FromMinutes(5);
                 includePreRelease = true;
             }
