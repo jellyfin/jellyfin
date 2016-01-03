@@ -1562,12 +1562,12 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url
             };
 
-            if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
-                (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
-                (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                state.SegmentLength = 6;
-            }
+            //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
+            //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
+            //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
+            //{
+            //    state.SegmentLength = 6;
+            //}
 
             if (!string.IsNullOrWhiteSpace(request.AudioCodec))
             {
