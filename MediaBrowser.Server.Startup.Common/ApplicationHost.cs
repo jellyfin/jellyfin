@@ -1307,7 +1307,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        public override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var includePreRelease = false;
             var cacheLength = TimeSpan.FromHours(12);
@@ -1331,8 +1331,8 @@ namespace MediaBrowser.Server.Startup.Common
                 includePreRelease = true;
             }
 
-            return await new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
-                .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, excludeSuffixes.ToArray(), _releaseAssetFilename, "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
+            return new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
+                .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, excludeSuffixes.ToArray(), _releaseAssetFilename, "MBServer", "Mbserver.zip", cancellationToken);
         }
 
         /// <summary>
