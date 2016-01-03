@@ -108,7 +108,8 @@ namespace MediaBrowser.Common.Implementations.Updates
                     sourceUrl = asset.browser_download_url,
                     targetFilename = targetFilename,
                     versionStr = version.ToString(),
-                    requiredVersionStr = "1.0.0"
+                    requiredVersionStr = "1.0.0",
+                    description = obj.body
                 }
             };
         }
