@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             _cacheLength = cacheLength;
         }
 
-        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, bool includePrerelease, string[] excludeSuffixes, string assetFilename, string packageName, string targetFilename, CancellationToken cancellationToken)
+        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, PackageVersionClass updateLevel, string assetFilename, string packageName, string targetFilename, CancellationToken cancellationToken)
         {
             var url = string.Format("https://api.github.com/repos/{0}/{1}/releases", organzation, repository);
 
@@ -44,42 +44,31 @@ namespace MediaBrowser.Common.Implementations.Updates
                 options.CacheLength = _cacheLength;
             }
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
-            {
-                Url = url,
-                EnableKeepAlive = false,
-                CancellationToken = cancellationToken,
-                UserAgent = "Emby/3.0"
-
-            }).ConfigureAwait(false))
+            using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {
                 var obj = _jsonSerializer.DeserializeFromStream<RootObject[]>(stream);
 
-                var availableUpdate = CheckForUpdateResult(obj, minVersion, includePrerelease, excludeSuffixes, assetFilename, packageName, targetFilename);
-
-                return availableUpdate ?? new CheckForUpdateResult
-                {
-                    IsUpdateAvailable = false
-                };
+                return CheckForUpdateResult(obj, minVersion, updateLevel, assetFilename, packageName, targetFilename);
             }
         }
 
-        private CheckForUpdateResult CheckForUpdateResult(RootObject[] obj, Version minVersion, bool includePrerelease, string[] excludeSuffixes, string assetFilename, string packageName, string targetFilename)
+        private CheckForUpdateResult CheckForUpdateResult(RootObject[] obj, Version minVersion, PackageVersionClass updateLevel, string assetFilename, string packageName, string targetFilename)
         {
-            if (!includePrerelease)
+            if (updateLevel == PackageVersionClass.Release)
             {
                 obj = obj.Where(i => !i.prerelease).ToArray();
             }
-
-            if (excludeSuffixes.Length > 0)
+            else if (updateLevel == PackageVersionClass.Beta)
             {
-                obj = obj.Where(i => !excludeSuffixes.Any(e => i.name.EndsWith(e, StringComparison.OrdinalIgnoreCase))).ToArray();
+                obj = obj.Where(i => !i.prerelease || !i.name.EndsWith("-dev", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
 
-            // TODO:
-            // Filter using name and check for suffixes such as -beta, -dev?
-
-            return obj.Select(i => CheckForUpdateResult(i, minVersion, assetFilename, packageName, targetFilename)).FirstOrDefault(i => i != null);
+            var availableUpdate = obj.Select(i => CheckForUpdateResult(i, minVersion, assetFilename, packageName, targetFilename)).FirstOrDefault(i => i != null); 
+            
+            return availableUpdate ?? new CheckForUpdateResult
+            {
+                IsUpdateAvailable = false
+            };
         }
 
         private CheckForUpdateResult CheckForUpdateResult(RootObject obj, Version minVersion, string assetFilename, string packageName, string targetFilename)
@@ -108,7 +97,9 @@ namespace MediaBrowser.Common.Implementations.Updates
                 IsUpdateAvailable = version > minVersion,
                 Package = new PackageVersionInfo
                 {
-                    classification = obj.prerelease ? PackageVersionClass.Beta : PackageVersionClass.Release,
+                    classification = obj.prerelease ?
+                        (obj.name.EndsWith("-dev", StringComparison.OrdinalIgnoreCase) ? PackageVersionClass.Dev : PackageVersionClass.Beta) :
+                        PackageVersionClass.Release,
                     name = packageName,
                     sourceUrl = asset.browser_download_url,
                     targetFilename = targetFilename,
