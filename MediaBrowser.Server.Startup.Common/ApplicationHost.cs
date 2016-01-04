@@ -1301,30 +1301,20 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var includePreRelease = false;
             var cacheLength = TimeSpan.FromHours(12);
-            var excludeSuffixes = new List<string>();
+            var updateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel;
 
-            if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Release)
+            if (updateLevel == PackageVersionClass.Beta)
             {
-                // Shouldn't actually be needed due to the prerelease filter
-                excludeSuffixes.Add("-beta");
-                excludeSuffixes.Add("-dev");
-            }
-            else if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Beta)
-            {
-                excludeSuffixes.Add("-dev");
                 cacheLength = TimeSpan.FromHours(1);
-                includePreRelease = true;
             }
-            else if (ConfigurationManager.CommonConfiguration.SystemUpdateLevel == PackageVersionClass.Dev)
+            else if (updateLevel == PackageVersionClass.Dev)
             {
                 cacheLength = TimeSpan.FromMinutes(5);
-                includePreRelease = true;
             }
 
-            return new GithubUpdater(HttpClient, JsonSerializer, cacheLength)
-                .CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, includePreRelease, excludeSuffixes.ToArray(), _releaseAssetFilename, "MBServer", "Mbserver.zip", cancellationToken);
+            return new GithubUpdater(HttpClient, JsonSerializer, cacheLength).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
+                    "MBServer", "Mbserver.zip", cancellationToken);
         }
 
         /// <summary>
