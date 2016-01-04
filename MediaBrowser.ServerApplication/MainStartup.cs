@@ -18,7 +18,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonIO.Windows;
+using Emby.Drawing.ImageMagick;
 using ImageMagickSharp;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.ServerApplication
@@ -249,6 +251,9 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                Task.WaitAll(task);
+
+                task = InstallVcredistIfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
                 SystemEvents.SessionEnding += SystemEvents_SessionEnding;
@@ -566,6 +571,70 @@ namespace MediaBrowser.ServerApplication
             {
                 service.Stop();
             }
+        }
+
+        private static async Task InstallVcredistIfNeeded(ApplicationHost appHost, ILogger logger)
+        {
+            try
+            {
+                var version = ImageMagickEncoder.GetVersion();
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error loading ImageMagick", ex);
+            }
+
+            try
+            {
+                await InstallVcredist().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error installing ImageMagick", ex);
+            }
+        }
+
+        private async static Task InstallVcredist()
+        {
+            var httpClient = _appHost.HttpClient;
+
+            var tmp = await httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = GetVcredistUrl(),
+                Progress = new Progress<double>()
+
+            }).ConfigureAwait(false);
+
+            var exePath = Path.ChangeExtension(tmp, ".exe");
+            File.Copy(tmp, exePath);
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = exePath,
+
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false
+            };
+
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit();
+            }
+        }
+
+        private static string GetVcredistUrl()
+        {
+            if (Environment.Is64BitProcess)
+            {
+                return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x64.exe";
+            }
+
+            // TODO: ARM url - https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_arm.exe
+
+            return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x86.exe";
         }
 
         /// <summary>
