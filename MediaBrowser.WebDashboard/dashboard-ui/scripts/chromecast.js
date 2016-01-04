@@ -54,7 +54,7 @@
     var applicationID = "2D4B1DA3";
 
     // This is the beta version used for testing new changes
-    //applicationID = '27C4EB5B';
+    applicationID = '27C4EB5B';
 
     var messageNamespace = 'urn:x-cast:com.connectsdk';
 

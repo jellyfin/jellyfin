@@ -199,19 +199,11 @@
 
         ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).then(function () {
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-                Dashboard.alert(Globalize.translate('SettingsSaved'));
-
-                loadForm(page, user, displayPreferences);
-            });
+            ApiClient.updateUserConfiguration(user.Id, user.Configuration);
         });
     }
 
-    function onSubmit() {
-
-        var page = $(this).parents('.page')[0];
-
-        Dashboard.showLoadingMsg();
+    function save(page) {
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -222,14 +214,20 @@
                 saveUser(page, user, displayPreferences);
 
             });
-
         });
+    }
+
+    function onSubmit() {
+
+        var page = $(this).parents('.page')[0];
+
+        save(page);
 
         // Disable default form submission
         return false;
     }
 
-    $(document).on('pageinit', "#homeScreenPreferencesPage", function () {
+    pageIdOn('pageinit', "homeScreenPreferencesPage", function () {
 
         var page = this;
 
@@ -272,7 +270,9 @@
 
         $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#homeScreenPreferencesPage", function () {
+    });
+
+    pageIdOn('pageshow', "homeScreenPreferencesPage", function () {
 
         var page = this;
 
@@ -288,6 +288,13 @@
 
             });
         });
+    });
+
+    pageIdOn('pagebeforehide', "homeScreenPreferencesPage", function () {
+
+        var page = this;
+
+        save(page);
     });
 
 })(jQuery, window, document);
