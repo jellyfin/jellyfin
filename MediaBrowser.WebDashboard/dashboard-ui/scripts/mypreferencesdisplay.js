@@ -25,18 +25,10 @@
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
-
-            loadForm(page, user);
-        });
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
-    function onSubmit() {
-
-        var page = $(this).parents('.page')[0];
-
-        Dashboard.showLoadingMsg();
+    function save(page) {
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -45,18 +37,26 @@
             saveUser(page, user);
 
         });
+    }
+
+    function onSubmit() {
+
+        var page = $(this).parents('.page')[0];
+
+        save(page);
 
         // Disable default form submission
         return false;
     }
 
-    $(document).on('pageinit', "#displayPreferencesPage", function () {
+    pageIdOn('pageinit', "displayPreferencesPage", function () {
 
         var page = this;
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#displayPreferencesPage", function () {
+    });
+    pageIdOn('pageshow', "displayPreferencesPage", function () {
 
         var page = this;
 
@@ -82,6 +82,14 @@
         } else {
             $('.languageSection', page).hide();
         }
+
+    });
+    pageIdOn('pagebeforehide', "displayPreferencesPage", function () {
+
+        var page = this;
+
+        save(page);
+
     });
 
 })(jQuery, window, document);

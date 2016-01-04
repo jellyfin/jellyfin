@@ -96,22 +96,10 @@
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-
-            Dashboard.hideLoadingMsg();
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
-
-        }, function () {
-            Dashboard.hideLoadingMsg();
-        });
+        ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
-    function onSubmit() {
-
-        var page = $(this).parents('.page')[0];
-
-        Dashboard.showLoadingMsg();
-
+    function save(page) {
         AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
         if ($('#selectMaxBitrate', page).val()) {
@@ -131,12 +119,19 @@
             saveUser(page, result);
 
         });
+    }
+
+    function onSubmit() {
+
+        var page = $(this).parents('.page')[0];
+
+        save(page);
 
         // Disable default form submission
         return false;
     }
 
-    $(document).on('pageinit', "#languagePreferencesPage", function () {
+    pageIdOn('pageinit', "languagePreferencesPage", function () {
 
         var page = this;
 
@@ -147,9 +142,9 @@
         });
 
         $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+    });
 
-
-    }).on('pageshow', "#languagePreferencesPage", function () {
+    pageIdOn('pageshow', "languagePreferencesPage", function () {
 
         var page = this;
 
@@ -168,6 +163,13 @@
         }
 
         loadPage(page);
+    });
+
+    pageIdOn('pagebeforehide', "languagePreferencesPage", function () {
+
+        var page = this;
+
+        save(page);
     });
 
 })(jQuery, window, document);
