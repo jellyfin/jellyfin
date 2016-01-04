@@ -31,7 +31,6 @@
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
         page.querySelector('.chkEnableCinemaMode').checked = AppSettings.enableCinemaMode();
-        page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
         page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
         require(['qualityoptions'], function (qualityoptions) {
@@ -45,6 +44,7 @@
             bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
 
             $('#selectMaxBitrate', page).html(bitrateOptions);
+            $('#selectMaxChromecastBitrate', page).html(bitrateOptions);
 
             if (AppSettings.enableAutomaticBitrateDetection()) {
                 $('#selectMaxBitrate', page).val('');
@@ -110,7 +110,6 @@
         }
 
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
-        AppSettings.enableChromecastAc3(page.querySelector('.chkEnableChromecastAc3').checked);
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
