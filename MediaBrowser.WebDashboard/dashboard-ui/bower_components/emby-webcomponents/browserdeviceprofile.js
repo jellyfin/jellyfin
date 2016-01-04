@@ -161,12 +161,23 @@
             }
         });
 
+        var videoAudioCodecs = [];
+        if (canPlayMp3) {
+            videoAudioCodecs.push('mp3');
+        }
+        if (canPlayAac) {
+            videoAudioCodecs.push('aac');
+        }
+        if (canPlayAc3) {
+            videoAudioCodecs.push('ac3');
+        }
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.mobile) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
-                AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming'
             });
@@ -176,7 +187,7 @@
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
-                AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 Protocol: 'hls'
@@ -198,7 +209,7 @@
         profile.TranscodingProfiles.push({
             Container: 'mp4',
             Type: 'Video',
-            AudioCodec: 'aac',
+            AudioCodec: videoAudioCodecs.join(','),
             VideoCodec: 'h264',
             Context: 'Streaming',
             Protocol: 'http'
@@ -207,7 +218,7 @@
         profile.TranscodingProfiles.push({
             Container: 'mp4',
             Type: 'Video',
-            AudioCodec: 'aac',
+            AudioCodec: videoAudioCodecs.join(','),
             VideoCodec: 'h264',
             Context: 'Static',
             Protocol: 'http'
