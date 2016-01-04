@@ -1055,6 +1055,10 @@
     <Content Include="Resources\Images\mb3logo800.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
+      <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
+      <Name>Emby.Drawing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
       <Name>MediaBrowser.Api</Name>

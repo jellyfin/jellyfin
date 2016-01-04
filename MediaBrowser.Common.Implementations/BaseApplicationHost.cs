@@ -133,7 +133,7 @@ namespace MediaBrowser.Common.Implementations
         /// Gets the HTTP client.
         /// </summary>
         /// <value>The HTTP client.</value>
-        protected IHttpClient HttpClient { get; private set; }
+        public IHttpClient HttpClient { get; private set; }
         /// <summary>
         /// Gets the network manager.
         /// </summary>
