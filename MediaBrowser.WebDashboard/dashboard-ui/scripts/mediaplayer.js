@@ -1789,16 +1789,8 @@
         }
 
         function canPlayH264() {
-
-            var userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.indexOf('firefox') != -1) {
-                if (userAgent.indexOf('windows') != -1) {
-                    return true;
-                }
-                return false;
-            }
-
-            return true;
+            var v = document.createElement('video');
+            return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
         }
 
         var supportedFormats;
@@ -1818,13 +1810,7 @@
                 list.push('ac3');
             }
 
-            var canPlayH264 = true;
-            var userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.indexOf('firefox') != -1 && userAgent.indexOf('windows') == -1) {
-                canPlayH264 = false;
-            }
-
-            if (canPlayH264) {
+            if (canPlayH264()) {
                 list.push('h264');
             }
 
