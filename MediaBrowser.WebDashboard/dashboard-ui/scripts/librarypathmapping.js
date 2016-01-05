@@ -115,7 +115,11 @@
 
     $(document).on('pageinit', "#libraryPathMappingPage", function () {
 
+        var page = this;
+
         $('.libraryPathMappingForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        page.querySelector('.labelFromHelp').innerHTML = Globalize.translate('LabelFromHelp', 'D:\\Movies');
 
     }).on('pageshow', "#libraryPathMappingPage", function () {
 
