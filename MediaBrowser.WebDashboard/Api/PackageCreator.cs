@@ -367,22 +367,22 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
-            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
+            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\">");
 
             // Open graph tags
-            sb.Append("<meta property=\"og:title\" content=\"Emby\" />");
-            sb.Append("<meta property=\"og:site_name\" content=\"Emby\"/>");
-            sb.Append("<meta property=\"og:url\" content=\"http://emby.media\" />");
-            sb.Append("<meta property=\"og:description\" content=\"Energize your media.\" />");
-            sb.Append("<meta property=\"og:type\" content=\"article\" />");
-            sb.Append("<meta property=\"fb:app_id\" content=\"1618309211750238\" />");
+            sb.Append("<meta property=\"og:title\" content=\"Emby\">");
+            sb.Append("<meta property=\"og:site_name\" content=\"Emby\">");
+            sb.Append("<meta property=\"og:url\" content=\"http://emby.media\">");
+            sb.Append("<meta property=\"og:description\" content=\"Energize your media.\">");
+            sb.Append("<meta property=\"og:type\" content=\"article\">");
+            sb.Append("<meta property=\"fb:app_id\" content=\"1618309211750238\">");
 
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-            sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
-            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
-            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
-            sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
+            sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\">");
+            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\">");
+            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\">");
+            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\">");
+            sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\">");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
             sb.Append("<meta name=\"msapplication-TileColor\" content=\"#333333\">");
 
