@@ -61,7 +61,7 @@
             html += '<paper-dialog-scrollable>';
         }
 
-        var itemsWithIcons = options.items.filter(function(o) {
+        var itemsWithIcons = options.items.filter(function (o) {
             return o.ironIcon;
         });
 
@@ -144,7 +144,7 @@
         });
 
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
-        var eventName = browserInfo.chrome ? 'click' : 'mousedown';
+        var eventName = browserInfo.chrome || browserInfo.safari ? 'click' : 'mousedown';
 
         $('.actionSheetMenuItem', dlg).on(eventName, function () {
 
