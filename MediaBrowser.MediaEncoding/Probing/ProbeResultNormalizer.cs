@@ -455,7 +455,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(artists))
             {
-                audio.Artists = SplitArtists(artists, new[] { '/' }, false)
+                audio.Artists = SplitArtists(artists, new[] { '/', ';' }, false)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
             }
