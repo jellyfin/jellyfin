@@ -15,7 +15,7 @@
 
         var currentDate;
 
-        var defaultChannels = 100;
+        var defaultChannels = browserInfo.mobile ? 50 : 100;
         var channelLimit = 1000;
 
         var channelQuery = {
