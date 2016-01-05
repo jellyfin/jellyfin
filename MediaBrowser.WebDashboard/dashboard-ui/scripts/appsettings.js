@@ -35,10 +35,10 @@
         maxChromecastBitrate: function (val) {
 
             if (val != null) {
-                update('chromecastBitrate', val);
+                update('chromecastBitrate1', val);
             }
 
-            val = appStorage.getItem('chromecastBitrate');
+            val = appStorage.getItem('chromecastBitrate1');
 
             return val ? parseInt(val) : null;
         },
