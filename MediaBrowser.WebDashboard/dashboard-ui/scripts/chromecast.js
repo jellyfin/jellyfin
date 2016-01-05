@@ -341,8 +341,6 @@
 
         var player = this;
 
-        var bitrateSetting = AppSettings.maxChromecastBitrate();
-
         var receiverName = null;
 
         if (castPlayer.session && castPlayer.session.receiver && castPlayer.session.receiver.friendlyName) {
@@ -354,10 +352,13 @@
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
             serverAddress: ApiClient.serverAddress(),
-            maxBitrate: bitrateSetting,
-            receiverName: receiverName,
-            supportsAc3: AppSettings.enableChromecastAc3()
+            receiverName: receiverName
         });
+
+        var bitrateSetting = AppSettings.maxChromecastBitrate();
+        if (bitrateSetting) {
+            message.maxBitrate = bitrateSetting;
+        }
 
         require(['chromecasthelpers'], function (chromecasthelpers) {
 
