@@ -35,18 +35,12 @@
         maxChromecastBitrate: function (val) {
 
             if (val != null) {
-                update('chromecastBitrate', val);
+                update('chromecastBitrate1', val);
             }
 
-            return parseInt(appStorage.getItem('chromecastBitrate') || '') || 3000000;
-        },
-        enableChromecastAc3: function (val) {
+            val = appStorage.getItem('chromecastBitrate1');
 
-            if (val != null) {
-                update('enablechromecastac3', val.toString());
-            }
-
-            return appStorage.getItem('enablechromecastac3') == 'true';
+            return val ? parseInt(val) : null;
         },
         enableExternalPlayers: function (val) {
 
