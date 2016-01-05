@@ -1,1 +1,0 @@
-vulcanize vulcanize-in.html > vulcanize-out.html --strip-comments --inline-scripts --inline-css
