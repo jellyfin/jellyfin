@@ -2473,6 +2473,9 @@
     <None Include="dashboard-ui\strings\html\hu.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="dashboard-ui\strings\html\id.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="dashboard-ui\strings\html\zh-HK.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
