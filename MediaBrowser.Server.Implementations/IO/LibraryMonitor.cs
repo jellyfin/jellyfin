@@ -275,9 +275,13 @@ namespace MediaBrowser.Server.Implementations.IO
                 {
                     var newWatcher = new FileSystemWatcher(path, "*")
                     {
-                        IncludeSubdirectories = true,
-                        InternalBufferSize = 32767
+                        IncludeSubdirectories = true
                     };
+
+                    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                    {
+                        newWatcher.InternalBufferSize = 32767;
+                    }
 
                     newWatcher.NotifyFilter = NotifyFilters.CreationTime |
                         NotifyFilters.DirectoryName |
