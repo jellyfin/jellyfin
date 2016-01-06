@@ -197,21 +197,36 @@
         displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
         displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
 
-        ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).then(function () {
+        return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).then(function () {
 
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration);
+            return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
         });
     }
 
     function save(page) {
 
+        Dashboard.showLoadingMsg();
+
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+
+        if (!AppInfo.enableAutoSave) {
+            Dashboard.showLoadingMsg();
+        }
 
         ApiClient.getUser(userId).then(function (user) {
 
             ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (displayPreferences) {
 
-                saveUser(page, user, displayPreferences);
+                saveUser(page, user, displayPreferences).then(function () {
+
+                    Dashboard.hideLoadingMsg();
+                    if (!AppInfo.enableAutoSave) {
+                        Dashboard.alert(Globalize.translate('SettingsSaved'));
+                    }
+
+                }, function () {
+                    Dashboard.hideLoadingMsg();
+                });
 
             });
         });
@@ -270,6 +285,12 @@
 
         $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        if (AppInfo.enableAutoSave) {
+            page.querySelector('.btnSave').classList.add('hide');
+        } else {
+            page.querySelector('.btnSave').classList.remove('hide');
+        }
+
     });
 
     pageIdOn('pageshow', "homeScreenPreferencesPage", function () {
@@ -293,8 +314,10 @@
     pageIdOn('pagebeforehide', "homeScreenPreferencesPage", function () {
 
         var page = this;
-
-        save(page);
+        
+        if (AppInfo.enableAutoSave) {
+            save(page);
+        }
     });
 
 })(jQuery, window, document);
