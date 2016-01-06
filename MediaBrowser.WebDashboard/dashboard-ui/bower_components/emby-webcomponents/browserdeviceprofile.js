@@ -1,5 +1,10 @@
 ﻿define(['browser'], function (browser) {
 
+    function canPlayH264() {
+        var v = document.createElement('video');
+        return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+    }
+
     var supportedFormats;
     function getSupportedFormats() {
 
@@ -20,13 +25,7 @@
             list.push('mkv');
         }
 
-        var canPlayH264 = true;
-        var userAgent = navigator.userAgent.toLowerCase();
-        if (userAgent.indexOf('firefox') != -1 && userAgent.indexOf('windows') == -1) {
-            canPlayH264 = false;
-        }
-
-        if (canPlayH264) {
+        if (canPlayH264()) {
             list.push('h264');
         }
 

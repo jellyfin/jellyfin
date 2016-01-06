@@ -11,7 +11,7 @@ env:
     - secure: SvsE+VQL35CZ967ZVy0+7o5xclnBM8egjhsjNRG7WxVPZQboCQ3Xwm8tIDQSWeagM3ZQRkTGca4ta91F1ZEhm4Jdt5CwKhhSNC6JgS3CX819r9UKgUnSS3nvWdqcZq4GXcMoOZm4qE9ttd3xdoKCfkLRQlEGAvM2TEw69mBhj24=
 node_js: 4
 addons:
-  firefox: '42.0'
+  firefox: latest
   apt:
     sources:
       - google-chrome
