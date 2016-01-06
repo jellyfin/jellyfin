@@ -24,7 +24,7 @@ namespace MediaBrowser.ServerApplication.Native
 
             if (!System.Environment.Is64BitProcess)
             {
-                list.Add(typeof(PismoIsoManager).Assembly);
+                //list.Add(typeof(PismoIsoManager).Assembly);
             }
 
             list.Add(GetType().Assembly);
