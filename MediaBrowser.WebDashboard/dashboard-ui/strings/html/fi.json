@@ -1,6 +1,4 @@
 {
-    "OptionSmartSubtitles": "Smart",
-    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "Poistu",
     "LabelVisitCommunity": "K\u00e4y Yhteis\u00f6ss\u00e4",
     "LabelGithub": "Github",
@@ -138,6 +136,8 @@
     "LabelAudioLanguagePreference": "\u00c4\u00e4nen ensisijainen kieli:",
     "LabelSubtitleLanguagePreference": "Tekstityksien ensisijainen kieli:",
     "OptionDefaultSubtitles": "Default",
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "OptionOnlyForcedSubtitles": "Only forced subtitles",
     "OptionAlwaysPlaySubtitles": "Always play subtitles",
     "OptionNoSubtitles": "No Subtitles",
@@ -498,7 +498,6 @@
     "HeaderFrom": "From",
     "HeaderTo": "To",
     "LabelFrom": "From:",
-    "LabelFromHelp": "Example: D:\\Movies (on the server)",
     "LabelTo": "To:",
     "LabelToHelp": "Example: \\\\MyServer\\Movies (a path clients can access)",
     "ButtonAddPathSubstitution": "Add Substitution",

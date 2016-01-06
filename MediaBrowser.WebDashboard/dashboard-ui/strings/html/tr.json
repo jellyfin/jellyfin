@@ -1,6 +1,4 @@
 {
-    "OptionSmartSubtitles": "Smart",
-    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "Cikis",
     "LabelVisitCommunity": "Bizi Ziyaret Edin",
     "LabelGithub": "Github",
@@ -138,6 +136,8 @@
     "LabelAudioLanguagePreference": "Ses Dili Tercihi:",
     "LabelSubtitleLanguagePreference": "Altyaz\u0131 Dili Tercihi:",
     "OptionDefaultSubtitles": "Default",
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "OptionOnlyForcedSubtitles": "Only forced subtitles",
     "OptionAlwaysPlaySubtitles": "Always play subtitles",
     "OptionNoSubtitles": "Altyaz\u0131 Yok",
@@ -498,7 +498,6 @@
     "HeaderFrom": "Buradan",
     "HeaderTo": "Buraya",
     "LabelFrom": "Buradan",
-    "LabelFromHelp": "\u00d6rnek: D:\\Movies (sunucu \u00fczerinde)",
     "LabelTo": "Buraya",
     "LabelToHelp": "Example: \\\\MyServer\\Movies (a path clients can access)",
     "ButtonAddPathSubstitution": "Add Substitution",
