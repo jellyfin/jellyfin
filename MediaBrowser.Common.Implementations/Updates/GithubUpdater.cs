@@ -88,7 +88,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 return null;
             }
 
-            var asset = (obj.assets ?? new List<Asset>()).FirstOrDefault(i => string.Equals(assetFilename, Path.GetFileName(i.browser_download_url), StringComparison.OrdinalIgnoreCase));
+            var asset = (obj.assets ?? new List<Asset>()).FirstOrDefault(i => IsAsset(i, assetFilename));
 
             if (asset == null)
             {
@@ -112,6 +112,18 @@ namespace MediaBrowser.Common.Implementations.Updates
                     description = obj.body
                 }
             };
+        }
+
+        private bool IsAsset(Asset asset, string assetFilename)
+        {
+            var downloadFilename = Path.GetFileName(asset.browser_download_url) ?? string.Empty;
+
+            if (downloadFilename.IndexOf(assetFilename, StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+
+            return string.Equals(assetFilename, downloadFilename, StringComparison.OrdinalIgnoreCase);
         }
 
         public class Uploader
