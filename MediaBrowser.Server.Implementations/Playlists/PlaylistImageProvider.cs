@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
                         return subItem;
                     }
 
-                    var parent = subItem.Parent;
+                    var parent = subItem.GetParent();
 
                     if (parent != null && parent.HasImage(ImageType.Primary))
                     {

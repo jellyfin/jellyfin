@@ -101,6 +101,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Implementations.Updates;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -206,7 +207,7 @@ namespace MediaBrowser.Server.Startup.Common
         private IPlaylistManager PlaylistManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
-        private readonly string _remotePackageName;
+        private readonly string _releaseAssetFilename;
 
         internal INativeApp NativeApp { get; set; }
         private Timer _ipAddressCacheTimer;
@@ -218,18 +219,18 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="logManager">The log manager.</param>
         /// <param name="options">The options.</param>
         /// <param name="fileSystem">The file system.</param>
-        /// <param name="remotePackageName">Name of the remote package.</param>
+        /// <param name="releaseAssetFilename">The release asset filename.</param>
         /// <param name="nativeApp">The native application.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
-            string remotePackageName,
+            string releaseAssetFilename,
             INativeApp nativeApp)
             : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
-            _remotePackageName = remotePackageName;
+            _releaseAssetFilename = releaseAssetFilename;
             NativeApp = nativeApp;
 
             SetBaseExceptionMessage();
@@ -369,7 +370,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new Release5767(ServerConfigurationManager, TaskManager)
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -425,7 +426,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
             RegisterSingleInstance(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -471,7 +472,7 @@ namespace MediaBrowser.Server.Startup.Common
             ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager, FileSystemManager);
             RegisterSingleInstance(ConnectManager);
 
-            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
+            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -509,7 +510,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager, UserViewManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager);
@@ -646,11 +647,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
+            try
+            {
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
 
-            await repo.Initialize().ConfigureAwait(false);
+                await repo.Initialize().ConfigureAwait(false);
 
-            return repo;
+                return repo;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error opening user db", ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -1298,28 +1307,22 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task{CheckForUpdateResult}.</returns>
-        public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
+        public override Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var availablePackages = await InstallationManager.GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+            var cacheLength = TimeSpan.FromHours(12);
+            var updateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel;
 
-            var version = InstallationManager.GetLatestCompatibleVersion(availablePackages, _remotePackageName, null, ApplicationVersion, ConfigurationManager.CommonConfiguration.SystemUpdateLevel);
-
-            var versionObject = version == null || string.IsNullOrWhiteSpace(version.versionStr) ? null : new Version(version.versionStr);
-
-            var isUpdateAvailable = versionObject != null && versionObject > ApplicationVersion;
-
-            var result = versionObject != null ?
-                new CheckForUpdateResult { AvailableVersion = versionObject.ToString(), IsUpdateAvailable = isUpdateAvailable, Package = version } :
-                new CheckForUpdateResult { AvailableVersion = ApplicationVersion.ToString(), IsUpdateAvailable = false };
-
-            HasUpdateAvailable = result.IsUpdateAvailable;
-
-            if (result.IsUpdateAvailable)
+            if (updateLevel == PackageVersionClass.Beta)
             {
-                Logger.Info("New application version is available: {0}", result.AvailableVersion);
+                cacheLength = TimeSpan.FromHours(1);
+            }
+            else if (updateLevel == PackageVersionClass.Dev)
+            {
+                cacheLength = TimeSpan.FromMinutes(5);
             }
 
-            return result;
+            return new GithubUpdater(HttpClient, JsonSerializer, cacheLength).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
+                    "MBServer", "Mbserver.zip", cancellationToken);
         }
 
         /// <summary>
@@ -1331,7 +1334,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         public override async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            await InstallationManager.InstallPackage(package, progress, cancellationToken).ConfigureAwait(false);
+            await InstallationManager.InstallPackage(package, false, progress, cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = false;
 
