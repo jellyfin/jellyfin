@@ -408,6 +408,7 @@
     <EmbeddedResource Include="Localization\Core\zh-TW.json" />
     <EmbeddedResource Include="Localization\Core\zh-HK.json" />
     <EmbeddedResource Include="Localization\Core\hu.json" />
+    <EmbeddedResource Include="Localization\Core\id.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
