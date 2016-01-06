@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
-            if (LocationType == LocationType.FileSystem && Parent != null && !IsInMixedFolder)
+            if (LocationType == LocationType.FileSystem && GetParent() != null && !IsInMixedFolder)
             {
                 var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -159,9 +159,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
+            return UnratedItem.Movie;
         }
 
         public MovieInfo GetLookupInfo()

@@ -102,11 +102,15 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetGameSystemSummaries request)
         {
-            var gameSystems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i is GameSystem)
+            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { typeof(GameSystem).Name }
+            };
+            var parentIds = new string[] { } ;
+            var gameSystems = _libraryManager.GetItems(query, parentIds)
                 .Cast<GameSystem>()
                 .ToList();
-
-            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
 
             var result = gameSystems
                 .Select(i => GetSummary(i, user))
@@ -119,8 +123,15 @@ namespace MediaBrowser.Api
 
         public object Get(GetPlayerIndex request)
         {
-            var games = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i is Game)
-                .Cast<Game>();
+            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { typeof(Game).Name }
+            };
+            var parentIds = new string[] { };
+            var games = _libraryManager.GetItems(query, parentIds)
+                .Cast<Game>()
+                .ToList();
 
             var lookup = games
                 .ToLookup(i => i.PlayersSupported ?? -1)

@@ -123,15 +123,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task CleanDatabase(CancellationToken cancellationToken)
         {
-            var allChannels = await _channelManager.GetChannelsInternal(new ChannelQuery { }, cancellationToken);
+            var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
 
-            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            var databaseIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name }
             });
 
-            var invalidIds = allIds
-                .Except(allChannels.Items.Select(i => i.Id).ToList())
+            var invalidIds = databaseIds
+                .Except(installedChannelIds)
                 .ToList();
 
             foreach (var id in invalidIds)
