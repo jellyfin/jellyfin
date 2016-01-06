@@ -9,11 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
 <link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
 <!--
+Material design: [Progress & activity](https://www.google.com/design/spec/components/progress-activity.html)
+
 The progress bars are for situations where the percentage completed can be
 determined. They give users a quick sense of how much longer an operation
 will take.
@@ -60,17 +62,17 @@ the value changed. You can also customize the transition:
 
 The following mixins are available for styling:
 
-Custom property                             | Description                                 | Default
---------------------------------------------|---------------------------------------------|----------
---paper-progress-container-color            | Mixin applied to container                  | --google-grey-300
---paper-progress-transition-duration        | Duration of the transition                  | 0.008s
---paper-progress-transition-timing-function | The timing function for the transition      | ease
---paper-progress-transition-delay           | delay for the transition                    | 0s
---paper-progress-active-color               | The color of the active bar                 | --google-green-500
---paper-progress-secondary-color            | The color of the secondary bar              | --google-green-100
---paper-progress-disabled-active-color      | The color of the active bar if disabled     | --google-grey-500
---paper-progress-disabled-secondary-color   | The color of the secondary bar if disabled  | --google-grey-300
---paper-progress-height                     | The height of the progress bar              | 4px
+Custom property                               | Description                                 | Default
+----------------------------------------------|---------------------------------------------|--------------
+`--paper-progress-container-color`            | Mixin applied to container                  | `--google-grey-300`
+`--paper-progress-transition-duration`        | Duration of the transition                  | `0.008s`
+`--paper-progress-transition-timing-function` | The timing function for the transition      | `ease`
+`--paper-progress-transition-delay`           | delay for the transition                    | `0s`
+`--paper-progress-active-color`               | The color of the active bar                 | `--google-green-500`
+`--paper-progress-secondary-color`            | The color of the secondary bar              | `--google-green-100`
+`--paper-progress-disabled-active-color`      | The color of the active bar if disabled     | `--google-grey-500`
+`--paper-progress-disabled-secondary-color`   | The color of the secondary bar if disabled  | `--google-grey-300`
+`--paper-progress-height`                     | The height of the progress bar              | `4px`
 
 @group Paper Elements
 @element paper-progress
@@ -79,161 +81,162 @@ Custom property                             | Description                       
 -->
 
 <dom-module id="paper-progress">
-  <style>
-    :host {
-      display: block;
-      width: 200px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #progressContainer {
-      position: relative;
-    }
-
-    #progressContainer,
-    /* the stripe for the indeterminate animation*/
-    .indeterminate:after {
-      height: var(--paper-progress-height, 4px);
-    }
-
-    #primaryProgress,
-    #secondaryProgress,
-    .indeterminate:after {
-      @apply(--layout-fit);
-    }
-
-    #progressContainer,
-    .indeterminate:after {
-      background-color: var(--paper-progress-container-color, --google-grey-300);
-    }
-
-    :host(.transiting) #primaryProgress,
-    :host(.transiting) #secondaryProgress {
-      -webkit-transition-property: -webkit-transform;
-      transition-property: transform;
-
-      /* Duration */
-      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
-      transition-duration: var(--paper-progress-transition-duration, 0.08s);
-
-      /* Timing function */
-      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
-      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
-
-      /* Delay */
-      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
-      transition-delay: var(--paper-progress-transition-delay, 0s);
-    }
-
-    #primaryProgress,
-    #secondaryProgress {
-      @apply(--layout-fit);
-      -webkit-transform-origin: left center;
-      transform-origin: left center;
-      -webkit-transform: scaleX(0);
-      transform: scaleX(0);
-      will-change: transform;
-    }
-
-    #primaryProgress {
-      background-color: var(--paper-progress-active-color, --google-green-500);
-    }
-
-    #secondaryProgress {
-      position: relative;
-      background-color: var(--paper-progress-secondary-color, --google-green-100);
-    }
-
-    :host([disabled]) #primaryProgress {
-      background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
-    }
-
-    :host([disabled]) #secondaryProgress {
-      background-color: var(--paper-progress-disabled-active-color, --google-grey-300);
-    }
-
-    :host(:not([disabled])) #primaryProgress.indeterminate {
-      -webkit-transform-origin: right center;
-      transform-origin: right center;
-      -webkit-animation: indeterminate-bar 2s linear infinite;
-      animation: indeterminate-bar 2s linear infinite;
-    }
-
-    :host(:not([disabled])) #primaryProgress.indeterminate:after {
-      content: "";
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-
-      -webkit-animation: indeterminate-splitter 2s linear infinite;
-      animation: indeterminate-splitter 2s linear infinite;
-    }
-
-    @-webkit-keyframes indeterminate-bar {
-      0% {
-        -webkit-transform: scaleX(1) translateX(-100%);
-      }
-      50% {
-        -webkit-transform: scaleX(1) translateX(0%);
-      }
-      75% {
-        -webkit-transform: scaleX(1) translateX(0%);
-        -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
-      }
-      100% {
-        -webkit-transform: scaleX(0) translateX(0%);
-      }
-    }
-
-    @-webkit-keyframes indeterminate-splitter {
-      0% {
-        -webkit-transform: scaleX(.75) translateX(-125%);
-      }
-      30% {
-        -webkit-transform: scaleX(.75) translateX(-125%);
-        -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
-      }
-      90% {
-        -webkit-transform: scaleX(.75) translateX(125%);
-      }
-      100% {
-        -webkit-transform: scaleX(.75) translateX(125%);
-      }
-    }
-
-    @keyframes indeterminate-bar {
-      0% {
-        transform: scaleX(1) translateX(-100%);
-      }
-      50% {
-        transform: scaleX(1) translateX(0%);
-      }
-      75% {
-        transform: scaleX(1) translateX(0%);
-        animation-timing-function: cubic-bezier(.28,.62,.37,.91);
-      }
-      100% {
-        transform: scaleX(0) translateX(0%);
-      }
-    }
-
-    @keyframes indeterminate-splitter {
-      0% {
-        transform: scaleX(.75) translateX(-125%);
-      }
-      30% {
-        transform: scaleX(.75) translateX(-125%);
-        animation-timing-function: cubic-bezier(.42,0,.6,.8);
-      }
-      90% {
-        transform: scaleX(.75) translateX(125%);
-      }
-      100% {
-        transform: scaleX(.75) translateX(125%);
-      }
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        width: 200px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      #progressContainer {
+        position: relative;
+      }
+
+      #progressContainer,
+      /* the stripe for the indeterminate animation*/
+      .indeterminate::after {
+        height: var(--paper-progress-height, 4px);
+      }
+
+      #primaryProgress,
+      #secondaryProgress,
+      .indeterminate::after {
+        @apply(--layout-fit);
+      }
+
+      #progressContainer,
+      .indeterminate::after {
+        background-color: var(--paper-progress-container-color, --google-grey-300);
+      }
+
+      :host(.transiting) #primaryProgress,
+      :host(.transiting) #secondaryProgress {
+        -webkit-transition-property: -webkit-transform;
+        transition-property: transform;
+
+        /* Duration */
+        -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
+        transition-duration: var(--paper-progress-transition-duration, 0.08s);
+
+        /* Timing function */
+        -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+        transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+
+        /* Delay */
+        -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
+        transition-delay: var(--paper-progress-transition-delay, 0s);
+      }
+
+      #primaryProgress,
+      #secondaryProgress {
+        @apply(--layout-fit);
+        -webkit-transform-origin: left center;
+        transform-origin: left center;
+        -webkit-transform: scaleX(0);
+        transform: scaleX(0);
+        will-change: transform;
+      }
+
+      #primaryProgress {
+        background-color: var(--paper-progress-active-color, --google-green-500);
+      }
+
+      #secondaryProgress {
+        position: relative;
+        background-color: var(--paper-progress-secondary-color, --google-green-100);
+      }
+
+      :host([disabled]) #primaryProgress {
+        background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
+      }
+
+      :host([disabled]) #secondaryProgress {
+        background-color: var(--paper-progress-disabled-secondary-color, --google-grey-300);
+      }
+
+      :host(:not([disabled])) #primaryProgress.indeterminate {
+        -webkit-transform-origin: right center;
+        transform-origin: right center;
+        -webkit-animation: indeterminate-bar 2s linear infinite;
+        animation: indeterminate-bar 2s linear infinite;
+      }
+
+      :host(:not([disabled])) #primaryProgress.indeterminate::after {
+        content: "";
+        -webkit-transform-origin: center center;
+        transform-origin: center center;
+
+        -webkit-animation: indeterminate-splitter 2s linear infinite;
+        animation: indeterminate-splitter 2s linear infinite;
+      }
+
+      @-webkit-keyframes indeterminate-bar {
+        0% {
+          -webkit-transform: scaleX(1) translateX(-100%);
+        }
+        50% {
+          -webkit-transform: scaleX(1) translateX(0%);
+        }
+        75% {
+          -webkit-transform: scaleX(1) translateX(0%);
+          -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
+        }
+        100% {
+          -webkit-transform: scaleX(0) translateX(0%);
+        }
+      }
+
+      @-webkit-keyframes indeterminate-splitter {
+        0% {
+          -webkit-transform: scaleX(.75) translateX(-125%);
+        }
+        30% {
+          -webkit-transform: scaleX(.75) translateX(-125%);
+          -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
+        }
+        90% {
+          -webkit-transform: scaleX(.75) translateX(125%);
+        }
+        100% {
+          -webkit-transform: scaleX(.75) translateX(125%);
+        }
+      }
+
+      @keyframes indeterminate-bar {
+        0% {
+          transform: scaleX(1) translateX(-100%);
+        }
+        50% {
+          transform: scaleX(1) translateX(0%);
+        }
+        75% {
+          transform: scaleX(1) translateX(0%);
+          animation-timing-function: cubic-bezier(.28,.62,.37,.91);
+        }
+        100% {
+          transform: scaleX(0) translateX(0%);
+        }
+      }
+
+      @keyframes indeterminate-splitter {
+        0% {
+          transform: scaleX(.75) translateX(-125%);
+        }
+        30% {
+          transform: scaleX(.75) translateX(-125%);
+          animation-timing-function: cubic-bezier(.42,0,.6,.8);
+        }
+        90% {
+          transform: scaleX(.75) translateX(125%);
+        }
+        100% {
+          transform: scaleX(.75) translateX(125%);
+        }
+      }
+    </style>
+
     <div id="progressContainer">
       <div id="secondaryProgress" hidden$="[[_hideSecondaryProgress(secondaryRatio)]]"></div>
       <div id="primaryProgress"></div>
@@ -243,7 +246,6 @@ Custom property                             | Description                       
 
 <script>
   Polymer({
-
     is: 'paper-progress',
 
     behaviors: [
@@ -251,7 +253,6 @@ Custom property                             | Description                       
     ],
 
     properties: {
-
       /**
        * The number that represents the current secondary progress.
        */
@@ -337,7 +338,5 @@ Custom property                             | Description                       
     _hideSecondaryProgress: function(secondaryRatio) {
       return secondaryRatio === 0;
     }
-
   });
-
 </script>

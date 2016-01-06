@@ -422,7 +422,7 @@
 
             afterConnected(apiClient, options);
 
-            onLocalUserSignIn(result.User);
+            onLocalUserSignIn(server, server.LastConnectionMode, result.User);
         }
 
         function saveUserInfoIntoCredentials(server, user) {
@@ -452,7 +452,10 @@
             }
         }
 
-        function onLocalUserSignIn(user) {
+        function onLocalUserSignIn(server, connectionMode, user) {
+
+            // Ensure this is created so that listeners of the event can get the apiClient instance
+            getOrAddApiClient(server, connectionMode);
 
             Events.trigger(self, 'localusersignedin', [user]);
         }
@@ -575,7 +578,7 @@
 
                         }).then(function (user) {
 
-                            onLocalUserSignIn(user);
+                            onLocalUserSignIn(server, connectionMode, user);
                             resolve();
 
                         }, function () {

@@ -69,15 +69,17 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       /**
        * Set to true to prevent the user from entering invalid input. The new input characters are
-       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
-       * set, or the `type` attribute (only supported for `type=number`).
+       * matched with `allowedPattern` if it is set, otherwise it will use the `type` attribute (only
+       * supported for `type=number`).
        */
       preventInvalidInput: {
         type: Boolean
       },
 
       /**
-       * Regular expression to match valid input characters.
+       * Regular expression expressing a set of characters to enforce the validity of input characters.
+       * The recommended value should follow this format: `[a-ZA-Z0-9.+-!;:]` that list the characters 
+       * allowed as input.
        */
       allowedPattern: {
         type: String,
@@ -105,8 +107,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       var pattern;
       if (this.allowedPattern) {
         pattern = new RegExp(this.allowedPattern);
-      } else if (this.pattern) {
-        pattern = new RegExp(this.pattern);
       } else {
         switch (this.type) {
           case 'number':
@@ -126,7 +126,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      */
     _bindValueChanged: function() {
       if (this.value !== this.bindValue) {
-        this.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
+        this.value = !(this.bindValue || this.bindValue === 0 || this.bindValue === false) ? '' : this.bindValue;
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -235,8 +235,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       if (this.hasValidator()) {
         valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
       } else {
-        this.invalid = !this.validity.valid;
-        valid = this.validity.valid;
+        valid = this.checkValidity();
+        this.invalid = !valid;
       }
       this.fire('iron-input-validate');
       return valid;
