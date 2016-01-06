@@ -25,10 +25,30 @@
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
+        return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
+    }
 
-            loadForm(page, user);
+    function save(page) {
+
+        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+
+        if (!AppInfo.enableAutoSave) {
+            Dashboard.showLoadingMsg();
+        }
+
+        ApiClient.getUser(userId).then(function (user) {
+
+            saveUser(page, user).then(function () {
+
+                Dashboard.hideLoadingMsg();
+                if (!AppInfo.enableAutoSave) {
+                    Dashboard.alert(Globalize.translate('SettingsSaved'));
+                }
+
+            }, function () {
+                Dashboard.hideLoadingMsg();
+            });
+
         });
     }
 
@@ -36,27 +56,26 @@
 
         var page = $(this).parents('.page')[0];
 
-        Dashboard.showLoadingMsg();
-
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
-
-        ApiClient.getUser(userId).then(function (user) {
-
-            saveUser(page, user);
-
-        });
+        save(page);
 
         // Disable default form submission
         return false;
     }
 
-    $(document).on('pageinit', "#displayPreferencesPage", function () {
+    pageIdOn('pageinit', "displayPreferencesPage", function () {
 
         var page = this;
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#displayPreferencesPage", function () {
+        if (AppInfo.enableAutoSave) {
+            page.querySelector('.btnSave').classList.add('hide');
+        } else {
+            page.querySelector('.btnSave').classList.remove('hide');
+        }
+
+    });
+    pageIdOn('pageshow', "displayPreferencesPage", function () {
 
         var page = this;
 
@@ -82,6 +101,16 @@
         } else {
             $('.languageSection', page).hide();
         }
+
+    });
+    pageIdOn('pagebeforehide', "displayPreferencesPage", function () {
+
+        var page = this;
+
+        if (AppInfo.enableAutoSave) {
+            save(page);
+        }
+
     });
 
 })(jQuery, window, document);

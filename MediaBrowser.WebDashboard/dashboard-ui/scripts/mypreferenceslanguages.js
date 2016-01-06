@@ -31,7 +31,6 @@
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
         page.querySelector('.chkEnableCinemaMode').checked = AppSettings.enableCinemaMode();
-        page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
         page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
         require(['qualityoptions'], function (qualityoptions) {
@@ -45,6 +44,7 @@
             bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
 
             $('#selectMaxBitrate', page).html(bitrateOptions);
+            $('#selectMaxChromecastBitrate', page).html(bitrateOptions);
 
             if (AppSettings.enableAutomaticBitrateDetection()) {
                 $('#selectMaxBitrate', page).val('');
@@ -96,22 +96,10 @@
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-
-            Dashboard.hideLoadingMsg();
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
-
-        }, function () {
-            Dashboard.hideLoadingMsg();
-        });
+        return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
-    function onSubmit() {
-
-        var page = $(this).parents('.page')[0];
-
-        Dashboard.showLoadingMsg();
-
+    function save(page) {
         AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
         if ($('#selectMaxBitrate', page).val()) {
@@ -122,21 +110,40 @@
         }
 
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
-        AppSettings.enableChromecastAc3(page.querySelector('.chkEnableChromecastAc3').checked);
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
+        if (!AppInfo.enableAutoSave) {
+            Dashboard.showLoadingMsg();
+        }
+
         ApiClient.getUser(userId).then(function (result) {
 
-            saveUser(page, result);
+            saveUser(page, result).then(function () {
+
+                Dashboard.hideLoadingMsg();
+                if (!AppInfo.enableAutoSave) {
+                    Dashboard.alert(Globalize.translate('SettingsSaved'));
+                }
+
+            }, function () {
+                Dashboard.hideLoadingMsg();
+            });
 
         });
+    }
+
+    function onSubmit() {
+
+        var page = $(this).parents('.page')[0];
+
+        save(page);
 
         // Disable default form submission
         return false;
     }
 
-    $(document).on('pageinit', "#languagePreferencesPage", function () {
+    pageIdOn('pageinit', "languagePreferencesPage", function () {
 
         var page = this;
 
@@ -148,8 +155,14 @@
 
         $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        if (AppInfo.enableAutoSave) {
+            page.querySelector('.btnSave').classList.add('hide');
+        } else {
+            page.querySelector('.btnSave').classList.remove('hide');
+        }
+    });
 
-    }).on('pageshow', "#languagePreferencesPage", function () {
+    pageIdOn('pageshow', "languagePreferencesPage", function () {
 
         var page = this;
 
@@ -168,6 +181,15 @@
         }
 
         loadPage(page);
+    });
+
+    pageIdOn('pagebeforehide', "languagePreferencesPage", function () {
+
+        var page = this;
+
+        if (AppInfo.enableAutoSave) {
+            save(page);
+        }
     });
 
 })(jQuery, window, document);

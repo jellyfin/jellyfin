@@ -1,1 +1,825 @@
-﻿
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+
+    var currentDialog;
+    var metadataEditorInfo;
+    var currentItem;
+
+    function onWebSocketMessageReceived(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "LibraryChanged") {
+
+            if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
+
+                console.log('Item updated - reloading metadata');
+                reload(currentDialog, currentItem.Id);
+            }
+        }
+    }
+
+    function bindItemChanged() {
+
+        Events.on(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+    }
+
+    function unbindItemChanged() {
+
+        Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+    }
+
+    function closeDialog(isSubmitted) {
+
+        paperDialogHelper.close(currentDialog);
+    }
+
+    function onSubmit() {
+
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        // Disable default form submission
+        return false;
+    }
+
+    function init(context) {
+
+        $('.btnCancel', context).on('click', function () {
+
+            closeDialog(false);
+        });
+
+        $('form', context).off('submit', onSubmit).on('submit', onSubmit);
+    }
+
+    function getItem(itemId) {
+        if (itemId) {
+            return ApiClient.getItem(Dashboard.getCurrentUserId(), itemId);
+        }
+
+        return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+    }
+
+    function getEditorConfig(itemId) {
+        if (itemId) {
+            return ApiClient.getJSON(ApiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
+        }
+
+        return new Promise(function (resolve, reject) {
+
+            resolve({});
+        });
+    }
+
+    function populateCountries(select, allCountries) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = allCountries.length; i < length; i++) {
+
+            var culture = allCountries[i];
+
+            html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        select.innerHTML = html;
+    }
+
+    function populateLanguages(select, languages) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        for (var i = 0, length = languages.length; i < length; i++) {
+
+            var culture = languages[i];
+
+            html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
+        }
+
+        select.innerHTML = html;
+    }
+
+    function renderContentTypeOptions(context, metadataInfo) {
+
+        if (metadataInfo.ContentTypeOptions.length) {
+            $('#fldContentType', context).show();
+        } else {
+            $('#fldContentType', context).hide();
+        }
+
+        var html = metadataInfo.ContentTypeOptions.map(function (i) {
+
+
+            return '<option value="' + i.Value + '">' + i.Name + '</option>';
+
+        }).join('');
+
+        $('#selectContentType', context).html(html).val(metadataInfo.ContentType || '');
+    }
+
+    function onExternalIdChange() {
+
+        var formatString = this.getAttribute('data-formatstring');
+        var buttonClass = this.getAttribute('data-buttonclass');
+
+        if (this.value) {
+            $('.' + buttonClass).attr('href', formatString.replace('{0}', this.value));
+        } else {
+            $('.' + buttonClass).attr('href', '#');
+        }
+    }
+
+    function loadExternalIds(context, item, externalIds) {
+
+        var html = '';
+
+        var providerIds = item.ProviderIds || {};
+
+        for (var i = 0, length = externalIds.length; i < length; i++) {
+
+            var idInfo = externalIds[i];
+
+            var id = "txt1" + idInfo.Key;
+            var buttonId = "btnOpen1" + idInfo.Key;
+            var formatString = idInfo.UrlFormatString || '';
+
+            var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+
+            html += '<div>';
+
+            var value = providerIds[idInfo.Key] || '';
+
+            html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
+
+            if (formatString) {
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><paper-icon-button icon="open-in-browser"></paper-icon-button></a>';
+            }
+
+            html += '</div>';
+        }
+
+        var elem = $('.externalIds', context).html(html).trigger('create');
+
+        $('.txtExternalId', elem).on('change', onExternalIdChange).trigger('change');
+    }
+
+    function setFieldVisibilities(context, item) {
+
+        if (item.Path && item.LocationType != 'Remote') {
+            $('#fldPath', context).show();
+        } else {
+            $('#fldPath', context).hide();
+        }
+
+        if (item.Type == "Series") {
+            $('#fldSeriesRuntime', context).show();
+        } else {
+            $('#fldSeriesRuntime', context).hide();
+        }
+
+        if (item.Type == "Series" || item.Type == "Person") {
+            $('#fldEndDate', context).show();
+        } else {
+            $('#fldEndDate', context).hide();
+        }
+
+        if (item.Type == "Movie" || item.MediaType == "Game" || item.MediaType == "Trailer" || item.Type == "MusicVideo") {
+            $('#fldBudget', context).show();
+            $('#fldRevenue', context).show();
+        } else {
+            $('#fldBudget', context).hide();
+            $('#fldRevenue', context).hide();
+        }
+
+        if (item.Type == "MusicAlbum") {
+            $('#albumAssociationMessage', context).show();
+        } else {
+            $('#albumAssociationMessage', context).hide();
+        }
+
+        if (item.MediaType == "Game") {
+            $('#fldPlayers', context).show();
+        } else {
+            $('#fldPlayers', context).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldCriticRating', context).show();
+            $('#fldCriticRatingSummary', context).show();
+        } else {
+            $('#fldCriticRating', context).hide();
+            $('#fldCriticRatingSummary', context).hide();
+        }
+
+        if (item.Type == "Movie") {
+            $('#fldAwardSummary', context).show();
+        } else {
+            $('#fldAwardSummary', context).hide();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldMetascore', context).show();
+        } else {
+            $('#fldMetascore', context).hide();
+        }
+
+        if (item.Type == "Series") {
+            $('#fldStatus', context).show();
+            $('#fldAirDays', context).show();
+            $('#fldAirTime', context).show();
+        } else {
+            $('#fldStatus', context).hide();
+            $('#fldAirDays', context).hide();
+            $('#fldAirTime', context).hide();
+        }
+
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
+            $('#fld3dFormat', context).show();
+        } else {
+            $('#fld3dFormat', context).hide();
+        }
+
+        if (item.Type == "Audio") {
+            $('#fldAlbumArtist', context).show();
+        } else {
+            $('#fldAlbumArtist', context).hide();
+        }
+
+        if (item.Type == "Audio" || item.Type == "MusicVideo") {
+            $('#fldArtist', context).show();
+            $('#fldAlbum', context).show();
+        } else {
+            $('#fldArtist', context).hide();
+            $('#fldAlbum', context).hide();
+        }
+
+        if (item.Type == "Episode") {
+            $('#collapsibleDvdEpisodeInfo', context).show();
+        } else {
+            $('#collapsibleDvdEpisodeInfo', context).hide();
+        }
+
+        if (item.Type == "Episode" && item.ParentIndexNumber == 0) {
+            $('#collapsibleSpecialEpisodeInfo', context).show();
+        } else {
+            $('#collapsibleSpecialEpisodeInfo', context).hide();
+        }
+
+        if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "TvChannel") {
+            $('#fldCommunityRating', context).hide();
+            $('#fldCommunityVoteCount', context).hide();
+            $('#genresCollapsible', context).hide();
+            $('#peopleCollapsible', context).hide();
+            $('#studiosCollapsible', context).hide();
+
+            if (item.Type == "TvChannel") {
+                $('#fldOfficialRating', context).show();
+            } else {
+                $('#fldOfficialRating', context).hide();
+            }
+            $('#fldCustomRating', context).hide();
+        } else {
+            $('#fldCommunityRating', context).show();
+            $('#fldCommunityVoteCount', context).show();
+            $('#genresCollapsible', context).show();
+            $('#peopleCollapsible', context).show();
+            $('#studiosCollapsible', context).show();
+            $('#fldOfficialRating', context).show();
+            $('#fldCustomRating', context).show();
+        }
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicArtist") {
+            $('#countriesCollapsible', context).show();
+        } else {
+            $('#countriesCollapsible', context).hide();
+        }
+
+        if (item.Type == "TvChannel") {
+            $('#tagsCollapsible', context).hide();
+            $('#metadataSettingsCollapsible', context).hide();
+            $('#fldPremiereDate', context).hide();
+            $('#fldSortName', context).hide();
+            $('#fldDateAdded', context).hide();
+            $('#fldYear', context).hide();
+        } else {
+            $('#tagsCollapsible', context).show();
+            $('#metadataSettingsCollapsible', context).show();
+            $('#fldPremiereDate', context).show();
+            $('#fldSortName', context).show();
+            $('#fldDateAdded', context).show();
+            $('#fldYear', context).show();
+        }
+
+        Dashboard.getCurrentUser().then(function (user) {
+
+            if (LibraryBrowser.getMoreCommands(item, user).indexOf('identify') != -1) {
+
+                $('#btnIdentify', context).show();
+            } else {
+                $('#btnIdentify', context).hide();
+            }
+        });
+
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
+            $('#keywordsCollapsible', context).show();
+        } else {
+            $('#keywordsCollapsible', context).hide();
+        }
+
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
+            $('#fldSourceType', context).show();
+        } else {
+            $('#fldSourceType', context).hide();
+        }
+
+        if (item.Type == "Person") {
+            context.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
+            context.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelBirthDate');
+            context.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelDeathDate');
+            $('#fldPlaceOfBirth', context).show();
+        } else {
+            context.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
+            context.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelReleaseDate');
+            context.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelEndDate');
+            $('#fldPlaceOfBirth', context).hide();
+        }
+
+        if (item.MediaType == "Video" && item.Type != "TvChannel") {
+            $('#fldOriginalAspectRatio', context).show();
+        } else {
+            $('#fldOriginalAspectRatio', context).hide();
+        }
+
+        if (item.Type == "Audio" || item.Type == "Episode" || item.Type == "Season") {
+            $('#fldIndexNumber', context).show();
+
+            if (item.Type == "Episode") {
+                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelEpisodeNumber');
+            } else if (item.Type == "Season") {
+                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelSeasonNumber');
+            } else if (item.Type == "Audio") {
+                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelTrackNumber');
+            } else {
+                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelNumber');
+            }
+        } else {
+            $('#fldIndexNumber', context).hide();
+        }
+
+        if (item.Type == "Audio" || item.Type == "Episode") {
+            $('#fldParentIndexNumber', context).show();
+
+            if (item.Type == "Episode") {
+                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelSeasonNumber');
+            } else if (item.Type == "Audio") {
+                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelDiscNumber');
+            } else {
+                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelParentNumber');
+            }
+        } else {
+            $('#fldParentIndexNumber', context).hide();
+        }
+
+        if (item.Type == "Series") {
+            $('#fldDisplaySpecialsInline', context).show();
+        } else {
+            $('#fldDisplaySpecialsInline', context).hide();
+        }
+
+        if (item.Type == "BoxSet") {
+            $('#fldDisplayOrder', context).show();
+
+            $('#labelDisplayOrder', context).html(Globalize.translate('LabelTitleDisplayOrder'));
+            $('#selectDisplayOrder', context).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>');
+        } else {
+            $('#selectDisplayOrder', context).html('');
+            $('#fldDisplayOrder', context).hide();
+        }
+
+        var displaySettingFields = $('.fldDisplaySetting', context);
+        if (displaySettingFields.filter(function (index) {
+
+            return displaySettingFields[index].style.display != 'none';
+
+        }).length) {
+            $('#collapsibleDisplaySettings', context).show();
+        } else {
+            $('#collapsibleDisplaySettings', context).hide();
+        }
+    }
+
+    function fillItemInfo(context, item, parentalRatingOptions) {
+
+        var select = $('#selectOfficialRating', context);
+
+        populateRatings(parentalRatingOptions, select, item.OfficialRating);
+
+        select.val(item.OfficialRating || "");
+
+        select = $('#selectCustomRating', context);
+
+        populateRatings(parentalRatingOptions, select, item.CustomRating);
+
+        select.val(item.CustomRating || "");
+
+        var selectStatus = $('#selectStatus', context);
+        populateStatus(selectStatus);
+        selectStatus.val(item.Status || "");
+
+        $('#select3dFormat', context).val(item.Video3DFormat || "");
+
+        $('.chkAirDay', context).each(function () {
+
+            this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
+
+        });
+
+        populateListView($('#listCountries', context), item.ProductionLocations || []);
+        populateListView($('#listGenres', context), item.Genres);
+        populatePeople(context, item.People || []);
+
+        populateListView($('#listStudios', context), (item.Studios || []).map(function (element) { return element.Name || ''; }));
+
+        populateListView($('#listTags', context), item.Tags);
+        populateListView($('#listKeywords', context), item.Keywords);
+
+        var lockData = (item.LockData || false);
+        var chkLockData = context.querySelector("#chkLockData");
+        chkLockData.checked = lockData;
+        if (chkLockData.checked) {
+            $('#providerSettingsContainer', context).hide();
+        } else {
+            $('#providerSettingsContainer', context).show();
+        }
+        populateInternetProviderSettings(context, item, item.LockedFields);
+
+        context.querySelector('#chkDisplaySpecialsInline').checked = item.DisplaySpecialsWithSeasons || false;
+
+        $('#txtPath', context).val(item.Path || '');
+        $('#txtName', context).val(item.Name || "");
+        context.querySelector('#txtOverview').value = item.Overview || '';
+        $('#txtShortOverview', context).val(item.ShortOverview || "");
+        $('#txtTagline', context).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
+        $('#txtSortName', context).val(item.ForcedSortName || "");
+        $('#txtDisplayMediaType', context).val(item.DisplayMediaType || "");
+        $('#txtCommunityRating', context).val(item.CommunityRating || "");
+        $('#txtCommunityVoteCount', context).val(item.VoteCount || "");
+        $('#txtHomePageUrl', context).val(item.HomePageUrl || "");
+
+        $('#txtAwardSummary', context).val(item.AwardSummary || "");
+        $('#txtMetascore', context).val(item.Metascore || "");
+
+        $('#txtBudget', context).val(item.Budget || "");
+        $('#txtRevenue', context).val(item.Revenue || "");
+
+        $('#txtCriticRating', context).val(item.CriticRating || "");
+        $('#txtCriticRatingSummary', context).val(item.CriticRatingSummary || "");
+
+        $('#txtIndexNumber', context).val(('IndexNumber' in item) ? item.IndexNumber : "");
+        $('#txtParentIndexNumber', context).val(('ParentIndexNumber' in item) ? item.ParentIndexNumber : "");
+        $('#txtPlayers', context).val(item.Players || "");
+
+        $('#txtAbsoluteEpisodeNumber', context).val(('AbsoluteEpisodeNumber' in item) ? item.AbsoluteEpisodeNumber : "");
+        $('#txtDvdEpisodeNumber', context).val(('DvdEpisodeNumber' in item) ? item.DvdEpisodeNumber : "");
+        $('#txtDvdSeasonNumber', context).val(('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "");
+        $('#txtAirsBeforeSeason', context).val(('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "");
+        $('#txtAirsAfterSeason', context).val(('AirsAfterSeasonNumber' in item) ? item.AirsAfterSeasonNumber : "");
+        $('#txtAirsBeforeEpisode', context).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
+
+        $('#txtAlbum', context).val(item.Album || "");
+
+        $('#txtAlbumArtist', context).val((item.AlbumArtists || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
+
+        $('#selectDisplayOrder', context).val(item.DisplayOrder);
+
+        $('#txtArtist', context).val((item.ArtistItems || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
+
+        var date;
+
+        if (item.DateCreated) {
+            try {
+                date = parseISO8601Date(item.DateCreated, { toLocal: true });
+
+                $('#txtDateAdded', context).val(date.toISOString().slice(0, 10));
+            } catch (e) {
+                $('#txtDateAdded', context).val('');
+            }
+        } else {
+            $('#txtDateAdded', context).val('');
+        }
+
+        if (item.PremiereDate) {
+            try {
+                date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                $('#txtPremiereDate', context).val(date.toISOString().slice(0, 10));
+            } catch (e) {
+                $('#txtPremiereDate', context).val('');
+            }
+        } else {
+            $('#txtPremiereDate', context).val('');
+        }
+
+        if (item.EndDate) {
+            try {
+                date = parseISO8601Date(item.EndDate, { toLocal: true });
+
+                $('#txtEndDate', context).val(date.toISOString().slice(0, 10));
+            } catch (e) {
+                $('#txtEndDate', context).val('');
+            }
+        } else {
+            $('#txtEndDate', context).val('');
+        }
+
+        $('#txtProductionYear', context).val(item.ProductionYear || "");
+
+        $('#txtAirTime', context).val(item.AirTime || '');
+
+        var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
+        $('#txtPlaceOfBirth', context).val(placeofBirth);
+
+        $('#txtOriginalAspectRatio', context).val(item.AspectRatio || "");
+
+        $('#selectLanguage', context).val(item.PreferredMetadataLanguage || "");
+        $('#selectCountry', context).val(item.PreferredMetadataCountryCode || "");
+
+        if (item.RunTimeTicks) {
+
+            var minutes = item.RunTimeTicks / 600000000;
+
+            $('#txtSeriesRuntime', context).val(Math.round(minutes));
+        } else {
+            $('#txtSeriesRuntime', context).val("");
+        }
+    }
+
+    function populateRatings(allParentalRatings, select, currentValue) {
+
+        var html = "";
+
+        html += "<option value=''></option>";
+
+        var ratings = [];
+        var i, length, rating;
+
+        var currentValueFound = false;
+
+        for (i = 0, length = allParentalRatings.length; i < length; i++) {
+
+            rating = allParentalRatings[i];
+
+            ratings.push({ Name: rating.Name, Value: rating.Name });
+
+            if (rating.Name == currentValue) {
+                currentValueFound = true;
+            }
+        }
+
+        if (currentValue && !currentValueFound) {
+            ratings.push({ Name: currentValue, Value: currentValue });
+        }
+
+        for (i = 0, length = ratings.length; i < length; i++) {
+
+            rating = ratings[i];
+
+            html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
+        }
+
+        select.html(html);
+    }
+
+    function populateStatus(select) {
+        var html = "";
+
+        html += "<option value=''></option>";
+        html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
+        select.html(html);
+    }
+
+    function populateListView(list, items, sortCallback) {
+        //items = items || [];
+        //if (typeof (sortCallback) === 'undefined') {
+        //    items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        //} else {
+        //    items = sortCallback(items);
+        //}
+        //var html = '';
+        //for (var i = 0; i < items.length; i++) {
+        //    html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
+        //}
+        //list.html(html).listview('refresh');
+    }
+
+    function populatePeople(context, people) {
+
+        var lastType = '';
+        var html = '';
+
+        var elem = $('#peopleList', context);
+
+        for (var i = 0, length = people.length; i < length; i++) {
+
+            var person = people[i];
+
+            var type = person.Type || Globalize.translate('PersonTypePerson');
+
+            if (type != lastType) {
+                html += '<li data-role="list-divider">' + type + '</li>';
+                lastType = type;
+            }
+
+            html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
+
+            html += '<h3>' + (person.Name || '') + '</h3>';
+
+            if (person.Role && person.Role != lastType) {
+                html += '<p>' + (person.Role) + '</p>';
+            }
+            html += '</a>';
+
+            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">' + Globalize.translate('Delete') + '</a>';
+
+            html += '</li>';
+        }
+
+        //elem.html(html).listview('refresh');
+
+        $('.btnDeletePerson', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+            currentItem.People.splice(index, 1);
+
+            populatePeople(context, currentItem.People);
+        });
+
+        $('.btnEditPerson', elem).on('click', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+
+            editPerson(context, currentItem.People[index], index);
+        });
+    }
+
+    function generateSliders(fields, currentFields) {
+
+        var html = '';
+        for (var i = 0; i < fields.length; i++) {
+
+            var field = fields[i];
+            var name = field.name;
+            var value = field.value || field.name;
+            var checkedHtml = currentFields.indexOf(value) == -1 ? ' checked' : '';
+            html += '<paper-checkbox class="selectLockedField" data-value="' + value + '" style="display:block;margin:1em 0;"' + checkedHtml + '>' + name + '</paper-checkbox>';
+        }
+        return html;
+    }
+
+    function populateInternetProviderSettings(context, item, lockedFields) {
+        var container = $('#providerSettingsContainer', context);
+        lockedFields = lockedFields || new Array();
+
+        var metadatafields = [
+            { name: Globalize.translate('OptionName'), value: "Name" },
+            { name: Globalize.translate('OptionOverview'), value: "Overview" },
+            { name: Globalize.translate('OptionGenres'), value: "Genres" },
+            { name: Globalize.translate('OptionParentalRating'), value: "OfficialRating" },
+            { name: Globalize.translate('OptionPeople'), value: "Cast" }
+        ];
+
+        if (item.Type == "Person") {
+            metadatafields.push({ name: Globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
+        } else {
+            metadatafields.push({ name: Globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
+        }
+
+        if (item.Type == "Series") {
+            metadatafields.push({ name: Globalize.translate('OptionRuntime'), value: "Runtime" });
+        }
+
+        metadatafields.push({ name: Globalize.translate('OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: Globalize.translate('OptionTags'), value: "Tags" });
+        metadatafields.push({ name: Globalize.translate('OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: Globalize.translate('OptionImages'), value: "Images" });
+        metadatafields.push({ name: Globalize.translate('OptionBackdrops'), value: "Backdrops" });
+
+        if (item.Type == "Game") {
+            metadatafields.push({ name: Globalize.translate('OptionScreenshots'), value: "Screenshots" });
+        }
+
+        var html = '';
+
+        html += "<h1>" + Globalize.translate('HeaderEnabledFields') + "</h1>";
+        html += "<p>" + Globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += generateSliders(metadatafields, lockedFields);
+        container.html(html);
+    }
+
+    function reload(context, itemId) {
+
+        unbindItemChanged();
+        Dashboard.showLoadingMsg();
+
+        Promise.all([getItem(itemId), getEditorConfig(itemId)]).then(function (responses) {
+
+            var item = responses[0];
+            metadataEditorInfo = responses[1];
+
+            currentItem = item;
+
+            var languages = metadataEditorInfo.Cultures;
+            var countries = metadataEditorInfo.Countries;
+
+            renderContentTypeOptions(context, metadataEditorInfo);
+
+            loadExternalIds(context, item, metadataEditorInfo.ExternalIdInfos);
+
+            populateLanguages(context.querySelector('#selectLanguage'), languages);
+            populateCountries(context.querySelector('#selectCountry'), countries);
+
+            LibraryBrowser.renderName(item, $('.itemName', context), true);
+
+            setFieldVisibilities(context, item);
+            fillItemInfo(context, item, metadataEditorInfo.ParentalRatingOptions);
+
+            if (item.MediaType == 'Photo') {
+                $('#btnEditImages', context).hide();
+            } else {
+                $('#btnEditImages', context).show();
+            }
+
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldShortOverview', context).show();
+            } else {
+                $('#fldShortOverview', context).hide();
+            }
+
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                $('#fldTagline', context).show();
+            } else {
+                $('#fldTagline', context).hide();
+            }
+
+            Dashboard.hideLoadingMsg();
+            bindItemChanged(context);
+        });
+    }
+
+    return {
+        show: function (itemId) {
+            return new Promise(function (resolve, reject) {
+
+                Dashboard.showLoadingMsg();
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
+
+                xhr.onload = function (e) {
+
+                    var template = this.response;
+                    var dlg = paperDialogHelper.createDialog({
+                        removeOnClose: true
+                    });
+
+                    dlg.classList.add('formDialog');
+
+                    var html = '';
+
+                    html += Globalize.translateDocument(template);
+
+                    dlg.innerHTML = html;
+                    document.body.appendChild(dlg);
+
+                    paperDialogHelper.open(dlg);
+
+                    dlg.addEventListener('iron-overlay-closed', function () {
+                        resolve();
+                    });
+
+                    currentDialog = dlg;
+
+                    init(dlg);
+
+                    reload(dlg, itemId);
+                }
+
+                xhr.send();
+            });
+        }
+    };
+});

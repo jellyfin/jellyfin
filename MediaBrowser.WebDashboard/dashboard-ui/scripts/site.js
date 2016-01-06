@@ -1555,6 +1555,7 @@ var AppInfo = {};
         AppInfo.enableNowPlayingBar = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
+        AppInfo.enableAutoSave = browserInfo.mobile;
 
         AppInfo.enableAppStorePolicy = isCordova;
 

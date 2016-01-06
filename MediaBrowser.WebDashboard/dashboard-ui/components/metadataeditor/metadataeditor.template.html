@@ -1,18 +1,12 @@
-﻿<form class="editItemMetadataForm editMetadataForm ">
+﻿<div class="dialogHeader">
+    <paper-icon-button icon="close" class="btnCancel"></paper-icon-button>
+    <div class="dialogHeaderTitle">
+        ${ButtonEdit}
+    </div>
+</div>
+
+<form class="editItemMetadataForm editMetadataForm ">
     <div class="metadataFormFields">
-
-        <div style="margin:2em 0 .5em;text-align:center;">
-
-            <paper-button raised class="submit">
-                <button class="btnSave clearButton" type="submit" data-role="none" style="display:inline-block;">
-                    <iron-icon icon="check"></iron-icon><span>${ButtonSave}</span>
-                </button>
-            </paper-button>
-
-            <paper-button raised class="subdued btnRefresh btnSimpleRefresh" style="background-color:#673AB7;"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefresh}</span></paper-button>
-            <paper-button id="btnIdentify" raised style="background-color:#009688;"><iron-icon icon="info"></iron-icon><span>${ButtonIdentify}</span></paper-button>
-            <paper-button raised class="subdued notext btnMore"><iron-icon icon="more-vert"></iron-icon></paper-button>
-        </div>
 
         <div style="padding: 0 0 10px;">
             <div id="fldContentType" style="display:none;">

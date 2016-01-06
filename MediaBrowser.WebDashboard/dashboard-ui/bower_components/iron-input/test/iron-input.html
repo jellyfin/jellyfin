@@ -44,25 +44,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="prevent-invalid-input">
     <template>
-      <input is="iron-input" prevent-invalid-input pattern="[0-9]">
+      <input is="iron-input" prevent-invalid-input allowed-pattern="[0-9]">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prevent-invalid-input-with-pattern">
+    <template>
+      <input is="iron-input" prevent-invalid-input pattern="[a-zA-Z]{3}[0-9]*">
     </template>
   </test-fixture>
 
   <test-fixture id="prevent-invalid-input-has-value">
     <template>
-      <input is="iron-input" prevent-invalid-input pattern="[0-9]*" value="foobar">
+      <input is="iron-input" prevent-invalid-input allowed-pattern="[0-9]" value="foobar">
     </template>
   </test-fixture>
 
   <test-fixture id="prevent-invalid-input-has-bind-value">
     <template>
-      <input is="iron-input" prevent-invalid-input pattern="[0-9]*" bind-value="foobar">
+      <input is="iron-input" prevent-invalid-input allowed-pattern="[0-9]" bind-value="foobar">
     </template>
   </test-fixture>
 
   <test-fixture id="automatically-prevent-invalid-input-if-allowed-pattern">
     <template>
       <input is="iron-input" allowed-pattern="[0-9]">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="no-validator">
+    <template>
+      <input is="iron-input" pattern="[a-zA-Z]{3}[0-9]*">
     </template>
   </test-fixture>
 
@@ -116,6 +128,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.ok(!scope.$.input.value, 'value is falsy');
       });
 
+      test('can validate using a complex regex', function() {
+        var input = fixture('no-validator');
+        input.value = '123';
+        input.validate();
+        assert.isTrue(input.invalid, 'input is invalid');
+        input.value = 'foo';
+        input.validate();
+        assert.isFalse(input.invalid, 'input is valid');
+        input.value = 'foo123';
+        input.validate();
+        assert.isFalse(input.invalid, 'input is valid');
+      });
+
+      test('set bindValue to false', function() {
+        var scope = document.getElementById('bind-to-object');
+        scope.foo = false;
+        assert.isFalse(scope.$.input.bindValue);
+        assert.equal(scope.$.input.value, 'false');
+      });
+
       test('validator used instead of constraints api if provided', function() {
         var input = fixture('has-validator')[1];
         input.value = '123';
@@ -132,6 +164,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         input.value = '123foo';
         input._onInput();
         assert.equal(input.bindValue, '123');
+      });
+
+      test('inputs can be validated', function() {
+        var input = fixture('prevent-invalid-input-with-pattern');
+        input.value = '123';
+        input._onInput();
+        assert.equal(input.bindValue, '123');
+        input.validate();
+        assert.isTrue(input.invalid, 'input is invalid');
+
+        input.value = 'foo';
+        input._onInput();
+        assert.equal(input.bindValue, 'foo');
+        input.validate();
+        assert.isFalse(input.invalid, 'input is valid');
+
+        input.value = 'foo123';
+        input._onInput();
+        assert.equal(input.bindValue, 'foo123');
+        input.validate();
+        assert.isFalse(input.invalid, 'input is valid');
       });
 
       test('prevent invalid input works automatically when allowed pattern is set', function() {

@@ -1,5 +1,10 @@
 ﻿define(['browser'], function (browser) {
 
+    function canPlayH264() {
+        var v = document.createElement('video');
+        return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+    }
+
     var supportedFormats;
     function getSupportedFormats() {
 
@@ -20,13 +25,7 @@
             list.push('mkv');
         }
 
-        var canPlayH264 = true;
-        var userAgent = navigator.userAgent.toLowerCase();
-        if (userAgent.indexOf('firefox') != -1 && userAgent.indexOf('windows') == -1) {
-            canPlayH264 = false;
-        }
-
-        if (canPlayH264) {
+        if (canPlayH264()) {
             list.push('h264');
         }
 
@@ -113,7 +112,7 @@
             });
         }
 
-        if (browser.chrome) {
+        if (canPlayMkv) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv,mov',
                 Type: 'Video',
@@ -161,12 +160,23 @@
             }
         });
 
+        var videoAudioCodecs = [];
+        if (canPlayMp3) {
+            videoAudioCodecs.push('mp3');
+        }
+        if (canPlayAac) {
+            videoAudioCodecs.push('aac');
+        }
+        if (canPlayAc3) {
+            videoAudioCodecs.push('ac3');
+        }
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.mobile) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
-                AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming'
             });
@@ -176,7 +186,7 @@
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
-                AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 Protocol: 'hls'
@@ -198,7 +208,7 @@
         profile.TranscodingProfiles.push({
             Container: 'mp4',
             Type: 'Video',
-            AudioCodec: 'aac',
+            AudioCodec: videoAudioCodecs.join(','),
             VideoCodec: 'h264',
             Context: 'Streaming',
             Protocol: 'http'
@@ -207,7 +217,7 @@
         profile.TranscodingProfiles.push({
             Container: 'mp4',
             Type: 'Video',
-            AudioCodec: 'aac',
+            AudioCodec: videoAudioCodecs.join(','),
             VideoCodec: 'h264',
             Context: 'Static',
             Protocol: 'http'
