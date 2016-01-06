@@ -1,6 +1,4 @@
 {
-    "OptionSmartSubtitles": "Smart",
-    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "LabelExit": "\u062e\u0631\u0648\u062c",
     "LabelVisitCommunity": "\u0632\u064a\u0627\u0631\u0629 \u0627\u0644\u0645\u062c\u062a\u0645\u0639",
     "LabelGithub": "\u062c\u064a\u062a \u0647\u0628",
@@ -138,6 +136,8 @@
     "LabelAudioLanguagePreference": "\u0627\u0644\u0644\u063a\u0629 \u0627\u0644\u0645\u0641\u0636\u0644\u0629 \u0644\u0644\u0635\u0648\u062a:",
     "LabelSubtitleLanguagePreference": "\u0627\u0644\u0644\u063a\u0629 \u0627\u0644\u0645\u0641\u0636\u0644\u0629 \u0644\u0644\u062a\u0631\u062c\u0645\u0629:",
     "OptionDefaultSubtitles": "Default",
+    "OptionSmartSubtitles": "Smart",
+    "OptionSmartSubtitlesHelp": "Subtitles matching the language preference will be loaded when the audio is in a foreign language.",
     "OptionOnlyForcedSubtitles": "Only forced subtitles",
     "OptionAlwaysPlaySubtitles": "Always play subtitles",
     "OptionNoSubtitles": "No Subtitles",
@@ -498,7 +498,6 @@
     "HeaderFrom": "From",
     "HeaderTo": "To",
     "LabelFrom": "From:",
-    "LabelFromHelp": "Example: D:\\Movies (on the server)",
     "LabelTo": "To:",
     "LabelToHelp": "Example: \\\\MyServer\\Movies (a path clients can access)",
     "ButtonAddPathSubstitution": "Add Substitution",
