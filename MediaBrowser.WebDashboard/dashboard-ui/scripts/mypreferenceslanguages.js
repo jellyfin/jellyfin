@@ -96,7 +96,7 @@
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
-        ApiClient.updateUserConfiguration(user.Id, user.Configuration);
+        return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
     function save(page) {
@@ -113,9 +113,22 @@
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
+        if (!AppInfo.enableAutoSave) {
+            Dashboard.showLoadingMsg();
+        }
+
         ApiClient.getUser(userId).then(function (result) {
 
-            saveUser(page, result);
+            saveUser(page, result).then(function () {
+
+                Dashboard.hideLoadingMsg();
+                if (!AppInfo.enableAutoSave) {
+                    Dashboard.alert(Globalize.translate('SettingsSaved'));
+                }
+
+            }, function () {
+                Dashboard.hideLoadingMsg();
+            });
 
         });
     }
@@ -141,6 +154,12 @@
         });
 
         $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        if (AppInfo.enableAutoSave) {
+            page.querySelector('.btnSave').classList.add('hide');
+        } else {
+            page.querySelector('.btnSave').classList.remove('hide');
+        }
     });
 
     pageIdOn('pageshow', "languagePreferencesPage", function () {
@@ -168,7 +187,9 @@
 
         var page = this;
 
-        save(page);
+        if (AppInfo.enableAutoSave) {
+            save(page);
+        }
     });
 
 })(jQuery, window, document);
