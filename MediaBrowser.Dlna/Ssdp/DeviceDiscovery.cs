@@ -11,6 +11,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MoreLinq;
 
 namespace MediaBrowser.Dlna.Ssdp
@@ -27,52 +28,21 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public event EventHandler<SsdpMessageEventArgs> DeviceDiscovered;
         public event EventHandler<SsdpMessageEventArgs> DeviceLeft;
+        private readonly INetworkManager _networkManager;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IServerApplicationHost appHost)
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IServerApplicationHost appHost, INetworkManager networkManager)
         {
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
             _config = config;
             _appHost = appHost;
+            _networkManager = networkManager;
         }
 
 		private List<IPAddress> GetLocalIpAddresses()
 		{
-			NetworkInterface[] interfaces;
-
-			try
-			{
-				interfaces = NetworkInterface.GetAllNetworkInterfaces();
-			}
-			catch (Exception ex)
-			{
-				_logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
-				return new List<IPAddress>();
-			}
-
-			return interfaces.SelectMany(network => {
-
-				try
-				{
-					_logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
-
-					var properties = network.GetIPProperties();
-
-					return properties.UnicastAddresses
-                        .Select(i => i.Address)
-						.Where(i => i.AddressFamily == AddressFamily.InterNetwork)
-						.ToList();
-				}
-				catch (Exception ex)
-				{
-					_logger.ErrorException("Error querying network interface", ex);
-					return new List<IPAddress>();
-				}
-
-			})
-                .DistinctBy(i => i.ToString())
-				.ToList();
+		    return _networkManager.GetLocalIpAddresses().ToList();
 		}
 
         public void Start(SsdpHandler ssdpHandler)
