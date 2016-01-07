@@ -231,6 +231,7 @@ namespace MediaBrowser.Common.Implementations.Networking
 					var properties = network.GetIPProperties();
 
 					return properties.UnicastAddresses
+                        .Where(i => i.IsDnsEligible)
                         .Select(i => i.Address)
                         .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
 						.ToList();
