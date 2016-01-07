@@ -48,6 +48,10 @@
             var type = getParameterByName('type');
             if (type) {
                 pageData.query.IncludeItemTypes = type;
+
+                if (type == 'Audio') {
+                    pageData.query.SortBy = 'Album,SortName';
+                }
             }
 
             var filters = getParameterByName('filters');
