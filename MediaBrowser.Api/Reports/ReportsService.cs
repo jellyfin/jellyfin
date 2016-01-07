@@ -275,6 +275,9 @@ namespace MediaBrowser.Api.Reports
                     case ItemFilter.IsFavorite:
                         query.IsFavorite = true;
                         break;
+                    case ItemFilter.IsNotFavorite:
+                        query.IsFavorite = false;
+                        break;
                     case ItemFilter.IsFavoriteOrLikes:
                         query.IsFavoriteOrLiked = true;
                         break;
