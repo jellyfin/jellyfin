@@ -57,6 +57,11 @@ namespace MediaBrowser.WebDashboard.Api
         public string Mode { get; set; }
     }
 
+    [Route("/robots.txt", "GET")]
+    public class GetRobotsTxt
+    {
+    }
+
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
@@ -186,6 +191,14 @@ namespace MediaBrowser.WebDashboard.Api
                 .ToList();
 
             return ResultFactory.GetOptimizedResult(Request, configPages);
+        }
+
+        public object Get(GetRobotsTxt request)
+        {
+            return Get(new GetDashboardResource
+            {
+                ResourceName = "robots.txt"
+            });
         }
 
         /// <summary>
