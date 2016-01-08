@@ -7,70 +7,68 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../../../polymer/polymer.html">
-<link rel="import" href="../../../paper-styles/paper-styles.html">
+<link rel="import" href="../../../paper-styles/typography.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../shared-styles.html">
 
 <dom-module id="animated-grid">
-
-  <link rel="import" type="css" href="../shared.css">
-
-  <style>
-
-    :host {
-      display: block;
-      background: #000;
-    }
-
-    .tile {
-      display: inline-block;
-      float: left;
-      vertical-align: top;
-      width: calc(100% / 6);
-      height: calc(100% / 3);
-
-      @apply(--paper-font-title);
-      @apply(--layout-vertical);
-      @apply(--layout-center-center);
-    }
-
-    .tile:nth-of-type(1) {
-      width: calc(100% / 3);
-      height: calc(100% / 3 * 2);
-    }
-
-    .tile:nth-of-type(4) {
-      width: calc(100% / 3);
-    }
-
-    .tile:nth-of-type(5) {
-      width: calc(100% / 3);
-      height: calc(100% / 3 * 2);
-    }
-
-    .tile:nth-of-type(8) {
-      width: calc(100% / 3);
-      height: calc(100% / 3);
-    }
-
-    .tile:nth-of-type(9) {
-      position: absolute;
-      top: calc(100% / 3 * 2);
-      left: 0;
-      width: calc(100% / 6);
-      height: calc(100% / 3);
-    }
-
-    .tile:nth-of-type(10) {
-      position: absolute;
-      top: calc(100% / 3 * 2);
-      left: calc(100% / 6);;
-      width: calc(100% / 6);
-      height: calc(100% / 3);
-    }
-
-  </style>
-
   <template>
+    <style include="shared-styles"></style>
+    <style>
+
+      :host {
+        display: block;
+        background: #000;
+      }
+
+      .tile {
+        display: inline-block;
+        float: left;
+        vertical-align: top;
+        width: calc(100% / 6);
+        height: calc(100% / 3);
+
+        @apply(--paper-font-title);
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+      }
+
+      .tile:nth-of-type(1) {
+        width: calc(100% / 3);
+        height: calc(100% / 3 * 2);
+      }
+
+      .tile:nth-of-type(4) {
+        width: calc(100% / 3);
+      }
+
+      .tile:nth-of-type(5) {
+        width: calc(100% / 3);
+        height: calc(100% / 3 * 2);
+      }
+
+      .tile:nth-of-type(8) {
+        width: calc(100% / 3);
+        height: calc(100% / 3);
+      }
+
+      .tile:nth-of-type(9) {
+        position: absolute;
+        top: calc(100% / 3 * 2);
+        left: 0;
+        width: calc(100% / 6);
+        height: calc(100% / 3);
+      }
+
+      .tile:nth-of-type(10) {
+        position: absolute;
+        top: calc(100% / 3 * 2);
+        left: calc(100% / 6);;
+        width: calc(100% / 6);
+        height: calc(100% / 3);
+      }
+    </style>
 
     <template is="dom-repeat" items="[[config]]">
       <div class$="[[_computeTileClass(item.color)]]">
@@ -79,7 +77,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
 
   </template>
-
 </dom-module>
 
 <script>

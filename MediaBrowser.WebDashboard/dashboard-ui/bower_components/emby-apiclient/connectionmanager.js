@@ -1123,7 +1123,7 @@
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
 
-                if (server.LastConnectionMode == ConnectionMode.Local) {
+                if (connectionMode == ConnectionMode.Local) {
                     server.DateLastLocalConnection = new Date().getTime();
                 }
             }

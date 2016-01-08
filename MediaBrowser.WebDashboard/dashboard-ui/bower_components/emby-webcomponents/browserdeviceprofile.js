@@ -103,12 +103,23 @@
 
         profile.DirectPlayProfiles = [];
 
+        var videoAudioCodecs = [];
+        if (canPlayMp3) {
+            videoAudioCodecs.push('mp3');
+        }
+        if (canPlayAac) {
+            videoAudioCodecs.push('aac');
+        }
+        if (canPlayAc3) {
+            videoAudioCodecs.push('ac3');
+        }
+
         if (supportedFormats.indexOf('h264') != -1) {
             profile.DirectPlayProfiles.push({
                 Container: 'mp4,m4v',
                 Type: 'Video',
                 VideoCodec: 'h264',
-                AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                AudioCodec: videoAudioCodecs.join(',')
             });
         }
 
@@ -117,7 +128,7 @@
                 Container: 'mkv,mov',
                 Type: 'Video',
                 VideoCodec: 'h264',
-                AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                AudioCodec: videoAudioCodecs.join(',')
             });
         }
 
@@ -159,17 +170,6 @@
                 });
             }
         });
-
-        var videoAudioCodecs = [];
-        if (canPlayMp3) {
-            videoAudioCodecs.push('mp3');
-        }
-        if (canPlayAac) {
-            videoAudioCodecs.push('aac');
-        }
-        if (canPlayAc3) {
-            videoAudioCodecs.push('ac3');
-        }
 
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.mobile) {
@@ -265,24 +265,6 @@
                 //    Property: 'AudioProfile',
                 //    Value: 'LC'
                 //}
-            ]
-        });
-
-        profile.CodecProfiles.push({
-            Type: 'VideoAudio',
-            Codec: 'aac,mp3',
-            Conditions: [
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: videoAudioChannels
-                },
-                {
-                    Condition: 'Equals',
-                    Property: 'IsSecondaryAudio',
-                    Value: 'false',
-                    IsRequired: 'false'
-                }
             ]
         });
 

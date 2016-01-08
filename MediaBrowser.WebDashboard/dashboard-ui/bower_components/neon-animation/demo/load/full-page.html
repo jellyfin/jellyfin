@@ -7,43 +7,38 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../../../polymer/polymer.html">
-<link rel="import" href="../../../paper-styles/paper-styles.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../neon-animatable-behavior.html">
 <link rel="import" href="../../neon-animation-runner-behavior.html">
+<link rel="import" href="../../../paper-styles/shadow.html">
 <link rel="import" href="animated-grid.html">
 
 <dom-module id="full-page">
-
-  <style>
-
-    :host {
-      background: black;
-      visibility: hidden;
-      @apply(--layout-vertical);
-    }
-
-    .toolbar {
-      background: #9c27b0;
-      height: 72px;
-      z-index: 1;
-      @apply(--shadow-elevation-2dp);
-    }
-
-    animated-grid {
-      height: calc(100% - 72px);
-      @apply(--layout-flex);
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        background: black;
+        visibility: hidden;
+        @apply(--layout-vertical);
+      }
+
+      .toolbar {
+        background: #9c27b0;
+        height: 72px;
+        z-index: 1;
+        @apply(--shadow-elevation-2dp);
+      }
+
+      animated-grid {
+        height: calc(100% - 72px);
+        @apply(--layout-flex);
+      }
+    </style>
 
     <div id="toolbar" class="toolbar"></div>
-
     <animated-grid id="grid"></animated-grid>
 
   </template>
-
 </dom-module>
 
 <script>

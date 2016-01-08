@@ -17,38 +17,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="../../../paper-styles/paper-styles.html">
     <link rel="import" href="../../neon-animated-pages.html">
     <link rel="import" href="../../neon-animations.html">
     <link rel="import" href="animated-grid.html">
     <link rel="import" href="fullsize-page-with-card.html">
 
-    <style>
-
+    <style is="custom-style">
       body {
         overflow: hidden;
+        @apply(--layout-fullbleed);
       }
 
       neon-animated-pages {
         height: 100%;
       }
-
     </style>
 
   </head>
-  <body class="fullbleed">
+  <body>
 
     <template is="dom-bind">
-
       <neon-animated-pages id="pages" selected="0">
-
         <animated-grid on-tile-click="_onTileClick"></animated-grid>
-
         <fullsize-page-with-card id="fullsize-card" hero-id="hero" on-click="_onFullsizeClick">
         </fullsize-page-with-card>
-
       </neon-animated-pages>
-
     </template>
 
     <script>

@@ -17,18 +17,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
 
+    <link rel="import" href="my-animatable.html">
     <link rel="import" href="my-dialog.html">
 
   </head>
+  <style>
+    my-animatable {
+      margin-top: 50px;
+    }
+  </style>
   <body>
 
     <template is="dom-bind">
 
-      <button on-click="_onButtonClick">Toggle</button>
+      <button on-click="_onCircleButtonClick">toggle circle</button>
+      <button on-click="_onDialogButtonClick">toggle dialog</button>
 
       <div style="text-align: center">
         <my-dialog>Hello World!</my-dialog>
       </div>
+
+      <my-animatable></my-animatable>
 
     </template>
 
@@ -36,7 +45,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       var scope = document.querySelector('template[is="dom-bind"]');
 
-      scope._onButtonClick = function(event) {
+      scope._onCircleButtonClick = function(event) {
+        var node = document.querySelector('my-animatable');
+        if (node) {
+          node.animate();
+        }
+      };
+
+      scope._onDialogButtonClick = function(event) {
         var node = document.querySelector('my-dialog');
         if (node) {
           if (node.opened) {
