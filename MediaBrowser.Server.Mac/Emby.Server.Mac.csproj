@@ -488,6 +488,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\reports.html">
       <Link>Resources\dashboard-ui\reports.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\robots.txt">
+      <Link>Resources\dashboard-ui\robots.txt</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scheduledtask.html">
       <Link>Resources\dashboard-ui\scheduledtask.html</Link>
     </BundleResource>
@@ -544,9 +547,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\userprofiles.html">
       <Link>Resources\dashboard-ui\userprofiles.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\vulcanize.txt">
-      <Link>Resources\dashboard-ui\vulcanize.txt</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardagreement.html">
       <Link>Resources\dashboard-ui\wizardagreement.html</Link>
@@ -1120,6 +1120,15 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\browserdeviceprofile.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\datetime.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\datetime.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fetchhelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fetchhelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\qualityoptions.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\qualityoptions.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\requirecss.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\requirecss.js</Link>
@@ -1873,6 +1882,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icons\notification-icons.html">
       <Link>Resources\dashboard-ui\bower_components\iron-icons\notification-icons.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icons\places-icons.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-icons\places-icons.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-icons\social-icons.html">
       <Link>Resources\dashboard-ui\bower_components\iron-icons\social-icons.html</Link>
@@ -3548,6 +3560,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-progress\.gitignore">
       <Link>Resources\dashboard-ui\bower_components\paper-progress\.gitignore</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-progress\.travis.yml">
+      <Link>Resources\dashboard-ui\bower_components\paper-progress\.travis.yml</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-progress\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\paper-progress\CONTRIBUTING.md</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-progress\README.md">
       <Link>Resources\dashboard-ui\bower_components\paper-progress\README.md</Link>
     </BundleResource>
@@ -5206,6 +5224,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\hu.json">
       <Link>Resources\dashboard-ui\strings\html\hu.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\id.json">
+      <Link>Resources\dashboard-ui\strings\html\id.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\html\it.json">
       <Link>Resources\dashboard-ui\strings\html\it.json</Link>
