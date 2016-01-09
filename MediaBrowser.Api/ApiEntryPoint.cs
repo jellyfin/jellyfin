@@ -540,13 +540,13 @@ namespace MediaBrowser.Api
             }
             catch (IOException ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
 
                 DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
+                //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
             }
         }
 
@@ -578,7 +578,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    Logger.Debug("Deleting HLS file {0}", file);
+                    //Logger.Debug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
                 }
                 catch (DirectoryNotFoundException)
@@ -592,7 +592,7 @@ namespace MediaBrowser.Api
                 catch (IOException ex)
                 {
                     e = ex;
-                    Logger.ErrorException("Error deleting HLS file {0}", ex, file);
+                    //Logger.ErrorException("Error deleting HLS file {0}", ex, file);
                 }
             }
 
