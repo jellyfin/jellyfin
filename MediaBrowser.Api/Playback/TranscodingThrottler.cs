@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = GetOptions();
 
-            if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleThresholdSeconds))
+            if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleDelaySeconds))
             {
                 PauseTranscoding();
             }

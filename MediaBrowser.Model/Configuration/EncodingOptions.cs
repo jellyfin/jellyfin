@@ -8,14 +8,14 @@ namespace MediaBrowser.Model.Configuration
         public double DownMixAudioBoost { get; set; }
         public bool EnableDebugLogging { get; set; }
         public bool EnableThrottling { get; set; }
-        public int ThrottleThresholdSeconds { get; set; }
+        public int ThrottleDelaySeconds { get; set; }
         public string HardwareAccelerationType { get; set; }
 
         public EncodingOptions()
         {
             DownMixAudioBoost = 2;
             EnableThrottling = true;
-            ThrottleThresholdSeconds = 110;
+            ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
         }
     }
