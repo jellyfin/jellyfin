@@ -1,4 +1,4 @@
-﻿(function (window, chrome, console) {
+﻿define(['https://www.gstatic.com/cv/js/sender/v1/cast_sender.js'], function () {
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;
@@ -89,6 +89,8 @@
      * receiverListener may be invoked at any time afterwards, and possibly more than once. 
      */
     CastPlayer.prototype.initializeCastPlayer = function () {
+
+        var chrome = window.chrome;
 
         if (!chrome) {
             return;
@@ -861,9 +863,17 @@
 
         castPlayer = new CastPlayer();
 
-        MediaController.registerPlayer(new chromecastPlayer());
+        var registeredPlayer = new chromecastPlayer();
+        MediaController.registerPlayer(registeredPlayer);
+
+        // To allow the native android app to override
+        document.dispatchEvent(new CustomEvent("chromecastloaded", {
+            detail: {
+                player: registeredPlayer
+            }
+        }));
     }
 
-    requirejs(["https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"], initializeChromecast);
+    initializeChromecast();
 
-})(window, window.chrome, console);
+});

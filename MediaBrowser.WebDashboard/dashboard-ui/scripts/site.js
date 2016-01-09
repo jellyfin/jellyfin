@@ -2276,15 +2276,17 @@ var AppInfo = {};
 
             if (Dashboard.isRunningInCordova()) {
 
-                postInitDependencies.push('cordova/connectsdk');
-
                 if (browserInfo.android) {
                     postInitDependencies.push('cordova/android/mediasession');
+                    postInitDependencies.push('cordova/android/chromecast');
+
                 } else {
                     postInitDependencies.push('cordova/volume');
                 }
 
                 if (browserInfo.safari) {
+
+                    postInitDependencies.push('cordova/connectsdk/connectsdk');
 
                     postInitDependencies.push('cordova/ios/orientation');
 
