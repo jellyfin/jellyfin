@@ -1466,19 +1466,30 @@
 
         self.getRegistrationInfo = function (feature, apiClient) {
 
+            if (isConnectUserSupporter()) {
+                return new Promise(function (resolve, reject) {
+
+                    resolve({
+                        Name: feature,
+                        IsRegistered: true,
+                        IsTrial: false
+                    });
+                });
+            }
+
             return self.getAvailableServers().then(function (servers) {
 
                 var matchedServers = servers.filter(function (s) {
                     return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
                 });
 
-                if (!matchedServers.length && !isConnectUserSupporter()) {
+                if (!matchedServers.length) {
                     return {};
                 }
 
                 var match = matchedServers[0];
 
-                if (!match.DateLastLocalConnection && !isConnectUserSupporter()) {
+                if (!match.DateLastLocalConnection) {
 
                     return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
