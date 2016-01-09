@@ -367,7 +367,7 @@ namespace MediaBrowser.Providers.Movies
         }
 
         private static long _lastRequestTicks;
-        private static int requestIntervalMs = 200;
+        private static int requestIntervalMs = 250;
 
         /// <summary>
         /// Gets the movie db response.
