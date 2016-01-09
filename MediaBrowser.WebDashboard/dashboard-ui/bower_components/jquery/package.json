@@ -1,0 +1,84 @@
+{
+  "name": "jquery",
+  "title": "jQuery",
+  "description": "JavaScript library for DOM operations",
+  "version": "2.2.0",
+  "main": "dist/jquery.js",
+  "homepage": "http://jquery.com",
+  "author": {
+    "name": "jQuery Foundation and other contributors",
+    "url": "https://github.com/jquery/jquery/blob/2.2.0/AUTHORS.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jquery/jquery.git"
+  },
+  "keywords": [
+    "jquery",
+    "javascript",
+    "browser",
+    "library"
+  ],
+  "bugs": {
+    "url": "https://github.com/jquery/jquery/issues"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "commitplease": "2.0.0",
+    "core-js": "0.9.17",
+    "grunt": "0.4.5",
+    "grunt-babel": "5.0.1",
+    "grunt-cli": "0.1.13",
+    "grunt-compare-size": "0.4.0",
+    "grunt-contrib-jshint": "0.11.2",
+    "grunt-contrib-uglify": "0.9.2",
+    "grunt-contrib-watch": "0.6.1",
+    "grunt-git-authors": "2.0.1",
+    "grunt-jscs": "2.1.0",
+    "grunt-jsonlint": "1.0.4",
+    "grunt-npmcopy": "0.1.0",
+    "gzip-js": "0.3.2",
+    "jsdom": "5.6.1",
+    "load-grunt-tasks": "1.0.0",
+    "qunitjs": "1.17.1",
+    "qunit-assert-step": "1.0.3",
+    "requirejs": "2.1.17",
+    "sinon": "1.10.3",
+    "sizzle": "2.2.1",
+    "strip-json-comments": "1.0.3",
+    "testswarm": "1.1.0",
+    "win-spawn": "2.0.0"
+  },
+  "scripts": {
+    "build": "npm install && grunt",
+    "start": "grunt watch",
+    "test": "grunt && grunt test"
+  },
+  "commitplease": {
+    "components": [
+      "Docs",
+      "Tests",
+      "Build",
+      "Release",
+      "Core",
+      "Ajax",
+      "Attributes",
+      "Callbacks",
+      "CSS",
+      "Data",
+      "Deferred",
+      "Deprecated",
+      "Dimensions",
+      "Effects",
+      "Event",
+      "Manipulation",
+      "Offset",
+      "Queue",
+      "Selector",
+      "Serialize",
+      "Traversing",
+      "Wrap"
+    ]
+  }
+}

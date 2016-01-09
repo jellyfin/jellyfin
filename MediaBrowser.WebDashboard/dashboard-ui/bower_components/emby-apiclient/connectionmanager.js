@@ -1472,13 +1472,13 @@
                     return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
                 });
 
-                if (!matchedServers.length) {
+                if (!matchedServers.length && !isConnectUserSupporter()) {
                     return {};
                 }
 
                 var match = matchedServers[0];
 
-                if (!match.DateLastLocalConnection) {
+                if (!match.DateLastLocalConnection && !isConnectUserSupporter()) {
 
                     return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
 
@@ -1497,6 +1497,19 @@
                 }
             });
         };
+
+        function isConnectUserSupporter() {
+
+            if (self.isLoggedIntoConnect()) {
+
+                var connectUser = self.connectUser();
+
+                if (connectUser && connectUser.IsSupporter) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         function updateDateLastLocalConnection(serverId) {
 
