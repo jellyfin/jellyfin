@@ -367,7 +367,8 @@ namespace MediaBrowser.Providers.Movies
         }
 
         private static long _lastRequestTicks;
-        private static int requestIntervalMs = 250;
+        // The limit is 40 requests per 10 seconds
+        private static int requestIntervalMs = 300;
 
         /// <summary>
         /// Gets the movie db response.
