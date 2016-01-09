@@ -8,5 +8,6 @@ namespace MediaBrowser.Model.Connect
         public string Email { get; set; }
         public bool IsActive { get; set; }
         public string ImageUrl { get; set; }
+        public bool IsSupporter { get; set; }
     }
 }
