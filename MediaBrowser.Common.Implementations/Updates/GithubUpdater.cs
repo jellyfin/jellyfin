@@ -67,7 +67,11 @@ namespace MediaBrowser.Common.Implementations.Updates
                 obj = obj.Where(i => !i.prerelease || i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase) || i.name.EndsWith("-dev", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
 
-            var availableUpdate = obj.Select(i => CheckForUpdateResult(i, minVersion, assetFilename, packageName, targetFilename)).FirstOrDefault(i => i != null); 
+            var availableUpdate = obj
+                .Select(i => CheckForUpdateResult(i, minVersion, assetFilename, packageName, targetFilename))
+                .Where(i => i != null)
+                .OrderByDescending(i => Version.Parse(i.AvailableVersion))
+                .FirstOrDefault();
             
             return availableUpdate ?? new CheckForUpdateResult
             {
