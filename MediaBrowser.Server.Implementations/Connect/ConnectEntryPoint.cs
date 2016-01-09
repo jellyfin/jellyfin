@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             Task.Run(() => LoadCachedAddress());
 
-            _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(2));
+            _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
 
         private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.emby.media/service/ip" };
