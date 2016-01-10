@@ -512,7 +512,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
 
-            if (episodeTitle == null)
+            if (string.IsNullOrEmpty(episodeTitle))
             {
                 episodeTitle = string.Empty;
             }
