@@ -565,7 +565,7 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Thumb
                         }
                     },
-                    DisabledMetadataFetchers = new []{ "TheMovieDb" }
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database", "TheMovieDb" }
                 },
 
                 new MetadataOptions(0, 1280)
@@ -586,6 +586,7 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Primary
                         }
                     },
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database" },
                     DisabledImageFetchers = new []{ "TheMovieDb" }
                 }
             };
