@@ -28,7 +28,8 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-                return true;
+                // A restart script must be provided
+                return StartupOptions.ContainsOption("-restartpath");
             }
         }
 
