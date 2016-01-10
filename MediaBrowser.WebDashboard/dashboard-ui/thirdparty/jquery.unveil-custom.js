@@ -85,9 +85,9 @@
             images = remaining;
 
             if (!images.length) {
-                document.removeEventListener('scroll', unveil);
-                document.removeEventListener(wheelEvent, unveil);
-                window.removeEventListener('resize', unveil);
+                document.removeEventListener('scroll', unveil, true);
+                document.removeEventListener(wheelEvent, unveil, true);
+                window.removeEventListener('resize', unveil, true);
             }
         }
 
