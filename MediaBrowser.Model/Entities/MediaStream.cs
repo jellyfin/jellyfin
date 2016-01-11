@@ -31,6 +31,12 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
+        /// Gets or sets the comment.
+        /// </summary>
+        /// <value>The comment.</value>
+        public string Comment { get; set; }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is interlaced.
         /// </summary>
         /// <value><c>true</c> if this instance is interlaced; otherwise, <c>false</c>.</value>

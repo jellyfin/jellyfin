@@ -141,6 +141,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.tags != null)
             {
                 stream.Language = GetDictionaryValue(streamInfo.tags, "language");
+                stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
             }
 
             if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
