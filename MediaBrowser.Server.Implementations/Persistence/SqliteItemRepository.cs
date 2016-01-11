@@ -127,7 +127,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
 
             var createMediaStreamsTableCommand
-               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, CodecTag TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, CodecTag TEXT NULL, Comment TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -385,7 +385,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "IsAnamorphic",
             "RefFrames",
             "IsCabac",
-            "CodecTag"
+            "CodecTag",
+            "Comment"
         };
 
         /// <summary>
@@ -2683,6 +2684,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
 
                     _saveStreamCommand.GetParameter(index++).Value = stream.CodecTag;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Comment;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
@@ -2839,6 +2841,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(26))
             {
                 item.CodecTag = reader.GetString(26);
+            }
+
+            if (!reader.IsDBNull(27))
+            {
+                item.Comment = reader.GetString(27);
             }
 
             return item;

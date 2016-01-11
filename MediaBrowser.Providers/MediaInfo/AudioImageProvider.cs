@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,20 +44,27 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var audio = (Audio)item;
 
+            var imageStreams =
+                audio.GetMediaSources(false)
+                    .Take(1)
+                    .SelectMany(i => i.MediaStreams)
+                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
+                    .ToList();
+
             // Can't extract if we didn't find a video stream in the file
-            if (!audio.GetMediaSources(false).Take(1).SelectMany(i => i.MediaStreams).Any(i => i.Type == MediaStreamType.EmbeddedImage))
+            if (imageStreams.Count == 0)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
-            return GetImage((Audio)item, cancellationToken);
+            return GetImage((Audio)item, imageStreams, cancellationToken);
         }
 
-        public async Task<DynamicImageResponse> GetImage(Audio item, CancellationToken cancellationToken)
+        public async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
             var path = GetAudioImagePath(item);
 
-			if (!_fileSystem.FileExists(path))
+            if (!_fileSystem.FileExists(path))
             {
                 var semaphore = GetLock(path);
 
@@ -66,11 +74,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 try
                 {
                     // Check again in case it was saved while waiting for the lock
-					if (!_fileSystem.FileExists(path))
+                    if (!_fileSystem.FileExists(path))
                     {
-						_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                        _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-                        using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, cancellationToken).ConfigureAwait(false))
+                        var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
+                            imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1);
+
+                        var imageStreamIndex = imageStream == null ? (int?)null : imageStream.Index;
+
+                        using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false))
                         {
                             using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                             {
