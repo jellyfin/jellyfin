@@ -238,18 +238,21 @@
 }
 
 
-@media all and (max-width: 1300px) {
+@media all and (max-width: 1400px) {
 
     .nowPlayingBarUserDataButtons {
         display: none;
     }
 }
 
-@media all and (max-width: 1000px) {
+@media all and (max-width: 1100px) {
 
     .nowPlayingBarVolumeSlider, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
         display: none !important;
     }
+}
+
+@media all and (max-width: 1000px) {
 
     .nowPlayingBar .playlistButton {
         display: none !important;
