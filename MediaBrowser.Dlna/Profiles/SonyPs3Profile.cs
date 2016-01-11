@@ -92,7 +92,7 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "ts",
                     VideoCodec = "h264",
-                    AudioCodec = "mp3",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new TranscodingProfile
