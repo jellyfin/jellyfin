@@ -427,11 +427,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }, cancellationToken).ConfigureAwait(false);
 
             var episode = searchResults.FirstOrDefault();
+            
+            string episodeName = string.Empty;
 
             if (episode == null)
             {
-                _logger.Warn("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
-                return null;
+                var msg = string.Format("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
+                _logger.Warn(msg);
+                //throw new Exception(msg);
+            }
+            else
+            {
+                episodeName = episode.Name;
             }
 
             var newPath = GetSeasonFolderPath(series, seasonNumber, options);
@@ -449,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             // Remove additional 4 chars to prevent PathTooLongException for downloaded subtitles (eg. filename.ext.eng.srt)
             maxFilenameLength -= 4;
 
-            var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episode.Name, options, maxFilenameLength);
+            var episodeFileName = GetEpisodeFileName(sourcePath, series.Name, seasonNumber, episodeNumber, endingEpisodeNumber, episodeName, options, maxFilenameLength);
 
             if (string.IsNullOrEmpty(episodeFileName))
             {
@@ -505,7 +512,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
 
-            if (episodeTitle == null)
+            if (string.IsNullOrEmpty(episodeTitle))
             {
                 episodeTitle = string.Empty;
             }
