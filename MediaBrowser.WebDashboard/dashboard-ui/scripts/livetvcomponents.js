@@ -6,8 +6,8 @@
 
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
                 var html = '';
-
                 var index = '';
+                var imgUrl;
 
                 for (var i = 0, length = timers.length; i < length; i++) {
 
@@ -31,8 +31,8 @@
                     html += '<paper-icon-item>';
 
                     var program = timer.ProgramInfo || {};
-                    var imgUrl;
 
+                    imgUrl = null;
                     if (program.ImageTags && program.ImageTags.Primary) {
 
                         imgUrl = ApiClient.getScaledImageUrl(program.Id, {
