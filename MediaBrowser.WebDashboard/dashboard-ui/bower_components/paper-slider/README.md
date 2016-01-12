@@ -44,14 +44,15 @@ Custom property | Description | Default
 `--paper-slider-active-color` | The progress bar color | `--google-blue-700`
 `--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300`
 `--paper-slider-knob-color` | The knob color | `--google-blue-700`
-`--paper-slider-disabled-knob-color` | The disabled knob color | `--google-grey-500`
+`--paper-slider-disabled-knob-color` | The disabled knob color | `--paper-grey-400`
 `--paper-slider-pin-color` | The pin color | `--google-blue-700`
 `--paper-slider-font-color` | The pin's text color | `#fff`
-`--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
-`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
+`--paper-slider-disabled-active-color` | The disabled progress bar color | `--paper-grey-400`
+`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--paper-grey-400`
 `--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
-`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
-`--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
+`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `--paper-grey-400`
+`--paper-slider-pin-start-color` | The color of the pin at the far left | `--paper-grey-400`
 `--paper-slider-height` | Height of the progress bar | `2px`
+`--paper-slider-input` | Mixin applied to the input in editable mode | `{}`
 
 
