@@ -63,12 +63,6 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable high quality image scaling].
-        /// </summary>
-        /// <value><c>true</c> if [enable high quality image scaling]; otherwise, <c>false</c>.</value>
-        public bool EnableHighQualityImageScaling { get; set; }
-
-        /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
         /// <value>The item by name path.</value>
