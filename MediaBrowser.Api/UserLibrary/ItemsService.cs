@@ -186,6 +186,7 @@ namespace MediaBrowser.Api.UserLibrary
 
                 Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
 
+                IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 IsMissing = request.IsMissing,

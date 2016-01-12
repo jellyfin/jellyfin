@@ -169,6 +169,13 @@ namespace MediaBrowser.Api.UserLibrary
         public string Filters { get; set; }
 
         /// <summary>
+        /// Gets or sets the Isfavorite option
+        /// </summary>
+        /// <value>IsFavorite</value>
+        [ApiMember(Name = "IsFavorite", Description = "Optional filter by items that are marked as favorite, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsFavorite { get; set; }
+
+        /// <summary>
         /// Gets or sets the media types.
         /// </summary>
         /// <value>The media types.</value>
