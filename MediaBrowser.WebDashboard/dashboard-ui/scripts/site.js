@@ -1842,6 +1842,7 @@ var AppInfo = {};
             credentialprovider: apiClientBowerPath + '/credentials',
             apiclient: apiClientBowerPath + '/apiclient',
             connectionmanagerfactory: apiClientBowerPath + '/connectionmanager',
+            visibleinviewport: embyWebComponentsBowerPath + "/visibleinviewport",
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",

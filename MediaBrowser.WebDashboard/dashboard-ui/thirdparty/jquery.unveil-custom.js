@@ -1,51 +1,11 @@
-﻿/**
- * jQuery Unveil
- * A very lightweight jQuery plugin to lazy load images
- * http://luis-almeida.github.com/unveil
- *
- * Licensed under the MIT license.
- * Copyright 2013 Luís Almeida
- * https://github.com/luis-almeida
- */
+﻿define(['visibleinviewport'], function (visibleInViewport) {
 
-(function () {
-
-    /**
-    * Copyright 2012, Digital Fusion
-    * Licensed under the MIT license.
-    * http://teamdf.com/jquery-plugins/license/
-    *
-    * @author Sam Sehnert
-    * @desc A small plugin that checks whether elements are within
-    *       the user visible viewport of a web browser.
-    *       only accounts for vertical position, not horizontal.
-    */
-
-    var thresholdX = screen.availWidth || 0;
-    var thresholdY = screen.availHeight || 0;
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
-
-    function visibleInViewport(elem, partial) {
-
-        var vpWidth = window.innerWidth,
-            vpHeight = window.innerHeight;
-
-        // Use this native browser method, if available.
-        var rec = elem.getBoundingClientRect(),
-            tViz = rec.top >= 0 && rec.top < vpHeight + thresholdY,
-            bViz = rec.bottom > 0 && rec.bottom <= vpHeight + thresholdY,
-            lViz = rec.left >= 0 && rec.left < vpWidth + thresholdX,
-            rViz = rec.right > 0 && rec.right <= vpWidth + thresholdX,
-            vVisible = partial ? tViz || bViz : tViz && bViz,
-            hVisible = partial ? lViz || rViz : lViz && rViz;
-
-        return vVisible && hVisible;
-    }
-
-    var unveilId = 0;
+    var thresholdX = screen.availWidth;
+    var thresholdY = screen.availHeight;
 
     function isVisible(elem) {
-        return visibleInViewport(elem, true);
+        return visibleInViewport(elem, true, thresholdX, thresholdY);
     }
 
     function fillImage(elem) {
@@ -63,8 +23,6 @@
         }
 
         var images = elems;
-
-        unveilId++;
 
         function unveil() {
 
@@ -118,16 +76,6 @@
         fillImages([elem]);
     }
 
-    window.ImageLoader = {
-        fillImages: fillImages,
-        lazyImage: lazyImage,
-        lazyChildren: lazyChildren
-    };
-
-})();
-
-(function () {
-
     function setImageIntoElement(elem, url) {
 
         if (elem.tagName !== "IMG") {
@@ -163,4 +111,10 @@
 
     window.ImageStore = new simpleImageStore();
 
-})();
+    window.ImageLoader = {
+        fillImages: fillImages,
+        lazyImage: lazyImage,
+        lazyChildren: lazyChildren
+    };
+
+});
