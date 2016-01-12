@@ -827,6 +827,9 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\VideoCodec.cs">
       <Link>MediaInfo\VideoCodec.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Net\EndPointInfo.cs">
+      <Link>Net\EndPointInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Net\HttpException.cs">
       <Link>Net\HttpException.cs</Link>
     </Compile>

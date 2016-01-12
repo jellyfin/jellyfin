@@ -63,6 +63,12 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable high quality image scaling].
+        /// </summary>
+        /// <value><c>true</c> if [enable high quality image scaling]; otherwise, <c>false</c>.</value>
+        public bool EnableHighQualityImageScaling { get; set; }
+
+        /// <summary>
         /// Gets or sets the item by name path.
         /// </summary>
         /// <value>The item by name path.</value>
@@ -91,24 +97,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable localized guids]; otherwise, <c>false</c>.</value>
         public bool EnableLocalizedGuids { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [disable startup scan].
-        /// </summary>
-        /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
-        public bool DisableStartupScan { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable user views].
-        /// </summary>
-        /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
-        public bool EnableUserViews { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable library metadata sub folder].
-        /// </summary>
-        /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
-        public bool EnableLibraryMetadataSubFolder { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -219,21 +207,20 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public bool DisableXmlSavers { get; set; }
         public bool EnableWindowsShortcuts { get; set; }
-
-        public bool EnableVideoFrameByFrameAnalysis { get; set; }
 
         public bool EnableDateLastRefresh { get; set; }
 
         public string[] Migrations { get; set; }
+
+        public int MigrationVersion { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
-            Migrations = new string[] {};
+            Migrations = new string[] { };
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;

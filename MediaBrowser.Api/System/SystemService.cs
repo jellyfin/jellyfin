@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.System
 {
@@ -28,6 +29,12 @@ namespace MediaBrowser.Api.System
 
     [Route("/System/Info/Public", "GET", Summary = "Gets public information about the server")]
     public class GetPublicSystemInfo : IReturn<PublicSystemInfo>
+    {
+
+    }
+
+    [Route("/System/Ping", "POST")]
+    public class PingSystem : IReturnVoid
     {
 
     }
@@ -59,7 +66,7 @@ namespace MediaBrowser.Api.System
 
     [Route("/System/Endpoint", "GET", Summary = "Gets information about the request endpoint")]
     [Authenticated]
-    public class GetEndpointInfo : IReturn<EndpointInfo>
+    public class GetEndpointInfo : IReturn<EndPointInfo>
     {
         public string Endpoint { get; set; }
     }
@@ -102,6 +109,11 @@ namespace MediaBrowser.Api.System
             _fileSystem = fileSystem;
             _network = network;
             _security = security;
+        }
+
+        public object Post(PingSystem request)
+        {
+            return _appHost.Name;
         }
 
         public object Get(GetServerLogs request)
@@ -199,17 +211,11 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetEndpointInfo request)
         {
-            return ToOptimizedResult(new EndpointInfo
+            return ToOptimizedResult(new EndPointInfo
             {
                 IsLocal = Request.IsLocal,
                 IsInNetwork = _network.IsInLocalNetwork(request.Endpoint ?? Request.RemoteIp)
             });
         }
-    }
-
-    public class EndpointInfo
-    {
-        public bool IsLocal { get; set; }
-        public bool IsInNetwork { get; set; }
     }
 }

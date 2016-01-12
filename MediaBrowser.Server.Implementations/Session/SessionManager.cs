@@ -1621,17 +1621,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (backropItem == null)
             {
-                backropItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Backdrop));
+                backropItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Backdrop));
             }
 
             if (thumbItem == null)
             {
-                thumbItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Thumb));
+                thumbItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Thumb));
             }
 
             if (logoItem == null)
             {
-                logoItem = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Logo));
+                logoItem = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Logo));
             }
 
             if (thumbItem != null)

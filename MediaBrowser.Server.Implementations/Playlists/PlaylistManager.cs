@@ -264,6 +264,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
         public Folder GetPlaylistsFolder(string userId)
         {
             return _libraryManager.RootFolder.Children.OfType<PlaylistsFolder>()
+                .FirstOrDefault() ?? _libraryManager.GetUserRootFolder().Children.OfType<PlaylistsFolder>()
                 .FirstOrDefault();
         }
     }

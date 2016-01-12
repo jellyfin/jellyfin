@@ -138,6 +138,11 @@ namespace MediaBrowser.Controller.Entities.Audio
             return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
+        }
+
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var items = GetRecursiveChildren().ToList();
