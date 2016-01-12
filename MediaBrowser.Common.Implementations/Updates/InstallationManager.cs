@@ -194,37 +194,36 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
-            using (var stream = await GetCachedPackages(cancellationToken).ConfigureAwait(false))
-            {
-                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
-
-                if ((DateTime.UtcNow - _lastPackageUpdateTime) > GetCacheLength())
-                {
-                    UpdateCachedPackages(CancellationToken.None, false);
-                }
-
-                return packages;
-            }
-        }
-
-        private string PackageCachePath
-        {
-            get { return Path.Combine(_appPaths.CachePath, "serverpackages.json"); }
-        }
-
-        private async Task<Stream> GetCachedPackages(CancellationToken cancellationToken)
-        {
             try
             {
-                return _fileSystem.OpenRead(PackageCachePath);
+                using (var stream = _fileSystem.OpenRead(PackageCachePath))
+                {
+                    var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
+
+                    if ((DateTime.UtcNow - _lastPackageUpdateTime) > GetCacheLength())
+                    {
+                        UpdateCachedPackages(CancellationToken.None, false);
+                    }
+
+                    return packages;
+                }
             }
             catch (Exception)
             {
 
             }
 
+            _lastPackageUpdateTime = DateTime.MinValue;
             await UpdateCachedPackages(cancellationToken, true).ConfigureAwait(false);
-            return _fileSystem.OpenRead(PackageCachePath);
+            using (var stream = _fileSystem.OpenRead(PackageCachePath))
+            {
+                return _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
+            }
+        }
+
+        private string PackageCachePath
+        {
+            get { return Path.Combine(_appPaths.CachePath, "serverpackages.json"); }
         }
 
         private readonly SemaphoreSlim _updateSemaphore = new SemaphoreSlim(1, 1);
