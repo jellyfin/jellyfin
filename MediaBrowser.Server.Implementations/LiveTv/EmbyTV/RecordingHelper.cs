@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             else
             {
-                name += " " + info.StartDate.ToString("yyyy-MM-dd");
+                name += " " + info.StartDate.ToString("yyyy-MM-dd") + " " + info.Id;
             }
 
             return name;
