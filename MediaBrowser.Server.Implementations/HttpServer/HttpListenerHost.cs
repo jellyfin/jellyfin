@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -39,40 +40,20 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
         public event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
 
-        private readonly List<string> _localEndpoints = new List<string>();
-
-        private readonly ReaderWriterLockSlim _localEndpointLock = new ReaderWriterLockSlim();
-
         public string CertificatePath { get; private set; }
 
         private readonly IServerConfigurationManager _config;
-
-        /// <summary>
-        /// Gets the local end points.
-        /// </summary>
-        /// <value>The local end points.</value>
-        public IEnumerable<string> LocalEndPoints
-        {
-            get
-            {
-                _localEndpointLock.EnterReadLock();
-
-                var list = _localEndpoints.ToList();
-
-                _localEndpointLock.ExitReadLock();
-
-                return list;
-            }
-        }
+        private readonly INetworkManager _networkManager;
 
         public HttpListenerHost(IApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, params Assembly[] assembliesWithServices)
+            string defaultRedirectPath, INetworkManager networkManager, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
+            _networkManager = networkManager;
             _config = config;
 
             _logger = logManager.GetLogger("HttpServer");
@@ -175,26 +156,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void OnRequestReceived(string localEndPoint)
         {
-            var ignore = localEndPoint.IndexOf("::", StringComparison.OrdinalIgnoreCase) != -1 ||
-
-                localEndPoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
-                localEndPoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
-                localEndPoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase);
-
-            if (ignore)
-            {
-                return;
-            }
-
-            if (_localEndpointLock.TryEnterWriteLock(100))
-            {
-                var list = _localEndpoints.ToList();
-
-                list.Remove(localEndPoint);
-                list.Insert(0, localEndPoint);
-
-                _localEndpointLock.ExitWriteLock();
-            }
         }
 
         /// <summary>

@@ -14,16 +14,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
-
-    <link rel="import" href="../../../paper-styles/paper-styles.html">
+    <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
     <link rel="import" href="list-demo.html">
 
   </head>
-  <body class="fullbleed relative">
+  <style is="custom-style">
+    body {
+      @apply(--layout-fullbleed);
+    }
 
-    <list-demo class="fit"></list-demo>
-
+    list-demo {
+      @apply(--layout-fit);
+    }
+  </style>
+  <body>
+    <list-demo></list-demo>
   </body>
 </html>

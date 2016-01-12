@@ -1,6 +1,6 @@
 {
   "name": "paper-styles",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Common (global) styles for Material Design elements.",
   "authors": [
     "The Polymer Authors"
@@ -29,11 +29,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0"
   },
-  "_release": "1.1.1",
+  "_release": "1.1.2",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.1",
-    "commit": "fc3ca8dcfc69b9c7a7261e51eefc9741d0f113f8"
+    "tag": "v1.1.2",
+    "commit": "7b97fa9d2c190bec9ef2d771d91f47b40a27f3be"
   },
   "_source": "git://github.com/PolymerElements/paper-styles.git",
   "_target": "^1.0.0",

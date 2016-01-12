@@ -21,14 +21,11 @@
     *       only accounts for vertical position, not horizontal.
     */
 
-    var thresholdX = Math.max(screen.availWidth);
-    var thresholdY = Math.max(screen.availHeight);
+    var thresholdX = screen.availWidth || 0;
+    var thresholdY = screen.availHeight || 0;
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 
     function visibleInViewport(elem, partial) {
-
-        thresholdX = thresholdX || 0;
-        thresholdY = thresholdY || 0;
 
         var vpWidth = window.innerWidth,
             vpHeight = window.innerHeight;
@@ -85,9 +82,9 @@
             images = remaining;
 
             if (!images.length) {
-                document.removeEventListener('scroll', unveil);
-                document.removeEventListener(wheelEvent, unveil);
-                window.removeEventListener('resize', unveil);
+                document.removeEventListener('scroll', unveil, true);
+                document.removeEventListener(wheelEvent, unveil, true);
+                window.removeEventListener('resize', unveil, true);
             }
         }
 

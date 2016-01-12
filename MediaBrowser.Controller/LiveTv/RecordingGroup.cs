@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -9,6 +10,11 @@ namespace MediaBrowser.Controller.LiveTv
         {
             // Don't block. 
             return false;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.LiveTvProgram;
         }
 
         public override bool SupportsLocalMetadata

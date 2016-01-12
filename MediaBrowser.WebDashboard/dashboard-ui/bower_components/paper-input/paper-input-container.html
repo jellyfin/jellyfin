@@ -172,8 +172,10 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .label-and-input-container {
-        @apply(--layout-flex);
+        @apply(--layout-flex-auto);
         @apply(--layout-relative);
+        width: 100%;
+        max-width: 100%;
       }
 
       .input-content {
@@ -189,6 +191,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         top: 0;
         right: 0;
         left: 0;
+        width: 100%;
         font: inherit;
         color: var(--paper-input-container-color, --secondary-text-color);
 
@@ -201,8 +204,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
       .input-content.label-is-floating ::content .paper-input-label {
         -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
-        -webkit-transition: -webkit-transform 0.25s;
-        transition: transform 0.25s;
+        -webkit-transition: -webkit-transform 0.25s, width 0.25s;
+        transition: transform 0.25s, width 0.25s;
         -webkit-transform-origin: left top;
         transform-origin: left top;
 
@@ -250,6 +253,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         box-shadow: none;
         padding: 0;
         width: 100%;
+        max-width: 100%;
         background: transparent;
         border: none;
         color: var(--paper-input-container-input-color, --primary-text-color);
@@ -263,11 +267,13 @@ This element is `display:block` by default, but you can set the `inline` attribu
       ::content [prefix] {
         @apply(--paper-font-subhead);
         @apply(--paper-input-prefix);
+        @apply(--layout-flex-none);
       }
 
       ::content [suffix] {
         @apply(--paper-font-subhead);
         @apply(--paper-input-suffix);
+        @apply(--layout-flex-none);
       }
 
       /* Firefox sets a min-width on the input, which can cause layout issues */

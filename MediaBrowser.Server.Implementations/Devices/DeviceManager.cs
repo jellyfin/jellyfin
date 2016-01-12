@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -18,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly IUserManager _userManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _libraryMonitor;
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly INetworkManager _network;
 
@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         /// </summary>
         public event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
 
-        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger, INetworkManager network)
+        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IServerConfigurationManager config, ILogger logger, INetworkManager network)
         {
             _repo = repo;
             _userManager = userManager;
@@ -187,11 +187,6 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
         }
 
-        private string GetUploadPath(string deviceId)
-        {
-            return GetUploadPath(GetDevice(deviceId));
-        }
-
         private string GetUploadPath(DeviceInfo device)
         {
             if (!string.IsNullOrWhiteSpace(device.CameraUploadPath))
@@ -205,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.Devices
                 return config.CameraUploadPath;
             }
 
-            var path = Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
+            var path = DefaultCameraUploadsPath;
 
             if (config.EnableCameraUploadSubfolders)
             {
@@ -213,6 +208,11 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             return path;
+        }
+
+        private string DefaultCameraUploadsPath
+        {
+            get { return Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads"); }
         }
 
         public async Task UpdateDeviceInfo(string id, DeviceOptions options)

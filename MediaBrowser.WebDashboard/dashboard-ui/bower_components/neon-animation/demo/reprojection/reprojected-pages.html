@@ -11,15 +11,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../neon-animated-pages.html">
 
 <dom-module id="reprojected-pages">
-
   <template>
-
+    <style>
+      neon-animated-pages {
+        height: 100%;
+      }
+    </style>
     <neon-animated-pages selected="{{selected}}">
       <content></content>
     </neon-animated-pages>
 
   </template>
-
 </dom-module>
 
 <script>

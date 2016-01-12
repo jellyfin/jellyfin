@@ -51,6 +51,9 @@
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
@@ -64,9 +67,6 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.1.1\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +162,7 @@
     <Compile Include="Entities\IHasThemeMedia.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IHasUserData.cs" />
+    <Compile Include="Entities\IHiddenFromDisplay.cs" />
     <Compile Include="Entities\IItemByName.cs" />
     <Compile Include="Entities\ILibraryItem.cs" />
     <Compile Include="Entities\ImageSourceInfo.cs" />

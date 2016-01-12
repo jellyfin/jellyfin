@@ -81,7 +81,7 @@ Polymer({
             node: this
           },
           'exit': {
-            // provided by neon-animation-animations/fade-out-animation.html
+            // provided by neon-animation/animations/fade-out-animation.html
             name: 'fade-out-animation',
             node: this
           }
