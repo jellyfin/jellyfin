@@ -112,6 +112,11 @@ namespace MediaBrowser.Api.UserLibrary
                 user == null ? _libraryManager.RootFolder : user.RootFolder :
                 parentItem;
 
+            if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
+            {
+                item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+            }
+
             // Default list type = children
 
             if (!string.IsNullOrEmpty(request.Ids))
@@ -211,6 +216,7 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
+                GenreIds = request.GetGenreIds(),
                 Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,
@@ -421,15 +427,6 @@ namespace MediaBrowser.Api.UserLibrary
                 }
 
                 return false;
-            }
-
-            // Min index number
-            if (request.MinIndexNumber.HasValue)
-            {
-                if (!(i.IndexNumber.HasValue && i.IndexNumber.Value >= request.MinIndexNumber.Value))
-                {
-                    return false;
-                }
             }
 
             // Min official rating

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -16,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
         public Guid DisplayParentId { get; set; }
 
         public Guid? UserId { get; set; }
-        
+
         public static ITVSeriesManager TVSeriesManager;
         public static IPlaylistManager PlaylistManager;
 
@@ -24,7 +25,26 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-        
+
+        public override IEnumerable<Guid> GetIdsForAncestorQuery()
+        {
+            var list = new List<Guid>();
+
+            if (DisplayParentId != Guid.Empty)
+            {
+                list.Add(DisplayParentId);
+            }
+            else if (ParentId != Guid.Empty)
+            {
+                list.Add(ParentId);
+            }
+            else
+            {
+                list.Add(Id);
+            }
+            return list;
+        }
+
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             var parent = this as Folder;
@@ -81,16 +101,11 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, false);
         }
 
-        public static bool IsExcludedFromGrouping(Folder folder)
+        public static bool IsUserSpecific(Folder folder)
         {
             var standaloneTypes = new List<string>
             {
-                CollectionType.Books,
-                CollectionType.HomeVideos,
-                CollectionType.Photos,
-                CollectionType.Playlists,
-                CollectionType.BoxSets,
-                CollectionType.MusicVideos
+                CollectionType.Playlists
             };
 
             var collectionFolder = folder as ICollectionFolder;
@@ -98,27 +113,65 @@ namespace MediaBrowser.Controller.Entities
             if (collectionFolder == null)
             {
                 return false;
+            }
+
+            var supportsUserSpecific = folder as ISupportsUserSpecificView;
+            if (supportsUserSpecific != null && supportsUserSpecific.EnableUserSpecificView)
+            {
+                return true;
             }
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
         }
 
-        public static bool IsUserSpecific(Folder folder)
+        public static bool IsEligibleForGrouping(Folder folder)
         {
-            var standaloneTypes = new List<string>
-            {
-                CollectionType.Playlists,
+            var collectionFolder = folder as ICollectionFolder;
+            return collectionFolder != null && IsEligibleForGrouping(collectionFolder.CollectionType);
+        }
+
+        public static bool IsEligibleForGrouping(string viewType)
+        {
+            var types = new[] 
+            { 
+                CollectionType.Movies, 
+                CollectionType.TvShows,
+                string.Empty
+            };
+
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool IsEligibleForEnhancedView(string viewType)
+        {
+            var types = new[] 
+            { 
+                CollectionType.Movies, 
+                CollectionType.TvShows 
+            };
+
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static bool EnableOriginalFolder(string viewType)
+        {
+            var types = new[] 
+            { 
+                CollectionType.Games, 
+                CollectionType.Books, 
+                CollectionType.MusicVideos, 
+                CollectionType.HomeVideos, 
+                CollectionType.Photos, 
+                CollectionType.Music, 
                 CollectionType.BoxSets
             };
 
-            var collectionFolder = folder as ICollectionFolder;
+            return types.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
 
-            if (collectionFolder == null)
-            {
-                return false;
-            }
-
-            return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
+        {
+            return Task.FromResult(true);
         }
 
         [IgnoreDataMember]

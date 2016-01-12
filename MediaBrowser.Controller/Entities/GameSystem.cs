@@ -50,6 +50,11 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Game;
+        }
+
         public GameSystemInfo GetLookupInfo()
         {
             var id = GetItemLookupInfo<GameSystemInfo>();
