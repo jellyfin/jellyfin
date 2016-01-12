@@ -181,7 +181,9 @@ namespace Emby.Drawing.ImageMagick
 
         private void ScaleImage(MagickWand wand, int width, int height)
         {
-            if (_config.Configuration.EnableHighQualityImageScaling)
+            var highQuality = false;
+
+            if (highQuality)
             {
                 wand.CurrentImage.ResizeImage(width, height);
             }
