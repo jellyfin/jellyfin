@@ -215,6 +215,7 @@ namespace MediaBrowser.Api.Reports
 
                 Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
 
+                IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 IsMissing = request.IsMissing,
@@ -274,9 +275,6 @@ namespace MediaBrowser.Api.Reports
                         break;
                     case ItemFilter.IsFavorite:
                         query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsNotFavorite:
-                        query.IsFavorite = false;
                         break;
                     case ItemFilter.IsFavoriteOrLikes:
                         query.IsFavoriteOrLiked = true;
