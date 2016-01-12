@@ -60,12 +60,18 @@ namespace MediaBrowser.Providers.Omdb
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
         {
             bool isSearch = false;
+            var episodeSearchInfo = searchInfo as EpisodeInfo;
 
             var list = new List<RemoteSearchResult>();
 
             var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
 
-            var url = "http://www.omdbapi.com/?plot=short&r=json";
+            var url = "http://www.omdbapi.com/?plot=full&r=json";
+            if (type == "episode" && episodeSearchInfo != null)
+            {
+                episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out imdbId);
+            }
+
 
             var name = searchInfo.Name;
             var year = searchInfo.Year;
@@ -93,6 +99,18 @@ namespace MediaBrowser.Providers.Omdb
             else
             {
                 url += "&i=" + imdbId;
+            }
+
+            if (type == "episode")
+            {
+                if (searchInfo.IndexNumber.HasValue)
+                {
+                    url += string.Format(CultureInfo.InvariantCulture, "&Episode={0}", searchInfo.IndexNumber);
+                }
+                if (searchInfo.ParentIndexNumber.HasValue)
+                {
+                    url += string.Format(CultureInfo.InvariantCulture, "&Season={0}", searchInfo.ParentIndexNumber);
+                }
             }
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions
@@ -124,10 +142,20 @@ namespace MediaBrowser.Providers.Omdb
 
                 foreach (var result in resultList)
                 {
-                    var item = new RemoteSearchResult();
+                    var item = new RemoteSearchResult
+                    {
+                        IndexNumber = searchInfo.IndexNumber,
+                        Name = result.Title,
+                        ParentIndexNumber = searchInfo.ParentIndexNumber,
+                        ProviderIds = searchInfo.ProviderIds,
+                        SearchProviderName = Name
+                    };
 
-                    item.SearchProviderName = Name;
-                    item.Name = result.Title;
+                    if (episodeSearchInfo != null && episodeSearchInfo.IndexNumberEnd.HasValue)
+                    {
+                        item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
+                    }
+
                     item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
 
                     int parsedYear;
@@ -135,6 +163,13 @@ namespace MediaBrowser.Providers.Omdb
                         && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Any, CultureInfo.InvariantCulture, out parsedYear))
                     {
                         item.ProductionYear = parsedYear;
+                    }
+
+                    DateTime released;
+                    if (!string.IsNullOrEmpty(result.Released)
+                        && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out released))
+                    {
+                        item.PremiereDate = released;
                     }
 
                     if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
@@ -267,6 +302,8 @@ namespace MediaBrowser.Providers.Omdb
             public string Year { get; set; }
             public string Rated { get; set; }
             public string Released { get; set; }
+            public string Season { get; set; }
+            public string Episode { get; set; }
             public string Runtime { get; set; }
             public string Genre { get; set; }
             public string Director { get; set; }
@@ -281,6 +318,7 @@ namespace MediaBrowser.Providers.Omdb
             public string imdbRating { get; set; }
             public string imdbVotes { get; set; }
             public string imdbID { get; set; }
+            public string seriesID { get; set; }
             public string Type { get; set; }
             public string Response { get; set; }
         }

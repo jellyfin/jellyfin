@@ -117,10 +117,7 @@ namespace MediaBrowser.Api.Movies
         public async Task<object> Get(GetSimilarMovies request)
         {
             var result = await GetSimilarItemsResult(
-                // Strip out secondary versions
-                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
-
-                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+                request, SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -128,10 +125,7 @@ namespace MediaBrowser.Api.Movies
         public async Task<object> Get(GetSimilarTrailers request)
         {
             var result = await GetSimilarItemsResult(
-                // Strip out secondary versions
-                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
-
-                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+                request, SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -140,8 +134,12 @@ namespace MediaBrowser.Api.Movies
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            IEnumerable<BaseItem> movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Movie);
-
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { typeof(Movie).Name }
+            };
+            var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
+            var movies = _libraryManager.GetItems(query, parentIds);
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
             var listEligibleForCategories = new List<BaseItem>();
@@ -184,21 +182,27 @@ namespace MediaBrowser.Api.Movies
             return ToOptimizedResult(result);
         }
 
-        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
-
-            Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
-
-            var inputItems = user == null
-                                 ? _libraryManager.RootFolder.GetRecursiveChildren(filter)
-                                 : user.RootFolder.GetRecursiveChildren(user, filter);
-
-            var list = inputItems.ToList();
+            
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { typeof(Movie).Name }
+            };
+            var parentIds = new string[] { };
+            var list = _libraryManager.GetItems(query, parentIds)
+                .Where(i =>
+                {
+                    // Strip out secondary versions
+                    var v = i as Video;
+                    return v != null && !v.PrimaryVersionId.HasValue;
+                })
+                .ToList();
 
             if (user != null && user.Configuration.IncludeTrailersInSuggestions)
             {
@@ -379,9 +383,10 @@ namespace MediaBrowser.Api.Movies
         {
             foreach (var name in names)
             {
-                var itemsWithActor = _libraryManager.GetItemIds(new InternalItemsQuery
+                var itemsWithActor = _libraryManager.GetItemIds(new InternalItemsQuery(user)
                 {
                     Person = name
+
                 });
 
                 var items = allMovies

@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return Season ?? Parent;
+                return Season ?? GetParent();
             }
         }
 
@@ -113,19 +113,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return base.CreateUserDataKey();
-        }
-
-        /// <summary>
-        /// Our rating comes from our series
-        /// </summary>
-        [IgnoreDataMember]
-        public override string OfficialRatingForComparison
-        {
-            get
-            {
-                var series = Series;
-                return series != null ? series.OfficialRatingForComparison : base.OfficialRatingForComparison;
-            }
         }
 
         /// <summary>
@@ -265,14 +252,28 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override IEnumerable<Guid> GetAncestorIds()
+        {
+            var list = base.GetAncestorIds().ToList();
+
+            var seasonId = SeasonId;
+
+            if (seasonId.HasValue && !list.Contains(seasonId.Value))
+            {
+                list.Add(seasonId.Value);
+            }
+
+            return list;
+        }
+
         public override IEnumerable<string> GetDeletePaths()
         {
             return new[] { Path };
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Series);
+            return UnratedItem.Series;
         }
 
         public EpisodeInfo GetLookupInfo()

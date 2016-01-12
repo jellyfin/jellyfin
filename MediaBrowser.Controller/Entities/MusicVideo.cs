@@ -56,9 +56,9 @@ namespace MediaBrowser.Controller.Entities
             return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return UnratedItem.Music;
         }
 
         public MusicVideoInfo GetLookupInfo()
