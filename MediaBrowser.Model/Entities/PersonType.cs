@@ -30,5 +30,9 @@ namespace MediaBrowser.Model.Entities
         /// The producer
         /// </summary>
         public const string Producer = "Producer";
+        /// <summary>
+        /// The conductor
+        /// </summary>
+        public const string Conductor = "Conductor";
     }
 }
