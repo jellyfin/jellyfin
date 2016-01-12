@@ -103,17 +103,21 @@
                             <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable">
                             <label for="chkResumable">${OptionResumable}</label>
 
-                            <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite">
-                            <label for="chkIsFavorite">${OptionFavorite}</label>
-
-                            <input class="chkStandardFilter" type="checkbox" name="chkIsNotFavorite" id="chkIsNotFavorite" data-filter="IsNotFavorite">
-                            <label for="chkIsNotFavorite">Not ${OptionFavorite}</label>
-
                             <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes">
                             <label for="chkLikes">${OptionLikes}</label>
 
                             <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes">
                             <label for="chkDislikes">${OptionDislikes}</label>
+
+                            <div id="isFavoriteDiv">
+                                <label for="isFavorite"></label>
+                                <select id="isFavorite" class="isFavorite">
+                                    <option value="-">${OptionFavorite}: All</option>
+                                    <option value="true">${OptionFavorite}: True</option>
+                                    <option value="false">${OptionFavorite}: False</option>
+                                </select>
+                            </div>
+
                         </fieldset>
                         <br />
 

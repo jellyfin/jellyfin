@@ -513,6 +513,19 @@
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
         $('#selectIncludeItemTypes').val(query.IncludeItemTypes);
+
+        // isfavorite
+        if (query.IsFavorite == true) {
+            $('#isFavorite').val("true");
+        }
+        else if (query.IsFavorite == false) {
+            $('#isFavorite').val("false");
+        }
+        else {
+            $('#isFavorite').val("-");
+        }
+
+        
     }
 
     var filtersLoaded;
@@ -597,6 +610,21 @@
 
         $('#selectPageSize', page).on('change', function () {
             query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        $('#isFavorite', page).on('change', function () {
+
+            if (this.value == "true") {
+                query.IsFavorite = true;
+            }
+            else if (this.value == "false") {
+                query.IsFavorite = false;
+            }
+            else {
+                query.IsFavorite = null;
+            }
             query.StartIndex = 0;
             reloadItems(page);
         });
