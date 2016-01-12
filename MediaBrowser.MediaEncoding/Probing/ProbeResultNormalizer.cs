@@ -440,12 +440,20 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
-
             if (!string.IsNullOrWhiteSpace(composer))
             {
                 foreach (var person in Split(composer, false))
                 {
                     audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
+                }
+            }
+
+            var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            if (!string.IsNullOrWhiteSpace(conductor))
+            {
+                foreach (var person in Split(conductor, false))
+                {
+                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
                 }
             }
 
