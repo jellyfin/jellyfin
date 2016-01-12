@@ -215,6 +215,7 @@ namespace MediaBrowser.Api.Reports
 
                 Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
 
+                IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
                 IsMissing = request.IsMissing,
@@ -301,8 +302,11 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
-            if (request.HasQueryLimit)
-                query.Limit = request.Limit;
+            if (request.HasQueryLimit == false)
+            {
+                query.StartIndex = null;
+                query.Limit = null;
+            }
 
             return query;
         }

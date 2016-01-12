@@ -66,7 +66,7 @@
                                 <option value="200">200</option>
                                 <option value="300">300</option>
                                 <option value="500">500</option>
-                                <option value="400">400</option>
+                                <option value="10000">10000</option>
                             </select>
                             <br />
                         </div>
@@ -103,14 +103,21 @@
                             <input class="chkStandardFilter" type="checkbox" name="chkResumable" id="chkResumable" data-filter="IsResumable">
                             <label for="chkResumable">${OptionResumable}</label>
 
-                            <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite">
-                            <label for="chkIsFavorite">${OptionFavorite}</label>
-
                             <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes">
                             <label for="chkLikes">${OptionLikes}</label>
 
                             <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes">
                             <label for="chkDislikes">${OptionDislikes}</label>
+
+                            <div id="isFavoriteDiv">
+                                <label for="isFavorite"></label>
+                                <select id="isFavorite" class="isFavorite">
+                                    <option value="-">${OptionFavorite}: All</option>
+                                    <option value="true">${OptionFavorite}: True</option>
+                                    <option value="false">${OptionFavorite}: False</option>
+                                </select>
+                            </div>
+
                         </fieldset>
                         <br />
 
@@ -128,6 +135,15 @@
 
                                 <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch">
                                 <label for="chkYearMismatch">${OptionFileMetadataYearMismatch}</label>
+
+                                <input class="chkMissingImdbId" type="checkbox" name="chkMissingImdbId" id="chkMissingImdbId">
+                                <label for="chkMissingImdbId">${OptionMissingImdbId}</label>
+
+                                <input class="chkMissingTmdbId" type="checkbox" name="chkMissingTmdbId" id="chkMissingTmdbId">
+                                <label for="chkMissingTmdbId">${OptionMissingTmdbId}</label>
+
+                                <input class="chkMissingTvdbId" type="checkbox" name="chkMissingTvdbId" id="chkMissingTvdbId">
+                                <label for="chkMissingTvdbId">${OptionMissingTvdbId}</label>
                             </div>
                         </div>
                         <fieldset data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupStatus">

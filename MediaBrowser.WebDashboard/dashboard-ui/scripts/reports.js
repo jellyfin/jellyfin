@@ -502,8 +502,10 @@
         $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
         $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
         $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
-
         $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
+        $('#chkMissingImdbId', page).checked(query.HasImdbId == false).checkboxradio('refresh');
+        $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false).checkboxradio('refresh');
+        $('#chkMissingTvdbId', page).checked(query.HasTvdbId == false).checkboxradio('refresh');
 
         //Episodes
         $('#chkSpecialEpisode', page).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
@@ -511,6 +513,19 @@
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
         $('#selectIncludeItemTypes').val(query.IncludeItemTypes);
+
+        // isfavorite
+        if (query.IsFavorite == true) {
+            $('#isFavorite').val("true");
+        }
+        else if (query.IsFavorite == false) {
+            $('#isFavorite').val("false");
+        }
+        else {
+            $('#isFavorite').val("-");
+        }
+
+        
     }
 
     var filtersLoaded;
@@ -595,6 +610,21 @@
 
         $('#selectPageSize', page).on('change', function () {
             query.Limit = parseInt(this.value);
+            query.StartIndex = 0;
+            reloadItems(page);
+        });
+
+        $('#isFavorite', page).on('change', function () {
+
+            if (this.value == "true") {
+                query.IsFavorite = true;
+            }
+            else if (this.value == "false") {
+                query.IsFavorite = false;
+            }
+            else {
+                query.IsFavorite = null;
+            }
             query.StartIndex = 0;
             reloadItems(page);
         });
@@ -754,6 +784,30 @@
 
             query.StartIndex = 0;
             query.HasOfficialRating = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingImdbId', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasImdbId = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingTmdbId', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTmdbId = this.checked ? false : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingTvdbId', page).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTvdbId = this.checked ? false : null;
 
             reloadItems(page);
         });

@@ -171,6 +171,17 @@
             }
         });
 
+        var videoAudioCodecs = [];
+        if (canPlayMp3) {
+            videoAudioCodecs.push('mp3');
+        }
+        if (canPlayAac) {
+            videoAudioCodecs.push('aac');
+        }
+        if (canPlayAc3) {
+            videoAudioCodecs.push('ac3');
+        }
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.mobile) {
             profile.TranscodingProfiles.push({
