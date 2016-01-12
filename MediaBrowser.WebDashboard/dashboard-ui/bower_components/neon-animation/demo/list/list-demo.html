@@ -7,7 +7,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../../../polymer/polymer.html">
-<link rel="import" href="../../../paper-styles/paper-styles.html">
 <link rel="import" href="../../../paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../neon-animated-pages.html">
 <link rel="import" href="../../neon-animations.html">
@@ -15,29 +14,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="full-view.html">
 
 <dom-module id="list-demo">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    neon-animated-pages {
-      height: 100%;
-    }
-
-  </style>
-
   <template>
-
+    <style>
+      :host {
+        display: block;
+      }
+      neon-animated-pages {
+        height: 100%;
+      }
+    </style>
     <neon-animated-pages id="pages" selected="0">
-
       <list-view data="[[fileData]]" on-item-click="_onItemClick"></list-view>
-
       <full-view on-close="_onClose"></full-view>
-
     </neon-animated-pages>
-
   </template>
 
 </dom-module>

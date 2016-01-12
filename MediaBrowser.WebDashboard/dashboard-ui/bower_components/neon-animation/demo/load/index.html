@@ -16,22 +16,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
-
-    <link rel="import" href="../../../paper-styles/paper-styles.html">
+    <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
     <link rel="import" href="../../neon-animated-pages.html">
     <link rel="import" href="../../neon-animations.html">
     <link rel="import" href="full-page.html">
 
-    <style>
+    <style is="custom-style">
       body {
         overflow: hidden;
+        @apply(--layout-fullbleed);
+      }
+      full-page {
+        @apply(--layout-fit);
       }
     </style>
-
   </head>
-  <body class="fullbleed relative">
+  <body>
 
-    <full-page class="fit"></full-page>
+    <full-page></full-page>
 
     <script>
 

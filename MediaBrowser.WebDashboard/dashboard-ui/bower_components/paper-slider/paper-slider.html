@@ -9,15 +9,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-progress/paper-progress.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
-<link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-styles/color.html">
 
 <!--
 Material design: [Sliders](https://www.google.com/design/spec/components/sliders.html)
@@ -47,15 +46,16 @@ Custom property | Description | Default
 `--paper-slider-active-color` | The progress bar color | `--google-blue-700`
 `--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300`
 `--paper-slider-knob-color` | The knob color | `--google-blue-700`
-`--paper-slider-disabled-knob-color` | The disabled knob color | `--google-grey-500`
+`--paper-slider-disabled-knob-color` | The disabled knob color | `--paper-grey-400`
 `--paper-slider-pin-color` | The pin color | `--google-blue-700`
 `--paper-slider-font-color` | The pin's text color | `#fff`
-`--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
-`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
+`--paper-slider-disabled-active-color` | The disabled progress bar color | `--paper-grey-400`
+`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--paper-grey-400`
 `--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
-`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
-`--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
+`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `--paper-grey-400`
+`--paper-slider-pin-start-color` | The color of the pin at the far left | `--paper-grey-400`
 `--paper-slider-height` | Height of the progress bar | `2px`
+`--paper-slider-input` | Mixin applied to the input in editable mode | `{}`
 
 @group Paper Elements
 @element paper-slider
@@ -79,8 +79,8 @@ Custom property | Description | Default
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
         --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
-        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --paper-grey-400);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --paper-grey-400);
       }
 
       /* focus shows the ripple */
@@ -116,7 +116,7 @@ Custom property | Description | Default
 
       .ring > .bar-container {
         left: calc(5px + var(--paper-slider-height, 2px)/2);
-        transition: left 0.18s ease, width 0.18s ease;
+        transition: left 0.18s ease;
       }
 
       .ring.expand.dragging > .bar-container {
@@ -124,23 +124,15 @@ Custom property | Description | Default
       }
 
       .ring.expand:not(.pin) > .bar-container {
-        left: calc(15px + var(--paper-slider-height, 2px)/2);
+        left: calc(8px + var(--paper-slider-height, 2px)/2);
       }
 
       #sliderBar {
         padding: 15px 0;
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-container-color: var(--paper-grey-400);
         --paper-progress-height: var(--paper-slider-height, 2px);
-      }
-
-      .ring #sliderBar {
-        margin-left: calc(-5px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 5px + var(--paper-slider-height, 2px)/2);
-      }
-      .ring.expand:not(.pin) #sliderBar {
-        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 15px + var(--paper-slider-height, 2px)/2);
       }
 
       .slider-markers {
@@ -198,29 +190,27 @@ Custom property | Description | Default
         margin: 10px;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
-        border-radius: 50%;
         background-color: var(--paper-slider-knob-color, --google-blue-700);
+        border: 2px solid var(--paper-slider-knob-color, --google-blue-700);
+        border-radius: 50%;
 
         -moz-box-sizing: border-box;
         box-sizing: border-box;
 
-        transition-property: margin, height, width, background-color, border;
-        transition-duration: 0.1s;
+        transition-property: -webkit-transform, background-color, border;
+        transition-property: transform, background-color, border;
+        transition-duration: 0.18s;
         transition-timing-function: ease;
       }
 
       .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+        -webkit-transform: scale(1.5);
+        transform: scale(1.5);
       }
 
       .ring > #sliderKnob > #sliderKnobInner {
         background-color: var(--paper-slider-knob-start-color, transparent);
-        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       #sliderKnobInner::before {
@@ -243,12 +233,12 @@ Custom property | Description | Default
 
       #sliderKnobInner::before,
       #sliderKnobInner::after {
-        transition: -webkit-transform .2s ease, background-color .18s ease;
-        transition: transform .2s ease, background-color .18s ease;
+        transition: -webkit-transform .18s ease, background-color .18s ease;
+        transition: transform .18s ease, background-color .18s ease;
       }
 
       .pin.ring > #sliderKnob > #sliderKnobInner::before {
-        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+        background-color: var(--paper-slider-pin-start-color, --paper-grey-400);
       }
 
       .pin.expand > #sliderKnob > #sliderKnobInner::before {
@@ -284,6 +274,7 @@ Custom property | Description | Default
         --paper-input-container-input: {
           text-align: center;
         };
+        @apply(--paper-slider-input);
       }
 
       /* disabled state */
@@ -291,26 +282,23 @@ Custom property | Description | Default
         pointer-events: none;
       }
 
-      .disabled > #sliderKnob {
-        top: 2px;
-        margin-left: calc(-13px - var(--paper-slider-height, 2px)/2);
-        width: calc(26px + var(--paper-slider-height, 2px));
-        height: calc(26px + var(--paper-slider-height, 2px));
-      }
-
       .disabled > #sliderKnob > #sliderKnobInner {
-        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+        background-color: var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        border: 2px solid var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        -webkit-transform: scale3d(0.75, 0.75, 1);
+        transform: scale3d(0.75, 0.75, 1);
       }
 
       .disabled.ring > #sliderKnob > #sliderKnobInner {
-        background-color: transparent;
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       paper-ripple {
         color: var(--paper-slider-knob-color, --google-blue-700);
       }
-
     </style>
+
     <div id="sliderContainer"
       class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
@@ -346,6 +334,7 @@ Custom property | Description | Default
           <div id="sliderKnobInner" value$="[[pinValue]]"></div>
       </div>
     </div>
+
     <template is="dom-if" if="[[editable]]">
       <paper-input
         id="input"
@@ -362,405 +351,407 @@ Custom property | Description | Default
       </paper-input>
     </template>
   </template>
-</dom-module>
 
-<script>
+  <script>
+    Polymer({
+      is: 'paper-slider',
 
-  Polymer({
-    is: 'paper-slider',
+      behaviors: [
+        Polymer.IronA11yKeysBehavior,
+        Polymer.IronFormElementBehavior,
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronRangeBehavior
+      ],
 
-    behaviors: [
-      Polymer.IronFormElementBehavior,
-      Polymer.PaperInkyFocusBehavior,
-      Polymer.IronRangeBehavior
-    ],
+      properties: {
+        /**
+         * If true, the slider thumb snaps to tick marks evenly spaced based
+         * on the `step` property value.
+         */
+        snaps: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
 
-    properties: {
+        /**
+         * If true, a pin with numeric value label is shown when the slider thumb
+         * is pressed. Use for settings for which users need to know the exact
+         * value of the setting.
+         */
+        pin: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
 
-      /**
-       * If true, the slider thumb snaps to tick marks evenly spaced based
-       * on the `step` property value.
-       */
-      snaps: {
-        type: Boolean,
-        value: false,
-        notify: true
+        /**
+         * The number that represents the current secondary progress.
+         */
+        secondaryProgress: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: '_secondaryProgressChanged'
+        },
+
+        /**
+         * If true, an input is shown and user can use it to set the slider value.
+         */
+        editable: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The immediate value of the slider.  This value is updated while the user
+         * is dragging the slider.
+         */
+        immediateValue: {
+          type: Number,
+          value: 0,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * The maximum number of markers
+         */
+        maxMarkers: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: '_maxMarkersChanged'
+        },
+
+        /**
+         * If true, the knob is expanded
+         */
+        expand: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        /**
+         * True when the user is dragging the slider.
+         */
+        dragging: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        transiting: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        markers: {
+          type: Array,
+          readOnly: true,
+          value: []
+        },
+      },
+
+      observers: [
+        '_updateKnob(value, min, max, snaps, step)',
+        '_valueChanged(value)',
+        '_immediateValueChanged(immediateValue)'
+      ],
+
+      hostAttributes: {
+        role: 'slider',
+        tabindex: 0
+      },
+
+      keyBindings: {
+        'left down pagedown home': '_decrementKey',
+        'right up pageup end': '_incrementKey'
+      },
+
+      ready: function() {
+        // issue polymer/polymer#1305
+        this.async(function() {
+          this._updateKnob(this.value);
+        }, 1);
       },
 
       /**
-       * If true, a pin with numeric value label is shown when the slider thumb
-       * is pressed. Use for settings for which users need to know the exact
-       * value of the setting.
+       * Increases value by `step` but not above `max`.
+       * @method increment
        */
-      pin: {
-        type: Boolean,
-        value: false,
-        notify: true
+      increment: function() {
+        this.value = this._clampValue(this.value + this.step);
       },
 
       /**
-       * The number that represents the current secondary progress.
+       * Decreases value by `step` but not below `min`.
+       * @method decrement
        */
-      secondaryProgress: {
-        type: Number,
-        value: 0,
-        notify: true,
-        observer: '_secondaryProgressChanged'
+      decrement: function() {
+        this.value = this._clampValue(this.value - this.step);
       },
 
-      /**
-       * If true, an input is shown and user can use it to set the slider value.
-       */
-      editable: {
-        type: Boolean,
-        value: false
+      _updateKnob: function(value, min, max, snaps, step) {
+        this.setAttribute('aria-valuemin', min);
+        this.setAttribute('aria-valuemax', max);
+        this.setAttribute('aria-valuenow', value);
+
+        this._positionKnob(this._calcRatio(value));
       },
 
-      /**
-       * The immediate value of the slider.  This value is updated while the user
-       * is dragging the slider.
-       */
-      immediateValue: {
-        type: Number,
-        value: 0,
-        readOnly: true,
-        notify: true
+      _valueChanged: function() {
+        this.fire('value-change');
       },
 
-      /**
-       * The maximum number of markers
-       */
-      maxMarkers: {
-        type: Number,
-        value: 0,
-        notify: true,
-        observer: '_maxMarkersChanged'
+      _immediateValueChanged: function() {
+        if (this.dragging) {
+          this.fire('immediate-value-change');
+        } else {
+          this.value = this.immediateValue;
+        }
       },
 
-      /**
-       * If true, the knob is expanded
-       */
-      expand: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _secondaryProgressChanged: function() {
+        this.secondaryProgress = this._clampValue(this.secondaryProgress);
       },
 
-      /**
-       * True when the user is dragging the slider.
-       */
-      dragging: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _expandKnob: function() {
+        this._setExpand(true);
       },
 
-      transiting: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _resetKnob: function() {
+        this.cancelDebouncer('expandKnob');
+        this._setExpand(false);
       },
 
-      markers: {
-        type: Array,
-        readOnly: true,
-        value: []
+      _positionKnob: function(ratio) {
+        this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+        this._setPinValue(this.immediateValue);
+        this._setRatio(this._calcRatio(this.immediateValue));
+
+        this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
+        if (this.dragging) {
+          this._knobstartx = this.ratio * this._w;
+          this.translate3d(0, 0, 0, this.$.sliderKnob);
+        }
       },
-    },
 
-    observers: [
-      '_updateKnob(value, min, max, snaps, step)',
-      '_valueChanged(value)',
-      '_immediateValueChanged(immediateValue)'
-    ],
+      _calcKnobPosition: function(ratio) {
+        return (this.max - this.min) * ratio + this.min;
+      },
 
-    hostAttributes: {
-      role: 'slider',
-      tabindex: 0
-    },
+      _onTrack: function(event) {
+        event.stopPropagation();
+        switch (event.detail.state) {
+          case 'start':
+            this._trackStart(event);
+            break;
+          case 'track':
+            this._trackX(event);
+            break;
+          case 'end':
+            this._trackEnd();
+            break;
+        }
+      },
 
-    keyBindings: {
-      'left down pagedown home': '_decrementKey',
-      'right up pageup end': '_incrementKey'
-    },
+      _trackStart: function(event) {
+        this._w = this.$.sliderBar.offsetWidth;
+        this._x = this.ratio * this._w;
+        this._startx = this._x;
+        this._knobstartx = this._startx;
+        this._minx = - this._startx;
+        this._maxx = this._w - this._startx;
+        this.$.sliderKnob.classList.add('dragging');
+        this._setDragging(true);
+      },
 
-    ready: function() {
-      // issue polymer/polymer#1305
-      this.async(function() {
-        this._updateKnob(this.value);
-      }, 1);
-    },
+      _trackX: function(e) {
+        if (!this.dragging) {
+          this._trackStart(e);
+        }
 
-    /**
-     * Increases value by `step` but not above `max`.
-     * @method increment
-     */
-    increment: function() {
-      this.value = this._clampValue(this.value + this.step);
-    },
+        var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+        this._x = this._startx + dx;
 
-    /**
-     * Decreases value by `step` but not below `min`.
-     * @method decrement
-     */
-    decrement: function() {
-      this.value = this._clampValue(this.value - this.step);
-    },
+        var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
+        this._setImmediateValue(immediateValue);
 
-    _updateKnob: function(value, min, max, snaps, step) {
-      this.setAttribute('aria-valuemin', min);
-      this.setAttribute('aria-valuemax', max);
-      this.setAttribute('aria-valuenow', value);
+        // update knob's position
+        var translateX = ((this._calcRatio(this.immediateValue) * this._w) - this._knobstartx);
+        this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+        this._setPinValue(immediateValue);
+      },
 
-      this._positionKnob(this._calcRatio(value));
-    },
+      _trackEnd: function() {
+        var s = this.$.sliderKnob.style;
 
-    _valueChanged: function() {
-      this.fire('value-change');
-    },
-
-    _immediateValueChanged: function() {
-      if (this.dragging) {
-        this.fire('immediate-value-change');
-      } else {
+        this.$.sliderKnob.classList.remove('dragging');
+        this._setDragging(false);
+        this._resetKnob();
         this.value = this.immediateValue;
-      }
-    },
 
-    _secondaryProgressChanged: function() {
-      this.secondaryProgress = this._clampValue(this.secondaryProgress);
-    },
+        s.transform = s.webkitTransform = '';
 
-    _expandKnob: function() {
-      this._setExpand(true);
-    },
-
-    _resetKnob: function() {
-      this.cancelDebouncer('expandKnob');
-      this._setExpand(false);
-    },
-
-    _positionKnob: function(ratio) {
-      this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
-      this._setPinValue(this.immediateValue);
-      this._setRatio(this._calcRatio(this.immediateValue));
-
-      this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _calcKnobPosition: function(ratio) {
-      return (this.max - this.min) * ratio + this.min;
-    },
-
-    _onTrack: function(event) {
-      event.stopPropagation();
-      switch (event.detail.state) {
-        case 'start':
-          this._trackStart(event);
-          break;
-        case 'track':
-          this._trackX(event);
-          break;
-        case 'end':
-          this._trackEnd();
-          break;
-      }
-    },
-
-    _trackStart: function(event) {
-      this._w = this.$.sliderBar.offsetWidth;
-      this._x = this.ratio * this._w;
-      this._startx = this._x || 0;
-      this._minx = - this._startx;
-      this._maxx = this._w - this._startx;
-      this.$.sliderKnob.classList.add('dragging');
-      this._setDragging(true);
-    },
-
-    _trackX: function(e) {
-      if (!this.dragging) {
-        this._trackStart(e);
-      }
-
-      var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
-      this._x = this._startx + dx;
-
-      var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
-      this._setImmediateValue(immediateValue);
-
-      // update knob's position
-      var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
-      this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
-      this._setPinValue(immediateValue);
-    },
-    _setPinValue: function (value) {
-        this.pinValue = value;
-    },
-
-    _trackEnd: function() {
-      var s = this.$.sliderKnob.style;
-
-      this.$.sliderKnob.classList.remove('dragging');
-      this._setDragging(false);
-      this._resetKnob();
-      this.value = this.immediateValue;
-
-      s.transform = s.webkitTransform = '';
-
-      this.fire('change');
-    },
-
-    _knobdown: function(event) {
-      this._expandKnob();
-
-      // cancel selection
-      event.preventDefault();
-
-      // set the focus manually because we will called prevent default
-      this.focus();
-    },
-
-    _bardown: function(event) {
-      this._w = this.$.sliderBar.offsetWidth;
-      var rect = this.$.sliderBar.getBoundingClientRect();
-      var ratio = (event.detail.x - rect.left) / this._w;
-      var prevRatio = this.ratio;
-
-      this._setTransiting(true);
-
-      this._positionKnob(ratio);
-
-      this.debounce('expandKnob', this._expandKnob, 60);
-
-      // if the ratio doesn't change, sliderKnob's animation won't start
-      // and `_knobTransitionEnd` won't be called
-      // Therefore, we need to manually update the `transiting` state
-
-      if (prevRatio === this.ratio) {
-        this._setTransiting(false);
-      }
-
-      this.async(function() {
         this.fire('change');
-      });
+      },
+      _setPinValue: function (value) {
+          this.pinValue = value;
+      },
 
-      // cancel selection
-      event.preventDefault();
-    },
+      _knobdown: function(event) {
+        this._expandKnob();
 
-    _knobTransitionEnd: function(event) {
-      if (event.target === this.$.sliderKnob) {
-        this._setTransiting(false);
-      }
-    },
+        // cancel selection
+        event.preventDefault();
 
-    _maxMarkersChanged: function(maxMarkers) {
-      if (!this.snaps) {
-        this._setMarkers([]);
-      }
-      var steps = Math.floor((this.max - this.min) / this.step);
-      if (steps > maxMarkers) {
-        steps = maxMarkers;
-      }
-      this._setMarkers(new Array(steps));
-    },
+        // set the focus manually because we will called prevent default
+        this.focus();
+      },
 
-    _mergeClasses: function(classes) {
-      return Object.keys(classes).filter(
-        function(className) {
-          return classes[className];
-        }).join(' ');
-    },
+      _bardown: function(event) {
+        this._w = this.$.sliderBar.offsetWidth;
+        var rect = this.$.sliderBar.getBoundingClientRect();
+        var ratio = (event.detail.x - rect.left) / this._w;
+        var prevRatio = this.ratio;
 
-    _getClassNames: function() {
-      return this._mergeClasses({
-        disabled: this.disabled,
-        pin: this.pin,
-        snaps: this.snaps,
-        ring: this.immediateValue <= this.min,
-        expand: this.expand,
-        dragging: this.dragging,
-        transiting: this.transiting,
-        editable: this.editable
-      });
-    },
+        this._setTransiting(true);
 
-    _incrementKey: function(event) {
-      if (!this.disabled) {
-        if (event.detail.key === 'end') {
-          this.value = this.max;
-        } else {
-          this.increment();
+        this._positionKnob(ratio);
+
+        this.debounce('expandKnob', this._expandKnob, 60);
+
+        // if the ratio doesn't change, sliderKnob's animation won't start
+        // and `_knobTransitionEnd` won't be called
+        // Therefore, we need to manually update the `transiting` state
+
+        if (prevRatio === this.ratio) {
+          this._setTransiting(false);
         }
-        this.fire('change');
-      }
-    },
 
-    _decrementKey: function(event) {
-      if (!this.disabled) {
-        if (event.detail.key === 'home') {
-          this.value = this.min;
-        } else {
-          this.decrement();
+        this.async(function() {
+          this.fire('change');
+        });
+
+        // cancel selection
+        event.preventDefault();
+      },
+
+      _knobTransitionEnd: function(event) {
+        if (event.target === this.$.sliderKnob) {
+          this._setTransiting(false);
         }
+      },
+
+      _maxMarkersChanged: function(maxMarkers) {
+        if (!this.snaps) {
+          this._setMarkers([]);
+        }
+        var steps = Math.floor((this.max - this.min) / this.step);
+        if (steps > maxMarkers) {
+          steps = maxMarkers;
+        }
+        this._setMarkers(new Array(steps));
+      },
+
+      _mergeClasses: function(classes) {
+        return Object.keys(classes).filter(
+          function(className) {
+            return classes[className];
+          }).join(' ');
+      },
+
+      _getClassNames: function() {
+        return this._mergeClasses({
+          disabled: this.disabled,
+          pin: this.pin,
+          snaps: this.snaps,
+          ring: this.immediateValue <= this.min,
+          expand: this.expand,
+          dragging: this.dragging,
+          transiting: this.transiting,
+          editable: this.editable
+        });
+      },
+
+      _incrementKey: function(event) {
+        if (!this.disabled) {
+          if (event.detail.key === 'end') {
+            this.value = this.max;
+          } else {
+            this.increment();
+          }
+          this.fire('change');
+        }
+      },
+
+      _decrementKey: function(event) {
+        if (!this.disabled) {
+          if (event.detail.key === 'home') {
+            this.value = this.min;
+          } else {
+            this.decrement();
+          }
+          this.fire('change');
+        }
+      },
+
+      _changeValue: function(event) {
+        this.value = event.target.value;
         this.fire('change');
-      }
-    },
+      },
 
-    _changeValue: function(event) {
-      this.value = event.target.value;
-      this.fire('change');
-    },
+      _inputKeyDown: function(event) {
+        event.stopPropagation();
+      },
 
-    _inputKeyDown: function(event) {
-      event.stopPropagation();
-    },
+      // create the element ripple inside the `sliderKnob`
+      _createRipple: function() {
+        this._rippleContainer = this.$.sliderKnob;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+      },
 
-    // create the element ripple inside the `sliderKnob`
-    _createRipple: function() {
-      this._rippleContainer = this.$.sliderKnob;
-      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
-    },
-
-    // Hide the ripple when user is not interacting with keyboard.
-    // This behavior is different from other ripple-y controls, but is
-    // according to spec: https://www.google.com/design/spec/components/sliders.html
-    _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (receivedFocusFromKeyboard) {
-        this.ensureRipple();
-      }
-      if (this.hasRipple()) {
-        // note, ripple must be un-hidden prior to setting `holdDown`
+      // Hide the ripple when user is not interacting with keyboard.
+      // This behavior is different from other ripple-y controls, but is
+      // according to spec: https://www.google.com/design/spec/components/sliders.html
+      _focusedChanged: function(receivedFocusFromKeyboard) {
         if (receivedFocusFromKeyboard) {
-          this._ripple.removeAttribute('hidden');
-        } else {
-          this._ripple.setAttribute('hidden', '');
+          this.ensureRipple();
         }
-        this._ripple.holdDown = receivedFocusFromKeyboard;
+        if (this.hasRipple()) {
+          // note, ripple must be un-hidden prior to setting `holdDown`
+          if (receivedFocusFromKeyboard) {
+            this._ripple.removeAttribute('hidden');
+          } else {
+            this._ripple.setAttribute('hidden', '');
+          }
+          this._ripple.holdDown = receivedFocusFromKeyboard;
+        }
       }
-    }
+    });
 
-  });
+    /**
+     * Fired when the slider's value changes.
+     *
+     * @event value-change
+     */
 
-  /**
-   * Fired when the slider's value changes.
-   *
-   * @event value-change
-   */
+    /**
+     * Fired when the slider's immediateValue changes.
+     *
+     * @event immediate-value-change
+     */
 
-  /**
-   * Fired when the slider's immediateValue changes.
-   *
-   * @event immediate-value-change
-   */
-
-  /**
-   * Fired when the slider's value changes due to user interaction.
-   *
-   * Changes to the slider's value due to changes in an underlying
-   * bound variable will not trigger this event.
-   *
-   * @event change
-   */
-
-</script>
+    /**
+     * Fired when the slider's value changes due to user interaction.
+     *
+     * Changes to the slider's value due to changes in an underlying
+     * bound variable will not trigger this event.
+     *
+     * @event change
+     */
+  </script>
+</dom-module>

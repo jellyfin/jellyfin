@@ -76,12 +76,24 @@
 
                     profile.DirectPlayProfiles = [];
 
+                    var videoAudioCodecs = [];
+                    // Putting mp3 first is really just a hack to ensure we transcode to 2 channels
+                    if (canPlayMp3) {
+                        videoAudioCodecs.push('mp3');
+                    }
+                    if (canPlayAac) {
+                        videoAudioCodecs.push('aac');
+                    }
+                    if (canPlayAc3) {
+                        videoAudioCodecs.push('ac3');
+                    }
+
                     if (supportedFormats.indexOf('h264') != -1) {
                         profile.DirectPlayProfiles.push({
                             Container: 'mp4,m4v',
                             Type: 'Video',
                             VideoCodec: 'h264',
-                            AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                            AudioCodec: videoAudioCodecs.join(',')
                         });
                     }
 
@@ -90,7 +102,7 @@
                             Container: 'mkv,mov',
                             Type: 'Video',
                             VideoCodec: 'h264',
-                            AudioCodec: 'aac' + (canPlayMp3 ? ',mp3' : '') + (canPlayAc3 ? ',ac3' : '')
+                            AudioCodec: videoAudioCodecs.join(',')
                         });
                     }
 
@@ -136,7 +148,7 @@
                         profile.TranscodingProfiles.push({
                             Container: 'mkv',
                             Type: 'Video',
-                            AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : '') + (canPlayMp3 ? ',mp3' : ''),
+                            AudioCodec: videoAudioCodecs.join(','),
                             VideoCodec: 'h264',
                             Context: 'Streaming'
                         });
@@ -146,7 +158,7 @@
                         profile.TranscodingProfiles.push({
                             Container: 'ts',
                             Type: 'Video',
-                            AudioCodec: 'aac' + (canPlayAc3 ? ',ac3' : ''),
+                            AudioCodec: videoAudioCodecs.join(','),
                             VideoCodec: 'h264',
                             Context: 'Streaming',
                             Protocol: 'hls'
@@ -178,7 +190,7 @@
                     profile.TranscodingProfiles.push({
                         Container: 'mp4',
                         Type: 'Video',
-                        AudioCodec: 'aac',
+                        AudioCodec: videoAudioCodecs.join(','),
                         VideoCodec: 'h264',
                         Context: 'Streaming',
                         Protocol: 'http'
@@ -187,7 +199,7 @@
                     profile.TranscodingProfiles.push({
                         Container: 'mp4',
                         Type: 'Video',
-                        AudioCodec: 'aac',
+                        AudioCodec: videoAudioCodecs.join(','),
                         VideoCodec: 'h264',
                         Context: 'Static',
                         Protocol: 'http'
@@ -253,7 +265,7 @@
 
                     } else {
 
-                        var videoAudioChannels = browserInfo.safari ? '2' : '6';
+                        var videoAudioChannels = '6';
 
                         profile.CodecProfiles.push({
                             Type: 'VideoAudio',

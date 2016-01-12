@@ -1,6 +1,6 @@
 {
   "name": "iron-a11y-keys-behavior",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A behavior that enables keybindings for greater a11y.",
   "keywords": [
     "web-components",

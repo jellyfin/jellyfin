@@ -7,47 +7,43 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../../../polymer/polymer.html">
-<link rel="import" href="../../../paper-styles/paper-styles.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../paper-styles/shadow.html">
 <link rel="import" href="../../neon-animatable-behavior.html">
 
 <dom-module id="full-view">
-
-  <style>
-
-    :host {
-      @apply(--layout-vertical);
-    }
-
-    .main {
-      background: white;
-      @apply(--layout-flex);
-      @apply(--layout-scroll);
-      @apply(--shadow-elevation-8dp);
-    }
-
-    .image-container {
-      position: relative;
-      width: 100%;
-      padding-bottom: 100%;
-    }
-
-    .image {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        45deg,
-        #f5f5f5,
-        #f5f5f5 8px,
-        #e0e0e0 8px,
-        #e0e0e0 16px
-      );
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout-vertical);
+      }
 
+      .main {
+        background: white;
+        @apply(--layout-flex);
+        @apply(--layout-scroll);
+        @apply(--shadow-elevation-8dp);
+      }
+
+      .image-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+      }
+
+      .image {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          45deg,
+          #f5f5f5,
+          #f5f5f5 8px,
+          #e0e0e0 8px,
+          #e0e0e0 16px
+        );
+      }
+    </style>
     <paper-toolbar class="medium-tall">
       <paper-icon-button id="button" icon="clear" on-click="_onClearButtonClick"></paper-icon-button>
     </paper-toolbar>
@@ -58,9 +54,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
       </div>
     </div>
-
+    
   </template>
-
 </dom-module>
 
 <script>

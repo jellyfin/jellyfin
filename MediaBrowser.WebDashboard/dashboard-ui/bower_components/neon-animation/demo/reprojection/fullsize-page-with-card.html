@@ -8,42 +8,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../../../polymer/polymer.html">
 <link rel="import" href="../../neon-shared-element-animatable-behavior.html">
-
+<link rel="import" href="../shared-styles.html">
 
 <dom-module id="fullsize-page-with-card">
-
-  <link rel="import" type="css" href="../shared.css">
-
-  <style>
-
-    :host {
-      display: block;
-    }
-
-    .fixed {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      width: 100vw;
-    }
-
-    .card {
-      position: relative;
-      margin: 200px 100px 0;
-      height: 700px;
-    }
-
-  </style>
-
   <template>
+    <style include="shared-styles"></style>
+    <style>
+
+      :host {
+        display: block;
+      }
+
+      .fixed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      .card {
+        position: relative;
+        margin: 200px 100px 0;
+        height: 700px;
+      }
+
+    </style>
 
     <div id="fixed" class$="[[_computeFixedBackgroundClass(color)]]"></div>
-
     <div id="card" class$="[[_computeCardClass(color)]]"></div>
 
   </template>
-
 </dom-module>
 
 <script>

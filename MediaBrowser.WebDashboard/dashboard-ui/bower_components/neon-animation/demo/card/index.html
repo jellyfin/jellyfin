@@ -17,17 +17,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="../../../paper-styles/paper-styles.html">
+    <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
     <link rel="import" href="../../neon-animated-pages.html">
     <link rel="import" href="../../neon-animations.html">
-
+    <link rel="import" href="../../../paper-styles/typography.html">
     <link rel="import" href="x-card.html">
     <link rel="import" href="x-cards-list.html">
 
-    <style>
+    <style is="custom-style">
 
       body {
         padding: 15px;
+        @apply(--layout-fullbleed);
+        @apply(--paper-font-common-base);
       }
 
       neon-animated-pages {
@@ -64,38 +66,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         left: 30px;
       }
 
+      .card-contents {
+        @apply(--layout-vertical);
+        @apply(--layout-center-center);
+        @apply(--layout-fit);
+      }
+
+      .button-container {
+        @apply(--layout-flex);
+        @apply(--layout-horizontal);
+        @apply(--layout-around-justified);
+      }
     </style>
 
   </head>
-  <body class="fullbleed">
+  <body>
 
     <template is="dom-bind">
-
       <neon-animated-pages id="pages" selected="0">
-
           <x-cards-list id="list">
-
-            <div class="fit layout vertical center-center">
-
+            <div class="card-contents">
               <h2>Choose a subject</h2>
-              <div class="flex layout horizontal around-justified large">
-
+              <div class="button-container large">
                 <div class="blue raised button" on-click="_onPolymerClick">
                   POLYMER
                 </div>
                 <div class="blue raised button" on-click="_onAngularClick">
                   ANGULAR
                 </div>
-
               </div>
-
             </div>
-
           </x-cards-list>
+
           <x-card>
-
-            <div class="fit layout vertical center-center">
-
+            <div class="card-contents">
               <div class="raised back button" on-click="_onBackClick">
                 BACK
               </div>
@@ -108,14 +112,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
                 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </p>
-
             </div>
-
           </x-card>
+
           <x-card>
-
-            <div class="fit layout vertical center-center">
-
+            <div class="card-contents">
               <div class="raised back button" on-click="_onBackClick">
                 BACK
               </div>
@@ -128,12 +129,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
                 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </p>
-
             </div>
-
           </x-card>
-        </neon-animated-pages>
 
+        </neon-animated-pages>
     </template>
 
     <script>
