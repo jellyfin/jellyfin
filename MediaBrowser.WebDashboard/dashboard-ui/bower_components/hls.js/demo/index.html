@@ -75,6 +75,7 @@ header {
       <label class="innerControls"><input id="enableStreaming" type=checkbox checked/> Enable Streaming</label>
       <label class="innerControls"><input id="autoRecoverError" type=checkbox checked/> Auto-Recover Media Error</label>
       <label class="innerControls"><input id="enableWorker" type=checkbox checked/> Enable Worker</label>
+      <label class="innerControls">Level Capping <input id="levelCapping" type=number/></label>
       <div id="StreamPermalink" class="innerControls"></div>
       <div>
         <select id="videoSize" style="float:left">
@@ -205,9 +206,11 @@ $(document).ready(function() {
    $('#enableStreaming').click(function()      { enableStreaming = this.checked; loadStream($('#streamURL').val()); });
    $('#autoRecoverError').click(function()  { autoRecoverError = this.checked; updatePermalink();});
    $('#enableWorker').click(function()  { enableWorker = this.checked; updatePermalink();});
+   $('#levelCapping').change(function()  { levelCapping = this.value; updatePermalink();});
    $('#enableStreaming').prop( "checked", enableStreaming );
    $('#autoRecoverError').prop( "checked", autoRecoverError );
    $('#enableWorker').prop( "checked", enableWorker );
+   $('#levelCapping').val(levelCapping);
 });
 
 
@@ -216,6 +219,7 @@ $(document).ready(function() {
       enableStreaming = JSON.parse(getURLParam('enableStreaming',true))
       autoRecoverError = JSON.parse(getURLParam('autoRecoverError',true)),
       enableWorker = JSON.parse(getURLParam('enableWorker',true));
+      levelCapping = JSON.parse(getURLParam('levelCapping',-1));
   var video = $('#video')[0];
   video.volume = 0.05;
 
@@ -247,6 +251,7 @@ $(document).ready(function() {
        hls = new Hls({debug:true, enableWorker : enableWorker});
        $("#HlsStatus").text('loading manifest and attaching video element...');
        hls.loadSource(url);
+       hls.autoLevelCapping = levelCapping;
        hls.attachMedia(video);
        hls.on(Hls.Events.MEDIA_ATTACHED,function() {
         $("#HlsStatus").text('MediaSource attached...');
@@ -429,17 +434,29 @@ $(document).ready(function() {
               $("#HlsStatus").html("cannot Load <a href=\"" + data.url + "\">" + url + "</a><br>Reason:Load " + data.event.type);
             }
             break;
+          case Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT:
+            $("#HlsStatus").text("timeout while loading manifest");
+            break;
+          case Hls.ErrorDetails.MANIFEST_PARSING_ERROR:
+            $("#HlsStatus").text("error while parsing manifest:" + data.reason);
+            break;
           case Hls.ErrorDetails.LEVEL_LOAD_ERROR:
-            $("#HlsStatus").text("error while trying to load level playlist");
+            $("#HlsStatus").text("error while loading level playlist");
+            break;
+          case Hls.ErrorDetails.LEVEL_LOAD_TIMEOUT:
+            $("#HlsStatus").text("timeout while loading level playlist");
             break;
           case Hls.ErrorDetails.LEVEL_SWITCH_ERROR:
             $("#HlsStatus").text("error while trying to switch to level " + data.level);
             break;
           case Hls.ErrorDetails.FRAG_LOAD_ERROR:
-            $("#HlsStatus").text("error while trying to load fragment " + data.frag.url);
+            $("#HlsStatus").text("error while loading fragment " + data.frag.url);
             break;
-          case Hls.ErrorDetails.LEVEL_LOAD_TIMEOUT:
-            $("#HlsStatus").text("timeout while trying to load level playlist");
+          case Hls.ErrorDetails.FRAG_LOAD_TIMEOUT:
+            $("#HlsStatus").text("timeout while loading fragment " + data.frag.url);
+            break;
+          case Hls.ErrorDetails.FRAG_LOOP_LOADING_ERROR:
+            $("#HlsStatus").text("Frag Loop Loading Error");
             break;
           case Hls.ErrorDetails.FRAG_DECRYPT_ERROR:
             $("#HlsStatus").text("Decrypting Error:" + data.reason);
@@ -447,14 +464,17 @@ $(document).ready(function() {
           case Hls.ErrorDetails.FRAG_PARSING_ERROR:
             $("#HlsStatus").text("Parsing Error:" + data.reason);
             break;
+          case Hls.ErrorDetails.KEY_LOAD_ERROR:
+            $("#HlsStatus").text("error while loading key " + data.frag.decryptdata.uri);
+            break;
+          case Hls.ErrorDetails.KEY_LOAD_TIMEOUT:
+            $("#HlsStatus").text("timeout while loading key " + data.frag.decryptdata.uri);
+            break;
           case Hls.ErrorDetails.BUFFER_APPEND_ERROR:
             $("#HlsStatus").text("Buffer Append Error");
             break;
           case Hls.ErrorDetails.BUFFER_APPENDING_ERROR:
             $("#HlsStatus").text("Buffer Appending Error");
-            break;
-          case Hls.ErrorDetails.FRAG_LOOP_LOADING_ERROR:
-            $("#HlsStatus").text("Frag Loop Loading Error");
             break;
           default:
             break;
@@ -835,7 +855,7 @@ function timeRangesToString(r) {
     } else {
       html3 += button_disabled;
     }
-    html3 += 'onclick="hls.autoLevelCapping=-1;updateLevelInfo()">auto</button>';
+    html3 += 'onclick="levelCapping=hls.autoLevelCapping=-1;updateLevelInfo();updatePermalink();">auto</button>';
 
     var html4 = button_template;
     if(hls.autoLevelEnabled) {
@@ -872,7 +892,7 @@ function timeRangesToString(r) {
       } else {
         html3 += button_disabled;
       }
-      html3 += 'onclick="hls.autoLevelCapping=' + i + ';updateLevelInfo()">' + levelName + '</button>';
+      html3 += 'onclick="levelCapping=hls.autoLevelCapping=' + i + ';updateLevelInfo();updatePermalink();">' + levelName + '</button>';
 
       html4 += button_template;
       if(hls.nextLevel === i) {
@@ -925,7 +945,11 @@ function timeRangesToString(r) {
 
   function updatePermalink() {
       var url = $('#streamURL').val();
-      var hlsLink = document.URL.split('?')[0] +  '?src=' + encodeURIComponent(url) + '&enableStreaming=' + enableStreaming + '&autoRecoverError=' + autoRecoverError + '&enableWorker=' + enableWorker;
+      var hlsLink = document.URL.split('?')[0] +  '?src=' + encodeURIComponent(url) +
+                    '&enableStreaming=' + enableStreaming +
+                    '&autoRecoverError=' + autoRecoverError +
+                    '&enableWorker=' + enableWorker +
+                    '&levelCapping=' + levelCapping;
       var description = 'permalink: ' + "<a href=\"" + hlsLink + "\">" + hlsLink + "</a>";
       $("#StreamPermalink").html(description);
   }

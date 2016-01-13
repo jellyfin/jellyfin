@@ -27,7 +27,7 @@ class FragmentLoader {
     this.frag.loaded = 0;
     var config = this.hls.config;
     frag.loader = this.loader = typeof(config.fLoader) !== 'undefined' ? new config.fLoader(config) : new config.loader(config);
-    this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 1, config.fragLoadingRetryDelay, this.loadprogress.bind(this), frag);
+    this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 1, 0, this.loadprogress.bind(this), frag);
   }
 
   loadsuccess(event, stats) {

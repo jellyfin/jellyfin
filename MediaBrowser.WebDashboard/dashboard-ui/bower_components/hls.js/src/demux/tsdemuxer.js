@@ -9,6 +9,7 @@
  * upon discontinuity or level switch detection, it will also notifies the remuxer so that it can reset its state.
 */
 
+ import ADTS from './adts';
  import Event from '../events';
  import ExpGolomb from './exp-golomb';
 // import Hex from '../utils/hex';
@@ -21,7 +22,6 @@
     this.observer = observer;
     this.remuxerClass = remuxerClass;
     this.lastCC = 0;
-    this.PES_TIMESCALE = 90000;
     this.remuxer = new this.remuxerClass(observer);
   }
 
@@ -423,16 +423,19 @@
               // If NAL units are not starting right at the beginning of the PES packet, push preceding data into previous NAL unit.
               overflow  = i - state - 1;
               if (overflow) {
+                var track = this._avcTrack,
+                    samples = track.samples;
                 //logger.log('first NALU found with overflow:' + overflow);
-                if (this._avcTrack.samples.length) {
-                  var lastavcSample = this._avcTrack.samples[this._avcTrack.samples.length - 1];
-                  var lastUnit = lastavcSample.units.units[lastavcSample.units.units.length - 1];
-                  var tmp = new Uint8Array(lastUnit.data.byteLength + overflow);
+                if (samples.length) {
+                  var lastavcSample = samples[samples.length - 1],
+                      lastUnits = lastavcSample.units.units,
+                      lastUnit = lastUnits[lastUnits.length - 1],
+                      tmp = new Uint8Array(lastUnit.data.byteLength + overflow);
                   tmp.set(lastUnit.data, 0);
                   tmp.set(array.subarray(0, overflow), lastUnit.data.byteLength);
                   lastUnit.data = tmp;
                   lastavcSample.units.length += overflow;
-                  this._avcTrack.len += overflow;
+                  track.len += overflow;
                 }
               }
             }
@@ -460,7 +463,13 @@
   }
 
   _parseAACPES(pes) {
-    var track = this._aacTrack, aacSample, data = pes.data, config, adtsFrameSize, adtsStartOffset, adtsHeaderLen, stamp, nbSamples, len;
+    var track = this._aacTrack,
+        data = pes.data,
+        pts = pes.pts,
+        startOffset = 0,
+        duration = this._duration,
+        audioCodec = this.audioCodec,
+        config, frameLength, frameDuration, frameIndex, offset, headerLength, stamp, len, aacSample;
     if (this.aacOverFlow) {
       var tmp = new Uint8Array(this.aacOverFlow.byteLength + data.byteLength);
       tmp.set(this.aacOverFlow, 0);
@@ -468,16 +477,16 @@
       data = tmp;
     }
     // look for ADTS header (0xFFFx)
-    for (adtsStartOffset = 0, len = data.length; adtsStartOffset < len - 1; adtsStartOffset++) {
-      if ((data[adtsStartOffset] === 0xff) && (data[adtsStartOffset+1] & 0xf0) === 0xf0) {
+    for (offset = startOffset, len = data.length; offset < len - 1; offset++) {
+      if ((data[offset] === 0xff) && (data[offset+1] & 0xf0) === 0xf0) {
         break;
       }
     }
     // if ADTS header does not start straight from the beginning of the PES payload, raise an error
-    if (adtsStartOffset) {
+    if (offset) {
       var reason, fatal;
-      if (adtsStartOffset < len - 1) {
-        reason = `AAC PES did not start with ADTS header,offset:${adtsStartOffset}`;
+      if (offset < len - 1) {
+        reason = `AAC PES did not start with ADTS header,offset:${offset}`;
         fatal = false;
       } else {
         reason = 'no ADTS header found in AAC PES';
@@ -489,37 +498,38 @@
       }
     }
     if (!track.audiosamplerate) {
-      config = this._ADTStoAudioConfig(data, adtsStartOffset, this.audioCodec);
+      config = ADTS.getAudioConfig(this.observer,data, offset, audioCodec);
       track.config = config.config;
       track.audiosamplerate = config.samplerate;
       track.channelCount = config.channelCount;
       track.codec = config.codec;
       track.timescale = this.remuxer.timescale;
-      track.duration = this.remuxer.timescale * this._duration;
+      track.duration = track.timescale * duration;
       logger.log(`parsed codec:${track.codec},rate:${config.samplerate},nb channel:${config.channelCount}`);
     }
-    nbSamples = 0;
-    while ((adtsStartOffset + 5) < len) {
+    frameIndex = 0;
+    frameDuration = 1024 * 90000 / track.audiosamplerate;
+    while ((offset + 5) < len) {
+      // The protection skip bit tells us if we have 2 bytes of CRC data at the end of the ADTS header
+      headerLength = (!!(data[offset + 1] & 0x01) ? 7 : 9);
       // retrieve frame size
-      adtsFrameSize = ((data[adtsStartOffset + 3] & 0x03) << 11);
-      // byte 4
-      adtsFrameSize |= (data[adtsStartOffset + 4] << 3);
-      // byte 5
-      adtsFrameSize |= ((data[adtsStartOffset + 5] & 0xE0) >>> 5);
-      adtsHeaderLen = (!!(data[adtsStartOffset + 1] & 0x01) ? 7 : 9);
-      adtsFrameSize -= adtsHeaderLen;
-      stamp = Math.round(pes.pts + nbSamples * 1024 * this.PES_TIMESCALE / track.audiosamplerate);
+      frameLength = ((data[offset + 3] & 0x03) << 11) |
+                     (data[offset + 4] << 3) |
+                    ((data[offset + 5] & 0xE0) >>> 5);
+      frameLength  -= headerLength;
+      stamp = Math.round(pts + frameIndex * frameDuration);
       //stamp = pes.pts;
-      //console.log('AAC frame, offset/length/pts:' + (adtsStartOffset+7) + '/' + adtsFrameSize + '/' + stamp.toFixed(0));
-      if ((adtsFrameSize > 0) && ((adtsStartOffset + adtsHeaderLen + adtsFrameSize) <= len)) {
-        aacSample = {unit: data.subarray(adtsStartOffset + adtsHeaderLen, adtsStartOffset + adtsHeaderLen + adtsFrameSize), pts: stamp, dts: stamp};
-        this._aacTrack.samples.push(aacSample);
-        this._aacTrack.len += adtsFrameSize;
-        adtsStartOffset += adtsFrameSize + adtsHeaderLen;
-        nbSamples++;
+
+      //console.log('AAC frame, offset/length/pts:' + (offset+headerLength) + '/' + frameLength + '/' + stamp.toFixed(0));
+      if ((frameLength > 0) && ((offset + headerLength + frameLength) <= len)) {
+        aacSample = {unit: data.subarray(offset + headerLength, offset + headerLength + frameLength), pts: stamp, dts: stamp};
+        track.samples.push(aacSample);
+        track.len += frameLength;
+        offset += frameLength + headerLength;
+        frameIndex++;
         // look for ADTS header (0xFFFx)
-        for ( ; adtsStartOffset < (len - 1); adtsStartOffset++) {
-          if ((data[adtsStartOffset] === 0xff) && ((data[adtsStartOffset + 1] & 0xf0) === 0xf0)) {
+        for ( ; offset < (len - 1); offset++) {
+          if ((data[offset] === 0xff) && ((data[offset + 1] & 0xf0) === 0xf0)) {
             break;
           }
         }
@@ -527,133 +537,11 @@
         break;
       }
     }
-    if (adtsStartOffset < len) {
-      this.aacOverFlow = data.subarray(adtsStartOffset, len);
+    if (offset < len) {
+      this.aacOverFlow = data.subarray(offset, len);
     } else {
       this.aacOverFlow = null;
     }
-  }
-
-  _ADTStoAudioConfig(data, offset, audioCodec) {
-    var adtsObjectType, // :int
-        adtsSampleingIndex, // :int
-        adtsExtensionSampleingIndex, // :int
-        adtsChanelConfig, // :int
-        config,
-        userAgent = navigator.userAgent.toLowerCase(),
-        adtsSampleingRates = [
-            96000, 88200,
-            64000, 48000,
-            44100, 32000,
-            24000, 22050,
-            16000, 12000,
-            11025, 8000,
-            7350];
-    // byte 2
-    adtsObjectType = ((data[offset + 2] & 0xC0) >>> 6) + 1;
-    adtsSampleingIndex = ((data[offset + 2] & 0x3C) >>> 2);
-    if(adtsSampleingIndex > adtsSampleingRates.length-1) {
-      this.observer.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: true, reason: `invalid ADTS sampling index:${adtsSampleingIndex}`});
-      return;
-    }
-    adtsChanelConfig = ((data[offset + 2] & 0x01) << 2);
-    // byte 3
-    adtsChanelConfig |= ((data[offset + 3] & 0xC0) >>> 6);
-    logger.log(`manifest codec:${audioCodec},ADTS data:type:${adtsObjectType},sampleingIndex:${adtsSampleingIndex}[${adtsSampleingRates[adtsSampleingIndex]}Hz],channelConfig:${adtsChanelConfig}`);
-    // firefox: freq less than 24kHz = AAC SBR (HE-AAC)
-    if (userAgent.indexOf('firefox') !== -1) {
-      if (adtsSampleingIndex >= 6) {
-        adtsObjectType = 5;
-        config = new Array(4);
-        // HE-AAC uses SBR (Spectral Band Replication) , high frequencies are constructed from low frequencies
-        // there is a factor 2 between frame sample rate and output sample rate
-        // multiply frequency by 2 (see table below, equivalent to substract 3)
-        adtsExtensionSampleingIndex = adtsSampleingIndex - 3;
-      } else {
-        adtsObjectType = 2;
-        config = new Array(2);
-        adtsExtensionSampleingIndex = adtsSampleingIndex;
-      }
-      // Android : always use AAC
-    } else if (userAgent.indexOf('android') !== -1) {
-      adtsObjectType = 2;
-      config = new Array(2);
-      adtsExtensionSampleingIndex = adtsSampleingIndex;
-    } else {
-      /*  for other browsers (chrome ...)
-          always force audio type to be HE-AAC SBR, as some browsers do not support audio codec switch properly (like Chrome ...)
-      */
-      adtsObjectType = 5;
-      config = new Array(4);
-      // if (manifest codec is HE-AAC or HE-AACv2) OR (manifest codec not specified AND frequency less than 24kHz)
-      if ((audioCodec && ((audioCodec.indexOf('mp4a.40.29') !== -1) ||
-                          (audioCodec.indexOf('mp4a.40.5') !== -1))) ||
-          (!audioCodec && adtsSampleingIndex >= 6)) {
-        // HE-AAC uses SBR (Spectral Band Replication) , high frequencies are constructed from low frequencies
-        // there is a factor 2 between frame sample rate and output sample rate
-        // multiply frequency by 2 (see table below, equivalent to substract 3)
-        adtsExtensionSampleingIndex = adtsSampleingIndex - 3;
-      } else {
-        // if (manifest codec is AAC) AND (frequency less than 24kHz OR nb channel is 1) OR (manifest codec not specified and mono audio)
-        // Chrome fails to play back with AAC LC mono when initialized with HE-AAC.  This is not a problem with stereo.
-        if (audioCodec && audioCodec.indexOf('mp4a.40.2') !== -1 && (adtsSampleingIndex >= 6 || adtsChanelConfig === 1) ||
-            (!audioCodec && adtsChanelConfig === 1)) {
-          adtsObjectType = 2;
-          config = new Array(2);
-        }
-        adtsExtensionSampleingIndex = adtsSampleingIndex;
-      }
-    }
-    /* refer to http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio#Audio_Specific_Config
-        ISO 14496-3 (AAC).pdf - Table 1.13 — Syntax of AudioSpecificConfig()
-      Audio Profile / Audio Object Type
-      0: Null
-      1: AAC Main
-      2: AAC LC (Low Complexity)
-      3: AAC SSR (Scalable Sample Rate)
-      4: AAC LTP (Long Term Prediction)
-      5: SBR (Spectral Band Replication)
-      6: AAC Scalable
-     sampling freq
-      0: 96000 Hz
-      1: 88200 Hz
-      2: 64000 Hz
-      3: 48000 Hz
-      4: 44100 Hz
-      5: 32000 Hz
-      6: 24000 Hz
-      7: 22050 Hz
-      8: 16000 Hz
-      9: 12000 Hz
-      10: 11025 Hz
-      11: 8000 Hz
-      12: 7350 Hz
-      13: Reserved
-      14: Reserved
-      15: frequency is written explictly
-      Channel Configurations
-      These are the channel configurations:
-      0: Defined in AOT Specifc Config
-      1: 1 channel: front-center
-      2: 2 channels: front-left, front-right
-    */
-    // audioObjectType = profile => profile, the MPEG-4 Audio Object Type minus 1
-    config[0] = adtsObjectType << 3;
-    // samplingFrequencyIndex
-    config[0] |= (adtsSampleingIndex & 0x0E) >> 1;
-    config[1] |= (adtsSampleingIndex & 0x01) << 7;
-    // channelConfiguration
-    config[1] |= adtsChanelConfig << 3;
-    if (adtsObjectType === 5) {
-      // adtsExtensionSampleingIndex
-      config[1] |= (adtsExtensionSampleingIndex & 0x0E) >> 1;
-      config[2] = (adtsExtensionSampleingIndex & 0x01) << 7;
-      // adtsObjectType (force to 2, chrome is checking that object type is less than 5 ???
-      //    https://chromium.googlesource.com/chromium/src.git/+/master/media/formats/mp4/aac.cc
-      config[2] |= 2 << 2;
-      config[3] = 0;
-    }
-    return {config: config, samplerate: adtsSampleingRates[adtsSampleingIndex], channelCount: adtsChanelConfig, codec: ('mp4a.40.' + adtsObjectType)};
   }
 
   _parseID3PES(pes) {
