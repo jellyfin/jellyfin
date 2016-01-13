@@ -54,23 +54,7 @@ class MP4 {
       }
     }
 
-    MP4.MAJOR_BRAND = new Uint8Array([
-      'i'.charCodeAt(0),
-      's'.charCodeAt(0),
-      'o'.charCodeAt(0),
-      'm'.charCodeAt(0)
-    ]);
-
-    MP4.AVC1_BRAND = new Uint8Array([
-      'a'.charCodeAt(0),
-      'v'.charCodeAt(0),
-      'c'.charCodeAt(0),
-      '1'.charCodeAt(0)
-    ]);
-
-    MP4.MINOR_VERSION = new Uint8Array([0, 0, 0, 1]);
-
-    MP4.VIDEO_HDLR = new Uint8Array([
+    var videoHdlr = new Uint8Array([
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x00, // pre_defined
@@ -83,7 +67,7 @@ class MP4 {
       0x64, 0x6c, 0x65, 0x72, 0x00 // name: 'VideoHandler'
     ]);
 
-    MP4.AUDIO_HDLR = new Uint8Array([
+    var audioHdlr = new Uint8Array([
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x00, // pre_defined
@@ -97,11 +81,11 @@ class MP4 {
     ]);
 
     MP4.HDLR_TYPES = {
-      'video': MP4.VIDEO_HDLR,
-      'audio': MP4.AUDIO_HDLR
+      'video': videoHdlr,
+      'audio': audioHdlr
     };
 
-    MP4.DREF = new Uint8Array([
+    var dref = new Uint8Array([
       0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x01, // entry_count
@@ -110,13 +94,15 @@ class MP4 {
       0x00, // version 0
       0x00, 0x00, 0x01 // entry_flags
     ]);
-    MP4.STCO = new Uint8Array([
+
+    var stco = new Uint8Array([
       0x00, // version
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x00 // entry_count
     ]);
-    MP4.STSC = MP4.STCO;
-    MP4.STTS = MP4.STCO;
+
+    MP4.STTS = MP4.STSC = MP4.STCO = stco;
+
     MP4.STSZ = new Uint8Array([
       0x00, // version
       0x00, 0x00, 0x00, // flags
@@ -143,28 +129,34 @@ class MP4 {
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x01]);// entry_count
 
-    MP4.FTYP = MP4.box(MP4.types.ftyp, MP4.MAJOR_BRAND, MP4.MINOR_VERSION, MP4.MAJOR_BRAND, MP4.AVC1_BRAND);
-    MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, MP4.DREF));
+    var majorBrand = new Uint8Array([105,115,111,109]); // isom
+    var avc1Brand = new Uint8Array([97,118,99,49]); // avc1
+    var minorVersion = new Uint8Array([0, 0, 0, 1]);
+
+    MP4.FTYP = MP4.box(MP4.types.ftyp, majorBrand, minorVersion, majorBrand, avc1Brand);
+    MP4.DINF = MP4.box(MP4.types.dinf, MP4.box(MP4.types.dref, dref));
   }
 
   static box(type) {
   var
     payload = Array.prototype.slice.call(arguments, 1),
-    size = 0,
+    size = 8,
     i = payload.length,
     len = i,
-    result,
-    view;
+    result;
     // calculate the total size we need to allocate
     while (i--) {
       size += payload[i].byteLength;
     }
-    result = new Uint8Array(size + 8);
-    view = new DataView(result.buffer);
-    view.setUint32(0, result.byteLength);
+    result = new Uint8Array(size);
+    result[0] = (size >> 24) & 0xff;
+    result[1] = (size >> 16) & 0xff;
+    result[2] = (size >> 8) & 0xff;
+    result[3] = size  & 0xff;
     result.set(type, 4);
     // copy the payload into the result
     for (i = 0, size = 8; i < len; i++) {
+      // copy payload[i] array @ offset size
       result.set(payload[i], size);
       size += payload[i].byteLength;
     }
@@ -564,7 +556,7 @@ class MP4 {
         (size >>> 16) & 0xFF,
         (size >>> 8) & 0xFF,
         size & 0xFF, // sample_size
-        (flags.isLeading << 2) | sample.flags.dependsOn,
+        (flags.isLeading << 2) | flags.dependsOn,
         (flags.isDependedOn << 6) |
           (flags.hasRedundancy << 4) |
           (flags.paddingValue << 1) |

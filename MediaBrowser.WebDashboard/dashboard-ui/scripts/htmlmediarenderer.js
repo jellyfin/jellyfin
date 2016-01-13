@@ -591,7 +591,7 @@
                 return false;
             }
 
-            return self.canAutoPlayVideo() && !browserInfo.mobile;
+            return self.canAutoPlayVideo();
         };
 
         self.canAutoPlayVideo = function () {

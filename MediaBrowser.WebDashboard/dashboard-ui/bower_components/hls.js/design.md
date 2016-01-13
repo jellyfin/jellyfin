@@ -39,10 +39,17 @@ design idea is pretty simple :
   - [src/controller/abr-controller.js][]
     - in charge of determining auto quality level.
     - auto quality switch algorithm is pretty naive and simple ATM and similar to the one that could be found in google [StageFright](https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp)
-
+  - [src/crypt/aes.js][]
+    - AES 128 software decryption routine, low level class handling decryption of 128 bit of data.
+  - [src/crypt/aes128-decrypter.js][]  
+    - AES 128-CBC software decryption routine, high-level class handling cipher-block chaining (CBC), and that should also handle padding (TODO).
+  - [src/crypt/decrypter.js][]
+    - decrypter interface, use either WebCrypto API if available and enabled, or fallback on AES 128 software decryption routine.
   - [src/demux/aacdemuxer.js][]
     - AAC ES demuxer
       - extract ADTS samples from AAC ES
+  - [src/demux/adts.js][]
+    - ADTS header parser helper, extract audio config from ADTS header. used by AAC ES and TS demuxer.
   - [src/demux/demuxer.js][]
     - demuxer abstraction interface, that will either use a [Worker](https://en.wikipedia.org/wiki/Web_worker) to demux or demux inline depending on config/browser capabilities.
     - also handle fragment decryption using WebCrypto API (fragment decryption is performed in main thread)
@@ -90,6 +97,8 @@ design idea is pretty simple :
    - in charge of converting AVC/AAC samples provided by demuxer into fragmented ISO BMFF boxes, compatible with MediaSource
    - this remuxer is able to deal with small gaps between fragments and ensure timestamp continuity.
    - it notifies remuxing completion using events (```FRAG_PARSING_INIT_SEGMENT```and ```FRAG_PARSING_DATA```)
+  - [src/utils/attr-list.js][]
+    - Attribute List parsing helper class, used by playlist-loader
   - [src/utils/binary-search.js][]
     - binary search helper class
   - [src/utils/hex.js][]
@@ -111,7 +120,11 @@ design idea is pretty simple :
 [src/controller/fps-controller.js]: src/controller/fps-controller.js
 [src/controller/level-controller.js]: src/controller/level-controller.js
 [src/controller/mse-media-controller.js]: src/controller/mse-media-controller.js
+[src/crypt/aes.js]: src/crypt/aes.js
+[src/crypt/aes128-decrypter.js]: src/crypt/aes128-decrypter.js
+[src/crypt/decrypter.js]: src/crypt/decrypter.js
 [src/demux/aacdemuxer.js]: src/demux/aacdemuxer.js
+[src/demux/adts.js]: src/demux/adts.js
 [src/demux/demuxer.js]: src/demux/demuxer.js
 [src/demux/demuxer-inline.js]: src/demux/demuxer-inline.js
 [src/demux/demuxer-worker.js]: src/demux/demuxer-worker.js
@@ -125,6 +138,7 @@ design idea is pretty simple :
 [src/remux/dummy-remuxer.js]: src/remux/dummy-remuxer.js
 [src/remux/mp4-generator.js]: src/remux/mp4-generator.js
 [src/remux/mp4-remuxer.js]: src/remux/mp4-remuxer.js
+[src/utils/attr-list.js]: src/utils/attr-list.js
 [src/utils/binary-search.js]: src/utils/binary-search.js
 [src/utils/hex.js]: src/utils/hex.js
 [src/utils/logger.js]: src/utils/logger.js
@@ -151,5 +165,5 @@ design idea is pretty simple :
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
   - ```FRAG_PARSING_ERROR``` is raised by [src/demux/tsdemuxer.js][] upon TS parsing error. this error is not fatal.
   - ```FRAG_DECRYPT_ERROR``` is raised by [src/demux/demuxer.js][] upon fragment decrypting error. this error is fatal.
-  - ```BUFFER_PREPARE_APPEND_ERROR``` is raised by [src/controller/mse-media-controller.js][] when an exception is raised when calling sourceBuffer.appendBuffer(). this error is non fatal and become fatal after config.appendErrorMaxRetry retries. when fatal, a call to ```hls.recoverMediaError()``` could help recover it.
+  - ```BUFFER_APPEND_ERROR``` is raised by [src/controller/mse-media-controller.js][] when an exception is raised when calling sourceBuffer.appendBuffer(). this error is non fatal and become fatal after config.appendErrorMaxRetry retries. when fatal, a call to ```hls.recoverMediaError()``` could help recover it.
   - ```BUFFER_APPENDING_ERROR``` is raised by [src/controller/mse-media-controller.js][] after SourceBuffer appending error. this error is fatal and a call to ```hls.recoverMediaError()``` could help recover it.

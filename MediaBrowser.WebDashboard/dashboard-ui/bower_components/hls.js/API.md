@@ -184,17 +184,21 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       debug : false,
       autoStartLoad : true,
       maxBufferLength : 30,
+      maxMaxBufferLength : 600,
       maxBufferSize : 60*1000*1000,
       liveSyncDurationCount : 3,
       liveMaxLatencyDurationCount: 10,
       enableWorker : true,
       enableSoftwareAES: true,
-      fragLoadingTimeOut : 20000,
-      fragLoadingMaxRetry : 6,
-      fragLoadingRetryDelay : 500,
       manifestLoadingTimeOut : 10000,
       manifestLoadingMaxRetry : 6,
       manifestLoadingRetryDelay : 500,
+      levelLoadingTimeOut : 10000,
+      levelLoadingMaxRetry : 6,
+      levelLoadingRetryDelay : 500,
+      fragLoadingTimeOut : 20000,
+      fragLoadingMaxRetry : 6,
+      fragLoadingRetryDelay : 500,
       fpsDroppedMonitoringPeriod : 5000,
       fpsDroppedMonitoringThreshold : 0.2,
       appendErrorMaxRetry : 3,
@@ -208,6 +212,10 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
 
 var hls = new Hls(config);
 ```
+
+#### ```Hls.DefaultConfig get/set```
+this getter/setter allows to retrieve and override Hls default configuration.
+this configuration will be applied by default to all instances.
 
 #### ```debug```
 (default false)
@@ -225,10 +233,24 @@ a logger object could also be provided for custom logging : ```config.debug=cust
 (default 30s)
 
 maximum buffer Length in seconds. if buffer length is/become less than this value, a new fragment will be loaded.
+this is the guaranteed buffer length hls.js will try to reach, regardless of maxBufferSize.
+
 #### ```maxBufferSize```
 (default 60 MB)
 
-maximum buffer size in bytes. if buffer size upfront is bigger than this value, no fragment will be loaded.
+'minimum' maximum buffer size in bytes. if buffer size upfront is bigger than this value, no fragment will be loaded.
+
+#### ```maxMaxBufferLength```
+(default 600s)
+
+maximum buffer Length in seconds. hls.js will never exceed this value. even if maxBufferSize is not reached yet.
+
+hls.js tries to buffer up to a maximum number of bytes (60 MB by default) rather than to buffer up to a maximum nb of seconds.
+this is to mimic the browser behaviour (the buffer eviction algorithm is starting after the browser detects that video buffer size reaches a limit in bytes)
+
+config.maxBufferLength is the minimum guaranteed buffer length that hls.js will try to achieve, even if that value exceeds the amount of bytes 60 MB of memory.
+maxMaxBufferLength acts as a capping value, as if bitrate is really low, you could need more than one hour of buffer to fill 60 MB....
+
 
 #### ```liveSyncDurationCount```
 (default 3)
@@ -255,19 +277,19 @@ enable webworker (if available on browser) for TS demuxing/MP4 remuxing, to impr
 
 enable to use JavaScript version AES decryption for fallback of WebCrypto API.
 
-#### ```fragLoadingTimeOut```/```manifestLoadingTimeOut```
-(default 60000ms for fragment/10000ms for manifest)
+#### ```fragLoadingTimeOut```/```manifestLoadingTimeOut```/```levelLoadingTimeOut```
+(default 60000ms for fragment/10000ms for level and manifest)
 
 URL Loader timeout.
 A timeout callback will be triggered if loading duration exceeds this timeout.
 no further action will be done : the load operation will not be cancelled/aborted.
 It is up to the application to catch this event and treat it as needed.
-#### ```fragLoadingMaxRetry```/```manifestLoadingMaxRetry```
+#### ```fragLoadingMaxRetry```/```manifestLoadingMaxRetry```/```levelLoadingMaxRetry```
 (default 3)
 
 max nb of load retry
-#### ```fragLoadingRetryDelay```/```manifestLoadingRetryDelay```
-(default 500ms)
+#### ```fragLoadingRetryDelay```/```manifestLoadingRetryDelay```/```levelLoadingRetryDelay```
+(default 1000ms)
 
 initial delay between XmlHttpRequest error and first load retry (in ms)
 any I/O error will trigger retries every 500ms,1s,2s,4s,8s, ... capped to 64s (exponential backoff)
@@ -485,7 +507,7 @@ full list of Events available below :
   - `Hls.Events.FRAG_LOADING`  - fired when a fragment loading starts
     -  data: { frag : fragment object}
   - `Hls.Events.FRAG_LOAD_PROGRESS`  - fired when a fragment load is in progress
-    - data: { frag : fragment object, stats : progress event }
+    - data: { frag : fragment object with frag.loaded=stats.loaded, stats : { trequest, tfirst, loaded} }
   - `Hls.Events.FRAG_LOADED`  - fired when a fragment loading is completed
     -  data: { frag : fragment object, payload : fragment payload, stats : { trequest, tfirst, tload, length}}
   - `Hls.Events.FRAG_PARSING_INIT_SEGMENT` - fired when Init Segment has been extracted from fragment
