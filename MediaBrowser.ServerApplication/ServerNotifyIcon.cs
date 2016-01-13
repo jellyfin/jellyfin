@@ -133,7 +133,20 @@ namespace MediaBrowser.ServerApplication
             LocalizeText();
 
             notifyIcon1.DoubleClick += notifyIcon1_DoubleClick;
+            Application.ThreadExit += Application_ThreadExit;
             Application.ApplicationExit += Application_ApplicationExit;
+        }
+
+        void Application_ThreadExit(object sender, EventArgs e)
+        {
+            try
+            {
+                notifyIcon1.Visible = false;
+            }
+            catch
+            {
+
+            }
         }
 
         void Application_ApplicationExit(object sender, EventArgs e)
