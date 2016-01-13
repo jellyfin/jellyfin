@@ -591,7 +591,7 @@ namespace MediaBrowser.ServerApplication
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Error installing ImageMagick", ex);
+                logger.ErrorException("Error installing Visual Studio C++ runtime", ex);
             }
         }
 
@@ -618,6 +618,8 @@ namespace MediaBrowser.ServerApplication
                 Verb = "runas",
                 ErrorDialog = false
             };
+
+            _logger.Info("Running {0}", startInfo.FileName);
 
             using (var process = Process.Start(startInfo))
             {
