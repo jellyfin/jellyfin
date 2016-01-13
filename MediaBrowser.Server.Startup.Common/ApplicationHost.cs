@@ -1301,7 +1301,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{CheckForUpdateResult}.</returns>
         public override async Task<CheckForUpdateResult> CheckForApplicationUpdate(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var cacheLength = TimeSpan.FromHours(12);
+            var cacheLength = TimeSpan.FromHours(3);
             var updateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel;
 
             if (updateLevel == PackageVersionClass.Beta)
