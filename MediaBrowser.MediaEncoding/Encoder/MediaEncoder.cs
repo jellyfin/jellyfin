@@ -307,7 +307,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
+            var args = "{0} -i {1} -map 0:v:{2} -an -filter:v idet -frames:v 500 -an -f null /dev/null";
 
             var process = new Process
             {
@@ -447,7 +447,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            if (((tff + bff) / total) >= .65)
+            if (((tff + bff) / total) >= .4)
             {
                 return true;
             }
@@ -472,29 +472,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
+        public Task<Stream> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(new[] { path }, MediaProtocol.File, true, null, null, cancellationToken);
+            return ExtractImage(new[] { path }, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
         public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat,
             TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, protocol, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFiles, null, protocol, false, threedFormat, offset, cancellationToken);
         }
 
-        private async Task<Stream> ExtractImage(string[] inputFiles, MediaProtocol protocol, bool isAudio,
+        private async Task<Stream> ExtractImage(string[] inputFiles, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
 
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
-            if (!isAudio)
+            if (isAudio)
+            {
+                if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
+                {
+                    // It seems for audio files we need to subtract 1 (for the audio stream??)
+                    imageStreamIndex = imageStreamIndex.Value - 1;
+                }
+            }
+            else
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, imageStreamIndex, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -506,10 +514,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, imageStreamIndex, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<Stream> ExtractImageInternal(string inputPath, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task<Stream> ExtractImageInternal(string inputPath, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -543,9 +551,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
+            var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
+
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
-                string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg) :
+                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
