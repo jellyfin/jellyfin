@@ -307,7 +307,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var args = "{0} -i {1} -map 0:v:{2} -filter:v idet -frames:v 500 -an -f null /dev/null";
+            var args = "{0} -i {1} -map 0:v:{2} -an -filter:v idet -frames:v 500 -an -f null /dev/null";
 
             var process = new Process
             {
@@ -447,7 +447,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            if (((tff + bff) / total) >= .65)
+            if (((tff + bff) / total) >= .4)
             {
                 return true;
             }
@@ -490,7 +490,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
-            if (!isAudio)
+            if (isAudio)
+            {
+                if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
+                {
+                    // It seems for audio files we need to subtract 1 (for the audio stream??)
+                    imageStreamIndex = imageStreamIndex.Value - 1;
+                }
+            }
+            else
             {
                 try
                 {
@@ -543,9 +551,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
+            var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
+
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf) :
-                string.Format("-i {0} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf);
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg) :
+                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
