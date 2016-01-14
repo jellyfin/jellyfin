@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -30,15 +31,6 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IServerConfigurationManager _config;
         private readonly IEncryptionManager _encryption;
 
-        private Timer _dailyTimer;
-
-        // This is limited to 200 per day
-        private int _dailyDownloadCount;
-
-        // It's 200 but this will be in-exact so buffer a little
-        // And the user may restart the server
-        private const int MaxDownloadsPerDay = 150;
-
         private readonly IJsonSerializer _json;
 
         public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json)
@@ -50,9 +42,6 @@ namespace MediaBrowser.Providers.Subtitles
             _json = json;
 
             _config.NamedConfigurationUpdating += _config_NamedConfigurationUpdating;
-
-            // Reset the count every 24 hours
-            _dailyTimer = new Timer(state => _dailyDownloadCount = 0, null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
 
             Utilities.HttpClient = httpClient;
             OpenSubtitles.SetUserAgent("mediabrowser.tv");
@@ -123,6 +112,7 @@ namespace MediaBrowser.Providers.Subtitles
             return GetSubtitlesInternal(id, GetOptions(), cancellationToken);
         }
 
+        private DateTime _lastRateLimitException;
         private async Task<SubtitleResponse> GetSubtitlesInternal(string id,
             SubtitleOptions options,
             CancellationToken cancellationToken)
@@ -130,12 +120,6 @@ namespace MediaBrowser.Providers.Subtitles
             if (string.IsNullOrWhiteSpace(id))
             {
                 throw new ArgumentNullException("id");
-            }
-
-            if (_dailyDownloadCount >= MaxDownloadsPerDay &&
-                !options.IsOpenSubtitleVipAccount)
-            {
-                throw new InvalidOperationException("Open Subtitle's daily download limit has been exceeded. Please try again tomorrow.");
             }
 
             var idParts = id.Split(new[] { '-' }, 3);
@@ -148,7 +132,18 @@ namespace MediaBrowser.Providers.Subtitles
 
             await Login(cancellationToken).ConfigureAwait(false);
 
+            if ((DateTime.UtcNow - _lastRateLimitException).TotalHours < 1)
+            {
+                throw new ApplicationException("OpenSubtitles rate limit reached");
+            }
+
             var resultDownLoad = await OpenSubtitles.DownloadSubtitlesAsync(downloadsList, cancellationToken).ConfigureAwait(false);
+
+            if ((resultDownLoad.Status ?? string.Empty).IndexOf("407", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                _lastRateLimitException = DateTime.UtcNow;
+                throw new ApplicationException("OpenSubtitles rate limit reached");
+            }
 
             if (!(resultDownLoad is MethodResponseSubtitleDownload))
             {
@@ -157,13 +152,15 @@ namespace MediaBrowser.Providers.Subtitles
 
             var results = ((MethodResponseSubtitleDownload)resultDownLoad).Results;
 
+            _lastRateLimitException = DateTime.MinValue;
+
             if (results.Count == 0)
             {
                 var msg = string.Format("Subtitle with Id {0} was not found. Name: {1}. Status: {2}. Message: {3}",
                     ossId,
                     resultDownLoad.Name ?? string.Empty,
-                    resultDownLoad.Message ?? string.Empty,
-                    resultDownLoad.Status ?? string.Empty);
+                    resultDownLoad.Status ?? string.Empty,
+                    resultDownLoad.Message ?? string.Empty);
 
                 throw new ResourceNotFoundException(msg);
             }
@@ -339,12 +336,6 @@ namespace MediaBrowser.Providers.Subtitles
         public void Dispose()
         {
             _config.NamedConfigurationUpdating -= _config_NamedConfigurationUpdating;
-
-            if (_dailyTimer != null)
-            {
-                _dailyTimer.Dispose();
-                _dailyTimer = null;
-            }
         }
     }
 }
