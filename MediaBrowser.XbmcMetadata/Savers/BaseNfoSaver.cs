@@ -305,8 +305,19 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Codec))
                 {
-                    writer.WriteElementString("codec", stream.Codec);
-                    writer.WriteElementString("micodec", stream.Codec);
+                    var codec = stream.Codec;
+
+                    if ((stream.CodecTag ?? string.Empty).IndexOf("xvid", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        codec = "xvid;";
+                    }
+                    else if ((stream.CodecTag ?? string.Empty).IndexOf("divx", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        codec = "divx;";
+                    }
+
+                    writer.WriteElementString("codec", codec);
+                    writer.WriteElementString("micodec", codec);
                 }
 
                 if (stream.BitRate.HasValue)
