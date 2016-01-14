@@ -141,6 +141,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (streamInfo.tags != null)
             {
                 stream.Language = GetDictionaryValue(streamInfo.tags, "language");
+                stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
             }
 
             if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
@@ -872,7 +873,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void ExtractTimestamp(Model.MediaInfo.MediaInfo video)
+        private void ExtractTimestamp(MediaInfo video)
         {
             if (video.VideoType == VideoType.VideoFile)
             {
