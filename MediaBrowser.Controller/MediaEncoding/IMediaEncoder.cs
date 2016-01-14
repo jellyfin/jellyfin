@@ -35,9 +35,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Extracts the audio image.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="imageStreamIndex">Index of the image stream.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken);
+        Task<Stream> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video image.
