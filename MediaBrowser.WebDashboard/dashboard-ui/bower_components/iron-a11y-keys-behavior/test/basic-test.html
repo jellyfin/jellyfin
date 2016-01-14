@@ -97,7 +97,8 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       ],
 
       keyBindings: {
-        'space': '_keyHandler'
+        'space': '_keyHandler',
+        '@': '_keyHandler'
       }
     });
 
@@ -175,6 +176,13 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       var event = new CustomEvent('keydown');
       event.ctrlKey = true;
       event.keyCode = event.code = 32;
+      keys.dispatchEvent(event);
+      expect(keys.keyCount).to.be.equal(1);
+    });
+
+    test('handles special character @', function() {
+      var event = new CustomEvent('keydown');
+      event.key = '@';
       keys.dispatchEvent(event);
       expect(keys.keyCount).to.be.equal(1);
     });
@@ -284,6 +292,19 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       expect(keys.keyCount).to.be.equal(1);
     });
 
+    test('check if KeyBoardEvent.key is alpha-numberic', function() {
+      var event = new CustomEvent('keydown');
+
+      event.ctrlKey = true;
+      event.shiftKey = true;
+      event.key = 'å';
+      event.keyCode = event.code = 65;
+
+      keys.dispatchEvent(event);
+
+      expect(keys.keyCount).to.be.equal(1);
+    });
+
     test('trigger also bindings without modifiers', function() {
       var event = new CustomEvent('keydown');
       // Combo `shift+enter`.
@@ -305,6 +326,7 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       expect(shiftEnterSpy.called).to.be.true;
       expect(enterSpy.calledAfter(shiftEnterSpy)).to.be.true;
     });
+
   });
 
   suite('alternative event keys', function() {

@@ -29,8 +29,7 @@ private demo accessible from Dailymotion network: [http://gdupontavice.dev.daily
 hls.js is (being) integrated in the following players:
 
  - [Clappr] (https://github.com/clappr/clappr), integrated since [0.2.14](https://github.com/clappr/clappr/releases)
- - [Flowplayer] (https://www.flowplayer.org)  through [flowplayer-hlsjs
-] (https://github.com/flowplayer/flowplayer-hlsjs)
+ - [Flowplayer] (https://www.flowplayer.org)  through [flowplayer-hlsjs] (https://github.com/flowplayer/flowplayer-hlsjs)
  - [Videojs] (http://videojs.com) through [Videojs-hlsjs] (https://github.com/benjipott/videojs-hlsjs)
 
  it might also be integrated in the following players if you push for it !
@@ -123,6 +122,7 @@ as of today, it is supported on:
   - `#EXT-X-DISCONTINUITY`
   - `#EXT-X-BYTERANGE`
   - `#EXT-X-KEY` (https://tools.ietf.org/html/draft-pantos-http-live-streaming-08#section-3.4.4)
+  - `#EXT-X-PROGRAM-DATE-TIME` (https://tools.ietf.org/html/draft-pantos-http-live-streaming-18#section-4.3.2.6)
 
 ## Getting Started
 

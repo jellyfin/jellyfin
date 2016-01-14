@@ -9,33 +9,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../../polymer/polymer.html">
 <link rel="import" href="../../../iron-icons/iron-icons.html">
 <link rel="import" href="../../../iron-icon/iron-icon.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../../paper-item/paper-item.html">
 <link rel="import" href="../../../paper-item/paper-item-body.html">
-<link rel="import" href="../../../paper-styles/paper-styles.html">
+<link rel="import" href="../../../paper-styles/color.html">
 <link rel="import" href="../../neon-animatable-behavior.html">
 
 <dom-module id="list-view">
-
-  <style>
-
-    :host {
-      @apply(--layout-vertical);
-    }
-
-    .main {
-      @apply(--layout-flex);
-      @apply(--layout-scroll);
-    }
-
-    iron-icon {
-      color: var(--google-grey-500);
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        @apply(--layout-vertical);
+      }
 
+      .main {
+        @apply(--layout-flex);
+        @apply(--layout-scroll);
+      }
+
+      iron-icon {
+        color: var(--google-grey-500);
+      }
+    </style>
     <paper-toolbar class="medium-tall">
       <paper-icon-button id="button" icon="arrow-back"></paper-icon-button>
     </paper-toolbar>

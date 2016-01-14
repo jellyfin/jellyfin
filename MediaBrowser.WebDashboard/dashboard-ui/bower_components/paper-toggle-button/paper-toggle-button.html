@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
@@ -55,6 +56,8 @@ Custom property | Description | Default
     <style>
       :host {
         display: inline-block;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
 
       :host([disabled]) {
@@ -142,11 +145,13 @@ Custom property | Description | Default
         position: relative;
         width: 36px;
         height: 14px;
+        /* The toggle button has an absolute position of -3px; The extra 1px
+        /* accounts for the toggle button shadow box. */
+        margin: 4px 1px;
       }
 
       .toggle-label {
         position: relative;
-        top: -2px;
         display: inline-block;
         vertical-align: middle;
         padding-left: var(--paper-toggle-button-label-spacing, 8px);

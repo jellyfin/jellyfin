@@ -1,6 +1,6 @@
 {
   "name": "paper-slider",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A material design-style slider",
   "license": "http://polymer.github.io/LICENSE.txt",
   "authors": "The Polymer Authors",
@@ -17,12 +17,11 @@
   },
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
+    "polymer": "Polymer/polymer#^1.1.0",
     "paper-input": "PolymerElements/paper-input#^1.0.0",
     "paper-progress": "PolymerElements/paper-progress#^1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
     "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
     "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
     "iron-a11y-keys-behavior": "PolymerElements/iron-a11y-keys-behavior#^1.0.0",

@@ -16,23 +16,42 @@
         }
     }
 
-    function unveilElements(elems) {
+    function cancelAll(tokens) {
+        for (var i = 0, length = tokens.length; i < length; i++) {
 
-        if (!elems.length) {
+            tokens[i] = true;
+        }
+    }
+
+    function unveilElements(images) {
+
+        if (!images.length) {
             return;
         }
 
-        var images = elems;
-
-        function unveil() {
+        var cancellationTokens = [];
+        function unveilInternal(tokenIndex) {
 
             var remaining = [];
+            var anyFound = false;
+            var out = false;
+
+            // TODO: This out construct assumes left to right, top to bottom
 
             for (var i = 0, length = images.length; i < length; i++) {
+
+                if (cancellationTokens[tokenIndex]) {
+                    return;
+                }
                 var img = images[i];
-                if (isVisible(img)) {
+                if (!out && isVisible(img)) {
+                    anyFound = true;
                     fillImage(img);
                 } else {
+
+                    if (anyFound) {
+                        out = true;
+                    }
                     remaining.push(img);
                 }
             }
@@ -40,13 +59,27 @@
             images = remaining;
 
             if (!images.length) {
+                document.removeEventListener('focus', unveil, true);
                 document.removeEventListener('scroll', unveil, true);
                 document.removeEventListener(wheelEvent, unveil, true);
                 window.removeEventListener('resize', unveil, true);
             }
         }
 
+        function unveil() {
+
+            cancelAll(cancellationTokens);
+
+            var index = cancellationTokens.length;
+            cancellationTokens.length++;
+
+            setTimeout(function () {
+                unveilInternal(index);
+            }, 1);
+        }
+
         document.addEventListener('scroll', unveil, true);
+        document.addEventListener('focus', unveil, true);
         document.addEventListener(wheelEvent, unveil, true);
         window.addEventListener('resize', unveil, true);
 
@@ -102,14 +135,9 @@
         return elem.animate(keyframes, timing);
     }
 
-    function simpleImageStore() {
-
-        var self = this;
-
-        self.setImageInto = setImageIntoElement;
-    }
-
-    window.ImageStore = new simpleImageStore();
+    window.ImageStore = {
+        setImageInto: setImageIntoElement
+    };
 
     window.ImageLoader = {
         fillImages: fillImages,

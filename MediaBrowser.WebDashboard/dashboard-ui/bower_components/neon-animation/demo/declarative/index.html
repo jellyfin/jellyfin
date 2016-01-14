@@ -17,24 +17,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
 
-    <link rel="import" href="../../../paper-styles/paper-styles.html">
+    <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+    <link rel="import" href="../../../paper-styles/typography.html">
+    <link rel="import" href="../../../paper-styles/color.html">
     <link rel="import" href="../../neon-animated-pages.html">
     <link rel="import" href="../../neon-animatable.html">
     <link rel="import" href="../../neon-animations.html">
 
-    <style>
-
+    <style is="custom-style">
       body {
         overflow: hidden;
+        @apply(--layout-fullbleed);
+        @apply(--layout-vertical);
       }
 
       .toolbar {
         padding: 8px;
       }
 
-    </style>
-
-    <style is="custom-style">
+      neon-animated-pages {
+        @apply(--layout-flex);
+      }
 
       neon-animatable {
         color: white;
@@ -66,7 +69,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
   </head>
-  <body class="fullbleed layout vertical">
+  <body>
 
     <template is="dom-bind">
 
@@ -75,7 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <button on-click="_onNextClick">&gt;&gt;</button>
       </div>
 
-      <neon-animated-pages id="pages" class="flex" selected="[[selected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+      <neon-animated-pages id="pages" selected="[[selected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
         <neon-animatable>1</neon-animatable>
         <neon-animatable>2</neon-animatable>
         <neon-animatable>3</neon-animatable>
