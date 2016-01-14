@@ -77,15 +77,20 @@
                     profile.DirectPlayProfiles = [];
 
                     var videoAudioCodecs = [];
-                    // Putting mp3 first is really just a hack to ensure we transcode to 2 channels
-                    if (canPlayMp3) {
-                        videoAudioCodecs.push('mp3');
+                    // Only put mp3 first if mkv support is there
+                    // Otherwise with HLS and mp3 audio we're seeing firefox and chrome not play it with HLS
+                    if (canPlayMkv) {
+                        if (canPlayMp3) {
+                            videoAudioCodecs.push('mp3');
+                        }
                     }
                     if (canPlayAac) {
                         videoAudioCodecs.push('aac');
                     }
-                    if (canPlayAc3) {
-                        videoAudioCodecs.push('ac3');
+                    if (!canPlayMkv) {
+                        if (canPlayMp3) {
+                            videoAudioCodecs.push('mp3');
+                        }
                     }
 
                     if (supportedFormats.indexOf('h264') != -1) {
@@ -1826,7 +1831,8 @@
                 list.push('h264');
             }
 
-            if (document.createElement('audio').canPlayType('audio/aac').replace(/no/, '')) {
+            // Firefox always reports that it doesn't support aac, so assume that it does
+            if (document.createElement('audio').canPlayType('audio/aac').replace(/no/, '') || browserInfo.firefox) {
                 list.push('aac');
             }
             if (document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '')) {

@@ -967,9 +967,12 @@
 
                 self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
+                    var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') != -1;
+
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
-                    if (browserInfo.safari && !mediaSource.RunTimeTicks) {
+                    // Edit: Also seeing stalls from hls.js
+                    if ((browserInfo.safari || browserInfo.msie || browserInfo.firefox) && !mediaSource.RunTimeTicks && isHls) {
 
                         Dashboard.showLoadingMsg();
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
