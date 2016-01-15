@@ -57,7 +57,12 @@ namespace MediaBrowser.Providers.Omdb
             return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
+        {
+            return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
+        }
+
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool enableMultipleResults, CancellationToken cancellationToken)
         {
             bool isSearch = false;
             var episodeSearchInfo = searchInfo as EpisodeInfo;
@@ -92,7 +97,14 @@ namespace MediaBrowser.Providers.Omdb
                 }
 
                 // &s means search and returns a list of results as opposed to t
-                url += "&s=" + WebUtility.UrlEncode(name);
+                if (enableMultipleResults)
+                {
+                    url += "&s=" + WebUtility.UrlEncode(name);
+                }
+                else
+                {
+                    url += "&t=" + WebUtility.UrlEncode(name);
+                }
                 url += "&type=" + type;
                 isSearch = true;
             }
@@ -274,14 +286,14 @@ namespace MediaBrowser.Providers.Omdb
 
         private async Task<string> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
         {
-            var results = await GetSearchResults(info, "movie", cancellationToken).ConfigureAwait(false);
+            var results = await GetSearchResultsInternal(info, "movie", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
             return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
 
         private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
-            var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
+            var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
             return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
