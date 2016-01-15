@@ -35,7 +35,6 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableDlnaProtocol>true</EnableDlnaProtocol>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:pv" value="http://www.pv.com/pvns/" />
   </XmlRootAttributes>
