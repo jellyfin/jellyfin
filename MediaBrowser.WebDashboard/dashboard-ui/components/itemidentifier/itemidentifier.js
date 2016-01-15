@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input'], function (paperDialogHelper) {
+﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
