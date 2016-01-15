@@ -795,22 +795,6 @@ namespace MediaBrowser.Providers.Manager
                             }
                         }
 
-                        // This is a workaround duplicate check for movies, where intersecting provider ids are not always available
-                        if (typeof(TItemType) == typeof(Movie) || typeof(TItemType) == typeof(Series))
-                        {
-                            var titleYearString = string.Format("{0} ({1})", result.Name, result.ProductionYear);
-
-                            if (foundTitleYearStrings.Contains(titleYearString))
-                            {
-                                bFound = true;
-                            }
-                            else
-                            {
-                                foundTitleYearStrings.Add(titleYearString);
-                            }
-
-                        }
-
                         if (!bFound && resultList.Count < maxResults)
                         {
                             resultList.Add(result);
