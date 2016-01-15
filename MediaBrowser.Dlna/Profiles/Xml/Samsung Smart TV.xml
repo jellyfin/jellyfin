@@ -34,7 +34,6 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableDlnaProtocol>true</EnableDlnaProtocol>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns:sec" value="http://www.sec.co.kr/" />
   </XmlRootAttributes>

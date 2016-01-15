@@ -54,14 +54,11 @@ namespace MediaBrowser.Dlna.Server
 
             var attributes = _profile.XmlRootAttributes.ToList();
 
-            if (_profile.EnableDlnaProtocol)
+            attributes.Insert(0, new XmlAttribute
             {
-                attributes.Insert(0, new XmlAttribute
-                {
-                    Name = "xmlns:dlna",
-                    Value = "urn:schemas-dlna-org:device-1-0"
-                });
-            }
+                Name = "xmlns:dlna",
+                Value = "urn:schemas-dlna-org:device-1-0"
+            });
             attributes.Insert(0, new XmlAttribute
             {
                 Name = "xmlns",
@@ -101,20 +98,10 @@ namespace MediaBrowser.Dlna.Server
         {
             builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
 
-            if (_profile.EnableDlnaProtocol)
-            {
-                builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
+            builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
 
-                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
-                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
-            }
-            else
-            {
-                builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
-
-                builder.Append("<dlna:X_DLNADOC>" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
-                builder.Append("<dlna:X_DLNADOC>M-DMS-1.50</dlna:X_DLNADOC>");
-            }
+            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
+            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
 
             builder.Append("<friendlyName>" + SecurityElement.Escape(GetFriendlyName()) + "</friendlyName>");
             builder.Append("<manufacturer>" + SecurityElement.Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");

@@ -32,7 +32,6 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableDlnaProtocol>true</EnableDlnaProtocol>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3,flac,m4a,wma" type="Audio" />

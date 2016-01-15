@@ -30,7 +30,6 @@ namespace MediaBrowser.Dlna.Profiles
             RequiresPlainFolders = true;
             RequiresPlainVideoItems = true;
             EnableMSMediaReceiverRegistrar = true;
-            EnableDlnaProtocol = false;
 
             Identification = new DeviceIdentification
             {
