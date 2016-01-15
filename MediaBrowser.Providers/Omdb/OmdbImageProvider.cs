@@ -51,25 +51,15 @@ namespace MediaBrowser.Providers.Omdb
             return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
         }
 
-        public async Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var response = await _httpClient.GetResponse(new HttpRequestOptions
+            return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
                 Url = url,
                 ResourcePool = OmdbProvider.ResourcePool
 
-            }).ConfigureAwait(false);
-
-            if (response.ContentLength == 11059)
-            {
-                throw new HttpException("File not found")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
-            }
-
-            return response;
+            });
         }
 
         public string Name
