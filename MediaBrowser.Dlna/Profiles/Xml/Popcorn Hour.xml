@@ -28,7 +28,6 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableDlnaProtocol>true</EnableDlnaProtocol>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4,mov" audioCodec="aac" videoCodec="h264,mpeg4" type="Video" />
