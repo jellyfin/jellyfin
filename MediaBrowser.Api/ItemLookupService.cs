@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api
 {
@@ -112,13 +113,15 @@ namespace MediaBrowser.Api
         private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly IJsonSerializer _json;
 
-        public ItemLookupService(IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public ItemLookupService(IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager, IJsonSerializer json)
         {
             _providerManager = providerManager;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
+            _json = json;
         }
 
         public object Get(GetExternalIdInfos request)
@@ -199,6 +202,7 @@ namespace MediaBrowser.Api
             //        item.SetProviderId(key.Key, value);
             //    }
             //}
+            Logger.Info("Setting provider id's to item {0}-{1}: {2}", item.Id, item.Name, _json.SerializeToString(request.ProviderIds));
             item.ProviderIds = request.ProviderIds;
 
 			var task = _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(_fileSystem)
