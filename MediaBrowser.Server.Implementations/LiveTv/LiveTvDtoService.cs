@@ -231,10 +231,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.ImageTags[ImageType.Primary] = imageTag;
 
-                _dtoService.AttachPrimaryImageAspectRatio(dto, info, new List<ItemFields>
-                    {
-                        ItemFields.PrimaryImageAspectRatio
-                    });
+                _dtoService.AttachPrimaryImageAspectRatio(dto, info);
             }
 
             if (currentProgram != null)
