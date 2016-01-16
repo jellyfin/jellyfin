@@ -70,7 +70,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-
   <test-fixture id="required-char-counter">
     <template>
       <paper-input auto-validate char-counter required error-message="error"></paper-input>
@@ -92,6 +91,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="placeholder">
     <template>
       <paper-input label="foo" placeholder="bar"></paper-input>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="date">
+    <template>
+      <paper-input label="foo" type="date"></paper-input>
     </template>
   </test-fixture>
 
@@ -119,6 +124,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(input.noLabelFloat, false);
         var floatingLabel = Polymer.dom(Polymer.dom(input.root).querySelector('paper-input-container').root).querySelector('.label-is-floating');
         assert.ok(floatingLabel);
+      });
+
+      test('special types autofloat the label', function() {
+        var input = fixture('date');
+        // Browsers that don't support special <input> types like `date` fallback
+        // to `text`, so make sure to only test if type is still preserved after
+        // the element is attached.
+        if (input.inputElement.type === "date") {
+          assert.equal(input.alwaysFloatLabel, true);
+          var floatingLabel = Polymer.dom(Polymer.dom(input.root).querySelector('paper-input-container').root).querySelector('.label-is-floating');
+          assert.ok(floatingLabel);
+        }
       });
 
       test('always-float-label attribute works without placeholder', function() {

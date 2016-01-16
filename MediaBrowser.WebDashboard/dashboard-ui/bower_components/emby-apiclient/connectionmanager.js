@@ -748,44 +748,38 @@
 
             console.log('Begin getConnectServers');
 
-            return new Promise(function (resolve, reject) {
+            if (!credentials.ConnectAccessToken || !credentials.ConnectUserId) {
+                return Promise.resolve([]);
+            }
 
-                if (!credentials.ConnectAccessToken || !credentials.ConnectUserId) {
-                    resolve([]);
-                    return;
+            var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
+
+            return ajax({
+                type: "GET",
+                url: url,
+                dataType: "json",
+                headers: {
+                    "X-Application": appName + "/" + appVersion,
+                    "X-Connect-UserToken": credentials.ConnectAccessToken
                 }
 
-                var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
+            }).then(function (servers) {
 
-                ajax({
-                    type: "GET",
-                    url: url,
-                    dataType: "json",
-                    headers: {
-                        "X-Application": appName + "/" + appVersion,
-                        "X-Connect-UserToken": credentials.ConnectAccessToken
-                    }
-
-                }).then(function (servers) {
-
-                    servers = servers.map(function (i) {
-                        return {
-                            ExchangeToken: i.AccessKey,
-                            ConnectServerId: i.Id,
-                            Id: i.SystemId,
-                            Name: i.Name,
-                            RemoteAddress: i.Url,
-                            LocalAddress: i.LocalAddress,
-                            UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
-                        };
-                    });
-
-                    resolve(servers);
-
-                }, function () {
-                    resolve([]);
-
+                return servers.map(function (i) {
+                    return {
+                        ExchangeToken: i.AccessKey,
+                        ConnectServerId: i.Id,
+                        Id: i.SystemId,
+                        Name: i.Name,
+                        RemoteAddress: i.Url,
+                        LocalAddress: i.LocalAddress,
+                        UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
+                    };
                 });
+
+            }, function () {
+                return [];
+
             });
         }
 
@@ -858,9 +852,8 @@
 
                         var info = {
                             Id: foundServer.Id,
-                            LocalAddress: foundServer.Address,
+                            LocalAddress: convertEndpointAddressToManualAddress(foundServer) || foundServer.Address,
                             Name: foundServer.Name,
-                            ManualAddress: convertEndpointAddressToManualAddress(foundServer),
                             DateLastLocalConnection: new Date().getTime()
                         };
 
@@ -1467,13 +1460,10 @@
         self.getRegistrationInfo = function (feature, apiClient) {
 
             if (isConnectUserSupporter()) {
-                return new Promise(function (resolve, reject) {
-
-                    resolve({
-                        Name: feature,
-                        IsRegistered: true,
-                        IsTrial: false
-                    });
+                return Promise.resolve({
+                    Name: feature,
+                    IsRegistered: true,
+                    IsTrial: false
                 });
             }
 

@@ -1,35 +1,20 @@
-﻿define(['visibleinviewport', 'imageloader'], function (visibleInViewport, imageLoader) {
+define(['visibleinviewport', 'imageloader'], function (visibleinviewport, imageLoader) {
 
-    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var thresholdX = screen.availWidth;
     var thresholdY = screen.availHeight;
 
+    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
+
     function isVisible(elem) {
-        return visibleInViewport(elem, true, thresholdX, thresholdY);
+        return visibleinviewport(elem, true, thresholdX, thresholdY);
     }
 
     function fillImage(elem) {
         var source = elem.getAttribute('data-src');
         if (source) {
-            imageLoader.loadImage(elem, source).then(fadeIn);
+            imageLoader.loadImage(elem, source);
             elem.setAttribute("data-src", '');
         }
-    }
-
-    function fadeIn(elem) {
-
-        if (!browserInfo.animate || browserInfo.mobile) {
-            return;
-        }
-        if (elem.classList.contains('noFade')) {
-            return;
-        }
-
-        var keyframes = [
-          { opacity: '0', offset: 0 },
-          { opacity: '1', offset: 1 }];
-        var timing = { duration: 300, iterations: 1 };
-        elem.animate(keyframes, timing);
     }
 
     function cancelAll(tokens) {
@@ -106,13 +91,17 @@
 
         for (var i = 0, length = elems.length; i < length; i++) {
             var elem = elems[0];
-            fillImage(elem);
+            var source = elem.getAttribute('data-src');
+            if (source) {
+                ImageStore.setImageInto(elem, source);
+                elem.setAttribute("data-src", '');
+            }
         }
     }
 
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'), elem);
+        unveilElements(elem.getElementsByClassName('lazy'));
     }
 
     function lazyImage(elem, url) {
@@ -121,10 +110,66 @@
         fillImages([elem]);
     }
 
-    window.ImageLoader = {
-        fillImages: fillImages,
-        lazyImage: lazyImage,
-        lazyChildren: lazyChildren
+    function getPrimaryImageAspectRatio(items) {
+
+        var values = [];
+
+        for (var i = 0, length = items.length; i < length; i++) {
+
+            var ratio = items[i].PrimaryImageAspectRatio || 0;
+
+            if (!ratio) {
+                continue;
+            }
+
+            values[values.length] = ratio;
+        }
+
+        if (!values.length) {
+            return null;
+        }
+
+        // Use the median
+        values.sort(function (a, b) { return a - b; });
+
+        var half = Math.floor(values.length / 2);
+
+        var result;
+
+        if (values.length % 2)
+            result = values[half];
+        else
+            result = (values[half - 1] + values[half]) / 2.0;
+
+        // If really close to 2:3 (poster image), just return 2:3
+        var aspect2x3 = 2 / 3;
+        if (Math.abs(aspect2x3 - result) <= .15) {
+            return aspect2x3;
+        }
+
+        // If really close to 16:9 (episode image), just return 16:9
+        var aspect16x9 = 16 / 9;
+        if (Math.abs(aspect16x9 - result) <= .2) {
+            return aspect16x9;
+        }
+
+        // If really close to 1 (square image), just return 1
+        if (Math.abs(1 - result) <= .15) {
+            return 1;
+        }
+
+        // If really close to 4:3 (poster image), just return 2:3
+        var aspect4x3 = 4 / 3;
+        if (Math.abs(aspect4x3 - result) <= .15) {
+            return aspect4x3;
+        }
+
+        return result;
+    }
+
+    return {
+        lazyChildren: lazyChildren,
+        getPrimaryImageAspectRatio: getPrimaryImageAspectRatio
     };
 
 });
