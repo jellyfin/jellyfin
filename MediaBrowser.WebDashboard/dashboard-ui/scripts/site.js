@@ -1849,6 +1849,14 @@ var AppInfo = {};
             connectservice: apiClientBowerPath + '/connectservice'
         };
 
+        if (navigator.webkitPersistentStorage) {
+            paths.imageloader = embyWebComponentsBowerPath + "/images/persistentimageloader";
+        } else if (Dashboard.isRunningInCordova()) {
+            paths.imageloader = 'cordova/imagestore';
+        } else {
+            paths.imageloader = embyWebComponentsBowerPath + "/images/basicimageloader";
+        }
+
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
         if (Dashboard.isRunningInCordova()) {
@@ -2262,13 +2270,6 @@ var AppInfo = {};
 
             var postInitDependencies = [];
 
-            if (navigator.webkitPersistentStorage) {
-                postInitDependencies.push('components/imagestore');
-            }
-            else if (Dashboard.isRunningInCordova()) {
-                postInitDependencies.push('cordova/imagestore');
-            }
-
             postInitDependencies.push('scripts/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
@@ -2396,7 +2397,7 @@ var AppInfo = {};
                     var keys = [];
                     keys.push(navigator.userAgent);
                     keys.push((navigator.cpuClass || ""));
-
+                    keys.push(new Date().getTime());
                     var randomId = CryptoJS.SHA1(keys.join('|')).toString();
                     appStorage.setItem('_deviceId', randomId);
                     onDeviceAdAcquired(randomId);
