@@ -305,7 +305,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 try
                 {
-                    AttachPrimaryImageAspectRatio(dto, item, fields);
+                    AttachPrimaryImageAspectRatio(dto, item);
                 }
                 catch (Exception ex)
                 {
@@ -1745,15 +1745,19 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <param name="fields">The fields.</param>
         /// <returns>Task.</returns>
-        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item, List<ItemFields> fields)
+        public void AttachPrimaryImageAspectRatio(IItemDto dto, IHasImages item)
+        {
+            dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);
+        }
+
+        public double? GetPrimaryImageAspectRatio(IHasImages item)
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
             if (imageInfo == null || !imageInfo.IsLocalFile)
             {
-                return;
+                return null;
             }
 
             ImageSize size;
@@ -1765,7 +1769,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             catch (Exception ex)
             {
                 //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
-                return;
+                return null;
             }
 
             var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToList();
@@ -1784,8 +1788,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (size.Width > 0 && size.Height > 0)
             {
-                dto.PrimaryImageAspectRatio = size.Width / size.Height;
+                return size.Width / size.Height;
             }
+            return null;
         }
     }
 }

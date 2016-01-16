@@ -179,6 +179,7 @@ namespace MediaBrowser.Api
             if (primaryImageTag != null)
             {
                 result.PrimaryImageTag = primaryImageTag;
+                result.PrimaryImageAspectRatio = _dtoService.GetPrimaryImageAspectRatio(item);
             }
 
             SetThumbImageInfo(result, item);

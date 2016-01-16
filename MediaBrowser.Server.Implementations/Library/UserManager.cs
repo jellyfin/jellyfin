@@ -403,10 +403,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user, new List<ItemFields>
-                    {
-                        ItemFields.PrimaryImageAspectRatio
-                    });
+                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {
