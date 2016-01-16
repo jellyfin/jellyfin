@@ -222,6 +222,11 @@ namespace MediaBrowser.Providers.TV
                 seriesId = await GetSeriesByRemoteId(seriesId, idType, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
             }
 
+            if (string.IsNullOrWhiteSpace(seriesId))
+            {
+                throw new ArgumentNullException("seriesId");
+            }
+
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
 
             using (var zipStream = await _httpClient.Get(new HttpRequestOptions
