@@ -144,5 +144,11 @@ namespace MediaBrowser.Model.Search
         /// </summary>
         /// <value>The name of the channel.</value>
         public string ChannelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the primary image aspect ratio.
+        /// </summary>
+        /// <value>The primary image aspect ratio.</value>
+        public double? PrimaryImageAspectRatio { get; set; }
     }
 }
