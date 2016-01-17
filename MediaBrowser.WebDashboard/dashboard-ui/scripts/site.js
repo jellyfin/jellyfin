@@ -1886,6 +1886,7 @@ var AppInfo = {};
         };
 
         requirejs.config({
+            waitSeconds: 0,
             map: {
                 '*': {
                     'css': bowerPath + '/emby-webcomponents/requirecss',
