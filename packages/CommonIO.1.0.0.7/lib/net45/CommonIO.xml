@@ -1,0 +1,872 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CommonIO</name>
+    </assembly>
+    <members>
+        <member name="P:CommonIO.FileSystemMetadata.Attributes">
+            <summary>
+            Gets or sets the attributes.
+            </summary>
+            <value>The attributes.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.Exists">
+            <summary>
+            Gets or sets a value indicating whether this <see cref="T:CommonIO.FileSystemMetadata"/> is exists.
+            </summary>
+            <value><c>true</c> if exists; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.FullName">
+            <summary>
+            Gets or sets the full name.
+            </summary>
+            <value>The full name.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.Name">
+            <summary>
+            Gets or sets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.Extension">
+            <summary>
+            Gets or sets the extension.
+            </summary>
+            <value>The extension.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.Length">
+            <summary>
+            Gets or sets the length.
+            </summary>
+            <value>The length.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.DirectoryName">
+            <summary>
+            Gets or sets the name of the directory.
+            </summary>
+            <value>The name of the directory.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.LastWriteTimeUtc">
+            <summary>
+            Gets or sets the last write time UTC.
+            </summary>
+            <value>The last write time UTC.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.CreationTimeUtc">
+            <summary>
+            Gets or sets the creation time UTC.
+            </summary>
+            <value>The creation time UTC.</value>
+        </member>
+        <member name="P:CommonIO.FileSystemMetadata.IsDirectory">
+            <summary>
+            Gets a value indicating whether this instance is directory.
+            </summary>
+            <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="T:CommonIO.IFileSystem">
+            <summary>
+            Interface IFileSystem
+            </summary>
+        </member>
+        <member name="M:CommonIO.IFileSystem.IsShortcut(System.String)">
+            <summary>
+            Determines whether the specified filename is shortcut.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.ResolveShortcut(System.String)">
+            <summary>
+            Resolves the shortcut.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.CreateShortcut(System.String,System.String)">
+            <summary>
+            Creates the shortcut.
+            </summary>
+            <param name="shortcutPath">The shortcut path.</param>
+            <param name="target">The target.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileSystemInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified file or directory path.
+            </summary>
+            <param name="path">A path to a file or directory.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks>If the specified path points to a directory, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property will be set to true and all other properties will reflect the properties of the directory.</remarks>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified file path.
+            </summary>
+            <param name="path">A path to a file.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks><para>If the specified path points to a directory, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property and the <see cref="P:CommonIO.FileSystemMetadata.Exists"/> property will both be set to false.</para>
+            <para>For automatic handling of files <b>and</b> directories, use <see cref="M:CommonIO.IFileSystem.GetFileSystemInfo(System.String)"/>.</para></remarks>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetDirectoryInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified directory path.
+            </summary>
+            <param name="path">A path to a directory.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks><para>If the specified path points to a file, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property will be set to true and the <see cref="P:CommonIO.FileSystemMetadata.Exists"/> property will be set to false.</para>
+            <para>For automatic handling of files <b>and</b> directories, use <see cref="M:CommonIO.IFileSystem.GetFileSystemInfo(System.String)"/>.</para></remarks>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetValidFilename(System.String)">
+            <summary>
+            Gets the valid filename.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetCreationTimeUtc(CommonIO.FileSystemMetadata)">
+            <summary>
+            Gets the creation time UTC.
+            </summary>
+            <param name="info">The information.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetCreationTimeUtc(System.String)">
+            <summary>
+            Gets the creation time UTC.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetLastWriteTimeUtc(CommonIO.FileSystemMetadata)">
+            <summary>
+            Gets the last write time UTC.
+            </summary>
+            <param name="info">The information.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetLastWriteTimeUtc(System.String)">
+            <summary>
+            Gets the last write time UTC.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileStream(System.String,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,System.Boolean)">
+            <summary>
+            Gets the file stream.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="mode">The mode.</param>
+            <param name="access">The access.</param>
+            <param name="share">The share.</param>
+            <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
+            <returns>FileStream.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.OpenRead(System.String)">
+            <summary>
+            Opens the read.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>Stream.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.SwapFiles(System.String,System.String)">
+            <summary>
+            Swaps the files.
+            </summary>
+            <param name="file1">The file1.</param>
+            <param name="file2">The file2.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.ContainsSubPath(System.String,System.String)">
+            <summary>
+            Determines whether [contains sub path] [the specified parent path].
+            </summary>
+            <param name="parentPath">The parent path.</param>
+            <param name="path">The path.</param>
+            <returns><c>true</c> if [contains sub path] [the specified parent path]; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.IsRootPath(System.String)">
+            <summary>
+            Determines whether [is root path] [the specified path].
+            </summary>
+            <param name="path">The path.</param>
+            <returns><c>true</c> if [is root path] [the specified path]; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.NormalizePath(System.String)">
+            <summary>
+            Normalizes the path.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileNameWithoutExtension(CommonIO.FileSystemMetadata)">
+            <summary>
+            Gets the file name without extension.
+            </summary>
+            <param name="info">The information.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileNameWithoutExtension(System.String)">
+            <summary>
+            Gets the file name without extension.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.IsPathFile(System.String)">
+            <summary>
+            Determines whether [is path file] [the specified path].
+            </summary>
+            <param name="path">The path.</param>
+            <returns><c>true</c> if [is path file] [the specified path]; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.DeleteFile(System.String)">
+            <summary>
+            Deletes the file.
+            </summary>
+            <param name="path">The path.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.DeleteDirectory(System.String,System.Boolean)">
+            <summary>
+            Deletes the directory.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetDirectories(System.String,System.Boolean)">
+            <summary>
+            Gets the directories.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;DirectoryInfo&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFiles(System.String,System.Boolean)">
+            <summary>
+            Gets the files.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;FileInfo&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileSystemEntries(System.String,System.Boolean)">
+            <summary>
+            Gets the file system entries.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;FileSystemMetadata&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.CreateDirectory(System.String)">
+            <summary>
+            Creates the directory.
+            </summary>
+            <param name="path">The path.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.CopyFile(System.String,System.String,System.Boolean)">
+            <summary>
+            Copies the file.
+            </summary>
+            <param name="source">The source.</param>
+            <param name="target">The target.</param>
+            <param name="overwrite">if set to <c>true</c> [overwrite].</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.MoveFile(System.String,System.String)">
+            <summary>
+            Moves the file.
+            </summary>
+            <param name="source">The source.</param>
+            <param name="target">The target.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.MoveDirectory(System.String,System.String)">
+            <summary>
+            Moves the directory.
+            </summary>
+            <param name="source">The source.</param>
+            <param name="target">The target.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.DirectoryExists(System.String)">
+            <summary>
+            Directories the exists.
+            </summary>
+            <param name="path">The path.</param>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.FileExists(System.String)">
+            <summary>
+            Files the exists.
+            </summary>
+            <param name="path">The path.</param>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.ReadAllText(System.String)">
+            <summary>
+            Reads all text.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.WriteAllText(System.String,System.String)">
+            <summary>
+            Writes all text.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="text">The text.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.WriteAllText(System.String,System.String,System.Text.Encoding)">
+            <summary>
+            Writes all text.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="text">The text.</param>
+            <param name="encoding">The encoding.</param>
+        </member>
+        <member name="M:CommonIO.IFileSystem.ReadAllText(System.String,System.Text.Encoding)">
+            <summary>
+            Reads all text.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="encoding">The encoding.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetDirectoryPaths(System.String,System.Boolean)">
+            <summary>
+            Gets the directory paths.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;System.String&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFilePaths(System.String,System.Boolean)">
+            <summary>
+            Gets the file paths.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;System.String&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IFileSystem.GetFileSystemEntryPaths(System.String,System.Boolean)">
+            <summary>
+            Gets the file system entry paths.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="recursive">if set to <c>true</c> [recursive].</param>
+            <returns>IEnumerable&lt;System.String&gt;.</returns>
+        </member>
+        <member name="M:CommonIO.IShortcutHandler.Resolve(System.String)">
+            <summary>
+            Resolves the specified shortcut path.
+            </summary>
+            <param name="shortcutPath">The shortcut path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="M:CommonIO.IShortcutHandler.Create(System.String,System.String)">
+            <summary>
+            Creates the specified shortcut path.
+            </summary>
+            <param name="shortcutPath">The shortcut path.</param>
+            <param name="targetPath">The target path.</param>
+            <returns>System.String.</returns>
+        </member>
+        <member name="P:CommonIO.IShortcutHandler.Extension">
+            <summary>
+            Gets the extension.
+            </summary>
+            <value>The extension.</value>
+        </member>
+        <member name="T:CommonIO.ManagedFileSystem">
+            <summary>
+            Class ManagedFileSystem
+            </summary>
+        </member>
+        <member name="F:CommonIO.ManagedFileSystem.SpaceChar">
+            <summary>
+            The space char
+            </summary>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.IsShortcut(System.String)">
+            <summary>
+            Determines whether the specified filename is shortcut.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentNullException">filename</exception>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.ResolveShortcut(System.String)">
+            <summary>
+            Resolves the shortcut.
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns>System.String.</returns>
+            <exception cref="T:System.ArgumentNullException">filename</exception>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.CreateShortcut(System.String,System.String)">
+            <summary>
+            Creates the shortcut.
+            </summary>
+            <param name="shortcutPath">The shortcut path.</param>
+            <param name="target">The target.</param>
+            <exception cref="T:System.ArgumentNullException">
+            shortcutPath
+            or
+            target
+            </exception>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetFileSystemInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified file or directory path.
+            </summary>
+            <param name="path">A path to a file or directory.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks>If the specified path points to a directory, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property will be set to true and all other properties will reflect the properties of the directory.</remarks>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetFileInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified file path.
+            </summary>
+            <param name="path">A path to a file.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks><para>If the specified path points to a directory, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property and the <see cref="P:CommonIO.FileSystemMetadata.Exists"/> property will both be set to false.</para>
+            <para>For automatic handling of files <b>and</b> directories, use <see cref="M:CommonIO.ManagedFileSystem.GetFileSystemInfo(System.String)"/>.</para></remarks>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetDirectoryInfo(System.String)">
+            <summary>
+            Returns a <see cref="T:CommonIO.FileSystemMetadata"/> object for the specified directory path.
+            </summary>
+            <param name="path">A path to a directory.</param>
+            <returns>A <see cref="T:CommonIO.FileSystemMetadata"/> object.</returns>
+            <remarks><para>If the specified path points to a file, the returned <see cref="T:CommonIO.FileSystemMetadata"/> object's
+            <see cref="P:CommonIO.FileSystemMetadata.IsDirectory"/> property will be set to true and the <see cref="P:CommonIO.FileSystemMetadata.Exists"/> property will be set to false.</para>
+            <para>For automatic handling of files <b>and</b> directories, use <see cref="M:CommonIO.ManagedFileSystem.GetFileSystemInfo(System.String)"/>.</para></remarks>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetValidFilename(System.String)">
+            <summary>
+            Takes a filename and removes invalid characters
+            </summary>
+            <param name="filename">The filename.</param>
+            <returns>System.String.</returns>
+            <exception cref="T:System.ArgumentNullException">filename</exception>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetCreationTimeUtc(System.IO.FileSystemInfo)">
+            <summary>
+            Gets the creation time UTC.
+            </summary>
+            <param name="info">The info.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetCreationTimeUtc(System.String)">
+            <summary>
+            Gets the creation time UTC.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetLastWriteTimeUtc(System.IO.FileSystemInfo)">
+            <summary>
+            Gets the creation time UTC.
+            </summary>
+            <param name="info">The info.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetLastWriteTimeUtc(System.String)">
+            <summary>
+            Gets the last write time UTC.
+            </summary>
+            <param name="path">The path.</param>
+            <returns>DateTime.</returns>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.GetFileStream(System.String,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,System.Boolean)">
+            <summary>
+            Gets the file stream.
+            </summary>
+            <param name="path">The path.</param>
+            <param name="mode">The mode.</param>
+            <param name="access">The access.</param>
+            <param name="share">The share.</param>
+            <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
+            <returns>FileStream.</returns>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.SwapFiles(System.String,System.String)">
+            <summary>
+            Swaps the files.
+            </summary>
+            <param name="file1">The file1.</param>
+            <param name="file2">The file2.</param>
+        </member>
+        <member name="M:CommonIO.ManagedFileSystem.RemoveHiddenAttribute(System.String)">
+            <summary>
+            Removes the hidden attribute.
+            </summary>
+            <param name="path">The path.</param>
+        </member>
+        <member name="T:CommonIO.Windows.NativeMethods">
+            <summary>
+            Class NativeMethods
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.NativeMethods.MAX_PATH">
+            <summary>
+            The MA x_ PATH
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.NativeMethods.MAX_ALTERNATE">
+            <summary>
+            The MA x_ ALTERNATE
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.NativeMethods.STGM_READ">
+            <summary>
+            The STG m_ READ
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.NativeMethods.INVALID_HANDLE_VALUE">
+            <summary>
+            The INVALI d_ HANDL e_ VALUE
+            </summary>
+        </member>
+        <member name="T:CommonIO.Windows.FILETIME">
+            <summary>
+            Struct FILETIME
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.FILETIME.dwLowDateTime">
+            <summary>
+            The dw low date time
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.FILETIME.dwHighDateTime">
+            <summary>
+            The dw high date time
+            </summary>
+        </member>
+        <member name="T:CommonIO.Windows.WIN32_FIND_DATA">
+            <summary>
+            Struct WIN32_FIND_DATA
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.dwFileAttributes">
+            <summary>
+            The dw file attributes
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.ftCreationTime">
+            <summary>
+            The ft creation time
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.ftLastAccessTime">
+            <summary>
+            The ft last access time
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.ftLastWriteTime">
+            <summary>
+            The ft last write time
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.nFileSizeHigh">
+            <summary>
+            The n file size high
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.nFileSizeLow">
+            <summary>
+            The n file size low
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.dwReserved0">
+            <summary>
+            The dw reserved0
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.dwReserved1">
+            <summary>
+            The dw reserved1
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.cFileName">
+            <summary>
+            The c file name
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.WIN32_FIND_DATA.cAlternate">
+            <summary>
+            This will always be null when FINDEX_INFO_LEVELS = basic
+            </summary>
+        </member>
+        <member name="M:CommonIO.Windows.WIN32_FIND_DATA.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>A <see cref="T:System.String"/> that represents this instance.</returns>
+        </member>
+        <member name="P:CommonIO.Windows.WIN32_FIND_DATA.Path">
+            <summary>
+            Gets or sets the path.
+            </summary>
+            <value>The path.</value>
+        </member>
+        <member name="T:CommonIO.Windows.SLGP_FLAGS">
+            <summary>
+            Enum SLGP_FLAGS
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLGP_FLAGS.SLGP_SHORTPATH">
+            <summary>
+            Retrieves the standard short (8.3 format) file name
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLGP_FLAGS.SLGP_UNCPRIORITY">
+            <summary>
+            Retrieves the Universal Naming Convention (UNC) path name of the file
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLGP_FLAGS.SLGP_RAWPATH">
+            <summary>
+            Retrieves the raw path name. A raw path is something that might not exist and may include environment variables that need to be expanded
+            </summary>
+        </member>
+        <member name="T:CommonIO.Windows.SLR_FLAGS">
+            <summary>
+            Enum SLR_FLAGS
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_NO_UI">
+            <summary>
+            Do not display a dialog box if the link cannot be resolved. When SLR_NO_UI is set,
+            the high-order word of fFlags can be set to a time-out value that specifies the
+            maximum amount of time to be spent resolving the link. The function returns if the
+            link cannot be resolved within the time-out duration. If the high-order word is set
+            to zero, the time-out duration will be set to the default value of 3,000 milliseconds
+            (3 seconds). To specify a value, set the high word of fFlags to the desired time-out
+            duration, in milliseconds.
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_ANY_MATCH">
+            <summary>
+            Obsolete and no longer used
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_UPDATE">
+            <summary>
+            If the link object has changed, update its path and list of identifiers.
+            If SLR_UPDATE is set, you do not need to call IPersistFile::IsDirty to determine
+            whether or not the link object has changed.
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_NOUPDATE">
+            <summary>
+            Do not update the link information
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_NOSEARCH">
+            <summary>
+            Do not execute the search heuristics
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_NOTRACK">
+            <summary>
+            Do not use distributed link tracking
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_NOLINKINFO">
+            <summary>
+            Disable distributed link tracking. By default, distributed link tracking tracks
+            removable media across multiple devices based on the volume name. It also uses the
+            Universal Naming Convention (UNC) path to track remote file systems whose drive letter
+            has changed. Setting SLR_NOLINKINFO disables both types of tracking.
+            </summary>
+        </member>
+        <member name="F:CommonIO.Windows.SLR_FLAGS.SLR_INVOKE_MSI">
+            <summary>
+            Call the Microsoft Windows Installer
+            </summary>
+        </member>
+        <member name="T:CommonIO.Windows.IShellLinkW">
+            <summary>
+            The IShellLink interface allows Shell links to be created, modified, and resolved
+            </summary>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetPath(System.Text.StringBuilder,System.Int32,CommonIO.Windows.WIN32_FIND_DATA@,CommonIO.Windows.SLGP_FLAGS)">
+            <summary>
+            Retrieves the path and file name of a Shell link object
+            </summary>
+            <param name="pszFile">The PSZ file.</param>
+            <param name="cchMaxPath">The CCH max path.</param>
+            <param name="pfd">The PFD.</param>
+            <param name="fFlags">The f flags.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetIDList(System.IntPtr@)">
+            <summary>
+            Retrieves the list of item identifiers for a Shell link object
+            </summary>
+            <param name="ppidl">The ppidl.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetIDList(System.IntPtr)">
+            <summary>
+            Sets the pointer to an item identifier list (PIDL) for a Shell link object.
+            </summary>
+            <param name="pidl">The pidl.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetDescription(System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Retrieves the description string for a Shell link object
+            </summary>
+            <param name="pszName">Name of the PSZ.</param>
+            <param name="cchMaxName">Name of the CCH max.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetDescription(System.String)">
+            <summary>
+            Sets the description for a Shell link object. The description can be any application-defined string
+            </summary>
+            <param name="pszName">Name of the PSZ.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetWorkingDirectory(System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Retrieves the name of the working directory for a Shell link object
+            </summary>
+            <param name="pszDir">The PSZ dir.</param>
+            <param name="cchMaxPath">The CCH max path.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetWorkingDirectory(System.String)">
+            <summary>
+            Sets the name of the working directory for a Shell link object
+            </summary>
+            <param name="pszDir">The PSZ dir.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetArguments(System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Retrieves the command-line arguments associated with a Shell link object
+            </summary>
+            <param name="pszArgs">The PSZ args.</param>
+            <param name="cchMaxPath">The CCH max path.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetArguments(System.String)">
+            <summary>
+            Sets the command-line arguments for a Shell link object
+            </summary>
+            <param name="pszArgs">The PSZ args.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetHotkey(System.Int16@)">
+            <summary>
+            Retrieves the hot key for a Shell link object
+            </summary>
+            <param name="pwHotkey">The pw hotkey.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetHotkey(System.Int16)">
+            <summary>
+            Sets a hot key for a Shell link object
+            </summary>
+            <param name="wHotkey">The w hotkey.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetShowCmd(System.Int32@)">
+            <summary>
+            Retrieves the show command for a Shell link object
+            </summary>
+            <param name="piShowCmd">The pi show CMD.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetShowCmd(System.Int32)">
+            <summary>
+            Sets the show command for a Shell link object. The show command sets the initial show state of the window.
+            </summary>
+            <param name="iShowCmd">The i show CMD.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.GetIconLocation(System.Text.StringBuilder,System.Int32,System.Int32@)">
+            <summary>
+            Retrieves the location (path and index) of the icon for a Shell link object
+            </summary>
+            <param name="pszIconPath">The PSZ icon path.</param>
+            <param name="cchIconPath">The CCH icon path.</param>
+            <param name="piIcon">The pi icon.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetIconLocation(System.String,System.Int32)">
+            <summary>
+            Sets the location (path and index) of the icon for a Shell link object
+            </summary>
+            <param name="pszIconPath">The PSZ icon path.</param>
+            <param name="iIcon">The i icon.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetRelativePath(System.String,System.Int32)">
+            <summary>
+            Sets the relative path to the Shell link object
+            </summary>
+            <param name="pszPathRel">The PSZ path rel.</param>
+            <param name="dwReserved">The dw reserved.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.Resolve(System.IntPtr,CommonIO.Windows.SLR_FLAGS)">
+            <summary>
+            Attempts to find the target of a Shell link, even if it has been moved or renamed
+            </summary>
+            <param name="hwnd">The HWND.</param>
+            <param name="fFlags">The f flags.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IShellLinkW.SetPath(System.String)">
+            <summary>
+            Sets the path and file name of a Shell link object
+            </summary>
+            <param name="pszFile">The PSZ file.</param>
+        </member>
+        <member name="T:CommonIO.Windows.IPersist">
+            <summary>
+            Interface IPersist
+            </summary>
+        </member>
+        <member name="M:CommonIO.Windows.IPersist.GetClassID(System.Guid@)">
+            <summary>
+            Gets the class ID.
+            </summary>
+            <param name="pClassID">The p class ID.</param>
+        </member>
+        <member name="T:CommonIO.Windows.IPersistFile">
+            <summary>
+            Interface IPersistFile
+            </summary>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.GetClassID(System.Guid@)">
+            <summary>
+            Gets the class ID.
+            </summary>
+            <param name="pClassID">The p class ID.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.IsDirty">
+            <summary>
+            Determines whether this instance is dirty.
+            </summary>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.Load(System.String,System.UInt32)">
+            <summary>
+            Loads the specified PSZ file name.
+            </summary>
+            <param name="pszFileName">Name of the PSZ file.</param>
+            <param name="dwMode">The dw mode.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.Save(System.String,System.Boolean)">
+            <summary>
+            Saves the specified PSZ file name.
+            </summary>
+            <param name="pszFileName">Name of the PSZ file.</param>
+            <param name="remember">if set to <c>true</c> [remember].</param>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.SaveCompleted(System.String)">
+            <summary>
+            Saves the completed.
+            </summary>
+            <param name="pszFileName">Name of the PSZ file.</param>
+        </member>
+        <member name="M:CommonIO.Windows.IPersistFile.GetCurFile(System.String)">
+            <summary>
+            Gets the cur file.
+            </summary>
+            <param name="ppszFileName">Name of the PPSZ file.</param>
+        </member>
+        <member name="T:CommonIO.Windows.ShellLink">
+            <summary>
+            Class ShellLink
+            </summary>
+        </member>
+    </members>
+</doc>
