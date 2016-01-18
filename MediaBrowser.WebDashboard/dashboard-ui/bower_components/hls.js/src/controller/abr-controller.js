@@ -3,23 +3,22 @@
 */
 
 import Event from '../events';
+import EventHandler from '../event-handler';
 
-class AbrController {
+class AbrController extends EventHandler {
 
   constructor(hls) {
-    this.hls = hls;
+    super(hls, Event.FRAG_LOAD_PROGRESS);
     this.lastfetchlevel = 0;
     this._autoLevelCapping = -1;
     this._nextAutoLevel = -1;
-    this.onflp = this.onFragmentLoadProgress.bind(this);
-    hls.on(Event.FRAG_LOAD_PROGRESS, this.onflp);
   }
 
   destroy() {
-    this.hls.off(Event.FRAG_LOAD_PROGRESS, this.onflp);
+    EventHandler.prototype.destroy.call(this);
   }
 
-  onFragmentLoadProgress(event, data) {
+  onFragLoadProgress(data) {
     var stats = data.stats;
     if (stats.aborted === undefined) {
       this.lastfetchduration = (performance.now() - stats.trequest) / 1000;

@@ -129,6 +129,7 @@ class MP4Remuxer {
         mdat, moof,
         firstPTS, firstDTS, lastDTS,
         pts, dts, ptsnorm, dtsnorm,
+        flags,
         samples = [];
     /* concatenate the video data and construct the mdat in place
       (need 8 more bytes to fill length and mpdat type) */
@@ -152,7 +153,7 @@ class MP4Remuxer {
       dts = avcSample.dts - this._initDTS;
       // ensure DTS is not bigger than PTS
       dts = Math.min(pts,dts);
-      //logger.log(`Video/PTS/DTS:${pts}/${dts}`);
+      //logger.log(`Video/PTS/DTS:${Math.round(pts/90)}/${Math.round(dts/90)}`);
       // if not first AVC sample of video track, normalize PTS/DTS with previous sample value
       // and ensure that sample duration is positive
       if (lastDTS !== undefined) {
@@ -201,13 +202,14 @@ class MP4Remuxer {
           degradPrio: 0
         }
       };
+      flags = mp4Sample.flags;
       if (avcSample.key === true) {
         // the current sample is a key frame
-        mp4Sample.flags.dependsOn = 2;
-        mp4Sample.flags.isNonSync = 0;
+        flags.dependsOn = 2;
+        flags.isNonSync = 0;
       } else {
-        mp4Sample.flags.dependsOn = 1;
-        mp4Sample.flags.isNonSync = 1;
+        flags.dependsOn = 1;
+        flags.isNonSync = 1;
       }
       samples.push(mp4Sample);
       lastDTS = dtsnorm;
@@ -222,7 +224,7 @@ class MP4Remuxer {
     track.len = 0;
     track.nbNalu = 0;
     if(samples.length && navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
-      var flags = samples[0].flags;
+      flags = samples[0].flags;
     // chrome workaround, mark first sample as being a Random Access Point to avoid sourcebuffer append issue
     // https://code.google.com/p/chromium/issues/detail?id=229412
       flags.dependsOn = 2;
@@ -270,7 +272,7 @@ class MP4Remuxer {
       unit = aacSample.unit;
       pts = aacSample.pts - this._initDTS;
       dts = aacSample.dts - this._initDTS;
-      //logger.log(`Audio/PTS:${aacSample.pts.toFixed(0)}`);
+      //logger.log(`Audio/PTS:${Math.round(pts/90)}`);
       // if not first sample
       if (lastDTS !== undefined) {
         ptsnorm = this._PTSNormalize(pts, lastDTS);

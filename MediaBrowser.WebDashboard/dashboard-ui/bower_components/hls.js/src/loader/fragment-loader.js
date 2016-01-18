@@ -3,14 +3,13 @@
 */
 
 import Event from '../events';
+import EventHandler from '../event-handler';
 import {ErrorTypes, ErrorDetails} from '../errors';
 
-class FragmentLoader {
+class FragmentLoader extends EventHandler {
 
   constructor(hls) {
-    this.hls = hls;
-    this.onfl = this.onFragLoading.bind(this);
-    hls.on(Event.FRAG_LOADING, this.onfl);
+    super(hls, Event.FRAG_LOADING);
   }
 
   destroy() {
@@ -18,10 +17,10 @@ class FragmentLoader {
       this.loader.destroy();
       this.loader = null;
     }
-    this.hls.off(Event.FRAG_LOADING, this.onfl);
+    EventHandler.prototype.destroy.call(this);
   }
 
-  onFragLoading(event, data) {
+  onFragLoading(data) {
     var frag = data.frag;
     this.frag = frag;
     this.frag.loaded = 0;
