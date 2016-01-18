@@ -2007,7 +2007,7 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("audiorenderer", ["cordova/android/vlcplayer"]);
+            define("audiorenderer", ["scripts/htmlmediarenderer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
@@ -2132,23 +2132,11 @@ var AppInfo = {};
             };
 
             if (Dashboard.isRunningInCordova() && browserInfo.android) {
-                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
-
-                // TODO: This is going to exclude it from both playback and sync, so improve on this
-                if (AppSettings.syncLosslessAudio()) {
-                    AppInfo.directPlayAudioContainers.push('flac');
-                }
-
                 AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
             }
             else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
 
-                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
-
-                // TODO: This is going to exclude it from both playback and sync, so improve on this
-                if (AppSettings.syncLosslessAudio()) {
-                    AppInfo.directPlayAudioContainers.push('flac');
-                }
+                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac".split(',');
             }
 
             var promises = [];
