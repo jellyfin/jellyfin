@@ -970,6 +970,10 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
+				if (!ServerConfigurationManager.Configuration.EnableAutoUpdate) 
+				{
+					return false;
+				}
 #if DEBUG
                 return false;
 #endif
