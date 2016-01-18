@@ -3,19 +3,18 @@
 */
 
 import Event from '../events';
+import EventHandler from '../event-handler';
 import {ErrorTypes, ErrorDetails} from '../errors';
 import URLHelper from '../utils/url';
 import AttrList from '../utils/attr-list';
 //import {logger} from '../utils/logger';
 
-class PlaylistLoader {
+class PlaylistLoader extends EventHandler {
 
   constructor(hls) {
-    this.hls = hls;
-    this.onml = this.onManifestLoading.bind(this);
-    this.onll = this.onLevelLoading.bind(this);
-    hls.on(Event.MANIFEST_LOADING, this.onml);
-    hls.on(Event.LEVEL_LOADING, this.onll);
+    super(hls,
+      Event.MANIFEST_LOADING,
+      Event.LEVEL_LOADING);
   }
 
   destroy() {
@@ -24,15 +23,14 @@ class PlaylistLoader {
       this.loader = null;
     }
     this.url = this.id = null;
-    this.hls.off(Event.MANIFEST_LOADING, this.onml);
-    this.hls.off(Event.LEVEL_LOADING, this.onll);
+    EventHandler.prototype.destroy.call(this);
   }
 
-  onManifestLoading(event, data) {
+  onManifestLoading(data) {
     this.load(data.url, null);
   }
 
-  onLevelLoading(event, data) {
+  onLevelLoading(data) {
     this.load(data.url, data.level, data.id);
   }
 

@@ -41,6 +41,8 @@ class Hls {
           debug: false,
           maxBufferLength: 30,
           maxBufferSize: 60 * 1000 * 1000,
+          maxBufferHole: 0.3,
+          maxSeekHole: 2,
           liveSyncDurationCount:3,
           liveMaxLatencyDurationCount: Infinity,
           maxMaxBufferLength: 600,

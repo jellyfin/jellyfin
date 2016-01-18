@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   // fired before MediaSource is attaching to media element - data: { media }
   MEDIA_ATTACHING: 'hlsMediaAttaching',
   // fired when MediaSource has been succesfully attached to media element - data: { }
@@ -20,7 +20,7 @@ export default {
   // fired when a level's details have been updated based on previous details, after it has been loaded. - data: { details : levelDetails object, level : id of updated level }
   LEVEL_UPDATED: 'hlsLevelUpdated',
   // fired when a level's PTS information has been updated after parsing a fragment - data: { details : levelDetails object, level : id of updated level, drift: PTS drift observed when parsing last fragment }
-  LEVEL_PTS_UPDATED: 'hlsPTSUpdated',
+  LEVEL_PTS_UPDATED: 'hlsLevelPtsUpdated',
   // fired when a level switch is requested - data: { level : id of new level }
   LEVEL_SWITCH: 'hlsLevelSwitch',
   // fired when a fragment loading starts - data: { frag : fragment object}
@@ -34,7 +34,7 @@ export default {
   // fired when Init Segment has been extracted from fragment - data: { moov : moov MP4 box, codecs : codecs found while parsing fragment}
   FRAG_PARSING_INIT_SEGMENT: 'hlsFragParsingInitSegment',
   // fired when parsing id3 is completed - data: { samples : [ id3 samples pes ] }
-  FRAG_PARSING_METADATA: 'hlsFraParsingMetadata',
+  FRAG_PARSING_METADATA: 'hlsFragParsingMetadata',
   // fired when moof/mdat have been extracted from fragment - data: { moof : moof MP4 box, mdat : mdat MP4 box}
   FRAG_PARSING_DATA: 'hlsFragParsingData',
   // fired when fragment parsing is completed - data: undefined
@@ -44,7 +44,7 @@ export default {
   // fired when fragment matching with current media position is changing - data : { frag : fragment object }
   FRAG_CHANGED: 'hlsFragChanged',
     // Identifier for a FPS drop event - data: {curentDropped, currentDecoded, totalDroppedFrames}
-  FPS_DROP: 'hlsFPSDrop',
+  FPS_DROP: 'hlsFpsDrop',
   // Identifier for an error event - data: { type : error type, details : error details, fatal : if true, hls.js cannot/will not try to recover, if false, hls.js will try to recover,other error specific data}
   ERROR: 'hlsError',
   // fired when hls.js instance starts destroying. Different from MEDIA_DETACHED as one could want to detach and reattach a media to the instance of hls.js to handle mid-rolls for example

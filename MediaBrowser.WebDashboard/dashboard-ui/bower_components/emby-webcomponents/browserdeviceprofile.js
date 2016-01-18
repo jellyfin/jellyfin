@@ -1,4 +1,4 @@
-﻿define(['browser'], function (browser) {
+define(['browser'], function (browser) {
 
     function canPlayH264() {
         var v = document.createElement('video');
@@ -67,7 +67,7 @@
     function canPlayHls(src) {
 
         if (_canPlayHls == null) {
-            _canPlayHls = window.MediaSource != null || canPlayNativeHls();
+            _canPlayHls = canPlayNativeHls() || canPlayHlsWithMSE();
         }
         return _canPlayHls;
     }
@@ -79,6 +79,15 @@
             media.canPlayType('application/vnd.apple.mpegURL').replace(/no/, '')) {
             return true;
         }
+
+        return false;
+    }
+
+    function canPlayHlsWithMSE() {
+        if (window.MediaSource != null) {
+		// text tracks don’t work with this in firefox
+		return !browser.firefox;
+	}
 
         return false;
     }

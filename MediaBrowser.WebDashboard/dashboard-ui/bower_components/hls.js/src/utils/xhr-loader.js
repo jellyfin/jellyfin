@@ -49,7 +49,7 @@ class XhrLoader {
 
   loadInternal() {
     var xhr = this.loader = new XMLHttpRequest();
-    xhr.onreadystatechange = this.statechange.bind(this);
+    xhr.onloadend = this.loadend.bind(this);
     xhr.onprogress = this.loadprogress.bind(this);
 
     xhr.open('GET', this.url, true);
@@ -65,13 +65,12 @@ class XhrLoader {
     xhr.send();
   }
 
-  statechange(event) {
+  loadend(event) {
     var xhr = event.currentTarget,
         status = xhr.status,
         stats = this.stats;
     // don't proceed if xhr has been aborted
-    // 4 = Response from server has been completely loaded.
-    if (!stats.aborted && xhr.readyState === 4) {
+    if (!stats.aborted) {
         // http status between 200 to 299 are all successful
         if (status >= 200 && status < 300)  {
           window.clearTimeout(this.timeoutHandle);
