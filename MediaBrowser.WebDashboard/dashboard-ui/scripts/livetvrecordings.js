@@ -70,7 +70,8 @@
             showParentTitle: true,
             centerText: true,
             coverImage: true,
-            lazy: true
+            lazy: true,
+            overlayPlayButton: true
 
         });
 
