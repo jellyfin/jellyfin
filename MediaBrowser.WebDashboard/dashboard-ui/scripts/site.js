@@ -2347,7 +2347,7 @@ var AppInfo = {};
                 deviceName = "Chrome";
             } else if (browserInfo.edge) {
                 deviceName = "Edge";
-            } else if (browserInfo.mozilla) {
+            } else if (browserInfo.firefox) {
                 deviceName = "Firefox";
             } else if (browserInfo.msie) {
                 deviceName = "Internet Explorer";

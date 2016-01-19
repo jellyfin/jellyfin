@@ -102,9 +102,9 @@
         // but not needed here since this is already on top of an existing dialog
         // but skip it in IE because it's causing the entire browser to hang
         // Also have to disable for firefox because it's causing select elements to not be clickable
-        if (!browserInfo.msie && !browserInfo.mozilla) {
+        if (!browserInfo.msie && !browserInfo.firefox) {
             if (options.modal !== false) {
-                dlg.setAttribute('modal', 'modal');
+                //dlg.setAttribute('modal', 'modal');
             }
         }
 
