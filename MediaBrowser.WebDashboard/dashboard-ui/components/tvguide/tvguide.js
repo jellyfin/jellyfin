@@ -478,9 +478,9 @@
             var tabContent = options.element;
             tabContent.innerHTML = Globalize.translateDocument(template);
 
-            Events.on(tabContent.querySelector('.programGrid'), 'scroll', function () {
+            tabContent.querySelector('.programGrid').addEventListener('scroll', function (e) {
 
-                onProgramGridScroll(tabContent, this);
+                onProgramGridScroll(tabContent, e.target);
             });
 
             if (browserInfo.mobile) {

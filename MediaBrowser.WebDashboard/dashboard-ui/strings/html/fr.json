@@ -541,7 +541,7 @@
     "LabelFriendlyServerName": "Surnom du serveur:",
     "LabelFriendlyServerNameHelp": "Ce nom sera utilis\u00e9 pour identifier le serveur. Si laiss\u00e9 vide, le nom d'ordinateur sera utilis\u00e9.",
     "LabelPreferredDisplayLanguage": "Langue d'affichage pr\u00e9f\u00e9r\u00e9e :",
-    "LabelPreferredDisplayLanguageHelp": "La traduction d'Emby est un porjet en cours.",
+    "LabelPreferredDisplayLanguageHelp": "La traduction d'Emby est un projet en cours.",
     "LabelReadHowYouCanContribute": "Voir comment vous pouvez contribuer.",
     "HeaderNewCollection": "Nouvelle collection",
     "ButtonSubmit": "Soumettre",

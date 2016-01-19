@@ -186,6 +186,8 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       maxBufferLength : 30,
       maxMaxBufferLength : 600,
       maxBufferSize : 60*1000*1000,
+      maxBufferHole : 0.3,
+      maxSeekHole : 2,
       liveSyncDurationCount : 3,
       liveMaxLatencyDurationCount: 10,
       enableWorker : true,
@@ -239,6 +241,20 @@ this is the guaranteed buffer length hls.js will try to reach, regardless of max
 (default 60 MB)
 
 'minimum' maximum buffer size in bytes. if buffer size upfront is bigger than this value, no fragment will be loaded.
+
+#### ```maxBufferHole```
+(default 0.3s)
+
+'maximum' inter-fragment buffer hole tolerance that hls.js can cope with.
+When switching between quality level, fragments might not be perfectly aligned.
+This could result in small overlapping or hole in media buffer. This tolerance factor helps cope with this.
+
+#### ```maxSeekHole```
+(default 2s)
+
+in case playback is stalled, and a buffered range is available upfront, less than maxSeekHole seconds from current media position,
+hls.js will jump over this buffer hole to reach the beginning of this following buffered range.
+```maxSeekHole``` allows to configure this jumpable threshold.
 
 #### ```maxMaxBufferLength```
 (default 600s)
@@ -499,7 +515,7 @@ full list of Events available below :
   - `Hls.Events.LEVEL_PTS_UPDATED`  - fired when a level's PTS information has been updated after parsing a fragment
     -  data: { details : levelDetails object, level : id of updated level, drift: PTS drift observed when parsing last fragment }
   - `Hls.Events.LEVEL_SWITCH`  - fired when a level switch is requested
-    -  data: { levelId : id of new level }
+    -  data: { level : id of new level, it is the index of the array `Hls.levels` }
   - `Hls.Events.KEY_LOADING`  - fired when a decryption key loading starts
     -  data: { frag : fragment object}
   - `Hls.Events.KEY_LOADED`  - fired when a decryption key loading is completed

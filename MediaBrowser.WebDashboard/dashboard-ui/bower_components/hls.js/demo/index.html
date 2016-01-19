@@ -718,14 +718,6 @@ function timeRangesToString(r) {
       events.buffer.push(event);
       refreshCanvas();
 
-      var decodedFrames, droppedFrames;
-      if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
-        decodedFrames = v.mozDecodedFrames;
-        droppedFrames = v.mozParsedFrames-v.mozPresentedFrames;
-      } else {
-        decodedFrames = v.webkitDecodedFrameCount;
-        droppedFrames = v.webkitDroppedFrameCount;
-      }
       var log = "Duration:"
               + v.duration + "<br>"
               + "Buffered:"
@@ -733,11 +725,16 @@ function timeRangesToString(r) {
               + "Seekable:"
               + timeRangesToString(v.seekable) + "<br>"
               + "Played:"
-              + timeRangesToString(v.played) + "<br>"
-              + "Decoded Frames:"
-              + decodedFrames + "<br>"
-              + "Dropped Frames:"
-              + droppedFrames + "<br>";
+              + timeRangesToString(v.played) + "<br>";
+
+
+      var videoPlaybackQuality = v.getVideoPlaybackQuality;
+      if(videoPlaybackQuality && typeof(videoPlaybackQuality) === typeof(Function)) {
+        log+="Dropped Frames:"+ v.getVideoPlaybackQuality().droppedVideoFrames + "<br>";
+        log+="Corrupted Frames:"+ v.getVideoPlaybackQuality().corruptedVideoFrames + "<br>";
+      } else if(v.webkitDroppedFrameCount) {
+        log+="Dropped Frames:"+ v.webkitDroppedFrameCount + "<br>";
+      }
       $("#buffered_log").html(log);
       $("#HlsStats").text(JSON.stringify(sortObject(stats),null,"\t"));
       ctx.fillStyle = "blue";

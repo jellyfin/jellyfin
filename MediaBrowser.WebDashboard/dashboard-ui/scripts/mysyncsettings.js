@@ -4,7 +4,6 @@
 
         page.querySelector('#txtSyncPath').value = AppSettings.syncPath();
         page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
-        page.querySelector('#chkSyncLosslessAudio').checked = AppSettings.syncLosslessAudio();
 
         var uploadServers = AppSettings.cameraUploadServers();
 
@@ -24,7 +23,6 @@
 
         AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
         AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
-        AppSettings.syncLosslessAudio(page.querySelector('#chkSyncLosslessAudio').checked);
 
         AppSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
 

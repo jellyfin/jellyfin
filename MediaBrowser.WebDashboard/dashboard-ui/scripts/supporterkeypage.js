@@ -77,7 +77,7 @@
             oldkey: oldkey
         };
 
-        var url = "http://mb3admin.com/admin/service/supporter/linkKeys";
+        var url = "https://mb3admin.com/admin/service/supporter/linkKeys";
         console.log(url);
         $.post(url, info).then(function (res) {
             var result = JSON.parse(res);
@@ -101,7 +101,7 @@
 
         var email = $('#txtEmail', form).val();
 
-        var url = "http://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
+        var url = "https://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
         console.log(url);
         $.post(url).then(function (res) {
             var result = JSON.parse(res);

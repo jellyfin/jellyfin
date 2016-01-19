@@ -84,14 +84,6 @@
 
             return appStorage.getItem('syncOnlyOnWifi') != 'false';
         },
-        syncLosslessAudio: function (val) {
-
-            if (val != null) {
-                update('syncLosslessAudio', val.toString());
-            }
-
-            return appStorage.getItem('syncLosslessAudio') != 'false';
-        },
         syncPath: function (val) {
 
             if (val != null) {

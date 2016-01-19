@@ -1915,7 +1915,7 @@
 
         if (currentItem && currentItem.Id == itemId) {
             if (currentItem.Type == 'Recording') {
-                Dashboard.navigate('livetv.html');
+                LibraryBrowser.showTab('livetv.html', 3);
             } else {
                 Dashboard.navigate('index.html');
             }
