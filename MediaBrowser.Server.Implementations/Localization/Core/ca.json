@@ -71,7 +71,7 @@
     "ViewTypeTvShowSeries": "S\u00e8ries:",
     "ViewTypeTvGenres": "G\u00e8neres",
     "ViewTypeTvFavoriteSeries": "S\u00e8ries Preferides",
-    "ViewTypeTvFavoriteEpisodes": "Episodis preferits",
+    "ViewTypeTvFavoriteEpisodes": "Episodis Preferits",
     "ViewTypeMovieResume": "Resume",
     "ViewTypeMovieLatest": "Darrers",
     "ViewTypeMovieMovies": "Pel\u00b7l\u00edcules",
@@ -173,5 +173,5 @@
     "HeaderWriter": "Escriptors",
     "HeaderParentalRatings": "Parental Ratings",
     "HeaderCommunityRatings": "Qualificacions de la comunitat",
-    "StartupEmbyServerIsLoading": "El servidor d'Emby s'est\u00e0 carregant. Si us plau, torneu-ho a provar de nou en breu."
+    "StartupEmbyServerIsLoading": "El servidor d'Emby s'est&agrave; carregant. Si et plau, tornau-ho a provar de nou en breu."
 }
