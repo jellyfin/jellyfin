@@ -162,6 +162,14 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
+    [Route("/Items", "DELETE", Summary = "Deletes an item from the library and file system")]
+    [Authenticated]
+    public class DeleteItems : IReturnVoid
+    {
+        [ApiMember(Name = "Ids", Description = "Ids", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Ids { get; set; }
+    }
+
     [Route("/Items/Counts", "GET")]
     [Authenticated]
     public class GetItemCounts : IReturn<ItemCounts>
@@ -715,27 +723,49 @@ namespace MediaBrowser.Api.Library
         /// Deletes the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
+        public void Delete(DeleteItems request)
+        {
+            var ids = string.IsNullOrWhiteSpace(request.Ids)
+             ? new string[] { }
+             : request.Ids.Split(',');
+
+            var tasks = ids.Select(i =>
+            {
+                var item = _libraryManager.GetItemById(i);
+                var auth = _authContext.GetAuthorizationInfo(Request);
+                var user = _userManager.GetUserById(auth.UserId);
+
+                if (!item.CanDelete(user))
+                {
+                    if (ids.Length > 1)
+                    {
+                        throw new SecurityException("Unauthorized access");
+                    }
+
+                    return Task.FromResult(true);
+                }
+
+                if (item is ILiveTvRecording)
+                {
+                    return _liveTv.DeleteRecording(i);
+                }
+
+                return _libraryManager.DeleteItem(item);
+            }).ToArray();
+
+            Task.WaitAll(tasks);
+        }
+
+        /// <summary>
+        /// Deletes the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
         public void Delete(DeleteItem request)
         {
-            var item = _libraryManager.GetItemById(request.Id);
-            var auth = _authContext.GetAuthorizationInfo(Request);
-            var user = _userManager.GetUserById(auth.UserId);
-
-            if (!item.CanDelete(user))
+            Delete(new DeleteItems
             {
-                throw new SecurityException("Unauthorized access");
-            }
-
-            if (item is ILiveTvRecording)
-            {
-                var task = _liveTv.DeleteRecording(request.Id);
-                Task.WaitAll(task);
-            }
-            else
-            {
-                var task = _libraryManager.DeleteItem(item);
-                Task.WaitAll(task);
-            }
+                Ids = request.Id
+            });
         }
 
         /// <summary>

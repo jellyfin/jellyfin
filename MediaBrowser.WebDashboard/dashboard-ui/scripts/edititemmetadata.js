@@ -1159,7 +1159,7 @@
                                 performAdvancedRefresh(page);
                                 break;
                             case 'delete':
-                                LibraryBrowser.deleteItem(currentItem.Id);
+                                LibraryBrowser.deleteItems([currentItem.Id]);
                                 break;
                             case 'editimages':
                                 LibraryBrowser.editImages(currentItem.Id);

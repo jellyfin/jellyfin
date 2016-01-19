@@ -469,7 +469,7 @@
                                 PlaylistManager.showPanel([itemId]);
                                 break;
                             case 'delete':
-                                LibraryBrowser.deleteItem(itemId);
+                                LibraryBrowser.deleteItems([itemId]);
                                 break;
                             case 'download':
                                 {
@@ -1025,7 +1025,7 @@
 
     function showSelections(initialCard) {
 
-        require(['paper-checkbox'], function() {
+        require(['paper-checkbox'], function () {
             var cards = document.querySelectorAll('.card');
             for (var i = 0, length = cards.length; i < length; i++) {
                 showSelection(cards[i]);
@@ -1101,6 +1101,14 @@
                 ironIcon: 'playlist-add'
             });
 
+            if (user.Policy.EnableContentDeletion) {
+                items.push({
+                    name: Globalize.translate('ButtonDelete'),
+                    id: 'delete',
+                    ironIcon: 'delete'
+                });
+            }
+
             if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
                 //items.push({
                 //    name: Globalize.translate('ButtonDownload'),
@@ -1147,6 +1155,12 @@
                                 break;
                             case 'playlist':
                                 PlaylistManager.showPanel(items);
+                                hideSelections();
+                                break;
+                            case 'delete':
+                                LibraryBrowser.deleteItems(items).then(function () {
+                                    Dashboard.navigate('index.html');
+                                });
                                 hideSelections();
                                 break;
                             case 'groupvideos':
