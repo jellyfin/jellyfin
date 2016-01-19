@@ -85,7 +85,8 @@
         ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            IsInProgress: true
+            IsInProgress: true,
+            Fields: 'CanDelete'
 
         }).then(function (result) {
 
@@ -97,7 +98,8 @@
 
             userId: Dashboard.getCurrentUserId(),
             limit: 12,
-            IsInProgress: false
+            IsInProgress: false,
+            Fields: 'CanDelete'
 
         }).then(function (result) {
 

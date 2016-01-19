@@ -834,27 +834,37 @@
 
             });
 
-
             Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
         },
 
-        deleteItem: function (itemId) {
+        deleteItems: function (itemIds) {
 
-            // The timeout allows the flyout to close
-            setTimeout(function () {
+            return new Promise(function (resolve, reject) {
 
                 var msg = Globalize.translate('ConfirmDeleteItem');
+                var title = Globalize.translate('HeaderDeleteItem');
 
-                Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
+                if (itemIds.length > 1) {
+                    msg = Globalize.translate('ConfirmDeleteItems');
+                    title = Globalize.translate('HeaderDeleteItems');
+                }
+
+                Dashboard.confirm(msg, title, function (result) {
 
                     if (result) {
-                        ApiClient.deleteItem(itemId);
 
-                        Events.trigger(LibraryBrowser, 'itemdeleting', [itemId]);
+                        var promises = itemIds.map(function (itemId) {
+                            ApiClient.deleteItem(itemId);
+                            Events.trigger(LibraryBrowser, 'itemdeleting', [itemId]);
+                        });
+
+                        resolve();
+
+                    } else {
+                        reject();
                     }
                 });
-
-            }, 250);
+            });
         },
 
         editImages: function (itemId) {
@@ -991,7 +1001,7 @@
                                 PlaylistManager.showPanel([itemId]);
                                 break;
                             case 'delete':
-                                LibraryBrowser.deleteItem(itemId);
+                                LibraryBrowser.deleteItems([itemId]);
                                 break;
                             case 'download':
                                 {
@@ -1594,12 +1604,8 @@
                 itemCommands.push('queuefromhere');
             }
 
-            // There's no detail page with a dedicated delete function
-            if (item.Type == 'Playlist' || item.Type == 'BoxSet') {
-
-                if (item.CanDelete) {
-                    itemCommands.push('delete');
-                }
+            if (item.CanDelete) {
+                itemCommands.push('delete');
             }
 
             if (SyncManager.isAvailable(item)) {
@@ -2892,7 +2898,7 @@
                 var fireCallbackOnClose = false;
                 var delay = browserInfo.animate ? 0 : 100;
 
-                setTimeout(function() {
+                setTimeout(function () {
                     paperDialogHelper.open(dlg).then(function () {
 
                         if (options.callback && fireCallbackOnClose) {
