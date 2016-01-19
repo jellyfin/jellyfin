@@ -119,7 +119,7 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-                return Environment.OperatingSystem == Startup.Common.OperatingSystem.Linux;
+				return Environment.OperatingSystem != Startup.Common.OperatingSystem.Osx;
             }
         }
 

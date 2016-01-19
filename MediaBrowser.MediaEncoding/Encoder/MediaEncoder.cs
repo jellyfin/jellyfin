@@ -492,11 +492,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (isAudio)
             {
-                //if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
-                //{
-                //    // It seems for audio files we need to subtract 1 (for the audio stream??)
-                //    imageStreamIndex = imageStreamIndex.Value - 1;
-                //}
+                if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
+                {
+                    // It seems for audio files we need to subtract 1 (for the audio stream??)
+                    imageStreamIndex = imageStreamIndex.Value - 1;
+                }
             }
             else
             {
