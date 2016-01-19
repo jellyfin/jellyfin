@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Web;
 using Funq;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
@@ -236,7 +237,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         private NameValueCollectionWrapper queryString;
         public INameValueCollection QueryString
         {
-            get { return queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query))); }
+            get { return queryString ?? (queryString = new NameValueCollectionWrapper(MyHttpUtility.ParseQueryString(request.Url.Query))); }
         }
 
         private NameValueCollectionWrapper formData;

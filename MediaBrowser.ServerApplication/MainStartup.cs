@@ -18,6 +18,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonIO.Windows;
+using Emby.Drawing.ImageMagick;
+using ImageMagickSharp;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.ServerApplication
@@ -29,6 +32,10 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         private static bool _isRunningAsService = false;
+        private static bool _appHostDisposed;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetDllDirectory(string lpPathName);
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -41,6 +48,11 @@ namespace MediaBrowser.ServerApplication
             var currentProcess = Process.GetCurrentProcess();
 
             var applicationPath = currentProcess.MainModule.FileName;
+            var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+
+            Wand.SetMagickCoderModulePath(architecturePath);
+
+            var success = SetDllDirectory(architecturePath);
 
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
@@ -136,7 +148,7 @@ namespace MediaBrowser.ServerApplication
             {
                 _logger.Info("Found a duplicate process. Giving it time to exit.");
 
-                if (!duplicate.WaitForExit(10000))
+                if (!duplicate.WaitForExit(12000))
                 {
                     _logger.Info("The duplicate process did not exit.");
                     return true;
@@ -215,7 +227,7 @@ namespace MediaBrowser.ServerApplication
                 logManager,
                 options,
                 fileSystem,
-                "MBServer",
+                "emby.windows.zip",
                 nativeApp);
 
             var initProgress = new Progress<double>();
@@ -239,6 +251,9 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                Task.WaitAll(task);
+
+                task = InstallVcredistIfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
                 SystemEvents.SessionEnding += SystemEvents_SessionEnding;
@@ -329,7 +344,7 @@ namespace MediaBrowser.ServerApplication
         {
             _logger.Info("Shutting down");
 
-            _appHost.Dispose();
+            DisposeAppHost();
         }
 
         /// <summary>
@@ -500,14 +515,15 @@ namespace MediaBrowser.ServerApplication
             }
             else
             {
+                DisposeAppHost();
+
                 ShutdownWindowsApplication();
             }
         }
 
         public static void Restart()
         {
-            _logger.Info("Disposing app host");
-            _appHost.Dispose();
+            DisposeAppHost();
 
             if (!_isRunningAsService)
             {
@@ -522,10 +538,23 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        private static void DisposeAppHost()
+        {
+            if (!_appHostDisposed)
+            {
+                _logger.Info("Disposing app host");
+
+                _appHostDisposed = true;
+                _appHost.Dispose();
+            }
+        }
+
         private static void ShutdownWindowsApplication()
         {
             _logger.Info("Calling Application.Exit");
             Application.Exit();
+
+            Environment.Exit(0);
 
             _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
             ApplicationTaskCompletionSource.SetResult(true);
@@ -542,6 +571,72 @@ namespace MediaBrowser.ServerApplication
             {
                 service.Stop();
             }
+        }
+
+        private static async Task InstallVcredistIfNeeded(ApplicationHost appHost, ILogger logger)
+        {
+            try
+            {
+                var version = ImageMagickEncoder.GetVersion();
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error loading ImageMagick", ex);
+            }
+
+            try
+            {
+                await InstallVcredist().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException("Error installing Visual Studio C++ runtime", ex);
+            }
+        }
+
+        private async static Task InstallVcredist()
+        {
+            var httpClient = _appHost.HttpClient;
+
+            var tmp = await httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = GetVcredistUrl(),
+                Progress = new Progress<double>()
+
+            }).ConfigureAwait(false);
+
+            var exePath = Path.ChangeExtension(tmp, ".exe");
+            File.Copy(tmp, exePath);
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = exePath,
+
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false
+            };
+
+            _logger.Info("Running {0}", startInfo.FileName);
+
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit();
+            }
+        }
+
+        private static string GetVcredistUrl()
+        {
+            if (Environment.Is64BitProcess)
+            {
+                return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x64.exe";
+            }
+
+            // TODO: ARM url - https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_arm.exe
+
+            return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x86.exe";
         }
 
         /// <summary>

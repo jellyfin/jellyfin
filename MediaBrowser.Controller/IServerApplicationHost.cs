@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace MediaBrowser.Controller
 {
@@ -63,7 +65,7 @@ namespace MediaBrowser.Controller
         /// Gets the local ip address.
         /// </summary>
         /// <value>The local ip address.</value>
-        string LocalIpAddress { get; }
+        List<IPAddress> LocalIpAddresses { get; }
 
         /// <summary>
         /// Gets the local API URL.

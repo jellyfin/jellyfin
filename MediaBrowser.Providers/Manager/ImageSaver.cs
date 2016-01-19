@@ -133,6 +133,7 @@ namespace MediaBrowser.Providers.Manager
             source = memoryStream;
 
             var currentImage = GetCurrentImage(item, type, index);
+            var savedPaths = new List<string>();
 
             using (source)
             {
@@ -146,17 +147,17 @@ namespace MediaBrowser.Providers.Manager
                     {
                         retryPath = retryPaths[currentPathIndex];
                     }
-                    await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
-
+                    var savedPath = await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
+                    savedPaths.Add(savedPath);
                     currentPathIndex++;
                 }
             }
 
             // Set the path into the item
-            SetImagePath(item, type, imageIndex, paths[0]);
+            SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
-            if (currentImage != null && currentImage.IsLocalFile && !paths.Contains(currentImage.Path, StringComparer.OrdinalIgnoreCase))
+            if (currentImage != null && currentImage.IsLocalFile && !savedPaths.Contains(currentImage.Path, StringComparer.OrdinalIgnoreCase))
             {
                 var currentPath = currentImage.Path;
 
@@ -184,11 +185,12 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private async Task SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
+        private async Task<string> SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
         {
             try
             {
                 await SaveImageToLocation(source, path, cancellationToken).ConfigureAwait(false);
+                return path;
             }
             catch (UnauthorizedAccessException)
             {
@@ -207,6 +209,7 @@ namespace MediaBrowser.Providers.Manager
 
             source.Position = 0;
             await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
+            return retryPath;
         }
 
         /// <summary>

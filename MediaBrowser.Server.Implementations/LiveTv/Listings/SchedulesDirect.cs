@@ -114,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             var requestString = _jsonSerializer.SerializeToString(requestList);
             _logger.Debug("Request string for schedules is: " + requestString);
             httpOptions.RequestContent = requestString;
-            using (var response = await Post(httpOptions).ConfigureAwait(false))
+            using (var response = await Post(httpOptions, true, info).ConfigureAwait(false))
             {
                 StreamReader reader = new StreamReader(response.Content);
                 string responseString = reader.ReadToEnd();
@@ -138,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 var requestBody = "[\"" + string.Join("\", \"", programsID) + "\"]";
                 httpOptions.RequestContent = requestBody;
 
-                using (var innerResponse = await Post(httpOptions).ConfigureAwait(false))
+                using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
                 {
                     StreamReader innerReader = new StreamReader(innerResponse.Content);
                     responseString = innerReader.ReadToEnd();
@@ -148,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                             responseString);
                     var programDict = programDetails.ToDictionary(p => p.programID, y => y);
 
-                    var images = await GetImageForPrograms(programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID).ToList(), cancellationToken);
+                    var images = await GetImageForPrograms(info, programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID).ToList(), cancellationToken);
 
                     var schedules = dailySchedules.SelectMany(d => d.programs);
                     foreach (ScheduleDirect.Program schedule in schedules)
@@ -229,7 +229,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            using (var response = await Get(httpOptions).ConfigureAwait(false))
+            using (var response = await Get(httpOptions, true, info).ConfigureAwait(false))
             {
                 var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
                 _logger.Info("Found " + root.map.Count() + " channels on the lineup on ScheduleDirect");
@@ -447,7 +447,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return url;
         }
 
-        private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(List<string> programIds,
+        private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
+			ListingsProviderInfo info,
+			List<string> programIds,
            CancellationToken cancellationToken)
         {
             var imageIdString = "[";
@@ -472,7 +474,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 TimeoutMs = 60000
             };
             List<ScheduleDirect.ShowImages> images;
-            using (var innerResponse2 = await Post(httpOptions).ConfigureAwait(false))
+            using (var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false))
             {
                 images = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.ShowImages>>(
                     innerResponse2.Content);
@@ -504,7 +506,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using (Stream responce = await Get(options).ConfigureAwait(false))
+				using (Stream responce = await Get(options, false, info).ConfigureAwait(false))
                 {
                     var root = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.Headends>>(responce);
 
@@ -606,30 +608,58 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
         }
 
-        private async Task<HttpResponseInfo> Post(HttpRequestOptions options)
+		private async Task<HttpResponseInfo> Post(HttpRequestOptions options, 
+			bool enableRetry,
+			ListingsProviderInfo providerInfo)
         {
             try
             {
                 return await _httpClient.Post(options).ConfigureAwait(false);
-            }
-            catch
-            {
-                _tokens.Clear();
-                throw;
-            }
+			}
+			catch (HttpException ex)
+			{
+				_tokens.Clear();
+
+				if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500) 
+				{
+					enableRetry = false;
+				}
+
+				if (!enableRetry) {
+					throw;
+				}
+			}
+
+			var newToken = await GetToken (providerInfo, options.CancellationToken).ConfigureAwait (false);
+			options.RequestHeaders ["token"] = newToken;
+			return await Post (options, false, providerInfo).ConfigureAwait (false);
         }
 
-        private async Task<Stream> Get(HttpRequestOptions options)
+		private async Task<Stream> Get(HttpRequestOptions options, 
+			bool enableRetry,
+			ListingsProviderInfo providerInfo)
         {
             try
             {
                 return await _httpClient.Get(options).ConfigureAwait(false);
-            }
-            catch
-            {
-                _tokens.Clear();
-                throw;
-            }
+			}
+			catch (HttpException ex)
+			{
+				_tokens.Clear();
+
+				if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500) 
+				{
+					enableRetry = false;
+				}
+
+				if (!enableRetry) {
+					throw;
+				}
+			}
+
+			var newToken = await GetToken (providerInfo, options.CancellationToken).ConfigureAwait (false);
+			options.RequestHeaders ["token"] = newToken;
+			return await Get (options, false, providerInfo).ConfigureAwait (false);
         }
 
         private async Task<string> GetTokenInternal(string username, string password,
@@ -646,7 +676,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             //_logger.Info("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
 
-            using (var responce = await Post(httpOptions).ConfigureAwait(false))
+			using (var responce = await Post(httpOptions, false, null).ConfigureAwait(false))
             {
                 var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Token>(responce.Content);
                 if (root.message == "OK")
@@ -728,7 +758,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using (var response = await Get(options).ConfigureAwait(false))
+				using (var response = await Get(options, false, null).ConfigureAwait(false))
                 {
                     var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
 

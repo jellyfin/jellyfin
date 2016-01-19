@@ -37,7 +37,6 @@ namespace MediaBrowser.Dlna.Profiles
             MusicSyncBitrate = 128000;
 
             EnableAlbumArtInDidl = false;
-            EnableDlnaProtocol = true;
 
             TranscodingProfiles = new[]
             {

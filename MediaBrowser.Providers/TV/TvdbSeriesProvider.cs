@@ -222,6 +222,11 @@ namespace MediaBrowser.Providers.TV
                 seriesId = await GetSeriesByRemoteId(seriesId, idType, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
             }
 
+            if (string.IsNullOrWhiteSpace(seriesId))
+            {
+                throw new ArgumentNullException("seriesId");
+            }
+
             var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
 
             using (var zipStream = await _httpClient.Get(new HttpRequestOptions
@@ -324,38 +329,48 @@ namespace MediaBrowser.Providers.TV
             return false;
         }
 
+        private SemaphoreSlim _ensureSemaphore = new SemaphoreSlim(1,1);
         internal async Task<string> EnsureSeriesInfo(Dictionary<string, string> seriesProviderIds, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
-            string seriesId;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId))
-            {
-                var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+            await _ensureSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                // Only download if not already there
-                // The post-scan task will take care of updates so we don't need to re-download here
-                if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
+            try
+            {
+                string seriesId;
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId))
                 {
-                    await DownloadSeriesZip(seriesId, MetadataProviders.Tvdb.ToString(), seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                    var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+
+                    // Only download if not already there
+                    // The post-scan task will take care of updates so we don't need to re-download here
+                    if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
+                    {
+                        await DownloadSeriesZip(seriesId, MetadataProviders.Tvdb.ToString(), seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return seriesDataPath;
                 }
 
-                return seriesDataPath;
-            }
-
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId))
-            {
-                var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
-
-                // Only download if not already there
-                // The post-scan task will take care of updates so we don't need to re-download here
-                if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId))
                 {
-                    await DownloadSeriesZip(seriesId, MetadataProviders.Imdb.ToString(), seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                    var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+
+                    // Only download if not already there
+                    // The post-scan task will take care of updates so we don't need to re-download here
+                    if (!IsCacheValid(seriesDataPath, preferredMetadataLanguage))
+                    {
+                        await DownloadSeriesZip(seriesId, MetadataProviders.Imdb.ToString(), seriesDataPath, null, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return seriesDataPath;
                 }
 
-                return seriesDataPath;
+                return null;
             }
-
-            return null;
+            finally
+            {
+                _ensureSemaphore.Release();
+            }
         }
 
         private bool IsCacheValid(string seriesDataPath, string preferredMetadataLanguage)

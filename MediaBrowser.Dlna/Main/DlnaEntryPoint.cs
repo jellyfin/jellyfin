@@ -43,19 +43,19 @@ namespace MediaBrowser.Dlna.Main
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, 
-            ILogManager logManager, 
-            IServerApplicationHost appHost, 
-            INetworkManager network, 
-            ISessionManager sessionManager, 
-            IHttpClient httpClient, 
-            ILibraryManager libraryManager, 
-            IUserManager userManager, 
-            IDlnaManager dlnaManager, 
-            IImageProcessor imageProcessor, 
-            IUserDataManager userDataManager, 
-            ILocalizationManager localization, 
-            IMediaSourceManager mediaSourceManager, 
+        public DlnaEntryPoint(IServerConfigurationManager config,
+            ILogManager logManager,
+            IServerApplicationHost appHost,
+            INetworkManager network,
+            ISessionManager sessionManager,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IDlnaManager dlnaManager,
+            IImageProcessor imageProcessor,
+            IUserDataManager userDataManager,
+            ILocalizationManager localization,
+            IMediaSourceManager mediaSourceManager,
             ISsdpHandler ssdpHandler, IDeviceDiscovery deviceDiscovery)
         {
             _config = config;
@@ -148,13 +148,20 @@ namespace MediaBrowser.Dlna.Main
 
         private void RegisterServerEndpoints()
         {
-            foreach (var address in _network.GetLocalIpAddresses())
+            foreach (var address in _appHost.LocalIpAddresses)
             {
-                var guid = address.GetMD5();
+                //if (IPAddress.IsLoopback(address))
+                //{
+                //    // Should we allow this?
+                //    continue;
+                //}
+
+                var addressString = address.ToString();
+                var guid = addressString.GetMD5();
 
                 var descriptorURI = "/dlna/" + guid.ToString("N") + "/description.xml";
 
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorURI);
+                var uri = new Uri(_appHost.GetLocalApiUrl(addressString) + descriptorURI);
 
                 var services = new List<string>
                 {
@@ -165,8 +172,8 @@ namespace MediaBrowser.Dlna.Main
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
                     "uuid:" + guid.ToString("N")
                 };
-                
-                _ssdpHandler.RegisterNotification(guid, uri, IPAddress.Parse(address), services);
+
+                _ssdpHandler.RegisterNotification(guid, uri, address, services);
 
                 _registeredServerIds.Add(guid.ToString("N"));
             }
