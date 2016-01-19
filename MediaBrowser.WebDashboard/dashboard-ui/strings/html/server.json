@@ -678,7 +678,7 @@
     "HeaderRequireManualLoginHelp": "When disabled clients may present a login screen with a visual selection of users.",
     "OptionOtherApps": "Other apps",
     "OptionMobileApps": "Mobile apps",
-    "HeaderNotificationList": "Click on a notification to configure it's sending options.",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "Application update available",
     "NotificationOptionApplicationUpdateInstalled": "Application update installed",
     "NotificationOptionPluginUpdateInstalled": "Plugin update installed",
