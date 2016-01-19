@@ -49,11 +49,13 @@
   <ItemGroup>
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+      <HintPath>..\packages\CommonIO.1.0.0.7\lib\net45\CommonIO.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.4.1.1\lib\net45\NLog.dll</HintPath>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -62,13 +64,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=2.8.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SimpleInjector.3.0.5\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector">
+      <HintPath>..\packages\SimpleInjector.3.1.2\lib\net45\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack.Text">
@@ -105,6 +108,7 @@
     <Compile Include="Security\SuppporterInfoResponse.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
+    <Compile Include="Updates\GithubUpdater.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -14,7 +14,7 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Xbox 360";
 
             // Required according to above
-            ModelName = "Windows Media Connect";
+            ModelName = "Windows Media Player Sharing";
 
             ModelNumber = "12.0";
 
@@ -25,13 +25,11 @@ namespace MediaBrowser.Dlna.Profiles
             ManufacturerUrl = "http://www.microsoft.com";
             XDlnaDoc = "DMS-1.50";
             ModelDescription = "Emby : UPnP Media Server";
-            ModelNumber = "001";
 
             TimelineOffsetSeconds = 40;
             RequiresPlainFolders = true;
             RequiresPlainVideoItems = true;
             EnableMSMediaReceiverRegistrar = true;
-            EnableDlnaProtocol = false;
 
             Identification = new DeviceIdentification
             {

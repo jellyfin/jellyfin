@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Mono
 
             var nativeApp = new NativeApp(options);
 
-            _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", nativeApp);
+            _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "emby.mono.zip", nativeApp);
 
             if (options.ContainsOption("-v"))
             {

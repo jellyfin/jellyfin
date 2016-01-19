@@ -437,11 +437,12 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Installs the package.
         /// </summary>
         /// <param name="package">The package.</param>
+        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="System.ArgumentNullException">package</exception>
-        public async Task InstallPackage(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken)
         {
             if (package == null)
             {
@@ -494,7 +495,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             try
             {
-                await InstallPackageInternal(package, innerProgress, linkedToken).ConfigureAwait(false);
+                await InstallPackageInternal(package, isPlugin, innerProgress, linkedToken).ConfigureAwait(false);
 
                 lock (CurrentInstallations)
                 {
@@ -550,18 +551,17 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Installs the package internal.
         /// </summary>
         /// <param name="package">The package.</param>
+        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task InstallPackageInternal(PackageVersionInfo package, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task InstallPackageInternal(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Do the install
             await PerformPackageInstallation(progress, package, cancellationToken).ConfigureAwait(false);
 
-            var extension = Path.GetExtension(package.targetFilename) ?? "";
-
             // Do plugin-specific processing
-            if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase) && !string.Equals(extension, ".7z", StringComparison.OrdinalIgnoreCase))
+            if (isPlugin)
             {
                 // Set last update time if we were installed before
                 var plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
