@@ -3,7 +3,7 @@ Emby Server
 
 Emby Server is a home media server built on top of other popular open source technologies such as **Service Stack**, **jQuery**, **jQuery mobile**, and **Mono**.
 
-It features a REST-based api with built-in documention to facilitate client development. We also have client libraries for our api to enable rapid development.
+It features a REST-based API with built-in documention to facilitate client development. We also have client libraries for our API to enable rapid development.
 
 ## Emby Apps
 
