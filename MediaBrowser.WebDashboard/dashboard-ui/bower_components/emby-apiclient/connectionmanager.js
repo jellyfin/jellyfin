@@ -420,6 +420,7 @@
             saveUserInfoIntoCredentials(server, result.User);
             credentialProvider.credentials(credentials);
 
+            apiClient.serverInfo(server);
             afterConnected(apiClient, options);
 
             onLocalUserSignIn(server, server.LastConnectionMode, result.User);

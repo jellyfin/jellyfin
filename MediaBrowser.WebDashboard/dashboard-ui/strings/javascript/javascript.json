@@ -899,7 +899,7 @@
     "ButtonNo": "No",
     "ButtonRestorePreviousPurchase": "Restore Purchase",
     "AlreadyPaid": "Already Paid?",
-    "AlreadyPaidHelp1": "If you already paid to install an older version of Media Browser for Android, you don't need to pay again in order to activate this app. Send us an email at {0} and we'll get it activated for you.",
+    "AlreadyPaidHelp1": "If you already paid to install an older version of Media Browser for Android, you don't need to pay again in order to activate this app. Click OK to send us an email at {0} and we'll get it activated for you.",
     "AlreadyPaidHelp2": "Got Emby Premiere? Just cancel this dialog, sign into the app from within your home WIFI network, and it will be unlocked automatically.",
     "ButtonForYou": "For You",
     "ButtonLibrary": "Library",
