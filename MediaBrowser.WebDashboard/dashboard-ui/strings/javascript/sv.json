@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "Inst\u00e4llningarna sparade.",
     "AddUser": "Skapa anv\u00e4ndare",
     "Users": "Anv\u00e4ndare",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identifiera",
     "HeaderIdentifyItem": "Identifiera objekt",
     "LabelRecurringDonationCanBeCancelledHelp": "St\u00e5ende donationer kan avbrytas n\u00e4r som helst via ditt PayPal-konto.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",
     "LabelAutomaticUpdateLevel": "Automatic update level:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Bl\u00e4ddra bland bilder online",
     "HeaderDeleteItem": "Radera objekt",
     "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Ange ett namn eller externt id.",
     "MessageValueNotCorrect": "Det angivna v\u00e4rdet \u00e4r felaktigt. Var god f\u00f6rs\u00f6k igen.",
     "MessageItemSaved": "Objektet har sparats.",

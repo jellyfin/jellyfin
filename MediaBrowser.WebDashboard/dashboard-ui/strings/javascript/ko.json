@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "\uc124\uc815\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "AddUser": "\uc0ac\uc6a9\uc790 \ucd94\uac00",
     "Users": "\uc0ac\uc6a9\uc790",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "\uc815\uae30 \ud6c4\uc6d0\uc740 \uc5b8\uc81c\ub4e0\uc9c0 \uadc0\ud558\uc758 PayPal \uacc4\uc815\uc5d0\uc11c \ucde8\uc18c\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "\ub0b4 \ubbf8\ub514\uc5b4",
     "ButtonRemoveFromCollection": "\uceec\ub809\uc158\uc5d0\uc11c \uc0ad\uc81c",
     "LabelAutomaticUpdateLevel": "\uc790\ub3d9 \uc5c5\ub370\uc774\ud2b8 \uc218\uc900:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "\uc628\ub77c\uc778 \uc774\ubbf8\uc9c0 \ud0d0\uc0c9",
     "HeaderDeleteItem": "\ud56d\ubaa9 \uc0ad\uc81c",
     "ConfirmDeleteItem": "\uc774 \ud56d\ubaa9\uc744 \uc0ad\uc81c\ud558\uba74 \ud30c\uc77c \uc2dc\uc2a4\ud15c\uacfc \ub77c\uc774\ube0c\ub7ec\ub9ac \ubaa8\ub450\uc5d0\uc11c \uc0ad\uc81c\ub429\ub2c8\ub2e4. \uacc4\uc18d\ud558\uaca0\uc2b5\ub2c8\uae4c?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageValueNotCorrect": "\uc785\ub825\ud55c \uac12\uc774 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.",
     "MessageItemSaved": "\ud56d\ubaa9\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",

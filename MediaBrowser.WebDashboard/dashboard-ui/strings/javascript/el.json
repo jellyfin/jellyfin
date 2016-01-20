@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "\u039f\u03b9 \u03c1\u03c5\u03b8\u03bc\u03af\u03c3\u03b5\u03b9\u03c2 \u03b1\u03c0\u03bf\u03b8\u03b7\u03ba\u03b5\u03cd\u03c4\u03b7\u03ba\u03b1\u03bd",
     "AddUser": "\u03a0\u03c1\u03bf\u03c3\u03b8\u03ae\u03ba\u03b7 \u03c7\u03c1\u03ae\u03c3\u03c4\u03b7",
     "Users": "\u039f\u03b9 \u03c7\u03c1\u03ae\u03c3\u03c4\u03b5\u03c2",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",
     "LabelAutomaticUpdateLevel": "Automatic update level:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Browse online images",
     "HeaderDeleteItem": "Delete Item",
     "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageValueNotCorrect": "The value entered is not correct. Please try again.",
     "MessageItemSaved": "Item saved.",

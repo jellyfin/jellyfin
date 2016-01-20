@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "Configuraci\u00f3n guardada",
     "AddUser": "Agregar usuario",
     "Users": "Usuarios",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Donaciones recurrentes se pueden cancelar en cualquier momento desde su cuenta de PayPal.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",
     "LabelAutomaticUpdateLevel": "Automatic update level:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Navegar im\u00e1genes online",
     "HeaderDeleteItem": "Borrar elemento",
     "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Introduzca un nombre o un identificador externo.",
     "MessageValueNotCorrect": "El valor introducido no es correcto. Intentelo de nuevo.",
     "MessageItemSaved": "Elemento grabado.",

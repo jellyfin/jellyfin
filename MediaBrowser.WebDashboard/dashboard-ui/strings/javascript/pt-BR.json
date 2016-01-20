@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Exemplo: {0} (no servidor)",
     "SettingsSaved": "Ajustes salvos.",
     "AddUser": "Adicionar Usu\u00e1rio",
     "Users": "Usu\u00e1rios",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identificar",
     "HeaderIdentifyItem": "Identificar Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Doa\u00e7\u00f5es recorrentes podem ser canceladas a qualquer momento dentro da conta do PayPal.",
+    "LabelFromHelp": "Exemplo: {0} (no servidor)",
     "HeaderMyMedia": "Minha M\u00eddia",
     "ButtonRemoveFromCollection": "Remover da Cole\u00e7\u00e3o",
     "LabelAutomaticUpdateLevel": "N\u00edvel de atualiza\u00e7\u00e3o autom\u00e1tica:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Procurar imagens online",
     "HeaderDeleteItem": "Excluir item",
     "ConfirmDeleteItem": "Excluir este item o excluir\u00e1 do sistema de arquivos e tamb\u00e9m da biblioteca de m\u00eddias. Deseja realmente continuar?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Por favor, digite um nome ou Id externo.",
     "MessageValueNotCorrect": "O valor digitado n\u00e3o est\u00e1 correto. Por favor, tente novamente.",
     "MessageItemSaved": "Item salvo.",

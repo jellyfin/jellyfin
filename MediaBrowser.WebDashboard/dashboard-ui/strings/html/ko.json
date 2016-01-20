@@ -675,7 +675,7 @@
     "HeaderRequireManualLoginHelp": "When disabled clients may present a login screen with a visual selection of users.",
     "OptionOtherApps": "\ub2e4\ub978 \uc571",
     "OptionMobileApps": "\ubaa8\ubc14\uc77c \uc571",
-    "HeaderNotificationList": "Click on a notification to configure it's sending options.",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "\uc560\ud50c\ub9ac\ucf00\uc774\uc158 \uc5c5\ub370\uc774\ud2b8 \uc0ac\uc6a9 \uac00\ub2a5",
     "NotificationOptionApplicationUpdateInstalled": "\uc560\ud50c\ub9ac\ucf00\uc774\uc158 \uc5c5\ub370\uc774\ud2b8 \uc124\uce58\ub428",
     "NotificationOptionPluginUpdateInstalled": "\ud50c\ub7ec\uadf8\uc778 \uc5c5\ub370\uc774\ud2b8 \uc124\uce58\ub428",
