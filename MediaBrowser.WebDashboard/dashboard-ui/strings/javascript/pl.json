@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "Ustawienia zapisane.",
     "AddUser": "Dodaj u\u017cytkownika",
     "Users": "U\u017cytkownicy",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identyfikuj",
     "HeaderIdentifyItem": "Identyfikuj obiekt",
     "LabelRecurringDonationCanBeCancelledHelp": "Okresowe dotacje mog\u0105 zosta\u0107 anulowane w dowolnym momencie poprzez swoje konto PayPal.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "Moje Media",
     "ButtonRemoveFromCollection": "Usu\u0144 z Kolekcji",
     "LabelAutomaticUpdateLevel": "Automatyczne poziom aktualizacji:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Przegl\u0105daj obrazy online",
     "HeaderDeleteItem": "Usu\u0144 pozycje",
     "ConfirmDeleteItem": "Usuni\u0119cie tej pozycji usunie j\u0105 zar\u00f3wno z systemu plik\u00f3w jak i z biblioteki medi\u00f3w. Czy chcesz kontynuowa\u0107?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Prosz\u0119 wprowad\u017a nazw\u0119 lub zewn\u0119trzne Id.",
     "MessageValueNotCorrect": "Wprowadzona warto\u015b\u0107 nie jest prawid\u0142owa. Spr\u00f3buj ponownie.",
     "MessageItemSaved": "Obiekt zapisany.",

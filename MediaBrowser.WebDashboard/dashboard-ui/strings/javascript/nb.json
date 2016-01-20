@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "Innstillinger lagret",
     "AddUser": "Legg til bruker",
     "Users": "Brukere",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identifiser",
     "HeaderIdentifyItem": "Identifiser Element",
     "LabelRecurringDonationCanBeCancelledHelp": "Gjentakende donasjoner kan avbrytes n\u00e5r som helst fra din PayPal-konto.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "Mine media",
     "ButtonRemoveFromCollection": "Remove from Collection",
     "LabelAutomaticUpdateLevel": "Automatic update level:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Bla igjennom bilder online",
     "HeaderDeleteItem": "Slett element",
     "ConfirmDeleteItem": "Sletter elementet fra b\u00e5de filsystemet og biblioteket. Er du sikker p\u00e5 at du vil fortsette?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Vennligst skriv ett navn eller en ekstern id.",
     "MessageValueNotCorrect": "Verdien som ble skrevet er ikke korrekt. Vennligst pr\u00f8v igjen.",
     "MessageItemSaved": "Element lagret.",

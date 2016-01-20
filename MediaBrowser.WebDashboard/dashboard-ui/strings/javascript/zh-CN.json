@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "\u8bbe\u7f6e\u5df2\u4fdd\u5b58",
     "AddUser": "\u6dfb\u52a0\u7528\u6237",
     "Users": "\u7528\u6237",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "\u8bc6\u522b",
     "HeaderIdentifyItem": "\u8bc6\u522b\u9879",
     "LabelRecurringDonationCanBeCancelledHelp": "\u5728\u60a8\u7684PayPal\u8d26\u6237\u5185\u4efb\u4f55\u65f6\u5019\u90fd\u53ef\u4ee5\u53d6\u6d88\u7ecf\u5e38\u6027\u6350\u8d60\u3002",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",
     "LabelAutomaticUpdateLevel": "Automatic update level:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "\u6d4f\u89c8\u5728\u7ebf\u56fe\u7247",
     "HeaderDeleteItem": "\u5220\u9664\u9879\u76ee",
     "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "\u8bf7\u8f93\u5165\u4e00\u4e2a\u540d\u79f0\u6216\u4e00\u4e2a\u5916\u90e8ID\u3002",
     "MessageValueNotCorrect": "\u8f93\u5165\u7684\u503c\u4e0d\u6b63\u786e\u3002\u8bf7\u91cd\u8bd5\u3002",
     "MessageItemSaved": "\u9879\u76ee\u5df2\u4fdd\u5b58\u3002",

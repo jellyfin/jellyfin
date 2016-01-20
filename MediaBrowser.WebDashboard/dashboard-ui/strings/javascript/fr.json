@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Exemple: {0} (sur le serveur)",
     "SettingsSaved": "Param\u00e8tres sauvegard\u00e9s.",
     "AddUser": "Ajouter un utilisateur",
     "Users": "Utilisateurs",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identifier",
     "HeaderIdentifyItem": "Identification de l'\u00e9l\u00e9ment",
     "LabelRecurringDonationCanBeCancelledHelp": "Des donations r\u00e9currentes peuvent \u00eatre annul\u00e9es \u00e0 tout moment depuis votre compte PayPal.",
+    "LabelFromHelp": "Exemple: {0} (sur le serveur)",
     "HeaderMyMedia": "Mes medias",
     "ButtonRemoveFromCollection": "Supprimer de la collection",
     "LabelAutomaticUpdateLevel": "Niveau de mise \u00e0 jour automatique :",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Parcourir les images en ligne",
     "HeaderDeleteItem": "Supprimer l'\u00e9l\u00e9ment",
     "ConfirmDeleteItem": "Supprimer cet \u00e9l\u00e9ment l'effacera \u00e0 la fois du syst\u00e8me de fichiers et de votre biblioth\u00e8que de medias. Etes-vous s\u00fbr de vouloir continuer ?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Veuillez saisir un nom ou un identifiant externe.",
     "MessageValueNotCorrect": "La valeur saisie est incorrecte. Veuillez r\u00e9essayer.",
     "MessageItemSaved": "Item sauvegard\u00e9.",

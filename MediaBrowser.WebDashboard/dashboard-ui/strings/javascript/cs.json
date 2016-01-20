@@ -1,5 +1,4 @@
 {
-    "LabelFromHelp": "Example: {0} (on the server)",
     "SettingsSaved": "Nastaven\u00ed ulo\u017eeno.",
     "AddUser": "P\u0159idat u\u017eivatele",
     "Users": "U\u017eivatel\u00e9",
@@ -49,6 +48,7 @@
     "ButtonIdentify": "Identifikuj",
     "HeaderIdentifyItem": "Identifikuj polo\u017eku",
     "LabelRecurringDonationCanBeCancelledHelp": "Opakuj\u00edc\u00ed se dary lze kdykoli zru\u0161it pomoc\u00ed sv\u00e9ho \u00fa\u010dtu PayPal.",
+    "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "Moje m\u00e9dia",
     "ButtonRemoveFromCollection": "Odebrat z kolekce",
     "LabelAutomaticUpdateLevel": "\u00darove\u0148 automatick\u00e9 aktualizace:",
@@ -355,6 +355,8 @@
     "ButtonBrowseOnlineImages": "Proch\u00e1zet obr\u00e1zky online",
     "HeaderDeleteItem": "Smazat polo\u017eku",
     "ConfirmDeleteItem": "Smaz\u00e1n\u00edm polo\u017eky odstran\u00edte soubor jak z knihovny m\u00e9di\u00ed tak ze souborov\u00e9ho syst\u00e9mu. Jste si jisti, \u017ee chcete pokra\u010dovat?",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "MessagePleaseEnterNameOrId": "Pros\u00edm, zadejte n\u00e1zev nebo extern\u00ed Id.",
     "MessageValueNotCorrect": "Zadan\u00e1 hodnota nen\u00ed spr\u00e1vn\u00e1. Pros\u00edm zkuste to znovu.",
     "MessageItemSaved": "Polo\u017eka ulo\u017eena.",
