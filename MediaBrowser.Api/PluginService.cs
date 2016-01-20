@@ -250,11 +250,7 @@ namespace MediaBrowser.Api
             var guid = new Guid(request.Id);
             var plugin = _appHost.Plugins.First(p => p.Id == guid);
 
-            var dateModified = plugin.ConfigurationDateLastModified;
-
-            var cacheKey = (plugin.Version.ToString() + dateModified.Ticks).GetMD5();
-
-            return ToOptimizedResultUsingCache(cacheKey, dateModified, null, () => plugin.Configuration);
+            return ToOptimizedResult(plugin.Configuration);
         }
 
         /// <summary>
