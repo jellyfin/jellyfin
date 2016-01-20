@@ -1680,6 +1680,7 @@ var AppInfo = {};
                 window.ConnectionManager.clearData();
             }
 
+            console.log('binding to apiclientcreated');
             Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
             if (Dashboard.isConnectMode()) {
@@ -1702,12 +1703,19 @@ var AppInfo = {};
                 }
 
             } else {
+
+                console.log('loading ApiClient singleton');
+
                 return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
+
+                    console.log('creating ApiClient singleton');
+
                     var apiClient = new apiClientFactory(Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, window.devicePixelRatio);
                     apiClient.enableAutomaticNetworking = false;
                     ConnectionManager.addApiClient(apiClient);
                     Dashboard.importCss(apiClient.getUrl('Branding/Css'));
                     window.ApiClient = apiClient;
+                    console.log('loaded ApiClient singleton');
                 });
             }
         });
@@ -1846,7 +1854,8 @@ var AppInfo = {};
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
-            connectservice: apiClientBowerPath + '/connectservice'
+            connectservice: apiClientBowerPath + '/connectservice',
+            hammer: bowerPath + "/hammerjs/hammer.min"
         };
 
         if (navigator.webkitPersistentStorage) {
@@ -1956,10 +1965,6 @@ var AppInfo = {};
         define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
 
         define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
-
-        define("hammer", [bowerPath + "/hammerjs/hammer.min"], function (Hammer) {
-            return Hammer;
-        });
 
         define("swipebox", [bowerPath + '/swipebox/src/js/jquery.swipebox.min', "css!" + bowerPath + "/swipebox/src/css/swipebox.min.css"]);
 
@@ -2148,7 +2153,6 @@ var AppInfo = {};
             deps.push('paper-icon-button');
             deps.push('paper-button');
             deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
-            deps.push('scripts/librarybrowser');
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
@@ -2156,6 +2160,7 @@ var AppInfo = {};
 
             Promise.all(promises).then(function () {
 
+                console.log('initAfterDependencies promises resolved');
                 MediaController.init();
 
                 document.title = Globalize.translateDocument(document.title, 'html');
@@ -2206,6 +2211,8 @@ var AppInfo = {};
 
     function onAppReady() {
 
+        console.log('Begin onAppReady');
+
         var deps = [];
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
@@ -2248,6 +2255,7 @@ var AppInfo = {};
         deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
+        deps.push('scripts/librarybrowser');
 
         deps.push('css!css/card.css');
 
