@@ -1028,6 +1028,8 @@
     }
 
     MediaController.init = function () {
+
+        console.log('Beginning MediaController.init');
         if (window.ApiClient) {
             initializeApiClient(window.ApiClient);
         }

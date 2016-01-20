@@ -22,6 +22,7 @@
         return new Promise(function (resolve, reject) {
 
             if (getDictionary(name, culture)) {
+                console.log('Globalize loadDictionary resolved: ' + name);
                 resolve();
                 return;
             }
@@ -45,6 +46,7 @@
 
                 xhr2.onload = function (e) {
                     dictionaries[url] = JSON.parse(this.response);
+                    console.log('Globalize loadDictionary resolved: ' + name);
                     resolve();
                 };
 
@@ -58,6 +60,7 @@
                 if (this.status < 400) {
 
                     dictionaries[url] = JSON.parse(this.response);
+                    console.log('Globalize loadDictionary resolved: ' + name);
                     resolve();
 
                 } else {

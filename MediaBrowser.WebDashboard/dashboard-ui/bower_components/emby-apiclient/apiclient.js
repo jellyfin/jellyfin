@@ -510,7 +510,12 @@
         };
 
         self.isWebSocketSupported = function () {
-            return WebSocket != null;
+            try {
+                return WebSocket != null;
+            }
+            catch (err) {
+                return false;
+            }
         };
 
         self.openWebSocket = function () {
