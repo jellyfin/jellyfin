@@ -28,6 +28,12 @@ namespace MediaBrowser.Controller.Security
         public bool? IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has user.
+        /// </summary>
+        /// <value><c>null</c> if [has user] contains no value, <c>true</c> if [has user]; otherwise, <c>false</c>.</value>
+        public bool? HasUser { get; set; }
+        
+        /// <summary>
         /// Gets or sets the start index.
         /// </summary>
         /// <value>The start index.</value>
