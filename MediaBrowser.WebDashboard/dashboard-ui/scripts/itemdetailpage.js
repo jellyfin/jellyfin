@@ -1,4 +1,4 @@
-﻿(function ($, document, LibraryBrowser, window) {
+﻿(function ($, document, window) {
 
     var currentItem;
 
@@ -2092,4 +2092,4 @@
 
     window.ItemDetailPage = new itemDetailPage();
 
-})(jQuery, document, LibraryBrowser, window);
+})(jQuery, document, window);

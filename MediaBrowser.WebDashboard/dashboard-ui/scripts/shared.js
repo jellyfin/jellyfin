@@ -1,4 +1,4 @@
-﻿(function ($, document, LibraryBrowser, window) {
+﻿(function ($, document, window) {
 
     var currentItem;
 
@@ -87,4 +87,4 @@
 
     });
 
-})(jQuery, document, LibraryBrowser, window);
+})(jQuery, document, window);

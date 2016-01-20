@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleAdvanced}</title>
+</head>
+<body>
+    <div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="jqmpanel,jqmtable,scripts/serversecurity,detailtablecss">
+        <div data-role="content">
+            <div class="content-primary">
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                    <a href="dashboardhosting.html" data-role="button">${TabHosting}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabSecurity}</a>
+                </div>
+                <div class="detailSectionHeader" style="margin-top:2.5em;">
+                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                        ${HeaderApiKeys}
+                    </h3>
+                    <paper-button raised class="btnNewKey submit mini" style="margin-left:1em;" title="${ButtonNew}">
+                        <iron-icon icon="add"></iron-icon>
+                        <span>${ButtonAdd}</span>
+                    </paper-button>
+                </div>
+                <p>${HeaderApiKeysHelp}</p>
+                <br />
+                <table data-role="table" data-mode="reflow" class="tblApiKeys stripedTable ui-responsive table-stroke" style="display: table;">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>${HeaderApiKey}</th>
+                            <th>${HeaderApp}</th>
+                            <th>${HeaderDevice}</th>
+                            <th>${HeaderUser}</th>
+                            <th>${HeaderDateIssued}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="resultBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div data-role="panel" class="newKeyPanel" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form class="newKeyForm">
+                <h3>${HeaderNewApiKey}</h3>
+                <p>${HeaderNewApiKeyHelp}</p>
+                <div>
+                    <label for="txtAppName">${LabelAppName}</label>
+                    <input type="text" id="txtAppName" required="required" />
+                    <div class="fieldDescription">${LabelAppNameExample}</div>
+                </div>
+                <br />
+                <p>
+                    <button type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonCreate}</button>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
