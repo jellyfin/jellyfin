@@ -58,21 +58,6 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResult(Request, result);
         }
 
-        /// <summary>
-        /// To the optimized result using cache.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="cacheKey">The cache key.</param>
-        /// <param name="lastDateModified">The last date modified.</param>
-        /// <param name="cacheDuration">Duration of the cache.</param>
-        /// <param name="factoryFn">The factory function.</param>
-        /// <returns>System.Object.</returns>
-        protected object ToOptimizedResultUsingCache<T>(Guid cacheKey, DateTime? lastDateModified, TimeSpan? cacheDuration, Func<T> factoryFn)
-           where T : class
-        {
-            return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
-        }
-
         protected void AssertCanUpdateUser(IUserManager userManager, string userId)
         {
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
