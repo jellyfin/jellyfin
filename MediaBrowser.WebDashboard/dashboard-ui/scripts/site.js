@@ -2013,7 +2013,11 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            if (MainActivity.getChromeVersion() >= 48) {
+                define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            } else {
+                define("audiorenderer", ["cordova/android/vlcplayer"]);
+            }
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
