@@ -294,7 +294,7 @@ namespace MediaBrowser.Api
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
-            Logger.Debug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            //Logger.Debug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
             if (job.ActiveRequestCount <= 0)
             {
                 PingTimer(job, false);
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("playSessionId");
             }
 
-            Logger.Debug("PingTranscodingJob PlaySessionId={0}", playSessionId);
+            //Logger.Debug("PingTranscodingJob PlaySessionId={0}", playSessionId);
 
             var jobs = new List<TranscodingJob>();
 
