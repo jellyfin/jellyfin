@@ -1,4 +1,4 @@
-﻿(function ($, document, LibraryBrowser) {
+﻿(function ($, document) {
 
     function renderItems(page, item) {
 
@@ -337,4 +337,4 @@
         renderItems: renderItems
     };
 
-})(jQuery, document, LibraryBrowser);
+})(jQuery, document);

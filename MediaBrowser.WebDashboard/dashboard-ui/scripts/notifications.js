@@ -1,4 +1,4 @@
-﻿(function ($, document, Dashboard, LibraryBrowser) {
+﻿(function ($, document, Dashboard) {
 
     function notifications() {
 
@@ -205,4 +205,4 @@
 
     });
 
-})(jQuery, document, Dashboard, LibraryBrowser);
+})(jQuery, document, Dashboard);

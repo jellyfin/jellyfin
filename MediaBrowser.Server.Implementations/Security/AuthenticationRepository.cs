@@ -185,6 +185,18 @@ namespace MediaBrowser.Server.Implementations.Security
                     cmd.Parameters.Add(cmd, "@IsActive", DbType.Boolean).Value = query.IsActive.Value;
                 }
 
+                if (query.HasUser.HasValue)
+                {
+                    if (query.HasUser.Value)
+                    {
+                        whereClauses.Add("UserId not null");
+                    }
+                    else
+                    {
+                        whereClauses.Add("UserId is null");
+                    }
+                }
+
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());

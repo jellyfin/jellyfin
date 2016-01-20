@@ -355,7 +355,8 @@ namespace MediaBrowser.Api.Session
         {
             var result = _authRepo.Get(new AuthenticationInfoQuery
             {
-                IsActive = true
+                IsActive = true,
+                HasUser = false
             });
 
             return ToOptimizedResult(result);
