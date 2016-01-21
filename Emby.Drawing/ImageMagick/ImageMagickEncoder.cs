@@ -139,7 +139,7 @@ namespace Emby.Drawing.ImageMagick
                 string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase);
         }
 
-        public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, string outputPath, int rotationAngle, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             // Even if the caller specified 100, don't use it because it takes forever
             quality = Math.Min(quality, 99);
@@ -149,6 +149,11 @@ namespace Emby.Drawing.ImageMagick
                 using (var originalImage = new MagickWand(inputPath))
                 {
                     ScaleImage(originalImage, width, height);
+
+                    if (rotationAngle > 0)
+                    {
+                        RotateImage(originalImage, rotationAngle);
+                    }
 
                     DrawIndicator(originalImage, width, height, options);
 
@@ -166,6 +171,11 @@ namespace Emby.Drawing.ImageMagick
                     {
                         ScaleImage(originalImage, width, height);
 
+                        if (rotationAngle > 0)
+                        {
+                            RotateImage(originalImage, rotationAngle);
+                        }
+
                         wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
                         DrawIndicator(wand, width, height, options);
 
@@ -177,6 +187,14 @@ namespace Emby.Drawing.ImageMagick
                 }
             }
             SaveDelay();
+        }
+
+        public static void RotateImage(MagickWand wand, float angle)
+        {
+            using (var pixelWand = new PixelWand("none", 1))
+            {
+                wand.CurrentImage.RotateImage(pixelWand, angle);
+            }
         }
 
         private void ScaleImage(MagickWand wand, int width, int height)
