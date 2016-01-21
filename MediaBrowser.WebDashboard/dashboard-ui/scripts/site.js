@@ -1855,15 +1855,16 @@ var AppInfo = {};
             browser: embyWebComponentsBowerPath + "/browser",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
-            hammer: bowerPath + "/hammerjs/hammer.min"
+            hammer: bowerPath + "/hammerjs/hammer.min",
+            imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
         if (navigator.webkitPersistentStorage) {
-            paths.imageloader = embyWebComponentsBowerPath + "/images/persistentimageloader";
+            paths.imageFetcher = embyWebComponentsBowerPath + "/images/persistentimagefetcher";
         } else if (Dashboard.isRunningInCordova()) {
-            paths.imageloader = 'cordova/imagestore';
+            paths.imageFetcher = 'cordova/imagestore';
         } else {
-            paths.imageloader = embyWebComponentsBowerPath + "/images/basicimageloader";
+            paths.imageFetcher = embyWebComponentsBowerPath + "/images/basicimagefetcher";
         }
 
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
@@ -2152,7 +2153,6 @@ var AppInfo = {};
             var promises = [];
             deps = [];
             deps.push('scripts/mediaplayer');
-            deps.push('thirdparty/jquery.unveil-custom.js');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
@@ -2219,6 +2219,8 @@ var AppInfo = {};
 
         var deps = [];
 
+        deps.push('imageLoader');
+
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
         }
@@ -2263,7 +2265,10 @@ var AppInfo = {};
 
         deps.push('css!css/card.css');
 
-        require(deps, function () {
+        require(deps, function (imageLoader) {
+
+            imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
+            window.ImageLoader = imageLoader;
 
             $.mobile.filterHtml = Dashboard.filterHtml;
 
