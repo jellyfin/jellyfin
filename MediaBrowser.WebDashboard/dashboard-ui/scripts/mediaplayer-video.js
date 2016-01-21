@@ -1192,7 +1192,8 @@
         function onError() {
             var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
-            if (item.Type == "TvChannel") {
+            var item = self.currentItem;
+            if (item && item.Type == "TvChannel") {
                 errorMsg += '<p>';
                 errorMsg += Globalize.translate('MessageEnsureOpenTuner');
                 errorMsg += '</p>';
