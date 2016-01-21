@@ -154,10 +154,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return this;
         }
 
-        private void OnRequestReceived(string localEndPoint)
-        {
-        }
-
         /// <summary>
         /// Starts the Web Service
         /// </summary>
@@ -177,7 +173,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            return new WebSocketSharpListener(_logger, OnRequestReceived, CertificatePath);
+            return new WebSocketSharpListener(_logger, CertificatePath);
         }
 
         private void OnWebSocketConnecting(WebSocketConnectingEventArgs args)
