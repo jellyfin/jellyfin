@@ -50,7 +50,9 @@
 
         document.body.appendChild(viewMenuBar);
 
-        ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        require(['imageLoader'], function (imageLoader) {
+            imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        });
 
         document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
@@ -323,7 +325,10 @@
         var userHeader = drawer.querySelector('.userheader');
 
         userHeader.innerHTML = html;
-        ImageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
+
+        require(['imageLoader'], function (imageLoader) {
+            imageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
+        });
     }
 
     function refreshLibraryInfoInDrawer(user, drawer) {
