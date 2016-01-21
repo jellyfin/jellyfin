@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.TV
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    _logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
+                    //_logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
                 }
                 catch (Exception ex)
                 {
