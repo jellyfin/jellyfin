@@ -89,7 +89,7 @@ namespace Emby.Drawing.GDI
             }
         }
 
-        public void EncodeImage(string inputPath, string cacheFilePath, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, string cacheFilePath, int rotationAngle, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             var hasPostProcessing = !string.IsNullOrEmpty(options.BackgroundColor) || options.UnplayedCount.HasValue || options.AddPlayedIndicator || options.PercentPlayed > 0;
 
