@@ -1204,7 +1204,10 @@
                 message: errorMsg
             });
 
-            self.onPlaybackStopped.call(mediaRenderer);
+            var mediaRenderer = self.currentMediaRenderer;
+            if (mediaRenderer) {
+                self.onPlaybackStopped.call(mediaRenderer);
+            }
             self.nextTrack();
         }
 
