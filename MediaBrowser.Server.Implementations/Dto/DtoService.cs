@@ -1786,11 +1786,31 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            if (size.Width > 0 && size.Height > 0)
+            var width = size.Width;
+            var height = size.Height;
+
+            if (width == 0 || height == 0)
             {
-                return size.Width / size.Height;
+                return null;
             }
-            return null;
+
+            var photo = item as Photo;
+            if (photo != null && photo.Orientation.HasValue)
+            {
+                switch (photo.Orientation.Value)
+                {
+                    case ImageOrientation.LeftBottom:
+                    case ImageOrientation.LeftTop:
+                    case ImageOrientation.RightBottom:
+                    case ImageOrientation.RightTop:
+                        var temp = height;
+                        height = width;
+                        width = temp;
+                        break;
+                }
+            }
+
+            return width / height;
         }
     }
 }
