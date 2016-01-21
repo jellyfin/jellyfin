@@ -218,7 +218,7 @@ namespace MediaBrowser.ServerApplication
             var fileSystem = new WindowsFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")));
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            var nativeApp = new WindowsApp(fileSystem)
+            var nativeApp = new WindowsApp(fileSystem, _logger)
             {
                 IsRunningAsService = runService
             };
