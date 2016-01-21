@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
+using MediaBrowser.Controller.Power;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -90,5 +91,11 @@ namespace MediaBrowser.Server.Startup.Common
         /// Prevents the system stand by.
         /// </summary>
         void PreventSystemStandby();
+
+        /// <summary>
+        /// Gets the power management.
+        /// </summary>
+        /// <returns>IPowerManagement.</returns>
+        IPowerManagement GetPowerManagement();
     }
 }
