@@ -258,7 +258,17 @@ namespace MediaBrowser.Common.Implementations.Security
 
                 try
                 {
-                    using (var json = await _httpClient.Post(MBValidateUrl, data, CancellationToken.None).ConfigureAwait(false))
+                    var options = new HttpRequestOptions
+                    {
+                        Url = MBValidateUrl,
+
+                        // Seeing block length errors
+                        EnableHttpCompression = false
+                    };
+
+                    options.SetPostData(data);
+
+                    using (var json = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
                     {
                         reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
                         success = true;
