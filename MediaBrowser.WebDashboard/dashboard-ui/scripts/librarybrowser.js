@@ -29,6 +29,20 @@
 
     var pageSizeKey = 'pagesize_v4';
 
+    function getDesiredAspect(shape) {
+
+        switch (shape) {
+
+            case 'squareCard':
+                return 1;
+            case 'backdropCard':
+                return (16 / 9);
+            case 'portraitCard':
+                return (2 / 3);
+        }
+        return null;
+    }
+
     var libraryBrowser = {
         getDefaultPageSize: function (key, defaultValue) {
 
@@ -1791,6 +1805,7 @@
             }
 
             var dateText;
+            var uiAspect = getDesiredAspect(options.shape);
 
             for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1828,13 +1843,13 @@
                     }
                 }
 
-                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth);
+                html += LibraryBrowser.getPosterViewItemHtml(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, uiAspect);
             }
 
             return html;
         },
 
-        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth) {
+        getPosterViewItemHtml: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, uiAspect) {
 
             var html = '';
             var imgUrl = null;
@@ -1867,8 +1882,11 @@
                     tag: item.ImageTags.Primary,
                     enableImageEnhancers: enableImageEnhancers
                 });
-                if (height != null) {
-                    coverImage = true;
+
+                if (primaryImageAspectRatio) {
+                    if (uiAspect) {
+                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                    }
                 }
 
             } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
@@ -1947,8 +1965,11 @@
                     tag: item.ImageTags.Primary,
                     enableImageEnhancers: enableImageEnhancers
                 });
-                if (height != null) {
-                    coverImage = true;
+
+                if (primaryImageAspectRatio) {
+                    if (uiAspect) {
+                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                    }
                 }
             }
             else if (item.ParentPrimaryImageTag) {
@@ -1972,8 +1993,11 @@
                     tag: item.AlbumPrimaryImageTag,
                     enableImageEnhancers: enableImageEnhancers
                 });
-                if (width != null) {
-                    coverImage = true;
+
+                if (primaryImageAspectRatio) {
+                    if (uiAspect) {
+                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                    }
                 }
             }
             else if (item.Type == 'Season' && item.ImageTags && item.ImageTags.Thumb) {
