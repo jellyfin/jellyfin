@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -106,8 +107,13 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// This is the small Person stub that is attached to BaseItems
     /// </summary>
-    public class PersonInfo
+    public class PersonInfo : IHasProviderIds
     {
+        public PersonInfo()
+        {
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         public Guid ItemId { get; set; }
 
         /// <summary>
@@ -131,6 +137,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The sort order.</value>
         public int? SortOrder { get; set; }
+
+        public string ImageUrl { get; set; }
+
+        public Dictionary<string, string> ProviderIds { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

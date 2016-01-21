@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Entities
                 if (existing != null)
                 {
                     existing.Type = PersonType.GuestStar;
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
+                    MergeExisting(existing, person);
                     return;
                 }
             }
@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Entities
                         existing.Role = person.Role;
                     }
 
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
+                    MergeExisting(existing, person);
                 }
             }
             else
@@ -83,8 +83,19 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
+                    MergeExisting(existing, person);
                 }
+            }
+        }
+
+        private static void MergeExisting(PersonInfo existing, PersonInfo person)
+        {
+            existing.SortOrder = person.SortOrder ?? existing.SortOrder;
+            existing.ImageUrl = person.ImageUrl ?? existing.ImageUrl;
+
+            foreach (var id in person.ProviderIds)
+            {
+                existing.SetProviderId(id.Key, id.Value);
             }
         }
 
