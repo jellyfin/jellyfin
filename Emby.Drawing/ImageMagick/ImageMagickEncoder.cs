@@ -139,7 +139,7 @@ namespace Emby.Drawing.ImageMagick
                 string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase);
         }
 
-        public void EncodeImage(string inputPath, string outputPath, int rotationAngle, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public void EncodeImage(string inputPath, string outputPath, bool autoOrient, int width, int height, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
             // Even if the caller specified 100, don't use it because it takes forever
             quality = Math.Min(quality, 99);
@@ -150,9 +150,9 @@ namespace Emby.Drawing.ImageMagick
                 {
                     ScaleImage(originalImage, width, height);
 
-                    if (rotationAngle > 0)
+                    if (autoOrient)
                     {
-                        RotateImage(originalImage, rotationAngle);
+                        AutoOrientImage(originalImage);
                     }
 
                     DrawIndicator(originalImage, width, height, options);
@@ -171,9 +171,9 @@ namespace Emby.Drawing.ImageMagick
                     {
                         ScaleImage(originalImage, width, height);
 
-                        if (rotationAngle > 0)
+                        if (autoOrient)
                         {
-                            RotateImage(originalImage, rotationAngle);
+                            AutoOrientImage(originalImage);
                         }
 
                         wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
@@ -187,6 +187,11 @@ namespace Emby.Drawing.ImageMagick
                 }
             }
             SaveDelay();
+        }
+
+        private void AutoOrientImage(MagickWand wand)
+        {
+            wand.CurrentImage.AutoOrientImage();
         }
 
         public static void RotateImage(MagickWand wand, float angle)
