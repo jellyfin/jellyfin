@@ -254,8 +254,51 @@ namespace MediaBrowser.Providers.Manager
             if (result.Item.SupportsPeople && result.People != null)
             {
                 await LibraryManager.UpdatePeople(result.Item as BaseItem, result.People.ToList());
+                await SavePeopleMetadata(result.People, cancellationToken).ConfigureAwait(false);
             }
             await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task SavePeopleMetadata(List<PersonInfo> people, CancellationToken cancellationToken)
+        {
+            foreach (var person in people)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (person.ProviderIds.Any() || !string.IsNullOrWhiteSpace(person.ImageUrl))
+                {
+                    var updateType = ItemUpdateType.MetadataDownload;
+
+                    var saveEntity = false;
+                    var personEntity = LibraryManager.GetPerson(person.Name);
+                    foreach (var id in person.ProviderIds)
+                    {
+                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
+                        {
+                            personEntity.SetProviderId(id.Key, id.Value);
+                            saveEntity = true;
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                    {
+                        personEntity.SetImage(new ItemImageInfo
+                        {
+                            Path = person.ImageUrl,
+                            Type = ImageType.Primary,
+                            IsPlaceholder = true
+                        }, 0);
+
+                        saveEntity = true;
+                        updateType = updateType | ItemUpdateType.ImageUpdate;
+                    }
+
+                    if (saveEntity)
+                    {
+                        await personEntity.UpdateToRepository(updateType, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);

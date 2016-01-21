@@ -826,6 +826,21 @@ namespace MediaBrowser.Providers.TV
                                 break;
                             }
 
+                        case "id":
+                            {
+                                break;
+                            }
+
+                        case "Image":
+                            {
+                                var url = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                if (!string.IsNullOrWhiteSpace(url))
+                                {
+                                    personInfo.ImageUrl = TVUtils.BannerUrl + url;
+                                }
+                                break;
+                            }
+
                         case "SortOrder":
                             {
                                 var val = reader.ReadElementContentAsString();
