@@ -6,6 +6,7 @@ using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
 using System.Reflection;
 using CommonIO;
+using MediaBrowser.Controller.Power;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -116,6 +117,11 @@ namespace MediaBrowser.ServerApplication.Native
         public void PreventSystemStandby()
         {
             Standby.PreventSystemStandby();
+        }
+
+        public IPowerManagement GetPowerManagement()
+        {
+            return new WindowsPowerManagement();
         }
     }
 }

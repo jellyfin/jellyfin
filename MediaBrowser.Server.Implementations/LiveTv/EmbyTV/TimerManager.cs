@@ -8,19 +8,23 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using CommonIO;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Power;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
         private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
+        private readonly IPowerManagement _powerManagement;
+        private readonly ILogger _logger;
 
         public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
 
-        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
+        public TimerManager(IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, string dataPath, IPowerManagement powerManagement, ILogger logger1)
             : base(fileSystem, jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
+            _powerManagement = powerManagement;
+            _logger = logger1;
         }
 
         public void RestartTimers()
@@ -58,6 +62,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var timespan = RecordingHelper.GetStartTime(item) - DateTime.UtcNow;
                 timer.Change(timespan, TimeSpan.Zero);
+                ScheduleWake(item);
             }
             else
             {
@@ -74,6 +79,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             base.Add(item);
             AddTimer(item);
+            ScheduleWake(item);
         }
 
         private void AddTimer(TimerInfo item)
@@ -89,6 +95,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var timerLength = startDate - now;
             StartTimer(item, timerLength);
+        }
+
+        private void ScheduleWake(TimerInfo info)
+        {
+            var startDate = RecordingHelper.GetStartTime(info).AddMinutes(-5);
+            _logger.Info("Scheduling system wake timer at {0} (UTC)", startDate);
+
+            try
+            {
+                _powerManagement.ScheduleWake(startDate);
+                _logger.Info("Scheduled system wake timer at {0} (UTC)", startDate);
+            }
+            catch (NotImplementedException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error scheduling wake timer", ex);
+            }
         }
 
         public void StartTimer(TimerInfo item, TimeSpan length)
