@@ -129,8 +129,19 @@ namespace MediaBrowser.LocalMetadata.Images
 
             AddImage(files, images, "logo", imagePrefix, isInMixedFolder, ImageType.Logo);
             AddImage(files, images, "clearart", imagePrefix, isInMixedFolder, ImageType.Art);
-            AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
-            AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+
+            // For music albums, prefer cdart before disc
+            if (item is MusicAlbum)
+            {
+                AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+                AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+            }
+            else
+            {
+                AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+                AddImage(files, images, "cdart", imagePrefix, isInMixedFolder, ImageType.Disc);
+            }
+
             AddImage(files, images, "box", imagePrefix, isInMixedFolder, ImageType.Box);
             AddImage(files, images, "back", imagePrefix, isInMixedFolder, ImageType.BoxRear);
             AddImage(files, images, "boxrear", imagePrefix, isInMixedFolder, ImageType.BoxRear);
