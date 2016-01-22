@@ -12,6 +12,7 @@
 
                 ApiClient.cancelLiveTvTimer(id).then(function () {
 
+                    Dashboard.hideLoadingMsg();
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
                     reload(page);
@@ -115,6 +116,7 @@
             item.Days = getDays(form);
 
             ApiClient.updateLiveTvSeriesTimer(item).then(function () {
+                Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
         });

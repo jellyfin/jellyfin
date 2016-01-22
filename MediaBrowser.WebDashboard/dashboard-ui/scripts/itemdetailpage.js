@@ -518,7 +518,7 @@
         }
 
         if (item.ImageOrientation) {
-            attributes.push(createAttribute(Globalize.translate('MediaInfoOrientation'), item.ImageOrientation));
+            //attributes.push(createAttribute(Globalize.translate('MediaInfoOrientation'), item.ImageOrientation));
         }
 
         if (item.IsoSpeedRating) {
