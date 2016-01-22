@@ -160,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 switch (ConfigurationManager.Configuration.EnableLibraryMonitor)
                 {
                     case AutoOnOff.Auto:
-                        return _appHost.SupportsLibraryMonitor;
+                        return Environment.OSVersion.Platform == PlatformID.Win32NT;
                     case AutoOnOff.Enabled:
                         return true;
                     default:
