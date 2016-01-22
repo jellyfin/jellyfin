@@ -122,6 +122,16 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private void PopulateImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, bool supportParentSeriesFiles, IDirectoryService directoryService)
         {
+            if (supportParentSeriesFiles)
+            {
+                var season = item as Season;
+
+                if (season != null)
+                {
+                    PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
+                }
+            }
+            
             var imagePrefix = item.FileNameWithoutExtension + "-";
             var isInMixedFolder = item.IsInMixedFolder;
 
@@ -151,33 +161,33 @@ namespace MediaBrowser.LocalMetadata.Images
             AddImage(files, images, "banner", imagePrefix, isInMixedFolder, ImageType.Banner);
 
             // Thumb
-            AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
             AddImage(files, images, "landscape", imagePrefix, isInMixedFolder, ImageType.Thumb);
+            AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
 
             PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder, directoryService);
             PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
-
-            if (supportParentSeriesFiles)
-            {
-                var season = item as Season;
-
-                if (season != null)
-                {
-                    PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
-                }
-            }
         }
 
         private void PopulatePrimaryImages(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
             var names = new List<string>
             {
-                "folder",
-                "poster",
                 "cover",
                 "default"
             };
 
+            if (item is MusicAlbum || item is MusicArtist)
+            {
+                // these prefer folder
+                names.Insert(0, "poster");
+                names.Insert(0, "folder");
+            }
+            else
+            {
+                names.Insert(0, "folder");
+                names.Insert(0, "poster");
+            }
+            
             // Support plex/kodi convention
             if (item is Series)
             {
@@ -212,8 +222,6 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private void PopulateBackdrops(IHasImages item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder, IDirectoryService directoryService)
         {
-            PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", isInMixedFolder, ImageType.Backdrop);
-
             if (!string.IsNullOrEmpty(item.Path))
             {
                 var name = item.FileNameWithoutExtension;
@@ -241,6 +249,8 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images, directoryService);
             }
+
+            PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", isInMixedFolder, ImageType.Backdrop);
         }
 
         private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, IDirectoryService directoryService)
