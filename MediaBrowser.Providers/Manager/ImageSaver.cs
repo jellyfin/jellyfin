@@ -332,7 +332,50 @@ namespace MediaBrowser.Providers.Manager
         /// </exception>
         private string GetStandardSavePath(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
+            var season = item as Season;
+            var extension = MimeTypes.ToExtension(mimeType);
+
+            if (type == ImageType.Thumb && saveLocally)
+            {
+                if (season != null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", UsCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-landscape" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+
+                if (item.IsInMixedFolder)
+                {
+                    return GetSavePathForItemInMixedFolder(item, type, "landscape", extension);
+                }
+
+                return Path.Combine(item.ContainingFolderPath, "landscape" + extension);
+            }
+
+            if (type == ImageType.Banner && saveLocally)
+            {
+                if (season != null && season.IndexNumber.HasValue)
+                {
+                    var seriesFolder = season.SeriesPath;
+
+                    var seasonMarker = season.IndexNumber.Value == 0
+                                           ? "-specials"
+                                           : season.IndexNumber.Value.ToString("00", UsCulture);
+
+                    var imageFilename = "season" + seasonMarker + "-banner" + extension;
+
+                    return Path.Combine(seriesFolder, imageFilename);
+                }
+            }
+
             string filename;
+            var folderName = item is MusicAlbum || item is MusicArtist ? "folder" : "poster";
 
             switch (type)
             {
@@ -342,11 +385,14 @@ namespace MediaBrowser.Providers.Manager
                 case ImageType.BoxRear:
                     filename = "back";
                     break;
+                case ImageType.Thumb:
+                    filename = "landscape";
+                    break;
                 case ImageType.Disc:
                     filename = item is MusicAlbum ? "cdart" : "disc";
                     break;
                 case ImageType.Primary:
-                    filename = item is Episode ? _fileSystem.GetFileNameWithoutExtension(item.Path) : "folder";
+                    filename = item is Episode ? _fileSystem.GetFileNameWithoutExtension(item.Path) : folderName;
                     break;
                 case ImageType.Backdrop:
                     filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
@@ -358,8 +404,6 @@ namespace MediaBrowser.Providers.Manager
                     filename = type.ToString().ToLower();
                     break;
             }
-
-            var extension = mimeType.Split('/').Last();
 
             if (string.Equals(extension, "jpeg", StringComparison.OrdinalIgnoreCase))
             {
@@ -393,7 +437,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (string.IsNullOrEmpty(filename))
                 {
-                    filename = "folder";
+                    filename = folderName;
                 }
                 path = Path.Combine(item.GetInternalMetadataPath(), filename + extension);
             }
@@ -524,45 +568,6 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 return new[] { Path.Combine(item.ContainingFolderPath, "poster" + extension) };
-            }
-
-            if (type == ImageType.Banner)
-            {
-                if (season != null && season.IndexNumber.HasValue)
-                {
-                    var seriesFolder = season.SeriesPath;
-
-                    var seasonMarker = season.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", UsCulture);
-
-                    var imageFilename = "season" + seasonMarker + "-banner" + extension;
-
-                    return new[] { Path.Combine(seriesFolder, imageFilename) };
-                }
-            }
-
-            if (type == ImageType.Thumb)
-            {
-                if (season != null && season.IndexNumber.HasValue)
-                {
-                    var seriesFolder = season.SeriesPath;
-
-                    var seasonMarker = season.IndexNumber.Value == 0
-                                           ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", UsCulture);
-
-                    var imageFilename = "season" + seasonMarker + "-landscape" + extension;
-
-                    return new[] { Path.Combine(seriesFolder, imageFilename) };
-                }
-
-                if (item.IsInMixedFolder)
-                {
-                    return new[] { GetSavePathForItemInMixedFolder(item, type, "landscape", extension) };
-                }
-
-                return new[] { Path.Combine(item.ContainingFolderPath, "landscape" + extension) };
             }
 
             // All other paths are the same
