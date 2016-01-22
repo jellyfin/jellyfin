@@ -169,7 +169,7 @@
         enableFullPaperTabs: function () {
 
             if (browserInfo.animate && !browserInfo.mobile) {
-                return true;
+                //return true;
             }
 
             return AppInfo.isNativeApp;

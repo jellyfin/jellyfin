@@ -252,6 +252,8 @@
                 renderMethod = 'renderSongsTab';
                 initMethod = 'initSongsTab';
                 depends.push('scripts/queryfilters');
+                depends.push('paper-icon-item');
+                depends.push('paper-item-body');
                 break;
             case 5:
                 depends.push('scripts/musicgenres');
