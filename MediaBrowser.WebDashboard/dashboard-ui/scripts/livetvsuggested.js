@@ -159,6 +159,8 @@
                 break;
             case 2:
                 depends.push('scripts/livetvchannels');
+                depends.push('paper-icon-item');
+                depends.push('paper-item-body');
                 renderMethod = 'renderChannelsTab';
                 initMethod = 'initChannelsTab';
                 break;
