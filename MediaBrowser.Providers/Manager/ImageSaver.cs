@@ -405,12 +405,12 @@ namespace MediaBrowser.Providers.Manager
                     break;
             }
 
-            if (string.Equals(extension, "jpeg", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
             {
-                extension = "jpg";
+                extension = ".jpg";
             }
 
-            extension = "." + extension.ToLower();
+            extension = extension.ToLower();
 
             string path = null;
 
