@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Providers
         public bool ReplaceAllImages { get; set; }
 
         public List<ImageType> ReplaceImages { get; set; }
+        public bool IsAutomated { get; set; }
 
         public ImageRefreshOptions(IDirectoryService directoryService)
         {
@@ -18,6 +19,7 @@ namespace MediaBrowser.Controller.Providers
             DirectoryService = directoryService;
 
             ReplaceImages = new List<ImageType>();
+            IsAutomated = true;
         }
 
         public bool IsReplacingImage(ImageType type)
