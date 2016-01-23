@@ -1584,7 +1584,6 @@ var AppInfo = {};
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
-                AppInfo.cardMargin = 'largeCardMargin';
 
                 AppInfo.forcedImageFormat = 'jpg';
             }
@@ -1760,10 +1759,6 @@ var AppInfo = {};
 
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
-        }
-
-        if (AppInfo.cardMargin) {
-            elem.classList.add(AppInfo.cardMargin);
         }
 
         if (!AppInfo.enableStudioTabs) {
