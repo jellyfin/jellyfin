@@ -28,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _logger = logger;
         }
 
-        public Task ReportServerUsage(CancellationToken cancellationToken)
+        public async Task ReportServerUsage(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -51,10 +51,24 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             data["plugins"] = string.Join(",", _applicationHost.Plugins.Select(i => i.Id).ToArray());
 
-            return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            var options = new HttpRequestOptions
+            {
+                Url = MbAdminUrl + "service/registration/ping",
+                CancellationToken = cancellationToken,
+
+                // Seeing block length errors
+                EnableHttpCompression = false
+            };
+
+            options.SetPostData(data);
+
+            using (var response = await _httpClient.SendAsync(options, "POST").ConfigureAwait(false))
+            {
+                
+            }
         }
 
-        public Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
+        public async Task ReportAppUsage(ClientInfo app, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(app.DeviceId))
             {
@@ -79,7 +93,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 { "platform", app.DeviceName }, 
             };
 
-            return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
+            var options = new HttpRequestOptions
+            {
+                Url = MbAdminUrl + "service/registration/ping",
+                CancellationToken = cancellationToken,
+
+                // Seeing block length errors
+                EnableHttpCompression = false
+            };
+
+            options.SetPostData(data);
+
+            using (var response = await _httpClient.SendAsync(options, "POST").ConfigureAwait(false))
+            {
+
+            }
         }
     }
 
