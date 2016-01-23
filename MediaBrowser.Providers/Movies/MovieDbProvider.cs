@@ -163,8 +163,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader,
-                UserAgent = "Emby/" + _appHost.ApplicationVersion
+                AcceptHeader = AcceptHeader
 
             }).ConfigureAwait(false))
             {
@@ -390,6 +389,8 @@ namespace MediaBrowser.Providers.Movies
 
             options.ResourcePool = MovieDbResourcePool;
             _lastRequestTicks = DateTime.UtcNow.Ticks;
+
+            options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
 
             return await _httpClient.Get(options).ConfigureAwait(false);
         }
