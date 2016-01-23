@@ -33,11 +33,11 @@
 
         switch (shape) {
 
-            case 'squareCard':
+            case 'square':
                 return 1;
-            case 'backdropCard':
+            case 'backdrop':
                 return (16 / 9);
-            case 'portraitCard':
+            case 'portrait':
                 return (2 / 3);
         }
         return null;
