@@ -16,7 +16,7 @@
     "url": "git://github.com/goldfire/howler.js.git"
   },
   "main": "howler.js",
-  "version": "1.1.27",
+  "version": "1.1.29",
   "license": {
     "type": "MIT",
     "url": "https://raw.githubusercontent.com/goldfire/howler.js/master/LICENSE.md"
