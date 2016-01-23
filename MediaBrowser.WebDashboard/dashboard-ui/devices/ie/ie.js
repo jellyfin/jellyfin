@@ -6,12 +6,10 @@
     function getWeek(date) {
 
         var onejan = new Date(date.getFullYear(), 0, 1);
-        return Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + 1) / 5);
+        return Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + 1) / 4);
     }
 
     function onPageShow() {
-
-        var page = this;
 
         var expectedValue;
         var msg;
