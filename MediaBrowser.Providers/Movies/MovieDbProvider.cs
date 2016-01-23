@@ -20,6 +20,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common;
 using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Movies
@@ -40,10 +41,11 @@ namespace MediaBrowser.Providers.Movies
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
         private readonly ILibraryManager _libraryManager;
+        private readonly IApplicationHost _appHost;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager)
+        public MovieDbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager, IApplicationHost appHost)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
@@ -52,6 +54,7 @@ namespace MediaBrowser.Providers.Movies
             _logger = logger;
             _localization = localization;
             _libraryManager = libraryManager;
+            _appHost = appHost;
             Current = this;
         }
 
@@ -160,7 +163,8 @@ namespace MediaBrowser.Providers.Movies
             {
                 Url = string.Format(TmdbConfigUrl, ApiKey),
                 CancellationToken = cancellationToken,
-                AcceptHeader = AcceptHeader
+                AcceptHeader = AcceptHeader,
+                UserAgent = "Emby/" + _appHost.ApplicationVersion
 
             }).ConfigureAwait(false))
             {
