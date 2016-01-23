@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentDialog;
     var metadataEditorInfo;
@@ -43,11 +43,64 @@
         return false;
     }
 
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
+    function editableListViewValues(list) {
+        return list.find('.textValue').map(function () { return $(this).text(); }).get();
+    }
+
+    function addElementToEditableListview(source, sortCallback) {
+
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                text: 'Value:',
+                callback: function (text) {
+                    if (text == '') return;
+                    var parent = $(source).parents('.editableListviewContainer');
+                    var list = parent.find('.paperList');
+                    var items = editableListViewValues(list);
+                    items.push(text);
+                    populateListView(list[0], items, sortCallback);
+                }
+            });
+        });
+    }
+
+    function removeElementFromListview(source) {
+        $(source).parents('paper-icon-item').remove();
+    }
+
     function init(context) {
 
         $('.btnCancel', context).on('click', function () {
 
             closeDialog(false);
+        });
+
+        context.addEventListener('click', function (e) {
+
+            var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
+            if (btnRemoveFromEditorList) {
+                removeElementFromListview(btnRemoveFromEditorList);
+            }
+
+            var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
+            if (btnAddTextItem) {
+                addElementToEditableListview(btnAddTextItem);
+            }
+
         });
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);
@@ -339,13 +392,13 @@
 
         if (item.Type == "Person") {
             context.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
-            context.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelBirthDate');
-            context.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelDeathDate');
+            context.querySelector("#txtPremiereDate").innerHTML = Globalize.translate('LabelBirthDate');
+            context.querySelector("#txtEndDate").innerHTML = Globalize.translate('LabelDeathDate');
             $('#fldPlaceOfBirth', context).show();
         } else {
             context.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
-            context.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelReleaseDate');
-            context.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelEndDate');
+            context.querySelector("#txtPremiereDate").innerHTML = Globalize.translate('LabelReleaseDate');
+            context.querySelector("#txtEndDate").innerHTML = Globalize.translate('LabelEndDate');
             $('#fldPlaceOfBirth', context).hide();
         }
 
@@ -439,14 +492,14 @@
 
         });
 
-        populateListView($('#listCountries', context), item.ProductionLocations || []);
-        populateListView($('#listGenres', context), item.Genres);
+        populateListView($('#listCountries', context)[0], item.ProductionLocations || []);
+        populateListView($('#listGenres', context)[0], item.Genres);
         populatePeople(context, item.People || []);
 
-        populateListView($('#listStudios', context), (item.Studios || []).map(function (element) { return element.Name || ''; }));
+        populateListView($('#listStudios', context)[0], (item.Studios || []).map(function (element) { return element.Name || ''; }));
 
-        populateListView($('#listTags', context), item.Tags);
-        populateListView($('#listKeywords', context), item.Keywords);
+        populateListView($('#listTags', context)[0], item.Tags);
+        populateListView($('#listKeywords', context)[0], item.Keywords);
 
         var lockData = (item.LockData || false);
         var chkLockData = context.querySelector("#chkLockData");
@@ -613,17 +666,35 @@
     }
 
     function populateListView(list, items, sortCallback) {
-        //items = items || [];
-        //if (typeof (sortCallback) === 'undefined') {
-        //    items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
-        //} else {
-        //    items = sortCallback(items);
-        //}
-        //var html = '';
-        //for (var i = 0; i < items.length; i++) {
-        //    html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
-        //}
-        //list.html(html).listview('refresh');
+
+        items = items || [];
+        if (typeof (sortCallback) === 'undefined') {
+            items.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        } else {
+            items = sortCallback(items);
+        }
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            html += '<paper-icon-item>';
+
+            html += '<paper-fab mini style="background-color:#444;" icon="live-tv" item-icon></paper-fab>';
+
+            html += '<paper-item-body>';
+
+            html += '<div class="textValue">';
+            html += items[i];
+            html += '</div>';
+
+            html += '</paper-item-body>';
+
+            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnRemoveFromEditorList"></paper-icon-button>';
+
+            html += '</paper-icon-item>';
+
+            //html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
+        }
+
+        list.innerHTML = html;
     }
 
     function populatePeople(context, people) {
@@ -793,7 +864,8 @@
 
                     var template = this.response;
                     var dlg = paperDialogHelper.createDialog({
-                        removeOnClose: true
+                        removeOnClose: true,
+                        size: 'small'
                     });
 
                     dlg.classList.add('formDialog');
