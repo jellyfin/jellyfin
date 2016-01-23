@@ -33,10 +33,12 @@ namespace MediaBrowser.Controller.Providers
         public int? Year { get; set; }
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
-		public DateTime? PremiereDate { get; set; }
+        public DateTime? PremiereDate { get; set; }
+        public bool IsAutomated { get; set; }
 
         public ItemLookupInfo()
         {
+            IsAutomated = true;
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
