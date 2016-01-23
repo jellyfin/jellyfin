@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.People
 
                     if (requestCount >= 5)
                     {
-                        _logger.Debug("Throttling Tmdb people");
+                        //_logger.Debug("Throttling Tmdb people");
 
                         // This needs to be throttled
                         return new List<RemoteSearchResult>();
