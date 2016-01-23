@@ -66,7 +66,10 @@ namespace MediaBrowser.Server.Implementations.Connect
                     {
                         Url = ipLookupUrl,
                         UserAgent = "Emby/" + _appHost.ApplicationVersion,
-                        LogErrors = logErrors
+                        LogErrors = logErrors,
+
+                        // Seeing block length errors with our server
+                        EnableHttpCompression = false
 
                     }).ConfigureAwait(false))
                     {
