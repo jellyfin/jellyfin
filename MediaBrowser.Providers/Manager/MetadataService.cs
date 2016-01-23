@@ -138,6 +138,7 @@ namespace MediaBrowser.Providers.Manager
                     var id = itemOfType.GetLookupInfo();
 
                     //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
+                    id.IsAutomated = refreshOptions.IsAutomated;
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
