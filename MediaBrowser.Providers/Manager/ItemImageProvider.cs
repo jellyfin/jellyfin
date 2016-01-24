@@ -480,21 +480,20 @@ namespace MediaBrowser.Providers.Manager
             ImageType type,
             CancellationToken cancellationToken)
         {
-            foreach (var image in images.Where(i => i.Type == type))
+            var eligibleImages = images
+                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .ToList();
+
+            if (EnableImageStub(item, type) && eligibleImages.Count > 0)
             {
-                if (image.Width.HasValue && image.Width.Value < minWidth)
-                {
-                    continue;
-                }
+                SaveImageStub(item, type, eligibleImages.Select(i => i.Url));
+                result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                return true;
+            }
 
+            foreach (var image in eligibleImages)
+            {
                 var url = image.Url;
-
-                if (EnableImageStub(item, type))
-                {
-                    SaveImageStub(item, type, url);
-                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
-                    return true;
-                }
 
                 try
                 {
@@ -557,18 +556,20 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private void SaveImageStub(IHasImages item, ImageType imageType, string url)
+        private void SaveImageStub(IHasImages item, ImageType imageType, IEnumerable<string> urls)
         {
             var newIndex = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
 
-            SaveImageStub(item, imageType, url, newIndex);
+            SaveImageStub(item, imageType, urls, newIndex);
         }
 
-        private void SaveImageStub(IHasImages item, ImageType imageType, string url, int newIndex)
+        private void SaveImageStub(IHasImages item, ImageType imageType, IEnumerable<string> urls, int newIndex)
         {
+            var path = string.Join("|", urls.Take(1).ToArray());
+
             item.SetImage(new ItemImageInfo
             {
-                Path = url,
+                Path = path,
                 Type = imageType
 
             }, newIndex);
@@ -592,7 +593,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (EnableImageStub(item, imageType))
                 {
-                    SaveImageStub(item, imageType, url);
+                    SaveImageStub(item, imageType, new[] { url });
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                     continue;
                 }
