@@ -2387,20 +2387,40 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly SemaphoreSlim _dynamicImageResourcePool = new SemaphoreSlim(1,1);
         public async Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex)
         {
-            _logger.Debug("ConvertImageToLocal item {0}", item.Id);
-
-            await _providerManagerFactory().SaveImage(item, image.Path, _dynamicImageResourcePool, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
-
-            var newImage = item.GetImageInfo(image.Type, imageIndex);
-
-            if (newImage != null)
+            foreach (var url in image.Path.Split('|'))
             {
-                newImage.IsPlaceholder = image.IsPlaceholder;
+                try
+                {
+                    _logger.Debug("ConvertImageToLocal item {0} - image url: {1}", item.Id, url);
+
+                    await _providerManagerFactory().SaveImage(item, url, _dynamicImageResourcePool, image.Type, imageIndex, CancellationToken.None).ConfigureAwait(false);
+
+                    var newImage = item.GetImageInfo(image.Type, imageIndex);
+
+                    if (newImage != null)
+                    {
+                        newImage.IsPlaceholder = image.IsPlaceholder;
+                    }
+
+                    await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
+
+                    return item.GetImageInfo(image.Type, imageIndex);
+                }
+                catch (HttpException ex)
+                {
+                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        continue;
+                    }
+                    throw;
+                }
             }
 
+            // Remove this image to prevent it from retrying over and over
+            item.RemoveImage(image);
             await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
-
-            return item.GetImageInfo(image.Type, imageIndex);
+            
+            throw new InvalidOperationException();
         }
     }
 }
