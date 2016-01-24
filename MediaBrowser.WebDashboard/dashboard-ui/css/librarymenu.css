@@ -418,7 +418,9 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .darkDrawer {
-    background-color: #282828 !important;
+    background-color: rgba(30,30,30,.96) !important;
+    backdrop-filter: brightness(1.5) blur(4px);
+    box-shadow: none !important;
 }
 
     .darkDrawer .sidebarLinkIcon {
