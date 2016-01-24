@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['browser'], function (browser) {
 
     require(['css!devices/ie/ie.css']);
     var browserSwitchKey = "ieswitchbrowser";
@@ -31,7 +31,7 @@
                 title: Globalize.translate('HeaderTryMicrosoftEdge')
             });
 
-        } else {
+        } else if (!browser.mobile) {
 
             expectedValue = getWeek(new Date()) + "_7";
 
@@ -60,5 +60,4 @@
 
     pageClassOn('pageshow', "libraryPage", onPageShow);
     pageClassOn('pageshow', "type-interior", onPageShow);
-
-})();
+});
