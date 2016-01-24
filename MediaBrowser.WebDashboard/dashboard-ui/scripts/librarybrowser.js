@@ -1885,7 +1885,9 @@
 
                 if (primaryImageAspectRatio) {
                     if (uiAspect) {
-                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                        if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                            coverImage = true;
+                        }
                     }
                 }
 
@@ -1968,7 +1970,9 @@
 
                 if (primaryImageAspectRatio) {
                     if (uiAspect) {
-                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                        if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                            coverImage = true;
+                        }
                     }
                 }
             }
@@ -1996,7 +2000,9 @@
 
                 if (primaryImageAspectRatio) {
                     if (uiAspect) {
-                        coverImage = Math.abs(primaryImageAspectRatio - uiAspect) <= .2;
+                        if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                            coverImage = true;
+                        }
                     }
                 }
             }
