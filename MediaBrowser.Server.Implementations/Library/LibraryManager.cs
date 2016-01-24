@@ -32,10 +32,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Net;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
