@@ -99,6 +99,7 @@ each error is categorized by :
     - ```Hls.ErrorDetails.FRAG_PARSING_ERROR```raised when fragment parsing fails
     - ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```raised when exception is raised while preparing buffer append
     - ```Hls.ErrorDetails.BUFFER_APPENDING_ERROR```raised when exception is raised during buffer appending
+    - ```Hls.ErrorDetails.BUFFER_STALLED_ERROR```raised when playback stalls because the buffer runs out
   - its fatality:
     - ```false```if error is not fatal, hls.js will try to recover it
     - ```true```if error is fatal, an action is required to (try to) recover it.

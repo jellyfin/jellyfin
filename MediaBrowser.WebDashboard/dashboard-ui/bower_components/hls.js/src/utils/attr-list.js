@@ -64,7 +64,7 @@ class AttrList {
   }
 
   static parseAttrList(input) {
-    const re = /(.+?)=((?:\".*?\")|.*?)(?:,|$)/g;
+    const re = /\s*(.+?)\s*=((?:\".*?\")|.*?)(?:,|$)/g;
     var match, attrs = {};
     while ((match = re.exec(input)) !== null) {
       var value = match[2], quote = '"';

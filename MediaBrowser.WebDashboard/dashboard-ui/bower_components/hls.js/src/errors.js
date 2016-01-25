@@ -37,5 +37,7 @@ export const ErrorDetails = {
   // Identifier for a buffer append error - data: append error description
   BUFFER_APPEND_ERROR: 'bufferAppendError',
   // Identifier for a buffer appending error event - data: appending error description
-  BUFFER_APPENDING_ERROR: 'bufferAppendingError'
+  BUFFER_APPENDING_ERROR: 'bufferAppendingError',
+  // Identifier for a buffer stalled error event
+  BUFFER_STALLED_ERROR: 'bufferStalledError'
 };

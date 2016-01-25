@@ -84,18 +84,21 @@ define(['browser'], function (browser) {
 
         var videoAudioCodecs = [];
 
+        var supportsMp3VideoAudio = videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.69"').replace(/no/, '') ||
+            videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.6B"').replace(/no/, '');
+
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
         if (canPlayMkv) {
-            if (canPlayAudioFormat('mp3')) {
+            if (supportsMp3VideoAudio) {
                 videoAudioCodecs.push('mp3');
             }
         }
-        if (canPlayAudioFormat('aac')) {
+        if (videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.2"').replace(/no/, '')) {
             videoAudioCodecs.push('aac');
         }
         if (!canPlayMkv) {
-            if (canPlayAudioFormat('mp3')) {
+            if (supportsMp3VideoAudio) {
                 videoAudioCodecs.push('mp3');
             }
         }
@@ -222,36 +225,31 @@ define(['browser'], function (browser) {
 
         var videoAudioChannels = '6';
 
-        profile.CodecProfiles.push({
-            Type: 'VideoAudio',
-            Codec: 'aac',
-            Container: 'mkv,mov',
-            Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'AudioProfile',
-                    Value: 'HE-AAC'
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: videoAudioChannels
-                },
-                {
-                    Condition: 'Equals',
-                    Property: 'IsSecondaryAudio',
-                    Value: 'false',
-                    IsRequired: 'false'
-                }
-                // Disabling this is going to require us to learn why it was disabled in the first place
-                //,
-                //{
-                //    Condition: 'NotEquals',
-                //    Property: 'AudioProfile',
-                //    Value: 'LC'
-                //}
-            ]
-        });
+        // Handle he-aac not supported
+        if (!videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.5"').replace(/no/, '')) {
+            profile.CodecProfiles.push({
+                Type: 'VideoAudio',
+                Codec: 'aac',
+                Conditions: [
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'AudioProfile',
+                        Value: 'HE-AAC'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'AudioChannels',
+                        Value: videoAudioChannels
+                    },
+                    {
+                        Condition: 'Equals',
+                        Property: 'IsSecondaryAudio',
+                        Value: 'false',
+                        IsRequired: 'false'
+                    }
+                ]
+            });
+        }
 
         profile.CodecProfiles.push({
             Type: 'VideoAudio',
