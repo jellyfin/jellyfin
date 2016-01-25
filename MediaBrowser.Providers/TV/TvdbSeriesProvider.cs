@@ -58,6 +58,17 @@ namespace MediaBrowser.Providers.TV
         private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
         private const string GetSeriesByImdbId = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
 
+        private string NormalizeLanguage(string language)
+        {
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                return language;
+            }
+
+            // pt-br is just pt to tvdb
+            return language.Split('-')[0].ToLower();
+        }
+
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
             if (IsValidSeries(searchInfo.ProviderIds))
@@ -270,7 +281,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(GetSeriesByImdbId, id, language);
+            var url = string.Format(GetSeriesByImdbId, id, NormalizeLanguage(language));
 
             using (var result = await _httpClient.Get(new HttpRequestOptions
             {
@@ -455,7 +466,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), language.ToLower());
+            var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), NormalizeLanguage(language));
             var doc = new XmlDocument();
 
             using (var results = await _httpClient.Get(new HttpRequestOptions
