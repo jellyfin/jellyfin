@@ -169,10 +169,8 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Gets the episode XML files.
         /// </summary>
-        /// <param name="seasonNumber">The season number.</param>
-        /// <param name="episodeNumber">The episode number.</param>
-        /// <param name="endingEpisodeNumber">The ending episode number.</param>
         /// <param name="seriesDataPath">The series data path.</param>
+        /// <param name="searchInfo">The search information.</param>
         /// <returns>List{FileInfo}.</returns>
 		internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
         {
