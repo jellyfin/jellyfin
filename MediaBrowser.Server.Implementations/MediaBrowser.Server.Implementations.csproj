@@ -231,6 +231,8 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
