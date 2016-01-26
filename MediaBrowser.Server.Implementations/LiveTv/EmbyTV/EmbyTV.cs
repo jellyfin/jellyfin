@@ -22,6 +22,7 @@ using MediaBrowser.Server.Implementations.FileOrganization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -623,6 +624,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     await RecordStream(timer, recordingEndDate, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
+                else
+                {
+                    _logger.Info("Skipping RecordStream because it's already in progress.");
+                }
             }
             catch (OperationCanceledException)
             {
@@ -741,7 +746,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recording.DateLastUpdated = DateTime.UtcNow;
                     _recordingProvider.AddOrUpdate(recording);
 
-                    _logger.Info("Beginning recording.");
+                    _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
                     httpRequestOptions.BufferContent = false;
                     var durationToken = new CancellationTokenSource(duration);
