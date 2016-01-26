@@ -566,19 +566,6 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(collections, parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetPhotosView(Folder queryParent, User user, InternalItemsQuery query)
-        {
-            if (query.Recursive)
-            {
-                var mediaTypes = new[] { MediaType.Video, MediaType.Photo };
-                var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Photos, string.Empty }, i => (i is PhotoAlbum || mediaTypes.Contains(i.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase)) && FilterItem(i, query));
-
-                return PostFilterAndSort(items, queryParent, null, query);
-            }
-
-            return GetResult(queryParent.GetChildren(user, true), queryParent, query);
-        }
-
         private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
