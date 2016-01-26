@@ -77,14 +77,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return ResolveVideos<MusicVideo>(parent, files, directoryService, false);
             }
 
-            if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideos<Video>(parent, files, directoryService, false);
-            }
-
-            if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
-            {
-                //return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
             }
 
             if (string.IsNullOrEmpty(collectionType))
@@ -250,11 +246,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 item = ResolveVideo<Movie>(args, true);
             }
 
-            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<Video>(args, false);
-            }
-            else if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<Video>(args, false);
             }
