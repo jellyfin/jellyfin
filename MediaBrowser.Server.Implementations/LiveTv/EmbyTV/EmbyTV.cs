@@ -92,6 +92,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
+            _logger.Info("Power mode changed to {0}", e.Mode);
+
             if (e.Mode == PowerModes.Resume)
             {
                 _timerProvider.RestartTimers();
