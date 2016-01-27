@@ -286,10 +286,8 @@
         if (userAtTop) {
 
             html += '<div class="drawerUserPanel">';
-            html += '<div class="drawerUserPanelInner">';
-            html += '<div class="drawerUserPanelContent">';
 
-            var imgWidth = 60;
+            var imgWidth = 40;
 
             if (hasUserImage) {
                 var url = user.imageUrl;
@@ -305,8 +303,6 @@
             html += user.name;
             html += '</div>';
 
-            html += '</div>';
-            html += '</div>';
             html += '</div>';
 
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="index.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="home" class="sidebarLinkIcon" style="color:#2196F3;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
@@ -845,21 +841,6 @@
             document.body.classList.remove('dashboardDocument');
             document.body.classList.add('hideMainDrawer');
         }
-
-        // Set drawer background color
-        var darkDrawer = false;
-        if (!Dashboard.isConnectMode() && !browserInfo.mobile) {
-            darkDrawer = true;
-        }
-
-        var drawer = document.querySelector('.mainDrawerPanel #drawer');
-        if (drawer) {
-            if (darkDrawer) {
-                drawer.classList.add('darkDrawer');
-            } else {
-                drawer.classList.remove('darkDrawer');
-            }
-        }
     });
 
     function updateTitle(page) {
@@ -939,6 +920,14 @@
         initializeApiClient(window.ApiClient);
     }
 
+    function setDrawerClass() {
+
+        var drawer = document.querySelector('.mainDrawerPanel #drawer');
+        if (drawer) {
+            drawer.classList.add('darkDrawer');
+        }
+    }
+
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
 
@@ -951,6 +940,7 @@
     Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
         requiresLibraryMenuRefresh = true;
         requiresDrawerRefresh = true;
+        setDrawerClass();
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(updateUserInHeader);
     });
 
@@ -963,6 +953,8 @@
     Events.on(MediaController, 'playerchange', function () {
         updateCastIcon();
     });
+
+    setDrawerClass();
 
 })(window, document, jQuery, window.devicePixelRatio);
 
