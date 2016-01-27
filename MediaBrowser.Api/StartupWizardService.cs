@@ -68,6 +68,7 @@ namespace MediaBrowser.Api
             _config.Configuration.EnableLocalizedGuids = true;
             _config.Configuration.EnableCustomPathSubFolders = true;
             _config.Configuration.EnableDateLastRefresh = true;
+            _config.Configuration.MergeMetadataAndImagesByName = true;
             _config.SaveConfiguration();
         }
 
