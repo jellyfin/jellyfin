@@ -626,12 +626,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (item is MusicArtist)
                 {
-                    writer.WriteElementString("formed", item.PremiereDate.Value.ToString(formatString));
+                    writer.WriteElementString("formed", item.PremiereDate.Value.ToLocalTime().ToString(formatString));
                 }
                 else
                 {
-                    writer.WriteElementString("premiered", item.PremiereDate.Value.ToString(formatString));
-                    writer.WriteElementString("releasedate", item.PremiereDate.Value.ToString(formatString));
+                    writer.WriteElementString("premiered", item.PremiereDate.Value.ToLocalTime().ToString(formatString));
+                    writer.WriteElementString("releasedate", item.PremiereDate.Value.ToLocalTime().ToString(formatString));
                 }
             }
 
@@ -641,7 +641,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     var formatString = options.ReleaseDateFormat;
 
-                    writer.WriteElementString("enddate", item.EndDate.Value.ToString(formatString));
+                    writer.WriteElementString("enddate", item.EndDate.Value.ToLocalTime().ToString(formatString));
                 }
             }
 
