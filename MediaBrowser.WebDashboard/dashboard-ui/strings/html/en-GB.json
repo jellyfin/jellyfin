@@ -25,7 +25,7 @@
     "LabelWindowsService": "Windows Service",
     "AWindowsServiceHasBeenInstalled": "A Windows Service has been installed.",
     "WindowsServiceIntro1": "Emby Server normally runs as a desktop application with a tray icon, but if you prefer to run it as a background service, it can be started from the windows services control panel instead.",
-    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. Please note that at this time the service is unable to self-update, so new versions will require manual interaction.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "That's all we need for now. Emby has begun collecting information about your media library. Check out some of our apps, and then click <b>Finish<\/b> to view the <b>Server Dashboard<\/b>.",
     "LabelConfigureSettings": "Configure settings",
     "LabelEnableVideoImageExtraction": "Enable video image extraction",

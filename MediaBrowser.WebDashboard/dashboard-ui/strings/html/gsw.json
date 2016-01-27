@@ -25,7 +25,7 @@
     "LabelWindowsService": "Windows Dienst",
     "AWindowsServiceHasBeenInstalled": "En Windows Dienst esch installiert worde.",
     "WindowsServiceIntro1": "Emby Server lauft normalerwiis als Desktop-Software mit emene Icon i de Taskliiste, aber falls es du vorziehsch das ganze als Dienst laufe z'loh, chasch es i de Windows Dienst under de Systemst\u00fcrig finde und starte.",
-    "WindowsServiceIntro2": "Falls de Windows Dienst verwendet wird, merk der bitte, dass es n\u00f6d gliichziitig au als Icon i de Taskliiste laufe chan, also muesch erst di normal Software beende um de Dienst ch\u00f6ne z'starte. De Dienst muess usserdem mit Adminrecht \u00fcber d'Systemst\u00fcrig verf\u00fcege. Merk der usserdem, dass de Windows Dienst sich ned selber chan update, also muesch jedes Update vo Hand us dure f\u00fcehre.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "Das esch alles wo mer momentan m\u00fcend w\u00fcsse. Emby het i de zw\u00fcscheziit agfange informatione \u00fcber diini medie-bibliothek z'sammle. Lueg der es paar vo eusne Apps a und denn klick uf <b>Beende<\/b> um zum <b>Server Dashboard<\/b> z'cho.",
     "LabelConfigureSettings": "Bearbeite iistellige",
     "LabelEnableVideoImageExtraction": "Aktiviere d'Extrahierig f\u00f6r Videobilder",
