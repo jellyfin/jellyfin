@@ -31,14 +31,17 @@
 
     function getDesiredAspect(shape) {
 
-        switch (shape) {
-
-            case 'square':
-                return 1;
-            case 'backdrop':
-                return (16 / 9);
-            case 'portrait':
+        if (shape) {
+            shape = shape.toLowerCase();
+            if (shape.indexOf('portrait') != -1) {
                 return (2 / 3);
+            }
+            if (shape.indexOf('backdrop') != -1) {
+                return (16 / 9);
+            }
+            if (shape.indexOf('square') != -1) {
+                return 1;
+            }
         }
         return null;
     }
