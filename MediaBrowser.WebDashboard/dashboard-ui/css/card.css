@@ -293,9 +293,13 @@
     }
 
 .coveredCardImage {
-    background-size: cover;
+    background-size: 100% 100%;
     background-position: center center;
 }
+
+    .coveredCardImage.noScale {
+        background-size: cover;
+    }
 
 .centeredCardImage {
     background-position: center center;

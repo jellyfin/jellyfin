@@ -2126,6 +2126,9 @@
 
             if (coverImage) {
                 imageCssClass += " coveredCardImage";
+                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
+                    imageCssClass += " noScale";
+                }
             }
             if (options.centerImage) {
                 imageCssClass += " centeredCardImage";
