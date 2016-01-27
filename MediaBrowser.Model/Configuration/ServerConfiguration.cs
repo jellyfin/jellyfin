@@ -164,7 +164,7 @@ namespace MediaBrowser.Model.Configuration
         /// different directories and files.
         /// </summary>
         /// <value>The file watcher delay.</value>
-        public int RealtimeLibraryMonitorDelay { get; set; }
+        public int LibraryMonitorDelay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable dashboard response caching].
@@ -255,7 +255,7 @@ namespace MediaBrowser.Model.Configuration
             MinResumeDurationSeconds = 300;
 
             EnableLibraryMonitor = AutoOnOff.Auto;
-            RealtimeLibraryMonitorDelay = 40;
+            LibraryMonitorDelay = 60;
 
             EnableInternetProviders = true;
             FindInternetTrailers = true;
