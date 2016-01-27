@@ -290,7 +290,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var operationName = httpReq.OperationName;
             var localPath = url.LocalPath;
 
-            var urlString = url.ToString();
+            var urlString = url.OriginalString;
             var enableLog = EnableLogging(urlString);
 
             if (enableLog)
