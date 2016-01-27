@@ -41,26 +41,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
         {
-            string server = null;
-            if (e.Headers.TryGetValue("SERVER", out server) && server.IndexOf("HDHomeRun", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                string location;
-                if (e.Headers.TryGetValue("Location", out location))
-                {
-                    //_logger.Debug("HdHomerun found at {0}", location);
+            //string server = null;
+            //if (e.Headers.TryGetValue("SERVER", out server) && server.IndexOf("HDHomeRun", StringComparison.OrdinalIgnoreCase) != -1)
+            //{
+            //    string location;
+            //    if (e.Headers.TryGetValue("Location", out location))
+            //    {
+            //        //_logger.Debug("HdHomerun found at {0}", location);
 
-                    // Just get the beginning of the url
-                    Uri uri;
-                    if (Uri.TryCreate(location, UriKind.Absolute, out uri))
-                    {
-                        var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
-                                .TrimEnd('/');
+            //        // Just get the beginning of the url
+            //        Uri uri;
+            //        if (Uri.TryCreate(location, UriKind.Absolute, out uri))
+            //        {
+            //            var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
+            //                    .TrimEnd('/');
 
-                        //_logger.Debug("HdHomerun api url: {0}", apiUrl);
-                        AddDevice(apiUrl);
-                    }
-                }
-            }
+            //            //_logger.Debug("HdHomerun api url: {0}", apiUrl);
+            //            AddDevice(apiUrl);
+            //        }
+            //    }
+            //}
         }
 
         private async void AddDevice(string url)
