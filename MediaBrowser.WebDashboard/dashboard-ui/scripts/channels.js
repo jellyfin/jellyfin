@@ -70,7 +70,7 @@
         }
     }
 
-    pageIdOn.on('pageinit', "channelsPage", function () {
+    pageIdOn('pageinit', "channelsPage", function () {
 
         var page = this;
 

@@ -48,6 +48,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
+        public bool DisplayChannelsInline { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
