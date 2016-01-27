@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Power;
+using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -84,6 +85,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public void Start()
         {
             _timerProvider.RestartTimers();
+
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+
+        }
+
+        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+            {
+                _timerProvider.RestartTimers();
+            }
         }
 
         public event EventHandler DataSourceChanged;
