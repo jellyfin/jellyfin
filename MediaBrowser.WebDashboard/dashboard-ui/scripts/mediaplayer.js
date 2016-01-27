@@ -1595,7 +1595,6 @@
 
                     state.PlayState.PlayMethod = self.streamInfo.playMethod;
 
-                    state.PlayState.LiveStreamId = mediaSource.LiveStreamId;
                     state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', currentSrc);
                 }
             }
@@ -1603,6 +1602,7 @@
             if (mediaSource) {
 
                 state.PlayState.MediaSourceId = mediaSource.Id;
+                state.PlayState.LiveStreamId = mediaSource.LiveStreamId;
 
                 state.NowPlayingItem = {
                     RunTimeTicks: mediaSource.RunTimeTicks
