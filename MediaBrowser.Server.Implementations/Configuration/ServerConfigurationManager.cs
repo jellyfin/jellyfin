@@ -35,6 +35,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         public ServerConfigurationManager(IApplicationPaths applicationPaths, ILogManager logManager, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
             : base(applicationPaths, logManager, xmlSerializer, fileSystem)
         {
+            UpdateItemsByNamePath();
             UpdateMetadataPath();
         }
 
@@ -72,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// </summary>
         protected override void OnConfigurationUpdated()
         {
+            UpdateItemsByNamePath();
             UpdateMetadataPath();
 
             base.OnConfigurationUpdated();
@@ -82,6 +84,19 @@ namespace MediaBrowser.Server.Implementations.Configuration
             base.AddParts(factories);
 
             UpdateTranscodingTempPath();
+        }
+
+        /// <summary>
+        /// Updates the items by name path.
+        /// </summary>
+        private void UpdateItemsByNamePath()
+        {
+            if (!Configuration.MergeMetadataAndImagesByName)
+            {
+                ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = string.IsNullOrEmpty(Configuration.ItemsByNamePath) ?
+                    null :
+                    Configuration.ItemsByNamePath;
+            }
         }
 
         /// <summary>
