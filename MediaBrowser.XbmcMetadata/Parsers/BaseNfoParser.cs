@@ -215,7 +215,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             DateTime added;
-                            if (DateTime.TryParse(val, out added))
+                            if (DateTime.TryParseExact(val, BaseNfoSaver.DateAddedFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
+                            {
+                                item.EndDate = added.ToUniversalTime();
+                            }
+                            else if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
                             {
                                 item.DateCreated = added.ToUniversalTime();
                             }
@@ -976,11 +980,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             DateTime parsedValue;
-                            if (DateTime.TryParseExact(val, "yyyy-MM-dd HH:mm:ss", _usCulture, DateTimeStyles.None, out parsedValue))
+                            if (DateTime.TryParseExact(val, "yyyy-MM-dd HH:mm:ss", _usCulture, DateTimeStyles.AssumeLocal, out parsedValue))
                             {
                                 var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                userData.LastPlayedDate = parsedValue;
+                                userData.LastPlayedDate = parsedValue.ToUniversalTime();
                             }
                         }
                         break;
