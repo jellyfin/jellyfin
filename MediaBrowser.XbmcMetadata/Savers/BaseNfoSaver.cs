@@ -416,6 +416,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
+        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
+
         /// <summary>
         /// Adds the common nodes.
         /// </summary>
@@ -472,7 +474,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("type", item.DisplayMediaType);
             }
 
-            writer.WriteElementString("dateadded", item.DateCreated.ToString("yyyy-MM-dd HH:mm:ss"));
+            writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat));
 
             writer.WriteElementString("title", item.Name ?? string.Empty);
             writer.WriteElementString("originaltitle", item.Name ?? string.Empty);
@@ -949,7 +951,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (userdata.LastPlayedDate.HasValue)
                 {
-                    writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss").ToLower());
+                    writer.WriteElementString("lastplayed", userdata.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss").ToLower());
                 }
 
                 writer.WriteStartElement("resume");
