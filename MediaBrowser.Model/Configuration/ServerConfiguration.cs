@@ -216,7 +216,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public bool DisableXmlSavers { get; set; }
         public bool EnableWindowsShortcuts { get; set; }
 
         public bool EnableVideoFrameByFrameAnalysis { get; set; }
