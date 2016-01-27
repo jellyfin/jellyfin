@@ -79,7 +79,6 @@
 
 .mainDrawer {
     height: auto !important;
-    border-right: 1px solid #e0e0e0;
 }
 
 .mainDrawerContent {
@@ -355,29 +354,11 @@
 }
 
 .drawerUserPanel {
-    background: url(images/splash720.jpg);
-    background-size: cover;
-    background-position: center center;
-    margin-bottom: 1em;
-    position: relative;
     color: #fff;
-    height: 140px;
-}
-
-.drawerUserPanelInner {
-    background-color: rgba(0, 0, 0, .70);
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-}
-
-.drawerUserPanelContent {
-    color: #fff;
-    font-weight: 500;
-    padding: 1.1em;
+    padding: 1em 1.2em;
     font-size: 14px;
+    display: flex;
+    align-items: center;
 }
 
 .drawerUserPanelUserImage {
@@ -385,12 +366,10 @@
     background-repeat: no-repeat;
     background-position: center center;
     border-radius: 1000px;
-    vertical-align: middle;
 }
 
 .drawerUserPanelUserName {
-    padding-top: 1.5em;
-    padding-left: .35em;
+    padding-left: 1em;
 }
 
 .libraryDocument .dashboardDrawerContent {
@@ -418,7 +397,7 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .darkDrawer {
-    background-color: rgba(30,30,30,.96) !important;
+    background-color: rgba(30,30,30,1) !important;
     backdrop-filter: brightness(1.5) blur(4px);
     box-shadow: none !important;
 }
@@ -437,7 +416,7 @@ body:not(.dashboardDocument) .btnNotifications {
     }
 
     .darkDrawer .sidebarDivider {
-        background: #555 !important;
+        background: #303030 !important;
     }
 
     .darkDrawer .sidebarLink:hover {
