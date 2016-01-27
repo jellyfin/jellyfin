@@ -47,11 +47,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             if (mergeMetadataSettings)
             {
-                var list = sourceItem.LinkedChildren.Where(i => i.Type != LinkedChildType.Manual).ToList();
-
-                list.AddRange(targetItem.LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
-
-                targetItem.LinkedChildren = list;
+                targetItem.LinkedChildren = sourceItem.LinkedChildren;
                 targetItem.Shares = sourceItem.Shares;
             }
         }
