@@ -62,7 +62,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("aired", episode.PremiereDate.Value.ToString(formatString));
+                writer.WriteElementString("aired", episode.PremiereDate.Value.ToLocalTime().ToString(formatString));
             }
 
             if (episode.AirsAfterSeasonNumber.HasValue)
