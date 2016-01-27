@@ -35,8 +35,8 @@ namespace MediaBrowser.ServerApplication.Native
 
         public void ScheduleWake(DateTime utcTime)
         {
-            Initialize();
-            _bgWorker.RunWorkerAsync(utcTime.ToFileTime());
+            //Initialize();
+            //_bgWorker.RunWorkerAsync(utcTime.ToFileTime());
         }
 
         private void Initialize()
