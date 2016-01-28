@@ -213,7 +213,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public ServerConfiguration()
         {
-            MergeMetadataAndImagesByName = true;
             Migrations = new string[] { };
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
