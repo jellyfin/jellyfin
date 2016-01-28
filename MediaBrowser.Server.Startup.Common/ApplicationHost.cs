@@ -210,7 +210,6 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly string _releaseAssetFilename;
 
         internal INativeApp NativeApp { get; set; }
-        private Timer _ipAddressCacheTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -234,8 +233,6 @@ namespace MediaBrowser.Server.Startup.Common
             NativeApp = nativeApp;
 
             SetBaseExceptionMessage();
-
-            _ipAddressCacheTimer = new Timer(OnCacheClearTimerFired, null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
         }
 
         private Version _version;
@@ -535,7 +532,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(EncodingManager);
 
             RegisterSingleInstance(NativeApp.GetPowerManagement());
-            
+
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
@@ -981,10 +978,10 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-				if (!ServerConfigurationManager.Configuration.EnableAutoUpdate) 
-				{
-					return false;
-				}
+                if (!ServerConfigurationManager.Configuration.EnableAutoUpdate)
+                {
+                    return false;
+                }
 #if DEBUG
                 return false;
 #endif
@@ -1168,7 +1165,12 @@ namespace MediaBrowser.Server.Startup.Common
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        private DateTime _lastAddressCacheClear;
         private bool IsIpAddressValid(IPAddress address)
+        {
+            return IsIpAddressValidInternal(address).Result;
+        }
+        private async Task<bool> IsIpAddressValidInternal(IPAddress address)
         {
             if (IPAddress.IsLoopback(address))
             {
@@ -1178,6 +1180,12 @@ namespace MediaBrowser.Server.Startup.Common
             var apiUrl = GetLocalApiUrl(address.ToString());
             apiUrl += "/system/ping";
 
+            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 5)
+            {
+                _lastAddressCacheClear = DateTime.UtcNow;
+                _validAddressResults.Clear();
+            }
+
             bool cachedResult;
             if (_validAddressResults.TryGetValue(apiUrl, out cachedResult))
             {
@@ -1186,14 +1194,15 @@ namespace MediaBrowser.Server.Startup.Common
 
             try
             {
-                using (var response = HttpClient.SendAsync(new HttpRequestOptions
+                using (var response = await HttpClient.SendAsync(new HttpRequestOptions
                 {
                     Url = apiUrl,
                     LogErrorResponseBody = false,
                     LogErrors = false,
-                    LogRequest = false
+                    LogRequest = false,
+                    TimeoutMs = 30000
 
-                }, "POST").Result)
+                }, "POST").ConfigureAwait(false))
                 {
                     using (var reader = new StreamReader(response.Content))
                     {
@@ -1201,23 +1210,18 @@ namespace MediaBrowser.Server.Startup.Common
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
                         _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                        //Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, valid);
                         return valid;
                     }
                 }
             }
             catch
             {
-                Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, false);
+                //Logger.Debug("Ping test result to {0}. Success: {1}", apiUrl, false);
 
                 _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
             }
-        }
-
-        private void OnCacheClearTimerFired(object state)
-        {
-            _validAddressResults.Clear();
         }
 
         public string FriendlyName
