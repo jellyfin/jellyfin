@@ -569,7 +569,7 @@
 
             // viblast can help us here
             //return true;
-            return window.MediaSource != null && !browserInfo.firefox;
+            return window.MediaSource != null;
         };
 
         self.changeStream = function (ticks, params) {
@@ -1518,6 +1518,11 @@
 
                 Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
+                var stopTranscoding = false;
+                if (!currentProgressInterval) {
+                    stopTranscoding = true;
+                }
+
                 mediaRenderer.stop();
 
                 Events.trigger(mediaRenderer, "ended");
@@ -1530,9 +1535,16 @@
 
                 self.currentMediaRenderer = null;
                 self.currentItem = null;
-                self.currentMediaSource = null;
+
                 self.currentSubtitleStreamIndex = null;
                 self.streamInfo = {};
+
+                self.currentMediaSource = null;
+
+                if (stopTranscoding) {
+                    ApiClient.stopActiveEncodings();
+                }
+
 
             } else {
                 self.currentMediaRenderer = null;
@@ -1767,14 +1779,24 @@
             Events.trigger(self, 'playstatechange', [state]);
         };
 
-        window.addEventListener("beforeunload", function () {
-
+        function onAppClose() {
             // Try to report playback stopped before the browser closes
-            if (self.currentItem && self.currentMediaRenderer && currentProgressInterval) {
+            if (self.currentItem && self.currentMediaRenderer) {
 
-                self.onPlaybackStopped.call(self.currentMediaRenderer);
+                if (currentProgressInterval) {
+
+                    self.onPlaybackStopped.call(self.currentMediaRenderer);
+                } else {
+                    ApiClient.stopActiveEncodings();
+                }
             }
-        });
+        }
+
+        window.addEventListener("beforeunload", onAppClose);
+
+        if (browserInfo.safari) {
+            document.addEventListener("pause", onAppClose);
+        }
 
         function sendProgressUpdate() {
 
