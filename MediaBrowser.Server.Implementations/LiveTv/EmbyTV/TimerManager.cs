@@ -5,6 +5,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using CommonIO;
@@ -100,7 +101,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private void ScheduleWake(TimerInfo info)
         {
             var startDate = RecordingHelper.GetStartTime(info).AddMinutes(-5);
-            _logger.Info("Scheduling system wake timer at {0} (UTC)", startDate);
 
             try
             {
@@ -123,9 +123,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var timer = new Timer(TimerCallback, item.Id, length, TimeSpan.Zero);
 
-            if (!_timers.TryAdd(item.Id, timer))
+            if (_timers.TryAdd(item.Id, timer))
+            {
+                _logger.Warn("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, length.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+            }
+            else
             {
                 timer.Dispose();
+                _logger.Warn("Timer already exists for item {0}", item.Id);
             }
         }
 
