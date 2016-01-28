@@ -994,11 +994,11 @@
 
             selectionCommandsPanel.innerHTML = html;
 
-            $('.btnCloseSelectionPanel', selectionCommandsPanel).on('click', hideSelections);
+            selectionCommandsPanel.querySelector('.btnCloseSelectionPanel').addEventListener('click', hideSelections);
 
             var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
 
-            $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
+            btnSelectionPanelOptions.addEventListener('click', showMenuForSelectedItems);
 
             if (!browserInfo.mobile) {
                 shake(btnSelectionPanelOptions, 1);
