@@ -37,6 +37,7 @@ namespace MediaBrowser.ServerApplication.Native
         {
             //Initialize();
             //_bgWorker.RunWorkerAsync(utcTime.ToFileTime());
+            throw new NotImplementedException();
         }
 
         private void Initialize()
