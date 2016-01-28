@@ -1883,6 +1883,13 @@ var AppInfo = {};
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
         }
 
+        // hack for an android test before browserInfo is loaded
+        if (Dashboard.isRunningInCordova() && window.MainActivity) {
+            paths.appStorage = "cordova/android/appstorage";
+        } else {
+            paths.appStorage = apiClientBowerPath + "/appstorage";
+        }
+
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
         var md5Path = bowerPath + "/cryptojslib/components/md5-min";
         var shim = {};
@@ -1987,8 +1994,6 @@ var AppInfo = {};
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
             define("fileupload", [apiClientBowerPath + "/fileupload"]);
         }
-
-        define("apiclient-store", [apiClientBowerPath + "/store"]);
         define("apiclient-deferred", ["legacy/deferred"]);
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
@@ -2000,14 +2005,6 @@ var AppInfo = {};
     }
 
     function init(hostingAppInfo) {
-
-        if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("appstorage", ["cordova/android/appstorage"]);
-        } else {
-            define('appstorage', [], function () {
-                return appStorage;
-            });
-        }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
@@ -2119,7 +2116,6 @@ var AppInfo = {};
         deps.push('connectionmanagerfactory');
         deps.push('credentialprovider');
 
-        deps.push('appstorage');
         deps.push('scripts/appsettings');
         deps.push('scripts/extensions');
 
@@ -2429,15 +2425,17 @@ var AppInfo = {};
         var initialDependencies = [];
 
         initialDependencies.push('browser');
-        initialDependencies.push('apiclient-store');
+        initialDependencies.push('appStorage');
 
         if (!window.Promise) {
             initialDependencies.push('native-promise-only');
         }
 
-        require(initialDependencies, function (browser) {
+        require(initialDependencies, function (browser, appStorage) {
 
             window.browserInfo = browser;
+            window.appStorage = appStorage;
+
             setAppInfo();
             setDocumentClasses();
 

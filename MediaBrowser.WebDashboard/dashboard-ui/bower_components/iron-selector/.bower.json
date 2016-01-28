@@ -36,7 +36,7 @@
     "tag": "v1.0.8",
     "commit": "e9a66727f3da0446f04956d4e4f1dcd51cdec2ff"
   },
-  "_source": "git://github.com/PolymerElements/iron-selector.git",
+  "_source": "git://github.com/polymerelements/iron-selector.git",
   "_target": "^1.0.0",
-  "_originalSource": "PolymerElements/iron-selector"
+  "_originalSource": "polymerelements/iron-selector"
 }

@@ -38,13 +38,15 @@
         return Math.floor(Math.random() * (max - min) + min);
     }
 
+    var cache = {};
+
     function getBackdropItemIds(apiClient, userId, types, parentId) {
 
         var key = 'backdrops2_' + userId + (types || '') + (parentId || '');
 
         var deferred = $.Deferred();
 
-        var data = sessionStore.getItem(key);
+        var data = cache[key];
 
         if (data) {
 
@@ -73,7 +75,7 @@
                     };
                 });
 
-                sessionStore.setItem(key, JSON.stringify(images));
+                cache[key] = JSON.stringify(images);
                 deferred.resolveWith(null, [images]);
             });
         }
