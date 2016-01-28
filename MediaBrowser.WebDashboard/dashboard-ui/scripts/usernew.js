@@ -107,15 +107,24 @@
                 Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
 
-        }, function () {
+        }, function (response) {
 
-            Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
+            if (response.status == 400) {
+
+                Dashboard.alert({
+                    message: page.querySelector('.labelNewUserNameHelp').innerHTML
+                });
+
+            } else {
+                Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
+            }
+
             Dashboard.hideLoadingMsg();
         });
     }
 
     function onSubmit() {
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
 
         Dashboard.showLoadingMsg();
 
