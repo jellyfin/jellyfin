@@ -631,7 +631,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             var person = GetPersonFromXmlNode(subtree);
 
-                            itemResult.AddPerson(person);
+                            if (!string.IsNullOrWhiteSpace(person.Name))
+                            {
+                                itemResult.AddPerson(person);
+                            }
                         }
                         break;
                     }
