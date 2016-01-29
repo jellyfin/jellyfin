@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.People
 
         private int _requestCount;
         private readonly object _requestCountLock = new object();
-        private Timer _requestCountReset;
+        private DateTime _lastRequestCountReset;
 
         public MovieDbPersonProvider(IFileSystem fileSystem, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
         {
@@ -48,16 +48,6 @@ namespace MediaBrowser.Providers.People
             _httpClient = httpClient;
             _logger = logger;
             Current = this;
-
-            _requestCountReset = new Timer(OnRequestThrottleTimerFired, null, TimeSpan.FromHours(1), TimeSpan.FromHours(1));
-        }
-
-        private void OnRequestThrottleTimerFired(object state)
-        {
-            lock (_requestCountLock)
-            {
-                _requestCount = 0;
-            }
         }
 
         public string Name
@@ -101,6 +91,12 @@ namespace MediaBrowser.Providers.People
             {
                 lock (_requestCountLock)
                 {
+                    if ((DateTime.UtcNow - _lastRequestCountReset).TotalHours >= 1)
+                    {
+                        _requestCount = 0;
+                        _lastRequestCountReset = DateTime.UtcNow;
+                    }
+
                     var requestCount = _requestCount;
 
                     if (requestCount >= 5)
