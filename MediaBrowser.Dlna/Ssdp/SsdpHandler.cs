@@ -33,11 +33,7 @@ namespace MediaBrowser.Dlna.Ssdp
         private readonly IPAddress _ssdpIp = IPAddress.Parse(SSDPAddr);
         private readonly IPEndPoint _ssdpEndp = new IPEndPoint(IPAddress.Parse(SSDPAddr), SSDPPort);
 
-        private Timer _queueTimer;
         private Timer _notificationTimer;
-
-        private readonly AutoResetEvent _datagramPosted = new AutoResetEvent(false);
-        private readonly ConcurrentQueue<Datagram> _messageQueue = new ConcurrentQueue<Datagram>();
 
         private bool _isDisposed;
         private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
@@ -121,9 +117,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Start()
         {
-            RestartSocketListener();
+            DisposeSocket();
+            StopAliveNotifier();
 
+            RestartSocketListener();
             ReloadAliveNotifier();
+
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
         }
 
@@ -131,7 +131,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             if (e.Mode == PowerModes.Resume)
             {
-                NotifyAll();
+                Start();
             }
         }
 
@@ -154,7 +154,7 @@ namespace MediaBrowser.Dlna.Ssdp
             SendDatagram("M-SEARCH * HTTP/1.1", values, _ssdpEndp, localIp, true, 2);
         }
 
-        public void SendDatagram(string header,
+        public async void SendDatagram(string header,
             Dictionary<string, string> values,
             EndPoint endpoint,
             EndPoint localAddress,
@@ -162,28 +162,18 @@ namespace MediaBrowser.Dlna.Ssdp
             int sendCount)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
-            var queued = false;
 
             var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
 
             for (var i = 0; i < sendCount; i++)
             {
+                if (i > 0)
+                {
+                    await Task.Delay(500).ConfigureAwait(false);
+                }
+
                 var dgram = new Datagram(endpoint, localAddress, _logger, msg, isBroadcast, enableDebugLogging);
-
-                if (_messageQueue.Count == 0)
-                {
-                    dgram.Send();
-                }
-                else
-                {
-                    _messageQueue.Enqueue(dgram);
-                    queued = true;
-                }
-            }
-
-            if (queued)
-            {
-                StartQueueTimer();
+                dgram.Send();
             }
         }
 
@@ -254,47 +244,10 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        private readonly object _queueTimerSyncLock = new object();
-        private void StartQueueTimer()
-        {
-            lock (_queueTimerSyncLock)
-            {
-                if (_queueTimer == null)
-                {
-                    _queueTimer = new Timer(QueueTimerCallback, null, 500, Timeout.Infinite);
-                }
-                else
-                {
-                    _queueTimer.Change(500, Timeout.Infinite);
-                }
-            }
-        }
-
-        private void QueueTimerCallback(object state)
-        {
-            Datagram msg;
-            while (_messageQueue.TryDequeue(out msg))
-            {
-                msg.Send();
-            }
-
-            _datagramPosted.Set();
-
-            if (_messageQueue.Count > 0)
-            {
-                StartQueueTimer();
-            }
-            else
-            {
-                DisposeQueueTimer();
-            }
-        }
-
         private void RestartSocketListener()
         {
             if (_isDisposed)
             {
-                StopSocketRetryTimer();
                 return;
             }
 
@@ -304,39 +257,12 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 _logger.Info("MultiCast socket created");
 
-                StopSocketRetryTimer();
-
                 Receive();
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error creating MultiCast socket", ex);
                 //StartSocketRetryTimer();
-            }
-        }
-
-        private Timer _socketRetryTimer;
-        private readonly object _socketRetryLock = new object();
-        private void StartSocketRetryTimer()
-        {
-            lock (_socketRetryLock)
-            {
-                if (_socketRetryTimer == null)
-                {
-                    _socketRetryTimer = new Timer(s => RestartSocketListener(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-                }
-            }
-        }
-
-        private void StopSocketRetryTimer()
-        {
-            lock (_socketRetryLock)
-            {
-                if (_socketRetryTimer != null)
-                {
-                    _socketRetryTimer.Dispose();
-                    _socketRetryTimer = null;
-                }
             }
         }
 
@@ -448,16 +374,9 @@ namespace MediaBrowser.Dlna.Ssdp
             SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
 
             _isDisposed = true;
-            while (_messageQueue.Count != 0)
-            {
-                _datagramPosted.WaitOne();
-            }
 
             DisposeSocket();
-            DisposeQueueTimer();
-            DisposeNotificationTimer();
-
-            _datagramPosted.Dispose();
+            StopAliveNotifier();
         }
 
         private void DisposeSocket()
@@ -467,18 +386,6 @@ namespace MediaBrowser.Dlna.Ssdp
                 _socket.Close();
                 _socket.Dispose();
                 _socket = null;
-            }
-        }
-
-        private void DisposeQueueTimer()
-        {
-            lock (_queueTimerSyncLock)
-            {
-                if (_queueTimer != null)
-                {
-                    _queueTimer.Dispose();
-                    _queueTimer = null;
-                }
             }
         }
 
@@ -534,14 +441,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
         {
-            List<UpnpDevice> list;
-            lock (_devices)
-            {
-                if (!_devices.TryGetValue(uuid, out list))
-                {
-                    _devices.TryAdd(uuid, list = new List<UpnpDevice>());
-                }
-            }
+            var list = _devices.GetOrAdd(uuid, new List<UpnpDevice>());
 
             list.AddRange(services.Select(i => new UpnpDevice(uuid, i, descriptionUri, address)));
 
@@ -572,7 +472,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             if (!config.BlastAliveMessages)
             {
-                DisposeNotificationTimer();
+                StopAliveNotifier();
                 return;
             }
 
@@ -599,7 +499,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        private void DisposeNotificationTimer()
+        private void StopAliveNotifier()
         {
             lock (_notificationTimerSyncLock)
             {
