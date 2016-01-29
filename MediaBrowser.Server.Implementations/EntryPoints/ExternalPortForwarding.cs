@@ -11,6 +11,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -21,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly ISsdpHandler _ssdp;
 
-        private Timer _timer;
+        private PeriodicTimer _timer;
         private bool _isStarted;
 
         public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, ISsdpHandler ssdp)
@@ -95,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             NatUtility.UnhandledException += NatUtility_UnhandledException;
             NatUtility.StartDiscovery();
 
-            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            _timer = new PeriodicTimer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
             _ssdp.MessageReceived += _ssdp_MessageReceived;
 

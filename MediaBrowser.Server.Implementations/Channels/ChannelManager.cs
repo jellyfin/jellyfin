@@ -29,7 +29,7 @@ using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    public class ChannelManager : IChannelManager, IDisposable
+    public class ChannelManager : IChannelManager
     {
         private IChannel[] _channels;
 
@@ -47,11 +47,6 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly ILocalizationManager _localization;
         private readonly ConcurrentDictionary<Guid, bool> _refreshedItems = new ConcurrentDictionary<Guid, bool>();
 
-        private readonly ConcurrentDictionary<string, int> _downloadCounts = new ConcurrentDictionary<string, int>();
-
-        private Timer _refreshTimer;
-        private Timer _clearDownloadCountsTimer;
-
         public ChannelManager(IUserManager userManager, IDtoService dtoService, ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IUserDataManager userDataManager, IJsonSerializer jsonSerializer, ILocalizationManager localization, IHttpClient httpClient, IProviderManager providerManager)
         {
             _userManager = userManager;
@@ -65,9 +60,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             _localization = localization;
             _httpClient = httpClient;
             _providerManager = providerManager;
-
-            _refreshTimer = new Timer(s => _refreshedItems.Clear(), null, TimeSpan.FromHours(3), TimeSpan.FromHours(3));
-            _clearDownloadCountsTimer = new Timer(s => _downloadCounts.Clear(), null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
         }
 
         private TimeSpan CacheLength
@@ -211,6 +203,8 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            _refreshedItems.Clear();
+
             var allChannelsList = GetAllChannels().ToList();
 
             var numComplete = 0;
@@ -1487,12 +1481,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var limit = features.DailyDownloadLimit;
 
-            if (!ValidateDownloadLimit(host, limit))
-            {
-                _logger.Error(string.Format("Download limit has been reached for {0}", channel.Name));
-                throw new ChannelDownloadException(string.Format("Download limit has been reached for {0}", channel.Name));
-            }
-
             foreach (var header in source.RequiredHttpHeaders)
             {
                 options.RequestHeaders[header.Key] = header.Value;
@@ -1510,8 +1498,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                     StatusCode = HttpStatusCode.NotFound
                 };
             }
-
-            IncrementDownloadCount(host, limit);
 
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) && response.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
             {
@@ -1545,47 +1531,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             catch
             {
 
-            }
-        }
-
-        private void IncrementDownloadCount(string key, int? limit)
-        {
-            if (!limit.HasValue)
-            {
-                return;
-            }
-
-            int current;
-            _downloadCounts.TryGetValue(key, out current);
-
-            current++;
-            _downloadCounts.AddOrUpdate(key, current, (k, v) => current);
-        }
-
-        private bool ValidateDownloadLimit(string key, int? limit)
-        {
-            if (!limit.HasValue)
-            {
-                return true;
-            }
-
-            int current;
-            _downloadCounts.TryGetValue(key, out current);
-
-            return current < limit.Value;
-        }
-
-        public void Dispose()
-        {
-            if (_clearDownloadCountsTimer != null)
-            {
-                _clearDownloadCountsTimer.Dispose();
-                _clearDownloadCountsTimer = null;
-            }
-            if (_refreshTimer != null)
-            {
-                _refreshTimer.Dispose();
-                _refreshTimer = null;
             }
         }
     }

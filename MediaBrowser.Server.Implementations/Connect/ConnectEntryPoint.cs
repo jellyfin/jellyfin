@@ -13,12 +13,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
     public class ConnectEntryPoint : IServerEntryPoint
     {
-        private Timer _timer;
+        private PeriodicTimer _timer;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
@@ -43,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             Task.Run(() => LoadCachedAddress());
 
-            _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
+            _timer = new PeriodicTimer(null, new TimerCallback(TimerCallback), TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
 
         private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.emby.media/service/ip" };
