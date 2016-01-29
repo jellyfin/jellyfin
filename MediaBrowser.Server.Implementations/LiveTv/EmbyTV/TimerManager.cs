@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.Warn("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, length.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.Info("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, length.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
