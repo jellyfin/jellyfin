@@ -2192,7 +2192,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
                 {
-                    inputModifier += " -noaccurate_seek";
+                    //inputModifier += " -noaccurate_seek";
                 }
             }
             
