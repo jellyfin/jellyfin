@@ -50,18 +50,16 @@
             var enableVlcVideo = true;
             var enableVlcAudio = true;
 
-            profile.CodecProfiles = [];
-
             if (enableVlcVideo) {
 
-                var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
+                profile.DirectPlayProfiles.push({
+                    Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm",
+                    Type: 'Video'
+                });
 
-                if (directPlayVideoContainers && directPlayVideoContainers.length) {
-                    profile.DirectPlayProfiles.push({
-                        Container: directPlayVideoContainers.join(','),
-                        Type: 'Video'
-                    });
-                }
+                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
+                    return i.Type == 'Audio';
+                });
 
                 profile.SubtitleProfiles = [];
                 profile.SubtitleProfiles.push({
@@ -157,14 +155,14 @@
 
             if (enableVlcAudio) {
 
-                var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
+                profile.DirectPlayProfiles.push({
+                    Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus",
+                    Type: 'Audio'
+                });
 
-                if (directPlayAudioContainers && directPlayAudioContainers.length) {
-                    profile.DirectPlayProfiles.push({
-                        Container: directPlayAudioContainers.join(','),
-                        Type: 'Audio'
-                    });
-                }
+                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
+                    return i.Type != 'Audio';
+                });
 
                 profile.CodecProfiles.push({
                     Type: 'Audio',
@@ -179,33 +177,10 @@
 
         function updateDeviceProfileForIOS(profile) {
 
-            var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
-
-            if (directPlayVideoContainers && directPlayVideoContainers.length) {
-                profile.DirectPlayProfiles.push({
-                    Container: directPlayVideoContainers.join(','),
-                    Type: 'Video'
-                });
-            }
-
-            var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
-
-            if (directPlayAudioContainers && directPlayAudioContainers.length) {
-                profile.DirectPlayProfiles.push({
-                    Container: directPlayAudioContainers.join(','),
-                    Type: 'Audio'
-                });
-            }
-
-            if (browserInfo.safari && !AppInfo.isNativeApp) {
-                profile.TranscodingProfiles.unshift({
-                    Container: 'ts',
-                    Type: 'Audio',
-                    AudioCodec: 'aac',
-                    Context: 'Streaming',
-                    Protocol: 'hls'
-                });
-            }
+            profile.DirectPlayProfiles.push({
+                Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
+                Type: 'Audio'
+            });
         }
 
         self.getDeviceProfile = function (maxHeight) {
