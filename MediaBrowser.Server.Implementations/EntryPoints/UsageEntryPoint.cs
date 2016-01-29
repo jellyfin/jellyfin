@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -23,7 +24,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
 
-        private Timer _timer;
         private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
 
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
@@ -95,16 +95,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             return info;
         }
 
-        public void Run()
+        public async void Run()
         {
-            _timer = new Timer(OnTimerFired, null, TimeSpan.FromMilliseconds(5000), _frequency);
+            await Task.Delay(5000).ConfigureAwait(false);
+            OnTimerFired();
         }
 
         /// <summary>
         /// Called when [timer fired].
         /// </summary>
-        /// <param name="state">The state.</param>
-        private async void OnTimerFired(object state)
+        private async void OnTimerFired()
         {
             try
             {
@@ -121,12 +121,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         public void Dispose()
         {
             _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
-
-            if (_timer != null)
-            {
-                _timer.Dispose();
-                _timer = null;
-            }
         }
     }
 }
