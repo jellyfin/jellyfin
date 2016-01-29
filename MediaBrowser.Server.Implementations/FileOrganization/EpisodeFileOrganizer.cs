@@ -189,15 +189,6 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 return Task.FromResult(true);
             }
 
-            if (!series.ProviderIds.Any())
-            {
-                var msg = string.Format("Series has not yet been identified: {0}. If you just added the series, please run a library scan or use the identify feature to identify it.", seriesName);
-                result.Status = FileSortingStatus.Failure;
-                result.StatusMessage = msg;
-                _logger.Warn(msg);
-                return Task.FromResult(true);
-            }
-
             return OrganizeEpisode(sourcePath,
                 series,
                 seasonNumber,
@@ -471,7 +462,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="episodeNumber">The episode number.</param>
         /// <param name="endingEpisodeNumber">The ending episode number.</param>
+        /// <param name="premiereDate">The premiere date.</param>
         /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
         private async Task<string> GetNewPath(string sourcePath,
             Series series,
@@ -501,17 +494,20 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var episode = searchResults.FirstOrDefault();
 
-            string episodeName = string.Empty;
-
             if (episode == null)
             {
                 var msg = string.Format("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
                 _logger.Warn(msg);
-                //throw new Exception(msg);
+                return null;
             }
-            else
+
+            var episodeName = episode.Name;
+
+            if (string.IsNullOrWhiteSpace(episodeName))
             {
-                episodeName = episode.Name;
+                var msg = string.Format("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
+                _logger.Warn(msg);
+                return null;
             }
 
             seasonNumber = seasonNumber ?? episode.ParentIndexNumber;
