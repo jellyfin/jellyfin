@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
-using System.Threading;
+using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Startup.Common.EntryPoints
 {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Server.Startup.Common.EntryPoints
     {
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
-        private Timer _timer;
+        private PeriodicTimer _timer;
         private readonly IServerApplicationHost _appHost;
 
         public KeepServerAwake(ISessionManager sessionManager, ILogger logger, IServerApplicationHost appHost)
@@ -24,7 +24,7 @@ namespace MediaBrowser.Server.Startup.Common.EntryPoints
 
         public void Run()
         {
-            _timer = new Timer(obj =>
+            _timer = new PeriodicTimer(obj =>
             {
                 var now = DateTime.UtcNow;
                 if (_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 15))
