@@ -36,7 +36,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly List<string> _nonRendererUrls = new List<string>();
-        private Timer _clearNonRenderersTimer;
+        private DateTime _lastRendererClear;
 
         public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
@@ -57,17 +57,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public void Start()
         {
-            _clearNonRenderersTimer = new Timer(OnClearUrlTimerCallback, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
-        }
-
-        private void OnClearUrlTimerCallback(object state)
-        {
-            lock (_nonRendererUrls)
-            {
-                _nonRendererUrls.Clear();
-            }
         }
 
         async void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
@@ -99,6 +89,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 lock (_nonRendererUrls)
                 {
+                    if ((DateTime.UtcNow - _lastRendererClear).TotalMinutes >= 10)
+                    {
+                        _nonRendererUrls.Clear();
+                        _lastRendererClear = DateTime.UtcNow;
+                    }
+
                     if (_nonRendererUrls.Contains(location, StringComparer.OrdinalIgnoreCase))
                     {
                         return;
@@ -181,12 +177,6 @@ namespace MediaBrowser.Dlna.PlayTo
         public void Dispose()
         {
             _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
-
-            if (_clearNonRenderersTimer != null)
-            {
-                _clearNonRenderersTimer.Dispose();
-                _clearNonRenderersTimer = null;
-            }
         }
     }
 }
