@@ -22,14 +22,26 @@ namespace MediaBrowser.Dlna.PlayTo
         #region Fields & Properties
 
         private Timer _timer;
-        private Timer _volumeTimer;
 
         public DeviceInfo Properties { get; set; }
 
         private int _muteVol;
         public bool IsMuted { get; set; }
 
-        public int Volume { get; set; }
+        private int _volume;
+
+        public int Volume
+        {
+            get
+            {
+                RefreshVolumeIfNeeded();
+                return _volume;
+            }
+            set
+            {
+                _volume = value;
+            }
+        }
 
         public TimeSpan? Duration { get; set; }
 
@@ -93,11 +105,6 @@ namespace MediaBrowser.Dlna.PlayTo
             return 1000;
         }
 
-        private int GetVolumeTimerIntervalMs()
-        {
-            return 5000;
-        }
-
         private int GetInactiveTimerIntervalMs()
         {
             return 20000;
@@ -107,9 +114,35 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             _timer = new Timer(TimerCallback, null, GetPlaybackTimerIntervalMs(), GetInactiveTimerIntervalMs());
 
-            _volumeTimer = new Timer(VolumeTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
-
             _timerActive = false;
+        }
+
+        private DateTime _lastVolumeRefresh;
+        private void RefreshVolumeIfNeeded()
+        {
+            if (!_timerActive)
+            {
+                return;
+            }
+
+            if (DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
+            {
+                _lastVolumeRefresh = DateTime.UtcNow;
+                RefreshVolume();
+            }
+        }
+
+        private async void RefreshVolume()
+        {
+            try
+            {
+                await GetVolume().ConfigureAwait(false);
+                await GetMute().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error updating device volume info for {0}", ex, Properties.Name);
+            }
         }
 
         private readonly object _timerLock = new object();
@@ -124,7 +157,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         _logger.Debug("RestartTimer");
                         _timer.Change(10, GetPlaybackTimerIntervalMs());
-                        _volumeTimer.Change(100, GetVolumeTimerIntervalMs());
                     }
 
                     _timerActive = true;
@@ -149,10 +181,6 @@ namespace MediaBrowser.Dlna.PlayTo
                         if (_timer != null)
                         {
                             _timer.Change(interval, interval);
-                        }
-                        if (_volumeTimer != null)
-                        {
-                            _volumeTimer.Change(Timeout.Infinite, Timeout.Infinite);
                         }
                     }
 
@@ -437,19 +465,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     RestartTimerInactive();
                 }
-            }
-        }
-
-        private async void VolumeTimerCallback(object sender)
-        {
-            try
-            {
-                await GetVolume().ConfigureAwait(false);
-                await GetMute().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error updating device volume info for {0}", ex, Properties.Name);
             }
         }
 
@@ -1012,7 +1027,6 @@ namespace MediaBrowser.Dlna.PlayTo
                 _disposed = true;
 
                 DisposeTimer();
-                DisposeVolumeTimer();
             }
         }
 
@@ -1022,15 +1036,6 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 _timer.Dispose();
                 _timer = null;
-            }
-        }
-
-        private void DisposeVolumeTimer()
-        {
-            if (_volumeTimer != null)
-            {
-                _volumeTimer.Dispose();
-                _volumeTimer = null;
             }
         }
 
