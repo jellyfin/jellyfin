@@ -25,7 +25,7 @@
     "LabelWindowsService": "Servi\u00e7o do Windows",
     "AWindowsServiceHasBeenInstalled": "Foi instalado um Servi\u00e7o do Windows.",
     "WindowsServiceIntro1": "O Servidor Emby normalmente \u00e9 executado como uma aplica\u00e7\u00e3o de desktop com um \u00edcone na bandeja do sistema, mas se preferir executar como um servi\u00e7o em segundo plano, pode ser iniciado no painel de controle de servi\u00e7os do windows.",
-    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
+    "WindowsServiceIntro2": "Se usar o servi\u00e7o do windows, por favor saiba que n\u00e3o \u00e9 poss\u00edvel execut\u00e1-lo ao mesmo tempo que o \u00edcone da bandeja de sistema, por isso necessitar\u00e1 sair da bandeja para poder executar o servi\u00e7o. O servi\u00e7o tamb\u00e9m necessitar\u00e1 ser configurado com privil\u00e9gios de administrador  atrav\u00e9s do painel de controle. Ao executar como servi\u00e7o, ser\u00e1 necess\u00e1rio verificar se a conta do servi\u00e7o pode acessar suas pastas de m\u00eddias.",
     "WizardCompleted": "Isto \u00e9 tudo no momento. Emby come\u00e7ou a coletar informa\u00e7\u00f5es de sua biblioteca de m\u00eddias. Confira algumas de nossas apps e ent\u00e3o clique<b>Terminar<\/b> para ver o <b>Painel do Servidor<\/b>.",
     "LabelConfigureSettings": "Configurar ajustes",
     "LabelEnableVideoImageExtraction": "Ativar extra\u00e7\u00e3o de imagens de v\u00eddeo",
