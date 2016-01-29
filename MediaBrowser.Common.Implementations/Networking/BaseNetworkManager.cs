@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Threading;
 using MoreLinq;
 
 namespace MediaBrowser.Common.Implementations.Networking
@@ -14,22 +13,11 @@ namespace MediaBrowser.Common.Implementations.Networking
     public abstract class BaseNetworkManager
     {
         protected ILogger Logger { get; private set; }
-        private Timer _clearCacheTimer;
+        private DateTime _lastRefresh;
 
         protected BaseNetworkManager(ILogger logger)
         {
             Logger = logger;
-
-            // Can't use network change events due to a crash in Linux
-            _clearCacheTimer = new Timer(ClearCacheTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-        }
-
-        private void ClearCacheTimerCallback(object state)
-        {
-            lock (_localIpAddressSyncLock)
-            {
-                _localIpAddresses = null;
-            }
         }
 
 		private volatile List<IPAddress> _localIpAddresses;
@@ -41,15 +29,21 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
 		public IEnumerable<IPAddress> GetLocalIpAddresses()
         {
-            if (_localIpAddresses == null)
+            const int cacheMinutes = 3;
+            var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+
+            if (_localIpAddresses == null || forceRefresh)
             {
                 lock (_localIpAddressSyncLock)
                 {
-                    if (_localIpAddresses == null)
+                    forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+
+                    if (_localIpAddresses == null || forceRefresh)
                     {
                         var addresses = GetLocalIpAddressesInternal().ToList();
 
                         _localIpAddresses = addresses;
+                        _lastRefresh = DateTime.UtcNow;
 
                         return addresses;
                     }
