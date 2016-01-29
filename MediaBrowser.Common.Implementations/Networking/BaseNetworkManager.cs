@@ -20,14 +20,6 @@ namespace MediaBrowser.Common.Implementations.Networking
             Logger = logger;
         }
 
-        private void ClearCacheTimerCallback(object state)
-        {
-            lock (_localIpAddressSyncLock)
-            {
-                _localIpAddresses = null;
-            }
-        }
-
 		private volatile List<IPAddress> _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
@@ -37,13 +29,14 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
 		public IEnumerable<IPAddress> GetLocalIpAddresses()
         {
-            var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= 1;
+            const int cacheMinutes = 3;
+            var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
 
             if (_localIpAddresses == null || forceRefresh)
             {
                 lock (_localIpAddressSyncLock)
                 {
-                    forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= 1;
+                    forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
 
                     if (_localIpAddresses == null || forceRefresh)
                     {
