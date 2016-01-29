@@ -14,6 +14,11 @@ namespace MediaBrowser.Common.Threading
 
         public PeriodicTimer(Action<object> callback, object state, TimeSpan dueTime, TimeSpan period)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
             Callback = callback;
             _period = period;
             _state = state;
