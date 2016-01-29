@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var chapters = mediaInfo.Chapters ?? new List<ChapterInfo>();
-            if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
+            if (blurayInfo != null)
             {
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
             }
@@ -360,7 +360,15 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>VideoStream.</returns>
         private BlurayDiscInfo GetBDInfo(string path)
         {
-            return _blurayExaminer.GetDiscInfo(path);
+            try
+            {
+                return _blurayExaminer.GetDiscInfo(path);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting BDInfo", ex);
+                return null;
+            }
         }
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
@@ -628,7 +636,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchFromDvdLib(item, mount);
             }
 
-            if (item.VideoType == VideoType.BluRay || (item.IsoType.HasValue && item.IsoType.Value == IsoType.BluRay))
+            if (blurayDiscInfo != null)
             {
                 item.PlayableStreamFileNames = blurayDiscInfo.Files.ToList();
             }
