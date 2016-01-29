@@ -1630,9 +1630,6 @@ var AppInfo = {};
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
         AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
-        AppInfo.directPlayAudioContainers = [];
-        AppInfo.directPlayVideoContainers = [];
-
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
         } else {
@@ -2138,14 +2135,6 @@ var AppInfo = {};
                     return this.length && this[0].checked;
                 }
             };
-
-            if (Dashboard.isRunningInCordova() && browserInfo.android) {
-                AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
-            }
-            else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-
-                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac".split(',');
-            }
 
             var promises = [];
             deps = [];

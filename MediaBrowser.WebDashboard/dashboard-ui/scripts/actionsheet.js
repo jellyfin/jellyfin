@@ -2,7 +2,7 @@
 
     function show(options) {
 
-        require(['paper-menu', 'paper-dialog', 'paper-dialog-scrollable', 'scale-up-animation', 'fade-out-animation'], function () {
+        require(['paper-menu', 'paper-dialog', 'scale-up-animation', 'fade-out-animation'], function () {
             showInternal(options);
         });
     }
@@ -134,7 +134,10 @@
             }
         };
 
-        dlg.open();
+        var delay = browserInfo.chrome ? 0 : 100;
+        setTimeout(function () {
+            dlg.open();
+        }, delay);
 
         // Has to be assigned a z-index after the call to .open() 
         dlg.addEventListener('iron-overlay-closed', function () {
@@ -144,21 +147,37 @@
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
         var eventName = browserInfo.chrome || browserInfo.safari ? 'click' : 'mousedown';
 
-        dlg.querySelector('.actionSheetMenuItem').addEventListener(eventName, function (e) {
+        dlg.addEventListener(eventName, function (e) {
 
-            var selectedId = e.target.getAttribute('data-id');
+            var target = parentWithClass(e.target, 'actionSheetMenuItem');
+            if (target) {
+                var selectedId = target.getAttribute('data-id');
 
-            // Add a delay here to allow the click animation to finish, for nice effect
-            setTimeout(function () {
+                // Add a delay here to allow the click animation to finish, for nice effect
+                setTimeout(function () {
 
-                dlg.close();
+                    dlg.close();
 
-                if (options.callback) {
-                    options.callback(selectedId);
-                }
+                    if (options.callback) {
+                        options.callback(selectedId);
+                    }
 
-            }, 100);
+                }, 100);
+            }
         });
+    }
+
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     window.ActionSheetElement = {
