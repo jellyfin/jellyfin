@@ -37,11 +37,28 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
         private readonly string _accessToken;
+        private readonly DateTime _creationTime;
 
         public bool IsSessionActive
         {
             get
             {
+                var lastDateKnownActivity = new[] { _creationTime, _device.DateLastActivity }.Max();
+
+                if (DateTime.UtcNow >= lastDateKnownActivity.AddSeconds(120))
+                {
+                    try
+                    {
+                        // Session is inactive, mark it for Disposal and don't start the elapsed timer.
+                        _sessionManager.ReportSessionEnded(_session.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in ReportSessionEnded", ex);
+                    }
+                    return false;
+                }
+
                 return _device != null;
             }
         }
@@ -54,8 +71,6 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             get { return IsSessionActive; }
         }
-
-        private Timer _updateTimer;
 
         public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
@@ -72,6 +87,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _mediaSourceManager = mediaSourceManager;
             _accessToken = accessToken;
             _logger = logger;
+            _creationTime = DateTime.UtcNow;
         }
 
         public void Init(Device device)
@@ -84,8 +100,6 @@ namespace MediaBrowser.Dlna.PlayTo
             _device.Start();
 
             _deviceDiscovery.DeviceLeft += _deviceDiscovery_DeviceLeft;
-
-            _updateTimer = new Timer(updateTimer_Elapsed, null, 60000, 60000);
         }
 
         void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
@@ -113,22 +127,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         // Could throw if the session is already gone
                     }
-                }
-            }
-        }
-
-        private void updateTimer_Elapsed(object state)
-        {
-            if (DateTime.UtcNow >= _device.DateLastActivity.AddSeconds(120))
-            {
-                try
-                {
-                    // Session is inactive, mark it for Disposal and don't start the elapsed timer.
-                    _sessionManager.ReportSessionEnded(_session.Id);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in ReportSessionEnded", ex);
                 }
             }
         }
@@ -634,18 +632,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.MediaChanged -= _device_MediaChanged;
                 _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
 
-                DisposeUpdateTimer();
-
                 _device.Dispose();
-            }
-        }
-
-        private void DisposeUpdateTimer()
-        {
-            if (_updateTimer != null)
-            {
-                _updateTimer.Dispose();
-                _updateTimer = null;
             }
         }
 
