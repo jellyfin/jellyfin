@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
@@ -17,12 +16,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.News
 {
     public class NewsEntryPoint : IServerEntryPoint
     {
-        private Timer _timer;
+        private PeriodicTimer _timer;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.News
 
         public void Run()
         {
-            _timer = new Timer(OnTimerFired, null, TimeSpan.FromMilliseconds(500), _frequency);
+            _timer = new PeriodicTimer(OnTimerFired, null, TimeSpan.FromMilliseconds(500), _frequency);
         }
 
         /// <summary>
