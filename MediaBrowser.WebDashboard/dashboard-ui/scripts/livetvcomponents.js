@@ -253,7 +253,7 @@
 
     function showOverlay(elem, item) {
 
-        require(['components/paperdialoghelper', 'scale-up-animation', 'fade-out-animation'], function () {
+        require(['paperdialoghelper', 'scale-up-animation', 'fade-out-animation'], function (paperdialoghelper) {
 
             var dlg = document.createElement('paper-dialog');
 
@@ -300,7 +300,7 @@
             LibraryBrowser.renderGenres($('.itemGenres', dlg), item, 3);
             $('.miscTvProgramInfo', dlg).html(LibraryBrowser.getMiscInfoHtml(item));
 
-            PaperDialogHelper.positionTo(dlg, elem);
+            paperdialoghelper.positionTo(dlg, elem);
 
             dlg.open();
 

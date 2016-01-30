@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
 
     var currentProgramId;
     var currentDialog;

@@ -97,7 +97,7 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+        require(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
             var dlg = paperDialogHelper.createDialog({});
 
