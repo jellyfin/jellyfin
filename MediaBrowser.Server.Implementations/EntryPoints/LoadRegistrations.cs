@@ -4,6 +4,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -22,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ILogger _logger;
 
-        private Timer _timer;
+        private PeriodicTimer _timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoadRegistrations" /> class.
@@ -41,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            _timer = new Timer(s => LoadAllRegistrations(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(12));
+            _timer = new PeriodicTimer(s => LoadAllRegistrations(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(12));
         }
 
         private async Task LoadAllRegistrations()
