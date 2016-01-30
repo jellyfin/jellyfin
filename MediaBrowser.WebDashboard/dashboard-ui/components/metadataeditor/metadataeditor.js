@@ -868,6 +868,9 @@
                         size: 'small'
                     });
 
+                    dlg.classList.add('ui-body-b');
+                    dlg.classList.add('background-theme-b');
+
                     dlg.classList.add('formDialog');
 
                     var html = '';

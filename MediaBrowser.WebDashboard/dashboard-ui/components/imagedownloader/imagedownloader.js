@@ -271,11 +271,19 @@
             currentItemId = itemId;
             currentItemType = itemType;
 
-            var dlg = paperDialogHelper.createDialog();
+            var dlg = paperDialogHelper.createDialog({
+                size: 'fullscreen-border'
+            });
+
+            var theme = 'b';
+
+            dlg.classList.add('ui-body-' + theme);
+            dlg.classList.add('background-theme-' + theme);
+            dlg.classList.add('popupEditor');
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderSearch') + '</div>';
             html += '</h2>';
 

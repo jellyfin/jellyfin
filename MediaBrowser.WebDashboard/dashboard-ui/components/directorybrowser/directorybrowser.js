@@ -208,9 +208,12 @@
             getSystemInfo().then(function (systemInfo) {
 
                 var dlg = paperDialogHelper.createDialog({
-                    theme: 'a',
                     size: 'medium'
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('popupEditor');
 
                 dlg.classList.add('directoryPicker');
 

@@ -236,9 +236,13 @@
 
                 var dlg = paperDialogHelper.createDialog({
                     size: 'small',
-                    theme: 'a',
-                    removeOnClose: true
+                    removeOnClose: true,
+                    autoFocus: false
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('popupEditor');
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';

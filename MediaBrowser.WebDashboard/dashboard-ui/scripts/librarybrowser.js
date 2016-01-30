@@ -2881,10 +2881,11 @@
 
                 var dlg = paperDialogHelper.createDialog({
                     removeOnClose: true,
-                    theme: 'a',
-                    size: 'auto',
                     modal: false
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
 
                 var html = '';
 

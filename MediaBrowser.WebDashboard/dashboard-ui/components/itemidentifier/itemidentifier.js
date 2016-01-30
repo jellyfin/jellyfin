@@ -295,6 +295,9 @@
                     size: 'medium'
                 });
 
+                dlg.classList.add('ui-body-b');
+                dlg.classList.add('background-theme-b');
+
                 var html = '';
                 html += Globalize.translateDocument(template);
 
