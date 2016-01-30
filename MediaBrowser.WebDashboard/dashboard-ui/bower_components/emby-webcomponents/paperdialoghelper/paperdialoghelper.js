@@ -115,13 +115,13 @@
         dlg.animationConfig = {
             // scale up
             'entry': {
-                name: options.entryAnimation || 'scale-up-animation',
+                name: dlg.entryAnimation,
                 node: dlg,
                 timing: { duration: entryAnimationDuration, easing: 'ease-out' }
             },
             // fade out
             'exit': {
-                name: 'fade-out-animation',
+                name: dlg.exitAnimation,
                 node: dlg,
                 timing: { duration: options.exitAnimationDuration || 400, easing: 'ease-in' }
             }
