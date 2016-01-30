@@ -503,12 +503,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var episodeName = episode.Name;
 
-            if (string.IsNullOrWhiteSpace(episodeName))
-            {
-                var msg = string.Format("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
-                _logger.Warn(msg);
-                return null;
-            }
+            //if (string.IsNullOrWhiteSpace(episodeName))
+            //{
+            //    var msg = string.Format("No provider metadata found for {0} season {1} episode {2}", series.Name, seasonNumber, episodeNumber);
+            //    _logger.Warn(msg);
+            //    return null;
+            //}
 
             seasonNumber = seasonNumber ?? episode.ParentIndexNumber;
             episodeNumber = episodeNumber ?? episode.IndexNumber;
@@ -584,7 +584,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             seriesName = _fileSystem.GetValidFilename(seriesName).Trim();
 
-            if (string.IsNullOrEmpty(episodeTitle))
+            if (string.IsNullOrWhiteSpace(episodeTitle))
             {
                 episodeTitle = string.Empty;
             }
