@@ -171,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     epgData = GetEpgDataForChannel(timer.ChannelId);
                 }
-                await UpdateTimersForSeriesTimer(epgData, timer).ConfigureAwait(false);
+                await UpdateTimersForSeriesTimer(epgData, timer, false).ConfigureAwait(false);
             }
 
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
@@ -348,25 +348,44 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             _seriesTimerProvider.Add(info);
-            await UpdateTimersForSeriesTimer(epgData, info).ConfigureAwait(false);
+            await UpdateTimersForSeriesTimer(epgData, info, false).ConfigureAwait(false);
         }
 
         public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            _seriesTimerProvider.Update(info);
-            List<ProgramInfo> epgData;
-            if (info.RecordAnyChannel)
-            {
-                var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
-                var channelIds = channels.Select(i => i.Id).ToList();
-                epgData = GetEpgDataForChannels(channelIds);
-            }
-            else
-            {
-                epgData = GetEpgDataForChannel(info.ChannelId);
-            }
+            var instance = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
 
-            await UpdateTimersForSeriesTimer(epgData, info).ConfigureAwait(false);
+            if (instance != null)
+            {
+                instance.ChannelId = info.ChannelId;
+                instance.Days = info.Days;
+                instance.EndDate = info.EndDate;
+                instance.IsPostPaddingRequired = info.IsPostPaddingRequired;
+                instance.IsPrePaddingRequired = info.IsPrePaddingRequired;
+                instance.PostPaddingSeconds = info.PostPaddingSeconds;
+                instance.PrePaddingSeconds = info.PrePaddingSeconds;
+                instance.Priority = info.Priority;
+                instance.RecordAnyChannel = info.RecordAnyChannel;
+                instance.RecordAnyTime = info.RecordAnyTime;
+                instance.RecordNewOnly = info.RecordNewOnly;
+                instance.StartDate = info.StartDate;
+
+                _seriesTimerProvider.Update(instance);
+
+                List<ProgramInfo> epgData;
+                if (instance.RecordAnyChannel)
+                {
+                    var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
+                    var channelIds = channels.Select(i => i.Id).ToList();
+                    epgData = GetEpgDataForChannels(channelIds);
+                }
+                else
+                {
+                    epgData = GetEpgDataForChannel(instance.ChannelId);
+                }
+
+                await UpdateTimersForSeriesTimer(epgData, instance, true).ConfigureAwait(false);
+            }
         }
 
         public Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
@@ -856,7 +875,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer)
+        private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool deleteInvalidTimers)
         {
             var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
 
@@ -869,12 +888,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.AddOrUpdate(timer);
                 }
             }
+
+            if (deleteInvalidTimers)
+            {
+                var allTimers = GetTimersForSeries(seriesTimer, epgData, new List<RecordingInfo>())
+                    .Select(i => i.Id)
+                    .ToList();
+
+                var deletes = _timerProvider.GetAll()
+                    .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
+                    .Where(i => !allTimers.Contains(i.Id, StringComparer.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
+                    .ToList();
+
+                foreach (var timer in deletes)
+                {
+                    await CancelTimerAsync(timer.Id, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
         }
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms, IReadOnlyList<RecordingInfo> currentRecordings)
         {
             // Exclude programs that have already ended
-            allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow);
+            allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow && i.StartDate > DateTime.UtcNow);
 
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
