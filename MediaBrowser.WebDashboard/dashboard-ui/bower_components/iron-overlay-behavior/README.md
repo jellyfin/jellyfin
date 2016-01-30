@@ -7,6 +7,9 @@ iron-overlay-backdrop.html  iron-overlay-behavior.html
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
 
+The bot does some handling of markdown. Please file a bug if it does the wrong
+thing! https://github.com/PolymerLabs/tedium/issues
+
 -->
 
 [![Build Status](https://travis-ci.org/PolymerElements/iron-overlay-behavior.svg?branch=master)](https://travis-ci.org/PolymerElements/iron-overlay-behavior)
@@ -16,7 +19,6 @@ _[Demo and API Docs](https://elements.polymer-project.org/elements/iron-overlay-
 
 ##&lt;iron-overlay-backdrop&gt;
 
-
 `iron-overlay-backdrop` is a backdrop used by `Polymer.IronOverlayBehavior`. It should be a
 singleton.
 
@@ -24,16 +26,16 @@ singleton.
 
 The following custom properties and mixins are available for styling.
 
-Custom property | Description | Default
--------------------------------------------|------------------------|---------
-`--iron-overlay-backdrop-background-color` | Backdrop background color                                     | #000
-`--iron-overlay-backdrop-opacity`          | Backdrop opacity                                              | 0.6
-`--iron-overlay-backdrop`                  | Mixin applied to `iron-overlay-backdrop`.                      | {}
-`--iron-overlay-backdrop-opened`           | Mixin applied to `iron-overlay-backdrop` when it is displayed | {}
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--iron-overlay-backdrop-background-color` | Backdrop background color | #000 |
+| `--iron-overlay-backdrop-opacity` | Backdrop opacity | 0.6 |
+| `--iron-overlay-backdrop` | Mixin applied to `iron-overlay-backdrop`. | {} |
+| `--iron-overlay-backdrop-opened` | Mixin applied to `iron-overlay-backdrop` when it is displayed | {} |
+
 
 
 ##Polymer.IronOverlayBehavior
-
 
 Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
 on top of other content. It includes an optional backdrop, and can be used to implement a variety

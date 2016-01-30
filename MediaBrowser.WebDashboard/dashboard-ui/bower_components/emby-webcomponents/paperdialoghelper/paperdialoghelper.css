@@ -1,0 +1,28 @@
+.paperDialog {
+    margin: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+    max-width: none !important;
+    max-height: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .paperDialog.scrollY {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
+    }
+
+    .paperDialog.hiddenScroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .paperDialog.hiddenScroll {
+        -ms-overflow-style: none;
+        overflow: -moz-scrollbars-none;
+    }
