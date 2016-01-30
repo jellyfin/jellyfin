@@ -788,7 +788,7 @@
             showOverlayTimeout = setTimeout(function () {
                 onShowTimerExpired(elem);
 
-            }, 1000);
+            }, 1200);
         }
 
         function preventTouchHover() {

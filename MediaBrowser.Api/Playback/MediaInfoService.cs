@@ -141,10 +141,10 @@ namespace MediaBrowser.Api.Playback
 
             var profile = request.DeviceProfile;
 
-            var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-            if (caps != null)
+            if (profile == null)
             {
-                if (profile == null)
+                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                if (caps != null)
                 {
                     profile = caps.DeviceProfile;
                 }
