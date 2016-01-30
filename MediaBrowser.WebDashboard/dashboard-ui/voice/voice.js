@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['paperdialoghelper'], function (paperDialogHelper) {
 
     var currentRecognition;
 
@@ -87,7 +87,7 @@
 
                 var dlg = currentDialog;
                 if (dlg) {
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 }
 
                 resolve();
@@ -227,7 +227,7 @@
     }
 
     var currentDialog;
-    function showVoiceHelp(paperDialogHelper) {
+    function showVoiceHelp() {
 
         var dlg = paperDialogHelper.createDialog({
             size: 'medium',
@@ -359,7 +359,7 @@
         currentRecognition = recognition;
 
         if (createUI !== false) {
-            require(['components/paperdialoghelper', 'paper-fab', 'css!voice/voice.css'], showVoiceHelp);
+            require(['paper-fab', 'css!voice/voice.css'], showVoiceHelp);
         }
     }
 
@@ -378,4 +378,4 @@
         startListening: startListening
     };
 
-})();
+});

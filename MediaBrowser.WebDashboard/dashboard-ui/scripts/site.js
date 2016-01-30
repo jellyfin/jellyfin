@@ -1806,6 +1806,10 @@ var AppInfo = {};
         }
     }
 
+    function returnFirstDependency(obj) {
+        return obj;
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1848,6 +1852,8 @@ var AppInfo = {};
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
+            performanceManager: embyWebComponentsBowerPath + "/performancemanager",
+            focusManager: embyWebComponentsBowerPath + "/focusmanager",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
@@ -1994,6 +2000,19 @@ var AppInfo = {};
         define("multiserversync", [apiClientBowerPath + "/sync/multiserversync"]);
         define("offlineusersync", [apiClientBowerPath + "/sync/offlineusersync"]);
         define("mediasync", [apiClientBowerPath + "/sync/mediasync"]);
+
+        define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
+
+        // alias
+        define("historyManager", [], function () {
+            return {
+                pushState: function (state, title, url) {
+                    state.navigate = false;
+                    history.pushState(state, title, url);
+                    jQuery.onStatePushed(state);
+                }
+            };
+        });
     }
 
     function init(hostingAppInfo) {

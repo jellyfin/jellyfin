@@ -2877,7 +2877,7 @@
 
         showSortMenu: function (options) {
 
-            require(['components/paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
+            require(['paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
 
                 var dlg = paperDialogHelper.createDialog({
                     removeOnClose: true,

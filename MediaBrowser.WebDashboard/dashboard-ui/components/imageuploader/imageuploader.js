@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItemId;
     var currentFile;

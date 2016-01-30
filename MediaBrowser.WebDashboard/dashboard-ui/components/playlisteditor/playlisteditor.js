@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
 
     var lastPlaylistId = '';
 
