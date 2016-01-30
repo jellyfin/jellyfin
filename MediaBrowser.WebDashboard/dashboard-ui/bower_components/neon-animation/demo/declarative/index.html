@@ -32,7 +32,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .toolbar {
+        position: relative;
+
         padding: 8px;
+
+        background-color: white;
+
+        z-index: 12;
       }
 
       neon-animated-pages {
@@ -74,8 +80,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template is="dom-bind">
 
       <div class="toolbar">
-        <button on-click="_onPrevClick">&lt;&lt;</button>
-        <button on-click="_onNextClick">&gt;&gt;</button>
+        <button on-click="_onPrevClick">&#8678;</button>
+        <button on-click="_onNextClick">&#8680;</button>
+        <button on-click="_onUpClick">&#8679;</button>
+        <button on-click="_onDownClick">&#8681;</button>
       </div>
 
       <neon-animated-pages id="pages" selected="[[selected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
@@ -103,6 +111,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.entryAnimation = 'slide-from-right-animation';
         this.exitAnimation = 'slide-left-animation';
         this.selected = this.selected === 4 ? 0 : (this.selected + 1);
+      }
+
+      scope._onUpClick = function() {
+        this.entryAnimation = 'slide-from-top-animation';
+        this.exitAnimation = 'slide-down-animation';
+        this.selected = this.selected === 4 ? 0 : (this.selected + 1);
+      }
+
+      scope._onDownClick = function() {
+        this.entryAnimation = 'slide-from-bottom-animation';
+        this.exitAnimation = 'slide-up-animation';
+        this.selected = this.selected === 0 ? 4 : (this.selected - 1);
       }
 
     </script>

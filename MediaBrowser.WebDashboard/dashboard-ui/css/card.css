@@ -54,10 +54,6 @@
     }
 }
 
-.largeCardMargin .cardBox {
-    margin: 10px;
-}
-
 .defaultBackground .cardImage {
     background-color: #333;
 }
@@ -338,7 +334,7 @@
 }
 
 .portraitCard {
-    width: 33.334%;
+    width: 33.333%;
 }
 
 .overflowPortraitCard {
@@ -383,11 +379,11 @@
 @media all and (min-width: 500px) {
 
     .smallBackdropCard {
-        width: 33.334%;
+        width: 33.333%;
     }
 
     .squareCard {
-        width: 33.334%;
+        width: 33.333%;
     }
 }
 
@@ -418,7 +414,7 @@
 
 @media all and (min-width: 770px) {
     .backdropCard {
-        width: 33.334%;
+        width: 33.333%;
     }
 }
 
@@ -477,7 +473,7 @@
     }
 
     .bannerCard {
-        width: 33.334%;
+        width: 33.333%;
     }
 
     .portraitCard {
@@ -576,7 +572,7 @@
 @media all and (min-width: 800px) {
 
     .detailPage169Card {
-        width: 33.334%;
+        width: 33.333%;
     }
 }
 
@@ -595,7 +591,7 @@
 
 
 .detailPagePortraitCard {
-    width: 33.334%;
+    width: 33.333%;
 }
 
 @media all and (min-width: 540px) {
@@ -621,7 +617,7 @@
 
 
 .detailPageSquareCard {
-    width: 33.334%;
+    width: 33.333%;
 }
 
 @media all and (min-width: 540px) {
@@ -644,7 +640,7 @@
 @media all and (min-width: 540px) {
 
     .homePageSmallBackdropCard {
-        width: 33.334%;
+        width: 33.333%;
     }
 }
 

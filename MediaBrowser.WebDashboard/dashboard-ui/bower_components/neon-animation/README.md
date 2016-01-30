@@ -272,12 +272,14 @@ The new page will slide in from the right, and the old page slide away to the le
 
 Single element animations:
 
- * `fade-in-animation` Animates opacity from `0` to `1`.
- * `fade-out-animation` Animates opacity from `1` to `0`.
- * `scale-down-animation` Animates transform from `scale(1)` to `scale(0)`.
- * `scale-up-animation` Animates transform from `scale(0)` to `scale(1)`.
- * `slide-down-animation` Animates transform from `translateY(-100%)` to `none`.
- * `slide-up-animation` Animates transform from `none` to `translateY(-100%)`.
+ * `fade-in-animation` Animates opacity from `0` to `1`;
+ * `fade-out-animation` Animates opacity from `1` to `0`;
+ * `scale-down-animation` Animates transform from `scale(1)` to `scale(0)`;
+ * `scale-up-animation` Animates transform from `scale(0)` to `scale(1)`;
+ * `slide-down-animation` Animates transform from `translateY(-100%)` to `none`;
+ * `slide-up-animation` Animates transform from `none` to `translateY(-100%)`;
+ * `slide-from-top-animation` Animates transform from `translateY(-100%)` to `none`;
+ * `slide-from-bottom-animation` Animates transform from `translateY(100%)` to `none`;
  * `slide-left-animation` Animates transform from `none` to `translateX(-100%)`;
  * `slide-right-animation` Animates transform from `none` to `translateX(100%)`;
  * `slide-from-left-animation` Animates transform from `translateX(-100%)` to `none`;

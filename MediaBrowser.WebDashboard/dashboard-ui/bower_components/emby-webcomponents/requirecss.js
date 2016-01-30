@@ -35,8 +35,6 @@ define(function () {
 
         var url = cssId + '.css';
 
-        var packageName = '';
-
         if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
             url = config.baseUrl + url;
         }
@@ -45,10 +43,6 @@ define(function () {
             importedCss.push(url);
 
             var link = document.createElement('link');
-
-            if (packageName) {
-                link.setAttribute('data-package', packageName);
-            }
 
             link.setAttribute('rel', 'stylesheet');
             link.setAttribute('type', 'text/css');
@@ -61,18 +55,10 @@ define(function () {
     }
 
     window.requireCss = {
-        unloadPackage: function (packageName) {
+        removeStylesheet: function (stylesheet) {
 
-            // Todo: unload css here
-            var stylesheets = document.head.querySelectorAll("link[data-package='" + packageName + "']");
-            for (var i = 0, length = stylesheets.length; i < length; i++) {
-
-                var stylesheet = stylesheets[i];
-
-                console.log('Unloading stylesheet: ' + stylesheet.href);
-                stylesheet.parentNode.removeChild(stylesheet);
-                removeFromLoadHistory(stylesheet.href);
-            }
+            stylesheet.parentNode.removeChild(stylesheet);
+            removeFromLoadHistory(stylesheet.href);
         }
     };
 

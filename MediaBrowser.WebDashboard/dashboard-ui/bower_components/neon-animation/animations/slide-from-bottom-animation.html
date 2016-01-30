@@ -13,13 +13,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../web-animations.html">
 
 <!--
-`<slide-down-animation>` animates the transform of an element from `translateY(-100%)` to `none`.
+`<slide-from-bottom-animation>` animates the transform of an element from `none` to `translateY(100%)`.
 The `transformOrigin` defaults to `50% 0`.
 
 Configuration:
 ```
 {
-  name: 'slide-down-animation',
+  name: 'slide-from-bottom-animation',
   node: <node>,
   transformOrigin: <transform-origin>,
   timing: <animation-timing>
@@ -31,7 +31,7 @@ Configuration:
 
   Polymer({
 
-    is: 'slide-down-animation',
+    is: 'slide-from-bottom-animation',
 
     behaviors: [
       Polymer.NeonAnimationBehavior
@@ -47,8 +47,8 @@ Configuration:
       }
 
       this._effect = new KeyframeEffect(node, [
-        {'transform': 'translateY(0%)'},
-        {'transform': 'translateY(100%)'}
+        {'transform': 'translateY(100%)'},
+        {'transform': 'translateY(0)'}
       ], this.timingFromConfig(config));
 
       return this._effect;

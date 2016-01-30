@@ -76,9 +76,8 @@
             <div id="fldShortOverview" style="display: none;">
                 <paper-input id="txtShortOverview" type="text" label="${LabelShortOverview}"></paper-input>
             </div>
-            <div id="fldPremiereDate" style="display: none;">
-                <label for="txtPremiereDate" class="likePaperLabel">${LabelReleaseDate}</label>
-                <input id="txtPremiereDate" type="date" class="likePaperText" data-role="none" />
+            <div id="fldPremiereDate">
+                <paper-input id="txtPremiereDate" label="${LabelReleaseDate}" type="date"></paper-input>
             </div>
             <div id="fldYear" style="display: none;">
                 <paper-input id="txtProductionYear" type="number" label="${LabelYear}"></paper-input>
@@ -86,9 +85,8 @@
             <div id="fldPlaceOfBirth" style="display: none;">
                 <paper-input id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}"></paper-input>
             </div>
-            <div id="fldEndDate" style="display: none;">
-                <label for="txtEndDate" class="likePaperLabel">${LabelEndDate}</label>
-                <input id="txtEndDate" type="date" class="likePaperText" data-role="none" />
+            <div id="fldEndDate">
+                <paper-input id="txtEndDate" label="${LabelEndDate}" type="date"></paper-input>
             </div>
             <div id="fldAirDays" style="display: none;">
                 <p>${LabelAirDays}</p>
@@ -210,74 +208,67 @@
             </div>
         </div>
 
-        <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderCountries}</h3>
-            <div data-role="editableListviewContainer">
-                <div>
-                    <div style="display: inline-block; width: 80%;">
-                        <input type="text" class="txtEditableListview" />
-                    </div>
-                    <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
-                </div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
-            </div>
+        <div id="countriesCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderCountries}
+            </h1>
+            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
+            <div class="paperList" id="listCountries"></div>
         </div>
-        <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderGenres}</h3>
-            <div data-role="editableListviewContainer">
-                <div>
-                    <div style="display: inline-block; width: 80%;">
-                        <input type="text" class="txtEditableListview" />
-                    </div>
-                    <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
-                </div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
-            </div>
+        <div id="genresCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderGenres}
+            </h1>
+            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
+            <div class="paperList" id="listGenres"></div>
         </div>
-        <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderPeople}</h3>
+        <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderPeople}
+            </h1>
+            <paper-button raised id="btnAddPerson" class="btnAddPerson submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
             <div>
-                <br />
-                <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">${ButtonAdd}</button>
-                <br />
                 <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
             </div>
         </div>
-        <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderPlotKeywords}</h3>
-            <div data-role="editableListviewContainer">
-                <div>
-                    <div style="display: inline-block; width: 80%;">
-                        <input type="text" class="txtEditableListview" />
-                    </div>
-                    <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
-                </div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
-            </div>
+        <div id="keywordsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderPlotKeywords}
+            </h1>
+            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
+            <div class="paperList" id="listKeywords"></div>
         </div>
-        <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderStudios}</h3>
-            <div data-role="editableListviewContainer">
-                <div>
-                    <div style="display: inline-block; width: 80%;">
-                        <input type="text" class="txtEditableListview" />
-                    </div>
-                    <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
-                </div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
-            </div>
+        <div id="studiosCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderStudios}
+            </h1>
+            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
+            <div class="paperList" id="listStudios"></div>
         </div>
-        <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none; margin-top: 1em;">
-            <h3>${HeaderTags}</h3>
-            <div data-role="editableListviewContainer">
-                <div>
-                    <div style="display: inline-block; width: 80%;">
-                        <input type="text" class="txtEditableListview" />
-                    </div>
-                    <paper-icon-button icon="add" onclick="EditItemMetadataPage.addElementToEditableListview(this)"></paper-icon-button>
-                </div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
-            </div>
+        <div id="tagsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+            <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                ${HeaderTags}
+            </h1>
+            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <iron-icon icon="add"></iron-icon>
+                <span>${ButtonAdd}</span>
+            </paper-button>
+            <div class="paperList" id="listTags"></div>
         </div>
         <div id="metadataSettingsCollapsible" style="display: none; margin-top: 3em;">
             <h1>${HeaderMetadataSettings}</h1>

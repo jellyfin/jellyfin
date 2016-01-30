@@ -838,7 +838,8 @@ var State = {
   PARSING: 5,
   PARSED: 6,
   APPENDING: 7,
-  BUFFER_FLUSHING: 8
+  BUFFER_FLUSHING: 8,
+  ENDED: 9
 };
 
 var MSEMediaController = (function (_EventHandler) {
@@ -902,6 +903,7 @@ var MSEMediaController = (function (_EventHandler) {
       this.mp4segments = [];
       this.flushRange = [];
       this.bufferRange = [];
+      this.stalled = false;
       var frag = this.fragCurrent;
       if (frag) {
         if (frag.loader) {
@@ -1083,13 +1085,23 @@ var MSEMediaController = (function (_EventHandler) {
                     // have we reached end of VOD playlist ?
                     if (!levelDetails.live) {
                       var mediaSource = this.mediaSource;
-                      if (mediaSource && mediaSource.readyState === 'open') {
-                        // ensure sourceBuffer are not in updating states
-                        var sb = this.sourceBuffer;
-                        if (!(sb.audio && sb.audio.updating || sb.video && sb.video.updating)) {
-                          _utilsLogger.logger.log('all media data available, signal endOfStream() to MediaSource');
-                          //Notify the media element that it now has all of the media data
-                          mediaSource.endOfStream();
+                      if (mediaSource) {
+                        switch (mediaSource.readyState) {
+                          case 'open':
+                            var sb = this.sourceBuffer;
+                            if (!(sb.audio && sb.audio.updating || sb.video && sb.video.updating)) {
+                              _utilsLogger.logger.log('all media data available, signal endOfStream() to MediaSource and stop loading fragment');
+                              //Notify the media element that it now has all of the media data
+                              mediaSource.endOfStream();
+                              this.state = State.ENDED;
+                            }
+                            break;
+                          case 'ended':
+                            _utilsLogger.logger.log('all media data available and mediaSource ended, stop loading fragment');
+                            this.state = State.ENDED;
+                            break;
+                          default:
+                            break;
                         }
                       }
                     }
@@ -1274,6 +1286,8 @@ var MSEMediaController = (function (_EventHandler) {
           /* if not everything flushed, stay in BUFFER_FLUSHING state. we will come back here
              each time sourceBuffer updateend() callback will be triggered
              */
+          break;
+        case State.ENDED:
           break;
         default:
           break;
@@ -1682,6 +1696,9 @@ var MSEMediaController = (function (_EventHandler) {
           // switch to IDLE state to load new fragment
           this.state = State.IDLE;
         }
+      } else if (this.state === State.ENDED) {
+        // switch to IDLE state to check for potential new fragment
+        this.state = State.IDLE;
       }
       if (this.media) {
         this.lastCurrentTime = this.media.currentTime;
@@ -2017,17 +2034,27 @@ var MSEMediaController = (function (_EventHandler) {
             var currentTime = media.currentTime,
                 bufferInfo = this.bufferInfo(currentTime, 0),
                 isPlaying = !(media.paused || media.ended || media.seeking || readyState < 3),
-                jumpThreshold = 0.2;
+                jumpThreshold = 0.2,
+                playheadMoving = currentTime > media.playbackRate * this.lastCurrentTime;
+
+            if (this.stalled && playheadMoving) {
+              this.stalled = false;
+            }
 
             // check buffer upfront
             // if less than 200ms is buffered, and media is playing but playhead is not moving,
             // and we have a new buffer range available upfront, let's seek to that one
             if (bufferInfo.len <= jumpThreshold) {
-              if (currentTime > media.playbackRate * this.lastCurrentTime || !isPlaying) {
+              if (playheadMoving || !isPlaying) {
                 // playhead moving or media not playing
                 jumpThreshold = 0;
               } else {
+                // playhead not moving AND media playing
                 _utilsLogger.logger.log('playback seems stuck');
+                if (!this.stalled) {
+                  this.hls.trigger(_events2['default'].ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
+                  this.stalled = true;
+                }
               }
               // if we are below threshold, try to jump if next buffer range is close
               if (bufferInfo.len <= jumpThreshold) {
@@ -3821,6 +3848,8 @@ var TSDemuxer = (function () {
     value: function switchLevel() {
       this.pmtParsed = false;
       this._pmtId = -1;
+      this.lastAacPTS = null;
+      this.aacOverFlow = null;
       this._avcTrack = { type: 'video', id: -1, sequenceNumber: 0, samples: [], len: 0, nbNalu: 0 };
       this._aacTrack = { type: 'audio', id: -1, sequenceNumber: 0, samples: [], len: 0 };
       this._id3Track = { type: 'id3', id: -1, sequenceNumber: 0, samples: [], len: 0 };
@@ -4231,7 +4260,7 @@ var TSDemuxer = (function () {
           case 3:
             if (value === 0) {
               state = 3;
-            } else if (value === 1) {
+            } else if (value === 1 && i < len) {
               unitType = array[i] & 0x1f;
               //logger.log('find NALU @ offset:' + i + ',type:' + unitType);
               if (lastUnitStart) {
@@ -4289,6 +4318,8 @@ var TSDemuxer = (function () {
           startOffset = 0,
           duration = this._duration,
           audioCodec = this.audioCodec,
+          aacOverFlow = this.aacOverFlow,
+          lastAacPTS = this.lastAacPTS,
           config,
           frameLength,
           frameDuration,
@@ -4298,10 +4329,11 @@ var TSDemuxer = (function () {
           stamp,
           len,
           aacSample;
-      if (this.aacOverFlow) {
-        var tmp = new Uint8Array(this.aacOverFlow.byteLength + data.byteLength);
-        tmp.set(this.aacOverFlow, 0);
-        tmp.set(data, this.aacOverFlow.byteLength);
+      if (aacOverFlow) {
+        var tmp = new Uint8Array(aacOverFlow.byteLength + data.byteLength);
+        tmp.set(aacOverFlow, 0);
+        tmp.set(data, aacOverFlow.byteLength);
+        //logger.log(`AAC: append overflowing ${aacOverFlow.byteLength} bytes to beginning of new PES`);
         data = tmp;
       }
       // look for ADTS header (0xFFFx)
@@ -4337,17 +4369,28 @@ var TSDemuxer = (function () {
       }
       frameIndex = 0;
       frameDuration = 1024 * 90000 / track.audiosamplerate;
+
+      // if last AAC frame is overflowing, we should ensure timestamps are contiguous:
+      // first sample PTS should be equal to last sample PTS + frameDuration
+      if (aacOverFlow && lastAacPTS) {
+        var newPTS = lastAacPTS + frameDuration;
+        if (Math.abs(newPTS - pts) > 1) {
+          _utilsLogger.logger.log('AAC: align PTS for overlapping frames by ' + Math.round((newPTS - pts) / 90));
+          pts = newPTS;
+        }
+      }
+
       while (offset + 5 < len) {
         // The protection skip bit tells us if we have 2 bytes of CRC data at the end of the ADTS header
         headerLength = !!(data[offset + 1] & 0x01) ? 7 : 9;
         // retrieve frame size
         frameLength = (data[offset + 3] & 0x03) << 11 | data[offset + 4] << 3 | (data[offset + 5] & 0xE0) >>> 5;
         frameLength -= headerLength;
-        stamp = Math.round(pts + frameIndex * frameDuration);
         //stamp = pes.pts;
 
-        //console.log('AAC frame, offset/length/pts:' + (offset+headerLength) + '/' + frameLength + '/' + stamp.toFixed(0));
         if (frameLength > 0 && offset + headerLength + frameLength <= len) {
+          stamp = Math.round(pts + frameIndex * frameDuration);
+          //logger.log(`AAC frame, offset/length/total/pts:${offset+headerLength}/${frameLength}/${data.byteLength}/${(stamp/90).toFixed(0)}`);
           aacSample = { unit: data.subarray(offset + headerLength, offset + headerLength + frameLength), pts: stamp, dts: stamp };
           track.samples.push(aacSample);
           track.len += frameLength;
@@ -4364,10 +4407,13 @@ var TSDemuxer = (function () {
         }
       }
       if (offset < len) {
-        this.aacOverFlow = data.subarray(offset, len);
+        aacOverFlow = data.subarray(offset, len);
+        //logger.log(`AAC: overflow detected:${len-offset}`);
       } else {
-        this.aacOverFlow = null;
-      }
+          aacOverFlow = null;
+        }
+      this.aacOverFlow = aacOverFlow;
+      this.lastAacPTS = stamp;
     }
   }, {
     key: '_parseID3PES',
@@ -4438,7 +4484,9 @@ var ErrorDetails = {
   // Identifier for a buffer append error - data: append error description
   BUFFER_APPEND_ERROR: 'bufferAppendError',
   // Identifier for a buffer appending error event - data: appending error description
-  BUFFER_APPENDING_ERROR: 'bufferAppendingError'
+  BUFFER_APPENDING_ERROR: 'bufferAppendingError',
+  // Identifier for a buffer stalled error event
+  BUFFER_STALLED_ERROR: 'bufferStalledError'
 };
 exports.ErrorDetails = ErrorDetails;
 
@@ -6475,12 +6523,13 @@ var MP4Remuxer = (function () {
             if (delta) {
               if (delta > 0) {
                 _utilsLogger.logger.log(delta + ' ms hole between AAC samples detected,filling it');
-              } else if (delta < 0) {
-                // drop overlapping audio frames... browser will deal with it
-                _utilsLogger.logger.log(-delta + ' ms overlapping between AAC samples detected, drop frame');
-                track.len -= unit.byteLength;
-                continue;
-              }
+                // if we have frame overlap, overlapping for more than half a frame duraion
+              } else if (delta < -12) {
+                  // drop overlapping audio frames... browser will deal with it
+                  _utilsLogger.logger.log(-delta + ' ms overlapping between AAC samples detected, drop frame');
+                  track.len -= unit.byteLength;
+                  continue;
+                }
               // set DTS to next DTS
               ptsnorm = dtsnorm = nextAacPts;
             }
@@ -6683,7 +6732,7 @@ var AttrList = (function () {
   }], [{
     key: 'parseAttrList',
     value: function parseAttrList(input) {
-      var re = /(.+?)=((?:\".*?\")|.*?)(?:,|$)/g;
+      var re = /\s*(.+?)\s*=((?:\".*?\")|.*?)(?:,|$)/g;
       var match,
           attrs = {};
       while ((match = re.exec(input)) !== null) {
@@ -6983,7 +7032,14 @@ var XhrLoader = (function () {
   }, {
     key: 'loadInternal',
     value: function loadInternal() {
-      var xhr = this.loader = new XMLHttpRequest();
+      var xhr;
+
+      if (typeof XDomainRequest !== 'undefined') {
+        xhr = this.loader = new XDomainRequest();
+      } else {
+        xhr = this.loader = new XMLHttpRequest();
+      }
+
       xhr.onloadend = this.loadend.bind(this);
       xhr.onprogress = this.loadprogress.bind(this);
 
