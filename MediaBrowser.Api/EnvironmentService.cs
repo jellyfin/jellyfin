@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -46,6 +45,11 @@ namespace MediaBrowser.Api
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "IncludeHidden", Description = "An optional filter to include or exclude hidden files and folders. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool IncludeHidden { get; set; }
+
+        public GetDirectoryContents()
+        {
+            IncludeHidden = true;
+        }
     }
 
     [Route("/Environment/NetworkShares", "GET", Summary = "Gets shares from a network device")]
