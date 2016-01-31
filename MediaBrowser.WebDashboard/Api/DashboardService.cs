@@ -354,8 +354,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "jstree"), "src");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
-            DeleteFoldersByName(Path.Combine(bowerPath, "swipebox"), "lib");
-            DeleteFoldersByName(Path.Combine(bowerPath, "swipebox"), "scss");
+            DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
