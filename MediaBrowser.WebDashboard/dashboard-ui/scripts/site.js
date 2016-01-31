@@ -1974,7 +1974,8 @@ var AppInfo = {};
 
         define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
-        define("swipebox", [bowerPath + '/swipebox/src/js/jquery.swipebox.min', "css!" + bowerPath + "/swipebox/src/css/swipebox.min.css"]);
+        define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
+        define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
@@ -2003,6 +2004,8 @@ var AppInfo = {};
         define("offlineusersync", [apiClientBowerPath + "/sync/offlineusersync"]);
         define("mediasync", [apiClientBowerPath + "/sync/mediasync"]);
 
+        define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
+
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
 
         // alias
@@ -2014,6 +2017,20 @@ var AppInfo = {};
                     jQuery.onStatePushed(state);
                 }
             };
+        });
+
+        // mock this for now. not used in this app
+        define("inputManager", [], function () {
+            return {
+                on: function () {
+                },
+                off: function () {
+                }
+            };
+        });
+
+        define("connectionManager", [], function () {
+            return ConnectionManager;
         });
     }
 

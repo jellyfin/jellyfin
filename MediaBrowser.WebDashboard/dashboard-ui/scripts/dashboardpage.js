@@ -1270,7 +1270,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
 (function ($, document, window) {
 
-    var welcomeDismissValue = '11';
+    var welcomeDismissValue = '12';
     var welcomeTourKey = 'welcomeTour';
 
     function dismissWelcome(page, userId) {
@@ -1312,27 +1312,35 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
     function takeTour(page, userId) {
 
-        require(['swipebox'], function () {
+        require(['slideshow'], function () {
 
-            $.swipebox([
-                    { href: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
-                    { href: 'css/images/tour/dashboard/help.png', title: Globalize.translate('DashboardTourHelp') },
-                    { href: 'css/images/tour/dashboard/users.png', title: Globalize.translate('DashboardTourUsers') },
-                    { href: 'css/images/tour/dashboard/sync.png', title: Globalize.translate('DashboardTourSync') },
-                    { href: 'css/images/tour/dashboard/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
-                    { href: 'css/images/tour/dashboard/chapters.png', title: Globalize.translate('DashboardTourChapters') },
-                    { href: 'css/images/tour/dashboard/subtitles.png', title: Globalize.translate('DashboardTourSubtitles') },
-                    { href: 'css/images/tour/dashboard/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
-                    { href: 'css/images/tour/dashboard/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
-                    { href: 'css/images/tour/dashboard/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
-                    { href: 'css/images/tour/dashboard/mobile.png', title: Globalize.translate('DashboardTourMobile') },
-                    { href: 'css/images/tour/enjoy.jpg', title: Globalize.translate('MessageEnjoyYourStay') }
-            ], {
-                afterClose: function () {
-                    dismissWelcome(page, userId);
-                    $('.welcomeMessage', page).hide();
-                },
-                hideBarsDelay: 30000
+            var slides = [
+                    { imageUrl: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
+                    { imageUrl: 'css/images/tour/dashboard/help.png', title: Globalize.translate('DashboardTourHelp') },
+                    { imageUrl: 'css/images/tour/dashboard/users.png', title: Globalize.translate('DashboardTourUsers') },
+                    { imageUrl: 'css/images/tour/dashboard/sync.png', title: Globalize.translate('DashboardTourSync') },
+                    { imageUrl: 'css/images/tour/dashboard/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
+                    { imageUrl: 'css/images/tour/dashboard/chapters.png', title: Globalize.translate('DashboardTourChapters') },
+                    { imageUrl: 'css/images/tour/dashboard/subtitles.png', title: Globalize.translate('DashboardTourSubtitles') },
+                    { imageUrl: 'css/images/tour/dashboard/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
+                    { imageUrl: 'css/images/tour/dashboard/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
+                    { imageUrl: 'css/images/tour/dashboard/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
+                    { imageUrl: 'css/images/tour/dashboard/mobile.png', title: Globalize.translate('DashboardTourMobile') },
+                    { imageUrl: 'css/images/tour/enjoy.jpg', title: Globalize.translate('MessageEnjoyYourStay') }
+            ];
+
+            require(['slideshow'], function (slideshow) {
+
+                var newSlideShow = new slideshow({
+                    slides: slides,
+                    interactive: true,
+                    loop: false
+                });
+
+                newSlideShow.show();
+
+                dismissWelcome(page, userId);
+                $('.welcomeMessage', page).hide();
             });
         });
     }
