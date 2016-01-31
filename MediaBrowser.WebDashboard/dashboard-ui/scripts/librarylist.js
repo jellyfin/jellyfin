@@ -450,9 +450,9 @@
                 }
             }
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: items,
                     positionTo: displayContextItem,
                     callback: function (id) {
@@ -1135,9 +1135,9 @@
                 ironIcon: 'sync'
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: items,
                     positionTo: e.target,
                     callback: function (id) {

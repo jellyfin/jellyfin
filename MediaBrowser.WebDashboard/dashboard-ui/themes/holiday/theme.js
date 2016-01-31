@@ -138,9 +138,9 @@
             ironIcon: current == 'christmas' ? 'check' : null
         });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 title: 'Happy holidays from the Emby team! Select your holiday theme:',
                 items: items,
                 callback: function (id) {

@@ -1,6 +1,6 @@
 ﻿define(['historyManager', 'focusManager', 'performanceManager', 'browser', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, performanceManager, browser) {
 
-    function paperDialogHashHandler(dlg, hash, resolve, lockDocumentScroll) {
+    function paperDialogHashHandler(dlg, hash, resolve) {
 
         var self = this;
         self.originalUrl = window.location.href;
@@ -55,7 +55,7 @@
         dlg.addEventListener('iron-overlay-closed', onDialogClosed);
         dlg.open();
 
-        if (lockDocumentScroll !== false && !document.body.classList.contains('noScroll')) {
+        if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
             removeScrollLockOnClose = true;
         }
@@ -85,6 +85,19 @@
         focusManager.autoFocus(e.target);
     }
 
+    function shouldLockDocumentScroll(options) {
+
+        if (options.lockScroll != null) {
+            return options.lockScroll;
+        }
+
+        if (options.size == 'fullscreen') {
+            return true;
+        }
+
+        return browser.mobile;
+    }
+
     function createDialog(options) {
 
         options = options || {};
@@ -93,6 +106,10 @@
 
         dlg.setAttribute('with-backdrop', 'with-backdrop');
         dlg.setAttribute('role', 'alertdialog');
+
+        if (shouldLockDocumentScroll(options)) {
+            dlg.setAttribute('data-lockscroll', 'true');
+        }
 
         // without this safari will scroll the background instead of the dialog contents
         // but not needed here since this is already on top of an existing dialog
