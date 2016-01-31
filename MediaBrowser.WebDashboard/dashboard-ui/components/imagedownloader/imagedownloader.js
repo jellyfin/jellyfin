@@ -6,7 +6,7 @@
     var hasChanges = false;
 
     // These images can be large and we're seeing memory problems in safari
-    var browsableImagePageSize = browserInfo.safari ? 6 : 10;
+    var browsableImagePageSize = browserInfo.safari ? 6 : (browserInfo.mobile ? 10 : 30);
 
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
@@ -272,7 +272,8 @@
             currentItemType = itemType;
 
             var dlg = paperDialogHelper.createDialog({
-                size: 'fullscreen-border'
+                size: 'fullscreen-border',
+                lockScroll: true
             });
 
             var theme = 'b';

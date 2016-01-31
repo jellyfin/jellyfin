@@ -1,19 +1,27 @@
-﻿(function () {
+﻿define(['paperdialoghelper', 'paper-menu', 'paper-dialog', 'scale-up-animation', 'fade-out-animation'], function (paperDialogHelper) {
 
-    function show(options) {
+    function parentWithClass(elem, className) {
 
-        require(['paper-menu', 'paper-dialog', 'scale-up-animation', 'fade-out-animation'], function () {
-            showInternal(options);
-        });
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
-    function showInternal(options) {
+    function show(options) {
 
         // items
         // positionTo
         // showCancel
         // title
         var html = '';
+
+        html += '<div style="margin:0;padding:.8em 1em;">';
 
         var windowHeight = $(window).height();
         var pos;
@@ -54,13 +62,6 @@
             html += '</h3>';
         }
 
-        // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-        var isScrollable = !browserInfo.safari;
-
-        if (isScrollable) {
-            //html += '<paper-dialog-scrollable>';
-        }
-
         var itemsWithIcons = options.items.filter(function (o) {
             return o.ironIcon;
         });
@@ -94,10 +95,7 @@
             html += '</paper-menu-item>';
         }
         html += '</paper-menu>';
-
-        if (isScrollable) {
-            //html += '</paper-dialog-scrollable>';
-        }
+        html += '</div>';
 
         if (options.showCancel) {
             html += '<div class="buttons">';
@@ -105,10 +103,11 @@
             html += '</div>';
         }
 
-        var dlg = document.createElement('paper-dialog');
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
-        dlg.setAttribute('noAutoFocus', 'noAutoFocus');
+        var dlg = paperDialogHelper.createDialog({
+            modal: false,
+            entryAnimationDuration: 160,
+            exitAnimationDuration: 200
+        });
         dlg.innerHTML = html;
 
         if (pos) {
@@ -119,25 +118,7 @@
 
         document.body.appendChild(dlg);
 
-        dlg.animationConfig = {
-            // scale up
-            'entry': {
-                name: 'scale-up-animation',
-                node: dlg,
-                timing: { duration: 160, easing: 'ease-out' }
-            },
-            // fade out
-            'exit': {
-                name: 'fade-out-animation',
-                node: dlg,
-                timing: { duration: 200, easing: 'ease-in' }
-            }
-        };
-
-        var delay = browserInfo.chrome ? 0 : 100;
-        setTimeout(function () {
-            dlg.open();
-        }, delay);
+        paperDialogHelper.open(dlg);
 
         // Has to be assigned a z-index after the call to .open() 
         dlg.addEventListener('iron-overlay-closed', function () {
@@ -151,12 +132,13 @@
 
             var target = parentWithClass(e.target, 'actionSheetMenuItem');
             if (target) {
+
                 var selectedId = target.getAttribute('data-id');
+
+                paperDialogHelper.close(dlg);
 
                 // Add a delay here to allow the click animation to finish, for nice effect
                 setTimeout(function () {
-
-                    dlg.close();
 
                     if (options.callback) {
                         options.callback(selectedId);
@@ -167,20 +149,7 @@
         });
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
-    window.ActionSheetElement = {
+    return {
         show: show
     };
-})();
+});

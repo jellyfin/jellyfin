@@ -142,9 +142,9 @@
             return menuItem;
         });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 items: menuItems,
                 positionTo: button,
                 callback: function (id) {
@@ -199,9 +199,9 @@
             ironIcon: currentIndex == null ? 'check' : null
         });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 items: menuItems,
                 positionTo: button,
                 callback: function (id) {

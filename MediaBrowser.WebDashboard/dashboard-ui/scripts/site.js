@@ -1873,12 +1873,14 @@ var AppInfo = {};
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
+            paths.actionsheet = "cordova/actionsheet";
         } else {
             paths.dialog = "components/dialog";
             paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
+            paths.actionsheet = "scripts/actionsheet";
         }
 
         // hack for an android test before browserInfo is loaded
@@ -2055,12 +2057,6 @@ var AppInfo = {};
             return {};
         });
         define("tileitemcss", ['css!css/tileitem.css']);
-
-        if (Dashboard.isRunningInCordova()) {
-            define("actionsheet", ["cordova/actionsheet"]);
-        } else {
-            define("actionsheet", ["scripts/actionsheet"]);
-        }
 
         define("sharingmanager", ["scripts/sharingmanager"]);
 
@@ -2519,9 +2515,9 @@ pageClassOn('pageshow', "page", function () {
     }
 
     if (currentTheme != 'a' && !browserInfo.mobile) {
-        document.body.classList.add('darkScrollbars');
+        document.documentElement.classList.add('darkScrollbars');
     } else {
-        document.body.classList.remove('darkScrollbars');
+        document.documentElement.classList.remove('darkScrollbars');
     }
 
     Dashboard.ensurePageTitle(page);
