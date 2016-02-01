@@ -145,7 +145,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(selectedEventCounter, 0);
       });
 
+      test('force synchronous item update', function() {
+        expect(s2.items.length).to.be.equal(5);
+        Polymer.dom(s2).appendChild(document.createElement('div'));
+        expect(s2.items.length).to.be.equal(5);
+        s2.forceSynchronousItemUpdate();
+        expect(s2.items.length).to.be.equal(6);
+      });
+
       suite('items changing', function() {
+        var s1;
+
+        setup(function() {
+          s1 = fixture('defaults');
+        });
+
         test('cause iron-items-changed to fire', function(done) {
           var newItem = document.createElement('div');
           var changeCount = 0;
@@ -166,6 +180,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               done();
             }, 1);
           }, 1);
+        });
+
+        test('updates selected item', function(done) {
+          s1.addEventListener('iron-items-changed', function firstListener() {
+            s1.removeEventListener('iron-items-changed', firstListener);
+            var firstElementChild = Polymer.dom(s1).firstElementChild;
+            expect(firstElementChild).to.be.equal(s1.selectedItem);
+            expect(firstElementChild.classList.contains('iron-selected'))
+                .to.be.eql(true);
+            Polymer.dom(s1).removeChild(s1.selectedItem);
+
+            s1.addEventListener('iron-items-changed', function() {
+              firstElementChild = Polymer.dom(s1).firstElementChild;
+              expect(firstElementChild).to.be.equal(s1.selectedItem);
+              expect(firstElementChild.classList.contains('iron-selected'))
+                  .to.be.eql(true);
+              done();
+            });
+          });
+          s1.selected = 0;
         });
       });
 
