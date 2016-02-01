@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button'], function (paperdialoghelper, inputmanager, connectionManager, browser) {
+define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button', 'paper-spinner'], function (paperdialoghelper, inputmanager, connectionManager, browser) {
 
     return function (options) {
 
@@ -109,12 +109,20 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
         function onSlideChangeStart(swiper, slide, image) {
 
-            slide.querySelector('paper-spinner').active = true;
+            var spinner = slide.querySelector('paper-spinner');
+            if (spinner) {
+                spinner.active = true;
+            }
         }
 
         function onSlideChangeEnd(swiper, slide, image) {
 
-            slide.querySelector('paper-spinner').active = false;
+            var spinner = slide.querySelector('paper-spinner');
+            if (spinner) {
+                spinner.active = false;
+                // Remove it because in IE it might just keep in spinning forever
+                spinner.parentNode.removeChild(spinner);
+            }
         }
 
         function getSwiperSlideHtmlFromSlide(item) {
