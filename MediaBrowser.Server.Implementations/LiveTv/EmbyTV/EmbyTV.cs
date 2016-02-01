@@ -239,7 +239,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
         {
-            var timers = _timerProvider.GetAll().Where(i => string.Equals(i.SeriesTimerId, timerId, StringComparison.OrdinalIgnoreCase));
+            var timers = _timerProvider
+                .GetAll()
+                .Where(i => string.Equals(i.SeriesTimerId, timerId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
             foreach (var timer in timers)
             {
                 CancelTimerInternal(timer.Id);
