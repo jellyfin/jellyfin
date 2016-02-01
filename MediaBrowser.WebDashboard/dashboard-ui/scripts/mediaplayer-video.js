@@ -125,6 +125,8 @@
 
                 actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoSubtitleButton')[0],
                     callback: function (id) {
 
@@ -176,6 +178,8 @@
                 selectedId = selectedId.length ? selectedId[0].bitrate : null;
                 actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoQualityButton')[0],
                     callback: function (id) {
 
@@ -240,6 +244,8 @@
 
                 actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoAudioButton')[0],
                     callback: function (id) {
 

@@ -106,7 +106,8 @@
         var dlg = paperDialogHelper.createDialog({
             modal: false,
             entryAnimationDuration: 160,
-            exitAnimationDuration: 200
+            exitAnimationDuration: 200,
+            enableHistory: options.enableHistory
         });
         dlg.innerHTML = html;
 
