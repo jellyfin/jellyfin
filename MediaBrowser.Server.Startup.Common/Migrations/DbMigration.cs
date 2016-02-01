@@ -20,9 +20,11 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
         {
             if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
             {
+                CleanDatabaseScheduledTask.EnableUnavailableMessage = true;
+                
                 Task.Run(async () =>
                 {
-                    await Task.Delay(2000).ConfigureAwait(false);
+                    await Task.Delay(1000).ConfigureAwait(false);
 
                     _taskManager.QueueScheduledTask<CleanDatabaseScheduledTask>();
                 });
