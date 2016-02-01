@@ -29,7 +29,7 @@
 
             window.removeEventListener('popstate', onHashChange);
 
-            if (!self.closedByBack) {
+            if (!self.closedByBack && isHistoryEnabled(dlg)) {
                 var state = history.state || {};
                 if (state.dialogId == hash) {
                     history.back();
@@ -60,9 +60,15 @@
             removeScrollLockOnClose = true;
         }
 
-        historyManager.pushState({ dialogId: hash }, "Dialog", hash);
+        if (isHistoryEnabled(dlg)) {
+            historyManager.pushState({ dialogId: hash }, "Dialog", hash);
 
-        window.addEventListener('popstate', onHashChange);
+            window.addEventListener('popstate', onHashChange);
+        }
+    }
+
+    function isHistoryEnabled(dlg) {
+        return dlg.getAttribute('data-history') == 'true';
     }
 
     function open(dlg) {
@@ -76,7 +82,11 @@
     function close(dlg) {
 
         if (dlg.opened) {
-            history.back();
+            if (isHistoryEnabled(dlg)) {
+                history.back();
+            } else {
+                dlg.close();
+            }
         }
     }
 
@@ -109,6 +119,10 @@
 
         if (shouldLockDocumentScroll(options)) {
             dlg.setAttribute('data-lockscroll', 'true');
+        }
+
+        if (options.enableHistory !== false) {
+            dlg.setAttribute('data-history', 'true');
         }
 
         // without this safari will scroll the background instead of the dialog contents

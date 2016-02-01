@@ -105,9 +105,11 @@ as of today, it is supported on:
   - [Redundant/Failover Playlists](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/UsingHTTPLiveStreaming/UsingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH102-SW22)
   - Timed Metadata for HTTP Live Streaming (in ID3 format, carried in MPEG-2 TS)
   - AES-128 decryption (AES-128 mode)
+  - CEA-708 captions (pop-on, channel 1)
 
 ## Not Supported (Yet)
 
+  - CEA-708 captions (roll-up, paint-on, channel 2)
   - MP3 / WebVTT container
   - Alternate Audio Track Rendition (Master Playlist with alternative Audio)  
 

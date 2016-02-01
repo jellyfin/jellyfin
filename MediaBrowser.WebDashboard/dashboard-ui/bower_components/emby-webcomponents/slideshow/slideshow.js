@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set'], function (paperdialoghelper, inputmanager, connectionManager, browser) {
+define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button'], function (paperdialoghelper, inputmanager, connectionManager, browser) {
 
     return function (options) {
 
@@ -9,7 +9,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
         function createElements(options) {
 
             dlg = paperdialoghelper.createDialog({
-                exitAnimationDuration: 800,
+                exitAnimationDuration: options.interactive ? 400 : 800,
                 size: 'fullscreen'
             });
 
@@ -22,7 +22,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
                 html += '<div>';
                 html += '<div class="slideshowSwiperContainer"><div class="swiper-wrapper"></div></div>';
 
-                html += '<paper-icon-button icon="slideshow:arrow-back" class="btnSlideshowExit" tabindex="-1"></paper-icon-button>';
+                html += '<paper-fab mini icon="slideshow:arrow-back" class="btnSlideshowExit" tabindex="-1"></paper-fab>';
 
                 html += '<div class="slideshowControlBar">';
                 html += '<paper-icon-button icon="slideshow:skip-previous" class="btnSlideshowPrevious slideshowButton"></paper-icon-button>';
@@ -77,7 +77,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
                 swiperInstance = new Swiper(dlg.querySelector('.slideshowSwiperContainer'), {
                     // Optional parameters
                     direction: 'horizontal',
-                    loop: true,
+                    loop: options.loop !== false,
                     autoplay: options.interval || 8000,
                     // Disable preloading of all images
                     preloadImages: false,
@@ -142,6 +142,15 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
         function nextImage() {
             if (swiperInstance) {
+
+                if (options.loop === false) {
+
+                    if (swiperInstance.activeIndex >= swiperInstance.slides.length - 1) {
+                        paperdialoghelper.close(dlg);
+                        return;
+                    }
+                }
+
                 swiperInstance.slideNext();
             } else {
                 stopInterval();

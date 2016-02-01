@@ -60,11 +60,12 @@ class LevelController extends EventHandler {
 
     // only keep level with supported audio/video codecs
     levels = levels.filter(function(level) {
-      var checkSupported = function(codec) { return MediaSource.isTypeSupported(`video/mp4;codecs=${codec}`);};
+      var checkSupportedAudio = function(codec) { return MediaSource.isTypeSupported(`audio/mp4;codecs=${codec}`);};
+      var checkSupportedVideo = function(codec) { return MediaSource.isTypeSupported(`video/mp4;codecs=${codec}`);};
       var audioCodec = level.audioCodec, videoCodec = level.videoCodec;
 
-      return (!audioCodec || checkSupported(audioCodec)) &&
-             (!videoCodec || checkSupported(videoCodec));
+      return (!audioCodec || checkSupportedAudio(audioCodec)) &&
+             (!videoCodec || checkSupportedVideo(videoCodec));
     });
 
     if(levels.length) {
