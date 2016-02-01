@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.TV
                 throw new ArgumentNullException("seriesId");
             }
 
-            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, preferredMetadataLanguage);
+            var url = string.Format(SeriesGetZip, TVUtils.TvdbApiKey, seriesId, NormalizeLanguage(preferredMetadataLanguage));
 
             using (var zipStream = await _httpClient.Get(new HttpRequestOptions
             {
@@ -268,7 +268,7 @@ namespace MediaBrowser.Providers.TV
                 await SanitizeXmlFile(file).ConfigureAwait(false);
             }
 
-            var downloadLangaugeXmlFile = Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml");
+            var downloadLangaugeXmlFile = Path.Combine(seriesDataPath, NormalizeLanguage(preferredMetadataLanguage) + ".xml");
             var saveAsLanguageXmlFile = Path.Combine(seriesDataPath, saveAsMetadataLanguage + ".xml");
 
             if (!string.Equals(downloadLangaugeXmlFile, saveAsLanguageXmlFile, StringComparison.OrdinalIgnoreCase))

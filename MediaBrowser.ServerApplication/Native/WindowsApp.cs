@@ -6,16 +6,19 @@ using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
 using System.Reflection;
 using CommonIO;
+using MediaBrowser.Controller.Power;
 
 namespace MediaBrowser.ServerApplication.Native
 {
     public class WindowsApp : INativeApp
     {
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
 
-        public WindowsApp(IFileSystem fileSystem)
+        public WindowsApp(IFileSystem fileSystem, ILogger logger)
         {
             _fileSystem = fileSystem;
+            _logger = logger;
         }
 
         public List<Assembly> GetAssembliesWithParts()
@@ -116,6 +119,11 @@ namespace MediaBrowser.ServerApplication.Native
         public void PreventSystemStandby()
         {
             Standby.PreventSystemStandby();
+        }
+
+        public IPowerManagement GetPowerManagement()
+        {
+            return new WindowsPowerManagement(_logger);
         }
     }
 }

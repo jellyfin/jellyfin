@@ -121,20 +121,12 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = metadataPath;
 
-            if (Configuration.MergeMetadataAndImagesByName)
-            {
-                ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath;
-            }
+            ((ServerApplicationPaths)ApplicationPaths).ItemsByNamePath = ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath;
         }
 
         private string GetInternalMetadataPath()
         {
-            if (Configuration.EnableStandaloneMetadata)
-            {
-                return Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
-            }
-
-            return null;
+            return Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
         }
 
         /// <summary>

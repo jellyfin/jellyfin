@@ -256,6 +256,25 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
+        private readonly Dictionary<string, int> _skipLogExtensions = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            {".js", 0},
+            {".css", 0},
+            {".woff", 0},
+            {".woff2", 0},
+            {".ttf", 0},
+            {".html", 0}
+        };
+
+        private bool EnableLogging(string url)
+        {
+            var parts = url.Split(new[] { '?' }, 2);
+
+            var extension = Path.GetExtension(parts[0]);
+
+            return string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension);
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -271,6 +290,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var operationName = httpReq.OperationName;
             var localPath = url.LocalPath;
 
+            var urlString = url.OriginalString;
+            var enableLog = EnableLogging(urlString);
+
+            if (enableLog)
+            {
+                LoggerUtils.LogRequest(_logger, urlString, httpReq.HttpMethod, httpReq.UserAgent);
+            }
+            
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
             {
@@ -333,15 +360,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
-                var urlString = url.ToString();
-
                 task.ContinueWith(x =>
                 {
                     var statusCode = httpRes.StatusCode;
 
                     var duration = DateTime.Now - date;
 
-                    LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
+                    if (enableLog)
+                    {
+                        LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
+                    }
 
                 }, TaskContinuationOptions.None);
                 return task;

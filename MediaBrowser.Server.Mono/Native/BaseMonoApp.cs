@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using MediaBrowser.Controller.Power;
 
 namespace MediaBrowser.Server.Mono.Native
 {
@@ -202,6 +203,19 @@ namespace MediaBrowser.Server.Mono.Native
         {
             public string sysname = string.Empty;
             public string machine = string.Empty;
+        }
+
+        public IPowerManagement GetPowerManagement()
+        {
+            return new NullPowerManagement();
+        }
+    }
+
+    public class NullPowerManagement : IPowerManagement
+    {
+        public void ScheduleWake(DateTime utcTime)
+        {
+            throw new NotImplementedException();
         }
     }
 }

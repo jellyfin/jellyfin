@@ -78,10 +78,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             var request = context.Request;
 
-            LogRequest(_logger, request);
-
             if (request.IsWebSocketRequest)
             {
+                LoggerUtils.LogRequest(_logger, request);
+
                 ProcessWebSocketRequest(context);
                 return Task.FromResult(true);
             }
@@ -154,44 +154,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             req.RequestAttributes = req.GetAttributes();
 
             return req;
-        }
-
-        /// <summary>
-        /// Logs the request.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="request">The request.</param>
-        private static void LogRequest(ILogger logger, HttpListenerRequest request)
-        {
-            var url = request.Url.ToString();
-            var extension = Path.GetExtension(url);
-
-            if (string.Equals(extension, ".js", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (string.Equals(extension, ".css", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (string.Equals(extension, ".woff", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (string.Equals(extension, ".woff2", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (string.Equals(extension, ".ttf", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (string.Equals(extension, ".html", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            logger.Info("{0} {1}. UserAgent: {2}", (request.IsWebSocketRequest ? "WS" : "HTTP " + request.HttpMethod), url, request.UserAgent ?? string.Empty);
         }
 
         private void HandleError(Exception ex, HttpListenerContext context)
