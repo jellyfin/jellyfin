@@ -187,7 +187,15 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['browserdeviceprofile'], function (profile) {
+                require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
+
+                    var bitrateSetting = AppSettings.maxStreamingBitrate();
+
+                    if (!maxHeight) {
+                        maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
+                            return q.selected;
+                        })[0].maxHeight;
+                    }
 
                     if (AppInfo.isNativeApp && browserInfo.android) {
                         updateDeviceProfileForAndroid(profile);
@@ -195,6 +203,9 @@
                     else if (AppInfo.isNativeApp && browserInfo.safari) {
                         updateDeviceProfileForIOS(profile);
                     }
+
+                    profile.MaxStreamingBitrate = bitrateSetting;
+
                     resolve(profile);
                 });
             });
