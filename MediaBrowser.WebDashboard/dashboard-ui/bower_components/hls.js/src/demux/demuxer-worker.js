@@ -72,6 +72,12 @@ var DemuxerWorker = function (self) {
     var objData = {event: event, samples: data.samples};
     self.postMessage(objData);
   });
+
+  observer.on(Event.FRAG_PARSING_USERDATA, function(event, data) {
+    var objData = {event: event, samples: data.samples};
+    self.postMessage(objData);
+  });
+
 };
 
 export default DemuxerWorker;

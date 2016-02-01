@@ -209,7 +209,9 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       fLoader: customFragmentLoader,
       pLoader: customPlaylistLoader,
       xhrSetup : XMLHttpRequestSetupCallback,
-      abrController : customAbrController
+      abrController : customAbrController,
+      timelineController: TimelineController,
+      enableCEA708Captions: true
     };
 
 
@@ -403,6 +405,21 @@ parameter should be a class providing 2 getter/setters and a destroy() method:
  - get/set autoLevelCapping : get/set : capping/max level value that could be used by ABR Controller
  - destroy() : should clean-up all used resources
 
+#### ```timelineController```
+(default : internal track timeline controller)
+
+customized text track syncronization controller
+
+parameter should be a class a destroy() method:
+
+ - destroy() : should clean-up all used resources
+
+#### ```enableCEA708Captions```
+(default : true)
+
+whether or not to enable CEA-708 captions
+
+parameter should be a boolean
 
 ## Video Binding/Unbinding API
 

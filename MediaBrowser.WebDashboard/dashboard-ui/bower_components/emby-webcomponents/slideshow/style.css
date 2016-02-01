@@ -10,6 +10,7 @@
     background-repeat: no-repeat;
     margin: 0 !important;
     color: #fff;
+    line-height: normal;
 }
 
     .slideshowImage.cover {
@@ -46,11 +47,15 @@
 .btnSlideshowExit {
     z-index: 1002;
     position: absolute;
-    top: 1%;
-    left: .5%;
+    top: 1.5vh;
+    left: 1.5vh;
     width: 6vh;
     height: 6vh;
     color: #eee;
+}
+
+paper-fab.btnSlideshowExit {
+    background-color: #444;
 }
 
 .slideshowControlBar {

@@ -125,6 +125,15 @@ class ExpGolomb {
     return this.readBits(8);
   }
 
+  // ():int
+  readUShort() {
+    return this.readBits(16);
+  }
+    // ():int
+  readUInt() {
+    return this.readBits(32);
+  }
+
   /**
    * Advance the ExpGolomb decoder past a scaling list. The scaling
    * list is optionally transmitted as part of a sequence parameter
