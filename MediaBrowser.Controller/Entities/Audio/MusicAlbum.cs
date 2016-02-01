@@ -1,17 +1,21 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
     /// Class MusicAlbum
     /// </summary>
-    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>
+    public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
         public MusicAlbum()
         {
@@ -143,6 +147,59 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
 
             return id;
+        }
+
+        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var items = GetRecursiveChildren().ToList();
+
+            var songs = items.OfType<Audio>().ToList();
+
+            var others = items.Except(songs).ToList();
+
+            var totalItems = songs.Count + others.Count;
+            var numComplete = 0;
+
+            var childUpdateType = ItemUpdateType.None;
+
+            // Refresh songs
+            foreach (var item in songs)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                childUpdateType = childUpdateType | updateType;
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            var parentRefreshOptions = refreshOptions;
+            if (childUpdateType > ItemUpdateType.None)
+            {
+                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions);
+                parentRefreshOptions.MetadataRefreshMode = MetadataRefreshMode.FullRefresh;
+            }
+
+            // Refresh current item
+            await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
+
+            // Refresh all non-songs
+            foreach (var item in others)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var updateType = await item.RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= totalItems;
+                progress.Report(percent * 100);
+            }
+
+            progress.Report(100);
         }
     }
 }
