@@ -245,7 +245,7 @@
             itemVideo.addEventListener('ended', onEnded);
             itemVideo.addEventListener('volumechange', onVolumeChange);
 
-            itemVideo.addEventListener('voluplaymechange', onPlay);
+            itemVideo.addEventListener('play', onPlay);
             itemVideo.addEventListener('pause', onPause);
             itemVideo.addEventListener('playing', onPlaying);
 
