@@ -77,9 +77,9 @@
             ironIcon: 'delete'
         });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 items: menuItems,
                 positionTo: card,
                 callback: function (id) {

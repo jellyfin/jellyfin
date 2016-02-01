@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -242,12 +242,18 @@
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = paperDialogHelper.createDialog({
-                    theme: options.theme
+                    size: 'fullscreen-border'
                 });
+
+                var theme = options.theme || 'b';
+
+                dlg.classList.add('ui-body-' + theme);
+                dlg.classList.add('background-theme-' + theme);
+                dlg.classList.add('popupEditor');
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
                 html += '</h2>';
 

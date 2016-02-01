@@ -1584,7 +1584,6 @@ var AppInfo = {};
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
-                AppInfo.cardMargin = 'largeCardMargin';
 
                 AppInfo.forcedImageFormat = 'jpg';
             }
@@ -1629,9 +1628,6 @@ var AppInfo = {};
 
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
         AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
-
-        AppInfo.directPlayAudioContainers = [];
-        AppInfo.directPlayVideoContainers = [];
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1762,10 +1758,6 @@ var AppInfo = {};
             elem.classList.add('touch');
         }
 
-        if (AppInfo.cardMargin) {
-            elem.classList.add(AppInfo.cardMargin);
-        }
-
         if (!AppInfo.enableStudioTabs) {
             elem.classList.add('studioTabDisabled');
         }
@@ -1814,6 +1806,10 @@ var AppInfo = {};
         }
     }
 
+    function returnFirstDependency(obj) {
+        return obj;
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1856,6 +1852,8 @@ var AppInfo = {};
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
+            performanceManager: embyWebComponentsBowerPath + "/performancemanager",
+            focusManager: embyWebComponentsBowerPath + "/focusmanager",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
@@ -1875,12 +1873,21 @@ var AppInfo = {};
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
+            paths.actionsheet = "cordova/actionsheet";
         } else {
             paths.dialog = "components/dialog";
             paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
+            paths.actionsheet = "scripts/actionsheet";
+        }
+
+        // hack for an android test before browserInfo is loaded
+        if (Dashboard.isRunningInCordova() && window.MainActivity) {
+            paths.appStorage = "cordova/android/appstorage";
+        } else {
+            paths.appStorage = apiClientBowerPath + "/appstorage";
         }
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
@@ -1967,7 +1974,8 @@ var AppInfo = {};
 
         define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
-        define("swipebox", [bowerPath + '/swipebox/src/js/jquery.swipebox.min', "css!" + bowerPath + "/swipebox/src/css/swipebox.min.css"]);
+        define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
+        define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
@@ -1987,8 +1995,6 @@ var AppInfo = {};
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
             define("fileupload", [apiClientBowerPath + "/fileupload"]);
         }
-
-        define("apiclient-store", [apiClientBowerPath + "/store"]);
         define("apiclient-deferred", ["legacy/deferred"]);
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
@@ -1997,17 +2003,38 @@ var AppInfo = {};
         define("multiserversync", [apiClientBowerPath + "/sync/multiserversync"]);
         define("offlineusersync", [apiClientBowerPath + "/sync/offlineusersync"]);
         define("mediasync", [apiClientBowerPath + "/sync/mediasync"]);
+
+        define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
+
+        define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
+
+        // alias
+        define("historyManager", [], function () {
+            return {
+                pushState: function (state, title, url) {
+                    state.navigate = false;
+                    history.pushState(state, title, url);
+                    jQuery.onStatePushed(state);
+                }
+            };
+        });
+
+        // mock this for now. not used in this app
+        define("inputManager", [], function () {
+            return {
+                on: function () {
+                },
+                off: function () {
+                }
+            };
+        });
+
+        define("connectionManager", [], function () {
+            return ConnectionManager;
+        });
     }
 
     function init(hostingAppInfo) {
-
-        if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("appstorage", ["cordova/android/appstorage"]);
-        } else {
-            define('appstorage', [], function () {
-                return appStorage;
-            });
-        }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
@@ -2047,12 +2074,6 @@ var AppInfo = {};
             return {};
         });
         define("tileitemcss", ['css!css/tileitem.css']);
-
-        if (Dashboard.isRunningInCordova()) {
-            define("actionsheet", ["cordova/actionsheet"]);
-        } else {
-            define("actionsheet", ["scripts/actionsheet"]);
-        }
 
         define("sharingmanager", ["scripts/sharingmanager"]);
 
@@ -2119,7 +2140,6 @@ var AppInfo = {};
         deps.push('connectionmanagerfactory');
         deps.push('credentialprovider');
 
-        deps.push('appstorage');
         deps.push('scripts/appsettings');
         deps.push('scripts/extensions');
 
@@ -2142,14 +2162,6 @@ var AppInfo = {};
                     return this.length && this[0].checked;
                 }
             };
-
-            if (Dashboard.isRunningInCordova() && browserInfo.android) {
-                AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
-            }
-            else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-
-                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac".split(',');
-            }
 
             var promises = [];
             deps = [];
@@ -2305,8 +2317,6 @@ var AppInfo = {};
                     }
                 }
 
-                //postInitDependencies.push('components/testermessage');
-
             } else if (browserInfo.chrome) {
                 postInitDependencies.push('scripts/chromecast');
             }
@@ -2429,15 +2439,17 @@ var AppInfo = {};
         var initialDependencies = [];
 
         initialDependencies.push('browser');
-        initialDependencies.push('apiclient-store');
+        initialDependencies.push('appStorage');
 
         if (!window.Promise) {
             initialDependencies.push('native-promise-only');
         }
 
-        require(initialDependencies, function (browser) {
+        require(initialDependencies, function (browser, appStorage) {
 
             window.browserInfo = browser;
+            window.appStorage = appStorage;
+
             setAppInfo();
             setDocumentClasses();
 
@@ -2520,9 +2532,9 @@ pageClassOn('pageshow', "page", function () {
     }
 
     if (currentTheme != 'a' && !browserInfo.mobile) {
-        document.body.classList.add('darkScrollbars');
+        document.documentElement.classList.add('darkScrollbars');
     } else {
-        document.body.classList.remove('darkScrollbars');
+        document.documentElement.classList.remove('darkScrollbars');
     }
 
     Dashboard.ensurePageTitle(page);

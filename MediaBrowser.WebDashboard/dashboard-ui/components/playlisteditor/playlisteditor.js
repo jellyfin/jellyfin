@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
 
     var lastPlaylistId = '';
 
@@ -198,12 +198,15 @@
                 size: 'small'
             });
 
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+
             var html = '';
 
             var title = Globalize.translate('HeaderAddToPlaylist');
 
             html += '<div class="dialogHeader">';
-            html += '<paper-icon-button icon="close" class="btnCancel"></paper-icon-button>';
+            html += '<paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

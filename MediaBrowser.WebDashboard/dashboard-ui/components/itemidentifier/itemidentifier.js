@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -294,6 +294,9 @@
                 var dlg = paperDialogHelper.createDialog({
                     size: 'medium'
                 });
+
+                dlg.classList.add('ui-body-b');
+                dlg.classList.add('background-theme-b');
 
                 var html = '';
                 html += Globalize.translateDocument(template);

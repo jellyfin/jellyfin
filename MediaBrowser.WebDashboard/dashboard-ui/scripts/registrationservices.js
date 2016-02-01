@@ -97,16 +97,22 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+        require(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
-            var dlg = paperDialogHelper.createDialog({});
+            var dlg = paperDialogHelper.createDialog({
+                size: 'fullscreen-border'
+            });
+
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+            dlg.classList.add('popupEditor');
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCancelSupporterInfo"></paper-fab>';
+            html += '<paper-fab icon="arrow-back" mini class="btnCancelSupporterInfo" tabindex="-1"></paper-fab>';
             html += '</h2>';
 
-            html += '<div class="readOnlyContent" style="margin:20px auto 0;color:#fff;padding:1em;">';
+            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:1em;">';
 
             html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 
@@ -123,7 +129,7 @@
 
             html += '<br/>';
 
-            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
+            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block" autoFocus><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
             html += '<paper-button raised class="subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></paper-button>';
 
             html += '</div>';

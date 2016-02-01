@@ -93,11 +93,11 @@
 
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
                 Dashboard.hideLoadingMsg();
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
@@ -413,9 +413,9 @@
                     id: 'cancel'
                 });
 
-                require(['actionsheet'], function () {
+                require(['actionsheet'], function (actionsheet) {
 
-                    ActionSheetElement.show({
+                    actionsheet.show({
                         items: menuItems,
                         //positionTo: positionTo,
                         title: Globalize.translate('ConfirmEndPlayerSession'),

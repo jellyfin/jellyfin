@@ -222,7 +222,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <summary>
         /// The _root folder
         /// </summary>
-        private AggregateFolder _rootFolder;
+        private volatile AggregateFolder _rootFolder;
         /// <summary>
         /// The _root folder sync lock
         /// </summary>
@@ -743,7 +743,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return rootFolder;
         }
 
-        private UserRootFolder _userRootFolder;
+        private volatile UserRootFolder _userRootFolder;
         private readonly object _syncLock = new object();
         public Folder GetUserRootFolder()
         {

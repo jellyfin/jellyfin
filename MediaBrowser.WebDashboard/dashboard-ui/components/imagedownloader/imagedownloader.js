@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
 
     var currentItemId;
     var currentItemType;
@@ -6,7 +6,7 @@
     var hasChanges = false;
 
     // These images can be large and we're seeing memory problems in safari
-    var browsableImagePageSize = browserInfo.safari ? 6 : 10;
+    var browsableImagePageSize = browserInfo.safari ? 6 : (browserInfo.mobile ? 10 : 30);
 
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';
@@ -271,11 +271,20 @@
             currentItemId = itemId;
             currentItemType = itemType;
 
-            var dlg = paperDialogHelper.createDialog();
+            var dlg = paperDialogHelper.createDialog({
+                size: 'fullscreen-border',
+                lockScroll: true
+            });
+
+            var theme = 'b';
+
+            dlg.classList.add('ui-body-' + theme);
+            dlg.classList.add('background-theme-' + theme);
+            dlg.classList.add('popupEditor');
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderSearch') + '</div>';
             html += '</h2>';
 

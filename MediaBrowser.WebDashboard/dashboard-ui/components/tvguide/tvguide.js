@@ -452,9 +452,9 @@
 
         function selectDate(page) {
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: dateOptions,
                     showCancel: true,
                     title: Globalize.translate('HeaderSelectDate'),

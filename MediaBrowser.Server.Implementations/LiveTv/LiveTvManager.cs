@@ -1954,6 +1954,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
+            _logger.Info("New recording scheduled");
         }
 
         public async Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)

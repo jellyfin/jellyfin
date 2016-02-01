@@ -471,11 +471,11 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 if (_updateTimer == null)
                 {
-                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
@@ -513,12 +513,18 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private bool IsFileLocked(string path)
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                // Causing lockups on linux
+                return false;
+            }
+
             try
             {
                 var data = _fileSystem.GetFileSystemInfo(path);
 
                 if (!data.Exists
-                    || data.Attributes.HasFlag(FileAttributes.Directory)
+                    || data.IsDirectory
 
                     // Opening a writable stream will fail with readonly files
                     || data.Attributes.HasFlag(FileAttributes.ReadOnly))

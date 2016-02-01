@@ -32,7 +32,7 @@ class MP4Remuxer {
     this.ISGenerated = false;
   }
 
-  remux(audioTrack,videoTrack,id3Track,timeOffset, contiguous) {
+  remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset, contiguous) {
     // generate Init Segment if needed
     if (!this.ISGenerated) {
       this.generateIS(audioTrack,videoTrack,timeOffset);
@@ -48,6 +48,10 @@ class MP4Remuxer {
     //logger.log('nb ID3 samples:' + audioTrack.samples.length);
     if (id3Track.samples.length) {
       this.remuxID3(id3Track,timeOffset);
+    }
+    //logger.log('nb ID3 samples:' + audioTrack.samples.length);
+    if (textTrack.samples.length) {
+      this.remuxText(textTrack,timeOffset);
     }
     //notify end of parsing
     this.observer.trigger(Event.FRAG_PARSED);
@@ -264,6 +268,7 @@ class MP4Remuxer {
         pts = aacSample.pts;
       } else {
         logger.warn('dropping past audio frame');
+        track.len -= aacSample.unit.byteLength;
       }
     });
 
@@ -295,7 +300,8 @@ class MP4Remuxer {
           if (delta) {
             if (delta > 0) {
               logger.log(`${delta} ms hole between AAC samples detected,filling it`);
-            } else if (delta < 0) {
+              // if we have frame overlap, overlapping for more than half a frame duraion
+            } else if (delta < -12) {
               // drop overlapping audio frames... browser will deal with it
               logger.log(`${(-delta)} ms overlapping between AAC samples detected, drop frame`);
               track.len -= unit.byteLength;
@@ -308,12 +314,17 @@ class MP4Remuxer {
         // remember first PTS of our aacSamples, ensure value is positive
         firstPTS = Math.max(0, ptsnorm);
         firstDTS = Math.max(0, dtsnorm);
-        /* concatenate the audio data and construct the mdat in place
-          (need 8 more bytes to fill length and mdat type) */
-        mdat = new Uint8Array(track.len + 8);
-        view = new DataView(mdat.buffer);
-        view.setUint32(0, mdat.byteLength);
-        mdat.set(MP4.types.mdat, 4);
+        if(track.len > 0) {
+          /* concatenate the audio data and construct the mdat in place
+            (need 8 more bytes to fill length and mdat type) */
+          mdat = new Uint8Array(track.len + 8);
+          view = new DataView(mdat.buffer);
+          view.setUint32(0, mdat.byteLength);
+          mdat.set(MP4.types.mdat, 4);
+        } else {
+          // no audio samples
+          return;
+        }
       }
       mdat.set(unit, offset);
       offset += unit.byteLength;
@@ -373,6 +384,29 @@ class MP4Remuxer {
         sample.dts = ((sample.dts - this._initDTS) / this.PES_TIMESCALE);
       }
       this.observer.trigger(Event.FRAG_PARSING_METADATA, {
+        samples:track.samples
+      });
+    }
+
+    track.samples = [];
+    timeOffset = timeOffset;
+  }
+
+  remuxText(track,timeOffset) {
+    track.samples.sort(function(a, b) {
+      return (a.pts-b.pts);
+    });
+
+    var length = track.samples.length, sample;
+    // consume samples
+    if(length) {
+      for(var index = 0; index < length; index++) {
+        sample = track.samples[index];
+        // setting text pts, dts to relative time
+        // using this._initPTS and this._initDTS to calculate relative time
+        sample.pts = ((sample.pts - this._initPTS) / this.PES_TIMESCALE);
+      }
+      this.observer.trigger(Event.FRAG_PARSING_USERDATA, {
         samples:track.samples
       });
     }

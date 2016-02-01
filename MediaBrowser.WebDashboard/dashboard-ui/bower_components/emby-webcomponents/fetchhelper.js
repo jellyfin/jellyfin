@@ -109,6 +109,8 @@
 
                 if (request.dataType == 'json' || request.headers.accept == 'application/json') {
                     return response.json();
+                } else if (request.dataType == 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') == 0) {
+                    return response.text();
                 } else {
                     return response;
                 }

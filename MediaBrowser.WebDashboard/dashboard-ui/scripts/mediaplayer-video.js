@@ -121,10 +121,12 @@
                 return opt;
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoSubtitleButton')[0],
                     callback: function (id) {
 
@@ -140,7 +142,7 @@
 
         self.showQualityFlyout = function () {
 
-            require(['qualityoptions', 'actionsheet'], function (qualityoptions) {
+            require(['qualityoptions', 'actionsheet'], function (qualityoptions, actionsheet) {
 
                 var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
                 var isStatic = currentSrc.indexOf('static=true') != -1;
@@ -174,8 +176,10 @@
                     return o.selected;
                 });
                 selectedId = selectedId.length ? selectedId[0].bitrate : null;
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoQualityButton')[0],
                     callback: function (id) {
 
@@ -236,10 +240,12 @@
                 return opt;
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
                     positionTo: $('.videoAudioButton')[0],
                     callback: function (id) {
 

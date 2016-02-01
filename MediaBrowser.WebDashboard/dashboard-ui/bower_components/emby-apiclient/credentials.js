@@ -1,4 +1,4 @@
-﻿define(['events'], function (Events) {
+﻿define(['events', 'appStorage'], function (Events, appStorage) {
 
     return function (key) {
 

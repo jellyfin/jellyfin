@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
 
     var currentProgramId;
     var currentDialog;
@@ -295,6 +295,9 @@
                     removeOnClose: true,
                     size: 'small'
                 });
+
+                dlg.classList.add('ui-body-b');
+                dlg.classList.add('background-theme-b');
 
                 dlg.classList.add('formDialog');
 

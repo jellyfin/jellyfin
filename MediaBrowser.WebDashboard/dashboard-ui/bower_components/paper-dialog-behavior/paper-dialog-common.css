@@ -51,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   padding: 8px 8px 8px 24px;
   margin: 0;
 
-  color: var(--paper-dialog-button-color, --default-primary-color);
+  color: var(--paper-dialog-button-color, --primary-color);
 
   @apply(--layout-horizontal);
   @apply(--layout-end-justified);

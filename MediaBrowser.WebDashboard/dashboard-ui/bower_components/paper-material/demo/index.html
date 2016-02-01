@@ -17,97 +17,68 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
-  <link rel="import" href="../../paper-styles/typography.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../paper-material.html">
-  <link rel="stylesheet" href="../../paper-styles/demo.css">
 
+  <style is="custom-style" include="demo-pages-shared-styles">
+    paper-material {
+      display: inline-block;
+      background: white;
+      box-sizing: border-box;
+      margin: 8px;
+      padding: 16px;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body unresolved>
-  <template is="dom-bind" id="demo">
-    <style is="custom-style">
-      paper-material {
-        display: inline-block;
-        background: white;
-        box-sizing: border-box;
-        margin: 16px;
-        padding: 16px;
-        border-radius: 2px;
-      }
+  <div class="vertical-section-container centered">
+    <h3>Paper-materials can have different elevations</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-material elevation="0">0</paper-material>
+        <paper-material elevation="1">1</paper-material>
+        <paper-material elevation="2">2</paper-material>
+        <paper-material elevation="3">3</paper-material>
+        <paper-material elevation="4">4</paper-material>
+        <paper-material elevation="5">5</paper-material>
+      </template>
+    </demo-snippet>
 
-      .fab {
-        display: inline-block;
-        background: white;
-        box-sizing: border-box;
-        width: 56px;
-        height: 56px;
-        margin: 16px;
-        padding: 16px;
-        border-radius: 50%;
-        text-align: center;
-        cursor: pointer;
-        @apply(--layout-center-center);
-      }
-    </style>
-    <section>
-      <div>Paper Elevations</div>
-
-      <paper-material elevation="0">
-        elevation = 0
-      </paper-material>
-
-      <paper-material elevation="1">
-        elevation = 1
-      </paper-material>
-
-      <paper-material elevation="2">
-        elevation = 2
-      </paper-material>
-
-      <paper-material elevation="3">
-        elevation = 3
-      </paper-material>
-
-      <paper-material elevation="4">
-        elevation = 4
-      </paper-material>
-
-      <paper-material elevation="5">
-        elevation = 5
-      </paper-material>
-    </section>
-
-    <section on-click="tapAction">
-      <div>Animated</div>
-
-      <paper-material elevation="0" animated>
-        tap
-      </paper-material>
-
-      <paper-material class="fab" elevation="0" animated>
-        tap
-      </paper-material>
-    </section>
-  </template>
-
-  <script>
-
-    demo.tapAction = function(e) {
-      var target = e.target;
-      if (!target.down) {
-        target.elevation += 1;
-        if (target.elevation === 5) {
-          target.down = true;
-        }
-      } else {
-        target.elevation -= 1;
-        if (target.elevation === 0) {
-          target.down = false;
-        }
-      }
-    };
-
-  </script>
-
+    <h3>Changes in elevation can be animated</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <style>
+          #a1, #a2 { cursor: pointer; }
+        </style>
+        Tap each of these boxes!
+        <div>
+          <paper-material elevation="0" animated id="a1">animated</paper-material>
+          <paper-material elevation="3" id="a2">not animated</paper-material>
+        </div>
+        <script>
+          document.addEventListener('WebComponentsReady', function() {
+            a1.addEventListener('click', _onTap);
+            a2.addEventListener('click', _onTap);
+          });
+          function _onTap(e) {
+            var target = e.target;
+            if (!target.down) {
+              target.elevation += 1;
+              if (target.elevation === 5) {
+                target.down = true;
+              }
+            } else {
+              target.elevation -= 1;
+              if (target.elevation === 0) {
+                target.down = false;
+              }
+            }
+          };
+        </script>
+      </template>
+    </demo-snippet>
+  </div>
 </body>
 </html>

@@ -25,7 +25,7 @@
     "LabelWindowsService": "Windows Servis",
     "AWindowsServiceHasBeenInstalled": "Windows Servisi Y\u00fcklenmistir.",
     "WindowsServiceIntro1": "Emby Server normally runs as a desktop application with a tray icon, but if you prefer to run it as a background service, it can be started from the windows services control panel instead.",
-    "WindowsServiceIntro2": "Windows hizmeti kullan\u0131yorsan\u0131z, o tepsi simgesi olarak ayn\u0131 anda cal\u0131st\u0131rabilirsiniz unutmay\u0131n, b\u00f6ylece hizmetini cal\u0131st\u0131rmak i\u00e7in tepsiyi \u00e7\u0131kmak gerekir l\u00fctfen. Hizmeti de kontrol paneli \u00fczerinden y\u00f6netim ayr\u0131cal\u0131klar\u0131yla yap\u0131land\u0131r\u0131lm\u0131\u015f olmas\u0131 gerekir. Su anda hizmet kendine g\u00fcncelleme m\u00fcmk\u00fcn oldugunu unutmay\u0131n, bu y\u00fczden yeni s\u00fcr\u00fcmleri manuel etkilesimi gerektirir.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "That's all we need for now. Emby has begun collecting information about your media library. Check out some of our apps, and then click <b>Finish<\/b> to view the <b>Server Dashboard<\/b>.",
     "LabelConfigureSettings": "Ayarlar\u0131 Degistir",
     "LabelEnableVideoImageExtraction": "Enable video image extraction",

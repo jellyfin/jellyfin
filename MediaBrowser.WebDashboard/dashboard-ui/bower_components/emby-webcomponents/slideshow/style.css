@@ -1,0 +1,120 @@
+.slideshowImage, .slideshowSwiperContainer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1001;
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin: 0 !important;
+    color: #fff;
+    line-height: normal;
+}
+
+    .slideshowImage.cover {
+        background-size: cover;
+    }
+
+.slideshowImageText {
+    position: fixed;
+    bottom: .25em;
+    right: .5em;
+    color: #fff;
+    z-index: 1002;
+    font-weight: 400;
+}
+
+.swiper-slide {
+    background: #000;
+}
+
+    .swiper-slide img {
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        -ms-transform: translate(-50%, -50%);
+        -webkit-transform: translate(-50%, -50%);
+        -moz-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+    }
+
+.btnSlideshowExit {
+    z-index: 1002;
+    position: absolute;
+    top: 1.5vh;
+    left: 1.5vh;
+    width: 6vh;
+    height: 6vh;
+    color: #eee;
+}
+
+paper-fab.btnSlideshowExit {
+    background-color: #444;
+}
+
+.slideshowControlBar {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1002;
+    background: rgba(0,0,0,.5);
+    text-align: center;
+    color: #eee;
+}
+
+.mouseIdle .btnSlideshowExit {
+    display: none;
+}
+
+.mouseIdle .slideshowControlBar {
+    transform: translateY(100%);
+    transition: transform 600ms ease-out;
+}
+
+.slideshowButton {
+    width: 8vh;
+    height: 8vh;
+}
+
+.slideText {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10vh;
+    text-align: center;
+}
+
+.slideTextInner {
+    margin: 0 auto;
+    max-width: 60%;
+    background: rgba(0,0,0,.8);
+    display: inline-block;
+    padding: .5em 1em;
+    border-radius: .25em;
+}
+
+.slideTitle {
+    font-size: 180%;
+}
+
+.slideSubtitle {
+    color: #ccc;
+}
+
+.swiper-slide paper-spinner {
+    width: 10vh;
+    height: 10vh;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -5vh;
+    margin-top: -5vh;
+    z-index: 1003;
+}

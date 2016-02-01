@@ -24,7 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="../../paper-button/paper-button.html">
   <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
-  
+
   <style is="custom-style">
     .centered {
       text-align: center;
@@ -48,9 +48,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h2>Alert</h2>
       <p>Discard draft?</p>
       <div class="buttons">
+        <paper-button data-dialog="multiple">More details</paper-button>
         <paper-button dialog-dismiss>Cancel</paper-button>
         <paper-button dialog-confirm autofocus>Discard</paper-button>
       </div>
+    </simple-dialog>
+
+    <simple-dialog id="multiple" modal>
+      <h2>Details</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <paper-button dialog-confirm autofocus>OK</paper-button>
     </simple-dialog>
 
     <button data-dialog="scrolling">scrolling</button>

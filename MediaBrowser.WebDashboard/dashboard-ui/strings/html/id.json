@@ -25,7 +25,7 @@
     "LabelWindowsService": "Windows Service",
     "AWindowsServiceHasBeenInstalled": "Windows Service sudah terinstall.",
     "WindowsServiceIntro1": "Server Emby umumnya berjalan sebagai aplikasi desktop dengan tray icon, tetapi jika anda inginkan dapat juga berjalan di latar, ini dapat dilakukan melalui windows service.",
-    "WindowsServiceIntro2": "Jika menggunakan windows service, mohon dicatat Emby tidak bisa dijalankan bersamaan sebagai tray icon, anda harus keluar dari tray untuk menjalankan service. Windows service juga harus dikonfigurasi dengan hak akses administratif via control panel. Mohon dicatat juga bahwa pada saat ini layanan ini tidak dapat melakukan update mandiri, jadi versi yang baru membutuhkan interaksi manual.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "Itu semua yang kami butuhkan saat ini. Emby sudah memulai mengkoleksi informasi pustaka media. Lihatlah beberapa aplikasi kami, kemudian klik <b>Selesai<\/b> untuk menuju ke <b>Dashboard Server<\/b>",
     "LabelConfigureSettings": "Ubah pengaturan",
     "LabelEnableVideoImageExtraction": "Aktifkan ekstraksi gambar video",

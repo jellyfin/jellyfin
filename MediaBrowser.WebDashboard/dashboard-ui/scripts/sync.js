@@ -2,7 +2,7 @@
 
     var currentDialogOptions;
 
-    function submitJob(dlg, userId, syncOptions, form) {
+    function submitJob(dlg, userId, syncOptions, form, paperDialogHelper) {
 
         if (!userId) {
             throw new Error('userId cannot be null');
@@ -51,7 +51,7 @@
 
         }).then(function () {
 
-            PaperDialogHelper.close(dlg);
+            paperDialogHelper.close(dlg);
             $(window.SyncManager).trigger('jobsubmit');
             Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
@@ -216,7 +216,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['components/paperdialoghelper', 'paper-fab'], function (paperDialogHelper) {
+        require(['paperdialoghelper', 'paper-fab'], function (paperDialogHelper) {
 
             var userId = Dashboard.getCurrentUserId();
 
@@ -236,9 +236,13 @@
 
                 var dlg = paperDialogHelper.createDialog({
                     size: 'small',
-                    theme: 'a',
-                    removeOnClose: true
+                    removeOnClose: true,
+                    autoFocus: false
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('popupEditor');
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
@@ -271,7 +275,7 @@
 
                 $('form', dlg).on('submit', function () {
 
-                    submitJob(dlg, userId, options, this);
+                    submitJob(dlg, userId, options, this, paperDialogHelper);
                     return false;
                 });
 

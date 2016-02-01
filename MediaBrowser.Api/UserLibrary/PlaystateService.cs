@@ -370,6 +370,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStopped request)
         {
+            Logger.Debug("ReportPlaybackStopped PlaySessionId: {0}", request.PlaySessionId ?? string.Empty);
+
             if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
             {
                 ApiEntryPoint.Instance.KillTranscodingJobs(AuthorizationContext.GetAuthorizationInfo(Request).DeviceId, request.PlaySessionId, s => true);

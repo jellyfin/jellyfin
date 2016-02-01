@@ -129,6 +129,7 @@
 
         page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
+        page.querySelector('.chkDisplayChannelsInline').checked = user.Configuration.DisplayChannelsInline || false;
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '');
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '');
@@ -157,6 +158,8 @@
 
         user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
+
+        user.Configuration.DisplayChannelsInline = page.querySelector('.chkDisplayChannelsInline').checked;
 
         user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest", page).get().filter(function (i) {
 

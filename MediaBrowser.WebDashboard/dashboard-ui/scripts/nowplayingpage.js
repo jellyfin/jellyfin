@@ -142,9 +142,9 @@
             return menuItem;
         });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 items: menuItems,
                 positionTo: button,
                 callback: function (id) {
@@ -192,10 +192,16 @@
 
             return menuItem;
         });
+        alert(currentIndex);
+        menuItems.unshift({
+            id: -1,
+            name: Globalize.translate('ButtonOff'),
+            ironIcon: currentIndex == null ? 'check' : null
+        });
 
-        require(['actionsheet'], function () {
+        require(['actionsheet'], function (actionsheet) {
 
-            ActionSheetElement.show({
+            actionsheet.show({
                 items: menuItems,
                 positionTo: button,
                 callback: function (id) {
@@ -848,8 +854,8 @@
         } else {
 
             // hack alert. doing this because the neon elements don't seem to be initialized yet
-            setTimeout(function() {
-                
+            setTimeout(function () {
+
                 page.querySelector('neon-animated-pages').selected = selected;
             }, 1000);
         }

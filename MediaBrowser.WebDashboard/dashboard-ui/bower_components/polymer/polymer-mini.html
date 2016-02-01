@@ -8,6 +8,8 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><link rel="import" href="polymer-micro.html">
 
+
+
 <script>Polymer.Base._addFeature({
 _prepTemplate: function () {
 if (this._template === undefined) {
@@ -41,6 +43,8 @@ this.dataHost = host = host || Polymer.Base._hostStack[Polymer.Base._hostStack.l
 if (host && host._clients) {
 host._clients.push(this);
 }
+this._clients = null;
+this._clientsReadied = false;
 },
 _beginHosting: function () {
 Polymer.Base._hostStack.push(this);
@@ -52,6 +56,7 @@ _endHosting: function () {
 Polymer.Base._hostStack.pop();
 },
 _tryReady: function () {
+this._readied = false;
 if (this._canReady()) {
 this._ready();
 }
@@ -364,7 +369,6 @@ if (node instanceof HTMLTemplateElement)
 node = node.content;
 var s = '';
 var c$ = Polymer.dom(node).childNodes;
-c$ = composed ? node._composedChildren : c$;
 for (var i = 0, l = c$.length, child; i < l && (child = c$[i]); i++) {
 s += getOuterHTML(child, node, composed);
 }
@@ -372,24 +376,213 @@ return s;
 }
 return { getInnerHTML: getInnerHTML };
 }();
+(function () {
+'use strict';
+var nativeInsertBefore = Element.prototype.insertBefore;
+var nativeAppendChild = Element.prototype.appendChild;
+var nativeRemoveChild = Element.prototype.removeChild;
+var TreeApi = Polymer.TreeApi = {
+arrayCopyChildNodes: function (parent) {
+var copy = [], i = 0;
+for (var n = parent.firstChild; n; n = n.nextSibling) {
+copy[i++] = n;
+}
+return copy;
+},
+arrayCopyChildren: function (parent) {
+var copy = [], i = 0;
+for (var n = parent.firstElementChild; n; n = n.nextElementSibling) {
+copy[i++] = n;
+}
+return copy;
+},
+arrayCopy: function (a$) {
+var l = a$.length;
+var copy = new Array(l);
+for (var i = 0; i < l; i++) {
+copy[i] = a$[i];
+}
+return copy;
+}
+};
+Polymer.TreeApi.Logical = {
+hasParentNode: function (node) {
+return Boolean(node.__dom && node.__dom.parentNode);
+},
+hasChildNodes: function (node) {
+return Boolean(node.__dom && node.__dom.childNodes !== undefined);
+},
+getChildNodes: function (node) {
+return this.hasChildNodes(node) ? this._getChildNodes(node) : node.childNodes;
+},
+_getChildNodes: function (node) {
+if (!node.__dom.childNodes) {
+node.__dom.childNodes = [];
+for (var n = node.__dom.firstChild; n; n = n.__dom.nextSibling) {
+node.__dom.childNodes.push(n);
+}
+}
+return node.__dom.childNodes;
+},
+getParentNode: function (node) {
+return node.__dom && node.__dom.parentNode !== undefined ? node.__dom.parentNode : node.parentNode;
+},
+getFirstChild: function (node) {
+return node.__dom && node.__dom.firstChild !== undefined ? node.__dom.firstChild : node.firstChild;
+},
+getLastChild: function (node) {
+return node.__dom && node.__dom.lastChild !== undefined ? node.__dom.lastChild : node.lastChild;
+},
+getNextSibling: function (node) {
+return node.__dom && node.__dom.nextSibling !== undefined ? node.__dom.nextSibling : node.nextSibling;
+},
+getPreviousSibling: function (node) {
+return node.__dom && node.__dom.previousSibling !== undefined ? node.__dom.previousSibling : node.previousSibling;
+},
+getFirstElementChild: function (node) {
+return node.__dom && node.__dom.firstChild !== undefined ? this._getFirstElementChild(node) : node.firstElementChild;
+},
+_getFirstElementChild: function (node) {
+var n = node.__dom.firstChild;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.nextSibling;
+}
+return n;
+},
+getLastElementChild: function (node) {
+return node.__dom && node.__dom.lastChild !== undefined ? this._getLastElementChild(node) : node.lastElementChild;
+},
+_getLastElementChild: function (node) {
+var n = node.__dom.lastChild;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.previousSibling;
+}
+return n;
+},
+getNextElementSibling: function (node) {
+return node.__dom && node.__dom.nextSibling !== undefined ? this._getNextElementSibling(node) : node.nextElementSibling;
+},
+_getNextElementSibling: function (node) {
+var n = node.__dom.nextSibling;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.nextSibling;
+}
+return n;
+},
+getPreviousElementSibling: function (node) {
+return node.__dom && node.__dom.previousSibling !== undefined ? this._getPreviousElementSibling(node) : node.previousElementSibling;
+},
+_getPreviousElementSibling: function (node) {
+var n = node.__dom.previousSibling;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.previousSibling;
+}
+return n;
+},
+saveChildNodes: function (node) {
+if (!this.hasChildNodes(node)) {
+node.__dom = node.__dom || {};
+node.__dom.firstChild = node.firstChild;
+node.__dom.lastChild = node.lastChild;
+node.__dom.childNodes = [];
+for (var n = node.firstChild; n; n = n.nextSibling) {
+n.__dom = n.__dom || {};
+n.__dom.parentNode = node;
+node.__dom.childNodes.push(n);
+n.__dom.nextSibling = n.nextSibling;
+n.__dom.previousSibling = n.previousSibling;
+}
+}
+},
+recordInsertBefore: function (node, container, ref_node) {
+container.__dom.childNodes = null;
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+for (var n = node.firstChild; n; n = n.nextSibling) {
+this._linkNode(n, container, ref_node);
+}
+} else {
+this._linkNode(node, container, ref_node);
+}
+},
+_linkNode: function (node, container, ref_node) {
+node.__dom = node.__dom || {};
+container.__dom = container.__dom || {};
+if (ref_node) {
+ref_node.__dom = ref_node.__dom || {};
+}
+node.__dom.previousSibling = ref_node ? ref_node.__dom.previousSibling : container.__dom.lastChild;
+if (node.__dom.previousSibling) {
+node.__dom.previousSibling.__dom.nextSibling = node;
+}
+node.__dom.nextSibling = ref_node;
+if (node.__dom.nextSibling) {
+node.__dom.nextSibling.__dom.previousSibling = node;
+}
+node.__dom.parentNode = container;
+if (ref_node) {
+if (ref_node === container.__dom.firstChild) {
+container.__dom.firstChild = node;
+}
+} else {
+container.__dom.lastChild = node;
+if (!container.__dom.firstChild) {
+container.__dom.firstChild = node;
+}
+}
+container.__dom.childNodes = null;
+},
+recordRemoveChild: function (node, container) {
+node.__dom = node.__dom || {};
+container.__dom = container.__dom || {};
+if (node === container.__dom.firstChild) {
+container.__dom.firstChild = node.__dom.nextSibling;
+}
+if (node === container.__dom.lastChild) {
+container.__dom.lastChild = node.__dom.previousSibling;
+}
+var p = node.__dom.previousSibling;
+var n = node.__dom.nextSibling;
+if (p) {
+p.__dom.nextSibling = n;
+}
+if (n) {
+n.__dom.previousSibling = p;
+}
+node.__dom.parentNode = node.__dom.previousSibling = node.__dom.nextSibling = undefined;
+container.__dom.childNodes = null;
+}
+};
+Polymer.TreeApi.Composed = {
+getChildNodes: function (node) {
+return Polymer.TreeApi.arrayCopyChildNodes(node);
+},
+getParentNode: function (node) {
+return node.parentNode;
+},
+clearChildNodes: function (node) {
+node.textContent = '';
+},
+insertBefore: function (parentNode, newChild, refChild) {
+return nativeInsertBefore.call(parentNode, newChild, refChild || null);
+},
+appendChild: function (parentNode, newChild) {
+return nativeAppendChild.call(parentNode, newChild);
+},
+removeChild: function (parentNode, node) {
+return nativeRemoveChild.call(parentNode, node);
+}
+};
+}());
 Polymer.DomApi = function () {
 'use strict';
 var Settings = Polymer.Settings;
-var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
-var nativeInsertBefore = Element.prototype.insertBefore;
-var nativeRemoveChild = Element.prototype.removeChild;
-var nativeAppendChild = Element.prototype.appendChild;
-var nativeCloneNode = Element.prototype.cloneNode;
-var nativeImportNode = Document.prototype.importNode;
-var needsToWrap = Settings.hasShadow && !Settings.nativeShadow;
-var wrap = window.wrap ? window.wrap : function (node) {
-return node;
-};
+var TreeApi = Polymer.TreeApi;
 var DomApi = function (node) {
-this.node = needsToWrap ? wrap(node) : node;
-if (this.patch) {
-this.patch();
-}
+this.node = needsToWrap ? DomApi.wrap(node) : node;
+};
+var needsToWrap = Settings.hasShadow && !Settings.nativeShadow;
+DomApi.wrap = window.wrap ? window.wrap : function (node) {
+return node;
 };
 DomApi.prototype = {
 flush: function () {
@@ -400,306 +593,17 @@ if (this.node.contains(node)) {
 return true;
 }
 var n = node;
-var wrappedDocument = wrap(document);
-while (n && n !== wrappedDocument && n !== this.node) {
+var doc = node.ownerDocument;
+while (n && n !== doc && n !== this.node) {
 n = Polymer.dom(n).parentNode || n.host;
 }
 return n === this.node;
-},
-_lazyDistribute: function (host) {
-if (host.shadyRoot && host.shadyRoot._distributionClean) {
-host.shadyRoot._distributionClean = false;
-Polymer.dom.addDebouncer(host.debounce('_distribute', host._distributeContent));
-}
-},
-appendChild: function (node) {
-return this._addNode(node);
-},
-insertBefore: function (node, ref_node) {
-return this._addNode(node, ref_node);
-},
-_addNode: function (node, ref_node) {
-this._removeNodeFromParent(node);
-var addedInsertionPoint;
-var root = this.getOwnerRoot();
-if (root) {
-addedInsertionPoint = this._maybeAddInsertionPoint(node, this.node);
-}
-if (this._nodeHasLogicalChildren(this.node)) {
-if (ref_node) {
-var children = this.childNodes;
-var index = children.indexOf(ref_node);
-if (index < 0) {
-throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
-}
-}
-this._addLogicalInfo(node, this.node, index);
-}
-this._addNodeToHost(node);
-if (!this._maybeDistribute(node, this.node) && !this._tryRemoveUndistributedNode(node)) {
-if (ref_node) {
-ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
-}
-var container = this.node._isShadyRoot ? this.node.host : this.node;
-addToComposedParent(container, node, ref_node);
-if (ref_node) {
-nativeInsertBefore.call(container, node, ref_node);
-} else {
-nativeAppendChild.call(container, node);
-}
-}
-if (addedInsertionPoint) {
-this._updateInsertionPoints(root.host);
-}
-this.notifyObserver();
-return node;
-},
-removeChild: function (node) {
-if (factory(node).parentNode !== this.node) {
-console.warn('The node to be removed is not a child of this node', node);
-}
-this._removeNodeFromHost(node);
-if (!this._maybeDistribute(node, this.node)) {
-var container = this.node._isShadyRoot ? this.node.host : this.node;
-if (container === node.parentNode) {
-removeFromComposedParent(container, node);
-nativeRemoveChild.call(container, node);
-}
-}
-this.notifyObserver();
-return node;
-},
-replaceChild: function (node, ref_node) {
-this.insertBefore(node, ref_node);
-this.removeChild(ref_node);
-return node;
-},
-_hasCachedOwnerRoot: function (node) {
-return Boolean(node._ownerShadyRoot !== undefined);
-},
-getOwnerRoot: function () {
-return this._ownerShadyRootForNode(this.node);
-},
-_ownerShadyRootForNode: function (node) {
-if (!node) {
-return;
-}
-if (node._ownerShadyRoot === undefined) {
-var root;
-if (node._isShadyRoot) {
-root = node;
-} else {
-var parent = Polymer.dom(node).parentNode;
-if (parent) {
-root = parent._isShadyRoot ? parent : this._ownerShadyRootForNode(parent);
-} else {
-root = null;
-}
-}
-node._ownerShadyRoot = root;
-}
-return node._ownerShadyRoot;
-},
-_maybeDistribute: function (node, parent) {
-var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && Polymer.dom(node).querySelector(CONTENT);
-var wrappedContent = fragContent && Polymer.dom(fragContent).parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
-var hasContent = fragContent || node.localName === CONTENT;
-if (hasContent) {
-var root = this._ownerShadyRootForNode(parent);
-if (root) {
-var host = root.host;
-this._lazyDistribute(host);
-}
-}
-var parentNeedsDist = this._parentNeedsDistribution(parent);
-if (parentNeedsDist) {
-this._lazyDistribute(parent);
-}
-return parentNeedsDist || hasContent && !wrappedContent;
-},
-_maybeAddInsertionPoint: function (node, parent) {
-var added;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent) {
-var c$ = factory(node).querySelectorAll(CONTENT);
-for (var i = 0, n, np, na; i < c$.length && (n = c$[i]); i++) {
-np = factory(n).parentNode;
-if (np === node) {
-np = parent;
-}
-na = this._maybeAddInsertionPoint(n, np);
-added = added || na;
-}
-} else if (node.localName === CONTENT) {
-saveLightChildrenIfNeeded(parent);
-saveLightChildrenIfNeeded(node);
-added = true;
-}
-return added;
-},
-_tryRemoveUndistributedNode: function (node) {
-if (this.node.shadyRoot) {
-var parent = getComposedParent(node);
-if (parent) {
-nativeRemoveChild.call(parent, node);
-}
-return true;
-}
-},
-_updateInsertionPoints: function (host) {
-var i$ = host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
-for (var i = 0, c; i < i$.length; i++) {
-c = i$[i];
-saveLightChildrenIfNeeded(c);
-saveLightChildrenIfNeeded(factory(c).parentNode);
-}
-},
-_nodeHasLogicalChildren: function (node) {
-return Boolean(node._lightChildren !== undefined);
-},
-_parentNeedsDistribution: function (parent) {
-return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
-},
-_removeNodeFromParent: function (node) {
-var parent = node._lightParent || node.parentNode;
-if (parent && hasDomApi(parent)) {
-factory(parent).notifyObserver();
-}
-this._removeNodeFromHost(node, true);
-},
-_removeNodeFromHost: function (node, ensureComposedRemoval) {
-var hostNeedsDist;
-var root;
-var parent = node._lightParent;
-if (parent) {
-factory(node)._distributeParent();
-root = this._ownerShadyRootForNode(node);
-if (root) {
-root.host._elementRemove(node);
-hostNeedsDist = this._removeDistributedChildren(root, node);
-}
-this._removeLogicalInfo(node, parent);
-}
-this._removeOwnerShadyRoot(node);
-if (root && hostNeedsDist) {
-this._updateInsertionPoints(root.host);
-this._lazyDistribute(root.host);
-} else if (ensureComposedRemoval) {
-removeFromComposedParent(getComposedParent(node), node);
-}
-},
-_removeDistributedChildren: function (root, container) {
-var hostNeedsDist;
-var ip$ = root._insertionPoints;
-for (var i = 0; i < ip$.length; i++) {
-var content = ip$[i];
-if (this._contains(container, content)) {
-var dc$ = factory(content).getDistributedNodes();
-for (var j = 0; j < dc$.length; j++) {
-hostNeedsDist = true;
-var node = dc$[j];
-var parent = node.parentNode;
-if (parent) {
-removeFromComposedParent(parent, node);
-nativeRemoveChild.call(parent, node);
-}
-}
-}
-}
-return hostNeedsDist;
-},
-_contains: function (container, node) {
-while (node) {
-if (node == container) {
-return true;
-}
-node = factory(node).parentNode;
-}
-},
-_addNodeToHost: function (node) {
-var root = this.getOwnerRoot();
-if (root) {
-root.host._elementAdd(node);
-}
-},
-_addLogicalInfo: function (node, container, index) {
-var children = factory(container).childNodes;
-index = index === undefined ? children.length : index;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-var c$ = arrayCopyChildNodes(node);
-for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
-children.splice(index++, 0, n);
-n._lightParent = container;
-}
-} else {
-children.splice(index, 0, node);
-node._lightParent = container;
-}
-},
-_removeLogicalInfo: function (node, container) {
-var children = factory(container).childNodes;
-var index = children.indexOf(node);
-if (index < 0 || container !== node._lightParent) {
-throw Error('The node to be removed is not a child of this node');
-}
-children.splice(index, 1);
-node._lightParent = null;
-},
-_removeOwnerShadyRoot: function (node) {
-if (this._hasCachedOwnerRoot(node)) {
-var c$ = factory(node).childNodes;
-for (var i = 0, l = c$.length, n; i < l && (n = c$[i]); i++) {
-this._removeOwnerShadyRoot(n);
-}
-}
-node._ownerShadyRoot = undefined;
-},
-_firstComposedNode: function (content) {
-var n$ = factory(content).getDistributedNodes();
-for (var i = 0, l = n$.length, n, p$; i < l && (n = n$[i]); i++) {
-p$ = factory(n).getDestinationInsertionPoints();
-if (p$[p$.length - 1] === content) {
-return n;
-}
-}
-},
-querySelector: function (selector) {
-return this.querySelectorAll(selector)[0];
-},
-querySelectorAll: function (selector) {
-return this._query(function (n) {
-return matchesSelector.call(n, selector);
-}, this.node);
-},
-_query: function (matcher, node) {
-node = node || this.node;
-var list = [];
-this._queryElements(factory(node).childNodes, matcher, list);
-return list;
-},
-_queryElements: function (elements, matcher, list) {
-for (var i = 0, l = elements.length, c; i < l && (c = elements[i]); i++) {
-if (c.nodeType === Node.ELEMENT_NODE) {
-this._queryElement(c, matcher, list);
-}
-}
-},
-_queryElement: function (node, matcher, list) {
-if (matcher(node)) {
-list.push(node);
-}
-this._queryElements(factory(node).childNodes, matcher, list);
-},
-getDestinationInsertionPoints: function () {
-return this.node._destinationInsertionPoints || [];
-},
-getDistributedNodes: function () {
-return this.node._distributedNodes || [];
 },
 queryDistributedElements: function (selector) {
 var c$ = this.getEffectiveChildNodes();
 var list = [];
 for (var i = 0, l = c$.length, c; i < l && (c = c$[i]); i++) {
-if (c.nodeType === Node.ELEMENT_NODE && matchesSelector.call(c, selector)) {
+if (c.nodeType === Node.ELEMENT_NODE && DomApi.matchesSelector.call(c, selector)) {
 list.push(c);
 }
 }
@@ -710,7 +614,7 @@ var list = [];
 var c$ = this.childNodes;
 for (var i = 0, l = c$.length, c; i < l && (c = c$[i]); i++) {
 if (c.localName === CONTENT) {
-var d$ = factory(c).getDistributedNodes();
+var d$ = dom(c).getDistributedNodes();
 for (var j = 0; j < d$.length; j++) {
 list.push(d$[j]);
 }
@@ -719,49 +623,6 @@ list.push(c);
 }
 }
 return list;
-},
-_clear: function () {
-while (this.childNodes.length) {
-this.removeChild(this.childNodes[0]);
-}
-},
-setAttribute: function (name, value) {
-this.node.setAttribute(name, value);
-this._distributeParent();
-},
-removeAttribute: function (name) {
-this.node.removeAttribute(name);
-this._distributeParent();
-},
-_distributeParent: function () {
-if (this._parentNeedsDistribution(this.parentNode)) {
-this._lazyDistribute(this.parentNode);
-}
-},
-cloneNode: function (deep) {
-var n = nativeCloneNode.call(this.node, false);
-if (deep) {
-var c$ = this.childNodes;
-var d = factory(n);
-for (var i = 0, nc; i < c$.length; i++) {
-nc = factory(c$[i]).cloneNode(true);
-d.appendChild(nc);
-}
-}
-return n;
-},
-importNode: function (externalNode, deep) {
-var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
-var n = nativeImportNode.call(doc, externalNode, false);
-if (deep) {
-var c$ = factory(externalNode).childNodes;
-var d = factory(n);
-for (var i = 0, nc; i < c$.length; i++) {
-nc = factory(doc).importNode(c$[i], true);
-d.appendChild(nc);
-}
-}
-return n;
 },
 observeNodes: function (callback) {
 if (callback) {
@@ -780,90 +641,467 @@ notifyObserver: function () {
 if (this.observer) {
 this.observer.notify();
 }
+},
+_query: function (matcher, node, halter) {
+node = node || this.node;
+var list = [];
+this._queryElements(TreeApi.Logical.getChildNodes(node), matcher, halter, list);
+return list;
+},
+_queryElements: function (elements, matcher, halter, list) {
+for (var i = 0, l = elements.length, c; i < l && (c = elements[i]); i++) {
+if (c.nodeType === Node.ELEMENT_NODE) {
+if (this._queryElement(c, matcher, halter, list)) {
+return true;
+}
+}
+}
+},
+_queryElement: function (node, matcher, halter, list) {
+var result = matcher(node);
+if (result) {
+list.push(node);
+}
+if (halter && halter(result)) {
+return result;
+}
+this._queryElements(TreeApi.Logical.getChildNodes(node), matcher, halter, list);
 }
 };
-if (!Settings.useShadow) {
+var CONTENT = DomApi.CONTENT = 'content';
+var dom = DomApi.factory = function (node) {
+node = node || document;
+if (!node.__domApi) {
+node.__domApi = new DomApi.ctor(node);
+}
+return node.__domApi;
+};
+DomApi.hasApi = function (node) {
+return Boolean(node.__domApi);
+};
+DomApi.ctor = DomApi;
+Polymer.dom = function (obj, patch) {
+if (obj instanceof Event) {
+return Polymer.EventApi.factory(obj);
+} else {
+return DomApi.factory(obj, patch);
+}
+};
+var p = Element.prototype;
+DomApi.matchesSelector = p.matches || p.matchesSelector || p.mozMatchesSelector || p.msMatchesSelector || p.oMatchesSelector || p.webkitMatchesSelector;
+return DomApi;
+}();
+(function () {
+'use strict';
+var Settings = Polymer.Settings;
+var DomApi = Polymer.DomApi;
+var dom = DomApi.factory;
+var TreeApi = Polymer.TreeApi;
+var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
+var CONTENT = DomApi.CONTENT;
+if (Settings.useShadow) {
+return;
+}
+var nativeCloneNode = Element.prototype.cloneNode;
+var nativeImportNode = Document.prototype.importNode;
+Polymer.Base.extend(DomApi.prototype, {
+_lazyDistribute: function (host) {
+if (host.shadyRoot && host.shadyRoot._distributionClean) {
+host.shadyRoot._distributionClean = false;
+Polymer.dom.addDebouncer(host.debounce('_distribute', host._distributeContent));
+}
+},
+appendChild: function (node) {
+return this.insertBefore(node);
+},
+insertBefore: function (node, ref_node) {
+if (ref_node && TreeApi.Logical.getParentNode(ref_node) !== this.node) {
+throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
+}
+if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+var parent = TreeApi.Logical.getParentNode(node);
+if (parent) {
+if (DomApi.hasApi(parent)) {
+dom(parent).notifyObserver();
+}
+this._removeNode(node);
+} else {
+this._removeOwnerShadyRoot(node);
+}
+}
+if (!this._addNode(node, ref_node)) {
+if (ref_node) {
+ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
+}
+var container = this.node._isShadyRoot ? this.node.host : this.node;
+if (ref_node) {
+TreeApi.Composed.insertBefore(container, node, ref_node);
+} else {
+TreeApi.Composed.appendChild(container, node);
+}
+}
+this.notifyObserver();
+return node;
+},
+_addNode: function (node, ref_node) {
+var root = this.getOwnerRoot();
+if (root) {
+var ipAdded = this._maybeAddInsertionPoint(node, this.node);
+if (!root._invalidInsertionPoints) {
+root._invalidInsertionPoints = ipAdded;
+}
+this._addNodeToHost(root.host, node);
+}
+if (TreeApi.Logical.hasChildNodes(this.node)) {
+TreeApi.Logical.recordInsertBefore(node, this.node, ref_node);
+}
+var handled = this._maybeDistribute(node) || this.node.shadyRoot;
+if (handled) {
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+while (node.firstChild) {
+TreeApi.Composed.removeChild(node, node.firstChild);
+}
+} else {
+var parent = TreeApi.Composed.getParentNode(node);
+if (parent) {
+TreeApi.Composed.removeChild(parent, node);
+}
+}
+}
+return handled;
+},
+removeChild: function (node) {
+if (TreeApi.Logical.getParentNode(node) !== this.node) {
+throw Error('The node to be removed is not a child of this node: ' + node);
+}
+if (!this._removeNode(node)) {
+var container = this.node._isShadyRoot ? this.node.host : this.node;
+var parent = TreeApi.Composed.getParentNode(node);
+if (container === parent) {
+TreeApi.Composed.removeChild(container, node);
+}
+}
+this.notifyObserver();
+return node;
+},
+_removeNode: function (node) {
+var logicalParent = TreeApi.Logical.hasParentNode(node) && TreeApi.Logical.getParentNode(node);
+var distributed;
+var root = this._ownerShadyRootForNode(node);
+if (logicalParent) {
+distributed = dom(node)._maybeDistributeParent();
+TreeApi.Logical.recordRemoveChild(node, logicalParent);
+if (root && this._removeDistributedChildren(root, node)) {
+root._invalidInsertionPoints = true;
+this._lazyDistribute(root.host);
+}
+}
+this._removeOwnerShadyRoot(node);
+if (root) {
+this._removeNodeFromHost(root.host, node);
+}
+return distributed;
+},
+replaceChild: function (node, ref_node) {
+this.insertBefore(node, ref_node);
+this.removeChild(ref_node);
+return node;
+},
+_hasCachedOwnerRoot: function (node) {
+return Boolean(node._ownerShadyRoot !== undefined);
+},
+getOwnerRoot: function () {
+return this._ownerShadyRootForNode(this.node);
+},
+_ownerShadyRootForNode: function (node) {
+if (!node) {
+return;
+}
+var root = node._ownerShadyRoot;
+if (root === undefined) {
+if (node._isShadyRoot) {
+root = node;
+} else {
+var parent = TreeApi.Logical.getParentNode(node);
+if (parent) {
+root = parent._isShadyRoot ? parent : this._ownerShadyRootForNode(parent);
+} else {
+root = null;
+}
+}
+if (root || document.documentElement.contains(node)) {
+node._ownerShadyRoot = root;
+}
+}
+return root;
+},
+_maybeDistribute: function (node) {
+var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && dom(node).querySelector(CONTENT);
+var wrappedContent = fragContent && TreeApi.Logical.getParentNode(fragContent).nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
+var hasContent = fragContent || node.localName === CONTENT;
+if (hasContent) {
+var root = this.getOwnerRoot();
+if (root) {
+this._lazyDistribute(root.host);
+}
+}
+var needsDist = this._nodeNeedsDistribution(this.node);
+if (needsDist) {
+this._lazyDistribute(this.node);
+}
+return needsDist || hasContent && !wrappedContent;
+},
+_maybeAddInsertionPoint: function (node, parent) {
+var added;
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent) {
+var c$ = dom(node).querySelectorAll(CONTENT);
+for (var i = 0, n, np, na; i < c$.length && (n = c$[i]); i++) {
+np = TreeApi.Logical.getParentNode(n);
+if (np === node) {
+np = parent;
+}
+na = this._maybeAddInsertionPoint(n, np);
+added = added || na;
+}
+} else if (node.localName === CONTENT) {
+TreeApi.Logical.saveChildNodes(parent);
+TreeApi.Logical.saveChildNodes(node);
+added = true;
+}
+return added;
+},
+_updateInsertionPoints: function (host) {
+var i$ = host.shadyRoot._insertionPoints = dom(host.shadyRoot).querySelectorAll(CONTENT);
+for (var i = 0, c; i < i$.length; i++) {
+c = i$[i];
+TreeApi.Logical.saveChildNodes(c);
+TreeApi.Logical.saveChildNodes(TreeApi.Logical.getParentNode(c));
+}
+},
+_nodeNeedsDistribution: function (node) {
+return node && node.shadyRoot && DomApi.hasInsertionPoint(node.shadyRoot);
+},
+_addNodeToHost: function (host, node) {
+if (host._elementAdd) {
+host._elementAdd(node);
+}
+},
+_removeNodeFromHost: function (host, node) {
+if (host._elementRemove) {
+host._elementRemove(node);
+}
+},
+_removeDistributedChildren: function (root, container) {
+var hostNeedsDist;
+var ip$ = root._insertionPoints;
+for (var i = 0; i < ip$.length; i++) {
+var content = ip$[i];
+if (this._contains(container, content)) {
+var dc$ = dom(content).getDistributedNodes();
+for (var j = 0; j < dc$.length; j++) {
+hostNeedsDist = true;
+var node = dc$[j];
+var parent = TreeApi.Composed.getParentNode(node);
+if (parent) {
+TreeApi.Composed.removeChild(parent, node);
+}
+}
+}
+}
+return hostNeedsDist;
+},
+_contains: function (container, node) {
+while (node) {
+if (node == container) {
+return true;
+}
+node = TreeApi.Logical.getParentNode(node);
+}
+},
+_removeOwnerShadyRoot: function (node) {
+if (this._hasCachedOwnerRoot(node)) {
+var c$ = TreeApi.Logical.getChildNodes(node);
+for (var i = 0, l = c$.length, n; i < l && (n = c$[i]); i++) {
+this._removeOwnerShadyRoot(n);
+}
+}
+node._ownerShadyRoot = undefined;
+},
+_firstComposedNode: function (content) {
+var n$ = dom(content).getDistributedNodes();
+for (var i = 0, l = n$.length, n, p$; i < l && (n = n$[i]); i++) {
+p$ = dom(n).getDestinationInsertionPoints();
+if (p$[p$.length - 1] === content) {
+return n;
+}
+}
+},
+querySelector: function (selector) {
+var result = this._query(function (n) {
+return DomApi.matchesSelector.call(n, selector);
+}, this.node, function (n) {
+return Boolean(n);
+})[0];
+return result || null;
+},
+querySelectorAll: function (selector) {
+return this._query(function (n) {
+return DomApi.matchesSelector.call(n, selector);
+}, this.node);
+},
+getDestinationInsertionPoints: function () {
+return this.node._destinationInsertionPoints || [];
+},
+getDistributedNodes: function () {
+return this.node._distributedNodes || [];
+},
+_clear: function () {
+while (this.childNodes.length) {
+this.removeChild(this.childNodes[0]);
+}
+},
+setAttribute: function (name, value) {
+this.node.setAttribute(name, value);
+this._maybeDistributeParent();
+},
+removeAttribute: function (name) {
+this.node.removeAttribute(name);
+this._maybeDistributeParent();
+},
+_maybeDistributeParent: function () {
+if (this._nodeNeedsDistribution(this.parentNode)) {
+this._lazyDistribute(this.parentNode);
+return true;
+}
+},
+cloneNode: function (deep) {
+var n = nativeCloneNode.call(this.node, false);
+if (deep) {
+var c$ = this.childNodes;
+var d = dom(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = dom(c$[i]).cloneNode(true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+importNode: function (externalNode, deep) {
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
+var n = nativeImportNode.call(doc, externalNode, false);
+if (deep) {
+var c$ = TreeApi.Logical.getChildNodes(externalNode);
+var d = dom(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = dom(doc).importNode(c$[i], true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+_getComposedInnerHTML: function () {
+return getInnerHTML(this.node, true);
+}
+});
 Object.defineProperties(DomApi.prototype, {
+activeElement: {
+get: function () {
+var active = document.activeElement;
+if (!active) {
+return null;
+}
+var isShadyRoot = !!this.node._isShadyRoot;
+if (this.node !== document) {
+if (!isShadyRoot) {
+return null;
+}
+if (this.node.host === active || !this.node.host.contains(active)) {
+return null;
+}
+}
+var activeRoot = dom(active).getOwnerRoot();
+while (activeRoot && activeRoot !== this.node) {
+active = activeRoot.host;
+activeRoot = dom(active).getOwnerRoot();
+}
+if (this.node === document) {
+return activeRoot ? null : active;
+} else {
+return activeRoot === this.node ? active : null;
+}
+},
+configurable: true
+},
 childNodes: {
 get: function () {
-var c$ = getLightChildren(this.node);
-return Array.isArray(c$) ? c$ : arrayCopyChildNodes(this.node);
+var c$ = TreeApi.Logical.getChildNodes(this.node);
+return Array.isArray(c$) ? c$ : TreeApi.arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
 children: {
 get: function () {
+if (TreeApi.Logical.hasChildNodes(this.node)) {
 return Array.prototype.filter.call(this.childNodes, function (n) {
 return n.nodeType === Node.ELEMENT_NODE;
 });
+} else {
+return TreeApi.arrayCopyChildren(this.node);
+}
 },
 configurable: true
 },
 parentNode: {
 get: function () {
-return this.node._lightParent || getComposedParent(this.node);
+return TreeApi.Logical.getParentNode(this.node);
 },
 configurable: true
 },
 firstChild: {
 get: function () {
-return this.childNodes[0];
+return TreeApi.Logical.getFirstChild(this.node);
 },
 configurable: true
 },
 lastChild: {
 get: function () {
-var c$ = this.childNodes;
-return c$[c$.length - 1];
+return TreeApi.Logical.getLastChild(this.node);
 },
 configurable: true
 },
 nextSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).childNodes;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) + 1];
-}
+return TreeApi.Logical.getNextSibling(this.node);
 },
 configurable: true
 },
 previousSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).childNodes;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) - 1];
-}
+return TreeApi.Logical.getPreviousSibling(this.node);
 },
 configurable: true
 },
 firstElementChild: {
 get: function () {
-return this.children[0];
+return TreeApi.Logical.getFirstElementChild(this.node);
 },
 configurable: true
 },
 lastElementChild: {
 get: function () {
-var c$ = this.children;
-return c$[c$.length - 1];
+return TreeApi.Logical.getLastElementChild(this.node);
 },
 configurable: true
 },
 nextElementSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).children;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) + 1];
-}
+return TreeApi.Logical.getNextElementSibling(this.node);
 },
 configurable: true
 },
 previousElementSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).children;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) - 1];
-}
+return TreeApi.Logical.getPreviousElementSibling(this.node);
 },
 configurable: true
 },
@@ -910,7 +1148,7 @@ if (nt !== Node.TEXT_NODE || nt !== Node.COMMENT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-var c$ = arrayCopyChildNodes(d);
+var c$ = TreeApi.arrayCopyChildNodes(d);
 for (var i = 0; i < c$.length; i++) {
 this.appendChild(c$[i]);
 }
@@ -919,31 +1157,23 @@ this.appendChild(c$[i]);
 configurable: true
 }
 });
-DomApi.prototype._getComposedInnerHTML = function () {
-return getInnerHTML(this.node, true);
+DomApi.hasInsertionPoint = function (root) {
+return Boolean(root && root._insertionPoints.length);
 };
-} else {
-var forwardMethods = function (m$) {
-for (var i = 0; i < m$.length; i++) {
-forwardMethod(m$[i]);
+}());
+(function () {
+'use strict';
+var Settings = Polymer.Settings;
+var TreeApi = Polymer.TreeApi;
+var DomApi = Polymer.DomApi;
+if (!Settings.useShadow) {
+return;
 }
-};
-var forwardMethod = function (method) {
-DomApi.prototype[method] = function () {
-return this.node[method].apply(this.node, arguments);
-};
-};
-forwardMethods([
-'cloneNode',
-'appendChild',
-'insertBefore',
-'removeChild',
-'replaceChild'
-]);
-DomApi.prototype.querySelectorAll = function (selector) {
-return arrayCopy(this.node.querySelectorAll(selector));
-};
-DomApi.prototype.getOwnerRoot = function () {
+Polymer.Base.extend(DomApi.prototype, {
+querySelectorAll: function (selector) {
+return TreeApi.arrayCopy(this.node.querySelectorAll(selector));
+},
+getOwnerRoot: function () {
 var n = this.node;
 while (n) {
 if (n.nodeType === Node.DOCUMENT_FRAGMENT_NODE && n.host) {
@@ -951,31 +1181,38 @@ return n;
 }
 n = n.parentNode;
 }
-};
-DomApi.prototype.importNode = function (externalNode, deep) {
+},
+importNode: function (externalNode, deep) {
 var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 return doc.importNode(externalNode, deep);
-};
-DomApi.prototype.getDestinationInsertionPoints = function () {
+},
+getDestinationInsertionPoints: function () {
 var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
-return n$ ? arrayCopy(n$) : [];
-};
-DomApi.prototype.getDistributedNodes = function () {
+return n$ ? TreeApi.arrayCopy(n$) : [];
+},
+getDistributedNodes: function () {
 var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
-return n$ ? arrayCopy(n$) : [];
-};
-DomApi.prototype._distributeParent = function () {
-};
+return n$ ? TreeApi.arrayCopy(n$) : [];
+}
+});
 Object.defineProperties(DomApi.prototype, {
+activeElement: {
+get: function () {
+var node = DomApi.wrap(this.node);
+var activeElement = node.activeElement;
+return node.contains(activeElement) ? activeElement : null;
+},
+configurable: true
+},
 childNodes: {
 get: function () {
-return arrayCopyChildNodes(this.node);
+return TreeApi.arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
 children: {
 get: function () {
-return arrayCopyChildren(this.node);
+return TreeApi.arrayCopyChildren(this.node);
 },
 configurable: true
 },
@@ -998,6 +1235,26 @@ return this.node.innerHTML = value;
 configurable: true
 }
 });
+var forwardMethods = function (m$) {
+for (var i = 0; i < m$.length; i++) {
+forwardMethod(m$[i]);
+}
+};
+var forwardMethod = function (method) {
+DomApi.prototype[method] = function () {
+return this.node[method].apply(this.node, arguments);
+};
+};
+forwardMethods([
+'cloneNode',
+'appendChild',
+'insertBefore',
+'removeChild',
+'replaceChild',
+'setAttribute',
+'removeAttribute',
+'querySelector'
+]);
 var forwardProperties = function (f$) {
 for (var i = 0; i < f$.length; i++) {
 forwardProperty(f$[i]);
@@ -1022,120 +1279,7 @@ forwardProperties([
 'nextElementSibling',
 'previousElementSibling'
 ]);
-}
-var CONTENT = 'content';
-function factory(node, patch) {
-node = node || document;
-if (!node.__domApi) {
-node.__domApi = new DomApi(node, patch);
-}
-return node.__domApi;
-}
-;
-function hasDomApi(node) {
-return Boolean(node.__domApi);
-}
-;
-Polymer.dom = function (obj, patch) {
-if (obj instanceof Event) {
-return Polymer.EventApi.factory(obj);
-} else {
-return factory(obj, patch);
-}
-};
-function getLightChildren(node) {
-var children = node._lightChildren;
-return children ? children : node.childNodes;
-}
-function getComposedChildren(node) {
-if (!node._composedChildren) {
-node._composedChildren = arrayCopyChildNodes(node);
-}
-return node._composedChildren;
-}
-function addToComposedParent(parent, node, ref_node) {
-var children = getComposedChildren(parent);
-var i = ref_node ? children.indexOf(ref_node) : -1;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-var fragChildren = getComposedChildren(node);
-for (var j = 0; j < fragChildren.length; j++) {
-addNodeToComposedChildren(fragChildren[j], parent, children, i + j);
-}
-node._composedChildren = null;
-} else {
-addNodeToComposedChildren(node, parent, children, i);
-}
-}
-function getComposedParent(node) {
-return node.__patched ? node._composedParent : node.parentNode;
-}
-function addNodeToComposedChildren(node, parent, children, i) {
-node._composedParent = parent;
-children.splice(i >= 0 ? i : children.length, 0, node);
-}
-function removeFromComposedParent(parent, node) {
-node._composedParent = null;
-if (parent) {
-var children = getComposedChildren(parent);
-var i = children.indexOf(node);
-if (i >= 0) {
-children.splice(i, 1);
-}
-}
-}
-function saveLightChildrenIfNeeded(node) {
-if (!node._lightChildren) {
-var c$ = arrayCopyChildNodes(node);
-for (var i = 0, l = c$.length, child; i < l && (child = c$[i]); i++) {
-child._lightParent = child._lightParent || node;
-}
-node._lightChildren = c$;
-}
-}
-function arrayCopyChildNodes(parent) {
-var copy = [], i = 0;
-for (var n = parent.firstChild; n; n = n.nextSibling) {
-copy[i++] = n;
-}
-return copy;
-}
-function arrayCopyChildren(parent) {
-var copy = [], i = 0;
-for (var n = parent.firstElementChild; n; n = n.nextElementSibling) {
-copy[i++] = n;
-}
-return copy;
-}
-function arrayCopy(a$) {
-var l = a$.length;
-var copy = new Array(l);
-for (var i = 0; i < l; i++) {
-copy[i] = a$[i];
-}
-return copy;
-}
-function hasInsertionPoint(root) {
-return Boolean(root && root._insertionPoints.length);
-}
-var p = Element.prototype;
-var matchesSelector = p.matches || p.matchesSelector || p.mozMatchesSelector || p.msMatchesSelector || p.oMatchesSelector || p.webkitMatchesSelector;
-return {
-getLightChildren: getLightChildren,
-getComposedParent: getComposedParent,
-getComposedChildren: getComposedChildren,
-removeFromComposedParent: removeFromComposedParent,
-saveLightChildrenIfNeeded: saveLightChildrenIfNeeded,
-matchesSelector: matchesSelector,
-hasInsertionPoint: hasInsertionPoint,
-ctor: DomApi,
-factory: factory,
-hasDomApi: hasDomApi,
-arrayCopy: arrayCopy,
-arrayCopyChildNodes: arrayCopyChildNodes,
-arrayCopyChildren: arrayCopyChildren,
-wrap: wrap
-};
-}();
+}());
 Polymer.Base.extend(Polymer.dom, {
 _flushGuard: 0,
 _FLUSH_MAX: 100,
@@ -1147,8 +1291,8 @@ flush: function () {
 this._flushGuard = 0;
 this._prepareFlush();
 while (this._debouncers.length && this._flushGuard < this._FLUSH_MAX) {
-for (var i = 0; i < this._debouncers.length; i++) {
-this._debouncers[i].complete();
+while (this._debouncers.length) {
+this._debouncers.shift().complete();
 }
 if (this._finishDebouncer) {
 this._finishDebouncer.complete();
@@ -1222,10 +1366,18 @@ return p$[i];
 get path() {
 if (!this.event._path) {
 var path = [];
-var o = this.rootTarget;
-while (o) {
-path.push(o);
-o = Polymer.dom(o).parentNode || o.host;
+var current = this.rootTarget;
+while (current) {
+path.push(current);
+var insertionPoints = Polymer.dom(current).getDestinationInsertionPoints();
+if (insertionPoints.length) {
+for (var i = 0; i < insertionPoints.length - 1; i++) {
+path.push(insertionPoints[i]);
+}
+current = insertionPoints[insertionPoints.length - 1];
+} else {
+current = Polymer.dom(current).parentNode || current.host;
+}
 }
 path.push(window);
 this.event._path = path;
@@ -1245,6 +1397,7 @@ return { factory: factory };
 (function () {
 'use strict';
 var DomApi = Polymer.DomApi.ctor;
+var useShadow = Polymer.Settings.useShadow;
 Object.defineProperty(DomApi.prototype, 'classList', {
 get: function () {
 if (!this._classList) {
@@ -1261,15 +1414,20 @@ this.node = host.node;
 DomApi.ClassList.prototype = {
 add: function () {
 this.node.classList.add.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
 },
 remove: function () {
 this.node.classList.remove.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
 },
 toggle: function () {
 this.node.classList.toggle.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
+},
+_distributeParent: function () {
+if (!useShadow) {
+this.domApi._maybeDistributeParent();
+}
 },
 contains: function () {
 return this.node.classList.contains.apply(this.node.classList, arguments);
@@ -1532,21 +1690,34 @@ this._observer = null;
 }
 }());
 (function () {
-var hasDomApi = Polymer.DomApi.hasDomApi;
+var DomApi = Polymer.DomApi;
+var TreeApi = Polymer.TreeApi;
 Polymer.Base._addFeature({
 _prepShady: function () {
 this._useContent = this._useContent || Boolean(this._template);
 },
+_setupShady: function () {
+this.shadyRoot = null;
+if (!this.__domApi) {
+this.__domApi = null;
+}
+if (!this.__dom) {
+this.__dom = null;
+}
+if (!this._ownerShadyRoot) {
+this._ownerShadyRoot = undefined;
+}
+},
 _poolContent: function () {
 if (this._useContent) {
-saveLightChildrenIfNeeded(this);
+TreeApi.Logical.saveChildNodes(this);
 }
 },
 _setupRoot: function () {
 if (this._useContent) {
 this._createLocalRoot();
 if (!this.dataHost) {
-upgradeLightChildren(this._lightChildren);
+upgradeLogicalChildren(TreeApi.Logical.getChildNodes(this));
 }
 }
 },
@@ -1557,11 +1728,11 @@ this.shadyRoot._hasDistributed = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
 var i$ = this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
-saveLightChildrenIfNeeded(this.shadyRoot);
+TreeApi.Logical.saveChildNodes(this.shadyRoot);
 for (var i = 0, c; i < i$.length; i++) {
 c = i$[i];
-saveLightChildrenIfNeeded(c);
-saveLightChildrenIfNeeded(c.parentNode);
+TreeApi.Logical.saveChildNodes(c);
+TreeApi.Logical.saveChildNodes(c.parentNode);
 }
 this.shadyRoot.host = this;
 },
@@ -1571,23 +1742,24 @@ return root && root.host;
 },
 distributeContent: function (updateInsertionPoints) {
 if (this.shadyRoot) {
-var dom = Polymer.dom(this);
-if (updateInsertionPoints) {
-dom._updateInsertionPoints(this);
-}
+this.shadyRoot._invalidInsertionPoints = this.shadyRoot._invalidInsertionPoints || updateInsertionPoints;
 var host = getTopDistributingHost(this);
-dom._lazyDistribute(host);
+Polymer.dom(this)._lazyDistribute(host);
 }
 },
 _distributeContent: function () {
 if (this._useContent && !this.shadyRoot._distributionClean) {
+if (this.shadyRoot._invalidInsertionPoints) {
+Polymer.dom(this)._updateInsertionPoints(this);
+this.shadyRoot._invalidInsertionPoints = false;
+}
 this._beginDistribute();
 this._distributeDirtyRoots();
 this._finishDistribute();
 }
 },
 _beginDistribute: function () {
-if (this._useContent && hasInsertionPoint(this.shadyRoot)) {
+if (this._useContent && DomApi.hasInsertionPoint(this.shadyRoot)) {
 this._resetDistribution();
 this._distributePool(this.shadyRoot, this._collectPool());
 }
@@ -1602,13 +1774,12 @@ this.shadyRoot._dirtyRoots = [];
 _finishDistribute: function () {
 if (this._useContent) {
 this.shadyRoot._distributionClean = true;
-if (hasInsertionPoint(this.shadyRoot)) {
+if (DomApi.hasInsertionPoint(this.shadyRoot)) {
 this._composeTree();
 notifyContentObservers(this.shadyRoot);
 } else {
 if (!this.shadyRoot._hasDistributed) {
-this.textContent = '';
-this._composedChildren = null;
+TreeApi.Composed.clearChildNodes(this);
 this.appendChild(this.shadyRoot);
 } else {
 var children = this._composeNode(this);
@@ -1623,10 +1794,10 @@ this.shadyRoot._hasDistributed = true;
 },
 elementMatches: function (selector, node) {
 node = node || this;
-return matchesSelector.call(node, selector);
+return DomApi.matchesSelector.call(node, selector);
 },
 _resetDistribution: function () {
-var children = getLightChildren(this);
+var children = TreeApi.Logical.getChildNodes(this);
 for (var i = 0; i < children.length; i++) {
 var child = children[i];
 if (child._destinationInsertionPoints) {
@@ -1644,7 +1815,7 @@ p$[j]._distributedNodes = [];
 },
 _collectPool: function () {
 var pool = [];
-var children = getLightChildren(this);
+var children = TreeApi.Logical.getChildNodes(this);
 for (var i = 0; i < children.length; i++) {
 var child = children[i];
 if (isInsertionPoint(child)) {
@@ -1676,7 +1847,7 @@ anyDistributed = true;
 }
 }
 if (!anyDistributed) {
-var children = getLightChildren(content);
+var children = TreeApi.Logical.getChildNodes(content);
 for (var j = 0; j < children.length; j++) {
 distributeNodeInto(children[j], content);
 }
@@ -1686,7 +1857,7 @@ _composeTree: function () {
 this._updateChildNodes(this, this._composeNode(this));
 var p$ = this.shadyRoot._insertionPoints;
 for (var i = 0, l = p$.length, p, parent; i < l && (p = p$[i]); i++) {
-parent = p._lightParent || p.parentNode;
+parent = TreeApi.Logical.getParentNode(p);
 if (!parent._useContent && parent !== this && parent !== this.shadyRoot) {
 this._updateChildNodes(parent, this._composeNode(parent));
 }
@@ -1694,7 +1865,7 @@ this._updateChildNodes(parent, this._composeNode(parent));
 },
 _composeNode: function (node) {
 var children = [];
-var c$ = getLightChildren(node.shadyRoot || node);
+var c$ = TreeApi.Logical.getChildNodes(node.shadyRoot || node);
 for (var i = 0; i < c$.length; i++) {
 var child = c$[i];
 if (isInsertionPoint(child)) {
@@ -1712,12 +1883,12 @@ children.push(child);
 return children;
 },
 _updateChildNodes: function (container, children) {
-var composed = getComposedChildren(container);
+var composed = TreeApi.Composed.getChildNodes(container);
 var splices = Polymer.ArraySplice.calculateSplices(children, composed);
 for (var i = 0, d = 0, s; i < splices.length && (s = splices[i]); i++) {
 for (var j = 0, n; j < s.removed.length && (n = s.removed[j]); j++) {
-if (getComposedParent(n) === container) {
-remove(n);
+if (TreeApi.Composed.getParentNode(n) === container) {
+TreeApi.Composed.removeChild(container, n);
 }
 composed.splice(s.index + d, 1);
 }
@@ -1727,11 +1898,10 @@ for (var i = 0, s, next; i < splices.length && (s = splices[i]); i++) {
 next = composed[s.index];
 for (var j = s.index, n; j < s.index + s.addedCount; j++) {
 n = children[j];
-insertBefore(container, n, next);
+TreeApi.Composed.insertBefore(container, n, next);
 composed.splice(j, 0, n);
 }
 }
-ensureComposedParent(container, children);
 },
 _matchesContentSelect: function (node, contentElement) {
 var select = contentElement.getAttribute('select');
@@ -1756,13 +1926,6 @@ _elementAdd: function () {
 _elementRemove: function () {
 }
 });
-var saveLightChildrenIfNeeded = Polymer.DomApi.saveLightChildrenIfNeeded;
-var getLightChildren = Polymer.DomApi.getLightChildren;
-var matchesSelector = Polymer.DomApi.matchesSelector;
-var hasInsertionPoint = Polymer.DomApi.hasInsertionPoint;
-var getComposedChildren = Polymer.DomApi.getComposedChildren;
-var getComposedParent = Polymer.DomApi.getComposedParent;
-var removeFromComposedParent = Polymer.DomApi.removeFromComposedParent;
 function distributeNodeInto(child, insertionPoint) {
 insertionPoint._distributedNodes.push(child);
 var points = child._destinationInsertionPoints;
@@ -1784,8 +1947,8 @@ d.splice(d.indexOf(content) + 1, d.length);
 }
 }
 function maybeRedistributeParent(content, host) {
-var parent = content._lightParent;
-if (parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot) && parent.shadyRoot._distributionClean) {
+var parent = TreeApi.Logical.getParentNode(content);
+if (parent && parent.shadyRoot && DomApi.hasInsertionPoint(parent.shadyRoot) && parent.shadyRoot._distributionClean) {
 parent.shadyRoot._distributionClean = false;
 host.shadyRoot._dirtyRoots.push(parent);
 }
@@ -1797,29 +1960,6 @@ return points && points[points.length - 1] === insertionPoint;
 function isInsertionPoint(node) {
 return node.localName == 'content';
 }
-var nativeInsertBefore = Element.prototype.insertBefore;
-var nativeRemoveChild = Element.prototype.removeChild;
-function insertBefore(parentNode, newChild, refChild) {
-var newChildParent = getComposedParent(newChild);
-if (newChildParent !== parentNode) {
-removeFromComposedParent(newChildParent, newChild);
-}
-remove(newChild);
-nativeInsertBefore.call(parentNode, newChild, refChild || null);
-newChild._composedParent = parentNode;
-}
-function remove(node) {
-var parentNode = getComposedParent(node);
-if (parentNode) {
-node._composedParent = null;
-nativeRemoveChild.call(parentNode, node);
-}
-}
-function ensureComposedParent(parent, children) {
-for (var i = 0, n; i < children.length; i++) {
-children[i]._composedParent = parent;
-}
-}
 function getTopDistributingHost(host) {
 while (host && hostNeedsRedistribution(host)) {
 host = host.domHost;
@@ -1827,10 +1967,10 @@ host = host.domHost;
 return host;
 }
 function hostNeedsRedistribution(host) {
-var c$ = Polymer.dom(host).children;
+var c$ = TreeApi.Logical.getChildNodes(host);
 for (var i = 0, c; i < c$.length; i++) {
 c = c$[i];
-if (c.localName === 'content') {
+if (c.localName && c.localName === 'content') {
 return host.domHost;
 }
 }
@@ -1838,18 +1978,18 @@ return host.domHost;
 function notifyContentObservers(root) {
 for (var i = 0, c; i < root._insertionPoints.length; i++) {
 c = root._insertionPoints[i];
-if (hasDomApi(c)) {
+if (DomApi.hasApi(c)) {
 Polymer.dom(c).notifyObserver();
 }
 }
 }
 function notifyInitialDistribution(host) {
-if (hasDomApi(host)) {
+if (DomApi.hasApi(host)) {
 Polymer.dom(host).notifyObserver();
 }
 }
 var needsUpgrade = window.CustomElements && !CustomElements.useNative;
-function upgradeLightChildren(children) {
+function upgradeLogicalChildren(children) {
 if (needsUpgrade && children) {
 for (var i = 0; i < children.length; i++) {
 CustomElements.upgrade(children[i]);
@@ -1876,6 +2016,123 @@ this.root = this.shadowRoot;
 }
 });
 }
+Polymer.Async = {
+_currVal: 0,
+_lastVal: 0,
+_callbacks: [],
+_twiddleContent: 0,
+_twiddle: document.createTextNode(''),
+run: function (callback, waitTime) {
+if (waitTime > 0) {
+return ~setTimeout(callback, waitTime);
+} else {
+this._twiddle.textContent = this._twiddleContent++;
+this._callbacks.push(callback);
+return this._currVal++;
+}
+},
+cancel: function (handle) {
+if (handle < 0) {
+clearTimeout(~handle);
+} else {
+var idx = handle - this._lastVal;
+if (idx >= 0) {
+if (!this._callbacks[idx]) {
+throw 'invalid async handle: ' + handle;
+}
+this._callbacks[idx] = null;
+}
+}
+},
+_atEndOfMicrotask: function () {
+var len = this._callbacks.length;
+for (var i = 0; i < len; i++) {
+var cb = this._callbacks[i];
+if (cb) {
+try {
+cb();
+} catch (e) {
+i++;
+this._callbacks.splice(0, i);
+this._lastVal += i;
+this._twiddle.textContent = this._twiddleContent++;
+throw e;
+}
+}
+}
+this._callbacks.splice(0, len);
+this._lastVal += len;
+}
+};
+new window.MutationObserver(function () {
+Polymer.Async._atEndOfMicrotask();
+}).observe(Polymer.Async._twiddle, { characterData: true });
+Polymer.Debounce = function () {
+var Async = Polymer.Async;
+var Debouncer = function (context) {
+this.context = context;
+var self = this;
+this.boundComplete = function () {
+self.complete();
+};
+};
+Debouncer.prototype = {
+go: function (callback, wait) {
+var h;
+this.finish = function () {
+Async.cancel(h);
+};
+h = Async.run(this.boundComplete, wait);
+this.callback = callback;
+},
+stop: function () {
+if (this.finish) {
+this.finish();
+this.finish = null;
+}
+},
+complete: function () {
+if (this.finish) {
+this.stop();
+this.callback.call(this.context);
+}
+}
+};
+function debounce(debouncer, callback, wait) {
+if (debouncer) {
+debouncer.stop();
+} else {
+debouncer = new Debouncer(this);
+}
+debouncer.go(callback, wait);
+return debouncer;
+}
+return debounce;
+}();
+Polymer.Base._addFeature({
+_setupDebouncers: function () {
+this._debouncers = {};
+},
+debounce: function (jobName, callback, wait) {
+return this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
+},
+isDebouncerActive: function (jobName) {
+var debouncer = this._debouncers[jobName];
+return !!(debouncer && debouncer.finish);
+},
+flushDebouncer: function (jobName) {
+var debouncer = this._debouncers[jobName];
+if (debouncer) {
+debouncer.complete();
+}
+},
+cancelDebouncer: function (jobName) {
+var debouncer = this._debouncers[jobName];
+if (debouncer) {
+debouncer.stop();
+}
+}
+});
 Polymer.DomModule = document.createElement('dom-module');
 Polymer.Base._addFeature({
 _registerFeatures: function () {
@@ -1905,4 +2162,3 @@ this._tryReady();
 _marshalBehavior: function (b) {
 }
 });</script>
-

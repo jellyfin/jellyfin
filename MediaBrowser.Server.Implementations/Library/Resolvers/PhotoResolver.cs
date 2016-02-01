@@ -51,8 +51,17 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         {
             var filename = Path.GetFileNameWithoutExtension(path) ?? string.Empty;
 
-            return !IgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase)
-                && imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'), StringComparer.OrdinalIgnoreCase);
+            if (IgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (IgnoreFiles.Any(i => filename.IndexOf("-" + i, StringComparison.OrdinalIgnoreCase) != -1))
+            {
+                return false;
+            }
+
+            return imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'), StringComparer.OrdinalIgnoreCase);
         }
 
     }

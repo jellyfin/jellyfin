@@ -125,26 +125,6 @@
 
     function showSlideshow(page, items, startItemId) {
 
-        var screenWidth = $(window).width();
-        var screenHeight = $(window).height();
-
-        var slideshowItems = items.map(function (item) {
-
-            var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-
-                tag: item.ImageTags.Primary,
-                type: 'Primary',
-                maxWidth: screenWidth,
-                maxHeight: screenHeight
-
-            });
-
-            return {
-                title: item.Name,
-                href: imgUrl
-            };
-        });
-
         var index = items.map(function (i) {
             return i.Id;
 
@@ -154,12 +134,18 @@
             index = 0;
         }
 
-        require(['swipebox'], function () {
+        require(['slideshow'], function (slideshow) {
 
-            $.swipebox(slideshowItems, {
-                initialIndexOnArray: index,
-                hideBarsDelay: 30000
+            var newSlideShow = new slideshow({
+                showTitle: false,
+                cover: false,
+                items: items,
+                startIndex: index,
+                interval: 7000,
+                interactive: true
             });
+
+            newSlideShow.show();
         });
     }
 

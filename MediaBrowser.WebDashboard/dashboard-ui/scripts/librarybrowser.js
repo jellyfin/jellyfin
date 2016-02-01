@@ -31,14 +31,17 @@
 
     function getDesiredAspect(shape) {
 
-        switch (shape) {
-
-            case 'square':
-                return 1;
-            case 'backdrop':
-                return (16 / 9);
-            case 'portrait':
+        if (shape) {
+            shape = shape.toLowerCase();
+            if (shape.indexOf('portrait') != -1) {
                 return (2 / 3);
+            }
+            if (shape.indexOf('backdrop') != -1) {
+                return (16 / 9);
+            }
+            if (shape.indexOf('square') != -1) {
+                return 1;
+            }
         }
         return null;
     }
@@ -719,9 +722,9 @@
                 });
             }
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: menuItems,
                     positionTo: positionTo,
                     callback: function (id) {
@@ -991,9 +994,9 @@
                 });
             }
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: items,
                     positionTo: positionTo,
                     callback: function (id) {
@@ -2763,9 +2766,9 @@
                 };
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: menuItems,
                     positionTo: button,
                     callback: function (id) {
@@ -2874,31 +2877,25 @@
 
         showSortMenu: function (options) {
 
-            require(['components/paperdialoghelper', 'paper-dialog', 'paper-radio-button', 'paper-radio-group', 'scale-up-animation', 'fade-in-animation', 'fade-out-animation'], function (paperDialogHelper) {
+            require(['paperdialoghelper', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper) {
 
                 var dlg = paperDialogHelper.createDialog({
                     removeOnClose: true,
-                    theme: 'a',
-                    size: 'auto',
-                    modal: false
+                    modal: false,
+                    entryAnimationDuration: 160,
+                    exitAnimationDuration: 200
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
 
                 var html = '';
 
-                // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
-                // Have to disable this right now because it's causing the radio buttons to not function properly in other browsers besides chrome
-                var isScrollable = false;
-                if (browserInfo.android) {
-                    isScrollable = true;
-                }
+                html += '<div style="margin:0;padding:1em 1em .7em;">';
 
-                html += '<h2>';
+                html += '<h2 style="margin:0 0 .5em;">';
                 html += Globalize.translate('HeaderSortBy');
                 html += '</h2>';
-
-                if (isScrollable) {
-                    html += '<paper-dialog-scrollable>';
-                }
 
                 html += '<paper-radio-group class="groupSortBy" selected="' + (options.query.SortBy || '').replace(',', '_') + '">';
                 for (var i = 0, length = options.items.length; i < length; i++) {
@@ -2909,17 +2906,14 @@
                 }
                 html += '</paper-radio-group>';
 
-                html += '<p style="margin: 1em 0;padding: 0 0 0 1.5em;">';
+                html += '<h2 style="margin: 1em 0 .5em;">';
                 html += Globalize.translate('HeaderSortOrder');
-                html += '</p>';
+                html += '</h2>';
                 html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';
                 html += '<paper-radio-button name="Ascending" class="menuSortOrder block">' + Globalize.translate('OptionAscending') + '</paper-radio-button>';
                 html += '<paper-radio-button name="Descending" class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
                 html += '</paper-radio-group>';
-
-                if (isScrollable) {
-                    html += '</paper-dialog-scrollable>';
-                }
+                html += '</div>';
 
                 html += '<div class="buttons">';
                 html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
@@ -2929,16 +2923,13 @@
                 document.body.appendChild(dlg);
 
                 var fireCallbackOnClose = false;
-                var delay = browserInfo.animate ? 0 : 100;
 
-                setTimeout(function () {
-                    paperDialogHelper.open(dlg).then(function () {
+                paperDialogHelper.open(dlg).then(function () {
 
-                        if (options.callback && fireCallbackOnClose) {
-                            options.callback();
-                        }
-                    });
-                }, delay);
+                    if (options.callback && fireCallbackOnClose) {
+                        options.callback();
+                    }
+                });
 
                 $('.groupSortBy', dlg).on('iron-select', function () {
 

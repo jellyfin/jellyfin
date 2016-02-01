@@ -1,3 +1,9 @@
+## 1.1.29 (January 22, 2016)
+- `ADDED`: Error messages added onto each `loaderror` event (thanks Philip Silva).
+- `FIXED`: Fixed various edge-case bugs by no longer comparing functions by string in `.off()` (thanks richard-livingston).
+- `FIXED`: Edge case where multiple overlapping instances of the same sound won't all fire `end` (thanks richard-livingston).
+- `FIXED`: `end` event now fires correctly when changing the `rate` of a sound.
+
 ## 1.1.28 (October 22, 2015)
 - `FIXED`: Fixed typo with iOS enabler that was preventing it from working.
 

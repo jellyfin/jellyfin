@@ -18,10 +18,11 @@ class DummyRemuxer {
   insertDiscontinuity() {
   }
 
-  remux(audioTrack,videoTrack,id3Track,timeOffset) {
+  remux(audioTrack,videoTrack,id3Track,textTrack,timeOffset) {
     this._remuxAACSamples(audioTrack,timeOffset);
     this._remuxAVCSamples(videoTrack,timeOffset);
     this._remuxID3Samples(id3Track,timeOffset);
+    this._remuxTextSamples(textTrack,timeOffset);
   }
 
   _remuxAVCSamples(track, timeOffset) {
@@ -55,6 +56,17 @@ class DummyRemuxer {
     while (track.samples.length) {
       id3Sample = track.samples.shift();
       unit = id3Sample.unit;
+    }
+    //please lint
+    timeOffset = timeOffset;
+  }
+
+  _remuxTextSamples(track,timeOffset) {
+    var textSample,bytes;
+    // loop through track.samples
+    while (track.samples.length) {
+      textSample = track.samples.shift();
+      bytes = textSample.bytes;
     }
     //please lint
     timeOffset = timeOffset;

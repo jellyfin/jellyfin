@@ -265,6 +265,7 @@
     <Compile Include="Playlists\IPlaylistManager.cs" />
     <Compile Include="Playlists\Playlist.cs" />
     <Compile Include="Plugins\ILocalizablePlugin.cs" />
+    <Compile Include="Power\IPowerManagement.cs" />
     <Compile Include="Providers\AlbumInfo.cs" />
     <Compile Include="Providers\ArtistInfo.cs" />
     <Compile Include="Providers\BookInfo.cs" />

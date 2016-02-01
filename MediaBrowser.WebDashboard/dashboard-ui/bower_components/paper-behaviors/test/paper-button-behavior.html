@@ -78,6 +78,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(button.elevation, 3);
         assert.ok(button.hasRipple());
       });
+
+      test('space key', function(done) {
+        const SPACE_KEY_CODE = 32;
+        var ripple;
+        MockInteractions.focus(button);
+
+        assert.ok(button.hasRipple());
+
+        ripple = button.getRipple();
+        MockInteractions.keyDownOn(button, SPACE_KEY_CODE);
+
+        assert.equal(ripple.ripples.length, 1);
+
+        MockInteractions.keyDownOn(button, SPACE_KEY_CODE);
+
+        assert.equal(ripple.ripples.length, 1);
+
+        MockInteractions.keyUpOn(button, SPACE_KEY_CODE);
+
+        var transitionEndCalled = false;
+        ripple.addEventListener('transitionend', function() {
+          if (!transitionEndCalled) {
+            transitionEndCalled = true;
+            assert.equal(ripple.ripples.length, 0);
+            done();
+          }
+        });
+      });
     });
   </script>
 

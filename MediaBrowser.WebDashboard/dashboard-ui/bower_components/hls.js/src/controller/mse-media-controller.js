@@ -21,7 +21,8 @@ const State = {
   PARSING : 5,
   PARSED : 6,
   APPENDING : 7,
-  BUFFER_FLUSHING : 8
+  BUFFER_FLUSHING : 8,
+  ENDED : 9
 };
 
 class MSEMediaController extends EventHandler {
@@ -86,6 +87,7 @@ class MSEMediaController extends EventHandler {
     this.mp4segments = [];
     this.flushRange = [];
     this.bufferRange = [];
+    this.stalled = false;
     var frag = this.fragCurrent;
     if (frag) {
       if (frag.loader) {
@@ -264,13 +266,23 @@ class MSEMediaController extends EventHandler {
                   // have we reached end of VOD playlist ?
                   if (!levelDetails.live) {
                     var mediaSource = this.mediaSource;
-                    if (mediaSource && mediaSource.readyState === 'open') {
-                       // ensure sourceBuffer are not in updating states
-                      var sb = this.sourceBuffer;
-                      if (!((sb.audio && sb.audio.updating) || (sb.video && sb.video.updating))) {
-                        logger.log('all media data available, signal endOfStream() to MediaSource');
-                        //Notify the media element that it now has all of the media data
-                        mediaSource.endOfStream();
+                    if (mediaSource) {
+                      switch(mediaSource.readyState) {
+                        case 'open':
+                          var sb = this.sourceBuffer;
+                          if (!((sb.audio && sb.audio.updating) || (sb.video && sb.video.updating))) {
+                            logger.log('all media data available, signal endOfStream() to MediaSource and stop loading fragment');
+                            //Notify the media element that it now has all of the media data
+                            mediaSource.endOfStream();
+                            this.state = State.ENDED;
+                          }
+                          break;
+                        case 'ended':
+                          logger.log('all media data available and mediaSource ended, stop loading fragment');
+                          this.state = State.ENDED;
+                          break;
+                        default:
+                          break;
                       }
                     }
                   }
@@ -455,6 +467,8 @@ class MSEMediaController extends EventHandler {
          /* if not everything flushed, stay in BUFFER_FLUSHING state. we will come back here
             each time sourceBuffer updateend() callback will be triggered
             */
+        break;
+      case State.ENDED:
         break;
       default:
         break;
@@ -864,6 +878,9 @@ class MSEMediaController extends EventHandler {
         // switch to IDLE state to load new fragment
         this.state = State.IDLE;
       }
+    } else if (this.state === State.ENDED) {
+        // switch to IDLE state to check for potential new fragment
+        this.state = State.IDLE;
     }
     if (this.media) {
       this.lastCurrentTime = this.media.currentTime;
@@ -1059,7 +1076,7 @@ class MSEMediaController extends EventHandler {
         logger.log(`selected A/V codecs for sourceBuffers:${audioCodec},${videoCodec}`);
         // create source Buffer and link them to MediaSource
         if (audioCodec) {
-          sb = this.sourceBuffer.audio = this.mediaSource.addSourceBuffer(`video/mp4;codecs=${audioCodec}`);
+          sb = this.sourceBuffer.audio = this.mediaSource.addSourceBuffer(`audio/mp4;codecs=${audioCodec}`);
           sb.addEventListener('updateend', this.onsbue);
           sb.addEventListener('error', this.onsbe);
         }
@@ -1188,17 +1205,27 @@ _checkBuffer() {
           var currentTime = media.currentTime,
               bufferInfo = this.bufferInfo(currentTime,0),
               isPlaying = !(media.paused || media.ended || media.seeking || readyState < 3),
-              jumpThreshold = 0.2;
+              jumpThreshold = 0.2,
+              playheadMoving = currentTime > media.playbackRate*this.lastCurrentTime;
+
+          if (this.stalled && playheadMoving) {
+            this.stalled = false;
+          }
 
           // check buffer upfront
           // if less than 200ms is buffered, and media is playing but playhead is not moving,
           // and we have a new buffer range available upfront, let's seek to that one
           if(bufferInfo.len <= jumpThreshold) {
-            if(currentTime > media.playbackRate*this.lastCurrentTime || !isPlaying) {
+            if(playheadMoving || !isPlaying) {
               // playhead moving or media not playing
               jumpThreshold = 0;
             } else {
+              // playhead not moving AND media playing
               logger.log('playback seems stuck');
+              if(!this.stalled) {
+                this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_STALLED_ERROR, fatal: false});
+                this.stalled = true;
+              }
             }
             // if we are below threshold, try to jump if next buffer range is close
             if(bufferInfo.len <= jumpThreshold) {

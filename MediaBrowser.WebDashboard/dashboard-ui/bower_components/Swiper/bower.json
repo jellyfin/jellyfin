@@ -1,0 +1,35 @@
+{
+  "name": "Swiper",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nolimits4web/Swiper.git"
+  },
+  "description": "Most modern mobile touch slider and framework with hardware accelerated transitions",
+  "version": "3.3.0",
+  "author": "Vladimir Kharlampidi",
+  "homepage": "http://www.idangero.us/swiper/",
+  "keywords": ["swiper", "swipe", "slider", "touch", "ios", "mobile", "cordova", "phonegap", "app", "framework", "carousel", "gallery"],
+  "dependencies": {
+  },
+  "scripts": [
+    "dist/js/swiper.js"
+  ],
+  "main": [
+    "dist/js/swiper.js",
+    "dist/css/swiper.css"
+  ],
+  "styles": [
+    "dist/css/swiper.css"
+  ],
+  "license": ["MIT"],
+  "dependencies": {},
+  "ignore": [
+    ".*",
+    "demos",
+    "gulpfile",
+    "build",
+    "node_modules",
+    "playground",
+    "package.json"
+  ]
+}

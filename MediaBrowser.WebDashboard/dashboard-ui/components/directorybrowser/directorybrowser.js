@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -25,6 +25,9 @@
 
     function refreshDirectoryBrowser(page, path, fileOptions) {
 
+        if (path && typeof(path) !== 'string') {
+            throw new Error('invalid path');
+        }
         Dashboard.showLoadingMsg();
 
         if (path) {
@@ -33,27 +36,20 @@
             $('.networkHeadline').show();
         }
 
-        var promise;
-
-        var parentPathPromise = null;
+        var promises = [];
 
         if (path === "Network") {
-            promise = ApiClient.getNetworkDevices();
+            promises.push(ApiClient.getNetworkDevices());
         }
         else if (path) {
-            promise = ApiClient.getDirectoryContents(path, fileOptions);
-            parentPathPromise = ApiClient.getParentPath(path);
+
+            promises.push(ApiClient.getDirectoryContents(path, fileOptions));
+            promises.push(ApiClient.getParentPath(path));
         } else {
-            promise = ApiClient.getDrives();
+            promises.push(ApiClient.getDrives());
         }
 
-        if (!parentPathPromise) {
-            parentPathPromise = new Promise(function (resolve, reject) {
-                resolve();
-            });
-        }
-
-        Promise.all([promise, parentPathPromise]).then(function (responses) {
+        Promise.all(promises).then(function (responses) {
 
             var folders = responses[0];
             var parentPath = responses[1] || '';
@@ -167,8 +163,6 @@
             } else {
                 refreshDirectoryBrowser(content, path, fileOptions);
             }
-
-
         }).on("click", ".btnRefreshDirectories", function () {
 
             var path = $('#txtDirectoryPickerPath', content).val();
@@ -214,9 +208,12 @@
             getSystemInfo().then(function (systemInfo) {
 
                 var dlg = paperDialogHelper.createDialog({
-                    theme: 'a',
                     size: 'medium'
                 });
+
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('popupEditor');
 
                 dlg.classList.add('directoryPicker');
 

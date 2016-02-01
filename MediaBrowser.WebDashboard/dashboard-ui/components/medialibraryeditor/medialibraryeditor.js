@@ -1,4 +1,4 @@
-﻿define(['components/paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
 
     var currentDeferred;
     var hasChanges;
@@ -148,15 +148,18 @@
                 var template = this.response;
                 var dlg = paperDialogHelper.createDialog({
                     size: 'small',
-                    theme: 'a',
 
                     // In (at least) chrome this is causing the text field to not be editable
                     modal: false
                 });
 
+                dlg.classList.add('ui-body-a');
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('popupEditor');
+
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
 
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + options.library.Name + '</div>';
                 html += '</h2>';

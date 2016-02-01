@@ -450,9 +450,9 @@
                 }
             }
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: items,
                     positionTo: displayContextItem,
                     callback: function (id) {
@@ -788,7 +788,7 @@
             showOverlayTimeout = setTimeout(function () {
                 onShowTimerExpired(elem);
 
-            }, 1000);
+            }, 1200);
         }
 
         function preventTouchHover() {
@@ -994,11 +994,11 @@
 
             selectionCommandsPanel.innerHTML = html;
 
-            $('.btnCloseSelectionPanel', selectionCommandsPanel).on('click', hideSelections);
+            selectionCommandsPanel.querySelector('.btnCloseSelectionPanel').addEventListener('click', hideSelections);
 
             var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
 
-            $(btnSelectionPanelOptions).on('click', showMenuForSelectedItems);
+            btnSelectionPanelOptions.addEventListener('click', showMenuForSelectedItems);
 
             if (!browserInfo.mobile) {
                 shake(btnSelectionPanelOptions, 1);
@@ -1135,9 +1135,9 @@
                 ironIcon: 'sync'
             });
 
-            require(['actionsheet'], function () {
+            require(['actionsheet'], function (actionsheet) {
 
-                ActionSheetElement.show({
+                actionsheet.show({
                     items: items,
                     positionTo: e.target,
                     callback: function (id) {
