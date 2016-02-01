@@ -79,7 +79,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="CommonIO">
-      <HintPath>..\packages\CommonIO.1.0.0.5\lib\net45\CommonIO.dll</HintPath>
+      <HintPath>..\packages\CommonIO.1.0.0.7\lib\net45\CommonIO.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -505,6 +505,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\selectserver.html">
       <Link>Resources\dashboard-ui\selectserver.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\serversecurity.html">
+      <Link>Resources\dashboard-ui\serversecurity.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\shared.html">
       <Link>Resources\dashboard-ui\shared.html</Link>
@@ -1139,6 +1142,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\imagehelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\imagehelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fastclick\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\fastclick\.bower.json</Link>
     </BundleResource>
@@ -1300,6 +1312,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\errors.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\errors.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\event-handler.js">
+      <Link>Resources\dashboard-ui\bower_components\hls.js\src\event-handler.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\events.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\events.js</Link>
@@ -4640,9 +4655,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\humanedate.js">
       <Link>Resources\dashboard-ui\components\humanedate.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imagestore.js">
-      <Link>Resources\dashboard-ui\components\imagestore.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\paperdialoghelper.js">
       <Link>Resources\dashboard-ui\components\paperdialoghelper.js</Link>
     </BundleResource>
@@ -5531,6 +5543,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\selectserver.js">
       <Link>Resources\dashboard-ui\scripts\selectserver.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\serversecurity.js">
+      <Link>Resources\dashboard-ui\scripts\serversecurity.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\shared.js">
       <Link>Resources\dashboard-ui\scripts\shared.js</Link>
     </BundleResource>
@@ -5881,9 +5896,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\themes\holiday\theme.js">
       <Link>Resources\dashboard-ui\themes\holiday\theme.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquery.unveil-custom.js">
-      <Link>Resources\dashboard-ui\thirdparty\jquery.unveil-custom.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\paper-button-style.css">
       <Link>Resources\dashboard-ui\thirdparty\paper-button-style.css</Link>
