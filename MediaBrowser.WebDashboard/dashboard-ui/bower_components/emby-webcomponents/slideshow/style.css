@@ -107,3 +107,14 @@ paper-fab.btnSlideshowExit {
 .slideSubtitle {
     color: #ccc;
 }
+
+.swiper-slide paper-spinner {
+    width: 10vh;
+    height: 10vh;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -5vh;
+    margin-top: -5vh;
+    z-index: 1003;
+}
