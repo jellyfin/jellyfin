@@ -233,7 +233,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// The _triggers
         /// </summary>
-        private IEnumerable<ITaskTrigger> _triggers;
+        private volatile List<ITaskTrigger> _triggers;
         /// <summary>
         /// The _triggers sync lock
         /// </summary>
@@ -532,7 +532,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Loads the triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        private IEnumerable<ITaskTrigger> LoadTriggers()
+        private List<ITaskTrigger> LoadTriggers()
         {
             try
             {
@@ -543,12 +543,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             catch (FileNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
-                return ScheduledTask.GetDefaultTriggers();
+                return ScheduledTask.GetDefaultTriggers().ToList();
             }
             catch (DirectoryNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
-                return ScheduledTask.GetDefaultTriggers();
+                return ScheduledTask.GetDefaultTriggers().ToList();
             }
         }
 

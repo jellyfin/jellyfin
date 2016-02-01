@@ -13,7 +13,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         where T : class
     {
         private readonly object _fileDataLock = new object();
-        private List<T> _items;
+        private volatile List<T> _items;
         private readonly IJsonSerializer _jsonSerializer;
         protected readonly ILogger Logger;
         private readonly string _dataPath;
