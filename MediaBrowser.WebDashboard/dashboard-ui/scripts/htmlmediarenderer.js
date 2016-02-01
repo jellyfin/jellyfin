@@ -240,7 +240,6 @@
             var itemVideo = $('.itemVideo', elem)[0];
 
             itemVideo.addEventListener('loadedmetadata', onLoadedMetadata);
-            itemVideo.addEventListener('playing', onOneVideoPlaying);
 
             itemVideo.addEventListener('timeupdate', onTimeUpdate);
             itemVideo.addEventListener('ended', onEnded);
@@ -368,6 +367,9 @@
 
             }
             else {
+
+                elem.removeEventListener('playing', onOneVideoPlaying);
+                elem.addEventListener('playing', onOneVideoPlaying);
 
                 if (hlsPlayer) {
                     hlsPlayer.destroy();
