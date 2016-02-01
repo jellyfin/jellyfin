@@ -1320,7 +1320,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
+            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
 
             SetTopParentIdsOrAncestors(query, parents);
 
@@ -1329,7 +1329,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).ToList();
+            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
 
             SetTopParentIdsOrAncestors(query, parents);
 
