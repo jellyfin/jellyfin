@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The last activity date.</value>
         public DateTime? LastActivityDate { get; set; }
 
-        private UserConfiguration _config;
+        private volatile UserConfiguration _config;
         private readonly object _configSyncLock = new object();
         [IgnoreDataMember]
         public UserConfiguration Configuration
@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.Entities
             set { _config = value; }
         }
 
-        private UserPolicy _policy;
+        private volatile UserPolicy _policy;
         private readonly object _policySyncLock = new object();
         [IgnoreDataMember]
         public UserPolicy Policy
