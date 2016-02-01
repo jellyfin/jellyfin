@@ -174,5 +174,6 @@
     "HeaderWriter": "Writers",
     "HeaderParentalRatings": "Parental Ratings",
     "HeaderCommunityRatings": "Community ratings",
-    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly."
+    "StartupEmbyServerIsLoading": "Emby Server is loading. Please try again shortly.",
+    "DbUpgradeMessage":  "Please wait while your Emby Server database is upgraded. {0}% complete."
 }

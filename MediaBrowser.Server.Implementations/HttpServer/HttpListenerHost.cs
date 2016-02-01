@@ -268,11 +268,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private bool EnableLogging(string url)
         {
-            var parts = url.Split(new[] { '?' }, 2);
-
-            var extension = Path.GetExtension(parts[0]);
+            var extension = GetExtension(url);
 
             return string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension);
+        }
+
+        private string GetExtension(string url)
+        {
+            var parts = url.Split(new[] { '?' }, 2);
+
+            return Path.GetExtension(parts[0]);
         }
 
         /// <summary>
@@ -339,6 +344,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 httpRes.Write(GlobalResponse);
                 httpRes.ContentType = "text/plain";
+
+                if (!string.Equals(GetExtension(urlString), "html", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.StatusCode = 503;
+                }
+
                 return Task.FromResult(true);
             }
 
