@@ -365,10 +365,10 @@
 
             function onPlayingOnce() {
 
-                Events.off(this, "play", onPlayingOnce);
-                Events.on(this, 'ended', self.onPlaybackStopped);
+                Events.off(mediaRenderer, "play", onPlayingOnce);
+                Events.on(mediaRenderer, 'ended', self.onPlaybackStopped);
 
-                Events.on(this, 'ended', self.playNextAfterEnded);
+                Events.on(mediaRenderer, 'ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
