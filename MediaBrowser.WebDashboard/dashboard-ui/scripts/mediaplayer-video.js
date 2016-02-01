@@ -613,6 +613,7 @@
         self.onQualityOptionSelected = function (bitrate) {
 
             AppSettings.maxStreamingBitrate(bitrate);
+            AppSettings.enableAutomaticBitrateDetection(false);
 
             self.changeStream(self.getCurrentTicks(), {
                 Bitrate: bitrate
