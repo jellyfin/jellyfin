@@ -87,6 +87,9 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
                     initialSlide: options.startIndex || 0
                 });
 
+                swiperInstance.on('onLazyImageLoad', onSlideChangeStart);
+                swiperInstance.on('onLazyImageReady', onSlideChangeEnd);
+
                 if (browser.mobile) {
                     pause();
                 } else {
@@ -104,12 +107,22 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
             });
         }
 
+        function onSlideChangeStart(swiper, slide, image) {
+
+            slide.querySelector('paper-spinner').active = true;
+        }
+
+        function onSlideChangeEnd(swiper, slide, image) {
+
+            slide.querySelector('paper-spinner').active = false;
+        }
+
         function getSwiperSlideHtmlFromSlide(item) {
 
             var html = '';
             html += '<div class="swiper-slide">';
             html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy">';
-            //html += '<paper-spinner class="swiper-lazy-preloader"></paper-spinner>';
+            html += '<paper-spinner></paper-spinner>';
             if (item.title || item.subtitle) {
                 html += '<div class="slideText">';
                 html += '<div class="slideTextInner">';
@@ -184,6 +197,8 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
             var swiper = swiperInstance;
             if (swiper) {
+                swiper.off('onLazyImageLoad');
+                swiper.off('onLazyImageReady');
                 swiper.destroy(true, true);
                 swiperInstance = null;
             }
