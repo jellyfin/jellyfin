@@ -70,7 +70,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('first item gets focus when menu is focused', function(done) {
           var menu = fixture('basic');
-          menu.focus();
+          MockInteractions.focus(menu);
           setTimeout(function() {
             assert.equal(document.activeElement, menu.firstElementChild, 'document.activeElement is first item')
             done();
@@ -81,7 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('selected item gets focus when menu is focused', function(done) {
           var menu = fixture('basic');
           menu.selected = 1;
-          menu.focus();
+          MockInteractions.focus(menu);
           setTimeout(function() {
             assert.equal(document.activeElement, menu.selectedItem, 'document.activeElement is selected item');
             done();
