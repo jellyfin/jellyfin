@@ -223,7 +223,7 @@ namespace MediaBrowser.Providers.MediaInfo
             FetchEmbeddedInfo(video, mediaInfo, options);
             await FetchPeople(video, mediaInfo, options).ConfigureAwait(false);
 
-            video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
+            video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1260);
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 

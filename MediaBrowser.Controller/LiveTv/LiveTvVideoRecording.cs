@@ -36,7 +36,6 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsLive { get; set; }
         [IgnoreDataMember]
         public bool IsPremiere { get; set; }
-        public ProgramAudio? Audio { get; set; }
 
         /// <summary>
         /// Gets the user data key.
@@ -121,9 +120,9 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram);
+            return UnratedItem.LiveTvProgram;
         }
 
         protected override string GetInternalMetadataPath(string basePath)
@@ -154,6 +153,11 @@ namespace MediaBrowser.Controller.LiveTv
             }
 
             return list;
+        }
+
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisible(user);
         }
     }
 }

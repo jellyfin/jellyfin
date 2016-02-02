@@ -18,9 +18,9 @@ namespace MediaBrowser.Controller.Channels
 
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.ChannelContent);
+            return UnratedItem.ChannelContent;
         }
 
         protected override string CreateUserDataKey()

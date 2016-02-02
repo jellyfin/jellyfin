@@ -6,6 +6,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Channels
@@ -18,6 +19,11 @@ namespace MediaBrowser.Controller.Channels
         {
             // Don't block. 
             return false;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.ChannelContent;
         }
 
         [IgnoreDataMember]

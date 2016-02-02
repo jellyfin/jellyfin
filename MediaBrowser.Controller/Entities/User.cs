@@ -20,7 +20,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public static IUserManager UserManager { get; set; }
         public static IXmlSerializer XmlSerializer { get; set; }
-        public bool EnableUserViews { get; set; }
 
         /// <summary>
         /// From now on all user paths will be Id-based. 
@@ -55,6 +54,26 @@ namespace MediaBrowser.Controller.Entities
             set
             {
                 base.Path = value;
+            }
+        }
+
+        private string _name;
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public override string Name
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                _name = value;
+
+                // lazy load this again
+                SortName = null;
             }
         }
 

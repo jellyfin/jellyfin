@@ -206,6 +206,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Genres { get; set; }
 
+        public string GenreIds { get; set; }
+        
         [ApiMember(Name = "OfficialRatings", Description = "Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string OfficialRatings { get; set; }
 
@@ -383,6 +385,11 @@ namespace MediaBrowser.Api.UserLibrary
         public string[] GetStudioIds()
         {
             return (StudioIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetGenreIds()
+        {
+            return (GenreIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetPersonTypes()

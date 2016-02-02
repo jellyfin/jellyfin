@@ -255,7 +255,8 @@
                     showChildCountIndicator: true,
                     lazy: true,
                     context: 'home',
-                    centerText: true
+                    centerText: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
@@ -299,7 +300,8 @@
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
-                    context: 'home'
+                    context: 'home',
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
@@ -336,7 +338,8 @@
                     showTitle: true,
                     centerText: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
