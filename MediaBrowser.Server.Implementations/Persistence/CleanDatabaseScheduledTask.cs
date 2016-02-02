@@ -9,10 +9,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Localization;
+using MediaBrowser.Controller.Net;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -23,14 +27,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IHttpServer _httpServer;
+        private readonly ILocalizationManager _localization;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem)
+        public const int MigrationVersion = 12;
+        public static bool EnableUnavailableMessage = false;
+
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _logger = logger;
             _config = config;
             _fileSystem = fileSystem;
+            _httpServer = httpServer;
+            _localization = localization;
         }
 
         public string Name
@@ -51,7 +62,23 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report(.4 * p));
+            innerProgress.RegisterAction(p =>
+            {
+                double newPercentCommplete = .4 * p;
+                if (EnableUnavailableMessage)
+                {
+                    var html = "<!doctype html><html><head><title>Emby</title></head><body>";
+                    var text = _localization.GetLocalizedString("DbUpgradeMessage");
+                    html += string.Format(text, newPercentCommplete.ToString("N2", CultureInfo.InvariantCulture));
+
+                    html += "<script>setTimeout(function(){window.location.reload(true);}, 5000);</script>";
+                    html += "</body></html>";
+
+                    _httpServer.GlobalResponse = html;
+                }
+
+                progress.Report(newPercentCommplete);
+            });
 
             await UpdateToLatestSchema(cancellationToken, innerProgress).ConfigureAwait(false);
 
@@ -64,16 +91,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress.RegisterAction(p => progress.Report(45 + (.55 * p)));
             await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(100);
+
+            await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
+
+            if (EnableUnavailableMessage)
+            {
+                EnableUnavailableMessage = false;
+                _httpServer.GlobalResponse = null;
+            }
         }
 
         private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
-                IsCurrentSchema = false,
-
-                // These are constantly getting regenerated so don't bother with them here
-                ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
+                IsCurrentSchema = false
             });
 
             var numComplete = 0;
@@ -115,9 +147,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 progress.Report(percent * 100);
             }
 
-            if (!_config.Configuration.DisableStartupScan)
+            if (_config.Configuration.MigrationVersion < MigrationVersion)
             {
-                _config.Configuration.DisableStartupScan = true;
+                _config.Configuration.MigrationVersion = MigrationVersion;
                 _config.SaveConfiguration();
             }
 
@@ -165,12 +197,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var result = _itemRepo.GetItemIdsWithPath(new InternalItemsQuery
             {
-                IsOffline = false,
                 LocationType = LocationType.FileSystem,
                 //Limit = limit,
 
                 // These have their own cleanup routines
-                ExcludeItemTypes = new[] { typeof(Person).Name, typeof(Genre).Name, typeof(MusicGenre).Name, typeof(GameGenre).Name, typeof(Studio).Name, typeof(Year).Name }
+                ExcludeItemTypes = new[]
+                {
+                    typeof(Person).Name, 
+                    typeof(Genre).Name, 
+                    typeof(MusicGenre).Name, 
+                    typeof(GameGenre).Name, 
+                    typeof(Studio).Name, 
+                    typeof(Year).Name, 
+                    typeof(Channel).Name, 
+                    typeof(AggregateFolder).Name, 
+                    typeof(CollectionFolder).Name
+                }
             });
 
             var numComplete = 0;
@@ -190,6 +232,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     var libraryItem = _libraryManager.GetItemById(item.Item1);
+
+                    if (libraryItem.IsTopParent)
+                    {
+                        continue;
+                    }
 
                     if (Folder.IsPathOffline(path))
                     {

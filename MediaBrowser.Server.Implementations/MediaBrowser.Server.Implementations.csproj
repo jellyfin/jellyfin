@@ -48,9 +48,9 @@
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.5869.26812, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Naming, Version=1.0.5875.38706, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.44\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.45\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
@@ -231,6 +231,8 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />

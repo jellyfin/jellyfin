@@ -80,15 +80,13 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var genreList = genres.ToList();
 
-            var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+            var inputItems = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Audio).Name },
 
-                Genres = genreList.ToArray(),
+                Genres = genreList.ToArray()
 
-                User = user
-
-            }).Items;
+            }, new string[] { });
 
             var genresDictionary = genreList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 

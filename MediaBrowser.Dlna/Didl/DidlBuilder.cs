@@ -966,7 +966,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            item = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+            item = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
             if (item != null)
             {

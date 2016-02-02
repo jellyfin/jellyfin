@@ -9,12 +9,10 @@ namespace MediaBrowser.Controller.Entities
 {
     public class Photo : BaseItem, IHasTags, IHasTaglines
     {
-        public List<string> Tags { get; set; }
         public List<string> Taglines { get; set; }
 
         public Photo()
         {
-            Tags = new List<string>();
             Taglines = new List<string>();
         }
 
@@ -51,7 +49,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return Parents.OfType<PhotoAlbum>().FirstOrDefault();
+                return GetParents().OfType<PhotoAlbum>().FirstOrDefault();
             }
         }
 
@@ -70,10 +68,5 @@ namespace MediaBrowser.Controller.Entities
         public double? Longitude { get; set; }
         public double? Altitude { get; set; }
         public int? IsoSpeedRating { get; set; }
-
-        protected override bool GetBlockUnratedValue(UserPolicy config)
-        {
-            return config.BlockUnratedItems.Contains(UnratedItem.Other);
-        }
     }
 }

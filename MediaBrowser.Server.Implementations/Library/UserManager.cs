@@ -704,8 +704,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 Id = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
-                UsesIdForConfigurationPath = true,
-                EnableUserViews = true
+                UsesIdForConfigurationPath = true
             };
         }
 

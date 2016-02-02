@@ -96,6 +96,11 @@ namespace MediaBrowser.Server.Implementations.Channels
                 .OrderBy(i => i.Name);
         }
 
+        public IEnumerable<Guid> GetInstalledChannelIds()
+        {
+            return GetAllChannels().Select(i => GetInternalChannelId(i.Name));
+        }
+
         public Task<QueryResult<Channel>> GetChannelsInternal(ChannelQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrWhiteSpace(query.UserId)
@@ -402,25 +407,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         private async Task<Channel> GetChannel(IChannel channelInfo, CancellationToken cancellationToken)
         {
+            var parentFolder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
+            var parentFolderId = parentFolder.Id;
+
             var id = GetInternalChannelId(channelInfo.Name);
 
             var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
             var isNew = false;
-
-            if (!_fileSystem.DirectoryExists(path))
-            {
-                _logger.Debug("Creating directory {0}", path);
-
-                _fileSystem.CreateDirectory(path);
-
-                if (!_fileSystem.DirectoryExists(path))
-                {
-                    throw new IOException("Path not created: " + path);
-                }
-
-                isNew = true;
-            }
+            var forceUpdate = false;
 
             var item = _libraryManager.GetItemById(id) as Channel;
             var channelId = channelInfo.Name.GetMD5().ToString("N");
@@ -432,18 +427,29 @@ namespace MediaBrowser.Server.Implementations.Channels
                     Name = channelInfo.Name,
                     Id = id,
                     DateCreated = _fileSystem.GetCreationTimeUtc(path),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(path),
-                    Path = path,
-                    ChannelId = channelId
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(path)
                 };
 
                 isNew = true;
             }
 
-            if (!string.Equals(item.ChannelId, channelId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 isNew = true;
             }
+            item.Path = path;
+
+            if (!string.Equals(item.ChannelId, channelId, StringComparison.OrdinalIgnoreCase))
+            {
+                forceUpdate = true;
+            }
+            item.ChannelId = channelId;
+
+            if (item.ParentId != parentFolderId)
+            {
+                forceUpdate = true;
+            }
+            item.ParentId = parentFolderId;
 
             item.OfficialRating = GetOfficialRating(channelInfo.ParentalRating);
             item.Overview = channelInfo.Description;
@@ -453,13 +459,17 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 item.Name = channelInfo.Name;
             }
-            
-            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+
+            if (isNew)
             {
-                ForceSave = isNew
+                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+            }
+            else if (forceUpdate)
+            {
+                await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+            }
 
-            }, cancellationToken);
-
+            await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem), cancellationToken);
             return item;
         }
 
@@ -1219,6 +1229,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             BaseItem item;
             bool isNew;
+            bool forceUpdate = false;
 
             if (info.Type == ChannelItemType.Folder)
             {
@@ -1248,24 +1259,25 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
                 item.OfficialRating = info.OfficialRating;
-
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
+                item.Tags = info.Tags;
             }
 
             var channelItem = (IChannelItem)item;
 
             channelItem.ChannelId = internalChannelId.ToString("N");
 
+            if (item.ParentId != internalChannelId)
+            {
+                forceUpdate = true;
+            }
+            item.ParentId = internalChannelId;
+
             if (!string.Equals(channelItem.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
             {
-                isNew = true;
+                forceUpdate = true;
             }
             channelItem.ExternalId = info.Id;
-
-            if (isNew)
-            {
-                channelItem.Tags = info.Tags;
-            }
 
             var channelMediaItem = item as IChannelMediaItem;
 
@@ -1293,6 +1305,10 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
                 }
+            }
+            else if (forceUpdate)
+            {
+                await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
 
             return item;

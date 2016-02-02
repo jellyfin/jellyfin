@@ -560,6 +560,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             item.ExternalId = channelInfo.Id;
 
+            if (!item.ParentId.Equals(parentFolderId))
+            {
+                isNew = true;
+            }
+            item.ParentId = parentFolderId;
+
             item.ChannelType = channelInfo.ChannelType;
             item.ServiceName = serviceName;
             item.Number = channelInfo.Number;
@@ -621,6 +627,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     ExternalEtag = info.Etag
                 };
             }
+
+            if (!item.ParentId.Equals(channel.Id))
+            {
+                forceUpdate = true;
+            }
+            item.ParentId = channel.Id;
 
             //item.ChannelType = channelType;
             if (!string.Equals(item.ServiceName, serviceName, StringComparison.Ordinal))
@@ -774,6 +786,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             recording.IsSeries = info.IsSeries;
 
+            if (!item.ParentId.Equals(parentFolderId))
+            {
+                dataChanged = true;
+            }
+            item.ParentId = parentFolderId;
+
             if (!item.HasImage(ImageType.Primary))
             {
                 if (!string.IsNullOrWhiteSpace(info.ImagePath))
@@ -851,7 +869,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
-            var internalQuery = new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 MinEndDate = query.MinEndDate,
@@ -868,16 +886,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortBy = query.SortBy,
                 SortOrder = query.SortOrder ?? SortOrder.Ascending
             };
-
-            if (user != null)
-            {
-                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
-
-                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
-                {
-                    internalQuery.HasParentalRating = true;
-                }
-            }
 
             if (query.HasAired.HasValue)
             {
@@ -913,7 +921,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = _userManager.GetUserById(query.UserId);
 
-            var internalQuery = new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 IsAiring = query.IsAiring,
@@ -921,16 +929,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids
             };
-
-            if (user != null)
-            {
-                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
-
-                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
-                {
-                    internalQuery.HasParentalRating = true;
-                }
-            }
 
             if (query.HasAired.HasValue)
             {
@@ -1399,7 +1397,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
 
-            var internalQuery = new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvVideoRecording).Name, typeof(LiveTvAudioRecording).Name }
             };
@@ -1409,8 +1407,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery);
-            IEnumerable<ILiveTvRecording> recordings = queryResult.Items.Cast<ILiveTvRecording>();
+            var queryResult = _libraryManager.GetItems(internalQuery, new string[] { });
+            IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrEmpty(query.Id))
             {
@@ -1516,6 +1514,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 if (channel != null)
                 {
                     dto.ChannelName = channel.Name;
+                    dto.MediaType = channel.MediaType;
 
                     if (channel.HasImage(ImageType.Primary))
                     {
@@ -1812,7 +1811,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { id },
@@ -1821,7 +1820,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = 1,
                 SortBy = new[] { "StartDate" }
 
-            }).Items.Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 
@@ -1836,7 +1835,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { channel.Id.ToString("N") },
@@ -1845,7 +1844,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = 1,
                 SortBy = new[] { "StartDate" }
 
-            }).Items.Cast<LiveTvProgram>();
+            }, new string[] { }).Cast<LiveTvProgram>();
 
             var currentProgram = programs.FirstOrDefault();
 

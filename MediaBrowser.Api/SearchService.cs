@@ -284,7 +284,7 @@ namespace MediaBrowser.Api
         private T GetParentWithImage<T>(BaseItem item, ImageType type)
             where T : BaseItem
         {
-            return item.Parents.OfType<T>().FirstOrDefault(i => i.HasImage(type));
+            return item.GetParents().OfType<T>().FirstOrDefault(i => i.HasImage(type));
         }
     }
 }
