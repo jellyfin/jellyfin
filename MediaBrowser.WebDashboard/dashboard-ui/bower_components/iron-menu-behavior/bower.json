@@ -1,6 +1,6 @@
 {
   "name": "iron-menu-behavior",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Provides accessible menu behavior",
   "authors": "The Polymer Authors",
   "keywords": [
@@ -23,7 +23,7 @@
   "ignore": [],
   "dependencies": {
     "iron-selector": "PolymerElements/iron-selector#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0",
+    "polymer": "Polymer/polymer#^1.2.4",
     "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0"
   },
   "devDependencies": {
@@ -31,7 +31,7 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }
