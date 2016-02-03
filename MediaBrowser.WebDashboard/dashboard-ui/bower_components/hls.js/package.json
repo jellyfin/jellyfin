@@ -1,6 +1,7 @@
 {
   "name": "hls.js",
-  "version": "0.4.8",
+  "version": "0.4.9",
+  "license" : "Apache-2.0",
   "description": "Media Source Extension - HLS library, by/for Dailymotion",
   "homepage": "https://github.com/dailymotion/hls.js",
   "authors": "Guillaume du Pontavice <guillaume.dupontavice@dailymotion.com>",
@@ -12,7 +13,7 @@
     "url": "https://github.com/dailymotion/hls.js/issues"
   },
   "main": "src/hls.js",
-  "private": true,
+  "private": false,
   "scripts": {
     "clean": "find dist -mindepth 1 -delete",
     "prebuild": "npm run clean & npm run test",

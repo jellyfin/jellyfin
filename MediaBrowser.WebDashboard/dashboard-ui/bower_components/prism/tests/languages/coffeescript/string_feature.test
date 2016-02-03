@@ -1,0 +1,52 @@
+''
+'foo'
+'foo\
+bar'
+""
+"foo"
+"foo\
+bar"
+"foo #{interpolation} bar"
+''''''
+'''foo'''
+'''foo
+bar'''
+
+""""""
+"""foo"""
+"""foo
+bar"""
+"""foo #{interpolation} bar"""
+
+----------------------------------------------------
+
+[
+	["string", "''"],
+	["string", "'foo'"],
+	["string", "'foo\\\r\nbar'"],
+	["string", ["\"\""]],
+	["string", ["\"foo\""]],
+	["string", ["\"foo\\\r\nbar\""]],
+	["string", [
+		"\"foo ",
+		["interpolation", "#{interpolation}"],
+		" bar\""
+	]],
+
+	["multiline-string", "''''''"],
+	["multiline-string", "'''foo'''"],
+	["multiline-string", "'''foo\r\nbar'''"],
+	["multiline-string", ["\"\"\"\"\"\""]],
+	["multiline-string", ["\"\"\"foo\"\"\""]],
+	["multiline-string", ["\"\"\"foo\r\nbar\"\"\""]],
+	["multiline-string", [
+		"\"\"\"foo ",
+		["interpolation", "#{interpolation}"],
+		" bar\"\"\""
+	]]
+]
+
+----------------------------------------------------
+
+Checks for single-line and multi-line strings and block strings.
+Also checks for string interpolation inside double-quoted strings.
