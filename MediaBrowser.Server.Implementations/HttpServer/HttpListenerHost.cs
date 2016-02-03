@@ -266,11 +266,19 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {".html", 0}
         };
 
-        private bool EnableLogging(string url)
+        private bool EnableLogging(string url, string localPath)
         {
             var extension = GetExtension(url);
 
-            return string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension);
+            if (string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension))
+            {
+                if (string.IsNullOrWhiteSpace(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private string GetExtension(string url)
@@ -296,7 +304,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var localPath = url.LocalPath;
 
             var urlString = url.OriginalString;
-            var enableLog = EnableLogging(urlString);
+            var enableLog = EnableLogging(urlString, localPath);
 
             if (enableLog)
             {
