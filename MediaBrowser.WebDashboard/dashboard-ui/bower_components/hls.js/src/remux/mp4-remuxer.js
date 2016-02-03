@@ -253,7 +253,8 @@ class MP4Remuxer {
     var view,
         offset = 8,
         pesTimeScale = this.PES_TIMESCALE,
-        pes2mp4ScaleFactor = this.PES2MP4SCALEFACTOR,
+        mp4timeScale = track.timescale,
+        pes2mp4ScaleFactor = pesTimeScale/mp4timeScale,
         aacSample, mp4Sample,
         unit,
         mdat, moof,
@@ -262,15 +263,10 @@ class MP4Remuxer {
         samples = [],
         samples0 = [];
 
-    track.samples.forEach(aacSample => {
-      if(pts === undefined || aacSample.pts > pts) {
-        samples0.push(aacSample);
-        pts = aacSample.pts;
-      } else {
-        logger.warn('dropping past audio frame');
-        track.len -= aacSample.unit.byteLength;
-      }
+    track.samples.sort(function(a, b) {
+      return (a.pts-b.pts);
     });
+    samples0 = track.samples;
 
     while (samples0.length) {
       aacSample = samples0.shift();
@@ -282,13 +278,15 @@ class MP4Remuxer {
       if (lastDTS !== undefined) {
         ptsnorm = this._PTSNormalize(pts, lastDTS);
         dtsnorm = this._PTSNormalize(dts, lastDTS);
-        // let's compute sample duration
+        // let's compute sample duration.
+        // there should be 1024 audio samples in one AAC frame
         mp4Sample.duration = (dtsnorm - lastDTS) / pes2mp4ScaleFactor;
-        if (mp4Sample.duration < 0) {
+        if(Math.abs(mp4Sample.duration - 1024) > 10) {
           // not expected to happen ...
-          logger.log(`invalid AAC sample duration at PTS:${aacSample.pts}:${mp4Sample.duration}`);
-          mp4Sample.duration = 0;
+          logger.log(`invalid AAC sample duration at PTS ${Math.round(pts/90)},should be 1024,found :${Math.round(mp4Sample.duration)}`);
         }
+        mp4Sample.duration = 1024;
+        dtsnorm = 1024 * pes2mp4ScaleFactor + lastDTS;
       } else {
         var nextAacPts = this.nextAacPts,delta;
         ptsnorm = this._PTSNormalize(pts, nextAacPts);

@@ -71,6 +71,6 @@
 
 	};
 
-	self.Prism.fileHighlight();
+	document.addEventListener('DOMContentLoaded', self.Prism.fileHighlight);
 
 })();
