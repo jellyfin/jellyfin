@@ -453,7 +453,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, Logger, FileSystemManager);
+			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LogManager.GetLogger("TaskManager"), FileSystemManager);
 
 			RegisterSingleInstance(JsonSerializer);
 			RegisterSingleInstance(XmlSerializer);
@@ -465,7 +465,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance(FileSystemManager);
 
-			HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, Logger, FileSystemManager);
+            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager);
 			RegisterSingleInstance(HttpClient);
 
 			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
@@ -474,7 +474,7 @@ namespace MediaBrowser.Common.Implementations
 			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager);
 			RegisterSingleInstance(SecurityManager);
 
-			InstallationManager = new InstallationManager(Logger, this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
 			RegisterSingleInstance(InstallationManager);
 
 			ZipClient = new ZipClient(FileSystemManager);
