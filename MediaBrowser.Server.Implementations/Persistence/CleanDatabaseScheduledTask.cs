@@ -64,6 +64,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
+            OnProgress(0);
+
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
@@ -146,6 +148,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (itemId != Guid.Empty)
                 {
+                    LogMessage(string.Format("Querying item {0}", itemId));
+
                     // Somehow some invalid data got into the db. It probably predates the boundary checking
                     var item = _libraryManager.GetItemById(itemId);
 
@@ -153,6 +157,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         try
                         {
+                            LogMessage(string.Format("Saving item {0}", itemId));
+
                             await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
@@ -173,6 +179,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             progress.Report(100);
+        }
+
+        private void LogMessage(string msg)
+        {
+            if (EnableUnavailableMessage)
+            {
+                _logger.Info(msg);
+            }
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
