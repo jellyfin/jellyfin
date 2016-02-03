@@ -1,0 +1,219 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="marked-import.html">
+
+<!--
+Element wrapper for the [marked](https://github.com/chjj/marked) library.
+
+`<marked-element>` accepts Markdown source, and renders it to a child
+element with the class `markdown-html`. This child element can be styled
+as you would a normal DOM element. If you do not provide a child element
+with the `markdown-html` class, the Markdown source will still be rendered,
+but to a shadow DOM child that cannot be styled.
+
+The Markdown source can be specified either via the `markdown` attribute:
+
+    <marked-element markdown="`Markdown` is _awesome_!">
+      <div class="markdown-html"></div>
+    </marked-element>
+
+Or, you can provide it via a `<script type="text/markdown">` element child:
+
+    <marked-element>
+      <div class="markdown-html"></div>
+      <script type="text/markdown">
+        Check out my markdown!
+
+        We can even embed elements without fear of the HTML parser mucking up their
+        textual representation:
+
+        ```html
+        <awesome-sauce>
+          <div>Oops, I'm about to forget to close this div.
+        </awesome-sauce>
+        ```
+      </script>
+    </marked-element>
+
+Note that the `<script type="text/markdown">` approach is _static_. Changes to
+the script content will _not_ update the rendered markdown!
+
+### Styling
+If you are using a child with the `markdown-html` class, you can style it
+as you would a regular DOM element:
+
+    .markdown-html p {
+      color: red;
+    }
+
+    .markdown-html td:first-child {
+      padding-left: 24px;
+    }
+
+@element marked-element
+@group Molecules
+@hero hero.svg
+@demo demo/index.html
+-->
+<dom-module id="marked-element">
+  <template>
+    <style>
+      /* Thanks IE 10. */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+    <content select=".markdown-html"></content>
+    <div id="content" class="hidden"></div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  'use strict';
+
+  Polymer({
+
+    is: 'marked-element',
+
+    properties: {
+
+      /**
+       * The markdown source that should be rendered by this element.
+       */
+      markdown: {
+        observer: 'render',
+        type: String,
+        value: null
+      },
+      /**
+       * Conform to obscure parts of markdown.pl as much as possible. Don't fix any of the original markdown bugs or poor behavior.
+       */
+      pedantic: {
+        observer: 'render',
+        type: Boolean,
+        value: false
+      },
+      /**
+       * Sanitize the output. Ignore any HTML that has been input.
+       */
+      sanitize: {
+        observer: 'render',
+        type: Boolean,
+        value: false
+      },
+      /**
+       * Use "smart" typographic punctuation for things like quotes and dashes.
+       */
+      smartypants: {
+        observer: 'render',
+        type: Boolean,
+        value: false
+      }
+    },
+
+    ready: function() {
+      if (!this.markdown) {
+        // Use the Markdown from the first `<script>` descendant whose MIME type starts with
+        // "text/markdown". Script elements beyond the first are ignored.
+        var markdownElement = Polymer.dom(this).querySelector('[type^="text/markdown"]');
+        if (markdownElement != null) {
+          this.markdown = this._unindent(markdownElement.textContent);
+        }
+      }
+    },
+
+    /**
+     * Renders `markdown` to HTML when the element is attached.
+     *
+     * This serves a dual purpose:
+     *
+     *  * Prevents unnecessary work (no need to render when not visible).
+     *
+     *  * `attached` fires top-down, so we can give ancestors a chance to
+     *    register listeners for the `syntax-highlight` event _before_ we render
+     *    any markdown.
+     *
+     */
+    attached: function() {
+      this._attached = true;
+      this._outputElement = this.outputElement;
+      this.render();
+    },
+
+    detached: function() {
+      this._attached = false;
+    },
+
+    /**
+     * Unindents the markdown source that will be rendered.
+     */
+    unindent: function(text) {
+      this._unindent(text);
+    },
+
+    get outputElement () {
+      var child = Polymer.dom(this).queryDistributedElements('.markdown-html')[0];
+
+      if (child)
+        return child;
+
+      this.toggleClass('hidden', false, this.$.content);
+      return this.$.content;
+    },
+
+    /**
+     * Renders `markdown` into this element's DOM.
+     *
+     * This is automatically called whenever the `markdown` property is changed.
+     *
+     * The only case where you should be calling this is if you are providing
+     * markdown via `<script type="text/markdown">` after this element has been
+     * constructed (or updating that markdown).
+     */
+    render: function() {
+      if (!this._attached) return;
+      if (!this.markdown) {
+        Polymer.dom(this._outputElement).innerHTML = '';
+        return;
+      }
+      var opts = {
+        highlight: this._highlight.bind(this),
+        sanitize: this.sanitize,
+        pedantic: this.pedantic,
+        smartypants: this.smartypants
+      };
+      Polymer.dom(this._outputElement).innerHTML = marked(this.markdown, opts);
+    },
+
+    _highlight: function(code, lang) {
+      var event = this.fire('syntax-highlight', {code: code, lang: lang});
+      return event.detail.code || code;
+    },
+
+    _unindent: function(text) {
+      if (!text) return text;
+      var lines  = text.replace(/\t/g, '  ').split('\n');
+      var indent = lines.reduce(function(prev, line) {
+        if (/^\s*$/.test(line)) return prev;  // Completely ignore blank lines.
+
+        var lineIndent = line.match(/^(\s*)/)[0].length;
+        if (prev === null) return lineIndent;
+        return lineIndent < prev ? lineIndent : prev;
+      }, null);
+
+      return lines.map(function(l) { return l.substr(indent); }).join('\n');
+    },
+
+  });
+
+</script>

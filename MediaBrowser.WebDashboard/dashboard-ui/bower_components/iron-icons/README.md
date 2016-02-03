@@ -19,7 +19,7 @@ _[Demo and API Docs](https://elements.polymer-project.org/elements/iron-icons)_
 
 ##&lt;iron-icons&gt;
 
-`iron-icons` is a utitliy import that includes the definition for the `iron-icon` element, `iron-iconset-svg` element, as well as an import for the default icon set.
+`iron-icons` is a utility import that includes the definition for the `iron-icon` element, `iron-iconset-svg` element, as well as an import for the default icon set.
 
 The `iron-icons` directory also includes imports for additional icon sets that can be loaded into your project.
 

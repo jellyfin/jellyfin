@@ -1,0 +1,1 @@
+!function(){if(("undefined"==typeof self||self.Prism)&&("undefined"==typeof global||global.Prism))for(var f in Prism.languages){var n=Prism.languages[f];n.tab=/\t/g,n.crlf=/\r\n/g,n.lf=/\n/g,n.cr=/\r/g}}();
