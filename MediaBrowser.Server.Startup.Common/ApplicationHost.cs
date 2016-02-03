@@ -328,6 +328,8 @@ namespace MediaBrowser.Server.Startup.Common
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
 
+            PerformPostInitMigrations();
+
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
             {
                 try
@@ -341,8 +343,6 @@ namespace MediaBrowser.Server.Startup.Common
             });
 
             LogManager.RemoveConsoleOutput();
-
-            PerformPostInitMigrations();
         }
 
         public override Task Init(IProgress<double> progress)

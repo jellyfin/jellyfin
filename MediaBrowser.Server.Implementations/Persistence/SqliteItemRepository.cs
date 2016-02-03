@@ -583,16 +583,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             CheckDisposed();
 
+            _logger.Info("SaveItems waiting on write lock");
+
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
             try
             {
+                _logger.Info("SaveItems creating transaction");
+                
                 transaction = _connection.BeginTransaction();
 
                 foreach (var item in items)
                 {
+                    _logger.Info("Saving {0}", item.Id);
+                    
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var index = 0;
