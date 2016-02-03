@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILocalizationManager _localization;
         private readonly ITaskManager _taskManager;
 
-        public const int MigrationVersion = 12;
+        public const int MigrationVersion = 17;
         public static bool EnableUnavailableMessage = false;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
@@ -97,12 +97,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
 
+            if (_config.Configuration.MigrationVersion < MigrationVersion)
+            {
+                _config.Configuration.MigrationVersion = MigrationVersion;
+                _config.SaveConfiguration();
+            }
+
             if (EnableUnavailableMessage)
             {
                 EnableUnavailableMessage = false;
                 _httpServer.GlobalResponse = null;
                 _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
             }
+
+            _taskManager.SuspendTriggers = false;
         }
 
         private void OnProgress(double newPercentCommplete)
@@ -162,12 +170,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 double percent = numComplete;
                 percent /= numItems;
                 progress.Report(percent * 100);
-            }
-
-            if (_config.Configuration.MigrationVersion < MigrationVersion)
-            {
-                _config.Configuration.MigrationVersion = MigrationVersion;
-                _config.SaveConfiguration();
             }
 
             progress.Report(100);
