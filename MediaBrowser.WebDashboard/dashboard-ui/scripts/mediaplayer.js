@@ -1571,56 +1571,6 @@
             }
         }
 
-        function canPlayH264() {
-            var v = document.createElement('video');
-            return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
-        }
-
-        var supportedFormats;
-        function getSupportedFormats() {
-
-            if (supportedFormats) {
-                return supportedFormats;
-            }
-
-            var list = [];
-            var elem = document.createElement('video');
-
-            if (elem.canPlayType('video/webm').replace(/no/, '')) {
-                list.push('webm');
-            }
-            if (elem.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '')) {
-                list.push('ac3');
-            }
-
-            if (canPlayH264()) {
-                list.push('h264');
-            }
-
-            // Firefox always reports that it doesn't support aac, so assume that it does
-            if (document.createElement('audio').canPlayType('audio/aac').replace(/no/, '') || browserInfo.firefox) {
-                list.push('aac');
-            }
-            if (document.createElement('audio').canPlayType('audio/mp3').replace(/no/, '')) {
-                list.push('mp3');
-            }
-
-            if (document.createElement('audio').canPlayType('audio/ogg; codecs="opus"').replace(/no/, '')) {
-                list.push('opus');
-            }
-
-            if (document.createElement('audio').canPlayType('audio/webm').replace(/no/, '')) {
-                list.push('webma');
-            }
-
-            if (browserInfo.chrome) {
-                list.push('mkv');
-            }
-
-            supportedFormats = list;
-            return list;
-        }
-
         self.canAutoPlayAudio = function () {
 
             if (AppInfo.isNativeApp) {
