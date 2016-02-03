@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 
                 Task.Run(async () =>
                 {
-                    await Task.Delay(1000).ConfigureAwait(false);
+                    await Task.Delay(100).ConfigureAwait(false);
 
                     _taskManager.Execute<CleanDatabaseScheduledTask>();
                 });
