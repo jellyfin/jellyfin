@@ -65,17 +65,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress.RegisterAction(p =>
             {
                 double newPercentCommplete = .4 * p;
-                if (EnableUnavailableMessage)
-                {
-                    var html = "<!doctype html><html><head><title>Emby</title></head><body>";
-                    var text = _localization.GetLocalizedString("DbUpgradeMessage");
-                    html += string.Format(text, newPercentCommplete.ToString("N2", CultureInfo.InvariantCulture));
-
-                    html += "<script>setTimeout(function(){window.location.reload(true);}, 5000);</script>";
-                    html += "</body></html>";
-
-                    _httpServer.GlobalResponse = html;
-                }
+                OnProgress(newPercentCommplete);
 
                 progress.Report(newPercentCommplete);
             });
@@ -83,12 +73,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
             await UpdateToLatestSchema(cancellationToken, innerProgress).ConfigureAwait(false);
 
             innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report(40 + (.05 * p)));
+            innerProgress.RegisterAction(p =>
+            {
+                double newPercentCommplete = 40 + (.05 * p);
+                OnProgress(newPercentCommplete);
+                progress.Report(newPercentCommplete);
+            });
             await CleanDeadItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(45);
 
             innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report(45 + (.55 * p)));
+            innerProgress.RegisterAction(p =>
+            {
+                double newPercentCommplete = 45 + (.55 * p);
+                OnProgress(newPercentCommplete);
+                progress.Report(newPercentCommplete);
+            });
             await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(100);
 
@@ -98,6 +98,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 EnableUnavailableMessage = false;
                 _httpServer.GlobalResponse = null;
+            }
+        }
+
+        private void OnProgress(double newPercentCommplete)
+        {
+            if (EnableUnavailableMessage)
+            {
+                var html = "<!doctype html><html><head><title>Emby</title></head><body>";
+                var text = _localization.GetLocalizedString("DbUpgradeMessage");
+                html += string.Format(text, newPercentCommplete.ToString("N2", CultureInfo.InvariantCulture));
+
+                html += "<script>setTimeout(function(){window.location.reload(true);}, 5000);</script>";
+                html += "</body></html>";
+
+                _httpServer.GlobalResponse = html;
             }
         }
 
@@ -117,27 +132,25 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (itemId == Guid.Empty)
+                if (itemId != Guid.Empty)
                 {
                     // Somehow some invalid data got into the db. It probably predates the boundary checking
-                    continue;
-                }
+                    var item = _libraryManager.GetItemById(itemId);
 
-                var item = _libraryManager.GetItemById(itemId);
-
-                if (item != null)
-                {
-                    try
+                    if (item != null)
                     {
-                        await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error saving item", ex);
+                        try
+                        {
+                            await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error saving item", ex);
+                        }
                     }
                 }
 
