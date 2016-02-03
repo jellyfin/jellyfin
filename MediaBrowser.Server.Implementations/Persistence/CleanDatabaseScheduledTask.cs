@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Server.Implementations.ScheduledTasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -29,11 +30,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IFileSystem _fileSystem;
         private readonly IHttpServer _httpServer;
         private readonly ILocalizationManager _localization;
+        private readonly ITaskManager _taskManager;
 
         public const int MigrationVersion = 12;
         public static bool EnableUnavailableMessage = false;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
         {
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
@@ -42,6 +44,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _fileSystem = fileSystem;
             _httpServer = httpServer;
             _localization = localization;
+            _taskManager = taskManager;
         }
 
         public string Name
@@ -98,6 +101,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 EnableUnavailableMessage = false;
                 _httpServer.GlobalResponse = null;
+                _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
             }
         }
 
