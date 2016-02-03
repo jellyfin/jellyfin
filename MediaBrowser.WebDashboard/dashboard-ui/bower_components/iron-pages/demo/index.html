@@ -12,71 +12,63 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
 
-  <title>iron-pages</title>
+  <title>iron-pages demo</title>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
   <link rel="import" href="../../paper-styles/color.html">
-  <link rel="import" href="../../paper-styles/typography.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../iron-pages.html">
 
-  <style is="custom-style">
-    body {
-      @apply(--layout-fullbleed);
-    }
-
-    iron-pages {
-      @apply(--layout-fit);
-
-      color: white;
-      margin: auto;
-      cursor: default;
-    }
-
-    iron-pages div {
-      @apply(--layout);
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-      @apply(--paper-font-display1);
-
-      width: 100%;
-      height: 100%;
-      font-size: 50px;
-    }
-
-    iron-pages div:nth-child(1) {
-      background-color: var(--google-blue-500);
-    }
-
-    iron-pages div:nth-child(2) {
-      background-color: var(--google-red-500);
-    }
-
-    iron-pages div:nth-child(3) {
-      background-color: var(--google-green-500);
-    }
-
-  </style>
+  <style is="custom-style" include="demo-pages-shared-styles"></style>
 </head>
 <body unresolved>
-
-  <iron-pages selected="0">
-    <div>Page One</div>
-    <div>Page Two</div>
-    <div>Page Three</div>
-  </iron-pages>
-
-  <script>
-
-    document.addEventListener('click', function(e) {
-      var pages = document.querySelector('iron-pages');
-      pages.selectNext();
-    });
-
-  </script>
-
+  <div class="vertical-section-container centered">
+    <h3>iron-pages shows only one of its children at a time.</h3>
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          iron-pages {
+            width: 100%;
+            height: 200px;
+            font-size: 50px;
+            color: white;
+            text-align: center;
+          }
+          iron-pages div {
+            width: 100%;
+            height: 100%;
+            padding: 80px 0;
+          }
+          iron-pages div:nth-child(1) {
+            background-color: var(--google-blue-500);
+          }
+          iron-pages div:nth-child(2) {
+            background-color: var(--google-red-500);
+          }
+          iron-pages div:nth-child(3) {
+            background-color: var(--google-green-500);
+          }
+        </style>
+        <p>Click on a page to advance to the next one.</p>
+        <iron-pages selected="0">
+          <div>One</div>
+          <div>Two</div>
+          <div>Three</div>
+        </iron-pages>
+        <script>
+          document.addEventListener('click', function(e) {
+            var pages = document.querySelector('iron-pages');
+            pages.selectNext();
+          });
+        </script>
+      </template>
+    </demo-snippet>
+  </div>
 </body>
 </html>

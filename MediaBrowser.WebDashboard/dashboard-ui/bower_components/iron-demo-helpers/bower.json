@@ -1,0 +1,38 @@
+{
+  "name": "iron-demo-helpers",
+  "version": "1.0.3",
+  "description": "Utility classes to make building demo pages easier",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "demo"
+  ],
+  "main": "demo-snippet.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-demo-helpers.git"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/iron-demo-helpers",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "marked-element": "polymerelements/marked-element#^1.0.0",
+    "prism-element": "PolymerElements/prism-element#^1.0.0"
+  },
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.1.2",
+    "paper-styles": "PolymerElements/paper-styles#1.0.0",
+    "paper-checkbox": "PolymerElements/paper-checkbox#^1.0.0"
+  }
+}

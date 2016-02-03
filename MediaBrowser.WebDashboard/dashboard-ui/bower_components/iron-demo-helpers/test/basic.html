@@ -1,0 +1,141 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>demo-snippet tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../demo-snippet.html">
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+
+</head>
+<body>
+
+  <test-fixture id="empty-demo">
+    <template>
+      <demo-snippet></demo-snippet>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="native-demo">
+    <template>
+      <demo-snippet>
+        <template>
+          <input disabled>
+        </template>
+      </demo-snippet>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="custom-demo">
+    <template>
+      <demo-snippet>
+        <template>
+          <paper-checkbox disabled></paper-checkbox>
+        </template>
+      </demo-snippet>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="demo-with-attributes">
+    <template>
+      <demo-snippet>
+        <template>
+          <input disabled type="date">
+        </template>
+      </demo-snippet>
+    </template>
+  </test-fixture>
+
+
+  <script>
+    // TODO(notwaldorf): Tests are currently very unhappy in IE
+    function isNotIE() {
+      return !navigator.userAgent.match(/MSIE/i);
+    }
+
+    suite('display', function() {
+      var emptyHeight;
+
+      setup(function() {
+        var emptyDemo = fixture('empty-demo');
+        emptyHeight = emptyDemo.getBoundingClientRect().height;
+      });
+
+      test('can render native elements', skipUnless(isNotIE, function() {
+        var element = fixture('native-demo');
+
+        // Render the distributed children.
+        Polymer.dom.flush();
+
+        var rect = element.getBoundingClientRect();
+        expect(rect.height).to.be.greaterThan(emptyHeight);
+
+        // The demo is rendered in the light dom, so it should exist, and
+        // it should respect the demo element's attributes, and not make up
+        // new ones.
+        var input = Polymer.dom(element).querySelector('input')
+        expect(input).to.be.ok;
+        expect(input.disabled).to.be.true;
+        expect(input.checked).to.be.false;
+
+        var markdownElement = element.$.marked;
+        expect(markdownElement.markdown).to.be.equal('```\n\n<input disabled>\n\n```');
+      }));
+
+      test('can render custom elements', skipUnless(isNotIE, function() {
+        var element = fixture('custom-demo');
+
+        // Render the distributed children.
+        Polymer.dom.flush();
+
+        var rect = element.getBoundingClientRect();
+        expect(rect.height).to.be.greaterThan(emptyHeight);
+
+        // The demo is rendered in the light dom, so it should exist, and
+        // it should respect the demo element's attributes, and not make up
+        // new ones.
+        var checkbox = Polymer.dom(element).querySelector('paper-checkbox')
+        expect(checkbox).to.be.ok;
+        expect(checkbox.disabled).to.be.true;
+        expect(checkbox.checked).to.be.false;
+
+        var markdownElement = element.$.marked;
+        expect(markdownElement.markdown).to.be.equal(
+            '```\n\n<paper-checkbox disabled></paper-checkbox>\n\n```');
+      }));
+    });
+
+    suite('parsing', function() {
+      var element;
+
+      setup(function() {
+        var element = fixture('demo-with-attributes');
+      });
+
+      test('preserves attributes', skipUnless(isNotIE, function() {
+        var element = fixture('demo-with-attributes');
+
+        // Render the distributed children.
+        Polymer.dom.flush();
+
+        var markdownElement = element.$.marked;
+        expect(markdownElement.markdown).to.be.equal(
+            '```\n\n<input disabled type="date">\n\n```');
+      }));
+    });
+  </script>
+</body>
+</html>
