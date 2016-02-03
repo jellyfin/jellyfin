@@ -317,6 +317,11 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         public override async Task RunStartupTasks()
         {
+            if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
+            {
+                TaskManager.SuspendTriggers = true;
+            }
+            
             await base.RunStartupTasks().ConfigureAwait(false);
 
             Logger.Info("ServerId: {0}", SystemId);

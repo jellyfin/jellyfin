@@ -66,7 +66,12 @@ namespace MediaBrowser.Common.ScheduledTasks
         void Cancel(IScheduledTaskWorker task);
         Task Execute(IScheduledTaskWorker task, TaskExecutionOptions options = null);
 
+        void Execute<T>()
+            where T : IScheduledTask;
+        
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
         event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+
+        bool SuspendTriggers { get; set; }
     }
 }
