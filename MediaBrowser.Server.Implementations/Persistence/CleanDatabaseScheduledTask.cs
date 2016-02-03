@@ -10,6 +10,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -32,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILocalizationManager _localization;
         private readonly ITaskManager _taskManager;
 
-        public const int MigrationVersion = 17;
+        public const int MigrationVersion = 20;
         public static bool EnableUnavailableMessage = false;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
@@ -65,6 +66,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             OnProgress(0);
+
+            // Ensure these objects are out of the database.
+            var rootChildren = _libraryManager.RootFolder.Children.ToList();
+            rootChildren = _libraryManager.GetUserRootFolder().Children.ToList();
 
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
@@ -148,8 +153,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (itemId != Guid.Empty)
                 {
-                    LogMessage(string.Format("Querying item {0}", itemId));
-
                     // Somehow some invalid data got into the db. It probably predates the boundary checking
                     var item = _libraryManager.GetItemById(itemId);
 
@@ -157,8 +160,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         try
                         {
-                            LogMessage(string.Format("Saving item {0}", itemId));
-
                             await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
