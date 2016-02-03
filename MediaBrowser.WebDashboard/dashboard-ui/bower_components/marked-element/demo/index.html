@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>marked-element demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../marked-element.html">
+
+  <style is="custom-style">
+
+    .centered {
+      max-width: 550px;
+      padding: 0;
+      overflow: auto;
+    }
+
+    h1 {
+      margin-left: 30px;
+    }
+
+    h3 {
+      color: var(--google-grey-700);
+      margin-left: 30px;
+    }
+
+    marked-element {
+      display: block;
+      background-color: var(--google-grey-100);
+      padding: 10px 30px;
+      margin-bottom: 10px;
+    }
+
+    .markdown-html.custom p {
+      padding-left: 24px;
+    }
+
+  </style>
+</head>
+
+<body unresolved>
+
+  <div class="vertical-section vertical-section-container centered">
+    <h1>&lt;marked-element&gt;</h1>
+
+    <section>
+      <h3>Inline Text</h3>
+      <marked-element>
+        <div class="markdown-html"></div>
+        <script type="text/markdown">
+          ## Markdown Renderer
+
+          Example:
+
+          ```html
+          <paper-toolbar>
+            <paper-icon-button icon="menu"></paper-icon-button>
+            <div class="title">Title</div>
+            <paper-icon-button icon="more"></paper-icon-button>
+          </paper-toolbar>
+          ```
+
+          _Nifty_ features.
+        </script>
+      </marked-element>
+    </section>
+
+    <section>
+      <h3>Text via Attribute, with custom styling</h3>
+      <marked-element markdown="***Bold and italic***">
+        <div class="markdown-html custom"></div>
+      </marked-element>
+    </section>
+
+  </div>
+
+</body>
+</html>

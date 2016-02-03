@@ -1,0 +1,39 @@
+""
+"fo\"o"
+"foo\
+bar"
+"foo \(42)"
+"foo \(f("bar"))"
+
+----------------------------------------------------
+
+[
+	["string", ["\"\""]],
+	["string", ["\"fo\\\"o\""]],
+	["string", ["\"foo\\\r\nbar\""]],
+	["string", [
+		"\"foo ",
+		["interpolation", [
+			["delimiter", "\\("],
+			["number", "42"],
+			["delimiter", ")"]
+		]],
+		"\""
+	]],
+	["string", [
+		"\"foo ",
+		["interpolation", [
+			["delimiter", "\\("],
+			["function", "f"],
+			["punctuation", "("],
+			["string", ["\"bar\""]],
+			["punctuation", ")"],
+			["delimiter", ")"]
+		]],
+		"\""
+	]]
+]
+
+----------------------------------------------------
+
+Checks for strings and string interpolation.

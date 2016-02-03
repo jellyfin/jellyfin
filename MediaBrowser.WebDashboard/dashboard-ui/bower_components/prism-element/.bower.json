@@ -1,0 +1,44 @@
+{
+  "name": "prism-element",
+  "description": "Prism.js import and syntax highlighting",
+  "version": "1.0.3",
+  "authors": [
+    "The Polymer Project Authors (https://polymer.github.io/AUTHORS.txt)"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "prism",
+    "molecule"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/prism-element.git"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/prism-highlighter",
+  "main": "prism-highlighter.html",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "prism": "*",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
+  },
+  "_release": "1.0.3",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.3",
+    "commit": "9de59abd5a8081a253dca5a7066e7be95e34bfbc"
+  },
+  "_source": "git://github.com/PolymerElements/prism-element.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/prism-element"
+}

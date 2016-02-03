@@ -1,0 +1,15 @@
+$LANGUAGE
+$(myLicenseData)
+${LANG_ENGLISH}
+
+----------------------------------------------------
+
+[
+	["variable", "$LANGUAGE"],
+	["variable", "$(myLicenseData)"],
+	["variable", "${LANG_ENGLISH}"]
+]
+
+----------------------------------------------------
+
+Checks for variables.

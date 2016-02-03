@@ -90,7 +90,10 @@ define(['browser'], function (browser) {
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
         if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '')) {
-            videoAudioCodecs.push('ac3');
+            // safari is lying
+            if (!browser.safari) {
+                videoAudioCodecs.push('ac3');
+            }
         }
         if (canPlayMkv) {
             if (supportsMp3VideoAudio) {
