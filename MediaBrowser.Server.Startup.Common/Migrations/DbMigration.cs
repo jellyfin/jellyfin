@@ -18,7 +18,8 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         public void Run()
         {
-            if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
+            if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion && 
+                _config.Configuration.IsStartupWizardCompleted)
             {
                 _taskManager.SuspendTriggers = true;
                 CleanDatabaseScheduledTask.EnableUnavailableMessage = true;

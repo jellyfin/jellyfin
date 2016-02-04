@@ -67,7 +67,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             OnProgress(0);
 
-            // Ensure these objects are out of the database.
+            // Ensure these objects are lazy loaded.
+            // Without this there is a deadlock that will need to be investigated
             var rootChildren = _libraryManager.RootFolder.Children.ToList();
             rootChildren = _libraryManager.GetUserRootFolder().Children.ToList();
 
@@ -180,14 +181,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             progress.Report(100);
-        }
-
-        private void LogMessage(string msg)
-        {
-            if (EnableUnavailableMessage)
-            {
-                _logger.Info(msg);
-            }
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
