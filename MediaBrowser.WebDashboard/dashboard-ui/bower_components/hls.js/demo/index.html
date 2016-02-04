@@ -76,6 +76,7 @@ header {
       <label class="innerControls"><input id="autoRecoverError" type=checkbox checked/> Auto-Recover Media Error</label>
       <label class="innerControls"><input id="enableWorker" type=checkbox checked/> Enable Worker</label>
       <label class="innerControls">Level Capping <input id="levelCapping" type=number/></label>
+      <label class="innerControls">default Audio Codec <input id="defaultAudioCodec"/></label>
       <div id="StreamPermalink" class="innerControls"></div>
       <div>
         <select id="videoSize" style="float:left">
@@ -207,10 +208,12 @@ $(document).ready(function() {
    $('#autoRecoverError').click(function()  { autoRecoverError = this.checked; updatePermalink();});
    $('#enableWorker').click(function()  { enableWorker = this.checked; updatePermalink();});
    $('#levelCapping').change(function()  { levelCapping = this.value; updatePermalink();});
+   $('#defaultAudioCodec').change(function()  { defaultAudioCodec = this.value; updatePermalink();});
    $('#enableStreaming').prop( "checked", enableStreaming );
    $('#autoRecoverError').prop( "checked", autoRecoverError );
    $('#enableWorker').prop( "checked", enableWorker );
    $('#levelCapping').val(levelCapping);
+   $('#defaultAudioCodec').val(defaultAudioCodec);
 });
 
 
@@ -218,8 +221,9 @@ $(document).ready(function() {
   var hls,events, stats,
       enableStreaming = JSON.parse(getURLParam('enableStreaming',true))
       autoRecoverError = JSON.parse(getURLParam('autoRecoverError',true)),
-      enableWorker = JSON.parse(getURLParam('enableWorker',true));
-      levelCapping = JSON.parse(getURLParam('levelCapping',-1));
+      enableWorker = JSON.parse(getURLParam('enableWorker',true)),
+      levelCapping = JSON.parse(getURLParam('levelCapping',-1)),
+      defaultAudioCodec = getURLParam('defaultAudioCodec',undefined);
   var video = $('#video')[0];
   video.volume = 0.05;
 
@@ -247,7 +251,7 @@ $(document).ready(function() {
       $("#HlsStatus").text('loading ' + url);
        events = { url : url, t0 : performance.now(), load : [], buffer : [], video : [], level : [], bitrate : []};
        recoverDecodingErrorDate = recoverSwapAudioCodecDate = null;
-       hls = new Hls({debug:true, enableWorker : enableWorker});
+       hls = new Hls({debug:true, enableWorker : enableWorker, defaultAudioCodec : defaultAudioCodec});
        $("#HlsStatus").text('loading manifest and attaching video element...');
        hls.loadSource(url);
        hls.autoLevelCapping = levelCapping;
@@ -945,7 +949,8 @@ function timeRangesToString(r) {
                     '&enableStreaming=' + enableStreaming +
                     '&autoRecoverError=' + autoRecoverError +
                     '&enableWorker=' + enableWorker +
-                    '&levelCapping=' + levelCapping;
+                    '&levelCapping=' + levelCapping +
+                    '&defaultAudioCodec=' + defaultAudioCodec;
       var description = 'permalink: ' + "<a href=\"" + hlsLink + "\">" + hlsLink + "</a>";
       $("#StreamPermalink").html(description);
   }
