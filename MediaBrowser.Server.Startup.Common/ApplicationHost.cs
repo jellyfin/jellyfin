@@ -317,7 +317,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         public override async Task RunStartupTasks()
         {
-            if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
+            if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
+                ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
                 TaskManager.SuspendTriggers = true;
             }

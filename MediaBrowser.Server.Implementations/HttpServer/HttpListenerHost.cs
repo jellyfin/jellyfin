@@ -241,7 +241,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }
         }
 
@@ -350,10 +350,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
-                httpRes.Write(GlobalResponse);
-                httpRes.ContentType = "text/plain";
-
-                if (!string.Equals(GetExtension(urlString), "html", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(GetExtension(urlString), "html", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write(GlobalResponse);
+                    httpRes.ContentType = "text/plain";
+                }
+                else
                 {
                     httpRes.StatusCode = 503;
                 }
