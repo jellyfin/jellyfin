@@ -394,6 +394,10 @@
             return false;
         }
 
+        if (user && !user.Policy.EnableSync) {
+            return false;
+        }
+
         return item.SupportsSync;
     }
 
@@ -419,7 +423,7 @@
                 SupportsSync: true
             };
 
-            if (isAvailable(item)) {
+            if (isAvailable(item, user)) {
                 $('.categorySyncButton', page).removeClass('hide');
             } else {
                 $('.categorySyncButton', page).addClass('hide');
