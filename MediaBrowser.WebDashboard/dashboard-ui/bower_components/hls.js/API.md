@@ -184,6 +184,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
    var config = {
       debug : false,
       autoStartLoad : true,
+      defaultAudioCodec : undefined,
       maxBufferLength : 30,
       maxMaxBufferLength : 600,
       maxBufferSize : 60*1000*1000,
@@ -233,6 +234,15 @@ a logger object could also be provided for custom logging : ```config.debug=cust
 
  - if set to true, start level playlist and first fragments will be loaded automatically, after triggering of ```Hls.Events.MANIFEST_PARSED``` event
  - if set to false, an explicit API call (```hls.startLoad()```) will be needed to start quality level/fragment loading.
+
+#### ```defaultAudioCodec```
+(default undefined)
+
+ if audio codec is not signaled in variant manifest, or if only a stream manifest is provided, hls.js tries to guess audio codec by parsing audio sampling rate in ADTS header. if sampling rate is less or equal than 22050 Hz, then hls.js assumes it is HE-AAC, otherwise it assumes it is AAC-LC. This could result in bad guess, leading to audio decode error, ending up in media error.
+ it is possible to hint default audiocodec to hls.js by configuring this value as below:
+  - ```mp4a.40.2``` (AAC-LC) or 
+  - ```mp4a.40.5``` (HE-AAC) or
+  - ```undefined``` (guess based on sampling rate)
 
 #### ```maxBufferLength```
 (default 30s)
