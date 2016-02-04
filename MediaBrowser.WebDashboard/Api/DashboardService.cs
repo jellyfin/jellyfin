@@ -356,6 +356,11 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
 
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "prism"), true);
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "prism-element"), true);
+           
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
