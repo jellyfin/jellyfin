@@ -1,0 +1,20 @@
+.promptDialog {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.btnPromptExit {
+    z-index: 1002;
+    position: absolute;
+    top: .5em;
+    left: .5em;
+    width: 5.2vh;
+    height: 5.2vh;
+}
+
+.txtPromptValue label {
+    font-size: 200%;
+}

@@ -1810,10 +1810,8 @@ var AppInfo = {};
         return obj;
     }
 
-    function initRequire() {
-
-        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
-
+    function getBowerPath() {
+        
         var bowerPath = "bower_components";
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
@@ -1821,6 +1819,15 @@ var AppInfo = {};
         if (!Dashboard.isRunningInCordova()) {
             bowerPath += window.dashboardVersion;
         }
+
+        return bowerPath;
+    }
+
+    function initRequire() {
+
+        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
+
+        var bowerPath = getBowerPath();
 
         var apiClientBowerPath = bowerPath + "/emby-apiclient";
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
@@ -1870,14 +1877,12 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova()) {
             paths.dialog = "cordova/dialog";
-            paths.prompt = "cordova/prompt";
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
             paths.dialog = "components/dialog";
-            paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
@@ -2033,6 +2038,21 @@ var AppInfo = {};
         define("connectionManager", [], function () {
             return ConnectionManager;
         });
+    }
+
+    function initRequireWithBrowser(browser) {
+        
+        var bowerPath = getBowerPath();
+
+        var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (Dashboard.isRunningInCordova()) {
+            define("prompt", ["cordova/prompt"], returnFirstDependency);
+        } else if (browser.mobile) {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+        } else {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2447,6 +2467,8 @@ var AppInfo = {};
         }
 
         require(initialDependencies, function (browser, appStorage) {
+
+            initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
             window.appStorage = appStorage;
