@@ -19,38 +19,40 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
         }
 
-        protected override string GetCommandLineArguments(EncodingJob job)
+        protected override string GetCommandLineArguments(EncodingJob state)
         {
             var audioTranscodeParams = new List<string>();
 
-            var bitrate = job.OutputAudioBitrate;
+            var bitrate = state.OutputAudioBitrate;
 
             if (bitrate.HasValue)
             {
                 audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(UsCulture));
             }
 
-            if (job.OutputAudioChannels.HasValue)
+            if (state.OutputAudioChannels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + job.OutputAudioChannels.Value.ToString(UsCulture));
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(UsCulture));
             }
 
-            if (job.OutputAudioSampleRate.HasValue)
+            if (state.OutputAudioSampleRate.HasValue)
             {
-                audioTranscodeParams.Add("-ar " + job.OutputAudioSampleRate.Value.ToString(UsCulture));
+                audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture));
             }
 
-            var threads = GetNumberOfThreads(job, false);
+            const string vn = " -vn";
 
-            var inputModifier = GetInputModifier(job);
+            var threads = GetNumberOfThreads(state, false);
+
+            var inputModifier = GetInputModifier(state);
 
             return string.Format("{0} {1} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1 -y \"{5}\"",
                 inputModifier,
-                GetInputArgument(job),
+                GetInputArgument(state),
                 threads,
-                " -vn",
+                vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),
-                job.OutputFilePath).Trim();
+                state.OutputFilePath).Trim();
         }
 
         protected override string GetOutputFileExtension(EncodingJob state)

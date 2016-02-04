@@ -10,6 +10,7 @@ using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,38 +67,56 @@ namespace MediaBrowser.MediaEncoding.Encoder
                ? mediaSources.First()
                : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
 
-            AttachMediaStreamInfo(state, mediaSource, options);
+            var videoRequest = state.Options;
 
-            state.OutputAudioBitrate = GetAudioBitrateParam(request, state.AudioStream);
+            AttachMediaSourceInfo(state, mediaSource, videoRequest);
+
+            //var container = Path.GetExtension(state.RequestedUrl);
+
+            //if (string.IsNullOrEmpty(container))
+            //{
+            //    container = request.Static ?
+            //        state.InputContainer :
+            //        (Path.GetExtension(GetOutputFilePath(state)) ?? string.Empty).TrimStart('.');
+            //}
+
+            //state.OutputContainer = (container ?? string.Empty).TrimStart('.');
+
+            state.OutputAudioBitrate = GetAudioBitrateParam(state.Options, state.AudioStream);
             state.OutputAudioSampleRate = request.AudioSampleRate;
 
-            state.OutputAudioCodec = GetAudioCodec(request);
+            state.OutputAudioCodec = state.Options.AudioCodec;
 
-            state.OutputAudioChannels = GetNumAudioChannelsParam(request, state.AudioStream, state.OutputAudioCodec);
+            state.OutputAudioChannels = GetNumAudioChannelsParam(state.Options, state.AudioStream, state.OutputAudioCodec);
 
-            if (isVideoRequest)
+            if (videoRequest != null)
             {
-                state.OutputVideoCodec = GetVideoCodec(request);
-                state.OutputVideoBitrate = GetVideoBitrateParamValue(request, state.VideoStream);
+                state.OutputVideoCodec = state.Options.VideoCodec;
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.Options, state.VideoStream);
 
                 if (state.OutputVideoBitrate.HasValue)
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-						state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
-						state.OutputVideoBitrate.Value,
-						state.VideoStream == null ? null : state.VideoStream.Codec,
+                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
+                        state.OutputVideoBitrate.Value,
+                        state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
-                        request.MaxWidth,
-                        request.MaxHeight);
+                        videoRequest.MaxWidth,
+                        videoRequest.MaxHeight);
 
-                    request.MaxWidth = resolution.MaxWidth;
-                    request.MaxHeight = resolution.MaxHeight;
+                    videoRequest.MaxWidth = resolution.MaxWidth;
+                    videoRequest.MaxHeight = resolution.MaxHeight;
                 }
             }
 
             ApplyDeviceProfileSettings(state);
 
-            TryStreamCopy(state, request);
+            if (videoRequest != null)
+            {
+                TryStreamCopy(state, videoRequest);
+            }
+
+            //state.OutputFilePath = GetOutputFilePath(state);
 
             return state;
         }
@@ -119,7 +138,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        internal static void AttachMediaStreamInfo(EncodingJob state,
+        internal static void AttachMediaSourceInfo(EncodingJob state,
             MediaSourceInfo mediaSource,
             EncodingJobOptions videoRequest)
         {
@@ -130,11 +149,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             state.InputBitrate = mediaSource.Bitrate;
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-
-            if (mediaSource.ReadAtNativeFramerate)
-            {
-                state.ReadInputAtNativeFramerate = true;
-            }
 
             if (mediaSource.VideoType.HasValue)
             {
@@ -156,12 +170,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.InputBitrate = mediaSource.Bitrate;
             state.InputFileSize = mediaSource.Size;
+            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
 
             if (state.ReadInputAtNativeFramerate ||
                 mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))
             {
                 state.OutputAudioSync = "1000";
                 state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
+            }
+
+            if (string.Equals(mediaSource.Container, "wma", StringComparison.OrdinalIgnoreCase))
+            {
+                // Seeing some stuttering when transcoding wma to audio-only HLS
                 state.InputAudioSync = "1";
             }
 
@@ -210,19 +231,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.Nullable{VideoCodecs}.</returns>
         private static string InferVideoCodec(string container)
         {
-            if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
+            var ext = "." + (container ?? string.Empty);
+
+            if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
             {
                 return "wmv";
             }
-            if (string.Equals(container, "webm", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
             {
                 return "vpx";
             }
-            if (string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(container, "ogv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return "theora";
             }
-            if (string.Equals(container, "m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(container, "ts", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "h264";
             }
@@ -232,35 +255,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string InferAudioCodec(string container)
         {
-            if (string.Equals(container, "mp3", StringComparison.OrdinalIgnoreCase))
+            var ext = "." + (container ?? string.Empty);
+
+            if (string.Equals(ext, ".mp3", StringComparison.OrdinalIgnoreCase))
             {
                 return "mp3";
             }
-            if (string.Equals(container, "aac", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "aac";
             }
-            if (string.Equals(container, "wma", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".wma", StringComparison.OrdinalIgnoreCase))
             {
                 return "wma";
             }
-            if (string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
-            if (string.Equals(container, "oga", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".oga", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
-            if (string.Equals(container, "ogv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
-            if (string.Equals(container, "webm", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
-            if (string.Equals(container, "webma", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ext, ".webma", StringComparison.OrdinalIgnoreCase))
             {
                 return "vorbis";
             }
@@ -398,15 +423,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (bitrate.HasValue)
             {
-                var hasFixedResolution = state.Options.HasFixedResolution;
-
                 if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (hasFixedResolution)
-                    {
-                        return string.Format(" -minrate:v ({0}*.90) -maxrate:v ({0}*1.10) -bufsize:v {0} -b:v {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
                     // With vpx when crf is used, b:v becomes a max rate
                     // https://trac.ffmpeg.org/wiki/vpxEncodingGuide. But higher bitrate source files -b:v causes judder so limite the bitrate but dont allow it to "saturate" the bitrate. So dont contrain it down just up.
                     return string.Format(" -maxrate:v {0} -bufsize:v ({0}*2) -b:v {0}", bitrate.Value.ToString(UsCulture));
@@ -417,20 +435,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
-                // H264
-                if (hasFixedResolution)
+                // h264
+                if (isHls)
                 {
-                    if (isHls)
-                    {
-                        return string.Format(" -b:v {0} -maxrate ({0}*.80) -bufsize {0}", bitrate.Value.ToString(UsCulture));
-                    }
-
-                    return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                    return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                        bitrate.Value.ToString(UsCulture),
+                        (bitrate.Value * 2).ToString(UsCulture));
                 }
 
-                return string.Format(" -maxrate {0} -bufsize {1}",
-                    bitrate.Value.ToString(UsCulture),
-                    (bitrate.Value * 2).ToString(UsCulture));
+                return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
             }
 
             return string.Empty;
@@ -466,11 +479,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the name of the output audio codec
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        private string GetAudioCodec(EncodingJobOptions request)
+        internal static string GetAudioEncoder(EncodingJob state)
         {
-            var codec = request.AudioCodec;
+            var codec = state.OutputAudioCodec;
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
@@ -489,40 +502,56 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return "wmav2";
             }
 
-            return (codec ?? string.Empty).ToLower();
+            return codec.ToLower();
         }
 
         /// <summary>
         /// Gets the name of the output video codec
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoCodec(EncodingJobOptions request)
+        internal static string GetVideoEncoder(EncodingJob state, EncodingOptions options)
         {
-            var codec = request.VideoCodec;
+            var codec = state.OutputVideoCodec;
 
-            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(codec))
             {
-                return "libx264";
-            }
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
-            {
-                return "libx265";
-            }
-            if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
-            {
-                return "libvpx";
-            }
-            if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return "wmv2";
-            }
-            if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
-            {
-                return "libtheora";
+                if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetH264Encoder(state, options);
+                }
+                if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "libvpx";
+                }
+                if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "wmv2";
+                }
+                if (string.Equals(codec, "theora", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "libtheora";
+                }
+
+                return codec.ToLower();
             }
 
-            return (codec ?? string.Empty).ToLower();
+            return "copy";
+        }
+
+        internal static string GetH264Encoder(EncodingJob state, EncodingOptions options)
+        {
+            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                // It's currently failing on live tv
+                if (state.RunTimeTicks.HasValue)
+                {
+                    return "h264_qsv";
+                }
+            }
+
+            return "libx264";
         }
 
         internal static bool CanStreamCopyVideo(EncodingJobOptions request, MediaStream videoStream)
