@@ -11,20 +11,25 @@ namespace MediaBrowser.Api
     [Route("/Auth/Pin", "POST", Summary = "Creates a pin request")]
     public class CreatePinRequest : IReturn<PinCreationResult>
     {
+        [ApiMember(Name = "DeviceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string DeviceId { get; set; }
     }
 
     [Route("/Auth/Pin", "GET", Summary = "Gets pin status")]
     public class GetPinStatusRequest : IReturn<PinStatusResult>
     {
+        [ApiMember(Name = "DeviceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
+        [ApiMember(Name = "Pin", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Pin { get; set; }
     }
 
     [Route("/Auth/Pin/Exchange", "POST", Summary = "Exchanges a pin")]
     public class ExchangePinRequest : IReturn<PinExchangeResult>
     {
+        [ApiMember(Name = "DeviceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string DeviceId { get; set; }
+        [ApiMember(Name = "Pin", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Pin { get; set; }
     }
 
@@ -32,6 +37,7 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class ValidatePinRequest : IReturnVoid
     {
+        [ApiMember(Name = "Pin", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Pin { get; set; }
     }
 
@@ -41,18 +47,18 @@ namespace MediaBrowser.Api
 
         public object Post(CreatePinRequest request)
         {
-            var pin = GetNewPin(5);
-            var key = GetKey(request.DeviceId, pin);
+            var pin = GetNewPin();
 
             var value = new MyPinStatus
             {
                 CreationTimeUtc = DateTime.UtcNow,
                 IsConfirmed = false,
                 IsExpired = false,
-                Pin = pin
+                Pin = pin,
+                DeviceId = request.DeviceId
             };
 
-            _activeRequests.AddOrUpdate(key, value, (k, v) => value);
+            _activeRequests.AddOrUpdate(pin, value, (k, v) => value);
 
             return ToOptimizedResult(new PinCreationResult
             {
@@ -67,17 +73,12 @@ namespace MediaBrowser.Api
         {
             MyPinStatus status;
 
-            if (!_activeRequests.TryGetValue(GetKey(request.DeviceId, request.Pin), out status))
+            if (!_activeRequests.TryGetValue(request.Pin, out status))
             {
                 throw new ResourceNotFoundException();
             }
 
-            CheckExpired(status);
-
-            if (status.IsExpired)
-            {
-                throw new ResourceNotFoundException();
-            }
+            EnsureValid(request.DeviceId, status);
 
             return ToOptimizedResult(new PinStatusResult
             {
@@ -91,37 +92,78 @@ namespace MediaBrowser.Api
         {
             MyPinStatus status;
 
-            if (!_activeRequests.TryGetValue(GetKey(request.DeviceId, request.Pin), out status))
+            if (!_activeRequests.TryGetValue(request.Pin, out status))
             {
                 throw new ResourceNotFoundException();
             }
 
-            CheckExpired(status);
+            EnsureValid(request.DeviceId, status);
 
-            if (status.IsExpired)
+            if (!status.IsConfirmed)
             {
                 throw new ResourceNotFoundException();
             }
 
             return ToOptimizedResult(new PinExchangeResult
             {
+                // TODO: Add access token
+                UserId = status.UserId
             });
         }
 
         public void Post(ValidatePinRequest request)
         {
+            MyPinStatus status;
+
+            if (!_activeRequests.TryGetValue(request.Pin, out status))
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            EnsureValid(status);
+
+            status.IsConfirmed = true;
+            status.UserId = AuthorizationContext.GetAuthorizationInfo(Request).UserId;
         }
 
-        private void CheckExpired(MyPinStatus status)
+        private void EnsureValid(string requestedDeviceId, MyPinStatus status)
+        {
+            if (!string.Equals(requestedDeviceId, status.DeviceId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            EnsureValid(status);
+        }
+
+        private void EnsureValid(MyPinStatus status)
         {
             if ((DateTime.UtcNow - status.CreationTimeUtc).TotalMinutes > 10)
             {
                 status.IsExpired = true;
             }
+
+            if (status.IsExpired)
+            {
+                throw new ResourceNotFoundException();
+            }
         }
 
-        private string GetNewPin(int length)
+        private string GetNewPin()
         {
+            var pin = GetNewPinInternal();
+
+            while (IsPinActive(pin))
+            {
+                pin = GetNewPinInternal();
+            }
+
+            return pin;
+        }
+
+        private string GetNewPinInternal()
+        {
+            var length = 5;
             var pin = string.Empty;
 
             while (pin.Length < length)
@@ -133,14 +175,28 @@ namespace MediaBrowser.Api
             return pin;
         }
 
-        private string GetKey(string deviceId, string pin)
+        private bool IsPinActive(string pin)
         {
-            return deviceId + pin;
+            MyPinStatus status;
+
+            if (!_activeRequests.TryGetValue(pin, out status))
+            {
+                return true;
+            }
+
+            if (status.IsExpired)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public class MyPinStatus : PinStatusResult
         {
             public DateTime CreationTimeUtc { get; set; }
+            public string DeviceId { get; set; }
+            public string UserId { get; set; }
         }
     }
 }
