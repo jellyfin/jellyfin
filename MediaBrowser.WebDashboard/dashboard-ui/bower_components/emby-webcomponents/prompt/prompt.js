@@ -13,6 +13,11 @@ define(['paperdialoghelper', 'layoutManager', 'html!./icons.html', 'css!./style.
             dialogOptions.size = 'fullscreen';
             backButton = true;
             raisedButtons = true;
+        } else {
+
+            dialogOptions.modal = false;
+            dialogOptions.entryAnimationDuration = 160;
+            dialogOptions.exitAnimationDuration = 200;
         }
 
         var dlg = paperdialoghelper.createDialog(dialogOptions);
