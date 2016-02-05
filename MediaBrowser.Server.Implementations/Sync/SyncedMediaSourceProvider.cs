@@ -138,11 +138,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             mediaSource.Protocol = dynamicInfo.Protocol;
             mediaSource.RequiredHttpHeaders = dynamicInfo.RequiredHttpHeaders;
 
-            if (mediaSource.Protocol == MediaProtocol.Http)
-            {
-                mediaSource.EnableHttpCredentials = false;
-            }
-
             return mediaSource;
         }
 
