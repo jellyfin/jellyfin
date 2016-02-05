@@ -6,15 +6,30 @@
     text-align: center;
 }
 
-.btnPromptExit {
+.txtPromptValue label {
+    font-size: 200%;
+}
+
+.promptDialogContent {
+    text-align: left;
+    padding: 2em;
+    margin: 0;
+}
+
+.promptDialog.fullscreen .promptDialogContent {
+    padding: 0;
+    width: 50%;
+}
+
+.promptDialog.fullscreen .btnSubmit {
+    display: block;
+}
+
+.promptDialog.fullscreen .btnPromptExit {
     z-index: 1002;
     position: absolute;
     top: .5em;
     left: .5em;
     width: 5.2vh;
     height: 5.2vh;
-}
-
-.txtPromptValue label {
-    font-size: 200%;
 }
