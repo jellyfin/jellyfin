@@ -12,14 +12,15 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getSmartMatchInfos(query).done(function (infos) {
+        ApiClient.getSmartMatchInfos(query).then(function (infos) {
 
             currentResult = infos;
 
             populateList(page, infos);
 
             Dashboard.hideLoadingMsg();
-        });
+        }, onApiFailure);
+
     }
 
     function populateList(page, result) {
@@ -86,6 +87,15 @@
         $('.divMatchInfos', page).html(html).trigger('create');
     }
 
+    function onApiFailure(e) {
+
+        Dashboard.hideLoadingMsg();
+
+        Dashboard.alert({
+            title: Globalize.translate('AutoOrganizeError'),
+            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+        });
+    }
 
     $(document).on('pageinit', "#libraryFileOrganizerSmartMatchPage", function () {
 
@@ -101,15 +111,15 @@
                 MatchString: button.getAttribute('data-matchstring')
             };
 
-            ApiClient.deleteSmartMatchEntry(id, options).done(function () {
+            ApiClient.deleteSmartMatchEntry(id, options).then(function () {
 
                 reloadList(page);
 
-            });
+            }, onApiFailure);
 
         });
 
-    }).on('pageshowready', "#libraryFileOrganizerSmartMatchPage", function () {
+    }).on('pageshow', "#libraryFileOrganizerSmartMatchPage", function () {
 
         var page = this;
 
