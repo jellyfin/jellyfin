@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-menu', 'paper-dialog', 'scale-up-animation', 'fade-out-animation'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'browser', 'paper-menu', 'paper-dialog', 'scale-up-animation', 'fade-out-animation'], function (paperDialogHelper, browser) {
 
     function parentWithClass(elem, className) {
 
@@ -127,7 +127,7 @@
         });
 
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
-        var eventName = browserInfo.firefox ? 'mousedown' : 'click';
+        var eventName = browser.firefox ? 'mousedown' : 'click';
 
         dlg.addEventListener(eventName, function (e) {
 

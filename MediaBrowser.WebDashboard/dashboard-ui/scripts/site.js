@@ -565,10 +565,13 @@ var Dashboard = {
             return;
         }
 
-        // Cordova
-        if (navigator.notification && navigator.notification.alert && options.message.indexOf('<') == -1) {
+        if (browserInfo.mobile && options.message.indexOf('<') == -1) {
 
-            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+            alert(options.message);
+
+            if (options.callback) {
+                options.callback();
+            }
 
         } else {
             require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
@@ -580,15 +583,13 @@ var Dashboard = {
     confirm: function (message, title, callback) {
 
         // Cordova
-        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
+        if (browserInfo.mobile && message.indexOf('<') == -1) {
 
-            var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
+            var confirmed = confirm(message);
 
-            navigator.notification.confirm(message, function (index) {
-
-                callback(index == 1);
-
-            }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
+            if (callback) {
+                callback(confirmed);
+            }
 
         } else {
 
@@ -1876,13 +1877,11 @@ var AppInfo = {};
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
         if (Dashboard.isRunningInCordova()) {
-            paths.dialog = "cordova/dialog";
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.dialog = "components/dialog";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
@@ -2046,9 +2045,7 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (Dashboard.isRunningInCordova()) {
-            define("prompt", ["cordova/prompt"], returnFirstDependency);
-        } else if (browser.mobile) {
+        if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
