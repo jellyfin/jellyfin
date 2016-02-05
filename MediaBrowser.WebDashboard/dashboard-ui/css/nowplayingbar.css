@@ -109,6 +109,14 @@
         height: 80px;
     }
 
+    .nowPlayingBar .nowPlayingImage {
+        height: 80px;
+        width: 80px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
 .nowPlayingBarText {
     display: inline-block;
     font-weight: normal;

@@ -130,7 +130,7 @@
     function bindEvents(elem) {
 
         currentTimeElement = $('.nowPlayingBarCurrentTime', elem);
-        nowPlayingImageElement = $('.nowPlayingImage', elem);
+        nowPlayingImageElement = elem.querySelector('.nowPlayingImage');
         nowPlayingTextElement = $('.nowPlayingBarText', elem);
         nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
 
@@ -522,9 +522,7 @@
 
         currentImgUrl = url;
 
-        var imgHtml = '<img src="' + url + '" />';
-
-        nowPlayingImageElement.html(imgHtml);
+        ImageLoader.lazyImage(nowPlayingImageElement, url);
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
