@@ -13,7 +13,7 @@
 .promptDialogContent {
     text-align: left;
     padding: 2em;
-    margin: 0;
+    margin: 0 !important;
 }
 
 .promptDialog.fullscreen .promptDialogContent {
