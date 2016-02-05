@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private bool EnableOrganization(FileSystemMetadata fileInfo, TvFileOrganizationOptions options)
         {
-            var minFileBytes = options.TvOptions.MinFileSizeMb * 1024 * 1024;
+            var minFileBytes = options.MinFileSizeMb * 1024 * 1024;
 
             try
             {
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var eligibleFiles = watchLocations.SelectMany(GetFilesToOrganize)
                 .OrderBy(_fileSystem.GetCreationTimeUtc)
-                .Where(i => EnableOrganization(i, options))
+                .Where(i => EnableOrganization(i, options.TvOptions))
                 .ToList();
 
             var processedFolders = new HashSet<string>();
