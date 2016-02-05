@@ -68,16 +68,22 @@
                         <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
                     </div>
                     <br />
+                    <div>
+                        <div>
+                            <paper-input type="text" label="${LabelCodecIntrosPath}" id="txtCodecIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
+                            <paper-icon-button id="btnSelectCodecIntrosPath" icon="search"></paper-icon-button>
+                        </div>
+                        <div class="fieldDescription">
+                            <div>${LabelCodecIntrosPathHelp}</div>
+                            <div style="margin-top:.5em;"><a href="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" target="_blank">${ButtonLearnMore}</a></div>
+                        </div>
+                    </div>
+                    <br />
+                    <br />
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
                     <p>${CinemaModeConfigurationHelp2}</p>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-
-                        </li>
-
-                    </ul>
                 </form>
             </div>
         </div>

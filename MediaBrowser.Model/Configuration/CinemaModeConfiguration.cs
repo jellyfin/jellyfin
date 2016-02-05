@@ -16,14 +16,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIntrosFromUpcomingStreamingMovies { get; set; }
 
         public int TrailerLimit { get; set; }
-        public string[] Tags { get; set; }
         
         public CinemaModeConfiguration()
         {
             EnableIntrosParentalControl = true;
             EnableIntrosFromSimilarMovies = true;
             TrailerLimit = 2;
-            Tags = new[] { "thx" };
         }
     }
 }
