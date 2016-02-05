@@ -51,8 +51,6 @@ namespace MediaBrowser.Model.Dto
         public string TranscodingUrl { get; set; }
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
-
-        public bool EnableHttpCredentials { get; set; }
         
         public MediaSourceInfo()
         {
@@ -63,7 +61,6 @@ namespace MediaBrowser.Model.Dto
             SupportsTranscoding = true;
             SupportsDirectStream = true;
             SupportsDirectPlay = true;
-            EnableHttpCredentials = true;
         }
 
         public int? DefaultAudioStreamIndex { get; set; }

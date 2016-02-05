@@ -213,9 +213,6 @@
 
         function getCrossOriginValue(mediaSource) {
 
-            if (mediaSource.EnableHttpCredentials) {
-                return 'use-credentials';
-            }
             return 'anonymous';
         }
 
