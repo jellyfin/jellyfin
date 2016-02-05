@@ -945,5 +945,8 @@
     "HeaderCinemaMode": "Kino-Modus",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Ausschalten"
+    "ButtonOff": "Ausschalten",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

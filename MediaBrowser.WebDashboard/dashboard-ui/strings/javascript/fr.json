@@ -945,5 +945,8 @@
     "HeaderCinemaMode": "Mode cin\u00e9ma",
     "CinemaModeFeatureDescription": "Le mode Cin\u00e9ma, vous donne l'exp\u00e9rience d'une vraie salle, avec des bandes annonces, et des introductions avant le film.",
     "CoverArt": "Pochette",
-    "ButtonOff": "Arr\u00eat"
+    "ButtonOff": "Arr\u00eat",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

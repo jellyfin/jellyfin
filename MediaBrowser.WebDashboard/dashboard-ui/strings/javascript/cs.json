@@ -945,5 +945,8 @@
     "HeaderCinemaMode": "Cinema M\u00f3d",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Off"
+    "ButtonOff": "Off",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

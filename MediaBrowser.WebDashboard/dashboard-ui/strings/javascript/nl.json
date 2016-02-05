@@ -945,5 +945,8 @@
     "HeaderCinemaMode": "Cinema Mode",
     "CinemaModeFeatureDescription": "Cinema Mode geeft u de ware bioscoopervaring met trailers en aangepaste intro voor de weergave van uw keuze.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Uit"
+    "ButtonOff": "Uit",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

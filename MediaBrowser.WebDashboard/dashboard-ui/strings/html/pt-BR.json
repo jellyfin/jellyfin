@@ -1526,5 +1526,7 @@
     "HeadersFolders": "Pastas",
     "LabelDisplayName": "Nome para exibi\u00e7\u00e3o:",
     "HeaderNewRecording": "Nova Grava\u00e7\u00e3o",
-    "ButtonAdvanced": "Avan\u00e7ado"
+    "ButtonAdvanced": "Avan\u00e7ado",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
 }
