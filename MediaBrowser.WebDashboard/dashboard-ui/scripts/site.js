@@ -1812,7 +1812,7 @@ var AppInfo = {};
     }
 
     function getBowerPath() {
-        
+
         var bowerPath = "bower_components";
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
@@ -2040,7 +2040,7 @@ var AppInfo = {};
     }
 
     function initRequireWithBrowser(browser) {
-        
+
         var bowerPath = getBowerPath();
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
@@ -2368,11 +2368,14 @@ var AppInfo = {};
                     // Remove special characters
                     var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
-                    var deviceId = window.MainActivity ? MainActivity.getLegacyDeviceId() : null;
-                    deviceId = deviceId || device.uuid;
+                    var deviceId = null;
+
+                    if (window.MainActivity) {
+                        deviceId = MainActivity.getLegacyDeviceId();
+                    }
 
                     resolve({
-                        deviceId: deviceId,
+                        deviceId: deviceId || device.uuid,
                         deviceName: cleanDeviceName,
                         appName: name,
                         appVersion: appVersion
