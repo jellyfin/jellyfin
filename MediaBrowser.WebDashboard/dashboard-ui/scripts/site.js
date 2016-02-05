@@ -2060,9 +2060,10 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             if (MainActivity.getChromeVersion() >= 48) {
-                //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-                define("audiorenderer", ["cordova/android/vlcplayer"]);
+                define("audiorenderer", ["scripts/htmlmediarenderer"]);
+                //define("audiorenderer", ["cordova/android/vlcplayer"]);
             } else {
+                window.VlcAudio = true;
                 define("audiorenderer", ["cordova/android/vlcplayer"]);
             }
             define("videorenderer", ["cordova/android/vlcplayer"]);
