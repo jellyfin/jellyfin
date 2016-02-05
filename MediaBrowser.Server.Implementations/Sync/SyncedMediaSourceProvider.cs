@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -136,6 +137,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             mediaSource.Path = dynamicInfo.Path;
             mediaSource.Protocol = dynamicInfo.Protocol;
             mediaSource.RequiredHttpHeaders = dynamicInfo.RequiredHttpHeaders;
+
+            if (mediaSource.Protocol == MediaProtocol.Http)
+            {
+                mediaSource.EnableHttpCredentials = false;
+            }
 
             return mediaSource;
         }
