@@ -375,7 +375,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             string filename;
-            var folderName = item is MusicAlbum || item is MusicArtist ? "folder" : "poster";
+            var folderName = item is MusicAlbum || item is MusicArtist || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy && saveLocally) ? "folder" : "poster";
 
             switch (type)
             {
