@@ -26,7 +26,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var format = string.Empty;
             var keyFrame = string.Empty;
 
-            if (string.Equals(Path.GetExtension(state.OutputFilePath), ".mp4", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetExtension(state.OutputFilePath), ".mp4", StringComparison.OrdinalIgnoreCase) &&
+                state.Options.Context == EncodingContext.Streaming)
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
                 format = " -f mp4 -movflags frag_keyframe+empty_moov";
