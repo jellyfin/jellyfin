@@ -129,10 +129,10 @@
 
     function bindEvents(elem) {
 
-        currentTimeElement = $('.nowPlayingBarCurrentTime', elem);
+        currentTimeElement = elem.querySelector('.nowPlayingBarCurrentTime');
         nowPlayingImageElement = elem.querySelector('.nowPlayingImage');
-        nowPlayingTextElement = $('.nowPlayingBarText', elem);
-        nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
+        nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
+        nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
         unmuteButton = $('.unmuteButton', elem).on('click', function () {
 
@@ -385,7 +385,7 @@
 
         }
 
-        currentTimeElement.html(timeText);
+        currentTimeElement.innerHTML = timeText;
 
         updateNowPlayingInfo(state);
     }
@@ -478,16 +478,16 @@
         var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem) || '';
 
         if (nameHtml.indexOf('<br/>') != -1) {
-            nowPlayingTextElement.addClass('nowPlayingDoubleText');
+            nowPlayingTextElement.classList.add('nowPlayingDoubleText');
         } else {
-            nowPlayingTextElement.removeClass('nowPlayingDoubleText');
+            nowPlayingTextElement.classList.remove('nowPlayingDoubleText');
         }
 
         if (state.NowPlayingItem.Id) {
             nameHtml = '<a style="color:inherit;text-decoration:none;" href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + nameHtml + '</a>';
         }
 
-        nowPlayingTextElement.html(nameHtml);
+        nowPlayingTextElement.innerHTML = nameHtml;
 
         var url;
         var imgHeight = 80;
@@ -540,10 +540,10 @@
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
-                nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
+                nowPlayingUserData.innerHTML = LibraryBrowser.getUserDataIconsHtml(item, false);
             });
         } else {
-            nowPlayingUserData.html('');
+            nowPlayingUserData.innerHTML = '';
         }
     }
 
