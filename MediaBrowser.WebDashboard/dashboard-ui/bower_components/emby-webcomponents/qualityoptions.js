@@ -10,8 +10,10 @@
         // Some 1080- videos are reported as 1912?
         if (maxAllowedWidth >= 1900) {
 
-            options.push({ name: '1080p - 50Mbps', maxHeight: 1080, bitrate: 40000000 });
-            options.push({ name: '1080p - 45Mbps', maxHeight: 1080, bitrate: 40000000 });
+            options.push({ name: '1080p - 60Mbps', maxHeight: 1080, bitrate: 60000000 });
+            options.push({ name: '1080p - 55Mbps', maxHeight: 1080, bitrate: 55000000 });
+            options.push({ name: '1080p - 50Mbps', maxHeight: 1080, bitrate: 50000000 });
+            options.push({ name: '1080p - 45Mbps', maxHeight: 1080, bitrate: 45000000 });
             options.push({ name: '1080p - 40Mbps', maxHeight: 1080, bitrate: 40000000 });
             options.push({ name: '1080p - 35Mbps', maxHeight: 1080, bitrate: 35000000 });
             options.push({ name: '1080p - 30Mbps', maxHeight: 1080, bitrate: 30000000 });

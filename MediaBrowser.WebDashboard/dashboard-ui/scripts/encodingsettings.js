@@ -20,22 +20,38 @@
     }
 
     function onSubmit() {
-        Dashboard.showLoadingMsg();
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("encoding").then(function (config) {
+        var onDecoderConfirmed = function() {
+            Dashboard.showLoadingMsg();
 
-            config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
-            config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
-            config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
-            config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
-            config.EnableThrottling = $('#chkEnableThrottle', form).checked();
-            config.EncodingThreadCount = $('#selectThreadCount', form).val();
-            config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
+            ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
-            ApiClient.updateNamedConfiguration("encoding", config).then(Dashboard.processServerConfigurationUpdateResult);
-        });
+                config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
+                config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
+                config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
+                config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
+                config.EnableThrottling = $('#chkEnableThrottle', form).checked();
+                config.EncodingThreadCount = $('#selectThreadCount', form).val();
+                config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
+
+                ApiClient.updateNamedConfiguration("encoding", config).then(Dashboard.processServerConfigurationUpdateResult);
+            });
+        };
+
+        if ($('#selectVideoDecoder', form).val()) {
+
+            Dashboard.alert({
+                callback: onDecoderConfirmed,
+                title: Globalize.translate('TitleHardwareAcceleration'),
+                message: Globalize.translate('HardwareAccelerationWarning')
+            });
+
+        } else {
+            onDecoderConfirmed();
+        }
+
 
         // Disable default form submission
         return false;

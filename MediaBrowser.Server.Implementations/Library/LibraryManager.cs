@@ -1536,6 +1536,10 @@ namespace MediaBrowser.Server.Implementations.Library
                         {
                             video = dbItem;
                         }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
                 catch (Exception ex)

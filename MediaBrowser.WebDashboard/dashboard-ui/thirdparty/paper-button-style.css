@@ -183,6 +183,10 @@ paper-button.notext {
         margin-right: 0;
     }
 
+.promptDialogContent paper-button {
+    color: #43A047;
+}
+
 .docspinner {
     display: block;
     margin-top: -14px;
@@ -533,7 +537,7 @@ paper-dialog paper-radio-group paper-radio-button {
 }
 
 div.dialogHeader {
-    margin: 0 0 2.5em!important;
+    margin: 0 0 2.5em !important;
     padding: .35em .5em;
     background-color: #101010;
     display: flex;

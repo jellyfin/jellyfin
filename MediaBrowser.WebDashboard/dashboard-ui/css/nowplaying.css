@@ -17,9 +17,12 @@
         display: inline-block !important;
     }
 
-.nowPlayingPageImage img {
-    max-height: 360px;
-    max-width: 360px;
+.nowPlayingPageImage {
+    height: 360px;
+    width: 360px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .nowPlayingPageTimeContainer {
@@ -89,9 +92,9 @@
 
 @media all and (max-width: 700px) {
 
-    .nowPlayingPageImage img {
-        max-height: 160px;
-        max-width: 200px;
+    .nowPlayingPageImage {
+        height: 160px;
+        width: 160px;
     }
 }
 
@@ -109,16 +112,17 @@
         margin: 2px 0;
     }
 
-    .nowPlayingPageImage img {
-        max-height: 160px;
-        max-width: 220px;
+    .nowPlayingPageImage {
+        height: 160px;
+        width: 160px;
     }
 }
 
 @media all and (max-height: 500px) {
 
-    .nowPlayingPageImage img {
-        max-height: 120px;
+    .nowPlayingPageImage {
+        height: 120px;
+        width: 120px;
     }
 }
 
@@ -130,7 +134,8 @@
 }
 
 .nowPlayingPageTitle {
-    margin: .5em 0;
+    margin: 1.5em auto .5em;
+    max-width: 50%;
 }
 
 .nowPlayingInfoButtons {
@@ -140,7 +145,7 @@
 @media all and (min-height: 600px) {
 
     .nowPlayingPageTitle {
-        margin: 1em 0;
+        margin-top: 2em;
     }
 
     .nowPlayingInfoButtons {
@@ -173,16 +178,6 @@
 }
 
 @media (orientation: landscape) and (max-height: 400px) {
-    .nowPlayingPageTitle {
-        margin: 0 auto;
-        width: 50%;
-        position: absolute;
-        text-align: center;
-        left: 0;
-        right: 0;
-        top: -20px;
-    }
-
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
         width: 60px;
         height: 60px;
@@ -190,15 +185,6 @@
 }
 
 @media (orientation: portrait) and (max-height: 600px) {
-    .nowPlayingPageTitle {
-        margin: 0 auto;
-        width: 50%;
-        position: absolute;
-        text-align: center;
-        left: 0;
-        right: 0;
-        top: -20px;
-    }
 
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
         width: 60px;
@@ -223,4 +209,12 @@
 .nowPlayingPageUserDataButtons paper-icon-button {
     width: 40px;
     height: 40px;
+}
+
+.hideVideoButtons .videoButton {
+    visibility: hidden;
+}
+
+.hideVolumeButtons .volumeButton {
+    visibility: hidden;
 }

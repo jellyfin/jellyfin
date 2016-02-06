@@ -565,10 +565,13 @@ var Dashboard = {
             return;
         }
 
-        // Cordova
-        if (navigator.notification && navigator.notification.alert && options.message.indexOf('<') == -1) {
+        if (browserInfo.mobile && options.message.indexOf('<') == -1) {
 
-            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+            alert(options.message);
+
+            if (options.callback) {
+                options.callback();
+            }
 
         } else {
             require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
@@ -580,15 +583,13 @@ var Dashboard = {
     confirm: function (message, title, callback) {
 
         // Cordova
-        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
+        if (browserInfo.mobile && message.indexOf('<') == -1) {
 
-            var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
+            var confirmed = confirm(message);
 
-            navigator.notification.confirm(message, function (index) {
-
-                callback(index == 1);
-
-            }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
+            if (callback) {
+                callback(confirmed);
+            }
 
         } else {
 
@@ -1810,9 +1811,7 @@ var AppInfo = {};
         return obj;
     }
 
-    function initRequire() {
-
-        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
+    function getBowerPath() {
 
         var bowerPath = "bower_components";
 
@@ -1821,6 +1820,15 @@ var AppInfo = {};
         if (!Dashboard.isRunningInCordova()) {
             bowerPath += window.dashboardVersion;
         }
+
+        return bowerPath;
+    }
+
+    function initRequire() {
+
+        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
+
+        var bowerPath = getBowerPath();
 
         var apiClientBowerPath = bowerPath + "/emby-apiclient";
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
@@ -1869,15 +1877,11 @@ var AppInfo = {};
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
         if (Dashboard.isRunningInCordova()) {
-            paths.dialog = "cordova/dialog";
-            paths.prompt = "cordova/prompt";
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.dialog = "components/dialog";
-            paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
@@ -2035,6 +2039,19 @@ var AppInfo = {};
         });
     }
 
+    function initRequireWithBrowser(browser) {
+
+        var bowerPath = getBowerPath();
+
+        var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (browser.mobile) {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+        } else {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+        }
+    }
+
     function init(hostingAppInfo) {
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
@@ -2043,9 +2060,10 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             if (MainActivity.getChromeVersion() >= 48) {
-                //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-                define("audiorenderer", ["cordova/android/vlcplayer"]);
+                define("audiorenderer", ["scripts/htmlmediarenderer"]);
+                //define("audiorenderer", ["cordova/android/vlcplayer"]);
             } else {
+                window.VlcAudio = true;
                 define("audiorenderer", ["cordova/android/vlcplayer"]);
             }
             define("videorenderer", ["cordova/android/vlcplayer"]);
@@ -2350,11 +2368,14 @@ var AppInfo = {};
                     // Remove special characters
                     var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
-                    var deviceId = window.MainActivity ? MainActivity.getLegacyDeviceId() : null;
-                    deviceId = deviceId || device.uuid;
+                    var deviceId = null;
+
+                    if (window.MainActivity) {
+                        deviceId = MainActivity.getLegacyDeviceId();
+                    }
 
                     resolve({
-                        deviceId: deviceId,
+                        deviceId: deviceId || device.uuid,
                         deviceName: cleanDeviceName,
                         appName: name,
                         appVersion: appVersion
@@ -2447,6 +2468,8 @@ var AppInfo = {};
         }
 
         require(initialDependencies, function (browser, appStorage) {
+
+            initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
             window.appStorage = appStorage;

@@ -675,7 +675,7 @@
     "HeaderRequireManualLoginHelp": "Lorsque d\u00e9sactiv\u00e9, les clients pourront afficher la s\u00e9lection du compte utilisateur de mani\u00e8re graphique sur l'\u00e9cran de connexion.",
     "OptionOtherApps": "Autres applications",
     "OptionMobileApps": "Applications mobiles",
-    "HeaderNotificationList": "Click on a notification to configure sending options.",
+    "HeaderNotificationList": "Cliquez sur une notification pour configurer les options d\u2019envoi.",
     "NotificationOptionApplicationUpdateAvailable": "Mise \u00e0 jour d'application disponible",
     "NotificationOptionApplicationUpdateInstalled": "Mise \u00e0 jour d'application install\u00e9e",
     "NotificationOptionPluginUpdateInstalled": "Mise \u00e0 jour de plugin install\u00e9e",
@@ -1526,5 +1526,7 @@
     "HeadersFolders": "Dossiers",
     "LabelDisplayName": "Nom d'affichage :",
     "HeaderNewRecording": "Nouvel enregistrement",
-    "ButtonAdvanced": "Avanc\u00e9"
+    "ButtonAdvanced": "Avanc\u00e9",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
 }

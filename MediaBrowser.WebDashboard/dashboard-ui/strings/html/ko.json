@@ -1526,5 +1526,7 @@
     "HeadersFolders": "\ud3f4\ub354",
     "LabelDisplayName": "\ud45c\uc2dc \uc774\ub984:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
 }

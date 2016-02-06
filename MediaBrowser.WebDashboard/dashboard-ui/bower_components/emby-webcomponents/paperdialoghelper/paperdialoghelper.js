@@ -56,7 +56,7 @@
         dlg.open();
 
         // It's not being positioned properly in firefox
-        if (!dlg.classList.contains('fixedSize')) {
+        if (!browser.chrome && !dlg.classList.contains('fixedSize')) {
             setTimeout(function () {
                 dlg.refit();
             }, 100);

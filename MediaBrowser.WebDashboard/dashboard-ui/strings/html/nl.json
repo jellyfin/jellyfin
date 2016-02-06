@@ -1526,5 +1526,7 @@
     "HeadersFolders": "Mappen",
     "LabelDisplayName": "Weergave naam:",
     "HeaderNewRecording": "Nieuwe opname",
-    "ButtonAdvanced": "Geavanceerd"
+    "ButtonAdvanced": "Geavanceerd",
+    "LabelCodecIntrosPath": "Codec intro's pad:",
+    "LabelCodecIntrosPathHelp": "Een map met video bestanden. Als de bestandsnaam van een video bestand overeenkomt met de video-, audiocodec of een audio profiel dan zal deze afgespeeld worden voor de hoofd film."
 }

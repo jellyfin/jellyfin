@@ -16,6 +16,7 @@
         $('.chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl);
 
         $('#txtCustomIntrosPath', page).val(config.CustomIntroPath || '');
+        $('#txtCodecIntrosPath', page).val(config.MediaInfoIntroPath || '');
         $('#txtNumTrailers', page).val(config.TrailerLimit);
 
         Dashboard.hideLoadingMsg();
@@ -31,6 +32,7 @@
         ApiClient.getNamedConfiguration("cinemamode").then(function (config) {
 
             config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
+            config.MediaInfoIntroPath = $('#txtCodecIntrosPath', page).val();
             config.TrailerLimit = $('#txtNumTrailers', page).val();
 
             config.EnableIntrosForMovies = $('.chkMovies', page).checked();
@@ -72,6 +74,27 @@
                     },
 
                     header: Globalize.translate('HeaderSelectCustomIntrosPath')
+                });
+            });
+        });
+
+        $('#btnSelectCodecIntrosPath', page).on("click.selectDirectory", function () {
+
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    callback: function (path) {
+
+                        if (path) {
+                            $('#txtCodecIntrosPath', page).val(path);
+                        }
+                        picker.close();
+                    },
+
+                    header: Globalize.translate('HeaderSelectCodecIntrosPath')
                 });
             });
         });

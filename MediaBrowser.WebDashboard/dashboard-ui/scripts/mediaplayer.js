@@ -47,7 +47,7 @@
         function updateDeviceProfileForAndroid(profile) {
 
             // Just here as an easy escape out, if ever needed
-            var enableVlcVideo = true;
+            var enableVlcVideo = window.VlcAudio;
             var enableVlcAudio = true;
 
             if (enableVlcVideo) {
