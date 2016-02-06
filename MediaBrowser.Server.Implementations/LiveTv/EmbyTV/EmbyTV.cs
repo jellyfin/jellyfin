@@ -664,12 +664,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException("timer");
             }
 
+            ProgramInfo info = null;
+
             if (string.IsNullOrWhiteSpace(timer.ProgramId))
             {
-                throw new InvalidOperationException("timer.ProgramId is null. Cannot record.");
+                _logger.Info("Timer {0} has null programId", timer.Id);
+            }
+            else
+            {
+                info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
             }
 
-            var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
+            if (info == null)
+            {
+                _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
+                info = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+            }
 
             if (info == null)
             {
@@ -775,14 +785,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
                     {
                         _logger.Info("Opened recording stream from tuner provider");
-                        
+
                         using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
                             result.Item2.Release();
                             isResourceOpen = false;
 
                             _logger.Info("Copying recording stream to file stream");
-                            
+
                             await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
                         }
                     }
@@ -865,6 +875,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var epgData = GetEpgDataForChannel(channelId);
             return epgData.FirstOrDefault(p => string.Equals(p.Id, programId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private ProgramInfo GetProgramInfoFromCache(string channelId, DateTime startDateUtc)
+        {
+            var epgData = GetEpgDataForChannel(channelId);
+            var startDateTicks = startDateUtc.Ticks;
+            // Find the first program that starts within 3 minutes
+            return epgData.FirstOrDefault(p => Math.Abs(startDateTicks - p.StartDate.Ticks) <= TimeSpan.FromMinutes(3).Ticks);
         }
 
         private string RecordingPath
