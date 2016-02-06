@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <value>The name.</value>
         public string Name
         {
-            get { return ItemSortBy.Album; }
+            get { return ItemSortBy.IsFolder; }
         }
     }
 }
