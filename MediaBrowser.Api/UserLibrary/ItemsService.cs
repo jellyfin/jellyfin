@@ -116,6 +116,10 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 item = user == null ? _libraryManager.RootFolder : user.RootFolder;
             }
+            else if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
+            {
+                item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+            }
 
             // Default list type = children
 

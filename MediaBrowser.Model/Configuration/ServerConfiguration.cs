@@ -161,8 +161,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
-
-        public bool MergeMetadataAndImagesByName { get; set; }
         
         /// <summary>
         /// Gets or sets the image saving convention.

@@ -742,7 +742,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None);
+                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None).ConfigureAwait(false);
                 var mediaStreamInfo = result.Item1;
                 var isResourceOpen = true;
 
@@ -771,14 +771,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
                     httpRequestOptions.CancellationToken = linkedToken;
                     _logger.Info("Writing file to path: " + recordPath);
-                    using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
+                    _logger.Info("Opening recording stream from tuner provider");
+                    using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
                     {
+                        _logger.Info("Opened recording stream from tuner provider");
+                        
                         using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
                             result.Item2.Release();
                             isResourceOpen = false;
 
-                            await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
+                            _logger.Info("Copying recording stream to file stream");
+                            
+                            await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
                         }
                     }
 
