@@ -1527,6 +1527,6 @@
     "LabelDisplayName": "Weergave naam:",
     "HeaderNewRecording": "Nieuwe opname",
     "ButtonAdvanced": "Geavanceerd",
-    "LabelCodecIntrosPath": "Codec intros path:",
-    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
+    "LabelCodecIntrosPath": "Codec intro's pad:",
+    "LabelCodecIntrosPathHelp": "Een map met video bestanden. Als de bestandsnaam van een video bestand overeenkomt met de video-, audiocodec of een audio profiel dan zal deze afgespeeld worden voor de hoofd film."
 }
