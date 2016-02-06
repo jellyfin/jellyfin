@@ -165,11 +165,14 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                 var item = _libraryManager.GetItemById(id);
 
-                await _libraryManager.DeleteItem(item, new DeleteOptions
+                if (item != null)
                 {
-                    DeleteFileLocation = false
+                    await _libraryManager.DeleteItem(item, new DeleteOptions
+                    {
+                        DeleteFileLocation = false
 
-                }).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
+                }
             }
 
             progress.Report(100);
