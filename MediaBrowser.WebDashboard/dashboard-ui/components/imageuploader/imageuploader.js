@@ -164,6 +164,8 @@
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
+            $('#selectImageType', dlg).val(options.imageType || 'Primary');
+
             $('.btnCloseDialog', dlg).on('click', function () {
 
                 paperDialogHelper.close(dlg);

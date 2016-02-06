@@ -206,11 +206,14 @@
 
         $('.btnOpenUploadMenu', page).on('click', function () {
 
+            var imageType = this.getAttribute('data-imagetype');
+
             require(['components/imageuploader/imageuploader'], function (imageUploader) {
 
                 imageUploader.show(currentItem.Id, {
 
-                    theme: options.theme
+                    theme: options.theme,
+                    imageType: imageType
 
                 }).then(function (hasChanged) {
 
