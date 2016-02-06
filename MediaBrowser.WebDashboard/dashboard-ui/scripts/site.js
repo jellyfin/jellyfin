@@ -2037,6 +2037,21 @@ var AppInfo = {};
         define("connectionManager", [], function () {
             return ConnectionManager;
         });
+
+        define("globalize", [], function () {
+            return Globalize;
+        });
+
+        define('dialogText', [], getDialogText());
+    }
+
+    function getDialogText() {
+        return function () {
+            return {
+                buttonOk: 'ButtonOk',
+                buttonCancel: 'ButtonCancel'
+            };
+        };
     }
 
     function initRequireWithBrowser(browser) {

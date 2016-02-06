@@ -12,9 +12,9 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 -->
 
-[![Build Status](https://travis-ci.org/PolymerElements/iron-overlay-behavior.svg?branch=master)](https://travis-ci.org/PolymerElements/iron-overlay-behavior)
+[![Build status](https://travis-ci.org/PolymerElements/iron-overlay-behavior.svg?branch=master)](https://travis-ci.org/PolymerElements/iron-overlay-behavior)
 
-_[Demo and API Docs](https://elements.polymer-project.org/elements/iron-overlay-behavior)_
+_[Demo and API docs](https://elements.polymer-project.org/elements/iron-overlay-behavior)_
 
 
 ##&lt;iron-overlay-backdrop&gt;

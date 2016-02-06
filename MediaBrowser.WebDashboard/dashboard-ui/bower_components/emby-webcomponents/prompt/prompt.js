@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'layoutManager', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager) {
+define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager, globalize, dialogText) {
 
     function show(options, resolve, reject) {
 
@@ -37,10 +37,12 @@ define(['paperdialoghelper', 'layoutManager', 'html!./icons.html', 'css!./style.
         // TODO: An actual form element should probably be added
         html += '<br/>';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + Globalize.translate('core#ButtonOk') + '</span></paper-button>';
+            html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + globalize.translate(dialogText.buttonOk) + '</span></paper-button>';
         } else {
-            html += '<paper-button class="btnSubmit">' + Globalize.translate('core#ButtonOk') + '</paper-button>';
-            html += '<paper-button class="btnPromptExit">' + Globalize.translate('core#ButtonCancel') + '</paper-button>';
+            html += '<div style="text-align:right;">';
+            html += '<paper-button class="btnSubmit">' + globalize.translate(dialogText.buttonOk) + '</paper-button>';
+            html += '<paper-button class="btnPromptExit">' + globalize.translate(dialogText.buttonCancel) + '</paper-button>';
+            html += '</div>';
         }
 
         html += '</div>';
