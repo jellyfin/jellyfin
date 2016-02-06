@@ -1,4 +1,4 @@
-﻿(function (window, document, $, setTimeout, clearTimeout) {
+﻿define([], function () {
 
     var currentPlayer;
 
@@ -60,7 +60,7 @@
 
         html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="tablet-android" class="mediaButton remoteControlButton"></paper-icon-button>';
         html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
 
         html += '</div>';
@@ -183,11 +183,14 @@
             }
         });
 
-        $('.playlistButton', elem).on('click', function () {
+        elem.querySelector('.remoteControlButton').addEventListener('click', function () {
 
-            $.mobile.changePage('nowplaying.html', {
-                dataUrl: 'nowplaying.html#playlist'
-            });
+            showRemoteControl();
+        });
+
+        elem.querySelector('.playlistButton').addEventListener('click', function () {
+
+            showRemoteControl('playlist');
         });
 
         toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
@@ -247,6 +250,17 @@
                 this.pinValue = Dashboard.getDisplayTime(ticks);
             };
         }, 300);
+    }
+
+    function showRemoteControl(tab) {
+
+        if (tab) {
+            $.mobile.changePage('nowplaying.html', {
+                dataUrl: 'nowplaying.html#' + tab
+            });
+        } else {
+            Dashboard.navigate('nowplaying.html');
+        }
     }
 
     var nowPlayingBarElement;
@@ -645,4 +659,4 @@
 
     bindToPlayer(MediaController.getCurrentPlayer());
 
-})(window, document, jQuery, setTimeout, clearTimeout);
+});
