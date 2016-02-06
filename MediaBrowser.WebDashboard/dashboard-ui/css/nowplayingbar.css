@@ -114,7 +114,7 @@
             height: 80px;
             background-position: center center;
             background-repeat: no-repeat;
-            background-size: cover;
+            background-size: contain;
         }
 
 .nowPlayingBarText {
