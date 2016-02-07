@@ -12,6 +12,7 @@
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabActivityLog}</a>
                     <a href="autoorganizetv.html" data-role="button">${TabTV}</a>
+                    <a href="autoorganizesmart.html" data-role="button">${TabSmartMatch}</a>
                 </div>
 
                 <div style="margin: -25px 0 1em; text-align: right;">
@@ -79,6 +80,11 @@
                         <label for="txtEndingEpisode">${LabelEndingEpisodeNumber}</label>
                         <input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" />
                         <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
+                    </div>
+                    <div style="margin: 1em 0;">
+                        <label>${TabSmartMatch}</label>
+                        <input type="checkbox" id="chkRememberCorrection" name="chkRememberCorrection" data-mini="true" />
+                        <label for="chkRememberCorrection">${LabelOrganizeSmartMatchOption} '<span class="extractedName" />' </label>
                     </div>
 
                     <p>
