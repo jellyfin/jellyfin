@@ -140,12 +140,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var options = GetAutoOrganizeptions();
 
-            var items = options.SmartMatchInfos.Skip(query.StartIndex ?? 0).Take(query.Limit ?? Int32.MaxValue);
+            var items = options.SmartMatchInfos.Skip(query.StartIndex ?? 0).Take(query.Limit ?? Int32.MaxValue).ToArray();
 
             return new QueryResult<SmartMatchInfo>()
             {
-                Items = items.ToArray(),
-                TotalRecordCount = items.Count()
+                Items = items,
+                TotalRecordCount = options.SmartMatchInfos.Length
             };
         }
 
@@ -165,14 +165,19 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var options = GetAutoOrganizeptions();
 
-            SmartMatchInfo info = options.SmartMatchInfos.Find(i => i.Id == Id);
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.Id, IdString));
 
             if (info != null && info.MatchStrings.Contains(matchString))
             {
-                info.MatchStrings.Remove(matchString);
-                if (info.MatchStrings.Count == 0)
+                var list = info.MatchStrings.ToList();
+                list.Remove(matchString);
+                info.MatchStrings = list.ToArray();
+
+                if (info.MatchStrings.Length == 0)
                 {
-                    options.SmartMatchInfos.Remove(info);
+                    var infos = options.SmartMatchInfos.ToList();
+                    infos.Remove(info);
+                    options.SmartMatchInfos = infos.ToArray();
                 }
 
                 _config.SaveAutoOrganizeOptions(options);
