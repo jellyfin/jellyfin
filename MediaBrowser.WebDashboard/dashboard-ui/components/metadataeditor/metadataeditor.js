@@ -729,7 +729,7 @@
             html += '</li>';
         }
 
-        //elem.html(html).listview('refresh');
+        //elem.html(html);
 
         $('.btnDeletePerson', elem).on('click', function () {
 

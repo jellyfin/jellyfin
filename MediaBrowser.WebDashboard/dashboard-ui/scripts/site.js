@@ -1958,6 +1958,8 @@ var AppInfo = {};
         define("paper-icon-item", ["html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
         define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
+        define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
+
         define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
@@ -1969,7 +1971,7 @@ var AppInfo = {};
 
         define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview", 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+        define("jqmlistview", ['css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
         define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
@@ -2238,12 +2240,7 @@ var AppInfo = {};
                     depends = depends || [];
 
                     if (newHtml.indexOf('type-interior') != -1) {
-                        depends.push('jqmpopup');
-                        depends.push('jqmlistview');
-                        depends.push('jqmcollapsible');
-                        depends.push('jqmcontrolgroup');
-                        depends.push('jqmcheckbox');
-                        depends.push('scripts/notifications');
+                        addLegacyDependencies(depends, window.location.href);
                     }
 
                     require(depends, function () {
@@ -2507,6 +2504,21 @@ var AppInfo = {};
     }
 
 })();
+
+function addLegacyDependencies(depends, url) {
+
+    var isPluginpage = url.toLowerCase().indexOf('/configurationpage?') != -1;
+
+    if (isPluginpage) {
+        depends.push('jqmpopup');
+        depends.push('jqmcollapsible');
+    }
+
+    depends.push('jqmcontrolgroup');
+    depends.push('jqmlistview');
+    depends.push('jqmcheckbox');
+    depends.push('scripts/notifications');
+}
 
 function pageClassOn(eventName, className, fn) {
 

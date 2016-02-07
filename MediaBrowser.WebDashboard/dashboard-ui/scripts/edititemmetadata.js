@@ -596,7 +596,7 @@
             html += '</li>';
         }
 
-        elem.html(html).listview('refresh');
+        elem.html(html);
 
         $('.btnDeletePerson', elem).on('click', function () {
 
@@ -716,7 +716,7 @@
         for (var i = 0; i < items.length; i++) {
             html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
         }
-        list.html(html).listview('refresh');
+        list.html(html);
     }
 
     function editableListViewValues(list) {
@@ -1008,7 +1008,6 @@
         self.removeElementFromListview = function (source) {
             var list = $(source).parents('ul[data-role="listview"]');
             $(source).parent().remove();
-            list.listview('refresh');
         };
 
         self.onRefreshFormSubmit = function () {

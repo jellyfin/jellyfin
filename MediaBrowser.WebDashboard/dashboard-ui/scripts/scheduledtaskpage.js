@@ -18,37 +18,39 @@ var ScheduledTaskPage = {
 
     loadScheduledTask: function (task) {
 
-        var page = $.mobile.activePage;
+        var page = $($.mobile.activePage)[0];
 
         $('.taskName', page).html(task.Name);
 
         $('#pTaskDescription', page).html(task.Description);
 
-        ScheduledTaskPage.loadTaskTriggers(task);
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+            ScheduledTaskPage.loadTaskTriggers(page, task);
+        });
 
         Dashboard.hideLoadingMsg();
     },
 
-    loadTaskTriggers: function (task) {
+    loadTaskTriggers: function (context, task) {
 
         var html = '';
 
-        html += '<li data-role="list-divider"><h3>' + Globalize.translate('HeaderTaskTriggers') + '</h3></li>';
+        html += '<div class="paperList">';
 
         for (var i = 0, length = task.Triggers.length; i < length; i++) {
 
             var trigger = task.Triggers[i];
 
-            html += '<li>';
+            html += '<paper-icon-item>';
 
-            html += '<a href="#">';
+            html += '<paper-fab mini icon="schedule" item-icon></paper-fab>';
 
-            html += '<h3>';
-            html += ScheduledTaskPage.getTriggerFriendlyName(trigger);
-            html += '</h3>';
+            html += '<paper-item-body two-line>';
+
+            html += "<div>" + ScheduledTaskPage.getTriggerFriendlyName(trigger) + "</div>";
 
             if (trigger.MaxRuntimeMs) {
-                html += '<p>';
+                html += '<div secondary>';
 
                 var hours = trigger.MaxRuntimeMs / 3600000;
 
@@ -57,19 +59,19 @@ var ScheduledTaskPage = {
                 } else {
                     html += Globalize.translate('ValueTimeLimitMultiHour', hours);
                 }
-                html += '</p>';
+                html += '</div>';
             }
 
-            html += '</a>';
+            html += '</paper-item-body>';
 
-            html += '<a href="#" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');">';
-            html += Globalize.translate('Delete');
-            html += '</a>';
+            html += '<paper-icon-button icon="delete" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"></paper-icon-button>';
 
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        $('#ulTaskTriggers', $.mobile.activePage).html(html).listview('refresh');
+        html += '</div>';
+
+        context.querySelector('.taskTriggers').innerHTML = html;
     },
 
     getTriggerFriendlyName: function (trigger) {
