@@ -301,20 +301,25 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private void SaveSmartMatchString(string matchString, Series series, AutoOrganizeOptions options)
         {
-            SmartMatchInfo info = options.SmartMatchInfos.Find(i => i.Id == series.Id);
+            var seriesIdString = series.Id.ToString("N");
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.Id, seriesIdString));
 
             if (info == null)
             {
                 info = new SmartMatchInfo();
-                info.Id = series.Id;
+                info.Id = series.Id.ToString("N");
                 info.OrganizerType = FileOrganizerType.Episode;
                 info.Name = series.Name;
-                options.SmartMatchInfos.Add(info);
+                var list = options.SmartMatchInfos.ToList();
+                list.Add(info);
+                options.SmartMatchInfos = list.ToArray();
             }
 
             if (!info.MatchStrings.Contains(matchString, StringComparer.OrdinalIgnoreCase))
             {
-                info.MatchStrings.Add(matchString);
+                var list = info.MatchStrings.ToList();
+                list.Add(matchString);
+                info.MatchStrings = list.ToArray();
                 _config.SaveAutoOrganizeOptions(options);
             }
         }
@@ -487,14 +492,14 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (series == null)
             {
-                SmartMatchInfo info = options.SmartMatchInfos.Where(e => e.MatchStrings.Contains(seriesName, StringComparer.OrdinalIgnoreCase)).FirstOrDefault();
+                SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(e => e.MatchStrings.Contains(seriesName, StringComparer.OrdinalIgnoreCase));
 
                 if (info != null)
                 {
-                    series = _libraryManager.RootFolder.GetRecursiveChildren(i => i is Series)
+                    series = _libraryManager.RootFolder
+                        .GetRecursiveChildren(i => i is Series)
                         .Cast<Series>()
-                        .Where(i => i.Id == info.Id)
-                        .FirstOrDefault();
+                        .FirstOrDefault(i => string.Equals(i.Id.ToString("N"), info.Id));
                 }
             }
 
