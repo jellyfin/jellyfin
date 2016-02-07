@@ -1639,7 +1639,15 @@ var AppInfo = {};
 
     function initializeApiClient(apiClient) {
 
-        apiClient.enableAppStorePolicy = AppInfo.enableAppStorePolicy;
+        if (AppInfo.enableAppStorePolicy) {
+            apiClient.getAvailablePlugins = function() {
+                return Promise.resolve([]);
+            };
+            apiClient.getInstalledPlugins = function () {
+                return Promise.resolve([]);
+            };
+        }
+
         apiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
@@ -1973,7 +1981,7 @@ var AppInfo = {};
 
         define("jqmlistview", ['css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
+        define("jqmcontrolgroup", ['css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
         define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 

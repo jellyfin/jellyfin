@@ -78,7 +78,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['paper-checkbox', 'paper-input'], function () {
+            require(['paper-checkbox', 'paper-input', 'jqmcollapsible'], function () {
                 renderFormInternal(options);
                 resolve();
             });

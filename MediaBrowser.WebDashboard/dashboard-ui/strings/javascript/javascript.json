@@ -129,6 +129,7 @@
     "HeaderDeleteTaskTrigger": "Delete Task Trigger",
     "MessageDeleteTaskTrigger": "Are you sure you wish to delete this task trigger?",
     "MessageNoPluginsInstalled": "You have no plugins installed.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} installed",
     "LabelNumberReviews": "{0} Reviews",
     "LabelFree": "Free",

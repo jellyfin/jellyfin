@@ -4,47 +4,60 @@
 
         var page = this;
 
-        var apiClient = ApiClient;
 
-        apiClient.getJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
+        require(['paper-fab', 'paper-progress', 'paper-item-body', 'paper-icon-item'], function () {
 
-            var html = '';
+            var apiClient = ApiClient;
 
-            html += '<ul data-role="listview" data-inset="true">';
+            apiClient.getJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
 
-            html += logs.map(function (log) {
+                var html = '';
 
-                var logUrl = apiClient.getUrl('System/Logs/Log', {
-                    name: log.Name
-                });
+                html += '<div class="paperList">';
 
-                logUrl += "&api_key=" + apiClient.accessToken();
+                html += logs.map(function (log) {
 
-                var logHtml = '<li><a href="' + logUrl + '" target="_blank">';
+                    var logUrl = apiClient.getUrl('System/Logs/Log', {
+                        name: log.Name
+                    });
 
-                logHtml += '<h3>';
-                logHtml += log.Name;
-                logHtml += '</h3>';
+                    logUrl += "&api_key=" + apiClient.accessToken();
 
-                var date = parseISO8601Date(log.DateModified, { toLocal: true });
+                    var logHtml = '';
+                    logHtml += '<paper-icon-item>';
 
-                var text = date.toLocaleDateString();
+                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank">';
+                    logHtml += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
+                    logHtml += "</a>";
 
-                text += ' ' + LibraryBrowser.getDisplayTime(date);
+                    logHtml += '<paper-item-body two-line>';
+                    logHtml += '<a class="clearLink" href="' + logUrl + '" target="_blank">';
 
-                logHtml += '<p>' + text + '</p>';
+                    logHtml += "<div>" + log.Name + "</div>";
 
-                logHtml += '</li>';
+                    var date = parseISO8601Date(log.DateModified, { toLocal: true });
 
-                return logHtml;
+                    var text = date.toLocaleDateString();
 
-            })
-                .join('');
+                    text += ' ' + LibraryBrowser.getDisplayTime(date);
 
-            html += '</ul>';
+                    logHtml += '<div secondary>' + text + '</div>';
 
-            $('.serverLogs', page).html(html).trigger('create');
+                    logHtml += "</a>";
+                    logHtml += '</paper-item-body>';
 
+                    logHtml += '</paper-icon-item>';
+
+                    return logHtml;
+
+                })
+                    .join('');
+
+                html += '</div>';
+
+                $('.serverLogs', page).html(html).trigger('create');
+
+            });
         });
     });
 
