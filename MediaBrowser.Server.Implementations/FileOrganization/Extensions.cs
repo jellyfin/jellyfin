@@ -10,6 +10,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             return manager.GetConfiguration<AutoOrganizeOptions>("autoorganize");
         }
+        public static void SaveAutoOrganizeOptions(this IConfigurationManager manager, AutoOrganizeOptions options)
+        {
+            manager.SaveConfiguration("autoorganize", options);
+        }
     }
 
     public class AutoOrganizeOptionsFactory : IConfigurationFactory
