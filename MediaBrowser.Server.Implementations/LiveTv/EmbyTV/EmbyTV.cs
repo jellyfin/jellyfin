@@ -171,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     epgData = GetEpgDataForChannel(timer.ChannelId);
                 }
-                await UpdateTimersForSeriesTimer(epgData, timer, false).ConfigureAwait(false);
+                await UpdateTimersForSeriesTimer(epgData, timer, true).ConfigureAwait(false);
             }
 
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
