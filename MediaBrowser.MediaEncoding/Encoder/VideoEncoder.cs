@@ -96,7 +96,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 args += GetOutputSizeParam(state, videoCodec);
             }
 
-            var qualityParam = GetVideoQualityParam(state, videoCodec, false);
+            var qualityParam = GetVideoQualityParam(state, videoCodec);
 
             if (!string.IsNullOrEmpty(qualityParam))
             {

@@ -1,11 +1,11 @@
 ﻿(function () {
 
-    $(document).on('pageshow', "#logPage", function () {
+    $(document).on('pagebeforeshow', "#logPage", function () {
 
         var page = this;
+        Dashboard.showLoadingMsg();
 
-
-        require(['paper-fab', 'paper-progress', 'paper-item-body', 'paper-icon-item'], function () {
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
 
             var apiClient = ApiClient;
 
@@ -56,6 +56,7 @@
                 html += '</div>';
 
                 $('.serverLogs', page).html(html).trigger('create');
+                Dashboard.hideLoadingMsg();
 
             });
         });
