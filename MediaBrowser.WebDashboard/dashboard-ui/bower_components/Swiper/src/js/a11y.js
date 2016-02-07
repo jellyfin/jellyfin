@@ -59,17 +59,15 @@ s.a11y = {
     },
     init: function () {
         // Setup accessibility
-        if (s.params.nextButton) {
-            var nextButton = $(s.params.nextButton);
-            s.a11y.makeFocusable(nextButton);
-            s.a11y.addRole(nextButton, 'button');
-            s.a11y.addLabel(nextButton, s.params.nextSlideMessage);
+        if (s.params.nextButton && s.nextButton && s.nextButton.length > 0) {
+            s.a11y.makeFocusable(s.nextButton);
+            s.a11y.addRole(s.nextButton, 'button');
+            s.a11y.addLabel(s.nextButton, s.params.nextSlideMessage);
         }
-        if (s.params.prevButton) {
-            var prevButton = $(s.params.prevButton);
-            s.a11y.makeFocusable(prevButton);
-            s.a11y.addRole(prevButton, 'button');
-            s.a11y.addLabel(prevButton, s.params.prevSlideMessage);
+        if (s.params.prevButton && s.prevButton && s.prevButton.length > 0) {
+            s.a11y.makeFocusable(s.prevButton);
+            s.a11y.addRole(s.prevButton, 'button');
+            s.a11y.addLabel(s.prevButton, s.params.prevSlideMessage);
         }
 
         $(s.container).append(s.a11y.liveRegion);
