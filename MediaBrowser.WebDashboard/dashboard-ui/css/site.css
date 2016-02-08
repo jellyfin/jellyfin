@@ -1,4 +1,255 @@
-﻿/* cyrillic-ext */
+﻿/* Swatches */
+
+/* A
+-----------------------------------------------------------------------------------------------------------*/
+
+/* Bar: Toolbars, dividers, slider track */
+.ui-bar-a,
+.ui-page-theme-a .ui-bar-inherit,
+html .ui-bar-a .ui-bar-inherit,
+html .ui-body-a .ui-bar-inherit,
+html body .ui-group-theme-a .ui-bar-inherit {
+    background-color: #e9e9e9 /*{a-bar-background-color}*/;
+    border-color: #ddd /*{a-bar-border}*/;
+    color: #333 /*{a-bar-color}*/;
+    font-weight: bold;
+}
+
+.ui-bar-a {
+    border-width: 1px;
+    border-style: solid;
+}
+
+/* Page and overlay */
+.ui-page-theme-a .ui-panel-wrapper {
+    background-color: #f9f9f9 /*{a-page-background-color}*/;
+    border-color: #bbb /*{a-page-border}*/;
+    color: #333 /*{a-page-color}*/;
+}
+
+/* Body: Read-only lists, text inputs, collapsible content */
+.ui-page-theme-a .ui-body-inherit,
+html .ui-bar-a .ui-body-inherit,
+html .ui-body-a .ui-body-inherit,
+html body .ui-group-theme-a .ui-body-inherit,
+html .ui-panel-page-container-a {
+    background-color: #fff /*{a-body-background-color}*/;
+    border-color: #ddd /*{a-body-border}*/;
+    color: #333 /*{a-body-color}*/;
+}
+
+/* Links */
+.ui-page-theme-a a,
+html .ui-bar-a a,
+html .ui-body-a a,
+html body .ui-group-theme-a a {
+    color: #3388cc /*{a-link-color}*/;
+    font-weight: bold;
+}
+
+    .ui-page-theme-a a:visited,
+    html .ui-bar-a a:visited,
+    html .ui-body-a a:visited,
+    html body .ui-group-theme-a a:visited {
+        color: #3388cc /*{a-link-visited}*/;
+    }
+
+    .ui-page-theme-a a:hover,
+    html .ui-bar-a a:hover,
+    html .ui-body-a a:hover,
+    html body .ui-group-theme-a a:hover {
+        color: #005599 /*{a-link-hover}*/;
+    }
+
+    .ui-page-theme-a a:active,
+    html .ui-bar-a a:active,
+    html .ui-body-a a:active,
+    html body .ui-group-theme-a a:active {
+        color: #005599 /*{a-link-active}*/;
+    }
+
+/* Button up */
+.ui-page-theme-a .ui-btn,
+html .ui-bar-a .ui-btn,
+html .ui-body-a .ui-btn,
+html body .ui-group-theme-a .ui-btn,
+html head + body .ui-btn.ui-btn-a,
+/* Button visited */
+.ui-page-theme-a .ui-btn:visited,
+html .ui-bar-a .ui-btn:visited,
+html .ui-body-a .ui-btn:visited,
+html body .ui-group-theme-a .ui-btn:visited,
+html head + body .ui-btn.ui-btn-a:visited,
+ul[data-role="listview"] a + a {
+    background-color: #f6f6f6 /*{a-bup-background-color}*/;
+    border-color: #ddd /*{a-bup-border}*/;
+    color: #333 /*{a-bup-color}*/;
+}
+    /* Button hover */
+    .ui-page-theme-a .ui-btn:hover,
+    html .ui-bar-a .ui-btn:hover,
+    html .ui-body-a .ui-btn:hover,
+    html body .ui-group-theme-a .ui-btn:hover,
+    html head + body .ui-btn.ui-btn-a:hover {
+        background-color: #ededed /*{a-bhover-background-color}*/;
+        border-color: #ddd /*{a-bhover-border}*/;
+        color: #333 /*{a-bhover-color}*/;
+    }
+    /* Button down */
+    .ui-page-theme-a .ui-btn:active,
+    html .ui-bar-a .ui-btn:active,
+    html .ui-body-a .ui-btn:active,
+    html body .ui-group-theme-a .ui-btn:active,
+    html head + body .ui-btn.ui-btn-a:active {
+        background-color: #e8e8e8 /*{a-bdown-background-color}*/;
+        border-color: #ddd /*{a-bdown-border}*/;
+        color: #333 /*{a-bdown-color}*/;
+    }
+
+    /* Active button */
+    .ui-page-theme-a .ui-btn.ui-btn-active,
+    html .ui-bar-a .ui-btn.ui-btn-active,
+    html .ui-body-a .ui-btn.ui-btn-active,
+    html body .ui-group-theme-a .ui-btn.ui-btn-active,
+    html head + body .ui-btn.ui-btn-a.ui-btn-active,
+    /* Active checkbox icon */
+    .ui-page-theme-a .ui-checkbox-on:after,
+    html .ui-bar-a .ui-checkbox-on:after,
+    html .ui-body-a .ui-checkbox-on:after,
+    html body .ui-group-theme-a .ui-checkbox-on:after,
+    .ui-btn.ui-checkbox-on.ui-btn-a:after {
+        background-color: #3388cc /*{a-active-background-color}*/;
+        border-color: #3388cc /*{a-active-border}*/;
+        color: #fff /*{a-active-color}*/;
+    }
+/* Active radio button icon */
+.ui-page-theme-a .ui-radio-on:after,
+html .ui-bar-a .ui-radio-on:after,
+html .ui-body-a .ui-radio-on:after,
+html body .ui-group-theme-a .ui-radio-on:after,
+.ui-btn.ui-radio-on.ui-btn-a:after {
+    border-color: #3388cc /*{a-active-background-color}*/;
+}
+
+/* B
+-----------------------------------------------------------------------------------------------------------*/
+
+/* Bar: Toolbars, dividers, slider track */
+.ui-bar-b,
+.ui-page-theme-b .ui-bar-inherit,
+html .ui-bar-b .ui-bar-inherit,
+html .ui-body-b .ui-bar-inherit,
+html body .ui-group-theme-b .ui-bar-inherit {
+    background-color: #1d1d1d /*{b-bar-background-color}*/;
+    border-color: #1b1b1b /*{b-bar-border}*/;
+    color: #fff /*{b-bar-color}*/;
+    font-weight: bold;
+}
+
+.ui-bar-b {
+    border-width: 1px;
+    border-style: solid;
+}
+
+/* Page and overlay */
+.ui-page-theme-b .ui-panel-wrapper {
+    background-color: #252525 /*{b-page-background-color}*/;
+    border-color: #454545 /*{b-page-border}*/;
+    color: #fff /*{b-page-color}*/;
+}
+
+/* Body: Read-only lists, text inputs, collapsible content */
+.ui-page-theme-b .ui-body-inherit,
+html .ui-bar-b .ui-body-inherit,
+html .ui-body-b .ui-body-inherit,
+html body .ui-group-theme-b .ui-body-inherit,
+html .ui-panel-page-container-b {
+    background-color: #2a2a2a /*{b-body-background-color}*/;
+    border-color: #1d1d1d /*{b-body-border}*/;
+    color: #fff /*{b-body-color}*/;
+}
+
+/* Links */
+.ui-body-b a {
+    color: #22aadd /*{b-link-color}*/;
+    font-weight: bold;
+}
+
+    .ui-body-b a:visited {
+        color: #22aadd /*{b-link-visited}*/;
+    }
+
+    .ui-body-b a:hover {
+        color: #0088bb /*{b-link-hover}*/;
+    }
+
+    .ui-body-b a:active {
+        color: #0088bb /*{b-link-active}*/;
+    }
+
+/* Button up */
+.ui-page-theme-b .ui-btn,
+html .ui-bar-b .ui-btn,
+html .ui-body-b .ui-btn,
+html body .ui-group-theme-b .ui-btn,
+html head + body .ui-btn.ui-btn-b,
+/* Button visited */
+.ui-page-theme-b .ui-btn:visited,
+html .ui-bar-b .ui-btn:visited,
+html .ui-body-b .ui-btn:visited,
+html body .ui-group-theme-b .ui-btn:visited,
+html head + body .ui-btn.ui-btn-b:visited {
+    background-color: #333 /*{b-bup-background-color}*/;
+    border-color: #1f1f1f /*{b-bup-border}*/;
+    color: #fff /*{b-bup-color}*/;
+}
+    /* Button hover */
+    .ui-page-theme-b .ui-btn:hover,
+    html .ui-bar-b .ui-btn:hover,
+    html .ui-body-b .ui-btn:hover,
+    html body .ui-group-theme-b .ui-btn:hover,
+    html head + body .ui-btn.ui-btn-b:hover {
+        background-color: #373737 /*{b-bhover-background-color}*/;
+        border-color: #1f1f1f /*{b-bhover-border}*/;
+        color: #fff /*{b-bhover-color}*/;
+    }
+    /* Button down */
+    .ui-page-theme-b .ui-btn:active,
+    html .ui-bar-b .ui-btn:active,
+    html .ui-body-b .ui-btn:active,
+    html body .ui-group-theme-b .ui-btn:active,
+    html head + body .ui-btn.ui-btn-b:active {
+        background-color: #404040 /*{b-bdown-background-color}*/;
+        border-color: #1f1f1f /*{b-bdown-border}*/;
+        color: #fff /*{b-bdown-color}*/;
+    }
+
+    /* Active button */
+    .ui-page-theme-b .ui-btn.ui-btn-active,
+    html .ui-bar-b .ui-btn.ui-btn-active,
+    html .ui-body-b .ui-btn.ui-btn-active,
+    html body .ui-group-theme-b .ui-btn.ui-btn-active,
+    html head + body .ui-btn.ui-btn-b.ui-btn-active,
+    /* Active checkbox icon */
+    .ui-page-theme-b .ui-checkbox-on:after,
+    html .ui-bar-b .ui-checkbox-on:after,
+    html .ui-body-b .ui-checkbox-on:after,
+    html body .ui-group-theme-b .ui-checkbox-on:after,
+    .ui-btn.ui-checkbox-on.ui-btn-b:after {
+        background-color: #22aadd /*{b-active-background-color}*/;
+        border-color: #22aadd /*{b-active-border}*/;
+        color: #fff /*{b-active-color}*/;
+    }
+/* Active radio button icon */
+.ui-page-theme-b .ui-radio-on:after,
+html .ui-bar-b .ui-radio-on:after,
+html .ui-body-b .ui-radio-on:after,
+html body .ui-group-theme-b .ui-radio-on:after,
+.ui-btn.ui-radio-on.ui-btn-b:after {
+    border-color: #22aadd /*{b-active-background-color}*/;
+}
+
+/* cyrillic-ext */
 @font-face {
     font-family: 'Roboto';
     font-style: normal;

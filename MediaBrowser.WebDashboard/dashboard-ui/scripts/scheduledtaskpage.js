@@ -43,7 +43,7 @@ var ScheduledTaskPage = {
 
             html += '<paper-icon-item>';
 
-            html += '<paper-fab mini icon="schedule" item-icon></paper-fab>';
+            html += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
 
             html += '<paper-item-body two-line>';
 
