@@ -835,13 +835,13 @@ paper-input + .fieldDescription {
 }
 
 .ulForm {
+    margin: -1em !important;
     margin-bottom: 20px !important;
 }
 
     .ulForm li:not(.ui-li-divider) {
         background: none;
-        border-top: none;
-        border-bottom: none;
+        border: 0 !important;
     }
 
 .popup .ulForm {
