@@ -149,13 +149,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             };
         }
 
-        public void DeleteSmartMatchEntry(string IdString, string matchString)
+        public void DeleteSmartMatchEntry(string itemName, string matchString)
         {
-            Guid Id;
-
-            if (!Guid.TryParse(IdString, out Id))
+            if (string.IsNullOrEmpty(itemName))
             {
-                throw new ArgumentNullException("Id");
+                throw new ArgumentNullException("itemName");
             }
 
             if (string.IsNullOrEmpty(matchString))
@@ -165,7 +163,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             var options = GetAutoOrganizeptions();
 
-            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.Id, IdString));
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, itemName));
 
             if (info != null && info.MatchStrings.Contains(matchString))
             {
