@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Para",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Ajustes salvos.",
     "AddUser": "Adicionar Usu\u00e1rio",
     "Users": "Usu\u00e1rios",
@@ -946,7 +948,7 @@
     "CinemaModeFeatureDescription": "Cinema Mode oferece uma verdadeira experi\u00eancia de cinema com trailers e introdu\u00e7\u00f5es personalizadas antes do filme.",
     "CoverArt": "Covert Art",
     "ButtonOff": "Desligado",
-    "TitleHardwareAcceleration": "Hardware Acceleration",
-    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "TitleHardwareAcceleration": "Acelera\u00e7\u00e3o de Hardware",
+    "HardwareAccelerationWarning": "Ativar a acelera\u00e7\u00e3o de hardware pode causar instabilidade em alguns casos. Se tiver dificuldades para reproduzir v\u00eddeos depois de ativar isto, ser\u00e1 necess\u00e1rio retornar a op\u00e7\u00e3o para Auto.",
+    "HeaderSelectCodecIntrosPath": "Selecionar o Caminho dos Codecs das Introdu\u00e7\u00f5es"
 }

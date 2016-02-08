@@ -1,4 +1,8 @@
 {
+    "HeaderTaskTriggers": "Aufgabenausl\u00f6ser",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "Organisiere alle zuk\u00fcnftigen Dateien in die ausgew\u00e4hlten Serien deren Name enth\u00e4lt",
+    "TabSmartMatchInfo": "Verwalten Sie Ihre Smart Matches die wir w\u00e4hrend im Berichtigungsdialog der Autoorganisation hinzugef\u00fcgt haben",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -1527,6 +1531,6 @@
     "LabelDisplayName": "Anzeige Name:",
     "HeaderNewRecording": "Neue Aufnahme",
     "ButtonAdvanced": "Erweitert",
-    "LabelCodecIntrosPath": "Codec intros path:",
-    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
+    "LabelCodecIntrosPath": "Codec Intros Verzeichnis:",
+    "LabelCodecIntrosPathHelp": "Ein Verzeichnis welches Video Dateien beinhaltet. Wenn ein Intro Video einem Video codec, audio codec, audio profil oder einem Tag zugeordnet werden kann, so wird es vor dem Hauptfilm gezeigt."
 }

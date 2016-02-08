@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Buraya",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Ayarlar Kaydedildi",
     "AddUser": "Kullan\u0131c\u0131 Ekle",
     "Users": "Kullan\u0131c\u0131lar",

@@ -1,4 +1,8 @@
 {
+    "HeaderTaskTriggers": "Wyzwalacze Zada\u0144",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -1528,5 +1532,5 @@
     "HeaderNewRecording": "Nowe nagranie",
     "ButtonAdvanced": "Zaawansowane",
     "LabelCodecIntrosPath": "Codec intros path:",
-    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

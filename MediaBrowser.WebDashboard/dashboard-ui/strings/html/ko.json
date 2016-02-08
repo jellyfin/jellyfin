@@ -1,4 +1,8 @@
 {
+    "HeaderTaskTriggers": "\uc791\uc5c5 \ud2b8\ub9ac\uac70",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
     "LabelExit": "\uc885\ub8cc",
     "LabelVisitCommunity": "\ucee4\ubba4\ub2c8\ud2f0 \ubc29\ubb38",
     "LabelGithub": "Github",
@@ -1528,5 +1532,5 @@
     "HeaderNewRecording": "New Recording",
     "ButtonAdvanced": "Advanced",
     "LabelCodecIntrosPath": "Codec intros path:",
-    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, or audio profile, then it will be played prior to the main feature."
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

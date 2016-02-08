@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "A",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Configuraci\u00f3 guardada.",
     "AddUser": "Afegir Usuari",
     "Users": "Usuaris",
