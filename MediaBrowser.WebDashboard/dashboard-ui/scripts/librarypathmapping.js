@@ -39,47 +39,49 @@
 
         var html = config.PathSubstitutions.map(function (map) {
 
-            var mapHtml = '<tr>';
+            var mapHtml = '';
+            mapHtml += '<paper-icon-item>';
 
-            mapHtml += '<td style="vertical-align:middle;">';
-            mapHtml += map.From;
-            mapHtml += '</td>';
+            mapHtml += '<paper-fab mini icon="folder" class="blue" item-icon></paper-fab>';
 
-            mapHtml += '<td style="vertical-align:middle;">';
-            mapHtml += map.To;
-            mapHtml += '</td>';
+            mapHtml += '<paper-item-body three-line>';
 
-            mapHtml += '<td>';
+            mapHtml += "<div>" + map.From + "</div>";
+            mapHtml += "<div secondary><b>" + Globalize.translate('HeaderTo') + "</b></div>";
+            mapHtml += "<div secondary>" + map.To + "</div>";
+
+            mapHtml += '</paper-item-body>';
+
             mapHtml += '<paper-icon-button data-index="' + index + '" icon="delete" class="btnDeletePath"></paper-icon-button>';
-            mapHtml += '</td>';
 
-            mapHtml += '</tr>';
+            mapHtml += '</paper-icon-item>';
 
             index++;
 
             return mapHtml;
-        });
 
-        var elem = $('.tbodyPathSubstitutions', page).html(html.join('')).parents('table').table('refresh').trigger('create');
+        }).join('');
+
+        if (config.PathSubstitutions.length) {
+            html = '<div class="paperList">' + html + '</div>';
+        } 
+
+        var elem = $('.pathSubstitutions', page).html(html);
 
         $('.btnDeletePath', elem).on('click', function () {
 
             remove(page, parseInt(this.getAttribute('data-index')));
         });
-
-        if (config.PathSubstitutions.length) {
-            $('#tblPaths', page).show();
-        } else {
-            $('#tblPaths', page).hide();
-        }
     }
 
     function loadPage(page, config) {
 
         currentConfig = config;
 
-        reloadPathMappings(page, config);
-        Dashboard.hideLoadingMsg();
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+            reloadPathMappings(page, config);
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function reload(page) {

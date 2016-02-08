@@ -10,7 +10,7 @@
 
         <div style="padding: 0 0 10px;">
             <div id="fldContentType" style="display:none;">
-                <label for="selectContentType">${LabelContentType}</label>
+                <label for="selectContentType" class="selectLabel">${LabelContentType}</label>
                 <select id="selectContentType" data-mini="true"></select>
             </div>
             <div id="fldPath">
@@ -26,7 +26,7 @@
                 <paper-input id="txtDateAdded" type="date" label="${LabelDateAdded}"></paper-input>
             </div>
             <div id="fldStatus" style="display: none;margin:1em 0;">
-                <label for="selectStatus">${LabelStatus}</label>
+                <label for="selectStatus" class="selectLabel">${LabelStatus}</label>
                 <select id="selectStatus" data-mini="true"></select>
             </div>
             <div id="fldArtist" style="display: none;">
@@ -111,12 +111,12 @@
             </div>
             <div id="fldOfficialRating" style="display: none;">
                 <br />
-                <label for="selectOfficialRating">${LabelParentalRating}</label>
+                <label for="selectOfficialRating" class="selectLabel">${LabelParentalRating}</label>
                 <select id="selectOfficialRating" data-mini="true"></select>
             </div>
             <div id="fldCustomRating" style="display: none;">
                 <br />
-                <label for="selectCustomRating">${LabelCustomRating}</label>
+                <label for="selectCustomRating" class="selectLabel">${LabelCustomRating}</label>
                 <select id="selectCustomRating" data-mini="true"></select>
             </div>
             <div id="fldBudget" style="display: none;">
@@ -133,7 +133,7 @@
             </div>
             <div id="fld3dFormat" style="display: none;">
                 <br />
-                <label for="select3dFormat">${Label3DFormat}</label>
+                <label for="select3dFormat" class="selectLabel">${Label3DFormat}</label>
                 <select id="select3dFormat" data-mini="true">
                     <option value=""></option>
                     <option value="HalfSideBySide">HSBS</option>
@@ -202,7 +202,7 @@
                     <paper-checkbox id="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
                 </div>
                 <div id="fldDisplayOrder" class="fldDisplaySetting">
-                    <label for="selectDisplayOrder" id="labelDisplayOrder">${LabelDisplayOrder}</label>
+                    <label for="selectDisplayOrder" class="selectLabel" id="labelDisplayOrder">${LabelDisplayOrder}</label>
                     <select id="selectDisplayOrder" data-mini="true"></select>
                 </div>
             </div>
@@ -274,23 +274,23 @@
             <h1>${HeaderMetadataSettings}</h1>
             <div>
                 <div>
-                    <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
+                    <label for="selectLanguage" class="selectLabel">${LabelMetadataDownloadLanguage}</label>
                     <select id="selectLanguage" data-mini="true"></select>
                 </div>
                 <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
                 <br />
                 <div>
-                    <label for="selectCountry">${LabelCountry}</label>
+                    <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
                     <select id="selectCountry" data-mini="true"></select>
                 </div>
                 <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
 
                 <div>
                     <br /><br />
-                    <paper-checkbox id="chkLockData" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)">${LabelLockItemToPreventChanges}</paper-checkbox>
+                    <paper-checkbox id="chkLockData">${LabelLockItemToPreventChanges}</paper-checkbox>
                 </div>
                 <br />
-                <div id="providerSettingsContainer" style="display: none">
+                <div class="providerSettingsContainer" style="display: none">
                 </div>
             </div>
         </div>

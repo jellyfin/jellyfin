@@ -189,7 +189,7 @@
 
             li += '</a>';
 
-            li += '<a class="btnDeleteXmlAttribute" href="#" data-index="' + index + '"></a>';
+            li += '<a class="btnDeleteXmlAttribute" href="#" data-icon="delete" data-index="' + index + '"></a>';
 
             li += '</li>';
 
@@ -256,7 +256,7 @@
 
             li += '</a>';
 
-            li += '<a class="btnDeleteProfile" href="#" data-index="' + index + '"></a>';
+            li += '<a class="btnDeleteProfile" href="#" data-icon="delete" data-index="' + index + '"></a>';
 
             li += '</li>';
 

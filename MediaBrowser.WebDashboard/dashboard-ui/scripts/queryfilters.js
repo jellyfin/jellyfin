@@ -15,7 +15,7 @@
         var html = '';
 
         //  style="margin: -.2em -.8em;"
-        html += '<div data-role="controlgroup">';
+        html += '<div>';
 
         var index = 0;
         var idPrefix = 'chk' + selector.substring(1);
