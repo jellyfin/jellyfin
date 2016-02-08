@@ -78,7 +78,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['paper-checkbox', 'paper-input'], function () {
+            require(['paper-checkbox', 'paper-input', 'jqmcollapsible'], function () {
                 renderFormInternal(options);
                 resolve();
             });
@@ -183,7 +183,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html);
+        $(elem).html(html).trigger('create');
 
         $('#selectSyncTarget', elem).on('change', function () {
 

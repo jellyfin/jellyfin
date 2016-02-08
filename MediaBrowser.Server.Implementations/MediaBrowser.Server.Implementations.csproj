@@ -45,6 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CommonIO.1.0.0.7\lib\net45\CommonIO.dll</HintPath>
     </Reference>
+    <Reference Include="Emby.XmlTv">
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.46\lib\net45\Emby.XmlTv.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>

@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Do",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Ustawienia zapisane.",
     "AddUser": "Dodaj u\u017cytkownika",
     "Users": "U\u017cytkownicy",

@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "To",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Asetukset tallennettu.",
     "AddUser": "Lis\u00e4\u00e4 K\u00e4ytt\u00e4j\u00e4",
     "Users": "K\u00e4ytt\u00e4j\u00e4t",

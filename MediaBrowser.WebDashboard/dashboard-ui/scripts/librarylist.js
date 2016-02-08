@@ -852,11 +852,19 @@
 
         require(['hammer'], function (Hammer) {
 
-            var hammertime = new Hammer(element);
+            var manager = new Hammer.Manager(element);
+
+            var press = new Hammer.Press({
+                time: 500
+            });
+
+            manager.add(press);
+
+            //var hammertime = new Hammer(element);
             element.classList.add('hasTapHold');
 
-            hammertime.on('press', onTapHold);
-            hammertime.on('pressup', onTapHoldUp);
+            manager.on('press', onTapHold);
+            manager.on('pressup', onTapHoldUp);
         });
 
         showTapHoldHelp(element);

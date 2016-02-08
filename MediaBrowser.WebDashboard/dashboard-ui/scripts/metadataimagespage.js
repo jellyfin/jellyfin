@@ -206,8 +206,6 @@
 
             elemToMove.parentNode.removeChild(elemToMove);
             $(elemToMove).insertAfter(insertAfter);
-
-            $('.imageFetcherGroup', page).controlgroup('destroy').controlgroup();
         });
 
         $('.btnUp', elem).on('click', function () {
@@ -220,8 +218,6 @@
 
             elemToMove.parentNode.removeChild(elemToMove);
             $(elemToMove).insertBefore(insertBefore);
-
-            $('.imageFetcherGroup', page).controlgroup('destroy').controlgroup();
         });
     }
 
@@ -330,8 +326,6 @@
 
             elemToMove.parentNode.removeChild(elemToMove);
             $(elemToMove).insertAfter(insertAfter);
-
-            $('.metadataFetcherGroup', page).controlgroup('destroy').controlgroup();
         });
 
         $('.btnUp', elem).on('click', function () {
@@ -344,8 +338,6 @@
 
             elemToMove.parentNode.removeChild(elemToMove);
             $(elemToMove).insertBefore(insertBefore);
-
-            $('.metadataFetcherGroup', page).controlgroup('destroy').controlgroup();
         });
     }
 
@@ -551,8 +543,6 @@
                 }
 
             });
-
-            ul.listview('destroy').listview({});
         });
 
         $('#selectItemType', page).on('change', function () {

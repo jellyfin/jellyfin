@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Do",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Nastaven\u00ed ulo\u017eeno.",
     "AddUser": "P\u0159idat u\u017eivatele",
     "Users": "U\u017eivatel\u00e9",

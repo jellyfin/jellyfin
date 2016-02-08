@@ -134,10 +134,16 @@
 
             if (showNoPluginsMessage) {
                 html += '<div style="padding:5px;">';
-                html += '<p>' + Globalize.translate('MessageNoPluginsInstalled') + '</p>';
-                html += '<p><a href="plugincatalog.html">';
-                html += Globalize.translate('BrowsePluginCatalogMessage');
-                html += '</a></p>';
+
+                if (AppInfo.enableAppStorePolicy) {
+                    html += '<p>' + Globalize.translate('MessageNoPluginsDueToAppStore') + '</p>';
+                } else {
+                    html += '<p>' + Globalize.translate('MessageNoPluginsInstalled') + '</p>';
+
+                    html += '<p><a href="plugincatalog.html">';
+                    html += Globalize.translate('BrowsePluginCatalogMessage');
+                    html += '</a></p>';
+                }
                 html += '</div>';
             }
 

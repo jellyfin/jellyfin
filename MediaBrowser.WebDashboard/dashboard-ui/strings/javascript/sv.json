@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Till",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Inst\u00e4llningarna sparade.",
     "AddUser": "Skapa anv\u00e4ndare",
     "Users": "Anv\u00e4ndare",

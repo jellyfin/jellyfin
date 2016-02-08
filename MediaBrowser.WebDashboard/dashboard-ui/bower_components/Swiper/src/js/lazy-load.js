@@ -23,7 +23,7 @@ s.lazy = {
                 srcset = _img.attr('data-srcset');
             s.loadImage(_img[0], (src || background), srcset, false, function () {
                 if (background) {
-                    _img.css('background-image', 'url(' + background + ')');
+                    _img.css('background-image', 'url("' + background + '")');
                     _img.removeAttr('data-background');
                 }
                 else {

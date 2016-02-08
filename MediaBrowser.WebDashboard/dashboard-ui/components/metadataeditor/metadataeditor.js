@@ -65,15 +65,12 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                text: 'Value:',
-                callback: function (text) {
-                    if (text == '') return;
-                    var parent = $(source).parents('.editableListviewContainer');
-                    var list = parent.find('.paperList');
-                    var items = editableListViewValues(list);
-                    items.push(text);
-                    populateListView(list[0], items, sortCallback);
-                }
+                title: 'Value:'
+            }).then(function (text) {
+                var list = $(source).parents('.editableListviewContainer').find('.paperList');
+                var items = editableListViewValues(list);
+                items.push(text);
+                populateListView(list[0], items, sortCallback);
             });
         });
     }
@@ -82,11 +79,66 @@
         $(source).parents('paper-icon-item').remove();
     }
 
+    function editPerson(context, person, index) {
+
+        $('#popupEditPerson', context).popup("open");
+
+        $('#txtPersonName', context).val(person.Name || '');
+        $('#selectPersonType', context).val(person.Type || '');
+        $('#txtPersonRole', context).val(person.Role || '');
+
+        if (index == null) {
+            index = '';
+        }
+
+        $("#fldPersonIndex", context).val(index);
+    }
+
+    function savePersonInfo(page) {
+
+        $('#popupEditPerson', page).popup("close");
+
+        var index = $("#fldPersonIndex", page).val();
+        var person;
+
+        var isNew = true;
+
+        if (index) {
+
+            isNew = false;
+            index = parseInt(index);
+
+            person = currentItem.People[index];
+
+        } else {
+            person = {};
+        }
+
+        person.Name = $('#txtPersonName', page).val();
+        person.Type = $('#selectPersonType', page).val();
+        person.Role = $('#txtPersonRole', page).val();
+
+        if (isNew) {
+            currentItem.People.push(person);
+        }
+
+        populatePeople(page, currentItem.People);
+    }
+
     function init(context) {
 
         $('.btnCancel', context).on('click', function () {
 
             closeDialog(false);
+        });
+
+        context.querySelector('#chkLockData').addEventListener('click', function (e) {
+
+            if (!e.target.checked) {
+                $('.providerSettingsContainer').show();
+            } else {
+                $('.providerSettingsContainer').hide();
+            }
         });
 
         context.addEventListener('click', function (e) {
@@ -104,6 +156,11 @@
         });
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);
+
+        $("#btnAddPerson", context).on('click', function (event, data) {
+
+            editPerson(context, {});
+        });
     }
 
     function getItem(itemId) {
@@ -505,9 +562,9 @@
         var chkLockData = context.querySelector("#chkLockData");
         chkLockData.checked = lockData;
         if (chkLockData.checked) {
-            $('#providerSettingsContainer', context).hide();
+            $('.providerSettingsContainer', context).hide();
         } else {
-            $('#providerSettingsContainer', context).show();
+            $('.providerSettingsContainer', context).show();
         }
         populateInternetProviderSettings(context, item, item.LockedFields);
 
@@ -690,8 +747,6 @@
             html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnRemoveFromEditorList"></paper-icon-button>';
 
             html += '</paper-icon-item>';
-
-            //html += '<li data-mini="true"><a class="data">' + items[i] + '</a><a href="#" onclick="EditItemMetadataPage.removeElementFromListview(this)" class="btnRemoveFromEditorList"></a></li>';
         }
 
         list.innerHTML = html;
@@ -729,7 +784,7 @@
             html += '</li>';
         }
 
-        //elem.html(html).listview('refresh');
+        //elem.html(html);
 
         $('.btnDeletePerson', elem).on('click', function () {
 
@@ -762,7 +817,7 @@
     }
 
     function populateInternetProviderSettings(context, item, lockedFields) {
-        var container = $('#providerSettingsContainer', context);
+        var container = $('.providerSettingsContainer', context);
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [

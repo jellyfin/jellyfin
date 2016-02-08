@@ -1,50 +1,64 @@
 ﻿(function () {
 
-    $(document).on('pageshow', "#logPage", function () {
+    $(document).on('pagebeforeshow', "#logPage", function () {
 
         var page = this;
+        Dashboard.showLoadingMsg();
 
-        var apiClient = ApiClient;
+        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
 
-        apiClient.getJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
+            var apiClient = ApiClient;
 
-            var html = '';
+            apiClient.getJSON(apiClient.getUrl('System/Logs')).then(function (logs) {
 
-            html += '<ul data-role="listview" data-inset="true">';
+                var html = '';
 
-            html += logs.map(function (log) {
+                html += '<div class="paperList">';
 
-                var logUrl = apiClient.getUrl('System/Logs/Log', {
-                    name: log.Name
-                });
+                html += logs.map(function (log) {
 
-                logUrl += "&api_key=" + apiClient.accessToken();
+                    var logUrl = apiClient.getUrl('System/Logs/Log', {
+                        name: log.Name
+                    });
 
-                var logHtml = '<li><a href="' + logUrl + '" target="_blank">';
+                    logUrl += "&api_key=" + apiClient.accessToken();
 
-                logHtml += '<h3>';
-                logHtml += log.Name;
-                logHtml += '</h3>';
+                    var logHtml = '';
+                    logHtml += '<paper-icon-item>';
 
-                var date = parseISO8601Date(log.DateModified, { toLocal: true });
+                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank">';
+                    logHtml += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
+                    logHtml += "</a>";
 
-                var text = date.toLocaleDateString();
+                    logHtml += '<paper-item-body two-line>';
+                    logHtml += '<a class="clearLink" href="' + logUrl + '" target="_blank">';
 
-                text += ' ' + LibraryBrowser.getDisplayTime(date);
+                    logHtml += "<div>" + log.Name + "</div>";
 
-                logHtml += '<p>' + text + '</p>';
+                    var date = parseISO8601Date(log.DateModified, { toLocal: true });
 
-                logHtml += '</li>';
+                    var text = date.toLocaleDateString();
 
-                return logHtml;
+                    text += ' ' + LibraryBrowser.getDisplayTime(date);
 
-            })
-                .join('');
+                    logHtml += '<div secondary>' + text + '</div>';
 
-            html += '</ul>';
+                    logHtml += "</a>";
+                    logHtml += '</paper-item-body>';
 
-            $('.serverLogs', page).html(html).trigger('create');
+                    logHtml += '</paper-icon-item>';
 
+                    return logHtml;
+
+                })
+                    .join('');
+
+                html += '</div>';
+
+                $('.serverLogs', page).html(html).trigger('create');
+                Dashboard.hideLoadingMsg();
+
+            });
         });
     });
 

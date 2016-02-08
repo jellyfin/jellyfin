@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="libraryPathMappingPage" data-role="page" class="page type-interior librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="jqmtable,scripts/librarypathmapping">
+    <div id="libraryPathMappingPage" data-role="page" class="page type-interior librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/librarypathmapping">
 
         <div data-role="content">
             <div class="content-primary">
@@ -17,16 +17,7 @@
                 <div class="readOnlyContent">
                     <p>${PathSubstitutionHelp}</p>
 
-                    <table id="tblPaths" data-role="table" data-mode="reflow" class="ui-responsive">
-                        <thead>
-                            <tr>
-                                <th>${HeaderFrom}</th>
-                                <th>${HeaderTo}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPathSubstitutions"></tbody>
-                    </table>
+                    <div class="pathSubstitutions"></div>
                 </div>
 
                 <br />

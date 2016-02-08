@@ -477,7 +477,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                                   {
-                                      "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css",
                                       "css/site.css",
                                       "css/librarymenu.css",
                                       "css/librarybrowser.css",

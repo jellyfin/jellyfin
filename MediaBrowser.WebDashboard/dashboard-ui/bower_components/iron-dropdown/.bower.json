@@ -1,6 +1,6 @@
 {
   "name": "iron-dropdown",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An unstyled element that works similarly to a native browser select",
   "authors": [
     "The Polymer Authors"
@@ -32,15 +32,15 @@
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "paper-styles": "polymerelements/paper-styles#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "web-component-tester": "*",
+    "web-component-tester": "^4.0.0",
     "iron-image": "polymerelements/iron-image#^1.0.0"
   },
   "ignore": [],
-  "_release": "1.1.0",
+  "_release": "1.2.0",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.0",
-    "commit": "b09b0d57ba917bac9315de4761373d88e85ac52e"
+    "tag": "v1.2.0",
+    "commit": "f864191c6ffbd3aaddea8102102ab40137046327"
   },
   "_source": "git://github.com/polymerelements/iron-dropdown.git",
   "_target": "^1.0.0",

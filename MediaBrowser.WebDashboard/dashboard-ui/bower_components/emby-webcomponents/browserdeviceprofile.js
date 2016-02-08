@@ -51,7 +51,27 @@ define(['browser'], function (browser) {
 
         if (format == 'opus') {
             typeString = 'audio/ogg; codecs="opus"';
-        } else if (format == 'webma') {
+
+            if (document.createElement('audio').canPlayType(typeString).replace(/no/, '')) {
+                return true;
+            }
+
+            // Newer mobile chrome supports it but doesn't report it
+            if (browser.chrome) {
+                var version = (browser.version || '').toString().split('.')[0];
+                try {
+                    version = parseInt(version);
+                    if (version >= 48) {
+                        return true;
+                    }
+                } catch (err) {
+
+                }
+            }
+            return false;
+        }
+
+        if (format == 'webma') {
             typeString = 'audio/webm';
         } else {
             typeString = 'audio/' + format;

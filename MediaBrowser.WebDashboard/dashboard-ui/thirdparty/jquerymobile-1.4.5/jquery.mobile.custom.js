@@ -1196,12 +1196,7 @@
 
                     if (contentElem.classList.contains('type-interior')) {
                         dependencies = dependencies || [];
-                        dependencies.push('jqmpopup');
-                        dependencies.push('jqmlistview');
-                        dependencies.push('jqmcollapsible');
-                        dependencies.push('jqmcontrolgroup');
-                        dependencies.push('jqmcheckbox');
-                        dependencies.push('scripts/notifications');
+                        addLegacyDependencies(dependencies, absUrl);
                     }
 
                     require(dependencies, function () {

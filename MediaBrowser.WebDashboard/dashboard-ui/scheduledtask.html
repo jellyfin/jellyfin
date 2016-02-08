@@ -11,12 +11,17 @@
                 <div class="readOnlyContent">
                     <h2 class="taskName"></h2>
                     <p id="pTaskDescription"></p>
-                    <p>
-                        <button type="button" data-icon="plus" onclick="ScheduledTaskPage.showAddTriggerPopup();">
-                            ${ButtonAddScheduledTaskTrigger}
-                        </button>
-                    </p>
-                    <ul id="ulTaskTriggers" data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="minus"></ul>
+                    <div>
+                        <br />
+                        <h1 style="margin: .6em 0; vertical-align: middle; display: inline-block;">
+                            ${HeaderTaskTriggers}
+                        </h1>
+                        <paper-button raised class="btnInvite submit mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}" onclick="ScheduledTaskPage.showAddTriggerPopup();">
+                            <iron-icon icon="add"></iron-icon>
+                            <span>${ButtonAdd}</span>
+                        </paper-button>
+                    </div>
+                    <div class="taskTriggers"></div>
                 </div>
             </div>
         </div>
@@ -26,10 +31,10 @@
                     <h3>${HeaderAddScheduledTaskTrigger}</h3>
                 </div>
                 <div data-role="content">
-
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectTriggerType">${LabelTriggerType}</label>
+                            <label for="selectTriggerType" class="selectLabel">${LabelTriggerType}</label>
                             <select id="selectTriggerType" name="selectTriggerType" onchange="ScheduledTaskPage.refreshTriggerFields(this.value);">
                                 <option value="DailyTrigger">${OptionDaily}</option>
                                 <option value="WeeklyTrigger">${OptionWeekly}</option>
@@ -39,7 +44,7 @@
                             </select>
                         </li>
                         <li id="fldDayOfWeek">
-                            <label for="selectDayOfWeek">${LabelDay}</label>
+                            <label for="selectDayOfWeek" class="selectLabel">${LabelDay}</label>
                             <select id="selectDayOfWeek" name="selectDayOfWeek">
                                 <option value="Sunday">${OptionSunday}</option>
                                 <option value="Monday">${OptionMonday}</option>
@@ -55,13 +60,13 @@
                             <input type="time" id="txtTimeOfDay" name="txtTimeOfDay" required="required" />
                         </li>
                         <li id="fldSelectSystemEvent">
-                            <label for="selectSystemEvent">${LabelEvent}</label>
+                            <label for="selectSystemEvent" class="selectLabel">${LabelEvent}</label>
                             <select id="selectSystemEvent" name="selectSystemEvent">
                                 <option value="WakeFromSleep">${OptionWakeFromSleep}</option>
                             </select>
                         </li>
                         <li id="fldSelectInterval">
-                            <label for="selectInterval">${LabelEveryXMinutes}</label>
+                            <label for="selectInterval" class="selectLabel">${LabelEveryXMinutes}</label>
                             <select id="selectInterval">
                                 <option value="9000000000">15 minutes</option>
                                 <option value="18000000000">30 minutes</option>

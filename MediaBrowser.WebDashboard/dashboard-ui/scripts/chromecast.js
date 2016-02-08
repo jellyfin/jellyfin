@@ -1,4 +1,4 @@
-﻿define(['https://www.gstatic.com/cv/js/sender/v1/cast_sender.js'], function () {
+﻿define([], function () {
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;
@@ -874,6 +874,10 @@
         }));
     }
 
-    initializeChromecast();
+    var fileref = document.createElement('script');
+    fileref.setAttribute("type", "text/javascript");
+    fileref.onload = initializeChromecast;
+    fileref.setAttribute("src", "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js");
+    document.querySelector('head').appendChild(fileref);
 
 });

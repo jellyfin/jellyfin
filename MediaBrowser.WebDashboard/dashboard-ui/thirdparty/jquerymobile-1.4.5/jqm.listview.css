@@ -1,279 +1,245 @@
-﻿
-
-
-.ui-listview,
-.ui-listview > li {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+﻿ul[data-role="listview"] {
+    border-radius: 3px;
+    border-color: #ddd;
 }
-.ui-content .ui-listview,
-.ui-panel-inner > .ui-listview {
-	margin: -1em;
-}
-.ui-content .ui-listview-inset,
-.ui-panel-inner > .ui-listview-inset {
+
+    ul[data-role="listview"],
+    ul[data-role="listview"] > li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-color: #ddd;
+    }
+
+/*.ui-content ul[data-role="listview"],
+.ui-panel-inner > ul[data-role="listview"] {
 	margin: 1em 0;
+}*/
+
+.ui-collapsible-content > ul[data-role="listview"] {
+    margin: .5em 0;
 }
-.ui-collapsible-content > .ui-listview {
-	margin: -.5em -1em;
+
+ul[data-role="listview"] > li {
+    display: block;
+    position: relative;
+    overflow: visible;
 }
-.ui-collapsible-content > .ui-listview-inset {
-	margin: .5em 0;
+
+    ul[data-role="listview"] > li,
+    ul[data-role="listview"] > li[data-role="list-divider"],
+    ul[data-role="listview"] > li > a {
+        margin: 0;
+        display: block;
+        position: relative;
+        text-align: left;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        color: inherit !important;
+        font-weight: inherit !important;
+        font-size: inherit !important;
+    }
+
+ul[data-role="listview"] > li[data-role="list-divider"] {
+    background: #ddd;
 }
-.ui-listview > li {
-	display: block;
-	position: relative;
-	overflow: visible;
+
+ul[data-role="listview"] > li > a:focus {
+    z-index: 1;
 }
-.ui-listview > .ui-li-static,
-.ui-listview > .ui-li-divider,
-.ui-listview > li > a.ui-btn {
-	margin: 0;
-	display: block;
-	position: relative;
-	text-align: left;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+
+ul[data-role="listview"] > li,
+ul[data-role="listview"] > li[data-role="list-divider"] {
+    border-width: 1px 0 0 0;
+    border-style: solid;
 }
-.ui-listview > li > .ui-btn:focus {
-	z-index: 1;
+
+    ul[data-role="listview"] > li,
+    ul[data-role="listview"] > li[data-role="list-divider"] {
+        border-right-width: 1px;
+        border-left-width: 1px;
+    }
+
+        ul[data-role="listview"] > li:last-child,
+        ul[data-role="listview"] > li[data-role="list-divider"]:last-child,
+        ul[data-role="listview"] > li:last-child > a {
+            border-bottom-width: 1px;
+        }
+
+.ui-collapsible-content > ul[data-role="listview"]:not(ul[data-role="listview"]) > li:first-child,
+.ui-collapsible-content > ul[data-role="listview"]:not(ul[data-role="listview"]) > li:first-child > a {
+    border-top-width: 0;
 }
-.ui-listview > .ui-li-static,
-.ui-listview > .ui-li-divider,
-.ui-listview > li > a.ui-btn {
-	border-width: 1px 0 0 0;
-	border-style: solid;
+
+.ui-collapsible-themed-content ul[data-role="listview"]:not(ul[data-role="listview"]) > li:last-child,
+.ui-collapsible-themed-content ul[data-role="listview"]:not(ul[data-role="listview"]) > li:last-child > a {
+    border-bottom-width: 0;
 }
-.ui-listview-inset > .ui-li-static,
-.ui-listview-inset > .ui-li-divider,
-.ui-listview-inset > li > a.ui-btn {
-	border-right-width: 1px;
-	border-left-width: 1px;
+
+ul[data-role="listview"] > li:first-child,
+ul[data-role="listview"] > li:first-child > a {
+    -webkit-border-top-right-radius: inherit;
+    border-top-right-radius: inherit;
+    -webkit-border-top-left-radius: inherit;
+    border-top-left-radius: inherit;
 }
-.ui-listview > .ui-li-static.ui-last-child,
-.ui-listview > .ui-li-divider.ui-last-child,
-.ui-listview > li.ui-last-child > a.ui-btn {
-	border-bottom-width: 1px;
+
+ul[data-role="listview"] > li:last-child,
+ul[data-role="listview"] > li:last-child > a {
+    -webkit-border-bottom-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+    -webkit-border-bottom-left-radius: inherit;
+    border-bottom-left-radius: inherit;
 }
-.ui-collapsible-content > .ui-listview:not(.ui-listview-inset) > li.ui-first-child,
-.ui-collapsible-content > .ui-listview:not(.ui-listview-inset) > li.ui-first-child > a.ui-btn {
-	border-top-width: 0;
+
+ul[data-role="listview"] > li.ui-li-has-alt > a {
+    -webkit-border-top-right-radius: 0;
+    border-top-right-radius: 0;
+    -webkit-border-bottom-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
-.ui-collapsible-themed-content .ui-listview:not(.ui-listview-inset) > li.ui-last-child,
-.ui-collapsible-themed-content .ui-listview:not(.ui-listview-inset) > li.ui-last-child > a.ui-btn {
-	border-bottom-width: 0;
+
+ul[data-role="listview"] > li:first-child > a + a {
+    -webkit-border-top-left-radius: 0;
+    border-top-left-radius: 0;
+    -webkit-border-top-right-radius: inherit;
+    border-top-right-radius: inherit;
 }
-.ui-listview > li.ui-first-child,
-.ui-listview > li.ui-first-child > a.ui-btn {
-	-webkit-border-top-right-radius: inherit;	
-	border-top-right-radius: inherit;
-	-webkit-border-top-left-radius: inherit;
-	border-top-left-radius: inherit;
+
+ul[data-role="listview"] > li:last-child > a + a {
+    -webkit-border-bottom-left-radius: 0;
+    border-bottom-left-radius: 0;
+    -webkit-border-bottom-right-radius: inherit;
+    border-bottom-right-radius: inherit;
 }
-.ui-listview > li.ui-last-child,
-.ui-listview > li.ui-last-child > a.ui-btn {
-	-webkit-border-bottom-right-radius: inherit;
-	border-bottom-right-radius: inherit;
-	-webkit-border-bottom-left-radius: inherit;
-	border-bottom-left-radius: inherit;
+
+ul[data-role="listview"] > li:first-child img:first-child:not(.ui-li-icon) {
+    -webkit-border-top-left-radius: inherit;
+    border-top-left-radius: inherit;
 }
-.ui-listview > li.ui-li-has-alt > a.ui-btn {
-	-webkit-border-top-right-radius: 0;
-	border-top-right-radius: 0;
-	-webkit-border-bottom-right-radius: 0;
-	border-bottom-right-radius: 0;
+
+ul[data-role="listview"] > li:last-child img:first-child:not(.ui-li-icon) {
+    -webkit-border-bottom-left-radius: inherit;
+    border-bottom-left-radius: inherit;
 }
-.ui-listview > li.ui-first-child > a.ui-btn + a.ui-btn {
-	-webkit-border-top-left-radius: 0;	
-	border-top-left-radius: 0;
-	-webkit-border-top-right-radius: inherit;
-	border-top-right-radius: inherit;
+
+.ui-collapsible-content > ul[data-role="listview"]:not(ul[data-role="listview"]) {
+    -webkit-border-radius: inherit;
+    border-radius: inherit;
 }
-.ui-listview > li.ui-last-child > a.ui-btn + a.ui-btn {
-	-webkit-border-bottom-left-radius: 0;
-	border-bottom-left-radius: 0;
-	-webkit-border-bottom-right-radius: inherit;
-	border-bottom-right-radius: inherit;
+
+ul[data-role="listview"] > li {
+    padding: .7em 1em;
 }
-.ui-listview > li.ui-first-child img:first-child:not(.ui-li-icon) {
-	-webkit-border-top-left-radius: inherit;
-	border-top-left-radius: inherit;	
+
+    ul[data-role="listview"] > li[data-role="list-divider"] {
+        padding: .5em 1.143em;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: default;
+        outline: 0; /* Dividers in custom selectmenus have tabindex */
+    }
+
+        ul[data-role="listview"] > .ui-li-has-count > a,
+        ul[data-role="listview"] > .ui-li-static.ui-li-has-count,
+        ul[data-role="listview"] > li[data-role="list-divider"].ui-li-has-count {
+            padding-right: 2.8125em;
+        }
+
+ul[data-role="listview"] > .ui-li-has-count > .ui-btn-icon-right {
+    padding-right: 4.6875em;
 }
-.ui-listview > li.ui-last-child img:first-child:not(.ui-li-icon) {
-	-webkit-border-bottom-left-radius: inherit;
-	border-bottom-left-radius: inherit;	
-}
-.ui-collapsible-content > .ui-listview:not(.ui-listview-inset) {
-	-webkit-border-radius: inherit;
-	border-radius: inherit;	
-}
-.ui-listview > .ui-li-static {
-	padding: .7em 1em;
-}
-.ui-listview > .ui-li-divider {
-	padding: .5em 1.143em;
-	font-size: 14px;
-	font-weight: bold;
-	cursor: default;
-	outline: 0; /* Dividers in custom selectmenus have tabindex */
-}
-.ui-listview > .ui-li-has-count > .ui-btn,
-.ui-listview > .ui-li-static.ui-li-has-count,
-.ui-listview > .ui-li-divider.ui-li-has-count {
-	padding-right: 2.8125em;
-}
-.ui-listview > .ui-li-has-count > .ui-btn-icon-right {
-	padding-right: 4.6875em;
-}
-.ui-listview > .ui-li-has-thumb > .ui-btn,
-.ui-listview > .ui-li-static.ui-li-has-thumb {
-	min-height: 3.625em;
-	padding-left: 6.25em;
+
+ul[data-role="listview"] > .ui-li-has-thumb > a,
+ul[data-role="listview"] > .ui-li-static.ui-li-has-thumb {
+    min-height: 3.625em;
+    padding-left: 6.25em;
 }
 /* ui-li-has-icon deprecated in 1.4. TODO: remove in 1.5 */
-.ui-listview > .ui-li-has-icon > .ui-btn,
-.ui-listview > .ui-li-static.ui-li-has-icon {
-	min-height: 1.25em;
-	padding-left: 2.5em;
+ul[data-role="listview"] > .ui-li-has-icon > a,
+ul[data-role="listview"] > a + a {
+    min-height: 1.25em;
+    padding-left: 2.5em;
 }
 /* Used by both listview and custom multiple select button */
 .ui-li-count {
-	position: absolute;
-	font-size: 12.5px;
-	font-weight: bold;
-	text-align: center;
-	border-width: 1px;
-	border-style: solid;
-	padding: 0 .48em;
-	line-height: 1.6em;
-	min-height: 1.6em;
-	min-width: .64em;
-	right: .8em;
-	top: 50%;
-	margin-top: -.88em;
+    position: absolute;
+    font-size: 12.5px;
+    font-weight: bold;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    padding: 0 .48em;
+    line-height: 1.6em;
+    min-height: 1.6em;
+    min-width: .64em;
+    right: .8em;
+    top: 50%;
+    margin-top: -.88em;
 }
-.ui-listview .ui-btn-icon-right .ui-li-count {
-	right: 3.2em;
+
+ul[data-role="listview"] .ui-btn-icon-right .ui-li-count {
+    right: 3.2em;
 }
-.ui-listview .ui-li-has-thumb > img:first-child,
-.ui-listview .ui-li-has-thumb > .ui-btn > img:first-child,
-.ui-listview .ui-li-has-thumb .ui-li-thumb {
-	position: absolute;
-	left: 0;
-	top: 0;
-	max-height: 5em;
-	max-width: 5em;
+
+ul[data-role="listview"] > li h1,
+ul[data-role="listview"] > li h2,
+ul[data-role="listview"] > li h3,
+ul[data-role="listview"] > li h4,
+ul[data-role="listview"] > li h5,
+ul[data-role="listview"] > li h6 {
+    font-size: 1em;
+    display: block;
+    margin: .45em 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
-/* ui-li-has-icon deprecated in 1.4. TODO: remove in 1.5 */
-.ui-listview > .ui-li-has-icon > img:first-child,
-.ui-listview > .ui-li-has-icon > .ui-btn > img:first-child {
-	position: absolute;
-	left: .625em;
-	top: .9em;
-	max-height: 1em;
-	max-width: 1em;
+
+ul[data-role="listview"] > li p {
+    font-size: .75em;
+    font-weight: normal;
+    display: block;
+    margin: .6em 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
-.ui-listview > li h1,
-.ui-listview > li h2,
-.ui-listview > li h3,
-.ui-listview > li h4,
-.ui-listview > li h5,
-.ui-listview > li h6 {
-	font-size: 1em;
-	display: block;
-	margin: .45em 0;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+
+ul[data-role="listview"] .ui-li-aside {
+    position: absolute;
+    top: 1em;
+    right: 3.333em;
+    margin: 0;
+    text-align: right;
 }
-.ui-listview > li p {
-	font-size: .75em;
-	font-weight: normal;
-	display: block;
-	margin: .6em 0;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+
+ul[data-role="listview"] > li.ui-li-has-alt > a {
+    margin-right: 2.5em;
+    border-right-width: 0;
 }
-.ui-listview .ui-li-aside {
-	position: absolute;
-	top: 1em;
-	right: 3.333em;
-	margin: 0;
-	text-align: right;
+
+ul[data-role="listview"] > li > a + a {
+    position: absolute;
+    width: 2.5em;
+    height: 100%;
+    min-height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border-left-width: 1px;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 2;
 }
-.ui-listview > li.ui-li-has-alt > .ui-btn {
-	margin-right: 2.5em;
-	border-right-width: 0;
+
+ul[data-role="listview"] > li > a + a {
+    border-right-width: 1px;
 }
-.ui-listview > li.ui-li-has-alt > .ui-btn + .ui-btn {
-	position: absolute;
-	width: 2.5em;
-	height: 100%;
-	min-height: auto;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	border-left-width: 1px;
-	top: 0;
-	right: 0;
-	margin: 0;
-	padding: 0;
-	z-index: 2;
-}
-.ui-listview-inset > li.ui-li-has-alt > .ui-btn + .ui-btn {
-	border-right-width: 1px;
-}
-.ui-listview > li.ui-li-has-alt > .ui-btn + .ui-btn:focus {
-	z-index: 3;
-}
-ol.ui-listview,
-ol.ui-listview > .ui-li-divider {
-	counter-reset: listnumbering;
-}
-ol.ui-listview > li > .ui-btn,
-ol.ui-listview > li.ui-li-static {
-	vertical-align: middle;
-}
-ol.ui-listview > li > .ui-btn:first-child:before,
-ol.ui-listview > li.ui-li-static:before,
-ol.ui-listview > li.ui-field-contain > label:before,
-ol.ui-listview > li.ui-field-contain > .ui-controlgroup-label:before {
-	display: inline-block;
-	font-size: .9em;
-	font-weight: normal;
-	padding-right: .3em;
-	min-width: 1.4em;
-	line-height: 1.5;
-	vertical-align: middle;
-	counter-increment: listnumbering;
-	content: counter(listnumbering) ".";
-}
-ol.ui-listview > li.ui-field-contain:before {
-	content: none;
-	display: none;
-}
-ol.ui-listview > li h1:first-child,
-ol.ui-listview > li h2:first-child,
-ol.ui-listview > li h3:first-child,
-ol.ui-listview > li h4:first-child,
-ol.ui-listview > li h5:first-child,
-ol.ui-listview > li h6:first-child,
-ol.ui-listview > li p:first-child,
-ol.ui-listview > li img:first-child + * {
-	display: inline-block;
-	vertical-align: middle;
-}
-ol.ui-listview > li h1:first-child ~ *,
-ol.ui-listview > li h2:first-child ~ *,
-ol.ui-listview > li h3:first-child ~ *,
-ol.ui-listview > li h4:first-child ~ *,
-ol.ui-listview > li h5:first-child ~ *,
-ol.ui-listview > li h6:first-child ~ *,
-ol.ui-listview > li p:first-child ~ *,
-ol.ui-listview > li img:first-child + * ~ * {
-	margin-top: 0;
-	text-indent: 2.04em; /* (1.4em + .3em) * .9em / .75em */
-}
+
+    ul[data-role="listview"] > li > a + a:focus {
+        z-index: 3;
+    }

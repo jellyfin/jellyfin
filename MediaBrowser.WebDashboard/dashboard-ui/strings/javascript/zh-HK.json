@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "\u5230",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Settings saved.",
     "AddUser": "Add User",
     "Users": "\u7528\u6236",

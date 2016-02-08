@@ -2,7 +2,7 @@
   "name": "swiper",
   "repo": "https://github.com/nolimits4web/Swiper.git",
   "description": "Most modern mobile touch slider and framework with hardware accelerated transitions",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "keywords": ["swiper", "swipe", "slider", "touch", "ios", "mobile", "cordova", "phonegap", "app", "framework", "carousel", "gallery"],
   "dependencies": {
   },

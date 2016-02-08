@@ -1,4 +1,6 @@
 {
+    "HeaderTo": "Za",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "SettingsSaved": "Postavke snimljene",
     "AddUser": "Dodaj korisnika",
     "Users": "Korisnici",

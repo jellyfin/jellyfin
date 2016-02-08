@@ -118,10 +118,14 @@ Custom property | Description | Default
       this.style.zIndex = this._manager.backdropZ();
       // close only if no element with backdrop is left
       if (this._manager.getBackdrops().length === 0) {
+        // Read style before setting opened.
+        var cs = getComputedStyle(this);
+        var noAnimation = (cs.transitionDuration === '0s' || cs.opacity == 0);
         this._setOpened(false);
-        // complete() will be called after the transition is done.
-        // If animations are disabled via custom-styles, user is expected to call
-        // complete() after close()
+        // In case of no animations, complete
+        if (noAnimation) {
+          this.complete();
+        }
       }
     },
 
