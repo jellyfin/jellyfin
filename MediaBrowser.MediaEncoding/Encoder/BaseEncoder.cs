@@ -568,9 +568,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="videoCodec">The video codec.</param>
-        /// <param name="isHls">if set to <c>true</c> [is HLS].</param>
         /// <returns>System.String.</returns>
-        protected string GetVideoQualityParam(EncodingJob state, string videoCodec, bool isHls)
+        protected string GetVideoQualityParam(EncodingJob state, string videoCodec)
         {
             var param = string.Empty;
 
@@ -648,7 +647,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 param = "-mbd 2";
             }
 
-            param += GetVideoBitrateParam(state, videoCodec, isHls);
+            param += GetVideoBitrateParam(state, videoCodec);
 
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)
@@ -718,7 +717,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return "-pix_fmt yuv420p " + param;
         }
 
-        protected string GetVideoBitrateParam(EncodingJob state, string videoCodec, bool isHls)
+        protected string GetVideoBitrateParam(EncodingJob state, string videoCodec)
         {
             var bitrate = state.OutputVideoBitrate;
 
@@ -737,14 +736,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 // h264
-                if (isHls)
-                {
-                    return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
-                        bitrate.Value.ToString(UsCulture),
-                        (bitrate.Value * 2).ToString(UsCulture));
-                }
-
-                return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                    bitrate.Value.ToString(UsCulture),
+                    (bitrate.Value * 2).ToString(UsCulture));
             }
 
             return string.Empty;

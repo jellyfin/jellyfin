@@ -74,6 +74,34 @@ namespace MediaBrowser.Api.Library
         public bool RememberCorrection { get; set; }
     }
 
+    [Route("/Library/FileOrganizationSmartMatch", "GET", Summary = "Gets smart match entries")]
+    public class GetSmartMatchInfos : IReturn<QueryResult<SmartMatchInfo>>
+    {
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+    }
+
+    [Route("/Library/FileOrganizationSmartMatch/{Id}/Delete", "POST", Summary = "Deletes a smart match entry")]
+    public class DeleteSmartMatchEntry
+    {
+        [ApiMember(Name = "Id", Description = "Item ID", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "MatchString", Description = "SmartMatch String", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string MatchString { get; set; }
+    }
+
     [Authenticated(Roles = "Admin")]
     public class FileOrganizationService : BaseApiService
     {
@@ -129,6 +157,22 @@ namespace MediaBrowser.Api.Library
             });
 
             Task.WaitAll(task);
+        }
+
+        public object Get(GetSmartMatchInfos request)
+        {
+            var result = _iFileOrganizationService.GetSmartMatchInfos(new FileOrganizationResultQuery
+            {
+                Limit = request.Limit,
+                StartIndex = request.StartIndex
+            });
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public void Post(DeleteSmartMatchEntry request)
+        {
+            _iFileOrganizationService.DeleteSmartMatchEntry(request.Id, request.MatchString);
         }
     }
 }
