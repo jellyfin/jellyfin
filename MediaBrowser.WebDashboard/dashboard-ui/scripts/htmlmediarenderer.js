@@ -10,23 +10,7 @@
         var mediaElement;
         var self = this;
 
-        function hideStatusBar() {
-            if (options.type == 'video' && window.StatusBar) {
-                //StatusBar.backgroundColorByName("black");
-                //StatusBar.overlaysWebView(true);
-                StatusBar.hide();
-            }
-        }
-
-        function showStatusBar() {
-            if (options.type == 'video' && window.StatusBar) {
-                StatusBar.show();
-                //StatusBar.overlaysWebView(false);
-            }
-        }
-
         function onEnded() {
-            showStatusBar();
             Events.trigger(self, 'ended');
         }
 
@@ -87,7 +71,6 @@
             var errorCode = elem.error ? elem.error.code : '';
             console.log('Media element error code: ' + errorCode);
 
-            showStatusBar();
             Events.trigger(self, 'error');
         }
 
@@ -129,8 +112,6 @@
         }
 
         function onOneVideoPlaying(e) {
-
-            hideStatusBar();
 
             var element = e.target;
             element.removeEventListener('playing', onOneVideoPlaying);
@@ -507,8 +488,6 @@
                     $(elem).remove();
                 }
             }
-
-            showStatusBar();
         };
 
         self.supportsTextTracks = function () {

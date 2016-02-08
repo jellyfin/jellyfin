@@ -13,10 +13,6 @@
 /* Font
 -----------------------------------------------------------------------------------------------------------*/
 
-html {
-    font-size: 100%;
-}
-
 body,
 button,
 .ui-btn {
@@ -37,13 +33,13 @@ div.ui-controlgroup-label {
 -----------------------------------------------------------------------------------------------------------*/
 
 .ui-btn,
-label.ui-btn {
+label.ui-btn, ul[data-role="listview"] a + a {
     font-weight: bold;
     border-width: 1px;
     border-style: solid;
 }
 
-.ui-btn {
+.ui-btn, ul[data-role="listview"] a + a {
     text-decoration: none !important;
 }
 
@@ -89,7 +85,8 @@ label.ui-btn {
 .ui-btn-icon-right:after,
 .ui-btn-icon-top:after,
 .ui-btn-icon-bottom:after,
-.ui-btn-icon-notext:after {
+.ui-btn-icon-notext:after,
+ul[data-role="listview"] a + a:after {
     background-color: #666 /*{global-icon-color}*/;
     background-color: rgba(0,0,0,.3) /*{global-icon-disc}*/;
     background-position: center center;
@@ -238,7 +235,8 @@ html head + body .ui-btn.ui-btn-a,
 html .ui-bar-a .ui-btn:visited,
 html .ui-body-a .ui-btn:visited,
 html body .ui-group-theme-a .ui-btn:visited,
-html head + body .ui-btn.ui-btn-a:visited {
+html head + body .ui-btn.ui-btn-a:visited,
+ul[data-role="listview"] a + a {
     background-color: #f6f6f6 /*{a-bup-background-color}*/;
     border-color: #ddd /*{a-bup-border}*/;
     color: #333 /*{a-bup-color}*/;
@@ -523,7 +521,7 @@ div.ui-mobile-viewport {
 }
 
 /* Buttons and icons */
-.ui-btn {
+.ui-btn, ul[data-role="listview"] a + a {
     font-size: 16px;
     margin: .5em 0;
     padding: .7em 1em;
@@ -540,7 +538,7 @@ div.ui-mobile-viewport {
     user-select: none;
 }
 
-.ui-btn-icon-notext {
+.ui-btn-icon-notext, ul[data-role="listview"] a + a {
     padding: 0;
     width: 1.75em;
     height: 1.75em;
@@ -588,7 +586,8 @@ div.ui-mobile-viewport {
     .ui-btn-icon-right:after,
     .ui-btn-icon-top:after,
     .ui-btn-icon-bottom:after,
-    .ui-btn-icon-notext:after {
+    .ui-btn-icon-notext:after,
+    ul[data-role="listview"] a + a:after {
         content: "";
         position: absolute;
         display: block;
@@ -598,7 +597,8 @@ div.ui-mobile-viewport {
 
 .ui-btn-icon-notext:after,
 .ui-btn-icon-left:after,
-.ui-btn-icon-right:after {
+.ui-btn-icon-right:after,
+ul[data-role="listview"] a + a:after {
     top: 50%;
     margin-top: -11px;
 }
@@ -623,7 +623,8 @@ div.ui-mobile-viewport {
 
 .ui-btn-icon-notext:after,
 .ui-btn-icon-top:after,
-.ui-btn-icon-bottom:after {
+.ui-btn-icon-bottom:after,
+ul[data-role="listview"] a + a:after {
     left: 50%;
     margin-left: -11px;
 }

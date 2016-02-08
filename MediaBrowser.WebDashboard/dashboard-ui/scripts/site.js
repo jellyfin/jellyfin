@@ -1970,24 +1970,25 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
-        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
+        define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
+        define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
+        define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
-        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
+        define("jqmwidget", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.widget"]);
 
-        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
+        define("jqmslider", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
 
-        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
+        define("jqmpopup", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ['css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+        define("jqmlistview", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ['css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
+        define("jqmcontrolgroup", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
-        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
+        define("jqmcollapsible", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 
-        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
+        define("jqmcheckbox", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
 
-        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
+        define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);

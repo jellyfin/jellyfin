@@ -1,6 +1,6 @@
 ﻿ul[data-role="listview"] {
     border-radius: 3px;
-    border-color: #ccc;
+    border-color: #ddd;
 }
 
     ul[data-role="listview"],
@@ -8,7 +8,7 @@
         margin: 0;
         padding: 0;
         list-style: none;
-        border-color: #ccc;
+        border-color: #ddd;
     }
 
 /*.ui-content ul[data-role="listview"],
@@ -236,10 +236,10 @@ ul[data-role="listview"] > li > a + a {
     z-index: 2;
 }
 
-ul[data-role="listview"] > li.ui-li-has-alt > a + a {
+ul[data-role="listview"] > li > a + a {
     border-right-width: 1px;
 }
 
-    ul[data-role="listview"] > li.ui-li-has-alt > a + a:focus {
+    ul[data-role="listview"] > li > a + a:focus {
         z-index: 3;
     }
