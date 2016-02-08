@@ -757,34 +757,36 @@
         var lastType = '';
         var html = '';
 
-        var elem = $('#peopleList', context);
+        var elem = context.querySelector('#peopleList');
 
         for (var i = 0, length = people.length; i < length; i++) {
 
             var person = people[i];
 
-            var type = person.Type || Globalize.translate('PersonTypePerson');
+            html += '<paper-icon-item>';
 
-            if (type != lastType) {
-                html += '<li data-role="list-divider">' + type + '</li>';
-                lastType = type;
-            }
+            html += '<paper-fab class="btnEditPerson" data-index="' + i + '" mini style="background-color:#444;" icon="person" item-icon></paper-fab>';
 
-            html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
+            html += '<paper-item-body>';
+            html += '<a class="btnEditPerson clearLink" href="#" data-index="' + i + '">';
 
-            html += '<h3>' + (person.Name || '') + '</h3>';
+            html += '<div class="textValue">';
+            html += (person.Name || '');
+            html += '</div>';
 
             if (person.Role && person.Role != lastType) {
-                html += '<p>' + (person.Role) + '</p>';
+                html += '<div secondary>' + (person.Role) + '</div>';
             }
+
             html += '</a>';
+            html += '</paper-item-body>';
 
-            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">' + Globalize.translate('Delete') + '</a>';
+            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnDeletePerson"></paper-icon-button>';
 
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        //elem.html(html);
+        elem.innerHTML = html;
 
         $('.btnDeletePerson', elem).on('click', function () {
 

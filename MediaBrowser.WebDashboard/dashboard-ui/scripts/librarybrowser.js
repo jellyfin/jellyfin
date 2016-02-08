@@ -902,12 +902,12 @@
 
         editMetadata: function (itemId) {
 
-           Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+            //Dashboard.navigate('edititemmetadata.html?id=' + itemId);
 
-            //require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+            require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
 
-            //    metadataeditor.show(itemId);
-            //});
+                metadataeditor.show(itemId);
+            });
         },
 
         showMoreCommands: function (positionTo, itemId, commands) {
