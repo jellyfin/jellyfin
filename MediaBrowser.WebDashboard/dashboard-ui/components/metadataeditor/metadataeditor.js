@@ -81,48 +81,19 @@
 
     function editPerson(context, person, index) {
 
-        $('#popupEditPerson', context).popup("open");
+        require(['components/metadataeditor/personeditor'], function (personeditor) {
 
-        $('#txtPersonName', context).val(person.Name || '');
-        $('#selectPersonType', context).val(person.Type || '');
-        $('#txtPersonRole', context).val(person.Role || '');
+            personeditor.show(person).then(function (updatedPerson) {
 
-        if (index == null) {
-            index = '';
-        }
+                var isNew = index == -1;
 
-        $("#fldPersonIndex", context).val(index);
-    }
+                if (isNew) {
+                    currentItem.People.push(updatedPerson);
+                }
 
-    function savePersonInfo(page) {
-
-        $('#popupEditPerson', page).popup("close");
-
-        var index = $("#fldPersonIndex", page).val();
-        var person;
-
-        var isNew = true;
-
-        if (index) {
-
-            isNew = false;
-            index = parseInt(index);
-
-            person = currentItem.People[index];
-
-        } else {
-            person = {};
-        }
-
-        person.Name = $('#txtPersonName', page).val();
-        person.Type = $('#selectPersonType', page).val();
-        person.Role = $('#txtPersonRole', page).val();
-
-        if (isNew) {
-            currentItem.People.push(person);
-        }
-
-        populatePeople(page, currentItem.People);
+                populatePeople(context, currentItem.People);
+            });
+        });
     }
 
     function init(context) {
@@ -159,7 +130,7 @@
 
         $("#btnAddPerson", context).on('click', function (event, data) {
 
-            editPerson(context, {});
+            editPerson(context, {}, -1);
         });
     }
 
