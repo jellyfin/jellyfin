@@ -43,6 +43,11 @@
                         }
                     });
 
+                    dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
+
+                        paperDialogHelper.close(dlg);
+                    });
+
                     dlg.querySelector('form').addEventListener('submit', function (e) {
 
                         submitted = true;
