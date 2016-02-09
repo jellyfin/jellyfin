@@ -5,12 +5,10 @@
             return;
         }
 
-        $('#chkEnableInternetProviders', page).checked(config.EnableInternetProviders).checkboxradio("refresh");
-        $('#chkSaveLocal', page).checked(config.SaveLocalMeta).checkboxradio("refresh");
+        page.querySelector('#chkEnableInternetProviders').checked = config.EnableInternetProviders;
+        page.querySelector('#chkSaveLocal').checked = config.SaveLocalMeta;
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage);
         $('#selectCountry', page).val(config.MetadataCountryCode);
-
-        $('#selectImageSavingConvention', page).val(config.ImageSavingConvention);
 
         Dashboard.hideLoadingMsg();
     }
@@ -22,10 +20,8 @@
 
         ApiClient.getServerConfiguration().then(function (config) {
 
-            config.ImageSavingConvention = $('#selectImageSavingConvention', form).val();
-
-            config.EnableInternetProviders = $('#chkEnableInternetProviders', form).checked();
-            config.SaveLocalMeta = $('#chkSaveLocal', form).checked();
+            config.EnableInternetProviders = form.querySelector('#chkEnableInternetProviders').checked;
+            config.SaveLocalMeta = form.querySelector('#chkSaveLocal').checked;
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();
 

@@ -949,7 +949,8 @@
             $(this).siblings().removeClass('ui-btn-active');
             $(this).addClass('ui-btn-active');
 
-            var elem = $('.' + this.getAttribute('data-value'), page);
+            var value = this.tagName == 'A' ? this.getAttribute('data-value') : this.value;
+            var elem = $('.' + value, page);
             elem.siblings('.tabContent').hide();
 
             elem.show();

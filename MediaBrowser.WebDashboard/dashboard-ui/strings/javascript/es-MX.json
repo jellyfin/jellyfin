@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Abortada por apagado del servidor)",
     "LabelScheduledTaskLastRan": "Ejecutado hace {0}, tomando {1}.",
     "HeaderDeleteTaskTrigger": "Borrar Disparador de Tarea",
-    "HeaderTaskTriggers": "Disparadores de Tarea",
     "MessageDeleteTaskTrigger": "\u00bfEst\u00e1 seguro de querer eliminar este disparador de tarea?",
     "MessageNoPluginsInstalled": "No tienes extensiones instaladas.",
     "LabelVersionInstalled": "{0} instalado",

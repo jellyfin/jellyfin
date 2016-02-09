@@ -92,6 +92,7 @@ element.
     },
 
     _renderOpened: function() {
+      this.cancelAnimation();
       if (this.withBackdrop) {
         this.backdropElement.open();
       }
@@ -99,6 +100,7 @@ element.
     },
 
     _renderClosed: function() {
+      this.cancelAnimation();
       if (this.withBackdrop) {
         this.backdropElement.close();
       }

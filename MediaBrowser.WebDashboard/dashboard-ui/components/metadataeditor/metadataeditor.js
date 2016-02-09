@@ -1,36 +1,107 @@
-﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea'], function (paperDialogHelper) {
 
     var currentDialog;
     var metadataEditorInfo;
     var currentItem;
 
-    function onWebSocketMessageReceived(e, data) {
-
-        var msg = data;
-
-        if (msg.MessageType === "LibraryChanged") {
-
-            if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
-
-                console.log('Item updated - reloading metadata');
-                reload(currentDialog, currentItem.Id);
-            }
-        }
-    }
-
-    function bindItemChanged() {
-
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessageReceived);
-    }
-
-    function unbindItemChanged() {
-
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
-    }
-
     function closeDialog(isSubmitted) {
 
         paperDialogHelper.close(currentDialog);
+    }
+
+    function submitUpdatedItem(form, item) {
+
+        function afterContentTypeUpdated() {
+
+            Dashboard.alert(Globalize.translate('MessageItemSaved'));
+
+            Dashboard.hideLoadingMsg();
+            closeDialog(true);
+        }
+
+        ApiClient.updateItem(item).then(function () {
+
+            var newContentType = $('#selectContentType', form).val() || '';
+
+            if ((metadataEditorInfo.ContentType || '') != newContentType) {
+
+                ApiClient.ajax({
+
+                    url: ApiClient.getUrl('Items/' + item.Id + '/ContentType', {
+                        ContentType: newContentType
+                    }),
+
+                    type: 'POST'
+
+                }).then(function () {
+                    afterContentTypeUpdated();
+                });
+
+            } else {
+                afterContentTypeUpdated();
+            }
+
+        });
+    }
+
+    function getSelectedAirDays(form) {
+        return $('.chkAirDay:checked', form).map(function () {
+            return this.getAttribute('data-day');
+        }).get();
+    }
+
+    function getAlbumArtists(form) {
+
+        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function (s) {
+
+            return s.length > 0;
+
+        }).map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
+    function getArtists(form) {
+
+        return $('#txtArtist', form).val().trim().split(';').filter(function (s) {
+
+            return s.length > 0;
+
+        }).map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
+    function getDateFromForm(form, element, property) {
+
+        var val = $(element, form).val();
+
+        if (!val) {
+            return null;
+        }
+
+        if (currentItem[property]) {
+
+            var date = parseISO8601Date(currentItem[property], { toLocal: true });
+
+            var parts = date.toISOString().split('T');
+
+            // If the date is the same, preserve the time
+            if (parts[0].indexOf(val) == 0) {
+
+                var iso = parts[1];
+
+                val += 'T' + iso;
+            }
+        }
+
+        return val;
     }
 
     function onSubmit() {
@@ -38,6 +109,98 @@
         Dashboard.showLoadingMsg();
 
         var form = this;
+
+        try {
+            var item = {
+                Id: currentItem.Id,
+                Name: $('#txtName', form).val(),
+                ForcedSortName: $('#txtSortName', form).val(),
+                DisplayMediaType: $('#txtDisplayMediaType', form).val(),
+                CommunityRating: $('#txtCommunityRating', form).val(),
+                VoteCount: $('#txtCommunityVoteCount', form).val(),
+                HomePageUrl: $('#txtHomePageUrl', form).val(),
+                Budget: $('#txtBudget', form).val(),
+                Revenue: $('#txtRevenue', form).val(),
+                CriticRating: $('#txtCriticRating', form).val(),
+                CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
+                IndexNumber: $('#txtIndexNumber', form).val() || null,
+                DisplaySpecialsWithSeasons: form.querySelector('#chkDisplaySpecialsInline').checked,
+                AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
+                DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
+                DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
+                AirsBeforeSeasonNumber: $('#txtAirsBeforeSeason', form).val(),
+                AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
+                AirsBeforeEpisodeNumber: $('#txtAirsBeforeEpisode', form).val(),
+                ParentIndexNumber: $('#txtParentIndexNumber', form).val() || null,
+                DisplayOrder: $('#selectDisplayOrder', form).val(),
+                Players: $('#txtPlayers', form).val(),
+                Album: $('#txtAlbum', form).val(),
+                AlbumArtist: getAlbumArtists(form),
+                ArtistItems: getArtists(form),
+                Metascore: $('#txtMetascore', form).val(),
+                AwardSummary: $('#txtAwardSummary', form).val(),
+                Overview: $('#txtOverview', form).val(),
+                ShortOverview: $('#txtShortOverview', form).val(),
+                Status: $('#selectStatus', form).val(),
+                AirDays: getSelectedAirDays(form),
+                AirTime: $('#txtAirTime', form).val(),
+                Genres: editableListViewValues($("#listGenres", form)),
+                ProductionLocations: editableListViewValues($("#listCountries", form)),
+                Tags: editableListViewValues($("#listTags", form)),
+                Keywords: editableListViewValues($("#listKeywords", form)),
+                Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
+
+                PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
+                DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
+                EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
+                ProductionYear: $('#txtProductionYear', form).val(),
+                AspectRatio: $('#txtOriginalAspectRatio', form).val(),
+                Video3DFormat: $('#select3dFormat', form).val(),
+
+                OfficialRating: $('#selectOfficialRating', form).val(),
+                CustomRating: $('#selectCustomRating', form).val(),
+                People: currentItem.People,
+                LockData: form.querySelector("#chkLockData").checked,
+                LockedFields: $('.selectLockedField', form).get().filter(function (c) {
+                    return !c.checked;
+                }).map(function (c) {
+                    return c.getAttribute('data-value');
+                })
+            };
+
+            item.ProviderIds = $.extend({}, currentItem.ProviderIds || {});
+
+            $('.txtExternalId', form).each(function () {
+
+                var providerkey = this.getAttribute('data-providerkey');
+
+                item.ProviderIds[providerkey] = this.value;
+            });
+
+            item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
+            item.PreferredMetadataCountryCode = $('#selectCountry', form).val();
+
+            if (currentItem.Type == "Person") {
+
+                var placeOfBirth = $('#txtPlaceOfBirth', form).val();
+
+                item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
+            }
+
+            if (currentItem.Type == "Series") {
+
+                // 600000000
+                var seriesRuntime = $('#txtSeriesRuntime', form).val();
+                item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
+            }
+
+            var tagline = $('#txtTagline', form).val();
+            item.Taglines = tagline ? [tagline] : [];
+
+            submitUpdatedItem(form, item);
+        } catch (err) {
+            alert(err);
+        }
 
         // Disable default form submission
         return false;
@@ -81,48 +244,19 @@
 
     function editPerson(context, person, index) {
 
-        $('#popupEditPerson', context).popup("open");
+        require(['components/metadataeditor/personeditor'], function (personeditor) {
 
-        $('#txtPersonName', context).val(person.Name || '');
-        $('#selectPersonType', context).val(person.Type || '');
-        $('#txtPersonRole', context).val(person.Role || '');
+            personeditor.show(person).then(function (updatedPerson) {
 
-        if (index == null) {
-            index = '';
-        }
+                var isNew = index == -1;
 
-        $("#fldPersonIndex", context).val(index);
-    }
+                if (isNew) {
+                    currentItem.People.push(updatedPerson);
+                }
 
-    function savePersonInfo(page) {
-
-        $('#popupEditPerson', page).popup("close");
-
-        var index = $("#fldPersonIndex", page).val();
-        var person;
-
-        var isNew = true;
-
-        if (index) {
-
-            isNew = false;
-            index = parseInt(index);
-
-            person = currentItem.People[index];
-
-        } else {
-            person = {};
-        }
-
-        person.Name = $('#txtPersonName', page).val();
-        person.Type = $('#selectPersonType', page).val();
-        person.Role = $('#txtPersonRole', page).val();
-
-        if (isNew) {
-            currentItem.People.push(person);
-        }
-
-        populatePeople(page, currentItem.People);
+                populatePeople(context, currentItem.People);
+            });
+        });
     }
 
     function init(context) {
@@ -130,6 +264,11 @@
         $('.btnCancel', context).on('click', function () {
 
             closeDialog(false);
+        });
+
+        context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
+
+            context.querySelector('.btnSave').click();
         });
 
         context.querySelector('#chkLockData').addEventListener('click', function (e) {
@@ -159,7 +298,7 @@
 
         $("#btnAddPerson", context).on('click', function (event, data) {
 
-            editPerson(context, {});
+            editPerson(context, {}, -1);
         });
     }
 
@@ -176,10 +315,7 @@
             return ApiClient.getJSON(ApiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
         }
 
-        return new Promise(function (resolve, reject) {
-
-            resolve({});
-        });
+        return Promise.resolve({});
     }
 
     function populateCountries(select, allCountries) {
@@ -757,34 +893,36 @@
         var lastType = '';
         var html = '';
 
-        var elem = $('#peopleList', context);
+        var elem = context.querySelector('#peopleList');
 
         for (var i = 0, length = people.length; i < length; i++) {
 
             var person = people[i];
 
-            var type = person.Type || Globalize.translate('PersonTypePerson');
+            html += '<paper-icon-item>';
 
-            if (type != lastType) {
-                html += '<li data-role="list-divider">' + type + '</li>';
-                lastType = type;
-            }
+            html += '<paper-fab class="btnEditPerson" data-index="' + i + '" mini style="background-color:#444;" icon="person" item-icon></paper-fab>';
 
-            html += '<li><a class="btnEditPerson" href="#" data-index="' + i + '">';
+            html += '<paper-item-body>';
+            html += '<a class="btnEditPerson clearLink" href="#" data-index="' + i + '">';
 
-            html += '<h3>' + (person.Name || '') + '</h3>';
+            html += '<div class="textValue">';
+            html += (person.Name || '');
+            html += '</div>';
 
             if (person.Role && person.Role != lastType) {
-                html += '<p>' + (person.Role) + '</p>';
+                html += '<div secondary>' + (person.Role) + '</div>';
             }
+
             html += '</a>';
+            html += '</paper-item-body>';
 
-            html += '<a class="btnDeletePerson" href="#" data-icon="delete" data-index="' + i + '">' + Globalize.translate('Delete') + '</a>';
+            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnDeletePerson"></paper-icon-button>';
 
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        //elem.html(html);
+        elem.innerHTML = html;
 
         $('.btnDeletePerson', elem).on('click', function () {
 
@@ -858,7 +996,6 @@
 
     function reload(context, itemId) {
 
-        unbindItemChanged();
         Dashboard.showLoadingMsg();
 
         Promise.all([getItem(itemId), getEditorConfig(itemId)]).then(function (responses) {
@@ -902,7 +1039,6 @@
             }
 
             Dashboard.hideLoadingMsg();
-            bindItemChanged(context);
         });
     }
 

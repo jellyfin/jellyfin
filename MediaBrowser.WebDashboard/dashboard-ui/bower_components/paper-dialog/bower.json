@@ -1,7 +1,7 @@
 {
   "name": "paper-dialog",
   "description": "A Material Design dialog",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "authors": "The Polymer Authors",
   "keywords": [
     "web-components",
@@ -19,20 +19,20 @@
   "homepage": "https://github.com/PolymerElements/paper-dialog",
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.0",
+    "neon-animation": "PolymerElements/neon-animation#^1.0.0",
     "paper-dialog-behavior": "PolymerElements/paper-dialog-behavior#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "neon-animation": "PolymerElements/neon-animation#^1.0.0"
+    "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "paper-button": "PolymerElements/paper-button#^1.0.0",
-    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0.0",
-    "paper-menu": "PolymerElements/paper-menu#^1.0.0",
-    "paper-item": "PolymerElements/paper-item#^1.0.0",
     "paper-dialog-scrollable": "PolymerElements/paper-dialog-scrollable#^1.0.0",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0.0",
+    "paper-item": "PolymerElements/paper-item#^1.0.0",
+    "paper-menu": "PolymerElements/paper-menu#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }

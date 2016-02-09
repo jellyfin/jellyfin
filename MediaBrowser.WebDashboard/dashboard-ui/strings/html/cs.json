@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extrakce obr\u00e1zk\u016f kapitol b\u011bhem prohled\u00e1v\u00e1n\u00ed va\u0161\u00ed knihovny.",
     "LabelExtractChaptersDuringLibraryScanHelp": "Jestli\u017ee povol\u00edte, budou sn\u00edmky kapitol extrahov\u00e1ny p\u0159i pravideln\u00e9m prohled\u00e1v\u00e1n\u00ed va\u0161\u00ed knihovny. Pokud zak\u00e1\u017eete budou sn\u00edmky extrahov\u00e1ny b\u011bhem napl\u00e1novan\u00e9 \u00falohy pro extrakci sn\u00edmk\u016f z kapitol, co\u017e umo\u017en\u00ed, p\u0159i pravideln\u00e9m prohled\u00e1v\u00e1n\u00ed va\u0161\u00ed knihovny, dokon\u010dit skenov\u00e1n\u00ed rychleji.",
     "LabelConnectGuestUserName": "Jejich Emby u\u017eivatelsk\u00e9 jm\u00e9no nebo emailov\u00e1 adresa:",
-    "LabelConnectUserName": "Emby u\u017eivatelsk\u00e9 jm\u00e9no\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "P\u0159ipojit tohoto lok\u00e1ln\u00edho u\u017eivatele, aby on-line Emby \u00fa\u010det umo\u017enil snadn\u00fd p\u0159\u00edstup z jak\u00e9koliv aplikace Emby, ani\u017e byste museli zn\u00e1t IP adresu serveru.",
     "ButtonLearnMoreAboutEmbyConnect": "Zjist\u011bte v\u00edce o Emby Connect",
     "LabelExternalPlayers": "Extern\u00ed p\u0159ehr\u00e1va\u010de:",

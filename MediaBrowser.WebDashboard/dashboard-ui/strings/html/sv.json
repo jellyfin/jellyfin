@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extrahera kapitelbildrutor vid genoms\u00f6kning av biblioteket",
     "LabelExtractChaptersDuringLibraryScanHelp": "Om aktiverat extraheras kapitelbildrutor n\u00e4r videor importeras vid genoms\u00f6kning av biblioteket. Om avaktiverat kommer extrahering att ske vid schemalagd kapitelbildrutebehandling, f\u00f6r att snabba upp den regelbundna genoms\u00f6kningen av biblioteket.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "Externa uppspelare:",

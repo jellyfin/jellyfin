@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Abortada pelo desligamento do servidor)",
     "LabelScheduledTaskLastRan": "\u00daltima execu\u00e7\u00e3o {0}, demorando {1}.",
     "HeaderDeleteTaskTrigger": "Excluir Disparador da Tarefa",
-    "HeaderTaskTriggers": "Disparadores de Tarefa",
     "MessageDeleteTaskTrigger": "Deseja realmente excluir este disparador de tarefa?",
     "MessageNoPluginsInstalled": "Voc\u00ea n\u00e3o possui plugins instalados.",
     "LabelVersionInstalled": "{0} instalado",

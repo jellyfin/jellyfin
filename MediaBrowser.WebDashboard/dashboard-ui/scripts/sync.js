@@ -106,7 +106,7 @@
         if (options.readOnlySyncTarget) {
             html += '<paper-input type="text" id="selectSyncTarget" readonly label="' + Globalize.translate('LabelSyncTo') + '"></paper-input>';
         } else {
-            html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
+            html += '<label for="selectSyncTarget" class="selectLabel">' + Globalize.translate('LabelSyncTo') + '</label>';
             html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
             html += targets.map(function (t) {
@@ -126,7 +126,7 @@
 
         html += '<div class="fldProfile" style="display:none;">';
         html += '<br/>';
-        html += '<label for="selectProfile">' + Globalize.translate('LabelProfile') + '</label>';
+        html += '<label for="selectProfile" class="selectLabel">' + Globalize.translate('LabelProfile') + '</label>';
         html += '<select id="selectProfile" data-mini="true">';
         html += '</select>';
         html += '<div class="fieldDescription profileDescription"></div>';
@@ -134,7 +134,7 @@
 
         html += '<div class="fldQuality" style="display:none;">';
         html += '<br/>';
-        html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
+        html += '<label for="selectQuality" class="selectLabel">' + Globalize.translate('LabelQuality') + '</label>';
         html += '<select id="selectQuality" data-mini="true" required="required">';
         html += '</select>';
         html += '<div class="fieldDescription qualityDescription"></div>';

@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Aborted by server shutdown)",
     "LabelScheduledTaskLastRan": "Last ran {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "Delete Task Trigger",
-    "HeaderTaskTriggers": "Task Triggers",
     "MessageDeleteTaskTrigger": "Are you sure you wish to delete this task trigger?",
     "MessageNoPluginsInstalled": "You have no plugins installed.",
     "LabelVersionInstalled": "{0} installed",

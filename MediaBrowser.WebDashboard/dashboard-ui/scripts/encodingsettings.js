@@ -3,7 +3,7 @@
     function loadPage(page, config) {
 
         $('#chkEnableDebugEncodingLogging', page).checked(config.EnableDebugLogging).checkboxradio('refresh');
-        $('#chkEnableThrottle', page).checked(config.EnableThrottling).checkboxradio('refresh');
+        page.querySelector('#chkEnableThrottle').checked = config.EnableThrottling;
 
         $('.radioEncodingQuality', page).each(function () {
 
@@ -32,9 +32,10 @@
                 config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
-                config.EnableThrottling = $('#chkEnableThrottle', form).checked();
                 config.EncodingThreadCount = $('#selectThreadCount', form).val();
                 config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
+
+                config.EnableThrottling = form.querySelector('#chkEnableThrottle').checked;
 
                 ApiClient.updateNamedConfiguration("encoding", config).then(Dashboard.processServerConfigurationUpdateResult);
             });

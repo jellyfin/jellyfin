@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(P\u0159eru\u0161eno p\u0159i vypnut\u00ed serveru)",
     "LabelScheduledTaskLastRan": "Posledn\u00ed spu\u0161t\u011bn\u00ed {0}, zabralo {1}.",
     "HeaderDeleteTaskTrigger": "Zru\u0161it spu\u0161t\u011bn\u00ed \u00falohy",
-    "HeaderTaskTriggers": "Spou\u0161t\u011b\u010de \u00faloh",
     "MessageDeleteTaskTrigger": "Opravdu si p\u0159ejete odebrat spou\u0161t\u011bn\u00ed \u00falohy?",
     "MessageNoPluginsInstalled": "Nem\u00e1te instalov\u00e1ny \u017e\u00e1dn\u00e9 z\u00e1suvn\u00e9 moduly.",
     "LabelVersionInstalled": "{0} instalov\u00e1no",

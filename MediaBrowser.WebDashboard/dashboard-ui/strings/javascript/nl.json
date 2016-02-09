@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Afgebroken door afsluiten van de server)",
     "LabelScheduledTaskLastRan": "Laatste keer {0}, duur {1}.",
     "HeaderDeleteTaskTrigger": "Verwijderen Taak Trigger",
-    "HeaderTaskTriggers": "Taak Triggers",
     "MessageDeleteTaskTrigger": "Weet u zeker dat u deze taak trigger wilt verwijderen?",
     "MessageNoPluginsInstalled": "U heeft geen Plugins ge\u00efnstalleerd.",
     "LabelVersionInstalled": "{0} ge\u00efnstalleerd",
