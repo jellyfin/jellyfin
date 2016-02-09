@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,paper-input">
+    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,14 +19,12 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</label>
-                            <input type="checkbox" id="chkEnablePlayTo" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableDlnaPlayToHelp}</div>
+                            <paper-checkbox type="checkbox" id="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaPlayToHelp}</div>
                         </li>
                         <li>
-                            <label for="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</label>
-                            <input type="checkbox" id="chkEnableDlnaDebugLogging" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
+                            <paper-checkbox type="checkbox" id="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
                         </li>
                         <li>
                             <paper-input type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"></paper-input>

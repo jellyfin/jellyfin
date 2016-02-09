@@ -74,7 +74,7 @@ namespace MediaBrowser.Api.Library
         public bool RememberCorrection { get; set; }
     }
 
-    [Route("/Library/FileOrganizationSmartMatch", "GET", Summary = "Gets smart match entries")]
+    [Route("/Library/FileOrganizations/SmartMatches", "GET", Summary = "Gets smart match entries")]
     public class GetSmartMatchInfos : IReturn<QueryResult<SmartMatchInfo>>
     {
         /// <summary>
@@ -92,13 +92,13 @@ namespace MediaBrowser.Api.Library
         public int? Limit { get; set; }
     }
 
-    [Route("/Library/FileOrganizationSmartMatch/{Id}/Delete", "POST", Summary = "Deletes a smart match entry")]
+    [Route("/Library/FileOrganizations/SmartMatches", "DELETE", Summary = "Deletes a smart match entry")]
     public class DeleteSmartMatchEntry
     {
-        [ApiMember(Name = "Id", Description = "Item ID", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
+        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Name { get; set; }
 
-        [ApiMember(Name = "MatchString", Description = "SmartMatch String", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "MatchString", Description = "SmartMatch String", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string MatchString { get; set; }
     }
 
@@ -172,7 +172,7 @@ namespace MediaBrowser.Api.Library
 
         public void Post(DeleteSmartMatchEntry request)
         {
-            _iFileOrganizationService.DeleteSmartMatchEntry(request.Id, request.MatchString);
+            _iFileOrganizationService.DeleteSmartMatchEntry(request.Name, request.MatchString);
         }
     }
 }
