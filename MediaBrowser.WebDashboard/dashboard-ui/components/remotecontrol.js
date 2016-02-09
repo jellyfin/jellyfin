@@ -551,15 +551,18 @@
         function updateCastIcon(context) {
 
             var info = MediaController.getPlayerInfo();
+            var btnCast = context.querySelector('.nowPlayingCastIcon');
 
             if (info.isLocalPlayer) {
 
-                context.querySelector('.nowPlayingCastIcon').icon = 'cast';
+                btnCast.icon = 'cast';
+                btnCast.classList.remove('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = '';
 
             } else {
 
-                context.querySelector('.nowPlayingCastIcon').icon = 'cast-connected';
+                btnCast.icon = 'cast-connected';
+                btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }
         }

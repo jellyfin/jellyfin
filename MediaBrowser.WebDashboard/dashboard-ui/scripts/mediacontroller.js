@@ -64,7 +64,7 @@
         });
     }
 
-    function showPlayerSelection(button) {
+    function showPlayerSelection(button, enableHistory) {
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -101,6 +101,7 @@
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
+                    enableHistory: enableHistory !== false,
                     callback: function (id) {
 
                         var target = targets.filter(function (t) {

@@ -674,22 +674,24 @@
 
     function updateCastIcon() {
 
+        var context = document;
+
+        var btnCast = context.querySelector('.btnCast');
+
         var info = MediaController.getPlayerInfo();
 
         if (info.isLocalPlayer) {
 
-            $('.btnCast').removeClass('btnActiveCast').each(function () {
-                this.icon = 'cast';
-            });
-            $('.headerSelectedPlayer').html('');
+            btnCast.icon = 'cast';
+            btnCast.classList.remove('btnActiveCast');
+
+            context.querySelector('.headerSelectedPlayer').innerHTML = '';
 
         } else {
 
-            $('.btnCast').addClass('btnActiveCast').each(function () {
-                this.icon = 'cast-connected';
-            });
-
-            $('.headerSelectedPlayer').html((info.deviceName || info.name));
+            btnCast.icon = 'cast-connected';
+            btnCast.classList.add('btnActiveCast');
+            context.querySelector('.headerSelectedPlayer').innerHTML = info.deviceName || info.name;
         }
     }
 
