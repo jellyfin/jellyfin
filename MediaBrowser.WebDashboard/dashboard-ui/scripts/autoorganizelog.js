@@ -3,7 +3,7 @@
     var query = {
 
         StartIndex: 0,
-        Limit: 20
+        Limit: 50
     };
 
     var currentResult;
