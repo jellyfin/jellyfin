@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IHttpClient _httpClient;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
-        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
 
         public UsageReporter(IApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager, ILogger logger)
         {
