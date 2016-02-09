@@ -537,13 +537,21 @@ paper-dialog paper-radio-group paper-radio-button {
 }
 
 div.dialogHeader {
-    margin: 0 0 2.5em !important;
+    margin: 0 0 2em !important;
     padding: .35em .5em;
-    background-color: #101010;
     display: flex;
     align-items: center;
     line-height: normal;
     font-size: 110%;
+}
+
+.background-theme-a div.dialogHeader {
+    background-color: #52B54B;
+    color: #fff;
+}
+
+.background-theme-b div.dialogHeader {
+    background-color: #101010;
 }
 
 .dialogHeaderTitle {
