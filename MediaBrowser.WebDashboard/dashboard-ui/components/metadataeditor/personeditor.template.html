@@ -8,13 +8,13 @@
 <form class="popupEditPersonForm" style="max-width: none;margin:0;">
 
     <div>
-        <paper-input type="text" id="txtPersonName" required="required" label="${LabelName}"></paper-input>
+        <paper-input type="text" class="txtPersonName" required="required" label="${LabelName}"></paper-input>
     </div>
 
     <br />
     <div>
         <label for="selectPersonType" class="selectLabel">${LabelType}</label>
-        <select id="selectPersonType" data-mini="true">
+        <select id="selectPersonType" class="selectPersonType" data-mini="true">
             <option value=""></option>
             <option value="Actor">${OptionActor}</option>
             <option value="Composer">${OptionComposer}</option>
@@ -25,7 +25,7 @@
         </select>
     </div>
     <div>
-        <paper-input type="text" id="txtPersonRole" label="${LabelPersonRole}"></paper-input>
+        <paper-input type="text" class="txtPersonRole" label="${LabelPersonRole}"></paper-input>
         <div class="fieldDescription">${LabelPersonRoleHelp}</div>
     </div>
     <br />

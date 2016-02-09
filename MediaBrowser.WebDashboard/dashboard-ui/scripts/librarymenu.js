@@ -792,6 +792,21 @@
         }
     }
 
+    pageClassOn('pageinit', 'page', function () {
+
+        var page = this;
+
+        var isLibraryPage = page.classList.contains('libraryPage');
+
+        if (isLibraryPage) {
+
+            var navs = page.querySelectorAll('.libraryViewNav');
+            for (var i = 0, length = navs.length; i < length; i++) {
+                initHeadRoom(navs[i]);
+            }
+        }
+    });
+
     pageClassOn('pagebeforeshow', 'page', function () {
 
         var page = this;
@@ -823,11 +838,6 @@
             document.body.classList.add('libraryDocument');
             document.body.classList.remove('dashboardDocument');
             document.body.classList.remove('hideMainDrawer');
-
-            var navs = page.querySelectorAll('.libraryViewNav');
-            for (var i = 0, length = navs.length; i < length; i++) {
-                initHeadRoom(navs[i]);
-            }
         }
         else if (page.classList.contains('type-interior')) {
 

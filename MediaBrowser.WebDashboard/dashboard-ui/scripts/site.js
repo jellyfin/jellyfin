@@ -1640,7 +1640,7 @@ var AppInfo = {};
     function initializeApiClient(apiClient) {
 
         if (AppInfo.enableAppStorePolicy) {
-            apiClient.getAvailablePlugins = function() {
+            apiClient.getAvailablePlugins = function () {
                 return Promise.resolve([]);
             };
             apiClient.getInstalledPlugins = function () {
