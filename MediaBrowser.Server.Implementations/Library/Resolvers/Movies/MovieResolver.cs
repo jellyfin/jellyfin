@@ -479,7 +479,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            return new T
+            var returnVideo = new T
             {
                 Path = folderPaths[0],
 
@@ -489,6 +489,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 Name = result.Stacks[0].Name
             };
+
+            SetIsoType(returnVideo);
+
+            return returnVideo;
         }
 
         private bool IsInvalid(Folder parent, string collectionType)
