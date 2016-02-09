@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "\ub77c\uc774\ube0c\ub7ec\ub9ac\ub97c \uac80\uc0c9\ud560 \ub54c \ucc55\ud130 \uc774\ubbf8\uc9c0 \ucd94\ucd9c",
     "LabelExtractChaptersDuringLibraryScanHelp": "\uc774 \uc635\uc158\uc744 \ucf1c\uba74 \ub77c\uc774\ube0c\ub7ec\ub9ac\ub97c \uac80\uc0c9\ud558\uc5ec \ube44\ub514\uc624\ub97c \uac00\uc838\uc62c \ub54c \ucc55\ud130 \uc774\ubbf8\uc9c0\ub97c \ucd94\ucd9c\ud569\ub2c8\ub2e4. \uc635\uc158\uc744 \ub044\uba74 \uc608\uc57d \uc791\uc5c5\uc744 \ud1b5\ud574 \uc815\uae30\uc801\uc73c\ub85c \ub77c\uc774\ube0c\ub7ec\ub9ac\ub97c \uac80\uc0c9\ud560 \ub54c \ucd94\ucd9c\ud569\ub2c8\ub2e4.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby \uc0ac\uc6a9\uc790\uba85\/\uc774\uba54\uc77c:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Emby Connect\uc5d0 \ub300\ud574\uc11c \uc54c\uc544\ubcf4\uae30",
     "LabelExternalPlayers": "\uc678\ubd80 \uc7ac\uc0dd\uae30:",

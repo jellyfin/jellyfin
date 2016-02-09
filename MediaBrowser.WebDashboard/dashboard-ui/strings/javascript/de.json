@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Durch herunterfahrenden Server abgebrochen)",
     "LabelScheduledTaskLastRan": "Zuletzt ausgef\u00fchrt vor: {0}. Ben\u00f6tigte Zeit: {1}.",
     "HeaderDeleteTaskTrigger": "Entferne Aufgabenausl\u00f6ser",
-    "HeaderTaskTriggers": "Aufgabenausl\u00f6ser",
     "MessageDeleteTaskTrigger": "Bist du dir sicher, dass du diesen Aufgabenausl\u00f6ser entfernen m\u00f6chtest?",
     "MessageNoPluginsInstalled": "Du hast keine Plugins installiert.",
     "LabelVersionInstalled": "{0} installiert",

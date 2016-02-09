@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Przerwano w skuter wy\u0142\u0105czenia serwera)",
     "LabelScheduledTaskLastRan": "Ostation uruchomiono {0}, czas trwania {1}.",
     "HeaderDeleteTaskTrigger": "Usu\u0144 Wyzwalacz Zadania",
-    "HeaderTaskTriggers": "Wyzwalacze Zada\u0144",
     "MessageDeleteTaskTrigger": "Jeste\u015b pewien \u017ce chcesz usun\u0105\u0107 ten wyzwalacz zadania?",
     "MessageNoPluginsInstalled": "Nie masz \u017cadnych wtyczek zainstalowanych.",
     "LabelVersionInstalled": "{0} zainstalowanych",

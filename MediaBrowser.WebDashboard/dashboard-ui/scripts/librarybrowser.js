@@ -902,8 +902,6 @@
 
         editMetadata: function (itemId) {
 
-            //Dashboard.navigate('edititemmetadata.html?id=' + itemId);
-
             require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
 
                 metadataeditor.show(itemId);

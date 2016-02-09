@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Avbrutt av server shutdown)",
     "LabelScheduledTaskLastRan": "Sist kj\u00f8rt {0}, tar {1}.",
     "HeaderDeleteTaskTrigger": "Slett Oppgave Trigger",
-    "HeaderTaskTriggers": "Oppgave Triggers",
     "MessageDeleteTaskTrigger": "Er du sikker p\u00e5 at du vil slette denne oppgave triggeren?",
     "MessageNoPluginsInstalled": "Du har ingen programtillegg installert.",
     "LabelVersionInstalled": "{0} installert.",

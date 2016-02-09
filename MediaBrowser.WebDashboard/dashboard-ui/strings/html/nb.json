@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Hent ut kapittel bilder under bibliotek skann",
     "LabelExtractChaptersDuringLibraryScanHelp": "Hvis aktivert, vil kapittel bilder bli hentet ut mens videoer importeres under bibliotek skanning.\nHvis deaktivert, vil de bli hentet ut under planlagte oppgaver for kapittel bilder, som medf\u00f8rer at vanlig bibliotek skanning blir fortere ferdig.",
     "LabelConnectGuestUserName": "Emby brukernavn eller epostadresse:",
-    "LabelConnectUserName": "Emby brukernavn\/epost",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "L\u00e6r mer om Emby Connect",
     "LabelExternalPlayers": "Eksterne avspillere:",

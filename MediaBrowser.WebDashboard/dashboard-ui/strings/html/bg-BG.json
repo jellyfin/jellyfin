@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "\u0422\u044f\u0445\u043d\u043e\u0442\u043e Emby \u043f\u043e\u0442\u0440\u0435\u0431\u0438\u0442\u0435\u043a\u0441\u043a\u043e \u0438\u043c\u0435 \u0438\u043b\u0438 \u0438\u043c\u0435\u0439\u043b \u0430\u0434\u0440\u0435\u0441:",
-    "LabelConnectUserName": "Emby \u043f\u043e\u0442\u0440\u0435\u0431\u0438\u0442\u0435\u043a\u0441\u043a\u043e \u0438\u043c\u0435\/\u0438\u043c\u0435\u0439\u043b \u0430\u0434\u0440\u0435\u0441:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",

@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Saiba mais sobre o Emby Connect",
     "LabelExternalPlayers": "External players:",

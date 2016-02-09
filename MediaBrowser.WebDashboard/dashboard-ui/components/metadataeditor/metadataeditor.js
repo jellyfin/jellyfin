@@ -315,10 +315,7 @@
             return ApiClient.getJSON(ApiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
         }
 
-        return new Promise(function (resolve, reject) {
-
-            resolve({});
-        });
+        return Promise.resolve({});
     }
 
     function populateCountries(select, allCountries) {

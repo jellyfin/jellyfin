@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(avbr\u00f6ts eftersom servern st\u00e4ngdes av)",
     "LabelScheduledTaskLastRan": "Senast k\u00f6rd {0}, tog {1}",
     "HeaderDeleteTaskTrigger": "Ta bort aktivitetsutl\u00f6sare",
-    "HeaderTaskTriggers": "Aktivitetsutl\u00f6sare",
     "MessageDeleteTaskTrigger": "Vill du ta bort denna aktivitetsutl\u00f6sare?",
     "MessageNoPluginsInstalled": "Inga till\u00e4gg har installerats.",
     "LabelVersionInstalled": "{0} installerade",
