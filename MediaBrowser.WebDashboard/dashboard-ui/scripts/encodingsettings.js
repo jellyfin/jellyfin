@@ -2,7 +2,6 @@
 
     function loadPage(page, config) {
 
-        $('#chkEnableDebugEncodingLogging', page).checked(config.EnableDebugLogging).checkboxradio('refresh');
         page.querySelector('#chkEnableThrottle').checked = config.EnableThrottling;
 
         $('.radioEncodingQuality', page).each(function () {
@@ -28,7 +27,6 @@
 
             ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
-                config.EnableDebugLogging = $('#chkEnableDebugEncodingLogging', form).checked();
                 config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
