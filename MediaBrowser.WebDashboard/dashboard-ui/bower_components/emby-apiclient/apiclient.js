@@ -3414,5 +3414,35 @@
 
             return self.getJSON(url);
         };
+
+        self.getSmartMatchInfos = function (options) {
+
+            options = options || {};
+
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.deleteSmartMatchEntry = function (name, options) {
+
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches", options || {});
+
+            var postData = {
+                Name: name
+            };
+
+            return self.ajax({
+
+                type: "POST",
+                url: url,
+                data: JSON.stringify(postData),
+                contentType: "application/json"
+            });
+        };
     };
 });
