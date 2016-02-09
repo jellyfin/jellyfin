@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Erzeuge Kapitelbilder w\u00e4hrend des scannens der Bibliothek",
     "LabelExtractChaptersDuringLibraryScanHelp": "Fall aktiviert, werden Kapitelbilder w\u00e4hrend des Imports von Videos beim Bibliothekenscan erzeugt. Falls deaktiviert, werden die Kapitelbilder w\u00e4hrend einer eigens daf\u00fcr geplanten Aufgabe erstellt, was den regelm\u00e4\u00dfig Bibliothekenscan beschleunigt.",
     "LabelConnectGuestUserName": "Ihr Emby Benutzername oder Emailadresse:",
-    "LabelConnectUserName": "Emby Benutzername\/ Email-Adresse:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Verbinden Sie diesen lokalen Benutzer mit einem Online Emby Account um vereinfachten Zugriff von jedem Emby Programm zu erhalten, auch ohne die IP-Adresse des Servers zu kennen.",
     "ButtonLearnMoreAboutEmbyConnect": "Erfahren Sie mehr \u00fcber Emby Connect",
     "LabelExternalPlayers": "Externe Abspielger\u00e4te:",

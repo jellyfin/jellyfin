@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings">
+    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -29,8 +29,7 @@
                             <div class="fieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
                         </li>
                         <li>
-                            <label for="txtClientDiscoveryInterval">${LabelEnableDlnaClientDiscoveryInterval}</label>
-                            <input type="number" id="txtClientDiscoveryInterval" min="1" max="300" />
+                            <paper-input type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"></paper-input>
                             <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
                         </li>
                     </ul>

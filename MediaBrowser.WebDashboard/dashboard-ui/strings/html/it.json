@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Estrarre immagini capitolo durante la scansione biblioteca",
     "LabelExtractChaptersDuringLibraryScanHelp": "Se abilitata, le immagini capitolo verranno estratti quando i video vengono importati durante la scansione della libreria. Se disabilitata verranno estratti durante le immagini dei capitoli programmati compito, permettendo la scansione biblioteca regolare per completare pi\u00f9 velocemente.",
     "LabelConnectGuestUserName": "Username di Emby o indirizzo email:",
-    "LabelConnectUserName": "Username\/email di Emby:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Collegare questo utente locale a un account online ricamato per consentire un facile segno-in di accesso da qualsiasi applicazione ricamato senza dover conoscere l'indirizzo IP del server",
     "ButtonLearnMoreAboutEmbyConnect": "Scopri di pi\u00f9 su Emby Connect",
     "LabelExternalPlayers": "Player esterni:",

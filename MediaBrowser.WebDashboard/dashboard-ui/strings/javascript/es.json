@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Abortado por cierre del servidor)",
     "LabelScheduledTaskLastRan": "\u00daltima ejecuci\u00f3n {0}, teniendo {1}.",
     "HeaderDeleteTaskTrigger": "Eliminar tarea de activaci\u00f3n",
-    "HeaderTaskTriggers": "Tareas de activaci\u00f3n",
     "MessageDeleteTaskTrigger": "\u00bfEst\u00e1 seguro que desea eliminar esta tarea de activaci\u00f3n?",
     "MessageNoPluginsInstalled": "No tiene plugins instalados.",
     "LabelVersionInstalled": "{0} instalado",

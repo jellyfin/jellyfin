@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Annul\u00e9 par fermeture du serveur)",
     "LabelScheduledTaskLastRan": "Derni\u00e8re ex\u00e9cution {0}, dur\u00e9e {1}.",
     "HeaderDeleteTaskTrigger": "Supprimer le d\u00e9clencheur de t\u00e2che",
-    "HeaderTaskTriggers": "D\u00e9clencheurs de t\u00e2ches",
     "MessageDeleteTaskTrigger": "\u00cates-vous s\u00fbr de vouloir supprimer ce d\u00e9clencheur de t\u00e2che?",
     "MessageNoPluginsInstalled": "Vous n'avez aucun plugin install\u00e9.",
     "LabelVersionInstalled": "{0} install\u00e9(s)",

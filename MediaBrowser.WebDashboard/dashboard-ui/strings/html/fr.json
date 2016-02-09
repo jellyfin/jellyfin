@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extraire les images des chapitres pendant le scan de la biblioth\u00e8que",
     "LabelExtractChaptersDuringLibraryScanHelp": "Si activ\u00e9, les images de chapitres seront extraites lors de l'importation de vid\u00e9os pendant le scan de la librairie. Sinon elles seront extraites pendant la t\u00e2che programm\u00e9e, permettant de terminer plus rapidement les scans r\u00e9guliers de la librairie.",
     "LabelConnectGuestUserName": "Nom d'utilisateur Emby ou adresse email de l'invit\u00e9 :",
-    "LabelConnectUserName": "Nom d'utilisateur Emby ou adresse email :",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connectez cet utilisateur local \u00e0 un compte Emby pour activer l'acc\u00e8s par code Easy Pin depuis n'importe quelle application Emby sans avoir \u00e0 conna\u00eetre l'adresse IP du serveur.",
     "ButtonLearnMoreAboutEmbyConnect": "Plus d'infos sur Emby Connect",
     "LabelExternalPlayers": "Lecteurs externes:",

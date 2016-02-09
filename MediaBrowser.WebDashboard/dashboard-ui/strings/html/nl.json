@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Hoofdstuk afbeeldingen uitpakken tijdens het scannen van de bibliotheek",
     "LabelExtractChaptersDuringLibraryScanHelp": "Wanneer ingeschakeld worden hoofdstuk afbeeldingen uitgepakt wanneer video's worden ge\u00efmporteerd tijdens het scannen van de bibliotheek. Wanneer uitgeschakeld worden de hoofdstuk afbeeldingen uitgepakt tijdens de geplande taak \"Hoofdstukken uitpakken\", waardoor de standaard bibliotheek scan sneller voltooid is.",
     "LabelConnectGuestUserName": "Hun Emby gebruikersnaam of email adres:",
-    "LabelConnectUserName": "Emby gebruikersnaam\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Verbind deze locale gebruiker aan een online Emby account om eenvoudig aanmelden vanaf elke Emby app toe te staan zonder dat u het IP-adres hoeft te weten.",
     "ButtonLearnMoreAboutEmbyConnect": "Leer meer over Emby Connect",
     "LabelExternalPlayers": "Externe spelers:",

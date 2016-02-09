@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(Annulleret grundet server nedlukning)",
     "LabelScheduledTaskLastRan": "Sidst k\u00f8rt {0}, og tog {1}.",
     "HeaderDeleteTaskTrigger": "Slet Task Trigger",
-    "HeaderTaskTriggers": "Task Triggers",
     "MessageDeleteTaskTrigger": "Er du sikker p\u00e5 du \u00f8nsker at slette denne task trigger?",
     "MessageNoPluginsInstalled": "Du har ingen plugins installeret.",
     "LabelVersionInstalled": "{0} installeret",

@@ -4,7 +4,7 @@
     <title>${TitlePlayback}</title>
 </head>
 <body>
-    <div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,paper-input">
+    <div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -44,9 +44,9 @@
                             <div class="fieldDescription">${LabelTranscodingThreadCountHelp}</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkEnableThrottle" data-mini="true" />
-                            <label for="chkEnableThrottle">${OptionEnableTranscodingThrottle}</label>
-                            <div class="fieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
+                            <br />
+                            <paper-checkbox id="chkEnableThrottle">${OptionEnableTranscodingThrottle}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
                         </li>
                         <li>
                             <paper-input id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" style="width:80%;display:inline-block;"></paper-input>
@@ -54,11 +54,9 @@
                             <div class="fieldDescription">
                                 ${LabelTranscodingTempPathHelp}
                             </div>
-                            <br />
                         </li>
                         <li>
-                            <label for="txtDownMixAudioBoost">${LabelDownMixAudioScale}</label>
-                            <input type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" />
+                            <paper-input type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" label="${LabelDownMixAudioScale}"></paper-input>
                             <div class="fieldDescription">${LabelDownMixAudioScaleHelp}</div>
                         </li>
                         <li style="display:none;">

@@ -7,15 +7,17 @@ paper-dialog.html
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
 
+The bot does some handling of markdown. Please file a bug if it does the wrong
+thing! https://github.com/PolymerLabs/tedium/issues
+
 -->
 
-[![Build Status](https://travis-ci.org/PolymerElements/paper-dialog.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-dialog)
+[![Build status](https://travis-ci.org/PolymerElements/paper-dialog.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-dialog)
 
-_[Demo and API Docs](https://elements.polymer-project.org/elements/paper-dialog)_
+_[Demo and API docs](https://elements.polymer-project.org/elements/paper-dialog)_
 
 
 ##&lt;paper-dialog&gt;
-
 
 Material design: [Dialogs](https://www.google.com/design/spec/components/dialogs.html)
 
@@ -27,16 +29,18 @@ content area. See `Polymer.PaperDialogBehavior` for specifics.
 For example, the following code implements a dialog with a header, scrolling content area and
 buttons.
 
-    <paper-dialog>
-      <h2>Header</h2>
-      <paper-dialog-scrollable>
-        Lorem ipsum...
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm>Accept</paper-button>
-      </div>
-    </paper-dialog>
+```html
+<paper-dialog>
+  <h2>Header</h2>
+  <paper-dialog-scrollable>
+    Lorem ipsum...
+  </paper-dialog-scrollable>
+  <div class="buttons">
+    <paper-button dialog-dismiss>Cancel</paper-button>
+    <paper-button dialog-confirm>Accept</paper-button>
+  </div>
+</paper-dialog>
+```
 
 ### Styling
 
@@ -51,14 +55,16 @@ is opened or closed. See the documentation in
 
 For example:
 
-    <link rel="import" href="components/neon-animation/animations/scale-up-animation.html">
-    <link rel="import" href="components/neon-animation/animations/fade-out-animation.html">
+```html
+<link rel="import" href="components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="components/neon-animation/animations/fade-out-animation.html">
 
-    <paper-dialog entry-animation="scale-up-animation"
-                  exit-animation="fade-out-animation">
-      <h2>Header</h2>
-      <div>Dialog body</div>
-    </paper-dialog>
+<paper-dialog entry-animation="scale-up-animation"
+              exit-animation="fade-out-animation">
+  <h2>Header</h2>
+  <div>Dialog body</div>
+</paper-dialog>
+```
 
 ### Accessibility
 

@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Wydobywaj obrazy rozdzia\u0142\u00f3w podczas skanowania biblioteki",
     "LabelExtractChaptersDuringLibraryScanHelp": "Je\u017celi w\u0142\u0105czone, obrazy rozdzia\u0142\u00f3w b\u0119d\u0105 wydobywane gdy widea s\u0105 importowane podczas skanowania biblioteki. Je\u017celi wy\u0142\u0105czone b\u0119d\u0105 one wydobywane podczas z zaplanowanego zadania obraz\u00f3w rozdzia\u0142\u00f3w, pozwalaj\u0105c aby zwyk\u0142e skanowanie biblioteki wykona\u0142o si\u0119 szybciej.",
     "LabelConnectGuestUserName": "Ich nazwa u\u017cytkownika Emby lub adres email:",
-    "LabelConnectUserName": "Nazwa u\u017cytkownika\/email Emby:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Po\u0142\u0105cz tego u\u017cytkownika z kontem Emby aby umo\u017cliwi\u0107 \u0142atwy dost\u0119p z ka\u017cdej aplikacji Emby, bez potrzeby wpisywania adresu IP serwera.",
     "ButtonLearnMoreAboutEmbyConnect": "Dowiedz si\u0119 wi\u0119cej o Emby Connect",
     "LabelExternalPlayers": "Zewn\u0119trzne odtwarzacze:",

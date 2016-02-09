@@ -1,8 +1,12 @@
 ﻿<div class="dialogHeader">
-    <paper-icon-button icon="close" class="btnCancel"></paper-icon-button>
+    <paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>
     <div class="dialogHeaderTitle">
         ${ButtonEdit}
     </div>
+    <paper-button class="btnHeaderSave accent" tabindex="-1" style="margin-left:auto;">
+        <iron-icon icon="check"></iron-icon>
+        <span>${ButtonSave}</span>
+    </paper-button>
 </div>
 
 <form class="editItemMetadataForm editMetadataForm ">
@@ -70,7 +74,7 @@
             </div>
             <div>
                 <label for="txtOverview" class="likePaperLabel">${LabelOverview}</label>
-                <textarea id="txtOverview" class="likePaperText" data-role="none"></textarea>
+                <paper-textarea id="txtOverview"></paper-textarea>
                 <br />
             </div>
             <div id="fldShortOverview" style="display: none;">
@@ -236,8 +240,7 @@
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
             </paper-button>
-            <div>
-                <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
+            <div id="peopleList" class="paperList">
             </div>
         </div>
         <div id="keywordsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
@@ -299,5 +302,6 @@
             <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
         </button>
     </div>
-
+    <br />
+    <br />
 </form>

@@ -129,7 +129,6 @@
     "LabelAbortedByServerShutdown": "(\u56e0\u4e3a\u670d\u52a1\u5668\u5173\u95ed\u88ab\u4e2d\u6b62)",
     "LabelScheduledTaskLastRan": "\u6700\u540e\u8fd0\u884c {0}, \u82b1\u8d39\u65f6\u95f4 {1}.",
     "HeaderDeleteTaskTrigger": "\u5220\u9664\u4efb\u52a1\u89e6\u53d1\u6761\u4ef6",
-    "HeaderTaskTriggers": "\u4efb\u52a1\u89e6\u53d1\u6761\u4ef6",
     "MessageDeleteTaskTrigger": "\u4f60\u786e\u5b9a\u5220\u9664\u8fd9\u4e2a\u4efb\u52a1\u89e6\u53d1\u6761\u4ef6\uff1f",
     "MessageNoPluginsInstalled": "\u4f60\u6ca1\u6709\u5b89\u88c5\u63d2\u4ef6\u3002",
     "LabelVersionInstalled": "{0} \u5df2\u5b89\u88c5",

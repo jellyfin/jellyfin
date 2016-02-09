@@ -1255,7 +1255,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extraer im\u00e1genes de cap\u00edtulos durante la exploraci\u00f3n de la biblioteca",
     "LabelExtractChaptersDuringLibraryScanHelp": "Si se activa, las im\u00e1genes de cap\u00edtulos ser\u00e1n extra\u00eddas cuando los videos sean importados durante la exploraci\u00f3n de la biblioteca. Si se deshabilita, ser\u00e1n extra\u00eddas durante la ejecuci\u00f3n de la tarea programada de extracci\u00f3n de im\u00e1genes de cap\u00edtulos, permiti\u00e9ndo que la exploraci\u00f3n normal de la biblioteca se complete m\u00e1s r\u00e1pidamente.",
     "LabelConnectGuestUserName": "Su nombre de usuario Emby o correo electr\u00f3nico:",
-    "LabelConnectUserName": "Usuario de Emby\/correo electr\u00f3nico:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Conectar este usuario local a una cuenta Emby en l\u00ednea para facilitar el ingreso desde cualquier aplicaci\u00f3n Emby sin tener que conocer la direcci\u00f3n ip del servidor.",
     "ButtonLearnMoreAboutEmbyConnect": "Conocer mas acerca de Emby Connect",
     "LabelExternalPlayers": "Reproductores Externos:",
