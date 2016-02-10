@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _connection.AddColumn(Logger, "SyncJobs", "Profile", "TEXT");
             _connection.AddColumn(Logger, "SyncJobs", "Bitrate", "INT");
-         
+
             PrepareStatements();
         }
 
@@ -798,24 +798,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return item;
-        }
-
-        private bool _disposed;
-        private void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
-            }
-        }
-
-        protected override void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                _disposed = true;
-            }
-            base.Dispose(dispose);
         }
 
         protected override void CloseConnection()
