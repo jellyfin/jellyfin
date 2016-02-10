@@ -1056,7 +1056,7 @@
                     var template = this.response;
                     var dlg = paperDialogHelper.createDialog({
                         removeOnClose: true,
-                        size: 'small'
+                        size: 'medium'
                     });
 
                     dlg.classList.add('ui-body-b');

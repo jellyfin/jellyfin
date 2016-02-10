@@ -102,7 +102,7 @@ namespace MediaBrowser.Api
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _serializer;
-        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
         private readonly IServerApplicationHost _appHost;
 
         public PackageReviewService(IHttpClient httpClient, IJsonSerializer serializer, IServerApplicationHost appHost)

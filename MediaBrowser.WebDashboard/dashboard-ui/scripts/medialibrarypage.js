@@ -72,8 +72,7 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                text: Globalize.translate('LabelNewName'),
-                title: Globalize.translate('HeaderRenameMediaFolder'),
+                title: Globalize.translate('LabelNewName'),
                 callback: function (newName) {
 
                     if (newName && newName != virtualFolder.Name) {

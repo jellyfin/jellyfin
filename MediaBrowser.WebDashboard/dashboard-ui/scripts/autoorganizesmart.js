@@ -19,8 +19,11 @@
             populateList(page, infos);
 
             Dashboard.hideLoadingMsg();
-        }, onApiFailure);
 
+        }, function () {
+
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function populateList(page, result) {
@@ -55,8 +58,7 @@
             if (info.OrganizerType != currentType) {
                 currentType = info.OrganizerType;
 
-                if (html.length > 0)
-                {
+                if (html.length > 0) {
                     html += "</ul>";
                 }
 
@@ -74,7 +76,7 @@
 
                 html += "<p>" + info.MatchStrings[n] + "</p>";
 
-                html += "<a id='btnDeleteMatchEntry" + info.Id + "' class='btnDeleteMatchEntry' href='#' data-id='" + info.Id + "' data-matchstring='" + info.MatchStrings[n]  + "' data-icon='delete'>" + Globalize.translate('ButtonDelete') + "</a>";
+                html += "<a id='btnDeleteMatchEntry" + info.Id + "' class='btnDeleteMatchEntry' href='#' data-id='" + info.Id + "' data-matchstring='" + info.MatchStrings[n] + "' data-icon='delete'>" + Globalize.translate('ButtonDelete') + "</a>";
 
                 html += "</a>";
 
@@ -92,8 +94,7 @@
         Dashboard.hideLoadingMsg();
 
         Dashboard.alert({
-            title: Globalize.translate('AutoOrganizeError'),
-            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+            message: Globalize.translate('DefaultErrorMessage')
         });
     }
 

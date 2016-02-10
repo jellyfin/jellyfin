@@ -12,7 +12,7 @@
                     var template = this.response;
                     var dlg = paperDialogHelper.createDialog({
                         removeOnClose: true,
-                        size: 'small'
+                        size: 'medium'
                     });
 
                     dlg.classList.add('ui-body-b');
@@ -28,9 +28,9 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    $('#txtPersonName', dlg).val(person.Name || '');
-                    $('#selectPersonType', dlg).val(person.Type || '');
-                    $('#txtPersonRole', dlg).val(person.Role || '');
+                    $('.txtPersonName', dlg).val(person.Name || '');
+                    $('.selectPersonType', dlg).val(person.Type || '');
+                    $('.txtPersonRole', dlg).val(person.Role || '');
 
                     paperDialogHelper.open(dlg);
 
@@ -52,9 +52,9 @@
 
                         submitted = true;
 
-                        person.Name = $('#txtPersonName', dlg).val();
-                        person.Type = $('#selectPersonType', dlg).val();
-                        person.Role = $('#txtPersonRole', dlg).val() || null;
+                        person.Name = $('.txtPersonName', dlg).val();
+                        person.Type = $('.selectPersonType', dlg).val();
+                        person.Role = $('.txtPersonRole', dlg).val() || null;
 
                         paperDialogHelper.close(dlg);
 

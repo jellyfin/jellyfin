@@ -355,8 +355,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private int? GetNumAudioChannelsParam(EncodingJobOptions request, MediaStream audioStream, string outputAudioCodec)
         {
             var inputChannels = audioStream == null
-                            ? null
-                            : audioStream.Channels;
+                ? null
+                : audioStream.Channels;
 
             if (inputChannels <= 0)
             {
@@ -373,14 +373,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (request.MaxAudioChannels.HasValue)
             {
+                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
+                   ? 2
+                   : 6;
+
                 if (inputChannels.HasValue)
                 {
-                    return Math.Min(request.MaxAudioChannels.Value, inputChannels.Value);
+                    channelLimit = Math.Min(channelLimit, inputChannels.Value);
                 }
-
-                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
-                    ? 2
-                    : 6;
 
                 // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
                 return Math.Min(request.MaxAudioChannels.Value, channelLimit);
@@ -436,14 +436,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 // h264
-                if (isHls)
-                {
-                    return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
-                        bitrate.Value.ToString(UsCulture),
-                        (bitrate.Value * 2).ToString(UsCulture));
-                }
-
-                return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
+                return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                    bitrate.Value.ToString(UsCulture),
+                    (bitrate.Value * 2).ToString(UsCulture));
             }
 
             return string.Empty;

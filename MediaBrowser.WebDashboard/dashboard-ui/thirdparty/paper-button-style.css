@@ -550,6 +550,11 @@ div.dialogHeader {
     color: #fff;
 }
 
+.background-theme-a .pageContentPaperMaterial {
+    background-color: #fff;
+    padding: 1.5em;
+}
+
 .background-theme-b div.dialogHeader {
     background-color: #101010;
 }

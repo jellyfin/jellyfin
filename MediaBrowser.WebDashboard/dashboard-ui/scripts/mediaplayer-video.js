@@ -743,6 +743,7 @@
 
             html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;margin-right:2em;display:inline-block;"></paper-slider>';
 
+            html += '<paper-icon-button icon="cast" class="mediaButton castButton" onclick="MediaController.showPlayerSelection(this, false);" style="width:32px;height:32px;"></paper-icon-button>';
             html += '<paper-icon-button icon="fullscreen" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"></paper-icon-button>';
             html += '<paper-icon-button icon="info" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"></paper-icon-button>';
             //html += '<paper-icon-button icon="dvr" class="mediaButton guideButton" onclick="MediaPlayer.toggleGuide();"></paper-icon-button>';
