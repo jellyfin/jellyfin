@@ -14,19 +14,17 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Activity
 {
-    public class ActivityRepository : IActivityRepository, IDisposable
+    public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
         private IDbConnection _connection;
-        private readonly ILogger _logger;
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
         private readonly IServerApplicationPaths _appPaths;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private IDbCommand _saveActivityCommand;
 
-        public ActivityRepository(ILogger logger, IServerApplicationPaths appPaths)
+        public ActivityRepository(ILogManager logManager, IServerApplicationPaths appPaths)
+            : base(logManager)
         {
-            _logger = logger;
             _appPaths = appPaths;
         }
 
@@ -34,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Activity
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "activitylog.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -47,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.Activity
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
             PrepareStatements();
         }
@@ -82,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Activity
                 throw new ArgumentNullException("entry");
             }
 
-            await _writeLock.WaitAsync().ConfigureAwait(false);
+            await WriteLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -119,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.Activity
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save record:", e);
+                Logger.ErrorException("Failed to save record:", e);
 
                 if (transaction != null)
                 {
@@ -135,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Activity
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -264,45 +262,17 @@ namespace MediaBrowser.Server.Implementations.Activity
             return info;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_connection != null)
             {
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
+                    _connection.Close();
+                }
 
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }
