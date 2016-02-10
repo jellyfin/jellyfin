@@ -9,6 +9,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
+
   <head>
 
     <title>paper-dialog-behavior tests</title>
@@ -18,15 +19,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
 
-    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../../iron-icons/iron-icons.html">
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html">
     <link rel="import" href="test-dialog.html">
     <link rel="import" href="test-buttons.html">
 
   </head>
+
   <body>
 
     <test-fixture id="basic">
@@ -51,6 +53,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="custom-element-button">
+      <template>
+        <test-dialog>
+          <p>Dialog</p>
+          <div class="buttons">
+            <paper-icon-button icon="cancel" dialog-dismiss></paper-icon-button>
+            <paper-icon-button icon="add-circle" dialog-confirm></paper-icon-button>
+            <paper-icon-button icon="favorite"></paper-icon-button>
+          </div>
+        </test-dialog>
+      </template>
+    </test-fixture>
+
     <test-fixture id="modal">
       <template>
         <test-dialog modal>
@@ -63,14 +78,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
-    <test-fixture id="backdrop">
+    <test-fixture id="like-modal">
       <template>
-        <test-dialog with-backdrop>
+        <test-dialog no-cancel-on-esc-key no-cancel-on-outside-click with-backdrop>
           <p>Dialog</p>
-          <div class="buttons">
-            <button dialog-dismiss>dismiss</button>
-            <button dialog-confirm autofocus>confirm</button>
-          </div>
         </test-dialog>
       </template>
     </test-fixture>
@@ -132,6 +143,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
 
+      // Firefox 43 and later will keep the focus on the search bar, so we need
+      // to move the focus on the document for focus-related tests.
+      function ensureDocumentHasFocus() {
+        window.top && window.top.focus();
+      }
+
       function runAfterOpen(dialog, cb) {
         dialog.addEventListener('iron-overlay-opened', function() {
           cb();
@@ -147,7 +164,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             dialog.addEventListener('iron-overlay-closed', function() {
               assert('dialog should not close');
             });
-            dialog.click();
+            MockInteractions.tap(dialog);
             setTimeout(function() {
               done();
             }, 100);
@@ -162,7 +179,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.isFalse(event.detail.confirmed, 'dialog is not confirmed');
               done();
             });
-            Polymer.dom(dialog).querySelector('[dialog-dismiss]').click();
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('[dialog-dismiss]'));
+          });
+        });
+
+        test('dialog-dismiss on a custom element is handled', function(done) {
+          var dialog = fixture('custom-element-button');
+          runAfterOpen(dialog, function() {
+            dialog.addEventListener('iron-overlay-closed', function(event) {
+              assert.isFalse(event.detail.canceled, 'dialog is not canceled');
+              assert.isFalse(event.detail.confirmed, 'dialog is not confirmed');
+              done();
+            });
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('[dialog-dismiss]'));
           });
         });
 
@@ -174,11 +203,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.isFalse(event.detail.confirmed, 'dialog is not confirmed');
               done();
             });
-            Polymer.dom(dialog).querySelector('test-buttons').$.dismiss.click();
-            // We don't wait too long to fail.
-            setTimeout(function didNotClose() {
-              done(new Error('dialog-dismiss click did not close overlay'));
-            }, 20);
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('test-buttons').$.dismiss);
           });
         });
 
@@ -190,7 +215,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.isTrue(event.detail.confirmed, 'dialog is confirmed');
               done();
             });
-            Polymer.dom(dialog).querySelector('[dialog-confirm]').click();
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('[dialog-confirm]'));
+          });
+        });
+
+        test('dialog-confirm on a custom element handled', function(done) {
+          var dialog = fixture('custom-element-button');
+          runAfterOpen(dialog, function() {
+            dialog.addEventListener('iron-overlay-closed', function(event) {
+              assert.isFalse(event.detail.canceled, 'dialog is not canceled');
+              assert.isTrue(event.detail.confirmed, 'dialog is confirmed');
+              done();
+            });
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('[dialog-confirm]'));
           });
         });
 
@@ -202,18 +239,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.isTrue(event.detail.confirmed, 'dialog is confirmed');
               done();
             });
-            Polymer.dom(dialog).querySelector('test-buttons').$.confirm.click();
-            // We don't wait too long to fail.
-            setTimeout(function didNotClose() {
-              done(new Error('dialog-confirm click did not close overlay'));
-            }, 20);
+            MockInteractions.tap(Polymer.dom(dialog).querySelector('test-buttons').$.confirm);
           });
         });
 
         test('clicking dialog-dismiss button closes only the dialog where is contained', function(done) {
           var dialog = fixture('nestedmodals');
           var innerDialog = Polymer.dom(dialog).querySelector('test-dialog');
-          Polymer.dom(innerDialog).querySelector('[dialog-dismiss]').click();
+          MockInteractions.tap(Polymer.dom(innerDialog).querySelector('[dialog-dismiss]'));
           setTimeout(function() {
             assert.isFalse(innerDialog.opened, 'inner dialog is closed');
             assert.isTrue(dialog.opened, 'dialog is still open');
@@ -224,7 +257,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('clicking dialog-confirm button closes only the dialog where is contained', function(done) {
           var dialog = fixture('nestedmodals');
           var innerDialog = Polymer.dom(dialog).querySelector('test-dialog');
-          Polymer.dom(innerDialog).querySelector('[dialog-confirm]').click();
+          MockInteractions.tap(Polymer.dom(innerDialog).querySelector('[dialog-confirm]'));
           setTimeout(function() {
             assert.isFalse(innerDialog.opened, 'inner dialog is closed');
             assert.isTrue(dialog.opened, 'dialog is still open');
@@ -232,20 +265,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }, 10);
         });
 
-        test('modal dialog has backdrop', function() {
-          var dialog = fixture('modal');
-          assert.isTrue(dialog.withBackdrop, 'withBackdrop is true');
-        });
+        var properties = ['noCancelOnEscKey', 'noCancelOnOutsideClick', 'withBackdrop'];
+        properties.forEach(function(property) {
 
-        test('modal dialog has no-cancel-on-outside-click', function() {
-          var dialog = fixture('modal');
-          assert.isTrue(dialog.noCancelOnOutsideClick, 'noCancelOnOutsideClick is true');
+          test('modal sets ' + property + ' to true', function() {
+            var dialog = fixture('modal');
+            assert.isTrue(dialog[property], property);
+          });
+
+          test('modal toggling keeps current value of ' + property, function() {
+            var dialog = fixture('modal');
+            // Changed to false while modal is true.
+            dialog[property] = false;
+            dialog.modal = false;
+            assert.isFalse(dialog[property], property + ' is false');
+          });
+
+          test('modal toggling keeps previous value of ' + property, function() {
+            var dialog = fixture('basic');
+            // Changed before modal is true.
+            dialog[property] = true;
+            // Toggle twice to trigger observer.
+            dialog.modal = true;
+            dialog.modal = false;
+            assert.isTrue(dialog[property], property + ' is still true');
+          });
+
+          test('default modal does not override ' + property +' (attribute)', function() {
+            // Property is set on ready from attribute.
+            var dialog = fixture('like-modal');
+            assert.isTrue(dialog[property], property + ' is true');
+          });
+
+          test('modal toggling keeps previous value of ' + property + ' (attribute)', function() {
+            // Property is set on ready from attribute.
+            var dialog = fixture('like-modal');
+            // Toggle twice to trigger observer.
+            dialog.modal = true;
+            dialog.modal = false;
+            assert.isTrue(dialog[property], property + ' is still true');
+          });
+
         });
 
         test('clicking outside a modal dialog does not move focus from dialog', function(done) {
           var dialog = fixture('modal');
           runAfterOpen(dialog, function() {
-            document.body.click();
+            MockInteractions.tap(document.body);
             setTimeout(function() {
               assert.equal(document.activeElement, Polymer.dom(dialog).querySelector('[autofocus]'), 'document.activeElement is the autofocused button');
               done();
@@ -262,11 +328,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               // should not throw exception here
               done();
             });
-            button.click();
+            MockInteractions.tap(button);
           });
         });
 
         test('multiple modal dialogs opened, handle focus change', function(done) {
+          ensureDocumentHasFocus();
+
           var dialogs = fixture('multiple');
           var focusChange = sinon.stub();
           document.body.addEventListener('focus', focusChange, true);
@@ -286,6 +354,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('multiple modal dialogs opened, handle backdrop click', function(done) {
+          ensureDocumentHasFocus();
+
           var dialogs = fixture('multiple');
           var focusChange = sinon.stub();
           document.body.addEventListener('focus', focusChange, true);
@@ -295,7 +365,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             dialogs[1].async(dialogs[1].open, 10);
             dialogs[1].addEventListener('iron-overlay-opened', function() {
               // This will trigger click listener for both dialogs.
-              document.body.click();
+              MockInteractions.tap(document.body);
               // Wait 10ms to allow focus changes
               setTimeout(function() {
                 // Should not enter in an infinite loop.
@@ -315,8 +385,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             dialog.removeEventListener('iron-overlay-opened', onFirstOpen);
             dialog.addEventListener('iron-overlay-closed', onFirstClose);
             // Set the focus on dismiss button
-            // Calling .focus() won't trigger the dialog._onFocus
-            Polymer.dom(dialog).querySelector('[dialog-dismiss]').dispatchEvent(new Event('focus'));
+            MockInteractions.focus(Polymer.dom(dialog).querySelector('[dialog-dismiss]'));
             // Close the dialog
             dialog.close();
           }
@@ -328,7 +397,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           function onSecondOpen() {
-            document.body.click();
+            MockInteractions.tap(document.body);
             setTimeout(function() {
               assert.equal(document.activeElement, Polymer.dom(dialog).querySelector('[autofocus]'), 'document.activeElement is the autofocused button');
               done();
@@ -382,8 +451,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
       });
-
     </script>
 
   </body>
+
 </html>
