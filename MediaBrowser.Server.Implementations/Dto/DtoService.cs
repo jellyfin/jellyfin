@@ -212,17 +212,17 @@ namespace MediaBrowser.Server.Implementations.Dto
             }).Items;
         }
 
-        public void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user)
+        public void FillSyncInfo(IEnumerable<Tuple<BaseItem, BaseItemDto>> tuples, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
                 var syncProgress = GetSyncedItemProgress(options);
 
-                foreach (var dto in dtos)
+                foreach (var tuple in tuples)
                 {
-                    var item = _libraryManager.GetItemById(dto.Id);
+                    var item = tuple.Item1;
 
-                    FillSyncInfo(dto, item, syncProgress, options, user);
+                    FillSyncInfo(tuple.Item2, item, syncProgress, options, user);
                 }
             }
         }

@@ -26,11 +26,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// <summary>
     /// Class SQLiteItemRepository
     /// </summary>
-    public class SqliteItemRepository : IItemRepository
+    public class SqliteItemRepository : BaseSqliteRepository, IItemRepository
     {
         private IDbConnection _connection;
-
-        private readonly ILogger _logger;
 
         private readonly TypeMapper _typeMapper = new TypeMapper();
 
@@ -96,6 +94,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// jsonSerializer
         /// </exception>
         public SqliteItemRepository(IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILogManager logManager)
+            : base(logManager)
         {
             if (appPaths == null)
             {
@@ -110,8 +109,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _jsonSerializer = jsonSerializer;
 
             _criticReviewsPath = Path.Combine(_appPaths.DataPath, "critic-reviews");
-
-            _logger = logManager.GetLogger(GetType().Name);
         }
 
         private const string ChaptersTableName = "Chapters2";
@@ -124,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "library.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             var createMediaStreamsTableCommand
                = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, CodecTag TEXT NULL, Comment TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
@@ -158,76 +155,76 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
-            _connection.AddColumn(_logger, "AncestorIds", "AncestorIdText", "Text");
+            _connection.AddColumn(Logger, "AncestorIds", "AncestorIdText", "Text");
             
-            _connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
-            _connection.AddColumn(_logger, "TypedBaseItems", "EndDate", "DATETIME");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ChannelId", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsSports", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsKids", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "CommunityRating", "Float");
-            _connection.AddColumn(_logger, "TypedBaseItems", "CustomRating", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IndexNumber", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsLocked", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Name", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRating", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Path", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "StartDate", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "EndDate", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ChannelId", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsMovie", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsSports", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsKids", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CommunityRating", "Float");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CustomRating", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IndexNumber", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsLocked", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Name", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "OfficialRating", "Text");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "MediaType", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Overview", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ParentIndexNumber", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ParentId", "GUID");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Genres", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ParentalRatingValue", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "SchemaVersion", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "SortName", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "RunTimeTicks", "BIGINT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "MediaType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Overview", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ParentIndexNumber", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "PremiereDate", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ProductionYear", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ParentId", "GUID");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Genres", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ParentalRatingValue", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SchemaVersion", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SortName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "RunTimeTicks", "BIGINT");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRatingDescription", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "HomePageUrl", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "VoteCount", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "DisplayMediaType", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "DateCreated", "DATETIME");
-            _connection.AddColumn(_logger, "TypedBaseItems", "DateModified", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "OfficialRatingDescription", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "HomePageUrl", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "VoteCount", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DisplayMediaType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateCreated", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateModified", "DATETIME");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "ForcedSortName", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsOffline", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "LocationType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ForcedSortName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsOffline", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "LocationType", "Text");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsSeries", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsLive", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsNews", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsPremiere", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsSeries", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsLive", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsNews", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsPremiere", "BIT");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "EpisodeTitle", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsRepeat", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "EpisodeTitle", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsRepeat", "BIT");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataLanguage", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "PreferredMetadataCountryCode", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsHD", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalEtag", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "DateLastRefreshed", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "PreferredMetadataLanguage", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "PreferredMetadataCountryCode", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsHD", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ExternalEtag", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateLastRefreshed", "DATETIME");
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "DateLastSaved", "DATETIME");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsInMixedFolder", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "LockedFields", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Studios", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Audio", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "ExternalServiceId", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "Tags", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "IsFolder", "BIT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
-            _connection.AddColumn(_logger, "TypedBaseItems", "UnratedType", "Text");
-            _connection.AddColumn(_logger, "TypedBaseItems", "TopParentId", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateLastSaved", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsInMixedFolder", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "LockedFields", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Studios", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Audio", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ExternalServiceId", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Tags", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsFolder", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "UnratedType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "TopParentId", "Text");
 
             PrepareStatements();
 
-            new MediaStreamColumns(_connection, _logger).AddColumns();
+            new MediaStreamColumns(_connection, Logger).AddColumns();
 
             var chapterDbFile = Path.Combine(_appPaths.DataPath, "chapters.db");
             if (File.Exists(chapterDbFile))
@@ -256,11 +253,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "REPLACE INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
                                };
 
-                _connection.RunQueries(queries, _logger);
+                _connection.RunQueries(queries, Logger);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error migrating media info database", ex);
+                Logger.ErrorException("Error migrating media info database", ex);
             }
             finally
             {
@@ -280,11 +277,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "REPLACE INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
                                };
 
-                _connection.RunQueries(queries, _logger);
+                _connection.RunQueries(queries, Logger);
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error migrating chapter database", ex);
+                Logger.ErrorException("Error migrating chapter database", ex);
             }
             finally
             {
@@ -300,14 +297,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error deleting file {0}", ex, file);
+                Logger.ErrorException("Error deleting file {0}", ex, file);
             }
         }
-
-        /// <summary>
-        /// The _write lock
-        /// </summary>
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
         private readonly string[] _retriveItemColumns =
         {
@@ -583,7 +575,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             CheckDisposed();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -761,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save items:", e);
+                Logger.ErrorException("Failed to save items:", e);
 
                 if (transaction != null)
                 {
@@ -777,7 +769,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -821,7 +813,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (type == null)
             {
-                _logger.Debug("Unknown type {0}", typeString);
+                Logger.Debug("Unknown type {0}", typeString);
 
                 return null;
             }
@@ -836,7 +828,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 catch (SerializationException ex)
                 {
-                    _logger.ErrorException("Error deserializing item", ex);
+                    Logger.ErrorException("Error deserializing item", ex);
                 }
 
                 if (item == null)
@@ -1237,7 +1229,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -1284,7 +1276,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save chapters:", e);
+                Logger.ErrorException("Failed to save chapters:", e);
 
                 if (transaction != null)
                 {
@@ -1300,62 +1292,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        private bool _disposed;
-        private void CheckDisposed()
-        {
-            if (_disposed)
+            if (_connection != null)
             {
-                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
-            }
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                _disposed = true;
-
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        _writeLock.Wait();
-
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
-
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
+                    _connection.Close();
                 }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+
+                _connection.Dispose();
+                _connection = null;
             }
         }
 
@@ -1399,7 +1350,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
 
-                //_logger.Debug(cmd.CommandText);
+                //Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
@@ -1474,7 +1425,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                //_logger.Debug(cmd.CommandText);
+                //Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
@@ -1526,7 +1477,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
 
-                _logger.Debug(cmd.CommandText);
+                Logger.Debug(cmd.CommandText);
 
                 var list = new List<BaseItem>();
                 var count = 0;
@@ -1609,7 +1560,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 var list = new List<Guid>();
 
-                _logger.Debug(cmd.CommandText);
+                Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
@@ -1662,7 +1613,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var list = new List<Tuple<Guid, string>>();
                 var count = 0;
 
-                _logger.Debug(cmd.CommandText);
+                Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
@@ -1731,7 +1682,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var list = new List<Guid>();
                 var count = 0;
 
-                _logger.Debug(cmd.CommandText);
+                Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
@@ -2075,7 +2026,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return;
             }
             
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -2107,7 +2058,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Error running query:", e);
+                Logger.ErrorException("Error running query:", e);
 
                 if (transaction != null)
                 {
@@ -2123,7 +2074,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -2168,7 +2119,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             CheckDisposed();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -2219,7 +2170,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save children:", e);
+                Logger.ErrorException("Failed to save children:", e);
 
                 if (transaction != null)
                 {
@@ -2235,7 +2186,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -2253,7 +2204,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             CheckDisposed();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -2292,7 +2243,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save children:", e);
+                Logger.ErrorException("Failed to save children:", e);
 
                 if (transaction != null)
                 {
@@ -2308,7 +2259,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -2482,7 +2433,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var cancellationToken = CancellationToken.None;
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -2528,7 +2479,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save people:", e);
+                Logger.ErrorException("Failed to save people:", e);
 
                 if (transaction != null)
                 {
@@ -2544,7 +2495,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -2631,7 +2582,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -2703,7 +2654,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save media streams:", e);
+                Logger.ErrorException("Failed to save media streams:", e);
 
                 if (transaction != null)
                 {
@@ -2719,7 +2670,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 

@@ -297,14 +297,27 @@
         });
     }
 
-    function reload(page, itemId) {
+    function reload(context, itemId) {
 
-        $('.noSearchResults', page).hide();
+        $('.noSearchResults', context).hide();
 
         function onGetItem(item) {
             currentItem = item;
 
-            fillSubtitleList(page, item);
+            fillSubtitleList(context, item);
+            var file = item.Path || '';
+            var index = Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\'));
+            if (index > -1) {
+                file = file.substring(index + 1);
+            }
+
+            if (file) {
+                context.querySelector('.pathValue').innerHTML = file;
+                context.querySelector('.originalFile').classList.remove('hide');
+            } else {
+                context.querySelector('.pathValue').innerHTML = '';
+                context.querySelector('.originalFile').classList.add('hide');
+            }
 
             Dashboard.hideLoadingMsg();
         }
@@ -361,6 +374,8 @@
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
+
+                dlg.querySelector('.pathLabel').innerHTML = Globalize.translate('MediaInfoFile');
 
                 $('.subtitleSearchForm', dlg).off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 

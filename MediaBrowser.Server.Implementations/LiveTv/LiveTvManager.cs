@@ -1592,18 +1592,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var internalResult = await GetInternalRecordings(query, cancellationToken).ConfigureAwait(false);
 
-            var returnArray = internalResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
+            var tuples = internalResult.Items
+                .Select(i => new Tuple<BaseItem, BaseItemDto>(i, _dtoService.GetBaseItemDto(i, options, user)))
                 .ToArray();
 
             if (user != null)
             {
-                _dtoService.FillSyncInfo(returnArray, new DtoOptions(), user);
+                _dtoService.FillSyncInfo(tuples, new DtoOptions(), user);
             }
 
             return new QueryResult<BaseItemDto>
             {
-                Items = returnArray,
+                Items = tuples.Select(i => i.Item2).ToArray(),
                 TotalRecordCount = internalResult.TotalRecordCount
             };
         }
@@ -1684,6 +1684,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             }
 
+            _lastRecordingRefreshTime = DateTime.MinValue;
+            
             // This is the responsibility of the live tv service
             await _libraryManager.DeleteItem((BaseItem)recording, new DeleteOptions
             {

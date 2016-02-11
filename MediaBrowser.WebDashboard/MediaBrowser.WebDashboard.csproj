@@ -2185,6 +2185,9 @@
     <None Include="dashboard-ui\strings\html\zh-HK.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="dashboard-ui\strings\javascript\id.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="dashboard-ui\strings\javascript\ko.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

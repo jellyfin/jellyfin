@@ -26,6 +26,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     this._minimumZ = 101;
 
     this._backdrops = [];
+
+    this._backdropElement = null;
+    Object.defineProperty(this, 'backdropElement', {
+      get: function() {
+        if (!this._backdropElement) {
+          this._backdropElement = document.createElement('iron-overlay-backdrop');
+        }
+        return this._backdropElement;
+      }.bind(this)
+    });
   }
 
   Polymer.IronOverlayManagerClass.prototype._applyOverlayZ = function(overlay, aboveZ) {
@@ -106,15 +116,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this._backdrops.splice(index, 1);
     }
   };
-
-  Object.defineProperty(Polymer.IronOverlayManagerClass.prototype, "backdropElement", {
-    get: function() {
-      if (!this._backdropElement) {
-        this._backdropElement = document.createElement('iron-overlay-backdrop');
-      }
-      return this._backdropElement;
-    }
-  });
 
   Polymer.IronOverlayManagerClass.prototype.getBackdrops = function() {
     return this._backdrops;

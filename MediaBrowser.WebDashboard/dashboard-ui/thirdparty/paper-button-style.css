@@ -545,17 +545,17 @@ div.dialogHeader {
     font-size: 110%;
 }
 
-.background-theme-a div.dialogHeader {
+.ui-body-a div.dialogHeader {
     background-color: #52B54B;
     color: #fff;
 }
 
-.background-theme-a .pageContentPaperMaterial {
+.ui-body-a .pageContentPaperMaterial {
     background-color: #fff;
     padding: 1.5em;
 }
 
-.background-theme-b div.dialogHeader {
+.ui-body-b div.dialogHeader {
     background-color: #101010;
 }
 

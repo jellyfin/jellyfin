@@ -491,6 +491,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool SupportsSync(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             if (item is Playlist)
             {
                 return true;

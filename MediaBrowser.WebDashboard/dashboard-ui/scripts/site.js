@@ -2449,7 +2449,8 @@ var AppInfo = {};
                 });
             }
 
-            var deviceId = appStorage.getItem('_deviceId');
+            var deviceIdKey = '_deviceId1';
+            var deviceId = appStorage.getItem(deviceIdKey);
 
             if (deviceId) {
                 onDeviceAdAcquired(deviceId);
@@ -2460,7 +2461,7 @@ var AppInfo = {};
                     keys.push((navigator.cpuClass || ""));
                     keys.push(new Date().getTime());
                     var randomId = CryptoJS.SHA1(keys.join('|')).toString();
-                    appStorage.setItem('_deviceId', randomId);
+                    appStorage.setItem(deviceIdKey, randomId);
                     onDeviceAdAcquired(randomId);
                 });
             }
@@ -2522,11 +2523,11 @@ function addLegacyDependencies(depends, url) {
     if (isPluginpage) {
         depends.push('jqmpopup');
         depends.push('jqmcollapsible');
+        depends.push('jqmcheckbox');
     }
 
     depends.push('jqmcontrolgroup');
     depends.push('jqmlistview');
-    depends.push('jqmcheckbox');
     depends.push('scripts/notifications');
 }
 
