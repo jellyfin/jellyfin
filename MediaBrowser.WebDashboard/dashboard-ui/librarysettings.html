@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="jqmcollapsible,scripts/librarysettings,paper-input">
+    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="jqmcollapsible,scripts/librarysettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -21,9 +21,8 @@
                         <div>
                             <br />
                             <div>
-                                <label for="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
-                                <input type="checkbox" id="chkEnableAudioArchiveFiles" />
-                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                                <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
                             </div>
                             <br />
                         </div>
@@ -34,9 +33,8 @@
                         <div>
                             <br />
                             <div>
-                                <label for="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
-                                <input type="checkbox" id="chkEnableVideoArchiveFiles" />
-                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                                <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
                             </div>
                             <br />
                         </div>
