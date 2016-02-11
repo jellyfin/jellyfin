@@ -6,6 +6,7 @@ namespace MediaBrowser.Model.Entities
         HalfSideBySide,
         FullSideBySide,
         FullTopAndBottom,
-        HalfTopAndBottom
+        HalfTopAndBottom,
+        MVC
     }
 }
