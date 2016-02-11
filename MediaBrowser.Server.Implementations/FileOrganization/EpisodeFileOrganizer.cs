@@ -368,7 +368,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             int? endingEpisodeNumber)
         {
             // TODO: Support date-naming?
-            if (!seasonNumber.HasValue || episodeNumber.HasValue)
+            if (!seasonNumber.HasValue || !episodeNumber.HasValue)
             {
                 return new List<string>();
             }
