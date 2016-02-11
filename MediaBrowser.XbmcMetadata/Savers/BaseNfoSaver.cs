@@ -404,6 +404,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                                 case Video3DFormat.HalfTopAndBottom:
                                     writer.WriteElementString("format3d", "HTAB");
                                     break;
+                                case Video3DFormat.MVC:
+                                    writer.WriteElementString("format3d", "MVC");
+                                    break;
                             }
                         }
                     }

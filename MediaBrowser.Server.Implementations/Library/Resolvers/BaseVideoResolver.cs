@@ -242,6 +242,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 {
                     video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
                 }
+                else if (string.Equals(format3D, "mvc", StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Video3DFormat = Video3DFormat.MVC;
+                }
             }
         }
 

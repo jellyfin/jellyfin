@@ -1173,6 +1173,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     {
                                         video.Video3DFormat = Video3DFormat.FullSideBySide;
                                     }
+                                    else if (string.Equals("MVC", val, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        video.Video3DFormat = Video3DFormat.MVC;
+                                    }
                                 }
                                 break;
                             }
