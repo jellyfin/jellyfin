@@ -245,19 +245,17 @@
                 dlg.classList.add('popupEditor');
 
                 var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCancel"></paper-fab>';
-                html += '</h2>';
+                html += '<div class="dialogHeader">';
+                html += '<paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<div class="dialogHeaderTitle">';
+                html += Globalize.translate('SyncMedia');
+                html += '</div>';
 
-                html += '<div>';
+                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><paper-button class="mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
+
+                html += '</div>';
 
                 html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
-
-                html += '<div style="margin:1em 0 1.5em;">';
-                html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
-
-                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-                html += '</div>';
 
                 html += '<div class="formFields"></div>';
 
@@ -266,7 +264,6 @@
                 html += '</p>';
 
                 html += '</form>';
-                html += '</div>';
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);

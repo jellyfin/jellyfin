@@ -111,7 +111,7 @@
                     dlg.innerHTML = html;
                     // needed for the collapsible
                     document.body.appendChild(dlg);
-                    $(dlg).trigger('create');
+                    $(dlg.querySelector('form')).trigger('create');
 
                     paperDialogHelper.open(dlg);
 
