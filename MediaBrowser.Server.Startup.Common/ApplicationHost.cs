@@ -692,7 +692,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private async Task<IActivityRepository> GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
+            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 
