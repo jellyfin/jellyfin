@@ -53,6 +53,11 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDownload()
+        {
+            return true;
+        }
+
         public int? Width { get; set; }
         public int? Height { get; set; }
         public string CameraMake { get; set; }
