@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Implementations.Security
     public class PluginSecurityManager : ISecurityManager
     {
         private const string MBValidateUrl = MbAdmin.HttpsUrl + "service/registration/validate";
-        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.com/admin/service/appstore/register";
+        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "http://mb3admin.com/admin/service/appstore/register";
 
         /// <summary>
         /// The _is MB supporter
