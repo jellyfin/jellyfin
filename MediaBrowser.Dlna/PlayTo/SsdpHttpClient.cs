@@ -114,7 +114,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLogging,
+                LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLog,
                 LogErrorResponseBody = true
             };
 

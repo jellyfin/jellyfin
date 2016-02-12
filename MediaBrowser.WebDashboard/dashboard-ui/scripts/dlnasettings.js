@@ -3,7 +3,7 @@
     function loadPage(page, config) {
 
         page.querySelector('#chkEnablePlayTo').checked = config.EnablePlayTo;
-        page.querySelector('#chkEnableDlnaDebugLogging').checked = config.EnableDebugLogging;
+        page.querySelector('#chkEnableDlnaDebugLogging').checked = config.EnableDebugLog;
 
         $('#txtClientDiscoveryInterval', page).val(config.ClientDiscoveryIntervalSeconds);
 
@@ -19,7 +19,7 @@
         ApiClient.getNamedConfiguration("dlna").then(function (config) {
 
             config.EnablePlayTo = form.querySelector('#chkEnablePlayTo').checked;
-            config.EnableDebugLogging = form.querySelector('#chkEnableDlnaDebugLogging').checked;
+            config.EnableDebugLog = form.querySelector('#chkEnableDlnaDebugLogging').checked;
 
             config.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
 

@@ -27,7 +27,7 @@ namespace MediaBrowser.Dlna.Service
         {
             try
             {
-                var enableDebugLogging = Config.GetDlnaConfiguration().EnableDebugLogging;
+                var enableDebugLogging = Config.GetDlnaConfiguration().EnableDebugLog;
 
                 if (enableDebugLogging)
                 {
