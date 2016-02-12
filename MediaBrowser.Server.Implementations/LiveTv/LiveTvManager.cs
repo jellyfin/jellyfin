@@ -1673,6 +1673,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException(string.Format("Recording with Id {0} not found", recordingId));
             }
 
+            await DeleteRecording(recording).ConfigureAwait(false);
+        }
+
+        public async Task DeleteRecording(ILiveTvRecording recording)
+        {
             var service = GetService(recording.ServiceName);
 
             try
@@ -1685,7 +1690,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             _lastRecordingRefreshTime = DateTime.MinValue;
-            
+
             // This is the responsibility of the live tv service
             await _libraryManager.DeleteItem((BaseItem)recording, new DeleteOptions
             {
