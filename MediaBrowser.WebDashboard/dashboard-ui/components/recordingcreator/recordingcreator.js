@@ -242,7 +242,6 @@
             var day = daysOfWeek[i];
 
             $('#chk' + day, page).checked(days.indexOf(day) != -1);
-
         }
     }
 
@@ -272,6 +271,12 @@
         }
 
         selectDays(context, defaultTimer.Days);
+
+        if (program.ServiceName == 'Emby') {
+            context.querySelector('.convertRecordingsContainer').classList.remove('hide');
+        } else {
+            context.querySelector('.convertRecordingsContainer').classList.add('hide');
+        }
 
         Dashboard.hideLoadingMsg();
     }
