@@ -845,7 +845,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             if (GetConfiguration().EnableRecordingEncoding)
             {
-                var regInfo = await _security.GetRegistrationStatus("embytvseriesrecordings").ConfigureAwait(false);
+                var regInfo = await _security.GetRegistrationStatus("embytvrecordingconversion").ConfigureAwait(false);
 
                 if (regInfo.IsValid)
                 {
