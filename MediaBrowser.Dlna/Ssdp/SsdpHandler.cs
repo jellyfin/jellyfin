@@ -92,7 +92,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 TimeSpan delay = GetSearchDelay(headers);
 
-                if (_config.GetDlnaConfiguration().EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLog)
                 {
                     _logger.Debug("Delaying search response by {0} seconds", delay.TotalSeconds);
                 }
@@ -163,7 +163,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             for (var i = 0; i < sendCount; i++)
             {
@@ -202,7 +202,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void RespondToSearch(EndPoint endpoint, string deviceType)
         {
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             var isLogged = false;
 
@@ -305,7 +305,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 var received = (byte[])result.AsyncState;
 
-                var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+                var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
                 if (enableDebugLogging)
                 {
@@ -404,7 +404,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void NotifyAll()
         {
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             if (enableDebugLogging)
             {

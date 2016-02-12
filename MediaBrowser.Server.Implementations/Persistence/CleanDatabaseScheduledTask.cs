@@ -205,10 +205,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     _logger.Info("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
-                    await _libraryManager.DeleteItem(item, new DeleteOptions
+                    await item.Delete(new DeleteOptions
                     {
                         DeleteFileLocation = false
-                    });
+                        
+                    }).ConfigureAwait(false);
                 }
 
                 numComplete++;
@@ -274,10 +275,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItem.Path ?? string.Empty);
 
-                    await _libraryManager.DeleteItem(libraryItem, new DeleteOptions
+                    await libraryItem.Delete(new DeleteOptions
                     {
                         DeleteFileLocation = false
-                    });
+
+                    }).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

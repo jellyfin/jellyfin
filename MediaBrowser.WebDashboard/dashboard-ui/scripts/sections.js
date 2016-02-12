@@ -141,7 +141,7 @@
             html += '<a' + onclick + ' data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
-            html += "<div class='cardText' style='padding:8px 10px;color:#fff;font-size:14px;'>";
+            html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";
             html += '<iron-icon icon="' + icon + '"></iron-icon>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";

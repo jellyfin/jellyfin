@@ -297,7 +297,7 @@
 
             html += '<div class="' + className + '" id="' + rowId + '">';
 
-            html += '<div class="cardBox">';
+            html += '<div class="cardBox" style="box-shadow:0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);margin:4px;">';
             html += '<div class="cardScalable">';
 
             html += '<div class="cardPadder"></div>';
@@ -1380,7 +1380,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
 
-                    var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank" style="font-size:14px;"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
+                    var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
 
                     $('.content-primary', page).append(html);
                 }
