@@ -569,7 +569,7 @@ namespace MediaBrowser.Api.Library
             {
                 throw new ArgumentException("This command cannot be used for remote or virtual items.");
             }
-			if (_fileSystem.DirectoryExists(item.Path))
+            if (_fileSystem.DirectoryExists(item.Path))
             {
                 throw new ArgumentException("This command cannot be used for directories.");
             }
@@ -789,12 +789,10 @@ namespace MediaBrowser.Api.Library
                     return Task.FromResult(true);
                 }
 
-                if (item is ILiveTvRecording)
+                return item.Delete(new DeleteOptions
                 {
-                    return _liveTv.DeleteRecording(i);
-                }
-
-                return _libraryManager.DeleteItem(item);
+                    DeleteFileLocation = true
+                });
             }).ToArray();
 
             Task.WaitAll(tasks);

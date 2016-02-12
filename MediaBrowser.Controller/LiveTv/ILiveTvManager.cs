@@ -45,6 +45,13 @@ namespace MediaBrowser.Controller.LiveTv
         Task DeleteRecording(string id);
 
         /// <summary>
+        /// Deletes the recording.
+        /// </summary>
+        /// <param name="recording">The recording.</param>
+        /// <returns>Task.</returns>
+        Task DeleteRecording(ILiveTvRecording recording);
+        
+        /// <summary>
         /// Cancels the timer.
         /// </summary>
         /// <param name="id">The identifier.</param>

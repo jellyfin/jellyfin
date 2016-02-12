@@ -1980,5 +1980,10 @@ namespace MediaBrowser.Controller.Entities
         {
             return new[] { Id };
         }
+
+        public virtual Task Delete(DeleteOptions options)
+        {
+            return LibraryManager.DeleteItem(this, options);
+        }
     }
 }

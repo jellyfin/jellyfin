@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -158,6 +160,11 @@ namespace MediaBrowser.Controller.LiveTv
         public override bool IsVisibleStandalone(User user)
         {
             return IsVisible(user);
+        }
+
+        public override Task Delete(DeleteOptions options)
+        {
+            return LiveTvManager.DeleteRecording(this);
         }
     }
 }
