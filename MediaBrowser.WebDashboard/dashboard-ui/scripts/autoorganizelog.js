@@ -54,41 +54,57 @@
 
         Dashboard.showLoadingMsg();
 
+        var seriesItems;
+
         ApiClient.getItems(null, {
             recursive: true,
             includeItemTypes: 'Series',
             sortBy: 'SortName'
 
         }).then(function (result) {
-            Dashboard.hideLoadingMsg();
-            showEpisodeCorrectionPopup(page, item, result.Items);
-        }, onApiFailure);
 
+            seriesItems = result.Items;
+
+            ApiClient.getVirtualFolders().then(function (result) {
+
+                Dashboard.hideLoadingMsg();
+
+                var movieLocations = [];
+                var seriesLocations = [];
+
+                for (var n = 0; n < result.length; n++) {
+
+                    var virtualFolder = result[n];
+
+                    for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {
+                        var location = {
+                            value: virtualFolder.Locations[i],
+                            display: virtualFolder.Name + ': ' + virtualFolder.Locations[i]
+                        };
+
+                        if (virtualFolder.CollectionType == 'movies') {
+                            movieLocations.push(location);
+                        }
+                        if (virtualFolder.CollectionType == 'tvshows') {
+                            seriesLocations.push(location);
+                        }
+                    }
+                }
+
+                showEpisodeCorrectionPopup(page, item, seriesItems, movieLocations, seriesLocations);
+            }, onApiFailure);
+
+        }, onApiFailure);
     }
 
-    function showEpisodeCorrectionPopup(page, item, allSeries) {
+    function showEpisodeCorrectionPopup(page, item, allSeries, movieLocations, seriesLocations) {
 
-        var popup = $('.episodeCorrectionPopup', page).popup("open");
+        require(['components/fileorganizer/fileorganizer'], function () {
 
-        $('.inputFile', popup).html(item.OriginalFileName);
-
-        $('#txtSeason', popup).val(item.ExtractedSeasonNumber);
-        $('#txtEpisode', popup).val(item.ExtractedEpisodeNumber);
-        $('#txtEndingEpisode', popup).val(item.ExtractedEndingEpisodeNumber);
-
-        $('#chkRememberCorrection', popup).val(false);
-
-        $('#hfResultId', popup).val(item.Id);
-
-        var seriesHtml = allSeries.map(function (s) {
-
-            return '<option value="' + s.Id + '">' + s.Name + '</option>';
-
-        }).join('');
-
-        seriesHtml = '<option value=""></option>' + seriesHtml;
-
-        $('#selectSeries', popup).html(seriesHtml);
+            FileOrganizer.show(page, item, allSeries, movieLocations, seriesLocations, function () {
+                reloadItems(page);
+            });
+        });
     }
 
     function organizeFile(page, id) {
@@ -131,36 +147,7 @@
 
                 }, onApiFailure);
             }
-
         });
-    }
-
-    function submitEpisodeForm(form) {
-
-        Dashboard.showLoadingMsg();
-
-        var page = $(form).parents('.page');
-
-        var resultId = $('#hfResultId', form).val();
-
-        var options = {
-
-            SeriesId: $('#selectSeries', form).val(),
-            SeasonNumber: $('#txtSeason', form).val(),
-            EpisodeNumber: $('#txtEpisode', form).val(),
-            EndingEpisodeNumber: $('#txtEndingEpisode', form).val(),
-            RememberCorrection: $('#chkRememberCorrection', form).checked()
-        };
-
-        ApiClient.performEpisodeOrganization(resultId, options).then(function () {
-
-            Dashboard.hideLoadingMsg();
-
-            $('.episodeCorrectionPopup', page).popup("close");
-
-            reloadItems(page);
-
-        }, onApiFailure);
     }
 
     function reloadItems(page) {
@@ -173,7 +160,6 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-
         }, onApiFailure);
 
     }
@@ -229,9 +215,9 @@
             var status = item.Status;
 
             if (status == 'SkippedExisting') {
-                html += '<div style="color:blue;">';
+                html += '<a data-resultid="' + item.Id + '" style="color:blue;" href="#" class="btnShowStatusMessage">';
                 html += item.OriginalFileName;
-                html += '</div>';
+                html += '</a>';
             }
             else if (status == 'Failure') {
                 html += '<a data-resultid="' + item.Id + '" style="color:red;" href="#" class="btnShowStatusMessage">';
@@ -323,14 +309,9 @@
 
         var page = $.mobile.activePage;
 
-        if (msg.MessageType == "ScheduledTaskEnded") {
+        if ((msg.MessageType == 'ScheduledTaskEnded' && msg.Data.Key == 'AutoOrganize') || msg.MessageType == 'AutoOrganizeUpdate') {
 
-            var result = msg.Data;
-
-            if (result.Key == 'AutoOrganize') {
-
-                reloadItems(page);
-            }
+            reloadItems(page);
         }
     }
 
@@ -338,15 +319,21 @@
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert({
-            title: Globalize.translate('AutoOrganizeError'),
-            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
-        });
-    }
+        var page = $.mobile.activePage;
+        $('.episodeCorrectionPopup', page).popup("close");
 
-    function onEpisodeCorrectionFormSubmit() {
-        submitEpisodeForm(this);
-        return false;
+        if (e.status == 0) {
+            Dashboard.alert({
+                title: 'Auto-Organize',
+                message: 'The operation is going to take a little longer. The view will be updated on completion.'
+            });
+        }
+        else {
+            Dashboard.alert({
+                title: Globalize.translate('AutoOrganizeError'),
+                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+            });
+        }
     }
 
     $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
@@ -360,8 +347,6 @@
             }, onApiFailure);
 
         });
-
-        $('.episodeCorrectionForm').off('submit', onEpisodeCorrectionFormSubmit).on('submit', onEpisodeCorrectionFormSubmit);
 
     }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
 
@@ -377,7 +362,7 @@
             taskKey: 'AutoOrganize'
         });
 
-        $(ApiClient).on("websocketmessage.autoorganizelog", onWebSocketMessage);
+        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
 
     }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
 
@@ -390,7 +375,7 @@
             mode: 'off'
         });
 
-        $(ApiClient).off("websocketmessage.autoorganizelog", onWebSocketMessage);
+        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

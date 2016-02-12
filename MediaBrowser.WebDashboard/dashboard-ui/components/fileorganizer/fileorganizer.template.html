@@ -1,0 +1,120 @@
+﻿<div class="popupTabPage">
+    <form class="episodeCorrectionForm">
+        <p><span class="inputFile"></span></p>
+        <div class="layout horizontal center-center" style="margin: 1em 0 1em; min-width: 350px;" id="divSelectSeries">
+            <div style="width: 100%;">
+                <label for="selectSeries">${LabelSeries}</label>
+                <select id="selectSeries" data-mini="true"></select>
+            </div>
+            <button type="button" id="btnNewSeries" data-icon="add" data-mini="true" style="width: auto; margin-left: 15px !important; margin-top: 13px !important">
+                New
+            </button>
+        </div>
+        <div style="margin: 1em 0 1em; min-width: 350px; display: none" id="divNewSeries">
+            <label for="txtSelectedNewSeries2">New Series</label>
+            <input id="txtSelectedNewSeries2" class="txt-readonly" disabled />
+            <div class="fieldDescription"><span id="spanTargetFolder"></span></div>
+        </div>
+        <div style="margin: 1em 0;">
+            <label for="txtSeason">${LabelSeasonNumber}</label>
+            <input id="txtSeason" type="number" pattern="[0-9]*" required="required" min="0" />
+        </div>
+        <div style="margin: 1em 0;">
+            <label for="txtEpisode">${LabelEpisodeNumber}</label>
+            <input id="txtEpisode" type="number" pattern="[0-9]*" required="required" min="0" />
+        </div>
+        <div style="margin: 1em 0;">
+            <label for="txtEndingEpisode">${LabelEndingEpisodeNumber}</label>
+            <input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" />
+            <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
+        </div>
+        <div id="divRememberCorrection" style="margin: 1em 0;">
+            <label style="display:block">${TabSmartMatch}</label>
+            <input type="checkbox" id="chkRememberCorrection" name="chkRememberCorrection" data-mini="true" />
+            <label for="chkRememberCorrection" style="max-width: 350px">${LabelOrganizeSmartMatchOption}: <span class="extractedName" style="font-weight: bold; font-style: italic" /></label>
+        </div>
+        <p>
+            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                ${ButtonOk}
+            </button>
+        </p>
+        <input id="hfResultId" type="hidden" />
+        <input id="hfNewSeriesProviderIds" type="hidden" />
+        <input id="hfNewSeriesName" type="hidden" />
+        <input id="hfNewSeriesYear" type="hidden" />
+    </form>
+
+    <form class="createSeriesForm">
+        <p><span class="inputFile"></span></p>
+        <div style="margin: 1em 0 1em; min-width: 350px;">
+            <label for="txtNewSeriesName">${LabelSeries}</label>
+            <input id="txtNewSeriesName" required="required" />
+        </div>
+        <div style="margin: 1em 0;">
+            <label for="txtNewSeriesYear">${LabelYear}</label>
+            <input id="txtNewSeriesYear" type="number" pattern="[0-9]*" min="0" />
+        </div>
+        <div style="margin: 1em 0;">
+            <button type="button" data-icon="info" id="btnIdentifySeries" data-mini="true">
+                ${ButtonIdentify}
+            </button>
+        </div>
+        <div style="margin: 1em 0 1em;">
+            <label for="txtSelectedNewSeries">Selected Series</label>
+            <!-- When setting the disabled attribute, the required checking on submit does not work.
+                 Therefore class text-readonly is used instead to prevent keyboard input -->
+            <input id="txtSelectedNewSeries" class="txt-readonly" required="required" />
+        </div>
+        <div style="margin: 1em 0 1em; min-width: 350px;">
+            <label for="selectSeriesFolder">Destination Folder</label>
+            <select id="selectSeriesFolder" data-mini="true" required="required"></select>
+        </div>
+        <p>
+            <button type="submit" id="btnCreateNewSeries" data-theme="b" data-icon="check" data-mini="true">
+                Create Series
+            </button>
+        </p>
+    </form>
+
+</div>
+<div class="popupTabPage hide">
+    <form class="organizeMovieForm">
+        <p><span class="inputFile"></span></p>
+        <div style="margin: 1em 0 1em; min-width: 350px;">
+            <label for="txtMovieName">Movie</label>
+            <input id="txtMovieName" required="required" min="0" />
+        </div>
+        <div style="margin: 1em 0;">
+            <label for="txtMovieYear">Year</label>
+            <input id="txtMovieYear" type="number" pattern="[0-9]*" min="0" />
+        </div>
+        <div style="margin: 1em 0;">
+            <button type="button" data-icon="info" id="btnIdentifyMovie" data-mini="true">
+                ${ButtonIdentify}
+            </button>
+        </div>
+        <div style="margin: 1em 0 1em;">
+            <label for="txtSelectedMovie">Selected Movie</label>
+            <input id="txtSelectedMovie" class="txt-readonly" required="required" />
+        </div>
+        <div style="margin: 1em 0 1em; min-width: 350px;">
+            <label for="selectMovieFolder">Destination Folder</label>
+            <select id="selectMovieFolder" data-mini="true" required="required"></select>
+        </div>
+        <p>
+            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                ${ButtonOk}
+            </button>
+        </p>
+        <input id="hfResultIdMovie" type="hidden" />
+    </form>
+</div>
+
+<div class="identificationResultForm">
+    <form>
+
+        <div class="identificationSearchResults" style="height:auto; min-width: 350px; min-height: 350px;">
+            <div class="identificationSearchResultList"></div>
+        </div>
+    </form>
+</div>

@@ -1,11 +1,11 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="css/metadataeditor.css">
     <title>${TitleAutoOrganize}</title>
 </head>
 <body>
-    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,jqmpopup,scripts/autoorganizelog,scripts/taskbutton,detailtablecss,paper-input,paper-checkbox">
-
+    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,jqmpopup,scripts/autoorganizelog,scripts/taskbutton,detailtablecss">
         <div data-role="content">
             <div class="content-primary">
 
@@ -51,48 +51,6 @@
                 <div class="listBottomPaging">
                 </div>
             </div>
-        </div>
-
-        <div data-role="popup" class="popup episodeCorrectionPopup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 1em;">
-                <h3>${HeaderEpisodeOrganization}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="episodeCorrectionForm" style="padding:0 .5em;">
-
-                    <p><span class="inputFile"></span></p>
-
-                    <div style="margin: 1em 0 1em; min-width: 250px;">
-                        <label for="selectSeries" class="selectLabel">${LabelSeries}</label>
-                        <select id="selectSeries" data-mini="true" required="required"></select>
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <paper-input id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"></paper-input>
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <paper-input id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}"></paper-input>
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <paper-input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}"></paper-input>
-                        <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
-                    </div>
-                    <br/>
-                    <div>
-                        <paper-checkbox type="checkbox" id="chkRememberCorrection">${OptionRememberOrganizeCorrection}</paper-checkbox>
-                    </div>
-                    <br />
-                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                        ${ButtonOk}
-                    </button>
-                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                        ${ButtonCancel}
-                    </button>
-                    <input id="hfResultId" type="hidden" />
-                </form>
-            </div>
-
         </div>
     </div>
 </body>
