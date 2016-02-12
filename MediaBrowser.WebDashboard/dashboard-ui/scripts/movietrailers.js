@@ -72,7 +72,8 @@
                 items: result.Items,
                 shape: "portrait",
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                overlayPlayButton: true
             });
 
             var elem = page.querySelector('.itemsContainer');

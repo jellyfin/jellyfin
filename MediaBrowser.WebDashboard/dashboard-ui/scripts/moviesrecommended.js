@@ -63,7 +63,8 @@
                     centerText: true,
                     lazy: true,
                     overlayText: false,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
 

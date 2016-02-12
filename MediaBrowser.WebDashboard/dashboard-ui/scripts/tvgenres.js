@@ -68,7 +68,8 @@
                     context: 'tv',
                     showItemCounts: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -102,7 +103,8 @@
                     context: 'tv',
                     centerText: true,
                     showItemCounts: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
 

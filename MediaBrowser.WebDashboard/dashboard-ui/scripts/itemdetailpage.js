@@ -903,7 +903,8 @@
                     shape: getPortraitShape(),
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
             else if (item.Type == "Season") {
@@ -916,7 +917,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayMoreButton: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {
