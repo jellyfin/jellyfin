@@ -764,10 +764,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     var duration = recordingEndDate - DateTime.UtcNow;
 
-                    HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
+                    var recorder = await GetRecorder().ConfigureAwait(false);
+
+                    if (recorder is EncodedRecorder)
                     {
-                        Url = mediaStreamInfo.Path
-                    };
+                        recordPath = Path.ChangeExtension(recordPath, ".mp4");
+                    }
 
                     recording.Path = recordPath;
                     recording.Status = RecordingStatus.InProgress;
@@ -776,26 +778,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-                    httpRequestOptions.BufferContent = false;
                     var durationToken = new CancellationTokenSource(duration);
                     var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    httpRequestOptions.CancellationToken = linkedToken;
+
                     _logger.Info("Writing file to path: " + recordPath);
                     _logger.Info("Opening recording stream from tuner provider");
-                    using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
+
+                    Action onStarted = () =>
                     {
-                        _logger.Info("Opened recording stream from tuner provider");
+                        result.Item2.Release();
+                        isResourceOpen = false;
+                    };
 
-                        using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                        {
-                            result.Item2.Release();
-                            isResourceOpen = false;
-
-                            _logger.Info("Copying recording stream to file stream");
-
-                            await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
-                        }
-                    }
+                    await recorder.Record(mediaStreamInfo, recordPath, onStarted, linkedToken).ConfigureAwait(false);
 
                     recording.Status = RecordingStatus.Completed;
                     _logger.Info("Recording completed");
@@ -844,6 +839,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _timerProvider.Delete(timer);
                 _recordingProvider.Delete(recording);
             }
+        }
+
+        private async Task<IRecorder> GetRecorder()
+        {
+            if (GetConfiguration().EnableRecordingEncoding)
+            {
+                var regInfo = await _security.GetRegistrationStatus("embytvseriesrecordings").ConfigureAwait(false);
+
+                if (regInfo.IsValid)
+                {
+                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
+                }
+            }
+
+            return new DirectRecorder(_logger, _httpClient, _fileSystem);
         }
 
         private async void OnSuccessfulRecording(RecordingInfo recording)

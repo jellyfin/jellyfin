@@ -215,8 +215,11 @@
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
+    <Compile Include="LiveTv\EmbyTV\DirectRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EmbyTV.cs" />
+    <Compile Include="LiveTv\EmbyTV\EncodedRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EntryPoint.cs" />
+    <Compile Include="LiveTv\EmbyTV\IRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\ItemDataProvider.cs" />
     <Compile Include="LiveTv\EmbyTV\RecordingHelper.cs" />
     <Compile Include="LiveTv\EmbyTV\SeriesTimerManager.cs" />
