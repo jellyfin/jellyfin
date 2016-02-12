@@ -217,7 +217,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 return;
             }
 
-            if (_config.GetDlnaConfiguration().EnableDebugLogging)
+            if (_config.GetDlnaConfiguration().EnableDebugLog)
             {
                 var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                 var headerText = string.Join(",", headerTexts.ToArray());
