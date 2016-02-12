@@ -9,6 +9,7 @@
 
         $('#chkMovies', page).checked(config.EnableMovieProviders);
         $('#chkOrganize', page).checked(config.EnableAutoOrganize);
+        $('#chkConvertRecordings', page).checked(config.EnableRecordingEncoding);
 
         $('#txtRecordingPath', page).val(config.RecordingPath || '');
 
@@ -29,6 +30,7 @@
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
                 config.EnableAutoOrganize = $('#chkOrganize', form).checked();
+                config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
                 config.RecordingPath = $('#txtRecordingPath', form).val() || null;
 
                 config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
