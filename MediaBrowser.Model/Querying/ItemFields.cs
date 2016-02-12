@@ -253,6 +253,11 @@
         /// <summary>
         /// The season user data
         /// </summary>
-        SeasonUserData
+        SeasonUserData,
+
+        /// <summary>
+        /// The service name
+        /// </summary>
+        ServiceName
     }
 }

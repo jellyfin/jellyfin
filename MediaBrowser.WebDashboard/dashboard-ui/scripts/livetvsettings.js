@@ -21,26 +21,26 @@
 
     function onSubmit() {
 
-			Dashboard.showLoadingMsg();
+        Dashboard.showLoadingMsg();
 
-            var form = this;
+        var form = this;
 
-            ApiClient.getNamedConfiguration("livetv").then(function (config) {
+        ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
-                config.GuideDays = $('#selectGuideDays', form).val() || null;
-                config.EnableMovieProviders = $('#chkMovies', form).checked();
-                config.EnableAutoOrganize = $('#chkOrganize', form).checked();
-                config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
-                config.RecordingPath = $('#txtRecordingPath', form).val() || null;
+            config.GuideDays = $('#selectGuideDays', form).val() || null;
+            config.EnableMovieProviders = $('#chkMovies', form).checked();
+            config.EnableAutoOrganize = $('#chkOrganize', form).checked();
+            config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
+            config.RecordingPath = $('#txtRecordingPath', form).val() || null;
 
-                config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
-                config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
+            config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
+            config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
 
-                ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
-            });
+            ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
+        });
 
-            // Disable default form submission
-            return false;
+        // Disable default form submission
+        return false;
     }
 
     $(document).on('pageinit', "#liveTvSettingsPage", function () {

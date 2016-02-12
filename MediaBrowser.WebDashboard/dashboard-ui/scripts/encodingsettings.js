@@ -4,12 +4,6 @@
 
         page.querySelector('#chkEnableThrottle').checked = config.EnableThrottling;
 
-        $('.radioEncodingQuality', page).each(function () {
-
-            this.checked = config.EncodingQuality == this.value;
-
-        }).checkboxradio('refresh');
-
         $('#selectVideoDecoder', page).val(config.HardwareAccelerationType);
         $('#selectThreadCount', page).val(config.EncodingThreadCount);
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
@@ -27,7 +21,6 @@
 
             ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
-                config.EncodingQuality = $('.radioEncodingQuality:checked', form).val();
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
                 config.EncodingThreadCount = $('#selectThreadCount', form).val();

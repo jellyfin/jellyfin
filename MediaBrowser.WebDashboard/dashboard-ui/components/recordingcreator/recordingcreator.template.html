@@ -45,7 +45,13 @@
             </div>
         </div>
     </div>
-
+    <div class="convertRecordingsContainer hide">
+        <br />
+        <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
+        <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+        <div class="fieldDescription paperCheckboxFieldDescription hide btnSupporter"><a href="http://emby.media/premiere" target="_blank">${ButtonLearnMore}</a></div>
+    </div>
+    <br />
     <div class="advancedToggle hide">
         <div>
             <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
