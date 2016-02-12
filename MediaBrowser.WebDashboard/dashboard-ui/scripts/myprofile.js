@@ -321,6 +321,15 @@
             Dashboard.alert(Globalize.translate('PasswordSaved'));
             loadUser(page);
 
+        }, function() {
+            
+            Dashboard.hideLoadingMsg();
+
+            Dashboard.alert({
+                title: Globalize.translate('HeaderLoginFailure'),
+                message: Globalize.translate('MessageInvalidUser')
+            });
+
         });
 
     }

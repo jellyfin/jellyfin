@@ -147,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private bool EncodeVideo(MediaSourceInfo mediaSource)
         {
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            return !mediaStreams.Any(i => i.Type == MediaStreamType.Video && string.Equals(i.Codec, "h264", StringComparison.OrdinalIgnoreCase));
+            return !mediaStreams.Any(i => i.Type == MediaStreamType.Video && string.Equals(i.Codec, "h264", StringComparison.OrdinalIgnoreCase) && !i.IsInterlaced);
         }
 
         protected string GetOutputSizeParam()
