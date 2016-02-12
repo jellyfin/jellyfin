@@ -395,7 +395,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             else if (item is LiveTvProgram)
             {
-                _livetvManager().AddInfoToProgramDto(item, dto, fields.Contains(ItemFields.ChannelInfo), user);
+                _livetvManager().AddInfoToProgramDto(item, dto, fields, user);
             }
 
             return dto;

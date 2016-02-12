@@ -1467,7 +1467,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, bool addChannelInfo, User user = null)
+        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, List<ItemFields> fields, User user = null)
         {
             var program = (LiveTvProgram)item;
 
@@ -1507,7 +1507,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.IsPremiere = program.IsPremiere;
             }
 
-            if (addChannelInfo)
+            if (fields.Contains(ItemFields.ChannelInfo))
             {
                 var channel = GetInternalChannel(program.ChannelId);
 
@@ -1520,6 +1520,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
                     }
+                }
+            }
+
+            if (fields.Contains(ItemFields.ServiceName))
+            {
+                var service = GetService(program);
+                if (service != null)
+                {
+                    dto.ServiceName = service.Name;
                 }
             }
         }
