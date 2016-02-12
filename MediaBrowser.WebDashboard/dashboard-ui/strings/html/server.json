@@ -1549,6 +1549,6 @@
     "ButtonAdvanced": "Advanced",
     "LabelCodecIntrosPath": "Codec intros path:",
     "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature.",
-    "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to streaming friendly formats.",
+    "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to streaming friendly formats",
     "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on any device. This feature requires an active Emby Premiere subscription."
 }

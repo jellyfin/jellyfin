@@ -80,6 +80,12 @@
 
         });
 
+        if (AppInfo.enableSupporterMembership) {
+            $('.lnkSupporterLearnMore', page).show();
+        } else {
+            $('.lnkSupporterLearnMore', page).hide();
+        }
+
     });
 
 })(jQuery, document, window);
