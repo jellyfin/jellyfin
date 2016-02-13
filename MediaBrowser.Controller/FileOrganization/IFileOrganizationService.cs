@@ -78,8 +78,8 @@ namespace MediaBrowser.Controller.FileOrganization
         /// <summary>
         /// Deletes a smart match entry.
         /// </summary>
-        /// <param name="Id">Item Id.</param>
+        /// <param name="ItemName">Item name.</param>
         /// <param name="matchString">The match string to delete.</param>
-        void DeleteSmartMatchEntry(string Id, string matchString);
+        void DeleteSmartMatchEntry(string ItemName, string matchString);
     }
 }
