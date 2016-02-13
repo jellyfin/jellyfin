@@ -1,8 +1,15 @@
-﻿<div class="popupTabPage">
+﻿<div class="dialogHeader">
+    <paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>
+    <div class="dialogHeaderTitle">
+        ${HeaderInviteUser}
+    </div>
+</div>
+
+<div class="popupTabPage">
     <form class="episodeCorrectionForm">
         <p><span class="inputFile"></span></p>
-        <div class="layout horizontal center-center" style="margin: 1em 0 1em; min-width: 350px;" id="divSelectSeries">
-            <div style="width: 100%;">
+        <div class="layout horizontal center-center" style="margin: 1em 0 1em;" id="divSelectSeries">
+            <div>
                 <label for="selectSeries">${LabelSeries}</label>
                 <select id="selectSeries" data-mini="true"></select>
             </div>
@@ -10,7 +17,7 @@
                 New
             </button>
         </div>
-        <div style="margin: 1em 0 1em; min-width: 350px; display: none" id="divNewSeries">
+        <div style="margin: 1em 0 1em; display: none" id="divNewSeries">
             <label for="txtSelectedNewSeries2">New Series</label>
             <input id="txtSelectedNewSeries2" class="txt-readonly" disabled />
             <div class="fieldDescription"><span id="spanTargetFolder"></span></div>
@@ -31,7 +38,7 @@
         <div id="divRememberCorrection" style="margin: 1em 0;">
             <label style="display:block">${TabSmartMatch}</label>
             <input type="checkbox" id="chkRememberCorrection" name="chkRememberCorrection" data-mini="true" />
-            <label for="chkRememberCorrection" style="max-width: 350px">${LabelOrganizeSmartMatchOption}: <span class="extractedName" style="font-weight: bold; font-style: italic" /></label>
+            <label for="chkRememberCorrection">${LabelOrganizeSmartMatchOption}: <span class="extractedName" style="font-weight: bold; font-style: italic" /></label>
         </div>
         <p>
             <button type="submit" data-theme="b" data-icon="check" data-mini="true">
@@ -46,7 +53,7 @@
 
     <form class="createSeriesForm">
         <p><span class="inputFile"></span></p>
-        <div style="margin: 1em 0 1em; min-width: 350px;">
+        <div style="margin: 1em 0 1em;">
             <label for="txtNewSeriesName">${LabelSeries}</label>
             <input id="txtNewSeriesName" required="required" />
         </div>
@@ -65,7 +72,7 @@
                  Therefore class text-readonly is used instead to prevent keyboard input -->
             <input id="txtSelectedNewSeries" class="txt-readonly" required="required" />
         </div>
-        <div style="margin: 1em 0 1em; min-width: 350px;">
+        <div style="margin: 1em 0 1em;">
             <label for="selectSeriesFolder">Destination Folder</label>
             <select id="selectSeriesFolder" data-mini="true" required="required"></select>
         </div>

@@ -385,7 +385,7 @@
             html += '<div style="padding:0; margin: 10px 0px 0px 0px"><paper-tabs hidescrollbuttons selected="0">';
             html += '<paper-tab id="popupTab1" class="episodeTabButton">TV Episode</paper-tab>';
             html += '<paper-tab id="popupTab2" class="movieTabButton">Movie</paper-tab>';
-            html += '</paper-tabs></div>'
+            html += '</paper-tabs></div>';
 
             html += '<div class="editorContent" style="margin:auto;">';
             html += Globalize.translateDocument(template);
@@ -441,19 +441,8 @@
             removeOnClose: true
         });
 
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
-
-        // without this safari will scroll the background instead of the dialog contents
-        // but not needed here since this is already on top of an existing dialog
-        dlg.setAttribute('modal', 'modal');
-
-        dlg.setAttribute('noAutoFocus', 'noAutoFocus');
-        dlg.entryAnimation = 'scale-up-animation';
-        dlg.exitAnimation = 'fade-out-animation';
         dlg.classList.add('ui-body-a');
         dlg.classList.add('background-theme-a');
-        dlg.classList.add('smoothScrollY');
 
         return dlg;
     }
