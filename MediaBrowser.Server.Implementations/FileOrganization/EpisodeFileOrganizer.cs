@@ -301,7 +301,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private void SaveSmartMatchString(string matchString, Series series, AutoOrganizeOptions options)
         {
-            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, series.Name));
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, series.Name, StringComparison.OrdinalIgnoreCase));
 
             if (info == null)
             {
@@ -498,7 +498,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     series = _libraryManager.RootFolder
                         .GetRecursiveChildren(i => i is Series)
                         .Cast<Series>()
-                        .FirstOrDefault(i => string.Equals(i.Name, info.ItemName));
+                        .FirstOrDefault(i => string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
