@@ -301,15 +301,14 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private void SaveSmartMatchString(string matchString, Series series, AutoOrganizeOptions options)
         {
-            var seriesIdString = series.Id.ToString("N");
-            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.Id, seriesIdString));
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, series.Name));
 
             if (info == null)
             {
                 info = new SmartMatchInfo();
-                info.Id = series.Id.ToString("N");
+                info.ItemName = series.Name;
                 info.OrganizerType = FileOrganizerType.Episode;
-                info.Name = series.Name;
+                info.DisplayName = series.Name;
                 var list = options.SmartMatchInfos.ToList();
                 list.Add(info);
                 options.SmartMatchInfos = list.ToArray();
@@ -499,7 +498,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     series = _libraryManager.RootFolder
                         .GetRecursiveChildren(i => i is Series)
                         .Cast<Series>()
-                        .FirstOrDefault(i => string.Equals(i.Id.ToString("N"), info.Id));
+                        .FirstOrDefault(i => string.Equals(i.Name, info.ItemName));
                 }
             }
 
