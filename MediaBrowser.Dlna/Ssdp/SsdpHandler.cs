@@ -160,7 +160,7 @@ namespace MediaBrowser.Dlna.Ssdp
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
-            SendDatagram(msg, _ssdpEndp, localIp, true, 3);
+            SendDatagram(msg, _ssdpEndp, localIp, true);
 
             //SendUnicastRequest(msg);
         }
@@ -169,7 +169,7 @@ namespace MediaBrowser.Dlna.Ssdp
             EndPoint endpoint,
             EndPoint localAddress,
             bool isBroadcast,
-            int sendCount)
+            int sendCount = 3)
         {
             var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
@@ -422,11 +422,11 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             foreach (var d in RegisteredDevices)
             {
-                NotifyDevice(d, "alive", 1, enableDebugLogging);
+                NotifyDevice(d, "alive", enableDebugLogging);
             }
         }
 
-        private void NotifyDevice(UpnpDevice dev, string type, int sendCount, bool logMessage)
+        private void NotifyDevice(UpnpDevice dev, string type, bool logMessage)
         {
             const string header = "NOTIFY * HTTP/1.1";
 
@@ -448,7 +448,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, sendCount);
+            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
@@ -469,7 +469,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 foreach (var d in dl.ToList())
                 {
-                    NotifyDevice(d, "byebye", 2, true);
+                    NotifyDevice(d, "byebye", true);
                 }
 
                 _logger.Debug("Unregistered mount {0}", uuid);
