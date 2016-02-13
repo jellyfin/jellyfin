@@ -94,10 +94,10 @@ namespace MediaBrowser.Api.Library
         public int? Limit { get; set; }
     }
 
-    [Route("/Library/FileOrganizations/SmartMatches", "DELETE", Summary = "Deletes a smart match entry")]
+    [Route("/Library/FileOrganizations/SmartMatches/Delete", "POST", Summary = "Deletes a smart match entry")]
     public class DeleteSmartMatchEntry
     {
-        [ApiMember(Name = "Entries", Description = "SmartMatch Entry", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        [ApiMember(Name = "Entries", Description = "SmartMatch Entry", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public List<NameValuePair> Entries { get; set; }
     }
 
