@@ -49,7 +49,7 @@
         <br />
         <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
         <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-        <div class="fieldDescription paperCheckboxFieldDescription hide btnSupporter"><a href="http://emby.media/premiere" target="_blank">${ButtonLearnMore}</a></div>
+        <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
     </div>
     <br />
     <div class="advancedToggle hide">
@@ -69,7 +69,10 @@
             <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
         </div>
         <button type="submit" data-role="none" class="clearButton btnSubmitContainer">
-            <paper-button raised class="submit block" style="background:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
+            <paper-button raised class="submit block" style="background:#cc3333;" autoFocus><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
         </button>
     </div>
+    <br />
+    <br />
+    <br />
 </form>

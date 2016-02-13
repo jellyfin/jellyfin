@@ -227,6 +227,12 @@
             }
         }
 
+        if (AppInfo.enableSupporterMembership) {
+            context.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
+        } else {
+            context.querySelector('.btnSupporterForConverting a').href = '#';
+        }
+
         ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
             $('#chkConvertRecordings', context).checked(config.EnableRecordingEncoding);

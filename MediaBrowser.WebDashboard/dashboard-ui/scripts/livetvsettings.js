@@ -81,9 +81,9 @@
         });
 
         if (AppInfo.enableSupporterMembership) {
-            $('.lnkSupporterLearnMore', page).show();
+            page.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
         } else {
-            $('.lnkSupporterLearnMore', page).hide();
+            page.querySelector('.btnSupporterForConverting a').href = '#';
         }
 
     });
