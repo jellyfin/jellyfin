@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Controller.FileOrganization;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Api.Library
 {
@@ -95,11 +97,8 @@ namespace MediaBrowser.Api.Library
     [Route("/Library/FileOrganizations/SmartMatches", "DELETE", Summary = "Deletes a smart match entry")]
     public class DeleteSmartMatchEntry
     {
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Name { get; set; }
-
-        [ApiMember(Name = "MatchString", Description = "SmartMatch String", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string MatchString { get; set; }
+        [ApiMember(Name = "Entries", Description = "SmartMatch Entry", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public List<NameValuePair> Entries { get; set; }
     }
 
     [Authenticated(Roles = "Admin")]
@@ -172,7 +171,10 @@ namespace MediaBrowser.Api.Library
 
         public void Post(DeleteSmartMatchEntry request)
         {
-            _iFileOrganizationService.DeleteSmartMatchEntry(request.Name, request.MatchString);
+            request.Entries.ForEach(entry =>
+            {
+                _iFileOrganizationService.DeleteSmartMatchEntry(entry.Name, entry.Value);
+            });
         }
     }
 }
