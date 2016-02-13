@@ -97,11 +97,11 @@
         }, onApiFailure);
     }
 
-    function showEpisodeCorrectionPopup(page, item, allSeries, movieLocations, seriesLocations) {
+    function showEpisodeCorrectionPopup(page, item) {
 
-        require(['components/fileorganizer/fileorganizer'], function () {
+        require(['components/fileorganizer/fileorganizer'], function (fileorganizer) {
 
-            FileOrganizer.show(page, item, allSeries, movieLocations, seriesLocations, function () {
+            fileorganizer.show(item).then(function () {
                 reloadItems(page);
             });
         });

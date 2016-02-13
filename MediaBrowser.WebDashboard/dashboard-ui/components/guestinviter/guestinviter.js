@@ -109,8 +109,8 @@
                     html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
-                    // needed for the collapsible
                     document.body.appendChild(dlg);
+                    // needed for the collapsible
                     $(dlg.querySelector('form')).trigger('create');
 
                     paperDialogHelper.open(dlg);
