@@ -246,7 +246,7 @@
 
                 var html = '';
                 html += '<div class="dialogHeader">';
-                html += '<paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
                 html += '<div class="dialogHeaderTitle">';
                 html += Globalize.translate('SyncMedia');
                 html += '</div>';

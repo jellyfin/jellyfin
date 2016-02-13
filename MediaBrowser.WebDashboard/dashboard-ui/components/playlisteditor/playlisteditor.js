@@ -206,7 +206,7 @@
             var title = Globalize.translate('HeaderAddToPlaylist');
 
             html += '<div class="dialogHeader">';
-            html += '<paper-icon-button icon="close" class="btnCancel" tabindex="-1"></paper-icon-button>';
+            html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';
