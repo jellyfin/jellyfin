@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
 
             // Wait for the file to exist before proceeeding
-			while (!_hasExited)
+            while (!_hasExited)
             {
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var commandLineArgs = "-fflags +genpts -i \"{0}\" -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
-            if (mediaSource.ReadAtNativeFramerate)
+            //if (mediaSource.ReadAtNativeFramerate)
             {
                 commandLineArgs = "-re " + commandLineArgs;
             }
@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            var copyAudio = new[] {"aac", "mp3"};
+            var copyAudio = new[] { "aac", "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             if (mediaStreams.Any(i => i.Type == MediaStreamType.Audio && copyAudio.Contains(i.Codec, StringComparer.OrdinalIgnoreCase)))
             {
