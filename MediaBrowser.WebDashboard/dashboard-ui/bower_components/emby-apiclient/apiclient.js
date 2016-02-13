@@ -3428,12 +3428,12 @@
             });
         };
 
-        self.deleteSmartMatchEntry = function (name, options) {
+        self.deleteSmartMatchEntries = function (entries) {
 
-            var url = self.getUrl("Library/FileOrganizations/SmartMatches", options || {});
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches/Delete");
 
             var postData = {
-                Name: name
+                Entries: entries
             };
 
             return self.ajax({

@@ -333,7 +333,7 @@
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
-    window.ItemIdentifier = {
+    return {
         show: function (itemId) {
 
             var deferred = DeferredBuilder.Deferred();

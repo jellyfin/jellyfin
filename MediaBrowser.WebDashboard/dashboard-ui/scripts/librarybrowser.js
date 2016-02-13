@@ -1061,9 +1061,9 @@
 
         identifyItem: function (itemId) {
 
-            require(['components/itemidentifier/itemidentifier'], function () {
+            require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
 
-                ItemIdentifier.show(itemId);
+                itemidentifier.show(itemId);
             });
         },
 

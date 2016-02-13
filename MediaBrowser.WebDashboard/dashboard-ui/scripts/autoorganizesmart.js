@@ -49,42 +49,37 @@
         }
 
         var html = "";
-        var currentType;
+
+        if (infos.length) {
+            html += '<div class="paperList">';
+        }
 
         for (var i = 0, length = infos.length; i < length; i++) {
 
             var info = infos[i];
 
-            if (info.OrganizerType != currentType) {
-                currentType = info.OrganizerType;
+            html += '<paper-icon-item>';
 
-                if (html.length > 0) {
-                    html += "</ul>";
-                }
+            html += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
 
-                html += "<h2>" + currentType + "</h2>";
+            html += '<paper-item-body two-line>';
 
-                html += '<ul data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="action">';
-            }
+            html += "<div>" + info.DisplayName + "</div>";
 
-            html += "<li data-role='list-divider'><h3 style='font-weight:bold'>" + info.Name + "</h3></li>";
+            html += info.MatchStrings.map(function (m) {
+                return "<div secondary>" + m + "</div>";
+            }).join('');
 
-            for (var n = 0; n < info.MatchStrings.length; n++) {
-                html += "<li title='" + info.MatchStrings[n] + "'>";
+            html += '</paper-item-body>';
 
-                html += "<a style='padding-top: 0.5em; padding-bottom: 0.5em'>";
+            html += '<paper-icon-button icon="delete" class="btnDeleteMatchEntry" data-index="' + i + '" title="' + Globalize.translate('ButtonDelete') + '"></paper-icon-button>';
 
-                html += "<p>" + info.MatchStrings[n] + "</p>";
-
-                html += "<a id='btnDeleteMatchEntry" + info.Id + "' class='btnDeleteMatchEntry' href='#' data-id='" + info.Id + "' data-matchstring='" + info.MatchStrings[n] + "' data-icon='delete'>" + Globalize.translate('ButtonDelete') + "</a>";
-
-                html += "</a>";
-
-                html += "</li>";
-            }
+            html += '</paper-icon-item>';
         }
 
-        html += "</ul>";
+        if (infos.length) {
+            html += "</div>";
+        }
 
         $('.divMatchInfos', page).html(html).trigger('create');
     }
@@ -105,14 +100,17 @@
         $('.divMatchInfos', page).on('click', '.btnDeleteMatchEntry', function () {
 
             var button = this;
-            var id = button.getAttribute('data-id');
+            var index = parseInt(button.getAttribute('data-index'));
 
-            var options = {
+            var info = currentResult.Items[index];
+            var entries = info.MatchStrings.map(function (m) {
+                return {
+                    Name: info.ItemName,
+                    Value: m
+                };
+            });
 
-                MatchString: button.getAttribute('data-matchstring')
-            };
-
-            ApiClient.deleteSmartMatchEntry(id, options).then(function () {
+            ApiClient.deleteSmartMatchEntries(entries).then(function () {
 
                 reloadList(page);
 
