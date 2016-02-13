@@ -1127,6 +1127,39 @@
             });
         };
 
+        self.performMovieOrganization = function (id, options) {
+
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/Movie/Organize", options || {});
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
+        self.getSmartMatchInfos = function (options) {
+
+            options = options || {};
+
+            var url = self.getUrl("Library/FileOrganizationSmartMatch", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.deleteSmartMatchEntry = function (id, options) {
+
+            var url = self.getUrl("Library/FileOrganizationSmartMatch/" + id + "/Delete", options || {});
+
+            return self.ajax({
+                type: "POST",
+                url: url
+            });
+        };
+
         self.getLiveTvSeriesTimer = function (id) {
 
             if (!id) {
