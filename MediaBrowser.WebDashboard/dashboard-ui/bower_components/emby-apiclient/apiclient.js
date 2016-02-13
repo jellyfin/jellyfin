@@ -1127,16 +1127,6 @@
             });
         };
 
-        self.performMovieOrganization = function (id, options) {
-
-            var url = self.getUrl("Library/FileOrganizations/" + id + "/Movie/Organize", options || {});
-
-            return self.ajax({
-                type: "POST",
-                url: url
-            });
-        };
-
         self.getLiveTvSeriesTimer = function (id) {
 
             if (!id) {
@@ -3438,12 +3428,12 @@
             });
         };
 
-        self.deleteSmartMatchEntry = function (name, options) {
+        self.deleteSmartMatchEntries = function (entries) {
 
-            var url = self.getUrl("Library/FileOrganizations/SmartMatches", options || {});
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches");
 
             var postData = {
-                Name: name
+                Entries: entries
             };
 
             return self.ajax({

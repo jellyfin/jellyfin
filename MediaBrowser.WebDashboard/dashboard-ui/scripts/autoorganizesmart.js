@@ -105,14 +105,14 @@
         $('.divMatchInfos', page).on('click', '.btnDeleteMatchEntry', function () {
 
             var button = this;
-            var id = button.getAttribute('data-id');
 
-            var options = {
+            var entries = [
+            {
+                Name: button.getAttribute('data-id'),
+                Value: button.getAttribute('data-matchstring')
+            }];
 
-                MatchString: button.getAttribute('data-matchstring')
-            };
-
-            ApiClient.deleteSmartMatchEntry(id, options).then(function () {
+            ApiClient.deleteSmartMatchEntries(entries).then(function () {
 
                 reloadList(page);
 
