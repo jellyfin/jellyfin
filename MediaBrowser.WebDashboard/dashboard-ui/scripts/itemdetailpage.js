@@ -408,7 +408,10 @@
     function renderDetails(page, item, context, isStatic) {
 
         renderSimilarItems(page, item, context);
-        renderSiblingLinks(page, item, context);
+
+        if (!isStatic) {
+            renderSiblingLinks(page, item, context);
+        }
 
         if (item.Taglines && item.Taglines.length) {
             $('.tagline', page).html(item.Taglines[0]).show();
