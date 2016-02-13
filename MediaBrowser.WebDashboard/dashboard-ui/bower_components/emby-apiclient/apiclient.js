@@ -3430,7 +3430,7 @@
 
         self.deleteSmartMatchEntries = function (entries) {
 
-            var url = self.getUrl("Library/FileOrganizations/SmartMatches");
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches/Delete");
 
             var postData = {
                 Entries: entries
