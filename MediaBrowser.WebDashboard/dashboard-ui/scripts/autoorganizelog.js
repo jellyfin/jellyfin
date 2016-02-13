@@ -52,49 +52,7 @@
 
     function organizeEpsiodeWithCorrections(page, item) {
 
-        Dashboard.showLoadingMsg();
-
-        var seriesItems;
-
-        ApiClient.getItems(null, {
-            recursive: true,
-            includeItemTypes: 'Series',
-            sortBy: 'SortName'
-
-        }).then(function (result) {
-
-            seriesItems = result.Items;
-
-            ApiClient.getVirtualFolders().then(function (result) {
-
-                Dashboard.hideLoadingMsg();
-
-                var movieLocations = [];
-                var seriesLocations = [];
-
-                for (var n = 0; n < result.length; n++) {
-
-                    var virtualFolder = result[n];
-
-                    for (var i = 0, length = virtualFolder.Locations.length; i < length; i++) {
-                        var location = {
-                            value: virtualFolder.Locations[i],
-                            display: virtualFolder.Name + ': ' + virtualFolder.Locations[i]
-                        };
-
-                        if (virtualFolder.CollectionType == 'movies') {
-                            movieLocations.push(location);
-                        }
-                        if (virtualFolder.CollectionType == 'tvshows') {
-                            seriesLocations.push(location);
-                        }
-                    }
-                }
-
-                showEpisodeCorrectionPopup(page, item, seriesItems, movieLocations, seriesLocations);
-            }, onApiFailure);
-
-        }, onApiFailure);
+        showEpisodeCorrectionPopup(page, item);
     }
 
     function showEpisodeCorrectionPopup(page, item) {
