@@ -669,6 +669,7 @@
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
                 if (!externalPlayers || mediaType != "Video") {
+
                     MediaController.play(itemId);
                     return;
                 }
@@ -1527,6 +1528,10 @@
 
             if (options.context) {
                 atts.push('data-context="' + (options.context || '') + '"');
+            }
+
+            if (item.IsFolder) {
+                atts.push('data-isfolder="' + item.IsFolder + '"');
             }
 
             atts.push('data-itemtype="' + item.Type + '"');

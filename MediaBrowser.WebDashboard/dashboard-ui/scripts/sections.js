@@ -637,7 +637,8 @@
                 coverImage: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true
+                centerText: true,
+                overlayPlayButton: true
             });
             html += '</div>';
 
