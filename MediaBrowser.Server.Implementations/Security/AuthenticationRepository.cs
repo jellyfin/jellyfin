@@ -13,19 +13,17 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Security
 {
-    public class AuthenticationRepository : IAuthenticationRepository
+    public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
         private IDbConnection _connection;
-        private readonly ILogger _logger;
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
         private readonly IServerApplicationPaths _appPaths;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private IDbCommand _saveInfoCommand;
 
-        public AuthenticationRepository(ILogger logger, IServerApplicationPaths appPaths)
+        public AuthenticationRepository(ILogManager logManager, IServerApplicationPaths appPaths)
+            : base(logManager)
         {
-            _logger = logger;
             _appPaths = appPaths;
         }
 
@@ -33,7 +31,7 @@ namespace MediaBrowser.Server.Implementations.Security
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "authentication.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -46,9 +44,9 @@ namespace MediaBrowser.Server.Implementations.Security
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
-            _connection.AddColumn(_logger, "AccessTokens", "AppVersion", "TEXT");
+            _connection.AddColumn(Logger, "AccessTokens", "AppVersion", "TEXT");
 
             PrepareStatements();
         }
@@ -86,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -124,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Security
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save record:", e);
+                Logger.ErrorException("Failed to save record:", e);
 
                 if (transaction != null)
                 {
@@ -140,7 +138,7 @@ namespace MediaBrowser.Server.Implementations.Security
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -305,7 +303,7 @@ namespace MediaBrowser.Server.Implementations.Security
             {
                 info.DeviceName = reader.GetString(5);
             }
-            
+
             if (!reader.IsDBNull(6))
             {
                 info.UserId = reader.GetString(6);
@@ -318,49 +316,21 @@ namespace MediaBrowser.Server.Implementations.Security
             {
                 info.DateRevoked = reader.GetDateTime(9).ToUniversalTime();
             }
-         
+
             return info;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_connection != null)
             {
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
+                    _connection.Close();
+                }
 
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }

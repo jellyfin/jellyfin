@@ -13,19 +13,10 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Notifications
 {
-    public class SqliteNotificationsRepository : INotificationsRepository
+    public class SqliteNotificationsRepository : BaseSqliteRepository, INotificationsRepository
     {
         private IDbConnection _connection;
-        private readonly ILogger _logger;
         private readonly IServerApplicationPaths _appPaths;
-
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-
-        public SqliteNotificationsRepository(ILogManager logManager, IServerApplicationPaths appPaths)
-        {
-            _appPaths = appPaths;
-            _logger = logManager.GetLogger(GetType().Name);
-        }
 
         public event EventHandler<NotificationUpdateEventArgs> NotificationAdded;
         public event EventHandler<NotificationReadEventArgs> NotificationsMarkedRead;
@@ -35,11 +26,17 @@ namespace MediaBrowser.Server.Implementations.Notifications
         private IDbCommand _markReadCommand;
         private IDbCommand _markAllReadCommand;
 
+        public SqliteNotificationsRepository(ILogManager logManager, IServerApplicationPaths appPaths)
+            : base(logManager)
+        {
+            _appPaths = appPaths;
+        }
+
         public async Task Initialize()
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "notifications.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -52,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
             PrepareStatements();
         }
@@ -251,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in NotificationAdded event handler", ex);
+                    Logger.ErrorException("Error in NotificationAdded event handler", ex);
                 }
             }
         }
@@ -275,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -311,7 +308,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save notification:", e);
+                Logger.ErrorException("Failed to save notification:", e);
 
                 if (transaction != null)
                 {
@@ -327,7 +324,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -359,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in NotificationsMarkedRead event handler", ex);
+                    Logger.ErrorException("Error in NotificationsMarkedRead event handler", ex);
                 }
             }
         }
@@ -368,7 +365,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -396,7 +393,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save notification:", e);
+                Logger.ErrorException("Failed to save notification:", e);
 
                 if (transaction != null)
                 {
@@ -412,7 +409,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -420,7 +417,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -455,7 +452,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save notification:", e);
+                Logger.ErrorException("Failed to save notification:", e);
 
                 if (transaction != null)
                 {
@@ -471,7 +468,21 @@ namespace MediaBrowser.Server.Implementations.Notifications
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
+            }
+        }
+
+        protected override void CloseConnection()
+        {
+            if (_connection != null)
+            {
+                if (_connection.IsOpen())
+                {
+                    _connection.Close();
+                }
+
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }
