@@ -103,6 +103,7 @@ define(['browser'], function (browser) {
         profile.DirectPlayProfiles = [];
 
         var videoAudioCodecs = [];
+        var hlsVideoAudioCodecs = [];
 
         var supportsMp3VideoAudio = videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.69"').replace(/no/, '') ||
             videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.6B"').replace(/no/, '');
@@ -113,19 +114,27 @@ define(['browser'], function (browser) {
             // safari is lying
             if (!browser.safari) {
                 videoAudioCodecs.push('ac3');
+
+                // This works in edge desktop, but not mobile
+                if (!browser.edge || !browser.mobile) {
+                    hlsVideoAudioCodecs.push('ac3');
+                }
             }
         }
         if (canPlayMkv) {
             if (supportsMp3VideoAudio) {
                 videoAudioCodecs.push('mp3');
+                hlsVideoAudioCodecs.push('mp3');
             }
         }
         if (videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.2"').replace(/no/, '')) {
             videoAudioCodecs.push('aac');
+            hlsVideoAudioCodecs.push('aac');
         }
         if (!canPlayMkv) {
             if (supportsMp3VideoAudio) {
                 videoAudioCodecs.push('mp3');
+                hlsVideoAudioCodecs.push('mp3');
             }
         }
 
@@ -197,7 +206,7 @@ define(['browser'], function (browser) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
-                AudioCodec: videoAudioCodecs.join(','),
+                AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 Protocol: 'hls'

@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
         
-        private const int LatestSchemaVersion = 44;
+        private const int LatestSchemaVersion = 45;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -221,6 +221,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "InheritedParentalRatingValue", "INT");
             _connection.AddColumn(Logger, "TypedBaseItems", "UnratedType", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "TopParentId", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsItemByName", "BIT");
 
             PrepareStatements();
 
@@ -445,7 +446,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Tags",
                 "IsFolder",
                 "UnratedType",
-                "TopParentId"
+                "TopParentId",
+                "IsItemByName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -729,6 +731,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    var isByName = false;
+                    var byName = item as IItemByName;
+                    if (byName != null)
+                    {
+                        var dualAccess = item as IHasDualAccess;
+                        isByName = dualAccess == null || dualAccess.IsAccessedByName;
+                    }
+                    _saveItemCommand.GetParameter(index++).Value = isByName;
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1905,14 +1916,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.TopParentIds.Length == 1)
             {
-                whereClauses.Add("(TopParentId=@TopParentId)");
+                whereClauses.Add("(TopParentId=@TopParentId or IsItemByName=@IsItemByName)");
                 cmd.Parameters.Add(cmd, "@TopParentId", DbType.String).Value = query.TopParentIds[0];
+                cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
             }
             if (query.TopParentIds.Length > 1)
             {
                 var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
 
-                whereClauses.Add("(TopParentId in (" + val + "))");
+                whereClauses.Add("(IsItemByName=@IsItemByName or TopParentId in (" + val + "))");
+                cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
             }
 
             if (query.AncestorIds.Length == 1)

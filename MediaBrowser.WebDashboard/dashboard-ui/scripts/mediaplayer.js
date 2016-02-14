@@ -469,7 +469,7 @@
             return self.currentItem && self.currentItem.MediaType == mediaType;
         };
 
-        function translateItemsForPlayback(items) {
+        function translateItemsForPlayback(items, smart) {
 
             var firstItem = items[0];
             var promise;
@@ -511,6 +511,33 @@
                     MediaTypes: "Audio,Video"
                 });
             }
+            else if (smart && firstItem.Type == "Episode" && items.length == 1) {
+
+                promise = ApiClient.getEpisodes(firstItem.SeriesId, {
+                    IsVirtualUnaired: false,
+                    IsMissing: false,
+                    UserId: ApiClient.getCurrentUserId(),
+                    Fields: getItemFields
+
+                }).then(function (episodesResult) {
+
+                    var foundItem = false;
+                    episodesResult.Items = episodesResult.Items.filter(function (e) {
+
+                        if (foundItem) {
+                            return true;
+                        }
+                        if (e.Id == firstItem.Id) {
+                            foundItem = true;
+                            return true;
+                        }
+
+                        return false;
+                    });
+                    episodesResult.TotalRecordCount = episodesResult.Items.length;
+                    return episodesResult;
+                });
+            }
 
             if (promise) {
                 return new Promise(function (resolve, reject) {
@@ -537,7 +564,7 @@
 
                 if (options.items) {
 
-                    translateItemsForPlayback(options.items).then(function (items) {
+                    translateItemsForPlayback(options.items, true).then(function (items) {
 
                         self.playWithIntros(items, options, user);
                     });
@@ -550,7 +577,7 @@
 
                     }).then(function (result) {
 
-                        translateItemsForPlayback(result.Items).then(function (items) {
+                        translateItemsForPlayback(result.Items, true).then(function (items) {
 
                             self.playWithIntros(items, options, user);
                         });
