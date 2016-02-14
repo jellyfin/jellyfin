@@ -1324,7 +1324,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             SetTopParentIdsOrAncestors(query, parents);
 
-            return GetItemIds(query).Select(GetItemById);
+            return GetItemIds(query).Select(GetItemById).Where(i => i != null);
         }
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
