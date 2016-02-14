@@ -1971,6 +1971,7 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -2215,7 +2216,7 @@ var AppInfo = {};
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
-            deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
+            deps.push('jqm');
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
