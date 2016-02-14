@@ -652,143 +652,142 @@
 
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
 
-            var deferred = $.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            var mediaUrl;
-            var contentType;
-            var startTimeTicksOffset = 0;
+                var mediaUrl;
+                var contentType;
+                var startTimeTicksOffset = 0;
 
-            var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
-            var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
-            var playMethod = 'Transcode';
+                var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
+                var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
+                var playMethod = 'Transcode';
 
-            if (type == 'Video') {
+                if (type == 'Video') {
 
-                contentType = 'video/' + mediaSource.Container;
+                    contentType = 'video/' + mediaSource.Container;
 
-                if (mediaSource.enableDirectPlay) {
-                    mediaUrl = mediaSource.Path;
+                    if (mediaSource.enableDirectPlay) {
+                        mediaUrl = mediaSource.Path;
 
-                    playMethod = 'DirectPlay';
+                        playMethod = 'DirectPlay';
 
-                } else {
+                    } else {
 
-                    if (mediaSource.SupportsDirectStream) {
+                        if (mediaSource.SupportsDirectStream) {
 
-                        var directOptions = {
-                            Static: true,
-                            mediaSourceId: mediaSource.Id,
-                            deviceId: ApiClient.deviceId(),
-                            api_key: ApiClient.accessToken()
-                        };
+                            var directOptions = {
+                                Static: true,
+                                mediaSourceId: mediaSource.Id,
+                                deviceId: ApiClient.deviceId(),
+                                api_key: ApiClient.accessToken()
+                            };
 
-                        if (mediaSource.LiveStreamId) {
-                            directOptions.LiveStreamId = mediaSource.LiveStreamId;
-                        }
-
-                        mediaUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, directOptions);
-                        mediaUrl += seekParam;
-
-                        playMethod = 'DirectStream';
-                    } else if (mediaSource.SupportsTranscoding) {
-
-                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
-
-                        if (mediaSource.TranscodingSubProtocol == 'hls') {
-
-                            mediaUrl += seekParam;
-                            contentType = 'application/x-mpegURL';
-
-                        } else {
-
-                            // Reports of stuttering with h264 stream copy in IE
-                            if (mediaUrl.indexOf('.mkv') == -1) {
-                                mediaUrl += '&EnableAutoStreamCopy=false';
+                            if (mediaSource.LiveStreamId) {
+                                directOptions.LiveStreamId = mediaSource.LiveStreamId;
                             }
-                            startTimeTicksOffset = startPosition || 0;
 
-                            contentType = 'video/' + mediaSource.TranscodingContainer;
+                            mediaUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, directOptions);
+                            mediaUrl += seekParam;
+
+                            playMethod = 'DirectStream';
+                        } else if (mediaSource.SupportsTranscoding) {
+
+                            mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+
+                            if (mediaSource.TranscodingSubProtocol == 'hls') {
+
+                                mediaUrl += seekParam;
+                                contentType = 'application/x-mpegURL';
+
+                            } else {
+
+                                // Reports of stuttering with h264 stream copy in IE
+                                if (mediaUrl.indexOf('.mkv') == -1) {
+                                    mediaUrl += '&EnableAutoStreamCopy=false';
+                                }
+                                startTimeTicksOffset = startPosition || 0;
+
+                                contentType = 'video/' + mediaSource.TranscodingContainer;
+                            }
                         }
                     }
-                }
-
-            } else {
-
-                contentType = 'audio/' + mediaSource.Container;
-
-                if (mediaSource.enableDirectPlay) {
-
-                    mediaUrl = mediaSource.Path;
-
-                    playMethod = 'DirectPlay';
 
                 } else {
 
-                    var isDirectStream = mediaSource.SupportsDirectStream;
+                    contentType = 'audio/' + mediaSource.Container;
 
-                    if (isDirectStream) {
+                    if (mediaSource.enableDirectPlay) {
 
-                        var outputContainer = (mediaSource.Container || '').toLowerCase();
+                        mediaUrl = mediaSource.Path;
 
-                        var directOptions = {
-                            Static: true,
-                            mediaSourceId: mediaSource.Id,
-                            deviceId: ApiClient.deviceId(),
-                            api_key: ApiClient.accessToken()
-                        };
+                        playMethod = 'DirectPlay';
 
-                        if (mediaSource.LiveStreamId) {
-                            directOptions.LiveStreamId = mediaSource.LiveStreamId;
-                        }
+                    } else {
 
-                        mediaUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, directOptions);
-                        mediaUrl += seekParam;
+                        var isDirectStream = mediaSource.SupportsDirectStream;
 
-                        playMethod = 'DirectStream';
+                        if (isDirectStream) {
 
-                    } else if (mediaSource.SupportsTranscoding) {
+                            var outputContainer = (mediaSource.Container || '').toLowerCase();
 
-                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+                            var directOptions = {
+                                Static: true,
+                                mediaSourceId: mediaSource.Id,
+                                deviceId: ApiClient.deviceId(),
+                                api_key: ApiClient.accessToken()
+                            };
 
-                        if (mediaSource.TranscodingSubProtocol == 'hls') {
+                            if (mediaSource.LiveStreamId) {
+                                directOptions.LiveStreamId = mediaSource.LiveStreamId;
+                            }
 
+                            mediaUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, directOptions);
                             mediaUrl += seekParam;
-                            contentType = 'application/x-mpegURL';
-                        } else {
 
-                            startTimeTicksOffset = startPosition || 0;
-                            contentType = 'audio/' + mediaSource.TranscodingContainer;
+                            playMethod = 'DirectStream';
+
+                        } else if (mediaSource.SupportsTranscoding) {
+
+                            mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+
+                            if (mediaSource.TranscodingSubProtocol == 'hls') {
+
+                                mediaUrl += seekParam;
+                                contentType = 'application/x-mpegURL';
+                            } else {
+
+                                startTimeTicksOffset = startPosition || 0;
+                                contentType = 'audio/' + mediaSource.TranscodingContainer;
+                            }
                         }
                     }
                 }
-            }
 
-            var resultInfo = {
-                url: mediaUrl,
-                mimeType: contentType,
-                startTimeTicksOffset: startTimeTicksOffset,
-                startPositionInSeekParam: startPositionInSeekParam,
-                playMethod: playMethod
-            };
+                var resultInfo = {
+                    url: mediaUrl,
+                    mimeType: contentType,
+                    startTimeTicksOffset: startTimeTicksOffset,
+                    startPositionInSeekParam: startPositionInSeekParam,
+                    playMethod: playMethod
+                };
 
-            if (playMethod == 'DirectPlay' && mediaSource.Protocol == 'File') {
+                if (playMethod == 'DirectPlay' && mediaSource.Protocol == 'File') {
 
-                require(['localassetmanager'], function () {
+                    require(['localassetmanager'], function () {
 
-                    LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
+                        LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
 
-                        resultInfo.url = path;
-                        console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
-                        deferred.resolveWith(null, [resultInfo]);
+                            resultInfo.url = path;
+                            console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
+                            resolve(resultInfo);
+                        });
                     });
-                });
 
-            }
-            else {
-                deferred.resolveWith(null, [resultInfo]);
-            }
-
-            return deferred.promise();
+                }
+                else {
+                    resolve(resultInfo);
+                }
+            });
         };
 
         self.lastBitrateDetections = {};

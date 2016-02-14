@@ -1,8 +1,4 @@
-﻿(function () {
-
-    if (jQuery.widget) {
-        return;
-    }
+﻿define(['jqm'], function () {
 
     /*!
      * jQuery UI Widget c0ab71056b936627e8a7821f03c044aec6280a40
@@ -498,7 +494,7 @@
     (function ($, undefined) {
 
 
-        var originalWidget = $.widget
+        var originalWidget = $.widget;
 
         $.widget = (function (orig) {
             return function () {
@@ -519,5 +515,4 @@
 
     })(jQuery);
 
-
-})();
+});

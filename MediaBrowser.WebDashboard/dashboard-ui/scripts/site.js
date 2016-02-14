@@ -704,36 +704,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        require(['jqmpanel'], function () {
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
-
-            html += '<h3 class="userHeader">';
-
-            html += '</h3>';
-
-            html += '<form>';
-
-            html += '<p class="preferencesContainer"></p>';
-
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
-
-            html += '</form>';
-            html += '</div>';
-
-            $(document.body).append(html);
-
-            var userFlyout = document.querySelector('#userFlyout');
-            ImageLoader.lazyChildren(userFlyout);
-
-            $(userFlyout).panel({}).panel("open").on("panelclose", function () {
-
-                $(this).off("panelclose").remove();
-            });
-
-            ConnectionManager.user(window.ApiClient).then(function (user) {
-                Dashboard.updateUserFlyout(userFlyout, user);
-            });
-        });
+        Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
     },
 
     updateUserFlyout: function (elem, user) {
@@ -1971,6 +1942,7 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -2141,8 +2113,6 @@ var AppInfo = {};
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
 
-        deps.push('jQuery');
-
         deps.push('paper-drawer-panel');
 
         require(deps, function (events) {
@@ -2196,26 +2166,14 @@ var AppInfo = {};
                 MediaBrowser[i] = connectionManagerExports[i];
             }
 
-            // TODO: This needs to be deprecated, but it's used heavily
-            $.fn.checked = function (value) {
-                if (value === true || value === false) {
-                    // Set the value of the checkbox
-                    return $(this).each(function () {
-                        this.checked = value;
-                    });
-                } else {
-                    // Return check state
-                    return this.length && this[0].checked;
-                }
-            };
-
             var promises = [];
             deps = [];
             deps.push('scripts/mediaplayer');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
-            deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
+            deps.push('jQuery');
+
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
@@ -2254,6 +2212,19 @@ var AppInfo = {};
                     }
 
                     require(depends, function () {
+
+                        // TODO: This needs to be deprecated, but it's used heavily
+                        $.fn.checked = function (value) {
+                            if (value === true || value === false) {
+                                // Set the value of the checkbox
+                                return $(this).each(function () {
+                                    this.checked = value;
+                                });
+                            } else {
+                                // Return check state
+                                return this.length && this[0].checked;
+                            }
+                        };
 
                         // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
                         $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
@@ -2316,6 +2287,7 @@ var AppInfo = {};
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
+        deps.push('jqm');
 
         deps.push('css!css/card.css');
 
