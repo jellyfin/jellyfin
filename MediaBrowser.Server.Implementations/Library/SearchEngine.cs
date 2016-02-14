@@ -163,6 +163,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
+                IncludeItemsByName = true
 
             }, new string[] { });
 
