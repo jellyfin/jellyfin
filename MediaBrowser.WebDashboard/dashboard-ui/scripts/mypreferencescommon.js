@@ -38,10 +38,10 @@ pageIdOn('pageshow', 'myPreferencesMenuPage', function () {
         }
     });
 
-    if (AppInfo.isNativeApp && browserInfo.safari) {
-        page.querySelector('.userSection').classList.remove('hide');
+    if (Dashboard.isConnectMode()) {
+        page.querySelector('.selectServer').classList.remove('hide');
     } else {
-        page.querySelector('.userSection').classList.add('hide');
+        page.querySelector('.selectServer').classList.add('hide');
     }
 
 });

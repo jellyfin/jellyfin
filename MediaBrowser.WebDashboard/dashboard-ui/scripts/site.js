@@ -704,36 +704,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        require(['jqmpanel'], function () {
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
-
-            html += '<h3 class="userHeader">';
-
-            html += '</h3>';
-
-            html += '<form>';
-
-            html += '<p class="preferencesContainer"></p>';
-
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
-
-            html += '</form>';
-            html += '</div>';
-
-            $(document.body).append(html);
-
-            var userFlyout = document.querySelector('#userFlyout');
-            ImageLoader.lazyChildren(userFlyout);
-
-            $(userFlyout).panel({}).panel("open").on("panelclose", function () {
-
-                $(this).off("panelclose").remove();
-            });
-
-            ConnectionManager.user(window.ApiClient).then(function (user) {
-                Dashboard.updateUserFlyout(userFlyout, user);
-            });
-        });
+        Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
     },
 
     updateUserFlyout: function (elem, user) {
