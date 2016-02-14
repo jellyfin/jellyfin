@@ -177,7 +177,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (i > 0)
                 {
-                    await Task.Delay(500).ConfigureAwait(false);
+                    await Task.Delay(200).ConfigureAwait(false);
                 }
 
                 var dgram = new Datagram(endpoint, localAddress, _logger, msg, isBroadcast, enableDebugLogging);
