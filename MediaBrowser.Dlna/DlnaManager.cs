@@ -210,6 +210,10 @@ namespace MediaBrowser.Dlna
                 throw new ArgumentNullException("headers");
             }
 
+            //_logger.Debug("GetProfile. Headers: " + _jsonSerializer.SerializeToString(headers));
+            // Convert to case insensitive
+            headers = new Dictionary<string, string>(headers, StringComparer.OrdinalIgnoreCase);
+
             var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
 
             if (profile != null)
@@ -221,7 +225,7 @@ namespace MediaBrowser.Dlna
                 string userAgent = null;
                 headers.TryGetValue("User-Agent", out userAgent);
 
-                var msg = "No matching device profile found. The default will be used. ";
+                var msg = "No matching device profile via headers found. The default will be used. ";
                 if (!string.IsNullOrEmpty(userAgent))
                 {
                     msg += "User-agent: " + userAgent + ". ";
@@ -249,7 +253,9 @@ namespace MediaBrowser.Dlna
                     case HeaderMatchType.Equals:
                         return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
                     case HeaderMatchType.Substring:
-                        return value.IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                        var isMatch = value.IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
+                        //_logger.Debug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
+                        return isMatch;
                     case HeaderMatchType.Regex:
                         // Reports of IgnoreCase not working on linux so try it a couple different ways.
                         return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase) || Regex.IsMatch(value.ToUpper(), header.Value.ToUpper(), RegexOptions.IgnoreCase);
