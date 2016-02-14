@@ -300,6 +300,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             var result = await GetInternalRecordings(new RecordingQuery
             {
                 Id = id
@@ -1410,7 +1415,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var queryResult = _libraryManager.GetItems(internalQuery, new string[] { });
             IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
-            if (!string.IsNullOrEmpty(query.Id))
+            if (!string.IsNullOrWhiteSpace(query.Id))
             {
                 var guid = new Guid(query.Id);
 
@@ -1418,7 +1423,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     .Where(i => i.Id == guid);
             }
 
-            if (!string.IsNullOrEmpty(query.GroupId))
+            if (!string.IsNullOrWhiteSpace(query.GroupId))
             {
                 var guid = new Guid(query.GroupId);
 
