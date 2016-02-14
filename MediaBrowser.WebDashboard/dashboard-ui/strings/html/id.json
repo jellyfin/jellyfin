@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Task Triggers",
+    "TabSmartMatches": "Kecocokan Cerdas",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Keluar",
     "LabelVisitCommunity": "Kunjungi Komunitas",
     "LabelGithub": "Github",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

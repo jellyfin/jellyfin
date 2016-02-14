@@ -45,12 +45,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CommonIO.1.0.0.7\lib\net45\CommonIO.dll</HintPath>
     </Reference>
+    <Reference Include="Emby.XmlTv">
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.46\lib\net45\Emby.XmlTv.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.5877.22335, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MediaBrowser.Naming, Version=1.0.5884.23751, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.46\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.47\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
@@ -212,8 +215,11 @@
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
+    <Compile Include="LiveTv\EmbyTV\DirectRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EmbyTV.cs" />
+    <Compile Include="LiveTv\EmbyTV\EncodedRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EntryPoint.cs" />
+    <Compile Include="LiveTv\EmbyTV\IRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\ItemDataProvider.cs" />
     <Compile Include="LiveTv\EmbyTV\RecordingHelper.cs" />
     <Compile Include="LiveTv\EmbyTV\SeriesTimerManager.cs" />
@@ -231,6 +237,8 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />

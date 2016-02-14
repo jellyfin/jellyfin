@@ -881,13 +881,15 @@ var MSEMediaController = (function (_EventHandler) {
   }, {
     key: 'startLoad',
     value: function startLoad() {
-      if (this.levels && this.media) {
+      if (this.levels) {
         this.startInternal();
-        if (this.lastCurrentTime) {
-          _utilsLogger.logger.log('seeking @ ' + this.lastCurrentTime);
+        var media = this.media,
+            lastCurrentTime = this.lastCurrentTime;
+        if (media && lastCurrentTime) {
+          _utilsLogger.logger.log('seeking @ ' + lastCurrentTime);
           if (!this.lastPaused) {
             _utilsLogger.logger.log('resuming video');
-            this.media.play();
+            media.play();
           }
           this.state = State.IDLE;
         } else {
@@ -897,7 +899,7 @@ var MSEMediaController = (function (_EventHandler) {
         this.nextLoadPosition = this.startPosition = this.lastCurrentTime;
         this.tick();
       } else {
-        _utilsLogger.logger.warn('cannot start loading as either manifest not parsed or video not attached');
+        _utilsLogger.logger.warn('cannot start loading as manifest not parsed yet');
       }
     }
   }, {
@@ -1222,28 +1224,28 @@ var MSEMediaController = (function (_EventHandler) {
           break;
         case State.PARSED:
         case State.APPENDING:
-          if (this.sourceBuffer) {
+          var sourceBuffer = this.sourceBuffer,
+              mp4segments = this.mp4segments;
+          if (sourceBuffer) {
             if (this.media.error) {
               _utilsLogger.logger.error('trying to append although a media error occured, switch to ERROR state');
               this.state = State.ERROR;
               return;
             }
             // if MP4 segment appending in progress nothing to do
-            else if (this.sourceBuffer.audio && this.sourceBuffer.audio.updating || this.sourceBuffer.video && this.sourceBuffer.video.updating) {
+            else if (sourceBuffer.audio && sourceBuffer.audio.updating || sourceBuffer.video && sourceBuffer.video.updating) {
                 //logger.log('sb append in progress');
                 // check if any MP4 segments left to append
-              } else if (this.mp4segments.length) {
-                  var segment = this.mp4segments.shift();
+              } else if (mp4segments.length) {
+                  var segment = mp4segments.shift();
                   try {
                     //logger.log(`appending ${segment.type} SB, size:${segment.data.length});
-                    this.sourceBuffer[segment.type].appendBuffer(segment.data);
+                    sourceBuffer[segment.type].appendBuffer(segment.data);
                     this.appendError = 0;
                   } catch (err) {
                     // in case any error occured while appending, put back segment in mp4segments table
                     _utilsLogger.logger.error('error while trying to append buffer:' + err.message + ',try appending later');
-                    this.mp4segments.unshift(segment);
-                    // just discard QuotaExceededError for now, and wait for the natural browser buffer eviction
-                    //http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
+                    mp4segments.unshift(segment);
                     if (err.code !== 22) {
                       if (this.appendError) {
                         this.appendError++;
@@ -1251,9 +1253,6 @@ var MSEMediaController = (function (_EventHandler) {
                         this.appendError = 1;
                       }
                       var event = { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_APPEND_ERROR, frag: this.fragCurrent };
-                      /* with UHD content, we could get loop of quota exceeded error until
-                        browser is able to evict some data from sourcebuffer. retrying help recovering this
-                      */
                       if (this.appendError > this.config.appendErrorMaxRetry) {
                         _utilsLogger.logger.log('fail ' + this.config.appendErrorMaxRetry + ' times to append segment in sourceBuffer');
                         event.fatal = true;
@@ -1264,6 +1263,15 @@ var MSEMediaController = (function (_EventHandler) {
                         event.fatal = false;
                         hls.trigger(_events2['default'].ERROR, event);
                       }
+                    } else {
+                      // handle QuotaExceededError: http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
+                      // let's stop appending any segments, and trigger a smooth level switch to empty buffers
+                      // also reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
+                      mp4segments = [];
+                      this.config.maxMaxBufferLength /= 2;
+                      _utilsLogger.logger.warn('reduce max buffer length to ' + this.config.maxMaxBufferLength + 's and trigger a nextLevelSwitch to flush old buffer and fix QuotaExceededError');
+                      this.nextLevelSwitch();
+                      return;
                     }
                   }
                   this.state = State.APPENDING;
@@ -1486,7 +1494,7 @@ var MSEMediaController = (function (_EventHandler) {
                  to avoid rounding issues/infinite loop,
                  only flush buffer range of length greater than 500ms.
               */
-              if (flushEnd - flushStart > 0.5) {
+              if (Math.min(flushEnd, bufEnd) - flushStart > 0.5) {
                 _utilsLogger.logger.log('flush ' + type + ' [' + flushStart + ',' + flushEnd + '], of [' + bufStart + ',' + bufEnd + '], pos:' + this.media.currentTime);
                 sb.remove(flushStart, flushEnd);
                 return false;
@@ -1499,6 +1507,8 @@ var MSEMediaController = (function (_EventHandler) {
             return false;
           }
         }
+      } else {
+        _utilsLogger.logger.warn('abort flushing too many retries');
       }
 
       /* after successful buffer flushing, rebuild buffer Range array
@@ -1855,7 +1865,7 @@ var MSEMediaController = (function (_EventHandler) {
               start = fragCurrent.start,
               level = fragCurrent.level,
               sn = fragCurrent.sn,
-              audioCodec = currentLevel.audioCodec;
+              audioCodec = currentLevel.audioCodec || this.config.defaultAudioCodec;
           if (this.audioCodecSwap) {
             _utilsLogger.logger.log('swapping playlist audio codec');
             if (audioCodec === undefined) {
@@ -1958,8 +1968,17 @@ var MSEMediaController = (function (_EventHandler) {
     key: 'onFragParsed',
     value: function onFragParsed() {
       if (this.state === State.PARSING) {
-        this.state = State.PARSED;
         this.stats.tparsed = performance.now();
+
+        var sb = this.sourceBuffer,
+            appending = sb.audio && sb.audio.updating || sb.video && sb.video.updating;
+
+        // if fragment parsed, and all segments appended, and no appending in progress, we are done with this fragment
+        if (this.mp4segments.length === 0 && !appending) {
+          this.state = State.IDLE;
+        } else {
+          this.state = State.PARSED;
+        }
         //trigger handler right now
         this.tick();
       }
@@ -2063,7 +2082,7 @@ var MSEMediaController = (function (_EventHandler) {
                 jumpThreshold = 0;
               } else {
                 // playhead not moving AND media playing
-                _utilsLogger.logger.log('playback seems stuck');
+                _utilsLogger.logger.log('playback seems stuck @' + currentTime);
                 if (!this.stalled) {
                   this.hls.trigger(_events2['default'].ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
                   this.stalled = true;
@@ -2850,52 +2869,52 @@ var AACDemuxer = (function () {
           id3 = new _demuxId32['default'](data),
           pts = 90 * id3.timeStamp,
           config,
-          adtsFrameSize,
-          adtsStartOffset,
-          adtsHeaderLen,
+          frameLength,
+          frameDuration,
+          frameIndex,
+          offset,
+          headerLength,
           stamp,
-          nbSamples,
           len,
           aacSample;
       // look for ADTS header (0xFFFx)
-      for (adtsStartOffset = id3.length, len = data.length; adtsStartOffset < len - 1; adtsStartOffset++) {
-        if (data[adtsStartOffset] === 0xff && (data[adtsStartOffset + 1] & 0xf0) === 0xf0) {
+      for (offset = id3.length, len = data.length; offset < len - 1; offset++) {
+        if (data[offset] === 0xff && (data[offset + 1] & 0xf0) === 0xf0) {
           break;
         }
       }
 
       if (!track.audiosamplerate) {
-        config = _adts2['default'].getAudioConfig(this.observer, data, adtsStartOffset, audioCodec);
+        config = _adts2['default'].getAudioConfig(this.observer, data, offset, audioCodec);
         track.config = config.config;
         track.audiosamplerate = config.samplerate;
         track.channelCount = config.channelCount;
         track.codec = config.codec;
-        track.timescale = this.remuxer.timescale;
-        track.duration = this.remuxer.timescale * duration;
+        track.timescale = config.samplerate;
+        track.duration = config.samplerate * duration;
         _utilsLogger.logger.log('parsed codec:' + track.codec + ',rate:' + config.samplerate + ',nb channel:' + config.channelCount);
       }
-      nbSamples = 0;
-      while (adtsStartOffset + 5 < len) {
+      frameIndex = 0;
+      frameDuration = 1024 * 90000 / track.audiosamplerate;
+      while (offset + 5 < len) {
+        // The protection skip bit tells us if we have 2 bytes of CRC data at the end of the ADTS header
+        headerLength = !!(data[offset + 1] & 0x01) ? 7 : 9;
         // retrieve frame size
-        adtsFrameSize = (data[adtsStartOffset + 3] & 0x03) << 11;
-        // byte 4
-        adtsFrameSize |= data[adtsStartOffset + 4] << 3;
-        // byte 5
-        adtsFrameSize |= (data[adtsStartOffset + 5] & 0xE0) >>> 5;
-        adtsHeaderLen = !!(data[adtsStartOffset + 1] & 0x01) ? 7 : 9;
-        adtsFrameSize -= adtsHeaderLen;
-        stamp = Math.round(pts + nbSamples * 1024 * 90000 / track.audiosamplerate);
+        frameLength = (data[offset + 3] & 0x03) << 11 | data[offset + 4] << 3 | (data[offset + 5] & 0xE0) >>> 5;
+        frameLength -= headerLength;
         //stamp = pes.pts;
-        //console.log('AAC frame, offset/length/pts:' + (adtsStartOffset+7) + '/' + adtsFrameSize + '/' + stamp.toFixed(0));
-        if (adtsFrameSize > 0 && adtsStartOffset + adtsHeaderLen + adtsFrameSize <= len) {
-          aacSample = { unit: data.subarray(adtsStartOffset + adtsHeaderLen, adtsStartOffset + adtsHeaderLen + adtsFrameSize), pts: stamp, dts: stamp };
+
+        if (frameLength > 0 && offset + headerLength + frameLength <= len) {
+          stamp = pts + frameIndex * frameDuration;
+          //logger.log(`AAC frame, offset/length/total/pts:${offset+headerLength}/${frameLength}/${data.byteLength}/${(stamp/90).toFixed(0)}`);
+          aacSample = { unit: data.subarray(offset + headerLength, offset + headerLength + frameLength), pts: stamp, dts: stamp };
           track.samples.push(aacSample);
-          track.len += adtsFrameSize;
-          adtsStartOffset += adtsFrameSize + adtsHeaderLen;
-          nbSamples++;
+          track.len += frameLength;
+          offset += frameLength + headerLength;
+          frameIndex++;
           // look for ADTS header (0xFFFx)
-          for (; adtsStartOffset < len - 1; adtsStartOffset++) {
-            if (data[adtsStartOffset] === 0xff && (data[adtsStartOffset + 1] & 0xf0) === 0xf0) {
+          for (; offset < len - 1; offset++) {
+            if (data[offset] === 0xff && (data[offset + 1] & 0xf0) === 0xf0) {
               break;
             }
           }
@@ -2913,12 +2932,12 @@ var AACDemuxer = (function () {
     value: function probe(data) {
       // check if data contains ID3 timestamp and ADTS sync worc
       var id3 = new _demuxId32['default'](data),
-          adtsStartOffset,
+          offset,
           len;
       if (id3.hasTimeStamp) {
         // look for ADTS header (0xFFFx)
-        for (adtsStartOffset = id3.length, len = data.length; adtsStartOffset < len - 1; adtsStartOffset++) {
-          if (data[adtsStartOffset] === 0xff && (data[adtsStartOffset + 1] & 0xf0) === 0xf0) {
+        for (offset = id3.length, len = data.length; offset < len - 1; offset++) {
+          if (data[offset] === 0xff && (data[offset + 1] & 0xf0) === 0xf0) {
             //logger.log('ADTS sync word found !');
             return true;
           }
@@ -4553,8 +4572,8 @@ var TSDemuxer = (function () {
         track.audiosamplerate = config.samplerate;
         track.channelCount = config.channelCount;
         track.codec = config.codec;
-        track.timescale = this.remuxer.timescale;
-        track.duration = track.timescale * duration;
+        track.timescale = config.samplerate;
+        track.duration = config.samplerate * duration;
         _utilsLogger.logger.log('parsed codec:' + track.codec + ',rate:' + config.samplerate + ',nb channel:' + config.channelCount);
       }
       frameIndex = 0;
@@ -4579,7 +4598,7 @@ var TSDemuxer = (function () {
         //stamp = pes.pts;
 
         if (frameLength > 0 && offset + headerLength + frameLength <= len) {
-          stamp = Math.round(pts + frameIndex * frameDuration);
+          stamp = pts + frameIndex * frameDuration;
           //logger.log(`AAC frame, offset/length/total/pts:${offset+headerLength}/${frameLength}/${data.byteLength}/${(stamp/90).toFixed(0)}`);
           aacSample = { unit: data.subarray(offset + headerLength, offset + headerLength + frameLength), pts: stamp, dts: stamp };
           track.samples.push(aacSample);
@@ -5076,7 +5095,7 @@ var Hls = (function () {
           debug: false,
           maxBufferLength: 30,
           maxBufferSize: 60 * 1000 * 1000,
-          maxBufferHole: 0.3,
+          maxBufferHole: 0.5,
           maxSeekHole: 2,
           liveSyncDurationCount: 3,
           liveMaxLatencyDurationCount: Infinity,
@@ -6674,7 +6693,8 @@ var MP4Remuxer = (function () {
       var view,
           offset = 8,
           pesTimeScale = this.PES_TIMESCALE,
-          pes2mp4ScaleFactor = this.PES2MP4SCALEFACTOR,
+          mp4timeScale = track.timescale,
+          pes2mp4ScaleFactor = pesTimeScale / mp4timeScale,
           aacSample,
           mp4Sample,
           unit,
@@ -6690,15 +6710,10 @@ var MP4Remuxer = (function () {
           samples = [],
           samples0 = [];
 
-      track.samples.forEach(function (aacSample) {
-        if (pts === undefined || aacSample.pts > pts) {
-          samples0.push(aacSample);
-          pts = aacSample.pts;
-        } else {
-          _utilsLogger.logger.warn('dropping past audio frame');
-          track.len -= aacSample.unit.byteLength;
-        }
+      track.samples.sort(function (a, b) {
+        return a.pts - b.pts;
       });
+      samples0 = track.samples;
 
       while (samples0.length) {
         aacSample = samples0.shift();
@@ -6710,13 +6725,15 @@ var MP4Remuxer = (function () {
         if (lastDTS !== undefined) {
           ptsnorm = this._PTSNormalize(pts, lastDTS);
           dtsnorm = this._PTSNormalize(dts, lastDTS);
-          // let's compute sample duration
+          // let's compute sample duration.
+          // there should be 1024 audio samples in one AAC frame
           mp4Sample.duration = (dtsnorm - lastDTS) / pes2mp4ScaleFactor;
-          if (mp4Sample.duration < 0) {
+          if (Math.abs(mp4Sample.duration - 1024) > 10) {
             // not expected to happen ...
-            _utilsLogger.logger.log('invalid AAC sample duration at PTS:' + aacSample.pts + ':' + mp4Sample.duration);
-            mp4Sample.duration = 0;
+            _utilsLogger.logger.log('invalid AAC sample duration at PTS ' + Math.round(pts / 90) + ',should be 1024,found :' + Math.round(mp4Sample.duration));
           }
+          mp4Sample.duration = 1024;
+          dtsnorm = 1024 * pes2mp4ScaleFactor + lastDTS;
         } else {
           var nextAacPts = this.nextAacPts,
               delta;

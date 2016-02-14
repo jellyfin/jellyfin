@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Durch herunterfahrenden Server abgebrochen)",
     "LabelScheduledTaskLastRan": "Zuletzt ausgef\u00fchrt vor: {0}. Ben\u00f6tigte Zeit: {1}.",
     "HeaderDeleteTaskTrigger": "Entferne Aufgabenausl\u00f6ser",
-    "HeaderTaskTriggers": "Aufgabenausl\u00f6ser",
     "MessageDeleteTaskTrigger": "Bist du dir sicher, dass du diesen Aufgabenausl\u00f6ser entfernen m\u00f6chtest?",
     "MessageNoPluginsInstalled": "Du hast keine Plugins installiert.",
+    "MessageNoPluginsDueToAppStore": "Um plugins zu verwalten verwenden Sie bitte die Emby Web App.",
     "LabelVersionInstalled": "{0} installiert",
     "LabelNumberReviews": "{0} Bewertungen",
     "LabelFree": "Frei",
+    "HeaderTo": "Nach",
     "HeaderPlaybackError": "Wiedergabefehler",
     "MessagePlaybackErrorNotAllowed": "Sie sind nicht befugt diese Inhalte wiederzugeben. Bitte kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
     "MessagePlaybackErrorNoCompatibleStream": "Es sind keine kompatiblen Streams verf\u00fcgbar. Bitte versuchen Sie es sp\u00e4ter erneut oder kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "Gaststar",
     "MediaInfoSize": "Gr\u00f6\u00dfe",
     "MediaInfoPath": "Pfad",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Container",
     "MediaInfoDefault": "Voreinstellung",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Kino-Modus",
     "CinemaModeFeatureDescription": "Der Cinema Mode bringt das richtige Kinogef\u00fchl mit Trailern und eigenen Intros vor dem Hauptfilm.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Ausschalten"
+    "ButtonOff": "Ausschalten",
+    "TitleHardwareAcceleration": "Hardware Beschleunigung",
+    "HardwareAccelerationWarning": "Das Aktivieren der Hardwarebeschleunigung kann auf einigen Systemen zu Problemen f\u00fchren. Wenn Sie probleme w\u00e4hrend der Videowiedergabe feststellen, sollten Sie diese Einstellung zur\u00fcck auf \"Automatik\" stellen.",
+    "HeaderSelectCodecIntrosPath": "W\u00e4hlen Sie ein Codec Intro Verzeichnis"
 }

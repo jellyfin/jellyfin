@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Taak Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "Organiseer alle bestanden voortaan in de geselecteerde serie wanneer het de naam bevat",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Hoofdstuk afbeeldingen uitpakken tijdens het scannen van de bibliotheek",
     "LabelExtractChaptersDuringLibraryScanHelp": "Wanneer ingeschakeld worden hoofdstuk afbeeldingen uitgepakt wanneer video's worden ge\u00efmporteerd tijdens het scannen van de bibliotheek. Wanneer uitgeschakeld worden de hoofdstuk afbeeldingen uitgepakt tijdens de geplande taak \"Hoofdstukken uitpakken\", waardoor de standaard bibliotheek scan sneller voltooid is.",
     "LabelConnectGuestUserName": "Hun Emby gebruikersnaam of email adres:",
-    "LabelConnectUserName": "Emby gebruikersnaam\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Verbind deze locale gebruiker aan een online Emby account om eenvoudig aanmelden vanaf elke Emby app toe te staan zonder dat u het IP-adres hoeft te weten.",
     "ButtonLearnMoreAboutEmbyConnect": "Leer meer over Emby Connect",
     "LabelExternalPlayers": "Externe spelers:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Mappen",
     "LabelDisplayName": "Weergave naam:",
     "HeaderNewRecording": "Nieuwe opname",
-    "ButtonAdvanced": "Geavanceerd"
+    "ButtonAdvanced": "Geavanceerd",
+    "LabelCodecIntrosPath": "Codec intro's pad:",
+    "LabelCodecIntrosPathHelp": "Een map met video bestanden. Als de bestandsnaam van een video bestand overeenkomt met de video-, audiocodec ,audio profiel of een Tag dan zal deze afgespeeld worden voor de hoofd film."
 }

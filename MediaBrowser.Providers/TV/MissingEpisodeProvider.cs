@@ -315,7 +315,11 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("Removing missing/unaired episode {0} {1}x{2}", episodeToRemove.Series.Name, episodeToRemove.ParentIndexNumber, episodeToRemove.IndexNumber);
 
-                await _libraryManager.DeleteItem(episodeToRemove).ConfigureAwait(false);
+                await episodeToRemove.Delete(new DeleteOptions
+                {
+                    DeleteFileLocation = true
+
+                }).ConfigureAwait(false);
 
                 hasChanges = true;
             }
@@ -380,7 +384,11 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("Removing virtual season {0} {1}", seasonToRemove.Series.Name, seasonToRemove.IndexNumber);
 
-                await _libraryManager.DeleteItem(seasonToRemove).ConfigureAwait(false);
+                await seasonToRemove.Delete(new DeleteOptions
+                {
+                    DeleteFileLocation = true
+
+                }).ConfigureAwait(false);
 
                 hasChanges = true;
             }

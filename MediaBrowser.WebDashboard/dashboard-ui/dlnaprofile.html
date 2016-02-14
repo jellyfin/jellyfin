@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmpopup,scripts/dlnaprofile">
+    <div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,18 +19,12 @@
 
                     <p>${HeaderProfileInformation}</p>
                     <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioInfo" value="tabInfo">
-                        <label for="radioInfo">${TabInfo}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioDirectPlay" value="tabDirectPlayProfiles">
-                        <label for="radioDirectPlay">${TabDirectPlay}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioTranscoding" value="tabTranscodingProfiles">
-                        <label for="radioTranscoding">${TabTranscoding}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioContainers" value="tabContainerProfiles">
-                        <label for="radioContainers">${TabContainers}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioCodecs" value="tabCodecProfiles">
-                        <label for="radioCodecs">${TabCodecs}</label>
-                        <input type="radio" name="radioProfileTab" class="radioTabButton" id="radioMediaProfiles" value="tabMediaProfiles">
-                        <label for="radioMediaProfiles">${TabResponses}</label>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioInfo" data-value="tabInfo">${TabInfo}</a>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioDirectPlay" data-value="tabDirectPlayProfiles">${TabDirectPlay}</a>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioTranscoding" data-value="tabTranscodingProfiles">${TabTranscoding}</a>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioContainers" data-value="tabContainerProfiles">${TabContainers}</a>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioCodecs" data-value="tabCodecProfiles">${TabCodecs}</a>
+                        <a href="#" data-role="button" class="radioTabButton" id="radioMediaProfiles" data-value="tabMediaProfiles">${TabResponses}</a>
                     </div>
                     <br />
                     <div class="tabContent tabInfo">
@@ -412,7 +406,7 @@
                         <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
                         <label for="radioTranscodingAdvanced">${TabAdvanced}</label>
                     </div>
-
+                    <br />
                     <div class="tabContent tabTranscodingBasics" style="display: none;">
                         <div style="margin: 1em 0;">
                             <label for="selectTranscodingProfileType">${LabelType}</label>

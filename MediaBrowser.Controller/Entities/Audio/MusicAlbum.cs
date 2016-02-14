@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parents.OfType<MusicArtist>().FirstOrDefault();
+                return GetParents().OfType<MusicArtist>().FirstOrDefault();
             }
         }
 
@@ -114,13 +114,18 @@ namespace MediaBrowser.Controller.Entities.Audio
             return config.BlockUnratedItems.Contains(UnratedItem.Music);
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Music;
+        }
+
         public AlbumInfo GetLookupInfo()
         {
             var id = GetItemLookupInfo<AlbumInfo>();
 
             id.AlbumArtists = AlbumArtists;
 
-            var artist = Parents.OfType<MusicArtist>().FirstOrDefault();
+            var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
 
             if (artist != null)
             {

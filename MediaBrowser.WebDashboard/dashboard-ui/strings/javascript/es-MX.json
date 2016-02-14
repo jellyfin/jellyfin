@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Abortada por apagado del servidor)",
     "LabelScheduledTaskLastRan": "Ejecutado hace {0}, tomando {1}.",
     "HeaderDeleteTaskTrigger": "Borrar Disparador de Tarea",
-    "HeaderTaskTriggers": "Disparadores de Tarea",
     "MessageDeleteTaskTrigger": "\u00bfEst\u00e1 seguro de querer eliminar este disparador de tarea?",
     "MessageNoPluginsInstalled": "No tienes extensiones instaladas.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} instalado",
     "LabelNumberReviews": "{0} Rese\u00f1as",
     "LabelFree": "Gratis",
+    "HeaderTo": "Hasta",
     "HeaderPlaybackError": "Error de Reproducci\u00f3n",
     "MessagePlaybackErrorNotAllowed": "Actualmente no esta autorizado para reproducir este contenido. Por favor contacte a su administrador de sistema para mas informaci\u00f3n.",
     "MessagePlaybackErrorNoCompatibleStream": "No hay streams compatibles en este en este momento. Por favor intente de nuevo mas tarde o contacte a su administrador de sistema para mas detalles.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "Estrella invitada",
     "MediaInfoSize": "Tama\u00f1o",
     "MediaInfoPath": "Trayectoria",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Formato",
     "MediaInfoContainer": "Contenedor",
     "MediaInfoDefault": "Por defecto",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Modo cine",
     "CinemaModeFeatureDescription": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la funci\u00f3n.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Apagar"
+    "ButtonOff": "Apagar",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

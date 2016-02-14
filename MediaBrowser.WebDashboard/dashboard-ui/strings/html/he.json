@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Task Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "\u05d9\u05e6\u05d9\u05d0\u05d4",
     "LabelVisitCommunity": "\u05d1\u05e7\u05e8 \u05d1\u05e7\u05d4\u05d9\u05dc\u05d4",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "\u05e9\u05d9\u05e8\u05d5\u05ea \u05d5\u05d5\u05d9\u05e0\u05d3\u05d5\u05e1",
     "AWindowsServiceHasBeenInstalled": "\u05e9\u05d9\u05e8\u05d5\u05ea \u05d5\u05d5\u05d9\u05e0\u05d3\u05d5\u05e1 \u05d4\u05d5\u05ea\u05e7\u05df",
     "WindowsServiceIntro1": "Emby Server normally runs as a desktop application with a tray icon, but if you prefer to run it as a background service, it can be started from the windows services control panel instead.",
-    "WindowsServiceIntro2": "\u05d0\u05dd \u05d0\u05ea\u05d4 \u05de\u05e4\u05e2\u05d9\u05dc \u05d0\u05ea \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea \u05d5\u05d5\u05d9\u05e0\u05d3\u05d5\u05e1, \u05d1\u05d1\u05e7\u05e9\u05d4 \u05e9\u05d9\u05dd \u05dc\u05d1 \u05e9\u05d4\u05d5\u05d0 \u05dc\u05d0 \u05d9\u05db\u05d5\u05dc \u05dc\u05e8\u05d5\u05e5 \u05d1\u05d0\u05d5\u05ea\u05d5 \u05d6\u05de\u05df \u05e9\u05d4\u05e9\u05e8\u05ea \u05db\u05d1\u05e8 \u05e2\u05d5\u05d1\u05d3 \u05d1\u05e8\u05e7\u05e2. \u05dc\u05db\u05df \u05ea\u05e6\u05d8\u05e8\u05da \u05dc\u05e1\u05d2\u05d5\u05e8 \u05d0\u05ea \u05d4\u05e9\u05e8\u05ea \u05e2\u05dc \u05de\u05e0\u05ea \u05dc\u05d4\u05e4\u05e2\u05d9\u05dc \u05d0\u05ea \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea. \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea \u05d2\u05dd \u05e6\u05e8\u05d9\u05da \u05dc\u05d4\u05d9\u05d5\u05ea \u05de\u05d5\u05d2\u05d3\u05e8 \u05e2\u05dd \u05d4\u05e8\u05e9\u05d0\u05d5\u05ea \u05de\u05e0\u05d4\u05dc \u05d3\u05e8\u05da \u05dc\u05d5\u05d7 \u05d4\u05d1\u05e7\u05e8\u05d4. \u05d1\u05d1\u05e7\u05e9\u05d4 \u05e7\u05d7 \u05d1\u05d7\u05e9\u05d1\u05d5\u05df \u05e9\u05db\u05e8\u05d2\u05e2 \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea \u05dc\u05d0 \u05d9\u05db\u05d5\u05dc \u05dc\u05e2\u05d3\u05db\u05df \u05d0\u05ea \u05e2\u05e6\u05de\u05d5 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea, \u05d5\u05dc\u05db\u05df \u05d2\u05d9\u05e8\u05e1\u05d0\u05d5\u05ea \u05d7\u05d3\u05e9\u05d5\u05ea \u05d9\u05e6\u05e8\u05d9\u05db\u05d5 \u05e2\u05d9\u05d3\u05db\u05d5\u05df \u05d9\u05d3\u05e0\u05d9.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "That's all we need for now. Emby has begun collecting information about your media library. Check out some of our apps, and then click <b>Finish<\/b> to view the <b>Server Dashboard<\/b>.",
     "LabelConfigureSettings": "\u05e7\u05d1\u05e2 \u05d0\u05ea \u05ea\u05e6\u05d5\u05e8\u05ea \u05d4\u05d4\u05d2\u05d3\u05e8\u05d5\u05ea",
     "LabelEnableVideoImageExtraction": "\u05d0\u05e4\u05e9\u05e8 \u05e9\u05dc\u05d9\u05e4\u05ea \u05ea\u05de\u05d5\u05e0\u05d4 \u05de\u05e1\u05e8\u05d8",
@@ -675,7 +680,7 @@
     "HeaderRequireManualLoginHelp": "\u05db\u05d0\u05e9\u05e8 \u05de\u05d1\u05d5\u05d8\u05dc, \u05d9\u05d5\u05e6\u05d2 \u05dc\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd \u05dc\u05d5\u05d7 \u05d4\u05ea\u05d7\u05d1\u05e8\u05d5\u05ea \u05e2\u05dd \u05d1\u05d7\u05d9\u05e8\u05ea \u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd.",
     "OptionOtherApps": "\u05ea\u05d5\u05db\u05e0\u05d5\u05ea \u05d0\u05d7\u05e8\u05d5\u05ea",
     "OptionMobileApps": "\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d5\u05ea \u05dc\u05e0\u05d9\u05d9\u05d3",
-    "HeaderNotificationList": "\u05dc\u05d7\u05e5 \u05e2\u05dc \u05d4\u05ea\u05e8\u05d0\u05d4 \u05dc\u05d4\u05d2\u05d3\u05e8\u05ea \u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05d4\u05e9\u05dc\u05d9\u05d7\u05d4 \u05e9\u05dc\u05d4",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "\u05e2\u05d3\u05db\u05d5\u05df \u05ea\u05d5\u05db\u05de\u05d4 \u05e7\u05d9\u05d9\u05dd",
     "NotificationOptionApplicationUpdateInstalled": "\u05e2\u05d3\u05db\u05d5\u05df \u05ea\u05d5\u05db\u05e0\u05d4 \u05d4\u05d5\u05ea\u05e7\u05df",
     "NotificationOptionPluginUpdateInstalled": "\u05e2\u05d3\u05db\u05d5\u05df \u05ea\u05d5\u05e1\u05e3 \u05d4\u05d5\u05ea\u05e7\u05df",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

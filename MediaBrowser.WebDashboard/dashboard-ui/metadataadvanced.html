@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadataadvanced,paper-checkbox,paper-input">
+    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataadvanced,paper-checkbox,paper-input,jqmcheckbox">
 
         <div data-role="content">
 
@@ -31,7 +31,7 @@
                             <input type="checkbox" id="chkSaveMetadataHidden" data-mini="true" />
                         </li>
                         <li>
-                            <label for="selectDateAdded">${LabelDateAddedBehavior}</label>
+                            <label for="selectDateAdded" class="selectLabel">${LabelDateAddedBehavior}</label>
                             <select id="selectDateAdded" data-mini="true">
                                 <option value="0">${OptionDateAddedImportTime}</option>
                                 <option value="1">${OptionDateAddedFileTime}</option>
@@ -149,8 +149,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
                 </form>

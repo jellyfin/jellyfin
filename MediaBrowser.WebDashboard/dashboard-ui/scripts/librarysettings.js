@@ -12,8 +12,8 @@
 
         $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor);
 
-        $('#chkEnableAudioArchiveFiles', page).checked(config.EnableAudioArchiveFiles).checkboxradio("refresh");
-        $('#chkEnableVideoArchiveFiles', page).checked(config.EnableVideoArchiveFiles).checkboxradio("refresh");
+        page.querySelector('#chkEnableAudioArchiveFiles').checked = config.EnableAudioArchiveFiles;
+        page.querySelector('#chkEnableVideoArchiveFiles').checked = config.EnableVideoArchiveFiles;
 
         Dashboard.hideLoadingMsg();
     }
@@ -29,8 +29,8 @@
 
             config.EnableLibraryMonitor = $('#selectEnableRealtimeMonitor', form).val();
 
-            config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
-            config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
+            config.EnableAudioArchiveFiles = form.querySelector('#chkEnableAudioArchiveFiles').checked;
+            config.EnableVideoArchiveFiles = form.querySelector('#chkEnableVideoArchiveFiles').checked;
 
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });

@@ -93,24 +93,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [disable startup scan].
-        /// </summary>
-        /// <value><c>true</c> if [disable startup scan]; otherwise, <c>false</c>.</value>
-        public bool DisableStartupScan { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable user views].
-        /// </summary>
-        /// <value><c>true</c> if [enable user views]; otherwise, <c>false</c>.</value>
-        public bool EnableUserViews { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable library metadata sub folder].
-        /// </summary>
-        /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
-        public bool EnableLibraryMetadataSubFolder { get; set; }
-
-        /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
@@ -179,9 +161,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
-
-        public bool MergeMetadataAndImagesByName { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
@@ -220,18 +200,18 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableWindowsShortcuts { get; set; }
 
-        public bool EnableVideoFrameByFrameAnalysis { get; set; }
-
         public bool EnableDateLastRefresh { get; set; }
 
         public string[] Migrations { get; set; }
+
+        public int MigrationVersion { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
-            Migrations = new string[] {};
+            Migrations = new string[] { };
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
@@ -576,7 +556,7 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Thumb
                         }
                     },
-                    DisabledMetadataFetchers = new []{ "TheMovieDb" }
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database", "TheMovieDb" }
                 },
 
                 new MetadataOptions(0, 1280)
@@ -597,6 +577,7 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Primary
                         }
                     },
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database" },
                     DisabledImageFetchers = new []{ "TheMovieDb" }
                 }
             };

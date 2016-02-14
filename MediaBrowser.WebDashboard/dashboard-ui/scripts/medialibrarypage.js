@@ -72,8 +72,7 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                text: Globalize.translate('LabelNewName'),
-                title: Globalize.translate('HeaderRenameMediaFolder'),
+                title: Globalize.translate('LabelNewName'),
                 callback: function (newName) {
 
                     if (newName && newName != virtualFolder.Name) {
@@ -314,7 +313,7 @@
         html += "</div>";
 
         if (!imgUrl && virtualFolder.showNameWithIcon) {
-            html += '<div class="cardImage iconCardImage addLibrary" style="position:absolute;top:0;left:0;right:0;bottom:0;font-size:140%;cursor:pointer;">';
+            html += '<h1 class="cardImage iconCardImage addLibrary" style="position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;">';
 
             html += '<div>';
             html += '<iron-icon icon="' + (virtualFolder.icon || getIcon(virtualFolder.CollectionType)) + '" style="width:45%;height:45%;color:#888;"></iron-icon>';
@@ -326,7 +325,7 @@
             }
             html += "</div>";
 
-            html += '</div>';
+            html += '</h1>';
         }
 
         html += '<div class="cardFooter">';

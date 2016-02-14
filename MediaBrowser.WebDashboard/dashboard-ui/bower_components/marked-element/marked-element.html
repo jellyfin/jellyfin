@@ -158,7 +158,7 @@ as you would a regular DOM element:
      * Unindents the markdown source that will be rendered.
      */
     unindent: function(text) {
-      this._unindent(text);
+      return this._unindent(text);
     },
 
     get outputElement () {
@@ -170,6 +170,14 @@ as you would a regular DOM element:
       this.toggleClass('hidden', false, this.$.content);
       return this.$.content;
     },
+
+    /**
+     * The `marked-render-complete` event is fired once Markdown to HTML
+     * conversion has finished, and the DOM has been populated via the resulting
+     * HTML.
+     *
+     * @event marked-render-complete
+     */
 
     /**
      * Renders `markdown` into this element's DOM.
@@ -193,6 +201,7 @@ as you would a regular DOM element:
         smartypants: this.smartypants
       };
       Polymer.dom(this._outputElement).innerHTML = marked(this.markdown, opts);
+      this.fire('marked-render-complete');
     },
 
     _highlight: function(code, lang) {
@@ -212,7 +221,7 @@ as you would a regular DOM element:
       }, null);
 
       return lines.map(function(l) { return l.substr(indent); }).join('\n');
-    },
+    }
 
   });
 

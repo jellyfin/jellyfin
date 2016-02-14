@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadataconfigurationpage">
+    <div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadataconfigurationpage,paper-checkbox">
 
         <div data-role="content">
 
@@ -18,39 +18,29 @@
                 </div>
 
                 <form class="metadataConfigurationForm">
+
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" data-mini="true" />
-                            <label for="chkEnableInternetProviders">${LabelDownloadInternetMetadata}</label>
-                            <div class="fieldDescription">${LabelDownloadInternetMetadataHelp}</div>
+                            <paper-checkbox id="chkEnableInternetProviders">${LabelDownloadInternetMetadata}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkSaveLocal" name="chkSaveLocal" data-mini="true" />
-                            <label for="chkSaveLocal">${LabelSaveLocalMetadata}</label>
-                            <div class="fieldDescription">${LabelSaveLocalMetadataHelp}</div>
-                        </li>
-                        <li style="display:none;">
-                            <label for="selectImageSavingConvention">${LabelImageSavingConvention}</label>
-                            <select name="selectImageSavingConvention" id="selectImageSavingConvention" data-mini="true">
-                                <option value="Compatible">${OptionImageSavingCompatible}</option>
-                                <option value="Legacy">${OptionImageSavingStandard}</option>
-                            </select>
-                            <div class="fieldDescription">${LabelImageSavingConventionHelp}</div>
+                            <paper-checkbox id="chkSaveLocal">${LabelSaveLocalMetadata}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
+                            <br/>
                         </li>
                         <li>
-                            <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
+                            <label for="selectLanguage" class="selectLabel">${LabelMetadataDownloadLanguage}</label>
                             <select name="selectLanguage" id="selectLanguage" data-mini="true" required="required"></select>
                         </li>
                         <li>
-                            <label for="selectCountry">${LabelCountry}</label>
+                            <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
                             <select name="selectCountry" id="selectCountry" data-mini="true" required="required"></select>
                         </li>
                         <li>
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
                 </form>

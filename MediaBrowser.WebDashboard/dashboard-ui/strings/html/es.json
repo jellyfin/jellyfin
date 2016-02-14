@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Tareas de activaci\u00f3n",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la comunidad",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Servicio de Windows",
     "AWindowsServiceHasBeenInstalled": "Un servicio de Windows se ha instalado",
     "WindowsServiceIntro1": "El Servidor Emby normalmente se inicia como una aplicacion con un icono en la bandeja, pero si usted prefiere que inicie como un servicio de fondo, entonces puede ser iniciado desde los servicios de Windows en el panel de control.",
-    "WindowsServiceIntro2": "Si se utiliza el servicio de Windows, tenga en cuenta que no se puede ejecutar al mismo tiempo que el icono de la bandeja, por lo que tendr\u00e1 que salir de la bandeja con el fin de ejecutar el servicio. Tambi\u00e9n tendr\u00e1 que ser configurado con privilegios administrativos a trav\u00e9s del panel de control del servicio. Tenga en cuenta que en este momento el servicio no es capaz de auto-actualizaci\u00f3n, por lo que las nuevas versiones requieren la interacci\u00f3n manual.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "Eso es todo lo que necesitamos por ahora. Emby a iniciado la colecci\u00f3n de su biblioteca digital. Vea algunos de nuestras aplicaciones, y despu\u00e9s haga clic <b>Finalizar<\/b>para ver el <b>Panel de Servidor<\/b>.",
     "LabelConfigureSettings": "Configuraci\u00f3n de opciones",
     "LabelEnableVideoImageExtraction": "Habilitar extracci\u00f3n de im\u00e1genes de video",
@@ -675,7 +680,7 @@
     "HeaderRequireManualLoginHelp": "Cuando est\u00e1 desactivado los clientes saldr\u00e1n en la pantalla de inicio para seleccionarlos visualmente.",
     "OptionOtherApps": "Otras aplicaciones",
     "OptionMobileApps": "Aplicaciones m\u00f3viles",
-    "HeaderNotificationList": "Haga click en una notificaci\u00f3n para configurar sus opciones de env\u00edo.",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "Disponible actualizaci\u00f3n de la aplicaci\u00f3n",
     "NotificationOptionApplicationUpdateInstalled": "Se ha instalado la actualizaci\u00f3n de la aplicaci\u00f3n",
     "NotificationOptionPluginUpdateInstalled": "Se ha instalado la actualizaci\u00f3n del plugin",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

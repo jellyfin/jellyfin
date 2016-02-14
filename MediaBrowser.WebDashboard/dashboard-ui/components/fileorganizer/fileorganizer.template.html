@@ -1,0 +1,34 @@
+﻿<div class="dialogHeader">
+    <paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>
+    <div class="dialogHeaderTitle">
+    </div>
+</div>
+
+<form class="episodeCorrectionForm" style="margin:auto;">
+
+    <p><span class="inputFile"></span></p>
+
+    <div style="margin: 1em 0 1em; min-width: 250px;">
+        <label for="selectSeries" class="selectLabel">${LabelSeries}</label>
+        <select id="selectSeries" data-mini="true" required="required"></select>
+    </div>
+    <div style="margin: 1em 0;">
+        <paper-input id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"></paper-input>
+    </div>
+    <div style="margin: 1em 0;">
+        <paper-input id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}"></paper-input>
+    </div>
+    <div style="margin: 1em 0;">
+        <paper-input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}"></paper-input>
+        <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
+    </div>
+    <div class="hide">
+        <br />
+        <paper-checkbox type="checkbox" id="chkRememberCorrection">${OptionRememberOrganizeCorrection}</paper-checkbox>
+    </div>
+    <br />
+    <button type="submit" data-role="none" class="clearButton">
+        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonOk}</span></paper-button>
+    </button>
+    <input id="hfResultId" type="hidden" />
+</form>

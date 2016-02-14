@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Task Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Izlaz",
     "LabelVisitCommunity": "Posjeti zajednicu",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Windows servis",
     "AWindowsServiceHasBeenInstalled": "Windows servis je instaliran.",
     "WindowsServiceIntro1": "Emby Server normally runs as a desktop application with a tray icon, but if you prefer to run it as a background service, it can be started from the windows services control panel instead.",
-    "WindowsServiceIntro2": "Ako koristite windows servis uslugu, imajte na umu da nemo\u017ee raditi u isto vrijeme kad i aplikacija na alatnoj traci. Stoga morate ugasiti aplikaciju na altanoj traci da bi mogli pokrenuti servis. Servis \u0107e te morati postaviti sa administrativnim dopu\u0161tenjima preko windows upravlja\u010dke plo\u010de. Tako\u0111er imajte na umu da se u ovom trenutku servis nemo\u017ee automatizirano nadograditi, ve\u0107 je za nove verzije potrebna interakcija korisnika.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "That's all we need for now. Emby has begun collecting information about your media library. Check out some of our apps, and then click <b>Finish<\/b> to view the <b>Server Dashboard<\/b>.",
     "LabelConfigureSettings": "Konfiguracija postavki",
     "LabelEnableVideoImageExtraction": "Omogu\u0107i preuzimanje slika iz videa",
@@ -675,7 +680,7 @@
     "HeaderRequireManualLoginHelp": "Kada onemogu\u0107eni korisnici otvore prozor za prijavu sa vizualnim odabirom korisnika.",
     "OptionOtherApps": "Druge aplikacije",
     "OptionMobileApps": "Mobilne aplikacije",
-    "HeaderNotificationList": "Kliknite na obavijesti kako bi postavili opcije slanja.",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "Dostupno a\u017euriranje aplikacije",
     "NotificationOptionApplicationUpdateInstalled": "Instalirano a\u017euriranje aplikacije",
     "NotificationOptionPluginUpdateInstalled": "Instalirano a\u017euriranje za dodatak",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

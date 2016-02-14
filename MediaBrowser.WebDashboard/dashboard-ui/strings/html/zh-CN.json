@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "\u4efb\u52a1\u89e6\u53d1\u6761\u4ef6",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "\u9000\u51fa",
     "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Windows \u670d\u52a1",
     "AWindowsServiceHasBeenInstalled": "Windows \u670d\u52a1\u5b89\u88c5\u5b8c\u6210",
     "WindowsServiceIntro1": "Emby\u670d\u52a1\u5668\u901a\u5e38\u4ee5\u6258\u76d8\u56fe\u6807\u7684\u65b9\u5f0f\u8fd0\u884c\uff0c\u4f46\u5982\u679c\u4f60\u60f3\u8981\u4ee5\u540e\u53f0\u670d\u52a1\u7684\u65b9\u5f0f\u6765\u8fd0\u884c\uff0c\u8bf7\u8bbe\u7f6e\u4e3a\u4eceWindows\u670d\u52a1\u63a7\u5236\u9762\u677f\u4e2d\u542f\u52a8\u3002",
-    "WindowsServiceIntro2": "\u5982\u679c\u4f7f\u7528Windows\u670d\u52a1\uff0c\u8bf7\u6ce8\u610f\uff0c\u5b83\u4e0d\u80fd\u540c\u65f6\u4e3a\u6258\u76d8\u56fe\u6807\u8fd0\u884c\uff0c\u6240\u4ee5\u4f60\u9700\u8981\u9000\u51fa\u6258\u76d8\u4ee5\u8fd0\u884c\u670d\u52a1\u3002\u8be5\u670d\u52a1\u8fd8\u5c06\u9700\u8981\u7ba1\u7406\u5458\u6743\u9650\uff0c\u8be5\u6743\u9650\u53ef\u4ee5\u901a\u8fc7\u63a7\u5236\u9762\u677f\u914d\u7f6e\u3002\u8bf7\u6ce8\u610f\uff0c\u6b64\u65f6\u670d\u52a1\u65e0\u6cd5\u81ea\u52a8\u66f4\u65b0\uff0c\u6240\u4ee5\u65b0\u7684\u7248\u672c\u5c06\u9700\u8981\u624b\u52a8\u66f4\u65b0\u3002",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "\u73b0\u5df2\u5b8c\u6210\u3002Emby \u5f00\u59cb\u6536\u96c6\u4f60\u7684\u5a92\u4f53\u5e93\u4fe1\u606f\u3002\u770b\u770b\u6211\u4eec\u7684\u5e94\u7528\u7a0b\u5e8f\uff0c \u70b9\u51fb <b>\u7ed3\u675f<\/b> \u6765\u6d4f\u89c8 <b>\u670d\u52a1\u5668\u63a7\u5236\u53f0<\/b>\u3002",
     "LabelConfigureSettings": "\u914d\u7f6e\u8bbe\u7f6e",
     "LabelEnableVideoImageExtraction": "\u542f\u7528\u89c6\u9891\u622a\u56fe\u529f\u80fd",
@@ -675,7 +680,7 @@
     "HeaderRequireManualLoginHelp": "\u7981\u7528\u5ba2\u6237\u7aef\u65f6\uff0c\u4f1a\u51fa\u73b0\u53ef\u89c6\u5316\u7528\u6237\u9009\u62e9\u767b\u5f55\u754c\u9762\u3002",
     "OptionOtherApps": "\u5176\u4ed6\u5e94\u7528\u7a0b\u5e8f",
     "OptionMobileApps": "\u624b\u673a\u5e94\u7528\u7a0b\u5e8f",
-    "HeaderNotificationList": "\u70b9\u51fb\u901a\u77e5\u6765\u914d\u7f6e\u5b83\u7684\u53d1\u9001\u9009\u9879\u3002",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "\u6709\u53ef\u7528\u7684\u5e94\u7528\u7a0b\u5e8f\u66f4\u65b0",
     "NotificationOptionApplicationUpdateInstalled": "\u5e94\u7528\u7a0b\u5e8f\u66f4\u65b0\u5df2\u5b89\u88c5",
     "NotificationOptionPluginUpdateInstalled": "\u63d2\u4ef6\u66f4\u65b0\u5df2\u5b89\u88c5",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "\u5a92\u4f53\u5e93\u626b\u63cf\u8fc7\u7a0b\u4e2d\u89e3\u538b\u7ae0\u8282\u56fe\u7247",
     "LabelExtractChaptersDuringLibraryScanHelp": "\u5982\u679c\u542f\u7528\uff0c\u5f53\u5a92\u4f53\u5e93\u5bfc\u5165\u89c6\u9891\u5e76\u626b\u63cf\u65f6\uff0c\u5c06\u63d0\u53d6\u7ae0\u8282\u56fe\u50cf\u3002\u5982\u679c\u7981\u7528\uff0c\u7ae0\u8282\u56fe\u50cf\u5c06\u5728\u4e4b\u540e\u7684\u8ba1\u5212\u4efb\u52a1\u63d0\u53d6\uff0c\u800c\u5a92\u4f53\u5e93\u4f1a\u66f4\u5feb\u5b8c\u6210\u626b\u63cf\u3002",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "\u5916\u90e8\u64ad\u653e\u5668\uff1a",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

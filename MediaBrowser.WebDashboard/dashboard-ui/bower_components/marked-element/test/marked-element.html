@@ -241,6 +241,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     });
 
+    suite('events', function() {
+      var markedElement;
+      var outputElement;
+
+      setup(function() {
+        markedElement = fixture('CamelCaseHTML');
+        outputElement = document.getElementById('output');
+      });
+
+      test('render() fires marked-render-complete', function(done) {
+        markedElement.addEventListener('marked-render-complete', function() {
+          expect(outputElement.innerHTML).to.not.equal('');
+          done();
+        });
+        markedElement.render();
+      });
+    });
+
   </script>
 
 </body>

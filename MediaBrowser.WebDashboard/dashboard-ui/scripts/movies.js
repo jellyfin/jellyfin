@@ -79,7 +79,8 @@
                     shape: "backdrop",
                     preferThumb: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -118,7 +119,8 @@
                     shape: "portrait",
                     centerText: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
             else if (view == "PosterCard") {

@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Model.Logging;
 using System;
+using System.Data;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -14,10 +16,46 @@ namespace MediaBrowser.Server.Implementations.Persistence
             Logger = logManager.GetLogger(GetType().Name);
         }
 
+        private bool _disposed;
+        protected void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name + " has been disposed and cannot be accessed.");
+            }
+        }
+
         public void Dispose()
         {
+            _disposed = true;
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected async Task Vacuum(IDbConnection connection)
+        {
+            CheckDisposed();
+
+            await WriteLock.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "vacuum";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.ErrorException("Failed to vacuum:", e);
+
+                throw;
+            }
+            finally
+            {
+                WriteLock.Release();
+            }
         }
 
         private readonly object _disposeLock = new object();

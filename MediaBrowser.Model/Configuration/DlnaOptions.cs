@@ -5,7 +5,7 @@ namespace MediaBrowser.Model.Configuration
     {
         public bool EnablePlayTo { get; set; }
         public bool EnableServer { get; set; }
-        public bool EnableDebugLogging { get; set; }
+        public bool EnableDebugLog { get; set; }
         public bool BlastAliveMessages { get; set; }
         public int ClientDiscoveryIntervalSeconds { get; set; }
         public int BlastAliveMessageIntervalSeconds { get; set; }

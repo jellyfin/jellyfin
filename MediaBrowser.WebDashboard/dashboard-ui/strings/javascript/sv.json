@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(avbr\u00f6ts eftersom servern st\u00e4ngdes av)",
     "LabelScheduledTaskLastRan": "Senast k\u00f6rd {0}, tog {1}",
     "HeaderDeleteTaskTrigger": "Ta bort aktivitetsutl\u00f6sare",
-    "HeaderTaskTriggers": "Aktivitetsutl\u00f6sare",
     "MessageDeleteTaskTrigger": "Vill du ta bort denna aktivitetsutl\u00f6sare?",
     "MessageNoPluginsInstalled": "Inga till\u00e4gg har installerats.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} installerade",
     "LabelNumberReviews": "{0} recensioner",
     "LabelFree": "Gratis",
+    "HeaderTo": "Till",
     "HeaderPlaybackError": "Playback Error",
     "MessagePlaybackErrorNotAllowed": "You're currently not authorized to play this content. Please contact your system administrator for details.",
     "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "G\u00e4startist",
     "MediaInfoSize": "Storlek",
     "MediaInfoPath": "S\u00f6kv\u00e4g",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Container",
     "MediaInfoDefault": "F\u00f6rval",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Biol\u00e4ge",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Off"
+    "ButtonOff": "Off",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

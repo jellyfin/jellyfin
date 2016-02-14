@@ -3,7 +3,7 @@
     var query = {
 
         StartIndex: 0,
-        Limit: 20
+        Limit: 50
     };
 
     var currentResult;
@@ -52,41 +52,17 @@
 
     function organizeEpsiodeWithCorrections(page, item) {
 
-        Dashboard.showLoadingMsg();
-
-        ApiClient.getItems(null, {
-            recursive: true,
-            includeItemTypes: 'Series',
-            sortBy: 'SortName'
-
-        }).then(function (result) {
-            Dashboard.hideLoadingMsg();
-            showEpisodeCorrectionPopup(page, item, result.Items);
-        }, onApiFailure);
-
+        showEpisodeCorrectionPopup(page, item);
     }
 
-    function showEpisodeCorrectionPopup(page, item, allSeries) {
+    function showEpisodeCorrectionPopup(page, item) {
 
-        var popup = $('.episodeCorrectionPopup', page).popup("open");
+        require(['components/fileorganizer/fileorganizer'], function (fileorganizer) {
 
-        $('.inputFile', popup).html(item.OriginalFileName);
-
-        $('#txtSeason', popup).val(item.ExtractedSeasonNumber);
-        $('#txtEpisode', popup).val(item.ExtractedEpisodeNumber);
-        $('#txtEndingEpisode', popup).val(item.ExtractedEndingEpisodeNumber);
-
-        $('#hfResultId', popup).val(item.Id);
-
-        var seriesHtml = allSeries.map(function (s) {
-
-            return '<option value="' + s.Id + '">' + s.Name + '</option>';
-
-        }).join('');
-
-        seriesHtml = '<option value=""></option>' + seriesHtml;
-
-        $('#selectSeries', popup).html(seriesHtml);
+            fileorganizer.show(item).then(function () {
+                reloadItems(page);
+            });
+        });
     }
 
     function organizeFile(page, id) {
@@ -129,35 +105,7 @@
 
                 }, onApiFailure);
             }
-
         });
-    }
-
-    function submitEpisodeForm(form) {
-
-        Dashboard.showLoadingMsg();
-
-        var page = $(form).parents('.page');
-
-        var resultId = $('#hfResultId', form).val();
-
-        var options = {
-
-            SeriesId: $('#selectSeries', form).val(),
-            SeasonNumber: $('#txtSeason', form).val(),
-            EpisodeNumber: $('#txtEpisode', form).val(),
-            EndingEpisodeNumber: $('#txtEndingEpisode', form).val()
-        };
-
-        ApiClient.performEpisodeOrganization(resultId, options).then(function () {
-
-            Dashboard.hideLoadingMsg();
-
-            $('.episodeCorrectionPopup', page).popup("close");
-
-            reloadItems(page);
-
-        }, onApiFailure);
     }
 
     function reloadItems(page) {
@@ -170,7 +118,6 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-
         }, onApiFailure);
 
     }
@@ -226,9 +173,9 @@
             var status = item.Status;
 
             if (status == 'SkippedExisting') {
-                html += '<div style="color:blue;">';
+                html += '<a data-resultid="' + item.Id + '" style="color:blue;" href="#" class="btnShowStatusMessage">';
                 html += item.OriginalFileName;
-                html += '</div>';
+                html += '</a>';
             }
             else if (status == 'Failure') {
                 html += '<a data-resultid="' + item.Id + '" style="color:red;" href="#" class="btnShowStatusMessage">';
@@ -320,14 +267,9 @@
 
         var page = $.mobile.activePage;
 
-        if (msg.MessageType == "ScheduledTaskEnded") {
+        if ((msg.MessageType == 'ScheduledTaskEnded' && msg.Data.Key == 'AutoOrganize') || msg.MessageType == 'AutoOrganizeUpdate') {
 
-            var result = msg.Data;
-
-            if (result.Key == 'AutoOrganize') {
-
-                reloadItems(page);
-            }
+            reloadItems(page);
         }
     }
 
@@ -335,15 +277,21 @@
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert({
-            title: Globalize.translate('AutoOrganizeError'),
-            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
-        });
-    }
+        var page = $.mobile.activePage;
+        $('.episodeCorrectionPopup', page).popup("close");
 
-    function onEpisodeCorrectionFormSubmit() {
-        submitEpisodeForm(this);
-        return false;
+        if (e.status == 0) {
+            Dashboard.alert({
+                title: 'Auto-Organize',
+                message: 'The operation is going to take a little longer. The view will be updated on completion.'
+            });
+        }
+        else {
+            Dashboard.alert({
+                title: Globalize.translate('AutoOrganizeError'),
+                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+            });
+        }
     }
 
     $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
@@ -357,8 +305,6 @@
             }, onApiFailure);
 
         });
-
-        $('.episodeCorrectionForm').off('submit', onEpisodeCorrectionFormSubmit).on('submit', onEpisodeCorrectionFormSubmit);
 
     }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
 
@@ -374,7 +320,7 @@
             taskKey: 'AutoOrganize'
         });
 
-        $(ApiClient).on("websocketmessage.autoorganizelog", onWebSocketMessage);
+        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
 
     }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
 
@@ -387,7 +333,7 @@
             mode: 'off'
         });
 
-        $(ApiClient).off("websocketmessage.autoorganizelog", onWebSocketMessage);
+        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

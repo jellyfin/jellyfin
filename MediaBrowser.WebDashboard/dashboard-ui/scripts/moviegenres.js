@@ -75,7 +75,8 @@
                     context: 'movies',
                     showItemCounts: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -109,7 +110,8 @@
                     context: 'movies',
                     centerText: true,
                     showItemCounts: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
 

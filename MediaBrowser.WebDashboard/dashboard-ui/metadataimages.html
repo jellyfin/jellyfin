@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadataimagespage">
+    <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataimagespage,jqmcheckbox">
 
         <div data-role="content">
 
@@ -21,7 +21,7 @@
                     <form class="metadataImagesConfigurationForm" style="margin-top: 10px; max-width: 800px;">
                         <br />
                         <div style="width: 75%;">
-                            <label for="selectItemType">${LabelCustomizeOptionsPerMediaType}</label>
+                            <label for="selectItemType" class="selectLabel">${LabelCustomizeOptionsPerMediaType}</label>
                             <select id="selectItemType" data-mini="true"></select>
                         </div>
                         <br />
@@ -121,8 +121,6 @@
                                 <button type="submit" data-role="none" class="clearButton">
                                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                                 </button>
-
-                                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                             </li>
                         </ul>
                     </form>

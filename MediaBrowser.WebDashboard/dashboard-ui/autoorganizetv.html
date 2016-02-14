@@ -4,7 +4,7 @@
     <title>${TitleAutoOrganize}</title>
 </head>
 <body>
-    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,scripts/autoorganizetv,paper-input">
+    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmcollapsible,jqmtable,scripts/autoorganizetv,paper-input,jqmcheckbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -29,21 +29,17 @@
                             <div class="fieldDescription">
                                 <div>${LabelWatchFolderHelp}</div>
                             </div>
-                            <br />
                         </li>
                         <li>
-                            <label for="txtMinFileSize">${LabelMinFileSizeForOrganize}</label>
-                            <input type="number" id="txtMinFileSize" name="txtMinFileSize" pattern="[0-9]*" required="required" min="0" />
+                            <paper-input type="number" id="txtMinFileSize" name="txtMinFileSize" label="${LabelMinFileSizeForOrganize}" pattern="[0-9]*" min="0" required></paper-input>
                             <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
                         </li>
                         <li>
-                            <label for="txtSeasonFolderPattern">${LabelSeasonFolderPattern}</label>
-                            <input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" required="required" />
+                            <paper-input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" label="${LabelSeasonFolderPattern}" required></paper-input>
                             <div class="fieldDescription seasonFolderFieldDescription"></div>
                         </li>
                         <li>
-                            <label for="txtSeasonZeroName">${LabelSeasonZeroFolderName}</label>
-                            <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
+                            <paper-input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" label="${LabelSeasonZeroFolderName}" required></paper-input>
                         </li>
                     </ul>
                     <div data-role="collapsible">
@@ -51,14 +47,12 @@
                         <div>
                             <br />
                             <div>
-                                <label for="txtEpisodePattern">${LabelEpisodePattern}</label>
-                                <input type="text" id="txtEpisodePattern" name="txtEpisodePattern" required="required" />
+                                <paper-input type="text" id="txtEpisodePattern" name="txtEpisodePattern" label="${LabelEpisodePattern}" required></paper-input>
                                 <div class="fieldDescription episodePatternDescription"></div>
                             </div>
                             <br />
                             <div>
-                                <label for="txtMultiEpisodePattern">${LabelMultiEpisodePattern}</label>
-                                <input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" required="required" />
+                                <paper-input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" label="${LabelMultiEpisodePattern}" required></paper-input>
                                 <div class="fieldDescription multiEpisodePatternDescription"></div>
                             </div>
 
@@ -142,7 +136,7 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="copyOrMoveFile">${LabelTransferMethod}</label>
+                            <label for="copyOrMoveFile" class="selectLabel">${LabelTransferMethod}</label>
                             <select id="copyOrMoveFile" data-mini="true">
                                 <option value="true">${OptionCopy}</option>
                                 <option value="false">${OptionMove}</option>
@@ -154,8 +148,7 @@
                             <label for="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</label>
                         </li>
                         <li>
-                            <label for="txtDeleteLeftOverFiles">${LabelDeleteLeftOverFiles}</label>
-                            <input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" />
+                            <paper-input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" label="${LabelDeleteLeftOverFiles}"></paper-input>
                             <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
                         </li>
                         <li>

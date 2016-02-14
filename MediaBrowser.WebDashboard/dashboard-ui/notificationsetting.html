@@ -4,7 +4,7 @@
     <title>${TitleNotifications}</title>
 </head>
 <body>
-    <div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting">
+    <div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,paper-input,jqmcheckbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -35,7 +35,7 @@
 
                     <div>
                         <div>
-                            <label for="selectUsers">${LabelSendNotificationToUsers}</label>
+                            <label for="selectUsers" class="selectLabel">${LabelSendNotificationToUsers}</label>
                             <select id="selectUsers">
                                 <option value="All">${OptionAllUsers}</option>
                                 <option value="Admins">${OptionAdminUsers}</option>
@@ -63,8 +63,7 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtTitle">${LabelMessageTitle}</label>
-                            <input id="txtTitle" type="text" required="required" />
+                            <paper-input id="txtTitle" type="text" required label="${LabelMessageTitle}"></paper-input>
                             <div class="fieldDescription tokenHelp">
                                 <div>${LabelAvailableTokens}</div>
                                 <div class="tokenList" style="margin-top: .5em;"></div>

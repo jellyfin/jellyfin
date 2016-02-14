@@ -22,9 +22,9 @@ namespace MediaBrowser.Controller.LiveTv
             return GetClientTypeName() + "-" + Name;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.LiveTvChannel);
+            return UnratedItem.LiveTvChannel;
         }
 
         /// <summary>

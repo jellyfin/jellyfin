@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/useredit">
+    <div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,jqmcheckbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -18,7 +18,6 @@
                 <p class="lnkEditUserPreferencesContainer">
                     <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
                 </p>
-                <br />
                 <form class="editUserProfileForm">
 
                     <div class="disabledUserBanner" style="display:none;">
@@ -34,17 +33,19 @@
                     </div>
                     <ul data-role="listview" class="ulForm">
                         <li id="fldUserName">
-                            <label for="txtUserName">${LabelName}</label>
-                            <input id="txtUserName" required="required" type="text" />
+                            <paper-input id="txtUserName" required type="text" label="${LabelName}"></paper-input>
                         </li>
-                        <li id="fldConnectInfo" style="display: none; background: #e8eef7;padding:1em;border-radius:5px;">
-                            <label for="txtConnectUserName">${LabelConnectUserName}</label>
-                            <input id="txtConnectUserName" type="text" />
-                            <div class="fieldDescription">
-                                <div>${LabelConnectUserNameHelp}</div>
-                                <div style="margin-top: .75em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+                        <li id="fldConnectInfo" style="display: none;">
+                            <div class="paperList" style="padding: 1em; border-radius: 5px;">
+                                <paper-input id="txtConnectUserName" type="text" label="${LabelConnectUserName}"></paper-input>
+                                <div class="fieldDescription">
+                                    <div>${LabelConnectUserNameHelp}</div>
+                                    <div style="margin-top: .75em;">
+                                        <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
+                                    </div>
+                                </div>
+                                <br />
                             </div>
-                            <br />
                         </li>
                         <li>
                             <input type="checkbox" id="chkIsAdmin" name="chkIsAdmin" />

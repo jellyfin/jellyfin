@@ -17,18 +17,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
         public string SeriesName { get; set; }
-
-        public Book()
-        {
-            Tags = new List<string>();
-        }
 
         public override bool CanDownload()
         {
@@ -37,9 +26,9 @@ namespace MediaBrowser.Controller.Entities
                    locationType != LocationType.Virtual;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Book);
+            return UnratedItem.Book;
         }
 
         public BookInfo GetLookupInfo()
@@ -48,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(SeriesName))
             {
-                info.SeriesName = Parents.Select(i => i.Name).FirstOrDefault();
+                info.SeriesName = GetParents().Select(i => i.Name).FirstOrDefault();
             }
             else
             {

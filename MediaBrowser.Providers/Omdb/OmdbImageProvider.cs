@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             // Save the http requests since we know it's not currently supported
-            if (item is Series || item is Season || item is Episode)
+            if (item is Season || item is Episode)
             {
                 return false;
             }

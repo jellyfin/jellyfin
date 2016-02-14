@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Przerwano w skuter wy\u0142\u0105czenia serwera)",
     "LabelScheduledTaskLastRan": "Ostation uruchomiono {0}, czas trwania {1}.",
     "HeaderDeleteTaskTrigger": "Usu\u0144 Wyzwalacz Zadania",
-    "HeaderTaskTriggers": "Wyzwalacze Zada\u0144",
     "MessageDeleteTaskTrigger": "Jeste\u015b pewien \u017ce chcesz usun\u0105\u0107 ten wyzwalacz zadania?",
     "MessageNoPluginsInstalled": "Nie masz \u017cadnych wtyczek zainstalowanych.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} zainstalowanych",
     "LabelNumberReviews": "{0} Recenzji",
     "LabelFree": "Darmowe",
+    "HeaderTo": "Do",
     "HeaderPlaybackError": "B\u0142\u0105d Odtwarzania",
     "MessagePlaybackErrorNotAllowed": "Obecnie nie jeste\u015b autoryzowany do odtwarzania tej zawarto\u015bci. prosz\u0119 skontaktuj si\u0119 ze swoim administratorem.",
     "MessagePlaybackErrorNoCompatibleStream": "Obecnie brak kompatybilnych stream\u00f3w. Prosz\u0119 spr\u00f3buj ponownie p\u00f3\u017aniej lub skontaktuj si\u0119 z administratorem systemu.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "Go\u015b\u0107 specjalny",
     "MediaInfoSize": "Rozmiar",
     "MediaInfoPath": "\u015acie\u017cka",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Kontener",
     "MediaInfoDefault": "Domy\u015blnie",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Tryb kinowy",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Off"
+    "ButtonOff": "Off",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

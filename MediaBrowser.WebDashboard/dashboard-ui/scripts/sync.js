@@ -78,7 +78,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['paper-checkbox', 'paper-input'], function () {
+            require(['paper-checkbox', 'paper-input', 'jqmcollapsible'], function () {
                 renderFormInternal(options);
                 resolve();
             });
@@ -106,7 +106,7 @@
         if (options.readOnlySyncTarget) {
             html += '<paper-input type="text" id="selectSyncTarget" readonly label="' + Globalize.translate('LabelSyncTo') + '"></paper-input>';
         } else {
-            html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
+            html += '<label for="selectSyncTarget" class="selectLabel">' + Globalize.translate('LabelSyncTo') + '</label>';
             html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
             html += targets.map(function (t) {
@@ -126,7 +126,7 @@
 
         html += '<div class="fldProfile" style="display:none;">';
         html += '<br/>';
-        html += '<label for="selectProfile">' + Globalize.translate('LabelProfile') + '</label>';
+        html += '<label for="selectProfile" class="selectLabel">' + Globalize.translate('LabelProfile') + '</label>';
         html += '<select id="selectProfile" data-mini="true">';
         html += '</select>';
         html += '<div class="fieldDescription profileDescription"></div>';
@@ -134,7 +134,7 @@
 
         html += '<div class="fldQuality" style="display:none;">';
         html += '<br/>';
-        html += '<label for="selectQuality">' + Globalize.translate('LabelQuality') + '</label>';
+        html += '<label for="selectQuality" class="selectLabel">' + Globalize.translate('LabelQuality') + '</label>';
         html += '<select id="selectQuality" data-mini="true" required="required">';
         html += '</select>';
         html += '<div class="fieldDescription qualityDescription"></div>';
@@ -183,7 +183,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html);
+        $(elem).html(html).trigger('create');
 
         $('#selectSyncTarget', elem).on('change', function () {
 
@@ -245,19 +245,17 @@
                 dlg.classList.add('popupEditor');
 
                 var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCancel"></paper-fab>';
-                html += '</h2>';
+                html += '<div class="dialogHeader">';
+                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<div class="dialogHeaderTitle">';
+                html += Globalize.translate('SyncMedia');
+                html += '</div>';
 
-                html += '<div>';
+                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><paper-button class="mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
+
+                html += '</div>';
 
                 html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
-
-                html += '<div style="margin:1em 0 1.5em;">';
-                html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
-
-                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-                html += '</div>';
 
                 html += '<div class="formFields"></div>';
 
@@ -266,7 +264,6 @@
                 html += '</p>';
 
                 html += '</form>';
-                html += '</div>';
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -394,6 +391,10 @@
             return false;
         }
 
+        if (user && !user.Policy.EnableSync) {
+            return false;
+        }
+
         return item.SupportsSync;
     }
 
@@ -419,7 +420,7 @@
                 SupportsSync: true
             };
 
-            if (isAvailable(item)) {
+            if (isAvailable(item, user)) {
                 $('.categorySyncButton', page).removeClass('hide');
             } else {
                 $('.categorySyncButton', page).addClass('hide');

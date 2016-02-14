@@ -77,39 +77,28 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     properties: {
 
       /**
-       * If `modal` is true, this implies `no-cancel-on-outside-click` and `with-backdrop`.
+       * If `modal` is true, this implies `no-cancel-on-outside-click`, `no-cancel-on-esc-key` and `with-backdrop`.
        */
       modal: {
-        observer: '_modalChanged',
         type: Boolean,
         value: false
-      },
-
-      /** @type {?Node} */
-      _lastFocusedElement: {
-        type: Object
-      },
-
-      _boundOnFocus: {
-        type: Function,
-        value: function() {
-          return this._onFocus.bind(this);
-        }
-      },
-
-      _boundOnBackdropClick: {
-        type: Function,
-        value: function() {
-          return this._onBackdropClick.bind(this);
-        }
       }
 
     },
 
+    observers: [
+      '_modalChanged(modal, _readied)'
+    ],
+
     listeners: {
-      'tap': '_onDialogClick',
-      'iron-overlay-opened': '_onIronOverlayOpened',
-      'iron-overlay-closed': '_onIronOverlayClosed'
+      'tap': '_onDialogClick'
+    },
+
+    ready: function () {
+      // Only now these properties can be read.
+      this.__prevNoCancelOnOutsideClick = this.noCancelOnOutsideClick;
+      this.__prevNoCancelOnEscKey = this.noCancelOnEscKey;
+      this.__prevWithBackdrop = this.withBackdrop;
     },
 
     attached: function() {
@@ -122,17 +111,34 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       Polymer.dom(this).unobserveNodes(this._ariaObserver);
     },
 
-    _modalChanged: function() {
-      if (this.modal) {
+    _modalChanged: function(modal, readied) {
+      if (modal) {
         this.setAttribute('aria-modal', 'true');
       } else {
         this.setAttribute('aria-modal', 'false');
       }
-      // modal implies noCancelOnOutsideClick and withBackdrop if true, don't overwrite
-      // those properties otherwise.
-      if (this.modal) {
+
+      // modal implies noCancelOnOutsideClick, noCancelOnEscKey and withBackdrop.
+      // We need to wait for the element to be ready before we can read the
+      // properties values.
+      if (!readied) {
+        return;
+      }
+
+      if (modal) {
+        this.__prevNoCancelOnOutsideClick = this.noCancelOnOutsideClick;
+        this.__prevNoCancelOnEscKey = this.noCancelOnEscKey;
+        this.__prevWithBackdrop = this.withBackdrop;
         this.noCancelOnOutsideClick = true;
+        this.noCancelOnEscKey = true;
         this.withBackdrop = true;
+      } else {
+        // If the value was changed to false, let it false.
+        this.noCancelOnOutsideClick = this.noCancelOnOutsideClick &&
+          this.__prevNoCancelOnOutsideClick;
+        this.noCancelOnEscKey = this.noCancelOnEscKey &&
+          this.__prevNoCancelOnEscKey;
+        this.withBackdrop = this.withBackdrop && this.__prevWithBackdrop;
       }
     },
 
@@ -162,57 +168,21 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       this.closingReason.confirmed = confirmed;
     },
 
+    /**
+     * Will dismiss the dialog if user clicked on an element with dialog-dismiss
+     * or dialog-confirm attribute.
+     */
     _onDialogClick: function(event) {
-      var target = Polymer.dom(event).rootTarget;
-      while (target && target !== this) {
-        if (target.hasAttribute) {
-          if (target.hasAttribute('dialog-dismiss')) {
-            this._updateClosingReasonConfirmed(false);
-            this.close();
-            event.stopPropagation();
-            break;
-          } else if (target.hasAttribute('dialog-confirm')) {
-            this._updateClosingReasonConfirmed(true);
-            this.close();
-            event.stopPropagation();
-            break;
-          }
-        }
-        target = Polymer.dom(target).parentNode;
-      }
-    },
-
-    _onIronOverlayOpened: function() {
-      if (this.modal) {
-        document.body.addEventListener('focus', this._boundOnFocus, true);
-        document.body.addEventListener('click', this._boundOnBackdropClick, true);
-      }
-    },
-
-    _onIronOverlayClosed: function() {
-      this._lastFocusedElement = null;
-      document.body.removeEventListener('focus', this._boundOnFocus, true);
-      document.body.removeEventListener('click', this._boundOnBackdropClick, true);
-    },
-
-    _onFocus: function(event) {
-      if (this.modal && this._manager.currentOverlay() === this) {
-        if (Polymer.dom(event).path.indexOf(this) !== -1) {
-          this._lastFocusedElement = event.target;
-        } else if (this._lastFocusedElement) {
-          this._lastFocusedElement.focus();
-        } else {
-          this._focusNode.focus();
-        }
-      }
-    },
-
-    _onBackdropClick: function(event) {
-      if (this.modal && this._manager.currentOverlay() === this && Polymer.dom(event).path.indexOf(this) === -1) {
-        if (this._lastFocusedElement) {
-          this._lastFocusedElement.focus();
-        } else {
-          this._focusNode.focus();
+      // Search for the element with dialog-confirm or dialog-dismiss,
+      // from the root target until this (excluded).
+      var path = Polymer.dom(event).path;
+      for (var i = 0; i < path.indexOf(this); i++) {
+        var target = path[i];
+        if (target.hasAttribute && (target.hasAttribute('dialog-dismiss') || target.hasAttribute('dialog-confirm'))) {
+          this._updateClosingReasonConfirmed(target.hasAttribute('dialog-confirm'));
+          this.close();
+          event.stopPropagation();
+          break;
         }
       }
     }

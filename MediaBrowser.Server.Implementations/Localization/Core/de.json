@@ -1,4 +1,5 @@
 {
+    "DbUpgradeMessage": "Bitte warten Sie w\u00e4hrend die Emby Datenbank aktualisiert wird. {0}% verarbeitet.",
     "AppDeviceValues": "App: {0}, Ger\u00e4t: {1}",
     "UserDownloadingItemWithValues": "{0} l\u00e4dt {1} herunter",
     "FolderTypeMixed": "Gemischte Inhalte",

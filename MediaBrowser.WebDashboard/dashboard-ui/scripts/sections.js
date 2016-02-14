@@ -141,7 +141,7 @@
             html += '<a' + onclick + ' data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
-            html += "<div class='cardText' style='padding:8px 10px;color:#fff;font-size:14px;'>";
+            html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";
             html += '<iron-icon icon="' + icon + '"></iron-icon>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
@@ -255,7 +255,8 @@
                     showChildCountIndicator: true,
                     lazy: true,
                     context: 'home',
-                    centerText: true
+                    centerText: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
@@ -299,7 +300,8 @@
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
-                    context: 'home'
+                    context: 'home',
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
@@ -336,7 +338,8 @@
                     showTitle: true,
                     centerText: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
@@ -634,7 +637,8 @@
                 coverImage: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true
+                centerText: true,
+                overlayPlayButton: true
             });
             html += '</div>';
 

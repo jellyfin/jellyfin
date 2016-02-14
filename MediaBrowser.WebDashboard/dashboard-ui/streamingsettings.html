@@ -4,7 +4,7 @@
     <title>${TitlePlayback}</title>
 </head>
 <body>
-    <div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings">
+    <div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -20,21 +20,14 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="txtRemoteClientBitrateLimit">${LabelRemoteClientBitrateLimit}</label>
-                            <input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" required="required" min="0" step=".25" />
+                            <paper-input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" required min="0" step=".25" label="${LabelRemoteClientBitrateLimit}"></paper-input>
                             <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
                         </li>
                     </ul>
 
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                        </li>
-                    </ul>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
                 </form>
             </div>
         </div>

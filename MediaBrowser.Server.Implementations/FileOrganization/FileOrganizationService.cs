@@ -11,6 +11,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -96,9 +97,9 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _repo.Delete(resultId);
         }
 
-        private TvFileOrganizationOptions GetTvOptions()
+        private AutoOrganizeOptions GetAutoOrganizeptions()
         {
-            return _config.GetAutoOrganizeOptions().TvOptions;
+            return _config.GetAutoOrganizeOptions();
         }
 
         public async Task PerformOrganization(string resultId)
@@ -113,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetTvOptions(), true, CancellationToken.None)
+            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetAutoOrganizeptions(), true, CancellationToken.None)
                     .ConfigureAwait(false);
         }
 
@@ -127,7 +128,58 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeWithCorrection(request, GetTvOptions(), CancellationToken.None).ConfigureAwait(false);
+            await organizer.OrganizeWithCorrection(request, GetAutoOrganizeptions(), CancellationToken.None).ConfigureAwait(false);
+        }
+
+        public QueryResult<SmartMatchInfo> GetSmartMatchInfos(FileOrganizationResultQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            var options = GetAutoOrganizeptions();
+
+            var items = options.SmartMatchInfos.Skip(query.StartIndex ?? 0).Take(query.Limit ?? Int32.MaxValue).ToArray();
+
+            return new QueryResult<SmartMatchInfo>()
+            {
+                Items = items,
+                TotalRecordCount = options.SmartMatchInfos.Length
+            };
+        }
+
+        public void DeleteSmartMatchEntry(string itemName, string matchString)
+        {
+            if (string.IsNullOrEmpty(itemName))
+            {
+                throw new ArgumentNullException("itemName");
+            }
+
+            if (string.IsNullOrEmpty(matchString))
+            {
+                throw new ArgumentNullException("matchString");
+            }
+
+            var options = GetAutoOrganizeptions();
+
+            SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, itemName));
+
+            if (info != null && info.MatchStrings.Contains(matchString))
+            {
+                var list = info.MatchStrings.ToList();
+                list.Remove(matchString);
+                info.MatchStrings = list.ToArray();
+
+                if (info.MatchStrings.Length == 0)
+                {
+                    var infos = options.SmartMatchInfos.ToList();
+                    infos.Remove(info);
+                    options.SmartMatchInfos = infos.ToArray();
+                }
+
+                _config.SaveAutoOrganizeOptions(options);
+            }
         }
     }
 }

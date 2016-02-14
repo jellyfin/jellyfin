@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Oppgave Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Avslutt",
     "LabelVisitCommunity": "Bes\u00f8k oss",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Windows Service",
     "AWindowsServiceHasBeenInstalled": "Windows Service har blitt installert",
     "WindowsServiceIntro1": "Emby Server normalt kj\u00f8rer som en desktop applikasjon, men hvis du foretrekker \u00e5 kj\u00f8re det som en bakgrunnstjeneste, kan det  i stedet startes fra Windows Services i kontrollpanelet.",
-    "WindowsServiceIntro2": "Hvis du bruker Windows, v\u00e6r oppmerksom p\u00e5 at det ikke kan kj\u00f8res samtidig som ikonet, slik at du trenger \u00e5 g\u00e5 ut av \"trayen\" for \u00e5 kj\u00f8re tjenesten. Tjenesten m\u00e5 ogs\u00e5 konfigureres med administratorrettigheter via kontrollpanelet. V\u00e6r oppmerksom p\u00e5 at p\u00e5 denne tiden tjenesten ikke er i stand til selv-oppdatering, s\u00e5 nye versjoner vil kreve manuell interaksjon.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "Det er alt vi trenger for n\u00e5. Emby har begynt \u00e5 samle informasjon om mediebiblioteket. Sjekk ut noen av v\u00e5re programmer, og klikk deretter <b> Fullf\u00f8r <\/b> for \u00e5 se <b> Server Dashboard<\/b>.",
     "LabelConfigureSettings": "Konfigurer innstillinger",
     "LabelEnableVideoImageExtraction": "Aktiv\u00e9r uthenting av stillbilder fra video",
@@ -675,7 +680,7 @@
     "HeaderRequireManualLoginHelp": "N\u00e5r deaktiverte kan brukere vises en innloggingskjerm med et visuelt utvalg av brukere.",
     "OptionOtherApps": "Andre applikasjoner",
     "OptionMobileApps": "Mobile applikasjoner",
-    "HeaderNotificationList": "Klikk p\u00e5 en varsling for \u00e5 konfigurere dennes sending-alternativer.",
+    "HeaderNotificationList": "Click on a notification to configure sending options.",
     "NotificationOptionApplicationUpdateAvailable": "Oppdatering tilgjengelig",
     "NotificationOptionApplicationUpdateInstalled": "Oppdatering installert",
     "NotificationOptionPluginUpdateInstalled": "Oppdatert programtillegg installert",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Hent ut kapittel bilder under bibliotek skann",
     "LabelExtractChaptersDuringLibraryScanHelp": "Hvis aktivert, vil kapittel bilder bli hentet ut mens videoer importeres under bibliotek skanning.\nHvis deaktivert, vil de bli hentet ut under planlagte oppgaver for kapittel bilder, som medf\u00f8rer at vanlig bibliotek skanning blir fortere ferdig.",
     "LabelConnectGuestUserName": "Emby brukernavn eller epostadresse:",
-    "LabelConnectUserName": "Emby brukernavn\/epost",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "L\u00e6r mer om Emby Connect",
     "LabelExternalPlayers": "Eksterne avspillere:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

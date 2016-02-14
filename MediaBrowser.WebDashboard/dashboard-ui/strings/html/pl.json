@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Wyzwalacze Zada\u0144",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Wydobywaj obrazy rozdzia\u0142\u00f3w podczas skanowania biblioteki",
     "LabelExtractChaptersDuringLibraryScanHelp": "Je\u017celi w\u0142\u0105czone, obrazy rozdzia\u0142\u00f3w b\u0119d\u0105 wydobywane gdy widea s\u0105 importowane podczas skanowania biblioteki. Je\u017celi wy\u0142\u0105czone b\u0119d\u0105 one wydobywane podczas z zaplanowanego zadania obraz\u00f3w rozdzia\u0142\u00f3w, pozwalaj\u0105c aby zwyk\u0142e skanowanie biblioteki wykona\u0142o si\u0119 szybciej.",
     "LabelConnectGuestUserName": "Ich nazwa u\u017cytkownika Emby lub adres email:",
-    "LabelConnectUserName": "Nazwa u\u017cytkownika\/email Emby:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Po\u0142\u0105cz tego u\u017cytkownika z kontem Emby aby umo\u017cliwi\u0107 \u0142atwy dost\u0119p z ka\u017cdej aplikacji Emby, bez potrzeby wpisywania adresu IP serwera.",
     "ButtonLearnMoreAboutEmbyConnect": "Dowiedz si\u0119 wi\u0119cej o Emby Connect",
     "LabelExternalPlayers": "Zewn\u0119trzne odtwarzacze:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Foldery",
     "LabelDisplayName": "Wy\u015bwietlaj nazw\u0119:",
     "HeaderNewRecording": "Nowe nagranie",
-    "ButtonAdvanced": "Zaawansowane"
+    "ButtonAdvanced": "Zaawansowane",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

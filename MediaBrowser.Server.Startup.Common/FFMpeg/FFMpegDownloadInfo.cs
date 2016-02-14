@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                     info.FFMpegFilename = "ffmpeg.exe";
                     info.FFProbeFilename = "ffprobe.exe";
-                    info.Version = "20151111";
+                    info.Version = "20160131";
                     info.ArchiveType = "7z";
 
                     switch (environment.SystemArchitecture)
@@ -83,13 +83,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20151111-win64.7z",
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160131-win64.7z",
                                 "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20151109-git-480bad7-win64-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20151111-win32.7z",
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160131-win32.7z",
                                 "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20151109-git-480bad7-win32-static.7z"
                             };
                     }

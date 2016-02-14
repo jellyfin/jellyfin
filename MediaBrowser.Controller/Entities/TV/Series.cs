@@ -333,6 +333,11 @@ namespace MediaBrowser.Controller.Entities.TV
             return config.BlockUnratedItems.Contains(UnratedItem.Series);
         }
 
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Series;
+        }
+
         public SeriesInfo GetLookupInfo()
         {
             var info = GetItemLookupInfo<SeriesInfo>();

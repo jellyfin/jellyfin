@@ -2,8 +2,9 @@
 
     function loadPage(page, config) {
 
-        $('#chkEnablePlayTo', page).checked(config.EnablePlayTo).checkboxradio("refresh");
-        $('#chkEnableDlnaDebugLogging', page).checked(config.EnableDebugLogging).checkboxradio("refresh");
+        page.querySelector('#chkEnablePlayTo').checked = config.EnablePlayTo;
+        page.querySelector('#chkEnableDlnaDebugLogging').checked = config.EnableDebugLog;
+
         $('#txtClientDiscoveryInterval', page).val(config.ClientDiscoveryIntervalSeconds);
 
         Dashboard.hideLoadingMsg();
@@ -17,8 +18,9 @@
 
         ApiClient.getNamedConfiguration("dlna").then(function (config) {
 
-            config.EnablePlayTo = $('#chkEnablePlayTo', form).checked();
-            config.EnableDebugLogging = $('#chkEnableDlnaDebugLogging', form).checked();
+            config.EnablePlayTo = form.querySelector('#chkEnablePlayTo').checked;
+            config.EnableDebugLog = form.querySelector('#chkEnableDlnaDebugLogging').checked;
+
             config.ClientDiscoveryIntervalSeconds = $('#txtClientDiscoveryInterval', form).val();
 
             ApiClient.updateNamedConfiguration("dlna", config).then(Dashboard.processServerConfigurationUpdateResult);

@@ -212,7 +212,6 @@
     padding: 10px !important;
     margin: 0 !important;
     color: inherit;
-    font-size: 20px;
 }
 
 .cardText {
@@ -223,10 +222,6 @@
     padding: 5px 5px 2px;
     font-weight: 400;
     line-height: 1.4;
-}
-
-.homeTopViews .cardText {
-    font-size: 15px;
 }
 
 .cardButtonContainer {

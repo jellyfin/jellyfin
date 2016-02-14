@@ -241,7 +241,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
+                //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }
         }
 
@@ -266,13 +266,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {".html", 0}
         };
 
-        private bool EnableLogging(string url)
+        private bool EnableLogging(string url, string localPath)
+        {
+            var extension = GetExtension(url);
+
+            if (string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension))
+            {
+                if (string.IsNullOrWhiteSpace(localPath) || localPath.IndexOf("system/ping", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private string GetExtension(string url)
         {
             var parts = url.Split(new[] { '?' }, 2);
 
-            var extension = Path.GetExtension(parts[0]);
-
-            return string.IsNullOrWhiteSpace(extension) || !_skipLogExtensions.ContainsKey(extension);
+            return Path.GetExtension(parts[0]);
         }
 
         /// <summary>
@@ -291,7 +304,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var localPath = url.LocalPath;
 
             var urlString = url.OriginalString;
-            var enableLog = EnableLogging(urlString);
+            var enableLog = EnableLogging(urlString, localPath);
 
             if (enableLog)
             {
@@ -337,8 +350,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
-                httpRes.Write(GlobalResponse);
-                httpRes.ContentType = "text/plain";
+                if (string.Equals(GetExtension(urlString), "html", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write(GlobalResponse);
+                    httpRes.ContentType = "text/plain";
+                }
+                else
+                {
+                    httpRes.StatusCode = 503;
+                }
+
                 return Task.FromResult(true);
             }
 

@@ -16,6 +16,11 @@ namespace MediaBrowser.Controller.Entities
         IEnumerable<string> PhysicalLocations { get; }
     }
 
+    public interface ISupportsUserSpecificView
+    {
+        bool EnableUserSpecificView { get; }
+    }
+
     public static class CollectionFolderExtensions
     {
         public static string GetViewType(this ICollectionFolder folder, User user)

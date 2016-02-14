@@ -49,6 +49,13 @@
 
         var form = this;
 
+        ApiClient.getNamedConfiguration("livetv").then(function (config) {
+
+            config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
+
+            ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
+        });
+
         ApiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
@@ -126,12 +133,6 @@
             } else {
 
                 context.querySelector('.supporterContainer').classList.remove('hide');
-
-                if (AppInfo.enableSupporterMembership) {
-                    context.querySelector('.btnSupporter').classList.remove('hide');
-                } else {
-                    context.querySelector('.btnSupporter').classList.add('hide');
-                }
 
                 if (regInfo.TrialVersion) {
                     context.querySelector('.supporterTrial').classList.remove('hide');
@@ -216,6 +217,26 @@
         });
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);
+
+        var supporterButtons = context.querySelectorAll('.btnSupporter');
+        for (var i = 0, length = supporterButtons.length; i < length; i++) {
+            if (AppInfo.enableSupporterMembership) {
+                supporterButtons[i].classList.remove('hide');
+            } else {
+                supporterButtons[i].classList.add('hide');
+            }
+        }
+
+        if (AppInfo.enableSupporterMembership) {
+            context.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
+        } else {
+            context.querySelector('.btnSupporterForConverting a').href = '#';
+        }
+
+        ApiClient.getNamedConfiguration("livetv").then(function (config) {
+
+            $('#chkConvertRecordings', context).checked(config.EnableRecordingEncoding);
+        });
     }
 
     function selectDays(page, days) {
@@ -227,7 +248,6 @@
             var day = daysOfWeek[i];
 
             $('#chk' + day, page).checked(days.indexOf(day) != -1);
-
         }
     }
 
@@ -257,6 +277,12 @@
         }
 
         selectDays(context, defaultTimer.Days);
+
+        if (program.ServiceName == 'Emby') {
+            context.querySelector('.convertRecordingsContainer').classList.remove('hide');
+        } else {
+            context.querySelector('.convertRecordingsContainer').classList.add('hide');
+        }
 
         Dashboard.hideLoadingMsg();
     }

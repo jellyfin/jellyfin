@@ -124,8 +124,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 {
                     if (extractImages)
                     {
-                        if (video.VideoType == VideoType.HdDvd || video.VideoType == VideoType.Iso ||
-                             video.VideoType == VideoType.BluRay)
+                        if (video.VideoType == VideoType.HdDvd || video.VideoType == VideoType.Iso || video.VideoType == VideoType.BluRay)
                         {
                             continue;
                         }

@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Dto
         public string TranscodingUrl { get; set; }
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
-
+        
         public MediaSourceInfo()
         {
             Formats = new List<string>();

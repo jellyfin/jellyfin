@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server" data-require="scripts/dlnaserversettings">
+    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server" data-require="scripts/dlnaserversettings,paper-input,jqmcheckbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -29,12 +29,11 @@
                             <div class="fieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
                         </li>
                         <li>
-                            <label for="txtBlastInterval">${LabelBlastMessageInterval}</label>
-                            <input type="number" id="txtBlastInterval" min="1" max="300" />
+                            <paper-input type="number" id="txtBlastInterval" min="1" max="300" label="${LabelBlastMessageInterval}"></paper-input>
                             <div class="fieldDescription">${LabelBlastMessageIntervalHelp}</div>
                         </li>
                         <li>
-                            <label for="selectUser">${LabelDefaultUser}</label>
+                            <label for="selectUser" class="selectLabel">${LabelDefaultUser}</label>
                             <select id="selectUser" data-mini="true"></select>
                             <div class="fieldDescription">${LabelDefaultUserHelp}</div>
                         </li>
@@ -49,8 +48,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
                 </form>

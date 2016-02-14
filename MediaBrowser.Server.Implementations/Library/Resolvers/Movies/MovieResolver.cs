@@ -67,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             string collectionType,
             IDirectoryService directoryService)
         {
-            if (IsInvalid(parent, collectionType, files))
+            if (IsInvalid(parent, collectionType))
             {
                 return null;
             }
@@ -77,14 +77,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return ResolveVideos<MusicVideo>(parent, files, directoryService, false);
             }
 
-            if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideos<Video>(parent, files, directoryService, false);
-            }
-
-            if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
-            {
-                //return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
             }
 
             if (string.IsNullOrEmpty(collectionType))
@@ -95,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     return ResolveVideos<Video>(parent, files, directoryService, false);
                 }
 
-                if (parent is Series || parent.Parents.OfType<Series>().Any())
+                if (parent is Series || parent.GetParents().OfType<Series>().Any())
                 {
                     return null;
                 }
@@ -185,7 +181,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         {
             var collectionType = args.GetCollectionType();
 
-            if (IsInvalid(args.Parent, collectionType, args.FileSystemChildren))
+            if (IsInvalid(args.Parent, collectionType))
             {
                 return null;
             }
@@ -193,14 +189,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Find movies with their own folders
             if (args.IsDirectory)
             {
+                var files = args.FileSystemChildren
+                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                    .ToList();
+
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                 }
 
                 if (string.IsNullOrEmpty(collectionType))
@@ -208,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     // Owned items should just use the plain video type
                     if (args.Parent == null)
                     {
-                        return FindMovie<Video>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                        return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                     }
 
                     if (args.HasParent<Series>())
@@ -216,12 +216,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return null;
                     }
 
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                 }
 
                 if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Movie>(args.Path, args.Parent, args.FileSystemChildren.ToList(), args.DirectoryService, collectionType);
+                    return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                 }
 
                 return null;
@@ -246,11 +246,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 item = ResolveVideo<Movie>(args, true);
             }
 
-            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<Video>(args, false);
-            }
-            else if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 item = ResolveVideo<Video>(args, false);
             }
@@ -482,7 +479,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            return new T
+            var returnVideo = new T
             {
                 Path = folderPaths[0],
 
@@ -492,9 +489,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
                 Name = result.Stacks[0].Name
             };
+
+            SetIsoType(returnVideo);
+
+            return returnVideo;
         }
 
-        private bool IsInvalid(Folder parent, string collectionType, IEnumerable<FileSystemMetadata> files)
+        private bool IsInvalid(Folder parent, string collectionType)
         {
             if (parent != null)
             {

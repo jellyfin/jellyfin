@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Task Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "\u96e2\u958b",
     "LabelVisitCommunity": "\u8a2a\u554f\u8a0e\u8ad6\u5340",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Windows \u670d\u52d9",
     "AWindowsServiceHasBeenInstalled": "Windows \u670d\u52d9\u5b89\u88dd\u5b8c\u6210\u3002",
     "WindowsServiceIntro1": "Emby \u4f3a\u670d\u5668\u901a\u5e38\u904b\u884c\u65bc\u4e00\u500b\u5713\u5f62\u5716\u6a19\u7684\u684c\u9762\u61c9\u7528\u7a0b\u5f0f\uff0c\u4f46\u5982\u679c\u60a8\u559c\u6b61\u628a\u5b83\u4f5c\u70ba\u5f8c\u53f0\u670d\u52d9\uff0c\u53ef\u4ee5\u5728Windows \u670d\u52d9\u63a7\u5236\u53f0\u5167\u53d6\u4ee3\u3002",
-    "WindowsServiceIntro2": "\u5982\u679c\u662f\u4f7f\u7528 Windows \u670d\u52d9\uff0c\u8acb\u6ce8\u610f\uff0c\u4e0d\u80fd\u5728\u540c\u6642\u9593\u904b\u884c\u5713\u5f62\u5716\u6a19\uff0c\u6240\u4ee5\u60a8\u9700\u9000\u51fa\u5716\u6a19\uff0c\u4ee5\u904b\u884c\u670d\u52d9\u3002\u6b64\u670d\u52d9\u4ea6\u9700\u901a\u904e\u63a7\u5236\u53f0\u7ba1\u7406\u6b0a\u9650\u5167\u8a2d\u7f6e\u3002\u8acb\u6ce8\u610f\uff0c\u73fe\u6642\u670d\u52d9\u7121\u6cd5\u81ea\u6211\u66f4\u65b0\uff0c\u6240\u4ee5\u9700\u8981\u624b\u52d5\u66f4\u65b0\u3002",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "\u9019\u5c31\u662f\u6211\u5011\u6240\u9700\u8981\u7684\u3002 Emby \u5df2\u958b\u59cb\u6536\u96c6\u6709\u95dc\u60a8\u7684\u5a92\u9ad4\u5eab\u4fe1\u606f\u3002\u8acb\u770b\u770b\u6211\u5011\u4e00\u4e9b\u61c9\u7528\u7a0b\u5f0f\uff0c\u7136\u5f8c\u9ede\u64ca <b>\u5b8c\u6210<\/b> \u624d\u67e5\u770b <b>\u670d\u52d9\u5668\u63a7\u5236\u53f0<\/b> \u3002",
     "LabelConfigureSettings": "\u9032\u884c\u8a2d\u5b9a",
     "LabelEnableVideoImageExtraction": "\u555f\u7528\u5f71\u7247\u622a\u5716\u529f\u80fd",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

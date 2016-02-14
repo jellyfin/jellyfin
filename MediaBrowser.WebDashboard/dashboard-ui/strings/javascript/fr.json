@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Annul\u00e9 par fermeture du serveur)",
     "LabelScheduledTaskLastRan": "Derni\u00e8re ex\u00e9cution {0}, dur\u00e9e {1}.",
     "HeaderDeleteTaskTrigger": "Supprimer le d\u00e9clencheur de t\u00e2che",
-    "HeaderTaskTriggers": "D\u00e9clencheurs de t\u00e2ches",
     "MessageDeleteTaskTrigger": "\u00cates-vous s\u00fbr de vouloir supprimer ce d\u00e9clencheur de t\u00e2che?",
     "MessageNoPluginsInstalled": "Vous n'avez aucun plugin install\u00e9.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} install\u00e9(s)",
     "LabelNumberReviews": "{0} Critique(s)",
     "LabelFree": "Gratuit",
+    "HeaderTo": "\u00c0",
     "HeaderPlaybackError": "Erreur de lecture",
     "MessagePlaybackErrorNotAllowed": "Vous n'\u00eates pas autoris\u00e9 \u00e0 lire ce contenu. Veuillez contacter votre administrateur syst\u00e8me pour plus de d\u00e9tails.",
     "MessagePlaybackErrorNoCompatibleStream": "Aucun flux compatible n'est actuellement disponible. Veuillez r\u00e9essayer plus tard ou contactez votre administrateur pour plus de d\u00e9tails.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "R\u00f4le principal",
     "MediaInfoSize": "Taille",
     "MediaInfoPath": "Chemin",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Conteneur",
     "MediaInfoDefault": "D\u00e9faut",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Mode cin\u00e9ma",
     "CinemaModeFeatureDescription": "Le mode Cin\u00e9ma, vous donne l'exp\u00e9rience d'une vraie salle, avec des bandes annonces, et des introductions avant le film.",
     "CoverArt": "Pochette",
-    "ButtonOff": "Arr\u00eat"
+    "ButtonOff": "Arr\u00eat",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

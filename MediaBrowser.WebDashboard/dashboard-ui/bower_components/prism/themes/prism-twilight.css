@@ -6,6 +6,7 @@
 code[class*="language-"],
 pre[class*="language-"] {
 	color: white;
+	background: none;
 	direction: ltr;
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	text-align: left;
@@ -41,13 +42,13 @@ pre[class*="language-"] {
 	padding: 1em;
 }
 
-pre[class*="language-"]::selection {
-	/* Safari */
+pre[class*="language-"]::-moz-selection {
+	/* Firefox */
 	background: hsl(200, 4%, 16%); /* #282A2B */
 }
 
 pre[class*="language-"]::selection {
-	/* Firefox */
+	/* Safari */
 	background: hsl(200, 4%, 16%); /* #282A2B */
 }
 
@@ -70,6 +71,7 @@ code[class*="language-"]::selection, code[class*="language-"] ::selection {
 	border: .13em solid hsl(0, 0%, 33%); /* #545454 */
 	box-shadow: 1px 1px .3em -.1em black inset;
 	padding: .15em .2em .05em;
+	white-space: normal;
 }
 
 .token.comment,

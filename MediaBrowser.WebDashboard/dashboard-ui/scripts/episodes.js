@@ -87,7 +87,8 @@
                     showParentTitle: true,
                     overlayText: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
             else if (view == "PosterCard") {

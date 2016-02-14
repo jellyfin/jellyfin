@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="scripts/librarysettings">
+    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="jqmcollapsible,scripts/librarysettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -21,9 +21,8 @@
                         <div>
                             <br />
                             <div>
-                                <label for="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
-                                <input type="checkbox" id="chkEnableAudioArchiveFiles" />
-                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                                <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
                             </div>
                             <br />
                         </div>
@@ -34,9 +33,8 @@
                         <div>
                             <br />
                             <div>
-                                <label for="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</label>
-                                <input type="checkbox" id="chkEnableVideoArchiveFiles" />
-                                <div class="fieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                                <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
                             </div>
                             <br />
                         </div>
@@ -48,15 +46,16 @@
                             <br />
                             <div>
                                 <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                                <input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" required="required" />
+                                <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
                             </div>
                             <br />
                         </div>
                     </div>
                     <br />
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li class="fldLibraryMonitor hide">
-                            <label for="selectEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
                             <select id="selectEnableRealtimeMonitor" data-mini="true">
                                 <option value="Auto">${OptionAuto}</option>
                                 <option value="Enabled">${OptionYes}</option>
@@ -70,8 +69,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
 

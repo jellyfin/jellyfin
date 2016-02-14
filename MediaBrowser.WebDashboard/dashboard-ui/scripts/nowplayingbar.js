@@ -1,4 +1,4 @@
-﻿(function (window, document, $, setTimeout, clearTimeout) {
+﻿define([], function () {
 
     var currentPlayer;
 
@@ -60,7 +60,7 @@
 
         html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="tablet-android" class="mediaButton remoteControlButton"></paper-icon-button>';
         html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
 
         html += '</div>';
@@ -91,10 +91,10 @@
             elem.classList.add('hide');
         };
 
-        //if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             onfinish();
             return;
-        //}
+        }
 
         requestAnimationFrame(function () {
             var keyframes = [
@@ -113,9 +113,9 @@
 
         elem.classList.remove('hide');
 
-        //if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browserInfo.animate || browserInfo.mobile) {
             return;
-        //}
+        }
 
         requestAnimationFrame(function () {
 
@@ -129,10 +129,10 @@
 
     function bindEvents(elem) {
 
-        currentTimeElement = $('.nowPlayingBarCurrentTime', elem);
-        nowPlayingImageElement = $('.nowPlayingImage', elem);
-        nowPlayingTextElement = $('.nowPlayingBarText', elem);
-        nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
+        currentTimeElement = elem.querySelector('.nowPlayingBarCurrentTime');
+        nowPlayingImageElement = elem.querySelector('.nowPlayingImage');
+        nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
+        nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
         unmuteButton = $('.unmuteButton', elem).on('click', function () {
 
@@ -183,11 +183,14 @@
             }
         });
 
-        $('.playlistButton', elem).on('click', function () {
+        elem.querySelector('.remoteControlButton').addEventListener('click', function () {
 
-            $.mobile.changePage('nowplaying.html', {
-                dataUrl: 'nowplaying.html#playlist'
-            });
+            showRemoteControl();
+        });
+
+        elem.querySelector('.playlistButton').addEventListener('click', function () {
+
+            showRemoteControl('playlist');
         });
 
         toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
@@ -247,6 +250,17 @@
                 this.pinValue = Dashboard.getDisplayTime(ticks);
             };
         }, 300);
+    }
+
+    function showRemoteControl(tab) {
+
+        if (tab) {
+            $.mobile.changePage('nowplaying.html', {
+                dataUrl: 'nowplaying.html#' + tab
+            });
+        } else {
+            Dashboard.navigate('nowplaying.html');
+        }
     }
 
     var nowPlayingBarElement;
@@ -371,7 +385,7 @@
 
         }
 
-        currentTimeElement.html(timeText);
+        currentTimeElement.innerHTML = timeText;
 
         updateNowPlayingInfo(state);
     }
@@ -464,16 +478,16 @@
         var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem) || '';
 
         if (nameHtml.indexOf('<br/>') != -1) {
-            nowPlayingTextElement.addClass('nowPlayingDoubleText');
+            nowPlayingTextElement.classList.add('nowPlayingDoubleText');
         } else {
-            nowPlayingTextElement.removeClass('nowPlayingDoubleText');
+            nowPlayingTextElement.classList.remove('nowPlayingDoubleText');
         }
 
         if (state.NowPlayingItem.Id) {
             nameHtml = '<a style="color:inherit;text-decoration:none;" href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + nameHtml + '</a>';
         }
 
-        nowPlayingTextElement.html(nameHtml);
+        nowPlayingTextElement.innerHTML = nameHtml;
 
         var url;
         var imgHeight = 80;
@@ -522,16 +536,14 @@
 
         currentImgUrl = url;
 
-        var imgHtml = '<img src="' + url + '" />';
-
-        nowPlayingImageElement.html(imgHtml);
+        ImageLoader.lazyImage(nowPlayingImageElement, url);
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
-                nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
+                nowPlayingUserData.innerHTML = LibraryBrowser.getUserDataIconsHtml(item, false);
             });
         } else {
-            nowPlayingUserData.html('');
+            nowPlayingUserData.innerHTML = '';
         }
     }
 
@@ -647,4 +659,4 @@
 
     bindToPlayer(MediaController.getCurrentPlayer());
 
-})(window, document, jQuery, setTimeout, clearTimeout);
+});

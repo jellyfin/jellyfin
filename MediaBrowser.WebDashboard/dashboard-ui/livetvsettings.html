@@ -19,7 +19,7 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="selectGuideDays">${LabelNumberOfGuideDays}</label>
+                            <label for="selectGuideDays" class="selectLabel">${LabelNumberOfGuideDays}</label>
                             <select id="selectGuideDays" data-mini="true">
                                 <option value="">${OptionAutomatic}</option>
                                 <option value="1">1</option>
@@ -49,6 +49,13 @@
                         <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
                         <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
                         <div class="fieldDescription">${LabelRecordingPathHelp}</div>
+                    </div>
+                    <br />
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+                        <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
                     </div>
                     <br />
                     <br />

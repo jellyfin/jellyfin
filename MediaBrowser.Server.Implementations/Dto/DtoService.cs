@@ -163,16 +163,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (person != null)
             {
-                var items = _libraryManager.GetItems(new InternalItemsQuery
+                var items = _libraryManager.GetItems(new InternalItemsQuery(user)
                 {
                     Person = byName.Name
 
-                }).Items;
-
-                if (user != null)
-                {
-                    return items.Where(i => i.IsVisibleStandalone(user)).ToList();
-                }
+                }, new string[] { });
 
                 return items.ToList();
             }
@@ -217,17 +212,17 @@ namespace MediaBrowser.Server.Implementations.Dto
             }).Items;
         }
 
-        public void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user)
+        public void FillSyncInfo(IEnumerable<Tuple<BaseItem, BaseItemDto>> tuples, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
                 var syncProgress = GetSyncedItemProgress(options);
 
-                foreach (var dto in dtos)
+                foreach (var tuple in tuples)
                 {
-                    var item = _libraryManager.GetItemById(dto.Id);
+                    var item = tuple.Item1;
 
-                    FillSyncInfo(dto, item, syncProgress, options, user);
+                    FillSyncInfo(tuple.Item2, item, syncProgress, options, user);
                 }
             }
         }
@@ -361,6 +356,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
             {
+                dto.OriginalCollectionType = collectionFolder.CollectionType;
+
                 dto.CollectionType = user == null ?
                     collectionFolder.CollectionType :
                     collectionFolder.GetViewType(user);
@@ -398,7 +395,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             else if (item is LiveTvProgram)
             {
-                _livetvManager().AddInfoToProgramDto(item, dto, fields.Contains(ItemFields.ChannelInfo), user);
+                _livetvManager().AddInfoToProgramDto(item, dto, fields, user);
             }
 
             return dto;
@@ -468,13 +465,15 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var folder = (Folder)item;
 
-                dto.ChildCount = GetChildCount(folder, user);
-
-                // These are just far too slow. 
-                // TODO: Disable for CollectionFolder
-                if (!(folder is UserRootFolder) && !(folder is UserView))
+                if (!(folder is IChannelItem) && !(folder is Channel))
                 {
-                    SetSpecialCounts(folder, user, dto, fields, syncProgress);
+                    dto.ChildCount = GetChildCount(folder, user);
+
+                    // These are just far too slow. 
+                    if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is ICollectionFolder))
+                    {
+                        SetSpecialCounts(folder, user, dto, fields, syncProgress);
+                    }
                 }
 
                 dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
@@ -815,7 +814,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>BaseItem.</returns>
         private BaseItem GetParentBackdropItem(BaseItem item, BaseItem owner)
         {
-            var parent = item.Parent ?? owner;
+            var parent = item.GetParent() ?? owner;
 
             while (parent != null)
             {
@@ -824,7 +823,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     return parent;
                 }
 
-                parent = parent.Parent;
+                parent = parent.GetParent();
             }
 
             return null;
@@ -839,7 +838,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>BaseItem.</returns>
         private BaseItem GetParentImageItem(BaseItem item, ImageType type, BaseItem owner)
         {
-            var parent = item.Parent ?? owner;
+            var parent = item.GetParent() ?? owner;
 
             while (parent != null)
             {
@@ -848,7 +847,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     return parent;
                 }
 
-                parent = parent.Parent;
+                parent = parent.GetParent();
             }
 
             return null;
@@ -1042,7 +1041,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.IsFolder = item.IsFolder;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
-            dto.IsHD = item.IsHD;
+            if (item.IsHD.HasValue && item.IsHD.Value)
+            {
+                dto.IsHD = item.IsHD;
+            }
+            dto.Audio = item.Audio;
 
             dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
@@ -1209,15 +1212,15 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.VoteCount = item.VoteCount;
             }
 
-            if (item.IsFolder)
-            {
-                var folder = (Folder)item;
+            //if (item.IsFolder)
+            //{
+            //    var folder = (Folder)item;
 
-                if (fields.Contains(ItemFields.IndexOptions))
-                {
-                    dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
-                }
-            }
+            //    if (fields.Contains(ItemFields.IndexOptions))
+            //    {
+            //        dto.IndexOptions = folder.IndexByOptionStrings.ToArray();
+            //    }
+            //}
 
             var supportsPlaceHolders = item as ISupportsPlaceHolders;
             if (supportsPlaceHolders != null)
@@ -1520,7 +1523,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.ChannelId = item.ChannelId;
-            
+
             var channelItem = item as IChannelItem;
             if (channelItem != null)
             {

@@ -408,7 +408,10 @@
     function renderDetails(page, item, context, isStatic) {
 
         renderSimilarItems(page, item, context);
-        renderSiblingLinks(page, item, context);
+
+        if (!isStatic) {
+            renderSiblingLinks(page, item, context);
+        }
 
         if (item.Taglines && item.Taglines.length) {
             $('.tagline', page).html(item.Taglines[0]).show();
@@ -903,7 +906,8 @@
                     shape: getPortraitShape(),
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayPlayButton: true
                 });
             }
             else if (item.Type == "Season") {
@@ -916,7 +920,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayMoreButton: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {

@@ -1,0 +1,31 @@
+﻿<div class="dialogHeader">
+    <paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>
+    <div class="dialogHeaderTitle">
+        ${HeaderInviteUser}
+    </div>
+</div>
+
+<form class="addUserForm" style="max-width: none;margin:0;">
+
+    <paper-input type="text" id="txtConnectUsername" value="" placeholder="${PlaceholderUsername}" label="${LabelConnectGuestUserName}" required></paper-input>
+    <div class="fieldDescription">
+        <div>${LabelConnectGuestUserNameHelp}</div>
+        <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+    </div>
+
+    <br />
+
+    <div data-role="collapsible">
+        <h2>${HeaderShareMediaFolders}</h2>
+        <div>
+            <div class="librarySharingList" style="margin-top:1em;">
+
+            </div>
+        </div>
+    </div>
+    <p class="fieldDescription" style="margin-top:.5em;">${MessageGuestSharingPermissionsHelp}</p>
+    <br />
+    <button type="submit" data-role="none" class="clearButton">
+        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSendInvitation}</span></paper-button>
+    </button>
+</form>

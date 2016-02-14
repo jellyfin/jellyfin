@@ -1,4 +1,9 @@
 {
+    "HeaderTaskTriggers": "Task Triggers",
+    "TabSmartMatches": "Smart Matches",
+    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
+    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
+    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
     "LabelExit": "Sair",
     "LabelVisitCommunity": "Visitar a Comunidade",
     "LabelGithub": "Github",
@@ -25,7 +30,7 @@
     "LabelWindowsService": "Servi\u00e7o do Windows",
     "AWindowsServiceHasBeenInstalled": "Foi instalado um Servi\u00e7o do Windows.",
     "WindowsServiceIntro1": "O Servidor Emby \u00e9 normalmente executado como uma aplica\u00e7\u00e3o de ambiente de trabalho com um \u00edcone na barra de tarefas, mas se o preferir executar como um servi\u00e7o em segundo plano, pode ser iniciado no painel de controlo de servi\u00e7os do windows.",
-    "WindowsServiceIntro2": "Por favor tome aten\u00e7\u00e3o que se estiver a usar o servi\u00e7o, este n\u00e3o pode estar a correr ao mesmo tempo que o \u00edcone na bandeja. Por isso, ter\u00e1 de sair da aplca\u00e7\u00e3o da bandeja para poder correr o servi\u00e7o. Note, ainda, que o servi\u00e7o necessita de privil\u00e9gios administrativos via Painel de Controlo. De momento, n\u00e3o \u00e9 poss\u00edvel utilizar a fun\u00e7\u00e3o de auto-actualiza\u00e7\u00e3o ao mesmo tempo que est\u00e1 em utiliza\u00e7\u00e3o o servi\u00e7o, por isso, novas vers\u00f5es necessitam de interac\u00e7\u00e3o manual.",
+    "WindowsServiceIntro2": "If using the windows service, please note that it cannot be run at the same time as the tray icon, so you'll need to exit the tray in order to run the service. The service will also need to be configured with administrative privileges via the control panel. When running as a service, you will need to ensure that the service account has access to your media folders.",
     "WizardCompleted": "\u00c9 tudo, de momento. O Emby come\u00e7ou a recolher informa\u00e7\u00f5es da sua biblioteca multim\u00e9dia. Confira algumas das nossas apps e de seguida clique <b>Terminar<\/b> para ver o <b>Painel Principal do Servidor<\/b>",
     "LabelConfigureSettings": "Configura\u00e7\u00f5es",
     "LabelEnableVideoImageExtraction": "Ativar extra\u00e7\u00e3o de imagens dos v\u00eddeos.",
@@ -1251,7 +1256,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extract chapter images during the library scan",
     "LabelExtractChaptersDuringLibraryScanHelp": "If enabled, chapter images will be extracted when videos are imported during the library scan. If disabled they will be extracted during the chapter images scheduled task, allowing the regular library scan to complete faster.",
     "LabelConnectGuestUserName": "Their Emby username or email address:",
-    "LabelConnectUserName": "Emby username\/email:",
+    "LabelConnectUserName": "Emby username or email address:",
     "LabelConnectUserNameHelp": "Connect this local user to an online Emby account to enable easy sign-in access from any Emby app without having to know the server ip address.",
     "ButtonLearnMoreAboutEmbyConnect": "Saiba mais sobre o Emby Connect",
     "LabelExternalPlayers": "External players:",
@@ -1526,5 +1531,7 @@
     "HeadersFolders": "Folders",
     "LabelDisplayName": "Display name:",
     "HeaderNewRecording": "New Recording",
-    "ButtonAdvanced": "Advanced"
+    "ButtonAdvanced": "Advanced",
+    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Afgebroken door afsluiten van de server)",
     "LabelScheduledTaskLastRan": "Laatste keer {0}, duur {1}.",
     "HeaderDeleteTaskTrigger": "Verwijderen Taak Trigger",
-    "HeaderTaskTriggers": "Taak Triggers",
     "MessageDeleteTaskTrigger": "Weet u zeker dat u deze taak trigger wilt verwijderen?",
     "MessageNoPluginsInstalled": "U heeft geen Plugins ge\u00efnstalleerd.",
+    "MessageNoPluginsDueToAppStore": "Om plugins te beheren, gebruik dan de Emby web app.",
     "LabelVersionInstalled": "{0} ge\u00efnstalleerd",
     "LabelNumberReviews": "{0} Recensies",
     "LabelFree": "Gratis",
+    "HeaderTo": "Naar",
     "HeaderPlaybackError": "Afspeel Fout",
     "MessagePlaybackErrorNotAllowed": "U bent niet bevoegd om deze content af te spelen. Neem contact op met uw systeembeheerder voor meer informatie.",
     "MessagePlaybackErrorNoCompatibleStream": "Geen compatibele streams beschikbaar. Probeer het later opnieuw of neem contact op met de serverbeheerder.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "Gast ster",
     "MediaInfoSize": "Grootte",
     "MediaInfoPath": "Pad",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Formaat",
     "MediaInfoContainer": "Container",
     "MediaInfoDefault": "Standaard",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Cinema Mode",
     "CinemaModeFeatureDescription": "Cinema Mode geeft u de ware bioscoopervaring met trailers en aangepaste intro voor de weergave van uw keuze.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Uit"
+    "ButtonOff": "Uit",
+    "TitleHardwareAcceleration": "Hardware versnelling",
+    "HardwareAccelerationWarning": "Het inschakelen van hardware versnelling kan problemen veroorzaken in somige omgevingen. Als je problemen met video afspelen ondervindt na inschakelen, zet deze setting dan weer op Auto.",
+    "HeaderSelectCodecIntrosPath": "Selecteer het Codec intro's pad"
 }

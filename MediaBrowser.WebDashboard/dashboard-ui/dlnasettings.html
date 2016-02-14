@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings">
+    <div id="dlnaSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,18 +19,15 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</label>
-                            <input type="checkbox" id="chkEnablePlayTo" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableDlnaPlayToHelp}</div>
+                            <paper-checkbox type="checkbox" id="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaPlayToHelp}</div>
                         </li>
                         <li>
-                            <label for="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</label>
-                            <input type="checkbox" id="chkEnableDlnaDebugLogging" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
+                            <paper-checkbox type="checkbox" id="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
                         </li>
                         <li>
-                            <label for="txtClientDiscoveryInterval">${LabelEnableDlnaClientDiscoveryInterval}</label>
-                            <input type="number" id="txtClientDiscoveryInterval" min="1" max="300" />
+                            <paper-input type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"></paper-input>
                             <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
                         </li>
                     </ul>
@@ -39,8 +36,6 @@
                             <button type="submit" data-role="none" class="clearButton">
                                 <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
                 </form>

@@ -177,6 +177,7 @@
     <Compile Include="TV\MovieDbSeasonProvider.cs" />
     <Compile Include="TV\MovieDbSeriesImageProvider.cs" />
     <Compile Include="TV\MovieDbSeriesProvider.cs" />
+    <Compile Include="TV\OmdbEpisodeProvider.cs" />
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />

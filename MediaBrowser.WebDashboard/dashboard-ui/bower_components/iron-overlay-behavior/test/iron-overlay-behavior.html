@@ -323,6 +323,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+        test('no-cancel-on-outside-click property; focus stays on overlay when click outside', function(done) {
+          overlay = fixture('autofocus');
+          overlay.noCancelOnOutsideClick = true;
+          runAfterOpen(overlay, function() {
+            MockInteractions.tap(document.body);
+            setTimeout(function() {
+              assert.equal(Polymer.dom(overlay).querySelector('[autofocus]'), document.activeElement, '<button autofocus> is focused');
+              done();
+            }, 10);
+          });
+        });
+
+
         test('no-cancel-on-esc-key property', function(done) {
           overlay.noCancelOnEscKey = true;
           runAfterOpen(overlay, function() {
@@ -465,6 +478,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           overlays[0].opened = false;
           assert.equal(overlays[0]._manager.getBackdrops().length, 0, 'overlay removed from manager backdrops');
         });
+
+        test('with-backdrop sets tabindex=-1 and removes it', function() {
+          var overlay = fixture('basic');
+          overlay.withBackdrop = true;
+          assert.equal(overlay.getAttribute('tabindex'), '-1', 'tabindex is -1');
+          overlay.withBackdrop = false;
+          assert.isFalse(overlay.hasAttribute('tabindex'), 'tabindex removed');
+        });
+
+        test('with-backdrop does not override tabindex if already set', function() {
+          var overlay = fixture('basic');
+          overlay.setAttribute('tabindex', '1');
+          overlay.withBackdrop = true;
+          assert.equal(overlay.getAttribute('tabindex'), '1', 'tabindex is 1');
+          overlay.withBackdrop = false;
+          assert.equal(overlay.getAttribute('tabindex'), '1', 'tabindex is still 1');
+        });
+
+        test('with-backdrop traps the focus within the overlay', function(done) {
+          // Add button to try to "steal" focus.
+          var button = document.createElement('button');
+          var focusSpy = sinon.stub();
+          button.addEventListener('focus', focusSpy, true);
+          document.body.appendChild(button);
+
+          var overlay = fixture('autofocus');
+          overlay.withBackdrop = true;
+          runAfterOpen(overlay, function() {
+            // Try to steal the focus
+            MockInteractions.focus(button);
+            assert.isFalse(focusSpy.called, 'button in body did not get the focus');
+            assert.equal(Polymer.dom(overlay).querySelector('[autofocus]'), document.activeElement, '<button autofocus> is focused');
+            button.parentNode.removeChild(button);
+            done();
+          });
+        });
       });
 
       suite('multiple overlays with backdrop', function() {
@@ -492,15 +541,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('updating with-backdrop to false closes backdrop', function(done) {
+          // no waiting for animations
+          overlays[0].backdropElement.style.transitionDuration = '0s';
+
           runAfterOpen(overlays[0], function() {
             overlays[0].withBackdrop = false;
-            // Don't wait for animations.
-            overlays[0].backdropElement.complete();
 
             assert.isFalse(overlays[0].backdropElement.opened, 'backdrop is closed');
             assert.isNotObject(overlays[0].backdropElement.parentNode, 'backdrop is removed from document');
+            overlays[0].backdropElement.style.transitionDuration = '';
             done();
           });
+        });
+
+        test('backdrop is removed when toggling overlay opened', function(done) {
+          overlays[0].open();
+          assert.isObject(overlays[0].backdropElement.parentNode, 'backdrop is immediately inserted in the document');
+          overlays[0].close();
+          // Wait a tick (overlay will call backdropElement.close in the _openChangedAsync)
+          setTimeout(function() {
+            assert.isFalse(overlays[0].backdropElement.opened, 'backdrop is closed');
+            assert.isNotObject(overlays[0].backdropElement.parentNode, 'backdrop is removed from document');
+            done();
+          }, 1);
         });
 
         test('updating with-backdrop updates z-index', function(done) {

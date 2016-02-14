@@ -1,11 +1,11 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="css/metadataeditor.css">
     <title>${TitleAutoOrganize}</title>
 </head>
 <body>
-    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,jqmpopup,scripts/autoorganizelog,scripts/taskbutton,detailtablecss">
-
+    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,scripts/autoorganizelog,scripts/taskbutton,detailtablecss">
         <div data-role="content">
             <div class="content-primary">
 
@@ -19,7 +19,7 @@
                     </div>
 
                     <div style="float: right; position: relative; top: 15px;margin-top: -5px;display:none;" class="organizeTaskPanel">
-                        <paper-button type="button" class="btnClearLog" raised><iron-icon icon="clear-all"></iron-icon><span>${ButtonClear}</span></paper-button>
+                        <paper-button type="button" class="btnClearLog" raised style="display: inline-block;"><iron-icon icon="clear-all"></iron-icon><span>${ButtonClear}</span></paper-button>
                         <paper-button type="button" class="btnOrganize" raised><iron-icon icon="check"></iron-icon><span>${ButtonOrganize}</span></paper-button>
                         <progress max="100" min="0" style="width:100px;display:none;" class="organizeProgress"></progress>
                     </div>
@@ -50,49 +50,6 @@
                 <div class="listBottomPaging">
                 </div>
             </div>
-        </div>
-
-        <div data-role="popup" class="popup episodeCorrectionPopup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderEpisodeOrganization}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="episodeCorrectionForm">
-
-                    <p><span class="inputFile"></span></p>
-
-                    <div style="margin: 1em 0 1em; min-width: 250px;">
-                        <label for="selectSeries">${LabelSeries}</label>
-                        <select id="selectSeries" data-mini="true" required="required"></select>
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <label for="txtSeason">${LabelSeasonNumber}</label>
-                        <input id="txtSeason" type="number" pattern="[0-9]*" required="required" min="0" />
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <label for="txtEpisode">${LabelEpisodeNumber}</label>
-                        <input id="txtEpisode" type="number" pattern="[0-9]*" required="required" min="0" />
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <label for="txtEndingEpisode">${LabelEndingEpisodeNumber}</label>
-                        <input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" />
-                        <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                    <input id="hfResultId" type="hidden" />
-                </form>
-            </div>
-
         </div>
     </div>
 </body>

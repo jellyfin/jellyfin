@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class PhotoAlbum : Folder, IMetadataContainer
+    public class PhotoAlbum : Folder
     {
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get
@@ -31,32 +32,6 @@ namespace MediaBrowser.Controller.Entities
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Other);
-        }
-
-        public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var items = GetRecursiveChildren().ToList();
-
-            var totalItems = items.Count;
-            var numComplete = 0;
-
-            // Refresh songs
-            foreach (var item in items)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
-
-            // Refresh current item
-            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
         }
     }
 }

@@ -45,6 +45,7 @@ code[class*="language-"] {
 	padding: .2em;
 	border-radius: .3em;
 	box-shadow: none;
+	white-space: normal;
 }
 
 .token.comment,

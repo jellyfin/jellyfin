@@ -1413,6 +1413,13 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;System.Int32&gt;.</returns>
-        Task<int> GetSupportedBitrate(CancellationToken cancellationToken);
+        Task<int> DetectMaxBitrate(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the end point information.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>System.Threading.Tasks.Task&lt;MediaBrowser.Model.Net.EndPointInfo&gt;.</returns>
+        Task<EndPointInfo> GetEndPointInfo(CancellationToken cancellationToken);
     }
 }

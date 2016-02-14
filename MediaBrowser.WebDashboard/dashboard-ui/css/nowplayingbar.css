@@ -109,6 +109,14 @@
         height: 80px;
     }
 
+        .nowPlayingBar .nowPlayingImage {
+            width: 80px;
+            height: 80px;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
 .nowPlayingBarText {
     display: inline-block;
     font-weight: normal;
@@ -272,9 +280,14 @@
         display: none !important;
     }
 
-    .nowPlayingBar, .nowPlayingImage img {
+    .nowPlayingBar {
         height: 70px;
     }
+
+        .nowPlayingBar .nowPlayingImage {
+            height: 70px;
+            width: 70px;
+        }
 
     .nowPlayingBarPositionContainer {
         left: 70px;

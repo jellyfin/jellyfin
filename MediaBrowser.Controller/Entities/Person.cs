@@ -102,6 +102,15 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsAncestors
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 
     /// <summary>

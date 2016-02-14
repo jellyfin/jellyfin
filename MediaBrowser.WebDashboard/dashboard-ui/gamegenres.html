@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="gameGenresPage" data-role="page" class="page libraryPage listPage" data-require="jqmcheckbox,jqmcontrolgroup,jqmpanel,scripts/gamegenrepage">
+    <div id="gameGenresPage" data-role="page" class="page libraryPage listPage" data-require="scripts/gamegenrepage">
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="gamesrecommended.html">${TabSuggestions}</a>
             <a href="games.html">${TabGames}</a>
@@ -18,41 +18,6 @@
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
-        </div>
-
-        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
-
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectPageSize">${LabelPageSize}</label>
-                        <select id="selectPageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderFilters}
-                        </legend>
-                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavorite">${OptionFavorite}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                        <label for="chkLikes">${OptionLikes}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikes">${OptionDislikes}</label>
-                    </fieldset>
-
-                </div>
-            </form>
         </div>
 
     </div>

@@ -103,11 +103,10 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false,
                 updatePageSizeSetting: false,
-                viewIcon: 'filter-list',
-                sortButton: true
+                sortButton: true,
+                filterButton: true
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -140,6 +139,10 @@
                 reloadItems(page);
             });
 
+            $('.btnFilter', page).on('click', function () {
+                showFilterMenu(page);
+            });
+
             // On callback make sure to set StartIndex = 0
             $('.btnSort', page).on('click', function () {
                 showSortMenu(page);
@@ -150,6 +153,22 @@
         }, function () {
 
             Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function showFilterMenu(page) {
+
+        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+            var filterDialog = new filterDialogFactory({
+                query: getQuery()
+            });
+
+            Events.on(filterDialog, 'filterchange', function () {
+                reloadItems(page);
+            });
+
+            filterDialog.show();
         });
     }
 
@@ -213,39 +232,12 @@
     function updateFilterControls(page) {
 
         var query = getQuery();
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        });
-
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
 
     pageIdOn('pageinit', "channelItemsPage", function () {
 
         var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 

@@ -22,8 +22,6 @@
         var webSocket;
         var serverInfo = {};
 
-        self.enableAppStorePolicy = false;
-
         /**
          * Gets the server address.
          */
@@ -1654,10 +1652,6 @@
             options = options || {};
             options.PackageType = "UserInstalled";
 
-            if (self.enableAppStorePolicy) {
-                options.IsAppStoreEnabled = true;
-            }
-
             var url = self.getUrl("Packages", options);
 
             return self.getJSON(url);
@@ -2095,10 +2089,6 @@
         self.getInstalledPlugins = function () {
 
             var options = {};
-
-            if (self.enableAppStorePolicy) {
-                options.IsAppStoreEnabled = true;
-            }
 
             var url = self.getUrl("Plugins", options);
 
@@ -3423,6 +3413,36 @@
             var url = self.getUrl("Packages/" + packageId + "/Reviews", options);
 
             return self.getJSON(url);
+        };
+
+        self.getSmartMatchInfos = function (options) {
+
+            options = options || {};
+
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches", options);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
+        self.deleteSmartMatchEntries = function (entries) {
+
+            var url = self.getUrl("Library/FileOrganizations/SmartMatches/Delete");
+
+            var postData = {
+                Entries: entries
+            };
+
+            return self.ajax({
+
+                type: "POST",
+                url: url,
+                data: JSON.stringify(postData),
+                contentType: "application/json"
+            });
         };
     };
 });

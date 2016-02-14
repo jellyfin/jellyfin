@@ -565,10 +565,13 @@ var Dashboard = {
             return;
         }
 
-        // Cordova
-        if (navigator.notification && navigator.notification.alert && options.message.indexOf('<') == -1) {
+        if (browserInfo.mobile && options.message.indexOf('<') == -1) {
 
-            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+            alert(options.message);
+
+            if (options.callback) {
+                options.callback();
+            }
 
         } else {
             require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
@@ -580,15 +583,13 @@ var Dashboard = {
     confirm: function (message, title, callback) {
 
         // Cordova
-        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
+        if (browserInfo.mobile && message.indexOf('<') == -1) {
 
-            var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
+            var confirmed = confirm(message);
 
-            navigator.notification.confirm(message, function (index) {
-
-                callback(index == 1);
-
-            }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
+            if (callback) {
+                callback(confirmed);
+            }
 
         } else {
 
@@ -703,36 +704,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        require(['jqmpanel'], function () {
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
-
-            html += '<h3 class="userHeader">';
-
-            html += '</h3>';
-
-            html += '<form>';
-
-            html += '<p class="preferencesContainer"></p>';
-
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
-
-            html += '</form>';
-            html += '</div>';
-
-            $(document.body).append(html);
-
-            var userFlyout = document.querySelector('#userFlyout');
-            ImageLoader.lazyChildren(userFlyout);
-
-            $(userFlyout).panel({}).panel("open").on("panelclose", function () {
-
-                $(this).off("panelclose").remove();
-            });
-
-            ConnectionManager.user(window.ApiClient).then(function (user) {
-                Dashboard.updateUserFlyout(userFlyout, user);
-            });
-        });
+        Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
     },
 
     updateUserFlyout: function (elem, user) {
@@ -1638,7 +1610,15 @@ var AppInfo = {};
 
     function initializeApiClient(apiClient) {
 
-        apiClient.enableAppStorePolicy = AppInfo.enableAppStorePolicy;
+        if (AppInfo.enableAppStorePolicy) {
+            apiClient.getAvailablePlugins = function () {
+                return Promise.resolve([]);
+            };
+            apiClient.getInstalledPlugins = function () {
+                return Promise.resolve([]);
+            };
+        }
+
         apiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
@@ -1810,17 +1790,24 @@ var AppInfo = {};
         return obj;
     }
 
-    function initRequire() {
-
-        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
+    function getBowerPath() {
 
         var bowerPath = "bower_components";
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
         if (!Dashboard.isRunningInCordova()) {
-            bowerPath += window.dashboardVersion;
+            //bowerPath += window.dashboardVersion;
         }
+
+        return bowerPath;
+    }
+
+    function initRequire() {
+
+        var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
+
+        var bowerPath = getBowerPath();
 
         var apiClientBowerPath = bowerPath + "/emby-apiclient";
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
@@ -1853,6 +1840,7 @@ var AppInfo = {};
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
             performanceManager: embyWebComponentsBowerPath + "/performancemanager",
+            layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
@@ -1868,15 +1856,11 @@ var AppInfo = {};
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
         if (Dashboard.isRunningInCordova()) {
-            paths.dialog = "cordova/dialog";
-            paths.prompt = "cordova/prompt";
             paths.sharingwidget = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.dialog = "components/dialog";
-            paths.prompt = "components/prompt";
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
@@ -1927,6 +1911,7 @@ var AppInfo = {};
         define("paper-slider", ["html!" + bowerPath + "/paper-slider/paper-slider.html"]);
         define("paper-tabs", ["html!" + bowerPath + "/paper-tabs/paper-tabs.html"]);
         define("paper-menu", ["html!" + bowerPath + "/paper-menu/paper-menu.html"]);
+        define("paper-material", ["html!" + bowerPath + "/paper-material/paper-material.html"]);
         define("paper-dialog", ["html!" + bowerPath + "/paper-dialog/paper-dialog.html"]);
         define("paper-dialog-scrollable", ["html!" + bowerPath + "/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
@@ -1953,26 +1938,30 @@ var AppInfo = {};
         define("paper-icon-item", ["html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
         define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
+        define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
+
         define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define("jqmicons", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
-        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
+        define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
+        define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
+        define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
-        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
+        define("jqmwidget", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.widget"]);
 
-        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
+        define("jqmslider", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
 
-        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
+        define("jqmpopup", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ["thirdparty/jquerymobile-1.4.5/jqm.listview", 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+        define("jqmlistview", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ["thirdparty/jquerymobile-1.4.5/jqm.controlgroup", 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
+        define("jqmcontrolgroup", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
-        define("jqmcollapsible", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
+        define("jqmcollapsible", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 
-        define("jqmcheckbox", ["jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
+        define("jqmcheckbox", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
 
-        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
+        define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
@@ -2032,6 +2021,34 @@ var AppInfo = {};
         define("connectionManager", [], function () {
             return ConnectionManager;
         });
+
+        define("globalize", [], function () {
+            return Globalize;
+        });
+
+        define('dialogText', [], getDialogText());
+    }
+
+    function getDialogText() {
+        return function () {
+            return {
+                buttonOk: 'ButtonOk',
+                buttonCancel: 'ButtonCancel'
+            };
+        };
+    }
+
+    function initRequireWithBrowser(browser) {
+
+        var bowerPath = getBowerPath();
+
+        var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (browser.mobile) {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+        } else {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2042,9 +2059,10 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             if (MainActivity.getChromeVersion() >= 48) {
-                //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-                define("audiorenderer", ["cordova/android/vlcplayer"]);
+                define("audiorenderer", ["scripts/htmlmediarenderer"]);
+                //define("audiorenderer", ["cordova/android/vlcplayer"]);
             } else {
+                window.VlcAudio = true;
                 define("audiorenderer", ["cordova/android/vlcplayer"]);
             }
             define("videorenderer", ["cordova/android/vlcplayer"]);
@@ -2094,8 +2112,6 @@ var AppInfo = {};
 
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
-
-        deps.push('jQuery');
 
         deps.push('paper-drawer-panel');
 
@@ -2150,26 +2166,14 @@ var AppInfo = {};
                 MediaBrowser[i] = connectionManagerExports[i];
             }
 
-            // TODO: This needs to be deprecated, but it's used heavily
-            $.fn.checked = function (value) {
-                if (value === true || value === false) {
-                    // Set the value of the checkbox
-                    return $(this).each(function () {
-                        this.checked = value;
-                    });
-                } else {
-                    // Return check state
-                    return this.length && this[0].checked;
-                }
-            };
-
             var promises = [];
             deps = [];
             deps.push('scripts/mediaplayer');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
-            deps.push('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js');
+            deps.push('jQuery');
+
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
@@ -2204,15 +2208,23 @@ var AppInfo = {};
                     depends = depends || [];
 
                     if (newHtml.indexOf('type-interior') != -1) {
-                        depends.push('jqmpopup');
-                        depends.push('jqmlistview');
-                        depends.push('jqmcollapsible');
-                        depends.push('jqmcontrolgroup');
-                        depends.push('jqmcheckbox');
-                        depends.push('scripts/notifications');
+                        addLegacyDependencies(depends, window.location.href);
                     }
 
                     require(depends, function () {
+
+                        // TODO: This needs to be deprecated, but it's used heavily
+                        $.fn.checked = function (value) {
+                            if (value === true || value === false) {
+                                // Set the value of the checkbox
+                                return $(this).each(function () {
+                                    this.checked = value;
+                                });
+                            } else {
+                                // Return check state
+                                return this.length && this[0].checked;
+                            }
+                        };
 
                         // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
                         $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
@@ -2275,6 +2287,7 @@ var AppInfo = {};
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
+        deps.push('jqm');
 
         deps.push('css!css/card.css');
 
@@ -2349,11 +2362,14 @@ var AppInfo = {};
                     // Remove special characters
                     var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
-                    var deviceId = window.MainActivity ? MainActivity.getLegacyDeviceId() : null;
-                    deviceId = deviceId || device.uuid;
+                    var deviceId = null;
+
+                    if (window.MainActivity) {
+                        deviceId = MainActivity.getLegacyDeviceId();
+                    }
 
                     resolve({
-                        deviceId: deviceId,
+                        deviceId: deviceId || device.uuid,
                         deviceName: cleanDeviceName,
                         appName: name,
                         appVersion: appVersion
@@ -2405,7 +2421,8 @@ var AppInfo = {};
                 });
             }
 
-            var deviceId = appStorage.getItem('_deviceId');
+            var deviceIdKey = '_deviceId1';
+            var deviceId = appStorage.getItem(deviceIdKey);
 
             if (deviceId) {
                 onDeviceAdAcquired(deviceId);
@@ -2416,7 +2433,7 @@ var AppInfo = {};
                     keys.push((navigator.cpuClass || ""));
                     keys.push(new Date().getTime());
                     var randomId = CryptoJS.SHA1(keys.join('|')).toString();
-                    appStorage.setItem('_deviceId', randomId);
+                    appStorage.setItem(deviceIdKey, randomId);
                     onDeviceAdAcquired(randomId);
                 });
             }
@@ -2447,6 +2464,8 @@ var AppInfo = {};
 
         require(initialDependencies, function (browser, appStorage) {
 
+            initRequireWithBrowser(browser);
+
             window.browserInfo = browser;
             window.appStorage = appStorage;
 
@@ -2468,6 +2487,21 @@ var AppInfo = {};
     }
 
 })();
+
+function addLegacyDependencies(depends, url) {
+
+    var isPluginpage = url.toLowerCase().indexOf('/configurationpage?') != -1;
+
+    if (isPluginpage) {
+        depends.push('jqmpopup');
+        depends.push('jqmcollapsible');
+        depends.push('jqmcheckbox');
+    }
+
+    depends.push('jqmcontrolgroup');
+    depends.push('jqmlistview');
+    depends.push('scripts/notifications');
+}
 
 function pageClassOn(eventName, className, fn) {
 

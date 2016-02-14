@@ -88,7 +88,8 @@
                         context: context,
                         showTitle: true,
                         centerText: true,
-                        lazy: true
+                        lazy: true,
+                        overlayPlayButton: true
                     });
                 }
                 else if (view == "PosterCard") {
@@ -110,7 +111,8 @@
                         showTitle: true,
                         centerText: true,
                         lazy: true,
-                        preferThumb: true
+                        preferThumb: true,
+                        overlayPlayButton: true
                     });
                 }
                 else if (view == "ThumbCard") {

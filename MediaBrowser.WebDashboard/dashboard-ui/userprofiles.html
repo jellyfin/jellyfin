@@ -4,7 +4,7 @@
     <title>${TitleUsers}</title>
 </head>
 <body>
-    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userprofilespage">
+    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -39,48 +39,6 @@
                     </div>
                     <div class="itemsContainer pending" style="text-align:left;margin-top:.5em;"></div>
                 </div>
-            </div>
-
-            <div data-role="popup" id="popupInvite" data-theme="a">
-
-                <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">${ButtonClose}</a>
-
-                <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
-                    <h3 style="margin: .5em;">${HeaderInviteUser}</h3>
-                </div>
-
-                <div style="padding:10px 20px;">
-
-                    <p style="margin:1em 0 1.25em;">${HeaderInviteUserHelp}</p>
-                    <form class="addUserForm">
-                        <div>
-                            <label for="txtConnectUsername">${LabelConnectGuestUserName}</label>
-                            <input type="text" id="txtConnectUsername" value="" placeholder="${PlaceholderUsername}" required="required">
-                            <div class="fieldDescription">
-                                <div>${LabelConnectGuestUserNameHelp}</div>
-                                <div style="margin-top: .75em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
-                            </div>
-
-                            <br />
-
-                            <div data-role="collapsible" data-mini="true">
-                                <h2>${HeaderShareMediaFolders}</h2>
-                                <div>
-                                    <div class="librarySharingList" style="margin-top:1em;">
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="margin:1.25em 0;" class="fieldDescription">${MessageGuestSharingPermissionsHelp}</div>
-                            <div>
-                                <button type="submit" data-icon="mail" data-theme="b" data-mini="true">${ButtonSendInvitation}</button>
-                                <a href="#" data-rel="back" data-icon="delete" data-role="button" data-mini="true">${ButtonCancel}</a>
-                            </div>
-                        </div>
-                    </form>
-
-                </div>
-
             </div>
 
         </div>

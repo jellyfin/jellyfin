@@ -1,4 +1,5 @@
 {
+    "DbUpgradeMessage": "Veuillez patienter pendant que la base de donn\u00e9e de votre Emby Serveur se met \u00e0 jour. Termin\u00e9e \u00e0 {0}%.",
     "AppDeviceValues": "Application : {0}, Appareil: {1}",
     "UserDownloadingItemWithValues": "{0} est en train de t\u00e9l\u00e9charger {1}",
     "FolderTypeMixed": "Contenus m\u00e9lang\u00e9s",

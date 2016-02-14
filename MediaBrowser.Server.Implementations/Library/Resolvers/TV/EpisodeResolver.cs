@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             // Not officially supported but in some cases we can handle it.
             if (season == null)
             {
-                season = parent.Parents.OfType<Season>().FirstOrDefault();
+                season = parent.GetParents().OfType<Season>().FirstOrDefault();
             }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something

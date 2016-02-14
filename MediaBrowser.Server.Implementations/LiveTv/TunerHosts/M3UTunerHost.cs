@@ -46,53 +46,59 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var url = info.Url;
-            var urlHash = url.GetMD5().ToString("N");
+            var urlHash = info.Url.GetMD5().ToString("N");
 
-            string line;
             // Read the file and display it line by line.
-            using (var file = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
+            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                var channels = new List<M3UChannel>();
-
-                string channnelName = null;
-                string channelNumber = null;
-
-                while ((line = file.ReadLine()) != null)
-                {
-                    line = line.Trim();
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var parts = line.Split(new[] { ':' }, 2).Last().Split(new[] { ',' }, 2);
-                        channelNumber = parts[0];
-                        channnelName = parts[1];
-                    }
-                    else if (!string.IsNullOrWhiteSpace(channelNumber))
-                    {
-                        channels.Add(new M3UChannel
-                        {
-                            Name = channnelName,
-                            Number = channelNumber,
-                            Id = ChannelIdPrefix + urlHash + channelNumber,
-                            Path = line
-                        });
-
-                        channelNumber = null;
-                        channnelName = null;
-                    }
-                }
-                return channels;
+                return GetChannels(reader, urlHash);
             }
+        }
+
+        private List<M3UChannel> GetChannels(StreamReader reader, string urlHash)
+        {
+            var channels = new List<M3UChannel>();
+
+            string channnelName = null;
+            string channelNumber = null;
+            string line;
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                line = line.Trim();
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
+                {
+                    line = line.Substring(8);
+                    Logger.Info("Found m3u channel: {0}", line);
+                    var parts = line.Split(new[] { ',' }, 2);
+                    channelNumber = parts[0];
+                    channnelName = parts[1];
+                }
+                else if (!string.IsNullOrWhiteSpace(channelNumber))
+                {
+                    channels.Add(new M3UChannel
+                    {
+                        Name = channnelName,
+                        Number = channelNumber,
+                        Id = ChannelIdPrefix + urlHash + line.GetMD5().ToString("N"),
+                        Path = line
+                    });
+
+                    channelNumber = null;
+                    channnelName = null;
+                }
+            }
+            return channels;
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -158,8 +164,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             {
                 return null;
             }
-
-            //channelId = channelId.Substring(prefix.Length);
 
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
             var m3uchannels = channels.Cast<M3UChannel>();

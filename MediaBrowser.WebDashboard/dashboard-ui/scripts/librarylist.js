@@ -181,11 +181,13 @@
 
     function onPlayItemButtonClick() {
 
-        var id = this.getAttribute('data-itemid');
-        var type = this.getAttribute('data-itemtype');
-        var isFolder = this.getAttribute('data-isfolder') == 'true';
-        var mediaType = this.getAttribute('data-mediatype');
-        var resumePosition = parseInt(this.getAttribute('data-resumeposition'));
+        var target = this;
+
+        var id = target.getAttribute('data-itemid');
+        var type = target.getAttribute('data-itemtype');
+        var isFolder = target.getAttribute('data-isfolder') == 'true';
+        var mediaType = target.getAttribute('data-mediatype');
+        var resumePosition = parseInt(target.getAttribute('data-resumeposition'));
 
         LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
@@ -852,11 +854,19 @@
 
         require(['hammer'], function (Hammer) {
 
-            var hammertime = new Hammer(element);
+            var manager = new Hammer.Manager(element);
+
+            var press = new Hammer.Press({
+                time: 500
+            });
+
+            manager.add(press);
+
+            //var hammertime = new Hammer(element);
             element.classList.add('hasTapHold');
 
-            hammertime.on('press', onTapHold);
-            hammertime.on('pressup', onTapHoldUp);
+            manager.on('press', onTapHold);
+            manager.on('pressup', onTapHoldUp);
         });
 
         showTapHoldHelp(element);

@@ -45,6 +45,13 @@ namespace MediaBrowser.Controller.LiveTv
         Task DeleteRecording(string id);
 
         /// <summary>
+        /// Deletes the recording.
+        /// </summary>
+        /// <param name="recording">The recording.</param>
+        /// <returns>Task.</returns>
+        Task DeleteRecording(ILiveTvRecording recording);
+        
+        /// <summary>
         /// Cancels the timer.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -338,9 +345,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="dto">The dto.</param>
-        /// <param name="addChannelInfo">if set to <c>true</c> [add channel information].</param>
+        /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
-        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, bool addChannelInfo, User user = null);
+        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, List<ItemFields> fields, User user = null);
         /// <summary>
         /// Saves the tuner host.
         /// </summary>

@@ -67,5 +67,19 @@ namespace MediaBrowser.Controller.FileOrganization
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a list of smart match entries
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable{SmartMatchInfo}.</returns>
+        QueryResult<SmartMatchInfo> GetSmartMatchInfos(FileOrganizationResultQuery query);
+
+        /// <summary>
+        /// Deletes a smart match entry.
+        /// </summary>
+        /// <param name="ItemName">Item name.</param>
+        /// <param name="matchString">The match string to delete.</param>
+        void DeleteSmartMatchEntry(string ItemName, string matchString);
     }
 }

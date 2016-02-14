@@ -10,23 +10,7 @@
         var mediaElement;
         var self = this;
 
-        function hideStatusBar() {
-            if (options.type == 'video' && window.StatusBar) {
-                //StatusBar.backgroundColorByName("black");
-                //StatusBar.overlaysWebView(true);
-                StatusBar.hide();
-            }
-        }
-
-        function showStatusBar() {
-            if (options.type == 'video' && window.StatusBar) {
-                StatusBar.show();
-                //StatusBar.overlaysWebView(false);
-            }
-        }
-
         function onEnded() {
-            showStatusBar();
             Events.trigger(self, 'ended');
         }
 
@@ -87,7 +71,6 @@
             var errorCode = elem.error ? elem.error.code : '';
             console.log('Media element error code: ' + errorCode);
 
-            showStatusBar();
             Events.trigger(self, 'error');
         }
 
@@ -130,8 +113,6 @@
 
         function onOneVideoPlaying(e) {
 
-            hideStatusBar();
-
             var element = e.target;
             element.removeEventListener('playing', onOneVideoPlaying);
 
@@ -173,12 +154,12 @@
                 var requiresControls = !MediaPlayer.canAutoPlayAudio();
 
                 if (requiresControls) {
-                    html += '<div class="mediaPlayerAudioContainer" style="position: fixed;top: 40%;text-align: center;left: 0;right: 0;"><div class="mediaPlayerAudioContainerInner">';;
+                    html += '<div class="mediaPlayerAudioContainer" style="position: fixed;top: 40%;text-align: center;left: 0;right: 0;z-index:999999;"><div class="mediaPlayerAudioContainerInner">';;
                 } else {
                     html += '<div class="mediaPlayerAudioContainer" style="display:none;padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
                 }
 
-                html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
+                html += '<audio class="mediaPlayerAudio" controls>';
                 html += '</audio></div></div>';
 
                 $(document.body).append(html);
@@ -211,6 +192,11 @@
             return MediaPlayer.canPlayHls() && !MediaPlayer.canPlayNativeHls();
         }
 
+        function getCrossOriginValue(mediaSource) {
+
+            return 'anonymous';
+        }
+
         function createVideoElement() {
 
             var html = '';
@@ -222,15 +208,15 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls && AppInfo.isNativeApp && browserInfo.android) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline>';
             }
             else if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' controls="controls" webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' controls="controls" webkit-playsinline>';
             }
             else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline>';
             }
 
             html += '</video>';
@@ -350,6 +336,7 @@
                 return;
             }
 
+            elem.crossOrigin = getCrossOriginValue(mediaSource);
             var val = streamInfo.url;
 
             if (AppInfo.isNativeApp && browserInfo.safari) {
@@ -501,8 +488,6 @@
                     $(elem).remove();
                 }
             }
-
-            showStatusBar();
         };
 
         self.supportsTextTracks = function () {

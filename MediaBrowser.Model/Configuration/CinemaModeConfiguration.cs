@@ -11,6 +11,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIntrosParentalControl { get; set; }
         public bool EnableIntrosFromSimilarMovies { get; set; }
         public string CustomIntroPath { get; set; }
+        public string MediaInfoIntroPath { get; set; }
         public bool EnableIntrosFromUpcomingDvdMovies { get; set; }
         public bool EnableIntrosFromUpcomingStreamingMovies { get; set; }
 

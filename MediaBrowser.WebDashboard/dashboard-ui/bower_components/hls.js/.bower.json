@@ -1,6 +1,7 @@
 {
   "name": "hls.js",
-  "version": "0.4.8",
+  "version": "0.4.10",
+  "license": "Apache-2.0",
   "description": "Media Source Extension - HLS library, by/for Dailymotion",
   "homepage": "https://github.com/dailymotion/hls.js",
   "authors": [
@@ -15,11 +16,11 @@
     "test",
     "tests"
   ],
-  "_release": "0.4.8",
+  "_release": "0.4.10",
   "_resolution": {
     "type": "version",
-    "tag": "v0.4.8",
-    "commit": "de1534ca184ffa3a313fc5b433713512f6ab1c27"
+    "tag": "v0.4.10",
+    "commit": "57c46a5eaa157dba3fc495236ff30a61a3ea5d89"
   },
   "_source": "git://github.com/dailymotion/hls.js.git",
   "_target": "~0.4.5",

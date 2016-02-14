@@ -822,7 +822,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
-                args += " " + GetVideoQualityParam(state, GetH264Encoder(state), true) + keyFrameArg;
+                args += " " + GetVideoQualityParam(state, GetH264Encoder(state)) + keyFrameArg;
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 

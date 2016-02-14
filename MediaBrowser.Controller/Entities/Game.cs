@@ -21,7 +21,6 @@ namespace MediaBrowser.Controller.Entities
             RemoteTrailerIds = new List<Guid>();
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
-            Tags = new List<string>();
         }
 
         public List<Guid> LocalTrailerIds { get; set; }
@@ -33,12 +32,6 @@ namespace MediaBrowser.Controller.Entities
             return locationType != LocationType.Remote &&
                    locationType != LocationType.Virtual;
         }
-
-        /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or sets the remote trailers.
@@ -105,9 +98,9 @@ namespace MediaBrowser.Controller.Entities
             return base.GetDeletePaths();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Game);
+            return UnratedItem.Game;
         }
 
         public GameInfo GetLookupInfo()

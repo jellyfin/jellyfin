@@ -317,11 +317,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         public override async Task RunStartupTasks()
         {
+            if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
+                ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            {
+                TaskManager.SuspendTriggers = true;
+            }
+            
             await base.RunStartupTasks().ConfigureAwait(false);
 
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
+
+            PerformPostInitMigrations();
 
             Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
             {
@@ -336,8 +344,6 @@ namespace MediaBrowser.Server.Startup.Common
             });
 
             LogManager.RemoveConsoleOutput();
-
-            PerformPostInitMigrations();
         }
 
         public override Task Init(IProgress<double> progress)
@@ -367,7 +373,8 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new Release5767(ServerConfigurationManager, TaskManager)
+                new OmdbEpisodeProviderMigration(ServerConfigurationManager),
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -423,7 +430,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager);
             RegisterSingleInstance(UserManager);
 
-            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager);
+            LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
             RegisterSingleInstance(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -469,7 +476,7 @@ namespace MediaBrowser.Server.Startup.Common
             ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager, FileSystemManager);
             RegisterSingleInstance(ConnectManager);
 
-            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
+            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
@@ -507,7 +514,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager, UserViewManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager);
@@ -646,11 +653,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
+            try
+            {
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
 
-            await repo.Initialize().ConfigureAwait(false);
+                await repo.Initialize().ConfigureAwait(false);
 
-            return repo;
+                return repo;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error opening user db", ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -668,7 +683,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
+            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -677,7 +692,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private async Task<IActivityRepository> GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
+            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -969,10 +984,6 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-                if (!ServerConfigurationManager.Configuration.EnableAutoUpdate)
-                {
-                    return false;
-                }
 #if DEBUG
                 return false;
 #endif

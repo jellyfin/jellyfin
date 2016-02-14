@@ -122,7 +122,7 @@ namespace MediaBrowser.Dlna.Server
                 builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber) + "</serialNumber>");
             }
 
-            builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
+            builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverId) + "</UDN>");
             builder.Append("<presentationURL>" + SecurityElement.Escape(_serverAddress) + "</presentationURL>");
 
             if (!EnableAbsoluteUrls)

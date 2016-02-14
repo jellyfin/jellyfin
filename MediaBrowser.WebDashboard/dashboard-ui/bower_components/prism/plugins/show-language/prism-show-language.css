@@ -2,7 +2,7 @@ div.prism-show-language {
 	position: relative;
 }
 
-div.prism-show-language > div.prism-show-language-label[data-language] {
+div.prism-show-language > div.prism-show-language-label {
 	color: black;
 	background-color: #CFCFCF;
 	display: inline-block;

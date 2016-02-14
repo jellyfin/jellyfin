@@ -171,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     epgData = GetEpgDataForChannel(timer.ChannelId);
                 }
-                await UpdateTimersForSeriesTimer(epgData, timer, false).ConfigureAwait(false);
+                await UpdateTimersForSeriesTimer(epgData, timer, true).ConfigureAwait(false);
             }
 
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
@@ -664,12 +664,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException("timer");
             }
 
+            ProgramInfo info = null;
+
             if (string.IsNullOrWhiteSpace(timer.ProgramId))
             {
-                throw new InvalidOperationException("timer.ProgramId is null. Cannot record.");
+                _logger.Info("Timer {0} has null programId", timer.Id);
+            }
+            else
+            {
+                info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
             }
 
-            var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
+            if (info == null)
+            {
+                _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
+                info = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+            }
 
             if (info == null)
             {
@@ -742,7 +752,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None);
+                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None).ConfigureAwait(false);
                 var mediaStreamInfo = result.Item1;
                 var isResourceOpen = true;
 
@@ -754,10 +764,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     var duration = recordingEndDate - DateTime.UtcNow;
 
-                    HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
+                    var recorder = await GetRecorder().ConfigureAwait(false);
+
+                    if (recorder is EncodedRecorder)
                     {
-                        Url = mediaStreamInfo.Path
-                    };
+                        recordPath = Path.ChangeExtension(recordPath, ".mp4");
+                    }
 
                     recording.Path = recordPath;
                     recording.Status = RecordingStatus.InProgress;
@@ -766,21 +778,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-                    httpRequestOptions.BufferContent = false;
                     var durationToken = new CancellationTokenSource(duration);
                     var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    httpRequestOptions.CancellationToken = linkedToken;
-                    _logger.Info("Writing file to path: " + recordPath);
-                    using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
-                    {
-                        using (var output = _fileSystem.GetFileStream(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                        {
-                            result.Item2.Release();
-                            isResourceOpen = false;
 
-                            await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
-                        }
-                    }
+                    _logger.Info("Writing file to path: " + recordPath);
+                    _logger.Info("Opening recording stream from tuner provider");
+
+                    Action onStarted = () =>
+                    {
+                        result.Item2.Release();
+                        isResourceOpen = false;
+                    };
+
+                    await recorder.Record(mediaStreamInfo, recordPath, onStarted, linkedToken).ConfigureAwait(false);
 
                     recording.Status = RecordingStatus.Completed;
                     _logger.Info("Recording completed");
@@ -831,6 +841,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        private async Task<IRecorder> GetRecorder()
+        {
+            if (GetConfiguration().EnableRecordingEncoding)
+            {
+                var regInfo = await _security.GetRegistrationStatus("embytvrecordingconversion").ConfigureAwait(false);
+
+                if (regInfo.IsValid)
+                {
+                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
+                }
+            }
+
+            return new DirectRecorder(_logger, _httpClient, _fileSystem);
+        }
+
         private async void OnSuccessfulRecording(RecordingInfo recording)
         {
             if (GetConfiguration().EnableAutoOrganize)
@@ -860,6 +885,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var epgData = GetEpgDataForChannel(channelId);
             return epgData.FirstOrDefault(p => string.Equals(p.Id, programId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private ProgramInfo GetProgramInfoFromCache(string channelId, DateTime startDateUtc)
+        {
+            var epgData = GetEpgDataForChannel(channelId);
+            var startDateTicks = startDateUtc.Ticks;
+            // Find the first program that starts within 3 minutes
+            return epgData.FirstOrDefault(p => Math.Abs(startDateTicks - p.StartDate.Ticks) <= TimeSpan.FromMinutes(3).Ticks);
         }
 
         private string RecordingPath

@@ -135,6 +135,18 @@ context. You should place this element as a child of `<body>` whenever possible.
         value: function() {
           return this._onCaptureKeydown.bind(this);
         }
+      },
+
+      _boundOnCaptureFocus: {
+        type: Function,
+        value: function() {
+          return this._onCaptureFocus.bind(this);
+        }
+      },
+
+      /** @type {?Node} */
+      _focusedChild: {
+        type: Object
       }
 
     },
@@ -152,10 +164,13 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     get _focusNode() {
-      return Polymer.dom(this).querySelector('[autofocus]') || this;
+      return this._focusedChild || Polymer.dom(this).querySelector('[autofocus]') || this;
     },
 
     ready: function() {
+      // with-backdrop need tabindex to be set in order to trap the focus.
+      // If it is not set, IronOverlayBehavior will set it, and remove it if with-backdrop = false.
+      this.__shouldRemoveTabIndex = false;
       this._ensureSetup();
     },
 
@@ -265,6 +280,14 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _withBackdropChanged: function() {
+      // If tabindex is already set, no need to override it.
+      if (this.withBackdrop && !this.hasAttribute('tabindex')) {
+        this.setAttribute('tabindex', '-1');
+        this.__shouldRemoveTabIndex = true;
+      } else if (this.__shouldRemoveTabIndex) {
+        this.removeAttribute('tabindex');
+        this.__shouldRemoveTabIndex = false;
+      }
       if (this.opened) {
         this._manager.trackBackdrop(this);
         if (this.withBackdrop) {
@@ -298,6 +321,7 @@ context. You should place this element as a child of `<body>` whenever possible.
     _toggleListeners: function () {
       this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
       this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
+      this._toggleListener(this.opened, document, 'focus', this._boundOnCaptureFocus, true);
     },
 
     // tasks which must occur before opening; e.g. making the element visible
@@ -343,6 +367,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.display = 'none';
       this._manager.removeOverlay(this);
 
+      this._focusedChild = null;
       this._applyFocus();
 
       this.notifyResize();
@@ -376,9 +401,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     _onCaptureClick: function(event) {
       if (this._manager.currentOverlay() === this &&
-          !this.noCancelOnOutsideClick &&
           Polymer.dom(event).path.indexOf(this) === -1) {
-        this.cancel();
+        if (this.noCancelOnOutsideClick) {
+          this._applyFocus();
+        } else {
+          this.cancel();
+        }
       }
     },
 
@@ -388,6 +416,19 @@ context. You should place this element as a child of `<body>` whenever possible.
           !this.noCancelOnEscKey &&
           event.keyCode === ESC) {
         this.cancel();
+      }
+    },
+
+    _onCaptureFocus: function (event) {
+      if (this._manager.currentOverlay() === this &&
+          this.withBackdrop) {
+        var path = Polymer.dom(event).path;
+        if (path.indexOf(this) === -1) {
+          event.stopPropagation();
+          this._applyFocus();
+        } else {
+          this._focusedChild = path[0];
+        }
       }
     },
 

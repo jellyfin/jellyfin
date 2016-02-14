@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(\uc11c\ubc84\uac00 \uc885\ub8cc\ub418\uc5b4 \ucde8\uc18c\ub428)",
     "LabelScheduledTaskLastRan": "Last ran {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "\uc791\uc5c5 \ud2b8\ub9ac\uac70 \uc0ad\uc81c",
-    "HeaderTaskTriggers": "\uc791\uc5c5 \ud2b8\ub9ac\uac70",
     "MessageDeleteTaskTrigger": "\uc774 \uc791\uc5c5 \ud2b8\ub9ac\uac70\ub97c \uc0ad\uc81c\ud558\uaca0\uc2b5\ub2c8\uae4c?",
     "MessageNoPluginsInstalled": "\uc124\uce58\ub41c \ud50c\ub7ec\uadf8\uc778\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} \uc124\uce58\ub428",
     "LabelNumberReviews": "{0} \ub9ac\ubdf0",
     "LabelFree": "\ubb34\ub8cc",
+    "HeaderTo": "To",
     "HeaderPlaybackError": "\uc7ac\uc0dd \uc624\ub958",
     "MessagePlaybackErrorNotAllowed": "\uc774 \ucf58\ud150\ud2b8\ub97c \uc7ac\uc0dd\ud560 \uad8c\ud55c\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \uc790\uc138\ud55c \ub0b4\uc6a9\uc740 \uc2dc\uc2a4\ud15c \uad00\ub9ac\uc790\uc5d0\uac8c \ubb38\uc758\ud558\uc138\uc694.",
     "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "Guest star",
     "MediaInfoSize": "Size",
     "MediaInfoPath": "\uacbd\ub85c",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "\ud615\uc2dd",
     "MediaInfoContainer": "\ucee8\ud14c\uc774\ub108",
     "MediaInfoDefault": "\uae30\ubcf8",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "\uc2dc\ub124\ub9c8 \ubaa8\ub4dc",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Off"
+    "ButtonOff": "Off",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }

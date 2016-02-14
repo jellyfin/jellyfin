@@ -127,12 +127,13 @@
     "LabelAbortedByServerShutdown": "(Aborted by server shutdown)",
     "LabelScheduledTaskLastRan": "Last ran {0}, taking {1}.",
     "HeaderDeleteTaskTrigger": "Delete Task Trigger",
-    "HeaderTaskTriggers": "Task Triggers",
     "MessageDeleteTaskTrigger": "Are you sure you wish to delete this task trigger?",
     "MessageNoPluginsInstalled": "You have no plugins installed.",
+    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
     "LabelVersionInstalled": "{0} installed",
     "LabelNumberReviews": "{0} Reviews",
     "LabelFree": "Free",
+    "HeaderTo": "\u5230",
     "HeaderPlaybackError": "Playback Error",
     "MessagePlaybackErrorNotAllowed": "You're currently not authorized to play this content. Please contact your system administrator for details.",
     "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
@@ -646,6 +647,7 @@
     "ValueGuestStar": "\u7279\u7d04\u660e\u661f",
     "MediaInfoSize": "Size",
     "MediaInfoPath": "\u8def\u5f91",
+    "MediaInfoFile": "File",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Container",
     "MediaInfoDefault": "Default",
@@ -945,5 +947,8 @@
     "HeaderCinemaMode": "Cinema Mode",
     "CinemaModeFeatureDescription": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the feature.",
     "CoverArt": "Cover Art",
-    "ButtonOff": "Off"
+    "ButtonOff": "Off",
+    "TitleHardwareAcceleration": "Hardware Acceleration",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
 }
