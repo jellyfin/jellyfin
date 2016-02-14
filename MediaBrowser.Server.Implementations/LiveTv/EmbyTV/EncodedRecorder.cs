@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var commandLineArgs = "-fflags +genpts -i \"{0}\" -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
-            //if (mediaSource.ReadAtNativeFramerate)
+            if (mediaSource.ReadAtNativeFramerate)
             {
                 commandLineArgs = "-re " + commandLineArgs;
             }
