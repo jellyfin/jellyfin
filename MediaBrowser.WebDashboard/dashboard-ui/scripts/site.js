@@ -2142,8 +2142,6 @@ var AppInfo = {};
         deps.push('scripts/mediacontroller');
         deps.push('scripts/globalize');
 
-        deps.push('jQuery');
-
         deps.push('paper-drawer-panel');
 
         require(deps, function (events) {
@@ -2197,26 +2195,14 @@ var AppInfo = {};
                 MediaBrowser[i] = connectionManagerExports[i];
             }
 
-            // TODO: This needs to be deprecated, but it's used heavily
-            $.fn.checked = function (value) {
-                if (value === true || value === false) {
-                    // Set the value of the checkbox
-                    return $(this).each(function () {
-                        this.checked = value;
-                    });
-                } else {
-                    // Return check state
-                    return this.length && this[0].checked;
-                }
-            };
-
             var promises = [];
             deps = [];
             deps.push('scripts/mediaplayer');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
-            deps.push('jqm');
+            deps.push('jQuery');
+
             promises.push(getRequirePromise(deps));
 
             promises.push(Globalize.ensure());
@@ -2255,6 +2241,19 @@ var AppInfo = {};
                     }
 
                     require(depends, function () {
+
+                        // TODO: This needs to be deprecated, but it's used heavily
+                        $.fn.checked = function (value) {
+                            if (value === true || value === false) {
+                                // Set the value of the checkbox
+                                return $(this).each(function () {
+                                    this.checked = value;
+                                });
+                            } else {
+                                // Return check state
+                                return this.length && this[0].checked;
+                            }
+                        };
 
                         // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
                         $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
@@ -2317,6 +2316,7 @@ var AppInfo = {};
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
+        deps.push('jqm');
 
         deps.push('css!css/card.css');
 

@@ -2821,7 +2821,7 @@
                 html += '</span>';
             }
 
-            if (showControls || options.viewButton || options.sortButton || options.addLayoutButton) {
+            if (showControls || options.viewButton || options.filterButton || options.sortButton || options.addLayoutButton) {
 
                 html += '<div style="display:inline-block;margin-left:10px;">';
 
@@ -2847,6 +2847,11 @@
                     var viewPanelClass = options.viewPanelClass || 'viewPanel';
                     var title = options.viewIcon == 'filter-list' ? Globalize.translate('ButtonFilter') : Globalize.translate('ButtonMenu');
                     html += '<paper-icon-button title="' + title + '" icon="' + (options.viewIcon || AppInfo.moreIcon) + '" onclick="LibraryBrowser.openViewPanel(this, \'' + viewPanelClass + '\');"></paper-icon-button>';
+                }
+
+                if (options.filterButton) {
+
+                    html += '<paper-icon-button class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '" icon="filter-list"></paper-icon-button>';
                 }
 
                 html += '</div>';

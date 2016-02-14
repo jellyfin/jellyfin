@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage noSecondaryNavPage" data-contextname="${HeaderChannels}" data-require="jqmpanel,scripts/channelitems,paper-checkbox" data-backbutton="true" data-menubutton="false">
+    <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage noSecondaryNavPage" data-contextname="${HeaderChannels}" data-require="scripts/channelitems,paper-checkbox" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <div class="viewSettings">
@@ -13,29 +13,6 @@
                 </div>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-        </div>
-
-        <div data-role="panel" class="viewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
-            <div class="ui-panel-inner">
-                <form>
-
-                    <div class="filterControls">
-                        <h1>
-                            ${HeaderFilters}
-                        </h1>
-
-                        <div class="paperCheckboxList">
-                            <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 </body>

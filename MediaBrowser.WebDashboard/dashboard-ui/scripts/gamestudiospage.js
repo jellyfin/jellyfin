@@ -31,11 +31,8 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false
             }));
-
-            updateFilterControls(page);
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -45,7 +42,6 @@
                 showItemCounts: true,
                 centerText: true,
                 lazy: true
-                
             });
 
             var elem = page.querySelector('#items');
@@ -68,39 +64,7 @@
         });
     }
 
-    function updateFilterControls(page) {
-
-        $('#selectPageSize', page).val(query.Limit);
-    }
-
-    $(document).on('pageinit', "#gameStudiosPage", function () {
-
-        var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshow', "#gameStudiosPage", function () {
+    $(document).on('pagebeforeshow', "#gameStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -115,8 +79,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-        updateFilterControls(this);
     });
 
 })(jQuery, document);
