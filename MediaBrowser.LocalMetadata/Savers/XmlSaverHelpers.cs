@@ -736,6 +736,9 @@ namespace MediaBrowser.LocalMetadata.Savers
                         case Video3DFormat.HalfTopAndBottom:
                             builder.Append("<Format3D>HTAB</Format3D>");
                             break;
+                        case Video3DFormat.MVC:
+                            builder.Append("<Format3D>MVC</Format3D>");
+                            break;
                     }
                 }
             }

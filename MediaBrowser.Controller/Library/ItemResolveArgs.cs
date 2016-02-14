@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Library
                 // Not officially supported but in some cases we can handle it.
                 if (item == null)
                 {
-                    item = parent.Parents.OfType<T>().FirstOrDefault();
+                    item = parent.GetParents().OfType<T>().FirstOrDefault();
                 }
 
                 return item != null;

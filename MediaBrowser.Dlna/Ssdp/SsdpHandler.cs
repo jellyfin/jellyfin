@@ -21,7 +21,7 @@ namespace MediaBrowser.Dlna.Ssdp
 {
     public class SsdpHandler : IDisposable, ISsdpHandler
     {
-        private Socket _socket;
+        private Socket _multicastSocket;
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
@@ -39,6 +39,9 @@ namespace MediaBrowser.Dlna.Ssdp
         private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
 
         private readonly IApplicationHost _appHost;
+
+        private readonly int _unicastPort = 1901;
+        private UdpClient _unicastClient;
 
         public SsdpHandler(ILogger logger, IServerConfigurationManager config, IApplicationHost appHost)
         {
@@ -92,7 +95,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 TimeSpan delay = GetSearchDelay(headers);
 
-                if (_config.GetDlnaConfiguration().EnableDebugLogging)
+                if (_config.GetDlnaConfiguration().EnableDebugLog)
                 {
                     _logger.Debug("Delaying search response by {0} seconds", delay.TotalSeconds);
                 }
@@ -123,6 +126,8 @@ namespace MediaBrowser.Dlna.Ssdp
             RestartSocketListener();
             ReloadAliveNotifier();
 
+            //CreateUnicastClient();
+
             SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
         }
@@ -150,26 +155,29 @@ namespace MediaBrowser.Dlna.Ssdp
             // Seconds to delay response
             values["MX"] = "3";
 
+            var header = "M-SEARCH * HTTP/1.1";
+
+            var msg = new SsdpMessageBuilder().BuildMessage(header, values);
+
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
-            SendDatagram("M-SEARCH * HTTP/1.1", values, _ssdpEndp, localIp, true, 2);
+            SendDatagram(msg, _ssdpEndp, localIp, true);
+
+            //SendUnicastRequest(msg);
         }
 
-        public async void SendDatagram(string header,
-            Dictionary<string, string> values,
+        public async void SendDatagram(string msg,
             EndPoint endpoint,
             EndPoint localAddress,
             bool isBroadcast,
-            int sendCount)
+            int sendCount = 3)
         {
-            var msg = new SsdpMessageBuilder().BuildMessage(header, values);
-
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             for (var i = 0; i < sendCount; i++)
             {
                 if (i > 0)
                 {
-                    await Task.Delay(500).ConfigureAwait(false);
+                    await Task.Delay(200).ConfigureAwait(false);
                 }
 
                 var dgram = new Datagram(endpoint, localAddress, _logger, msg, isBroadcast, enableDebugLogging);
@@ -202,7 +210,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void RespondToSearch(EndPoint endpoint, string deviceType)
         {
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             var isLogged = false;
 
@@ -232,8 +240,10 @@ namespace MediaBrowser.Dlna.Ssdp
                     values["ST"] = d.Type;
                     values["USN"] = d.USN;
 
-                    SendDatagram(header, values, endpoint, null, false, 1);
-                    SendDatagram(header, values, endpoint, new IPEndPoint(d.Address, 0), false, 1);
+                    var msg = new SsdpMessageBuilder().BuildMessage(header, values);
+
+                    SendDatagram(msg, endpoint, null, false, 1);
+                    SendDatagram(msg, endpoint, new IPEndPoint(d.Address, 0), false, 1);
                     //SendDatagram(header, values, endpoint, null, true);
 
                     if (enableDebugLogging)
@@ -253,7 +263,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             try
             {
-                _socket = CreateMulticastSocket();
+                _multicastSocket = CreateMulticastSocket();
 
                 _logger.Info("MultiCast socket created");
 
@@ -274,8 +284,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 EndPoint endpoint = new IPEndPoint(IPAddress.Any, SSDPPort);
 
-                _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref endpoint, ReceiveCallback,
-                    buffer);
+                _multicastSocket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref endpoint, ReceiveCallback, buffer);
             }
             catch (ObjectDisposedException)
             {
@@ -301,11 +310,11 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 EndPoint endpoint = new IPEndPoint(IPAddress.Any, SSDPPort);
 
-                var length = _socket.EndReceiveFrom(result, ref endpoint);
+                var length = _multicastSocket.EndReceiveFrom(result, ref endpoint);
 
                 var received = (byte[])result.AsyncState;
 
-                var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+                var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
                 if (enableDebugLogging)
                 {
@@ -325,7 +334,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                     var headerText = string.Join(",", headerTexts.ToArray());
 
-                    _logger.Debug("{0} message received from {1} on {3}. Headers: {2}", args.Method, args.EndPoint, headerText, _socket.LocalEndPoint);
+                    _logger.Debug("{0} message received from {1} on {3}. Headers: {2}", args.Method, args.EndPoint, headerText, _multicastSocket.LocalEndPoint);
                 }
 
                 OnMessageReceived(args);
@@ -342,7 +351,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.ErrorException("Failed to read SSDP message", ex);
             }
 
-            if (_socket != null)
+            if (_multicastSocket != null)
             {
                 Receive();
             }
@@ -375,17 +384,18 @@ namespace MediaBrowser.Dlna.Ssdp
 
             _isDisposed = true;
 
+            DisposeUnicastClient();
             DisposeSocket();
             StopAliveNotifier();
         }
 
         private void DisposeSocket()
         {
-            if (_socket != null)
+            if (_multicastSocket != null)
             {
-                _socket.Close();
-                _socket.Dispose();
-                _socket = null;
+                _multicastSocket.Close();
+                _multicastSocket.Dispose();
+                _multicastSocket = null;
             }
         }
 
@@ -404,7 +414,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private void NotifyAll()
         {
-            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
 
             if (enableDebugLogging)
             {
@@ -412,11 +422,11 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             foreach (var d in RegisteredDevices)
             {
-                NotifyDevice(d, "alive", 1, enableDebugLogging);
+                NotifyDevice(d, "alive", enableDebugLogging);
             }
         }
 
-        private void NotifyDevice(UpnpDevice dev, string type, int sendCount, bool logMessage)
+        private void NotifyDevice(UpnpDevice dev, string type, bool logMessage)
         {
             const string header = "NOTIFY * HTTP/1.1";
 
@@ -436,7 +446,9 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
 
-            SendDatagram(header, values, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, sendCount);
+            var msg = new SsdpMessageBuilder().BuildMessage(header, values);
+
+            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
@@ -457,10 +469,108 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 foreach (var d in dl.ToList())
                 {
-                    NotifyDevice(d, "byebye", 2, true);
+                    NotifyDevice(d, "byebye", true);
                 }
 
                 _logger.Debug("Unregistered mount {0}", uuid);
+            }
+        }
+
+        private void CreateUnicastClient()
+        {
+            if (_unicastClient == null)
+            {
+                try
+                {
+                    _unicastClient = new UdpClient(_unicastPort);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error creating unicast client", ex);
+                }
+
+                try
+                {
+                    UnicastSetBeginReceive();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in UnicastSetBeginReceive", ex);
+                }
+            }
+        }
+
+        private void DisposeUnicastClient()
+        {
+            if (_unicastClient != null)
+            {
+                try
+                {
+                    _unicastClient.Close();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error closing unicast client", ex);
+                }
+
+                _unicastClient = null;
+            }
+        }
+
+        /// <summary>
+        /// Listen for Unicast SSDP Responses
+        /// </summary>
+        private void UnicastSetBeginReceive()
+        {
+            var ipRxEnd = new IPEndPoint(IPAddress.Any, _unicastPort);
+            var udpListener = new UdpState { EndPoint = ipRxEnd };
+
+            udpListener.UdpClient = _unicastClient;
+            _unicastClient.BeginReceive(UnicastReceiveCallback, udpListener);
+        }
+
+        /// <summary>
+        /// The UnicastReceiveCallback receives Http Responses 
+        /// and Fired the SatIpDeviceFound Event for adding the SatIpDevice  
+        /// </summary>
+        /// <param name="ar"></param>
+        private void UnicastReceiveCallback(IAsyncResult ar)
+        {
+            var udpClient = ((UdpState)(ar.AsyncState)).UdpClient;
+            var endpoint = ((UdpState)(ar.AsyncState)).EndPoint;
+            if (udpClient.Client != null)
+            {
+                var responseBytes = udpClient.EndReceive(ar, ref endpoint);
+                var args = SsdpHelper.ParseSsdpResponse(responseBytes);
+
+                args.EndPoint = endpoint;
+
+                OnMessageReceived(args);
+
+                UnicastSetBeginReceive();
+            }
+        }
+
+        private async void SendUnicastRequest(string request)
+        {
+            if (_unicastClient == null)
+            {
+                return;
+            }
+
+            _logger.Debug("Sending unicast search request");
+
+            byte[] req = Encoding.ASCII.GetBytes(request);
+            var ipSsdp = IPAddress.Parse(SSDPAddr);
+            var ipTxEnd = new IPEndPoint(ipSsdp, SSDPPort);
+
+            for (var i = 0; i < 3; i++)
+            {
+                if (i > 0)
+                {
+                    await Task.Delay(50).ConfigureAwait(false);
+                }
+                _unicastClient.Send(req, req.Length, ipTxEnd);
             }
         }
 
@@ -510,6 +620,12 @@ namespace MediaBrowser.Dlna.Ssdp
                     _notificationTimer = null;
                 }
             }
+        }
+
+        public class UdpState
+        {
+            public UdpClient UdpClient;
+            public IPEndPoint EndPoint;
         }
     }
 }

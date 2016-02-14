@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Controller.FileOrganization;
+﻿using System.Collections.Generic;
+using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Api.Library
 {
@@ -74,6 +76,31 @@ namespace MediaBrowser.Api.Library
         public bool RememberCorrection { get; set; }
     }
 
+    [Route("/Library/FileOrganizations/SmartMatches", "GET", Summary = "Gets smart match entries")]
+    public class GetSmartMatchInfos : IReturn<QueryResult<SmartMatchInfo>>
+    {
+        /// <summary>
+        /// Skips over a given number of items within the results. Use for paging.
+        /// </summary>
+        /// <value>The start index.</value>
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        /// <summary>
+        /// The maximum number of items to return
+        /// </summary>
+        /// <value>The limit.</value>
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+    }
+
+    [Route("/Library/FileOrganizations/SmartMatches/Delete", "POST", Summary = "Deletes a smart match entry")]
+    public class DeleteSmartMatchEntry
+    {
+        [ApiMember(Name = "Entries", Description = "SmartMatch Entry", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public List<NameValuePair> Entries { get; set; }
+    }
+
     [Authenticated(Roles = "Admin")]
     public class FileOrganizationService : BaseApiService
     {
@@ -129,6 +156,25 @@ namespace MediaBrowser.Api.Library
             });
 
             Task.WaitAll(task);
+        }
+
+        public object Get(GetSmartMatchInfos request)
+        {
+            var result = _iFileOrganizationService.GetSmartMatchInfos(new FileOrganizationResultQuery
+            {
+                Limit = request.Limit,
+                StartIndex = request.StartIndex
+            });
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        public void Post(DeleteSmartMatchEntry request)
+        {
+            request.Entries.ForEach(entry =>
+            {
+                _iFileOrganizationService.DeleteSmartMatchEntry(entry.Name, entry.Value);
+            });
         }
     }
 }

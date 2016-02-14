@@ -26,6 +26,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly ILocalizationManager _localization;
         private readonly IChannelManager _channelManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IUserViewManager _userViewManager;
 
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -34,7 +35,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger logger,
-            IHttpClient httpClient, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager)
+            IHttpClient httpClient, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager)
             : base(logger, httpClient)
         {
             _dlna = dlna;
@@ -46,6 +47,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _localization = localization;
             _channelManager = channelManager;
             _mediaSourceManager = mediaSourceManager;
+            _userViewManager = userViewManager;
         }
 
         private int SystemUpdateId
@@ -86,7 +88,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 _config,
                 _localization,
                 _channelManager,
-                _mediaSourceManager)
+                _mediaSourceManager,
+                _userViewManager)
                 .ProcessControlRequest(request);
         }
 

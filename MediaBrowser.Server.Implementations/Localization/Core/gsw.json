@@ -1,4 +1,5 @@
 {
+    "DbUpgradeMessage": "Please wait while your Emby Server database is upgraded. {0}% complete.",
     "AppDeviceValues": "App: {0}, Device: {1}",
     "UserDownloadingItemWithValues": "{0} is downloading {1}",
     "FolderTypeMixed": "Verschiedeni Sache",

@@ -27,8 +27,21 @@ namespace MediaBrowser.Controller.Entities.Audio
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
-        public List<string> Tags { get; set; }
         public ExtraType? ExtraType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the artist.
+        /// </summary>
+        /// <value>The artist.</value>
+        public List<string> Artists { get; set; }
+
+        public List<string> AlbumArtists { get; set; }
+
+        /// <summary>
+        /// Gets or sets the album.
+        /// </summary>
+        /// <value>The album.</value>
+        public string Album { get; set; }
 
         [IgnoreDataMember]
         public bool IsThemeMedia
@@ -43,7 +56,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             Artists = new List<string>();
             AlbumArtists = new List<string>();
-            Tags = new List<string>();
         }
 
         [IgnoreDataMember]
@@ -92,14 +104,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                    locationType != LocationType.Virtual;
         }
 
-        /// <summary>
-        /// Gets or sets the artist.
-        /// </summary>
-        /// <value>The artist.</value>
-        public List<string> Artists { get; set; }
-
-        public List<string> AlbumArtists { get; set; }
-        
         [IgnoreDataMember]
         public List<string> AllArtists
         {
@@ -113,12 +117,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             }
         }
-
-        /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
 
         [IgnoreDataMember]
         public MusicAlbum AlbumEntity
@@ -173,9 +171,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.CreateUserDataKey();
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        public override UnratedItem GetBlockUnratedType()
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return UnratedItem.Music;
         }
 
         public SongInfo GetLookupInfo()

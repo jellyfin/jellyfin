@@ -156,19 +156,19 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             AddIfMissing(excludeItemTypes, typeof(CollectionFolder).Name);
-            
-            var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
+
+            var mediaItems = _libraryManager.GetItems(new InternalItemsQuery(user)
             {
                 NameContains = searchTerm,
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
-                MaxParentalRating = user == null ? null : user.Policy.MaxParentalRating,
-                Limit = (query.Limit.HasValue ? (int?)(query.Limit.Value * 3) : null),
+                Limit = query.Limit,
+                IncludeItemsByName = true
 
-            }).Items;
+            }, new string[] { });
 
             // Add search hints based on item name
-            hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && IsVisible(i, user)).Select(item =>
+            hints.AddRange(mediaItems.Where(IncludeInSearch).Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
@@ -182,25 +182,6 @@ namespace MediaBrowser.Server.Implementations.Library
             });
 
             return Task.FromResult(returnValue);
-        }
-
-        private bool IsVisible(BaseItem item, User user)
-        {
-            if (user == null)
-            {
-                return true;
-            }
-
-            if (item is IItemByName)
-            {
-                var dual = item as IHasDualAccess;
-                if (dual == null || dual.IsAccessedByName)
-                {
-                    return true;
-                }
-            }
-
-            return item.IsVisibleStandalone(user);
         }
 
         private bool IncludeInSearch(BaseItem item)

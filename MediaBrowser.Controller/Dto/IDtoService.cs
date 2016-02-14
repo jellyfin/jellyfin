@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -44,10 +45,10 @@ namespace MediaBrowser.Controller.Dto
         /// <summary>
         /// Fills the synchronize information.
         /// </summary>
-        /// <param name="dtos">The dtos.</param>
+        /// <param name="tuples">The tuples.</param>
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
-        void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user);
+        void FillSyncInfo(IEnumerable<Tuple<BaseItem, BaseItemDto>> tuples, DtoOptions options, User user);
 
         /// <summary>
         /// Gets the base item dto.

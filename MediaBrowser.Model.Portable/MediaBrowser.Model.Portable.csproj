@@ -668,6 +668,9 @@
     <Compile Include="..\MediaBrowser.Model\FileOrganization\FileSortingStatus.cs">
       <Link>FileOrganization\FileSortingStatus.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\FileOrganization\SmartMatchInfo.cs">
+      <Link>FileOrganization\SmartMatchInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\TvFileOrganizationOptions.cs">
       <Link>FileOrganization\TvFileOrganizationOptions.cs</Link>
     </Compile>

@@ -6,6 +6,7 @@ using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -32,7 +33,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public override BaseItem DisplayParent
         {
-            get { return Series ?? Parent; }
+            get { return Series ?? GetParent(); }
         }
 
         // Genre, Rating and Stuido will all be the same
@@ -84,19 +85,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
 
                 return System.IO.Path.GetDirectoryName(Path);
-            }
-        }
-
-        /// <summary>
-        /// Our rating comes from our series
-        /// </summary>
-        [IgnoreDataMember]
-        public override string OfficialRatingForComparison
-        {
-            get
-            {
-                var series = Series;
-                return series != null ? series.OfficialRatingForComparison : base.OfficialRatingForComparison;
             }
         }
 
@@ -232,6 +220,11 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Series;
         }
 
         [IgnoreDataMember]

@@ -43,11 +43,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             }.ToList();
 
-            if (!_config.Configuration.DisableStartupScan)
-            {
-                list.Add(new StartupTrigger());
-            }
-
             return list;
         }
 

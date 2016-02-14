@@ -329,7 +329,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        /// <param name="uniqueId">The unique identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
         Task<UserView> GetNamedView(User user,
@@ -337,7 +336,6 @@ namespace MediaBrowser.Controller.Library
             string parentId,
             string viewType, 
             string sortName, 
-            string uniqueId,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -391,13 +389,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        /// <param name="uniqueId">The unique identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;UserView&gt;.</returns>
         Task<UserView> GetShadowView(BaseItem parent,
           string viewType,
           string sortName,
-          string uniqueId,
           CancellationToken cancellationToken);
         
         /// <summary>
@@ -543,5 +539,29 @@ namespace MediaBrowser.Controller.Library
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>Task.</returns>
         Task<ItemImageInfo> ConvertImageToLocal(IHasImages item, ItemImageInfo image, int imageIndex);
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parentIds">The parent ids.</param>
+        /// <returns>List&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds);
+
+        /// <summary>
+        /// Gets the items result.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parentIds">The parent ids.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds);
+
+        /// <summary>
+        /// Ignores the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="parent">The parent.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
     }
 }

@@ -341,7 +341,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 if (primaryImage == null)
                 {
-                    var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+                    var parentWithImage = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
                     if (parentWithImage != null)
                     {
@@ -380,7 +380,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (primaryImage == null)
             {
-                var parentWithImage = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+                var parentWithImage = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
                 if (parentWithImage != null)
                 {
@@ -491,6 +491,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public bool SupportsSync(BaseItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             if (item is Playlist)
             {
                 return true;
@@ -739,10 +744,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var requiresSaving = false;
                 var removeFromDevice = false;
 
-                var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
-
                 if (request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
                 {
+                    var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
                     var job = _repo.GetJob(jobItem.JobId);
                     var user = _userManager.GetUserById(job.UserId);
 
@@ -845,10 +850,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var requiresSaving = false;
                 var removeFromDevice = false;
 
-                var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
-
                 if (request.SyncJobItemIds.Contains(jobItem.Id, StringComparer.OrdinalIgnoreCase))
                 {
+                    var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
                     var job = _repo.GetJob(jobItem.JobId);
                     var user = _userManager.GetUserById(job.UserId);
 

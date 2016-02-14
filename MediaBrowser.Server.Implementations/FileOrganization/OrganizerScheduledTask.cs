@@ -50,17 +50,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             get { return "Library"; }
         }
 
-        private TvFileOrganizationOptions GetTvOptions()
+        private AutoOrganizeOptions GetAutoOrganizeOptions()
         {
-            return _config.GetAutoOrganizeOptions().TvOptions;
+            return _config.GetAutoOrganizeOptions();
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            if (GetTvOptions().IsEnabled)
+            if (GetAutoOrganizeOptions().TvOptions.IsEnabled)
             {
                 await new TvFolderOrganizer(_libraryManager, _logger, _fileSystem, _libraryMonitor, _organizationService, _config, _providerManager)
-                    .Organize(GetTvOptions(), cancellationToken, progress).ConfigureAwait(false);
+                    .Organize(GetAutoOrganizeOptions(), cancellationToken, progress).ConfigureAwait(false);
             }
         }
 
@@ -74,12 +74,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         public bool IsHidden
         {
-            get { return !GetTvOptions().IsEnabled; }
+            get { return !GetAutoOrganizeOptions().TvOptions.IsEnabled; }
         }
 
         public bool IsEnabled
         {
-            get { return GetTvOptions().IsEnabled; }
+            get { return GetAutoOrganizeOptions().TvOptions.IsEnabled; }
         }
 
         public bool IsActivityLogged

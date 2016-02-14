@@ -186,12 +186,6 @@ namespace MediaBrowser.Controller.Entities
         public string ShortcutPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the tags.
-        /// </summary>
-        /// <value>The tags.</value>
-        public List<string> Tags { get; set; }
-
-        /// <summary>
         /// Gets or sets the video bit rate.
         /// </summary>
         /// <value>The video bit rate.</value>
@@ -356,7 +350,7 @@ namespace MediaBrowser.Controller.Entities
             // Must have a parent to have additional parts or alternate versions
             // In other words, it must be part of the Parent/Child tree
             // The additional parts won't have additional parts themselves
-            if (LocationType == LocationType.FileSystem && Parent != null)
+            if (LocationType == LocationType.FileSystem && GetParent() != null)
             {
                 if (!IsStacked)
                 {
