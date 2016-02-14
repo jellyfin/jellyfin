@@ -1914,18 +1914,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("LocationType not in (" + val + ")");
             }
 
+            var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;
+
             if (query.TopParentIds.Length == 1)
             {
-                whereClauses.Add("(TopParentId=@TopParentId or IsItemByName=@IsItemByName)");
+                if (enableItemsByName)
+                {
+                    whereClauses.Add("(TopParentId=@TopParentId or IsItemByName=@IsItemByName)");
+                    cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
+                }
+                else
+                {
+                    whereClauses.Add("(TopParentId=@TopParentId)");
+                }
                 cmd.Parameters.Add(cmd, "@TopParentId", DbType.String).Value = query.TopParentIds[0];
-                cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
             }
             if (query.TopParentIds.Length > 1)
             {
                 var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
-
-                whereClauses.Add("(IsItemByName=@IsItemByName or TopParentId in (" + val + "))");
-                cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
+                
+                if (enableItemsByName)
+                {
+                    whereClauses.Add("(IsItemByName=@IsItemByName or TopParentId in (" + val + "))");
+                    cmd.Parameters.Add(cmd, "@IsItemByName", DbType.Boolean).Value = true;
+                }
+                else
+                {
+                    whereClauses.Add("(TopParentId in (" + val + "))");
+                }
             }
 
             if (query.AncestorIds.Length == 1)

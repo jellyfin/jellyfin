@@ -27,6 +27,7 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsLiked { get; set; }
         public bool? IsPlayed { get; set; }
         public bool? IsResumable { get; set; }
+        public bool? IncludeItemsByName { get; set; }
 
         public string[] MediaTypes { get; set; }
         public string[] IncludeItemTypes { get; set; }
