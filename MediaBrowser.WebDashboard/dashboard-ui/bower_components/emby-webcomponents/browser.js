@@ -20,13 +20,17 @@
 
         var browser = match[1] || "";
 
-        if (ua.indexOf("windows phone") != -1 || ua.indexOf("iemobile") != -1) {
+        if (browser == "edge") {
+            platform_match = [""];
+        } else {
+            if (ua.indexOf("windows phone") != -1 || ua.indexOf("iemobile") != -1) {
 
-            // http://www.neowin.net/news/ie11-fakes-user-agent-to-fool-gmail-in-windows-phone-81-gdr1-update
-            browser = "msie";
-        }
-        else if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1 && ua.indexOf('chrome') == -1 && ua.indexOf('safari') == -1) {
-            browser = "msie";
+                // http://www.neowin.net/news/ie11-fakes-user-agent-to-fool-gmail-in-windows-phone-81-gdr1-update
+                browser = "msie";
+            }
+            else if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1 && ua.indexOf('chrome') == -1 && ua.indexOf('safari') == -1) {
+                browser = "msie";
+            }
         }
 
         if (browser == 'opr') {
