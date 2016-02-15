@@ -2070,8 +2070,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _updateInheritedRatingCommand.Transaction = transaction;
                     _updateInheritedRatingCommand.ExecuteNonQuery();
-
-                    _updateInheritedRatingCommand.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
