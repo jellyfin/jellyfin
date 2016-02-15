@@ -280,7 +280,7 @@
 
         if (program.ServiceName == 'Emby') {
             context.querySelector('.convertRecordingsContainer').classList.remove('hide');
-            showConvertRecordingsUnlockMessage();
+            showConvertRecordingsUnlockMessage(context);
         } else {
             context.querySelector('.convertRecordingsContainer').classList.add('hide');
         }
@@ -291,8 +291,8 @@
     function showConvertRecordingsUnlockMessage(context) {
 
         Dashboard.getPluginSecurityInfo().then(function(regInfo) {
-            
-            if (regInfo.IsRegistered) {
+
+            if (regInfo.IsMBSupporter) {
                 context.querySelector('.btnSupporterForConverting').classList.add('hide');
             } else {
                 context.querySelector('.btnSupporterForConverting').classList.remove('hide');
