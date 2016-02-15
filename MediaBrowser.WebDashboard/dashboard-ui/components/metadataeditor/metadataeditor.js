@@ -585,13 +585,13 @@
 
         if (item.Type == "Person") {
             context.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
-            context.querySelector("#txtPremiereDate").innerHTML = Globalize.translate('LabelBirthDate');
-            context.querySelector("#txtEndDate").innerHTML = Globalize.translate('LabelDeathDate');
+            context.querySelector("#txtPremiereDate").label = Globalize.translate('LabelBirthDate');
+            context.querySelector("#txtEndDate").label = Globalize.translate('LabelDeathDate');
             $('#fldPlaceOfBirth', context).show();
         } else {
             context.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
-            context.querySelector("#txtPremiereDate").innerHTML = Globalize.translate('LabelReleaseDate');
-            context.querySelector("#txtEndDate").innerHTML = Globalize.translate('LabelEndDate');
+            context.querySelector("#txtPremiereDate").label = Globalize.translate('LabelReleaseDate');
+            context.querySelector("#txtEndDate").label = Globalize.translate('LabelEndDate');
             $('#fldPlaceOfBirth', context).hide();
         }
 
