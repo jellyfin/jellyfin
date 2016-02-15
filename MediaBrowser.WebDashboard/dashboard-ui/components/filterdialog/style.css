@@ -2,17 +2,15 @@
     position: fixed !important;
     top: 5% !important;
     bottom: 5% !important;
-    left: 50%!important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     margin-right: 0 !important;
     border-radius: 0 !important;
     max-height: none !important;
     max-width: none !important;
-    width: 200px;
 }
 
-@media all and (min-height: 300px) {
+@media all and (min-height: 600px) {
 
     .dynamicFilterDialog {
         top: 10% !important;
@@ -20,11 +18,13 @@
     }
 }
 
-@media all and (min-width: 300px) {
+@media all and (max-width: 400px) {
 
     .dynamicFilterDialog {
-        width: 240px;
-        margin-left: -120px !important;
+        width: auto;
+        left: 10vw !important;
+        right: 10vw !important;
+        margin-left: 0 !important;
     }
 }
 
@@ -33,6 +33,7 @@
     .dynamicFilterDialog {
         width: 300px;
         margin-left: -150px !important;
+        left: 50% !important;
     }
 }
 

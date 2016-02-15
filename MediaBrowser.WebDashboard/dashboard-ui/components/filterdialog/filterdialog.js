@@ -54,7 +54,6 @@
         renderOptions(context, '.officialRatingFilters', 'chkOfficialRatingFilter', result.OfficialRatings);
         renderOptions(context, '.tagFilters', 'chkTagFilter', result.Tags);
         renderOptions(context, '.yearFilters', 'chkYearFilter', result.Years);
-
     }
 
     function loadDynamicFilters(context, userId, itemQuery) {
@@ -487,7 +486,7 @@
     }
 
     function enableDynamicFilters(mode) {
-        return mode == 'movies' || mode == 'games' || mode == 'series' || mode == 'albums' || mode == 'albumartists' || mode == 'artists' || mode == 'songs';
+        return mode == 'movies' || mode == 'games' || mode == 'series' || mode == 'albums' || mode == 'albumartists' || mode == 'artists' || mode == 'songs' || mode == 'episodes';
     }
 
     return function (options) {
