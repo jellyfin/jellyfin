@@ -134,7 +134,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         _deviceDiscovery,
                         _userDataManager,
                         _localization,
-                        _mediaSourceManager);
+                        _mediaSourceManager,
+                        _config);
 
                     controller.Init(device);
 
