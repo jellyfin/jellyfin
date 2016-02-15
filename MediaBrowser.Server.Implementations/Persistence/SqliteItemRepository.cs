@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
         
-        private const int LatestSchemaVersion = 45;
+        private const int LatestSchemaVersion = 48;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
