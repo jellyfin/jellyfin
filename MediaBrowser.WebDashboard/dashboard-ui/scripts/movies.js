@@ -58,15 +58,13 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false,
-                viewPanelClass: 'movieViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,
-                viewIcon: 'filter-list',
                 sortButton: true,
                 currentLayout: view,
-                layouts: 'Banner,List,Poster,PosterCard,Thumb,ThumbCard,Timeline'
+                layouts: 'Banner,List,Poster,PosterCard,Thumb,ThumbCard,Timeline',
+                filterButton: true
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -152,12 +150,12 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
@@ -169,7 +167,11 @@
 
                 getPageData().view = layout;
                 LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                reloadItems(page, viewPanel);
+                reloadItems(page);
+            });
+
+            $('.btnFilter', page).on('click', function () {
+                showFilterMenu(page);
             });
 
             // On callback make sure to set StartIndex = 0
@@ -228,7 +230,7 @@
                         id: 'VideoBitRate,SortName'
                     }],
                     callback: function () {
-                        reloadItems(page, viewPanel);
+                        reloadItems(page);
                     },
                     query: query
                 });
@@ -242,117 +244,31 @@
         });
     }
 
-    function updateFilterControls(tabContent, viewPanel) {
+    function showFilterMenu(page) {
+
+        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+            var filterDialog = new filterDialogFactory({
+                query: getQuery(),
+                mode: 'movies'
+            });
+
+            Events.on(filterDialog, 'filterchange', function () {
+                reloadItems(page);
+            });
+
+            filterDialog.show();
+        });
+    }
+
+    function updateFilterControls(tabContent) {
 
         var query = getQuery();
-
-        $('.chkStandardFilter', viewPanel).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        });
-
-        $('.chkVideoTypeFilter', viewPanel).each(function () {
-
-            var filters = "," + (query.VideoTypes || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        });
-
-        $('.chk3DFilter', viewPanel).checked(query.Is3D == true);
-        $('.chkHDFilter', viewPanel).checked(query.IsHD == true);
-        $('.chkSDFilter', viewPanel).checked(query.IsHD == false);
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function reloadFiltersIfNeeded(tabContent, viewPanel) {
-
-        if (!getPageData().filtersLoaded) {
-
-            getPageData().filtersLoaded = true;
-
-            var query = getQuery();
-            QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {
-
-                reloadItems(tabContent, viewPanel);
-            });
-        }
-    }
-
-    function initPage(tabContent, viewPanel) {
-
-        $(viewPanel).on('panelopen', function () {
-
-            reloadFiltersIfNeeded(tabContent, viewPanel);
-        });
-
-        $('.chkStandardFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkVideoTypeFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.VideoTypes || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.VideoTypes = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chk3DFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.Is3D = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkHDFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.IsHD = this.checked ? true : null;
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkSDFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.IsHD = this.checked ? false : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
+    function initPage(tabContent) {
 
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
@@ -360,55 +276,32 @@
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(tabContent, viewPanel);
+            reloadItems(tabContent);
 
         }).on('alphaclear', function (e) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.radioBasicFilters', viewPanel).on('change', function () {
-
-            if (this.checked) {
-                $('.basicFilters', viewPanel).show();
-                $('.advancedFilters', viewPanel).hide();
-            } else {
-                $('.basicFilters', viewPanel).hide();
-            }
-        });
-
-        $('.radioAdvancedFilters', viewPanel).on('change', function () {
-
-            if (this.checked) {
-                $('.advancedFilters', viewPanel).show();
-                $('.basicFilters', viewPanel).hide();
-            } else {
-                $('.advancedFilters', viewPanel).hide();
-            }
+            reloadItems(tabContent);
         });
 
         $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
-            reloadItems(tabContent, viewPanel);
-
+            reloadItems(tabContent);
         });
     }
 
     window.MoviesPage.initMoviesTab = function (page, tabContent) {
 
-        var viewPanel = page.querySelector('.movieViewPanel');
-        initPage(tabContent, viewPanel);
+        initPage(tabContent);
     };
 
     window.MoviesPage.renderMoviesTab = function (page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
-            var viewPanel = page.querySelector('.movieViewPanel');
-            reloadItems(tabContent, viewPanel);
-            updateFilterControls(tabContent, viewPanel);
+            reloadItems(tabContent);
+            updateFilterControls(tabContent);
         }
     };
 

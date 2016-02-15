@@ -4,7 +4,7 @@
     <title>${TitleAdvanced}</title>
 </head>
 <body>
-    <div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="jqmpanel,jqmtable,scripts/serversecurity,detailtablecss">
+    <div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="jqmtable,scripts/serversecurity,detailtablecss">
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
@@ -37,21 +37,6 @@
                     <tbody class="resultBody"></tbody>
                 </table>
             </div>
-        </div>
-        <div data-role="panel" class="newKeyPanel" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form class="newKeyForm">
-                <h3>${HeaderNewApiKey}</h3>
-                <p>${HeaderNewApiKeyHelp}</p>
-                <div>
-                    <label for="txtAppName">${LabelAppName}</label>
-                    <input type="text" id="txtAppName" required="required" />
-                    <div class="fieldDescription">${LabelAppNameExample}</div>
-                </div>
-                <br />
-                <p>
-                    <button type="submit" data-icon="plus" data-mini="true" data-theme="b">${ButtonCreate}</button>
-                </p>
-            </form>
         </div>
     </div>
 </body>

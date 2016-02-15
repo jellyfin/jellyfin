@@ -106,8 +106,6 @@
 
         LibraryBrowser.loadSavedQueryValues(viewkey, query);
 
-        QueryFilters.onPageShow(page, query);
-
         reloadItems(page);
     });
 
