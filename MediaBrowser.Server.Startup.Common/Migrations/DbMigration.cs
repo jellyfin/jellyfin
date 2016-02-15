@@ -18,15 +18,21 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         public void Run()
         {
-            if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion && 
-                _config.Configuration.IsStartupWizardCompleted)
+            if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
             {
+                if (!_config.Configuration.IsStartupWizardCompleted)
+                {
+                    _config.Configuration.MigrationVersion = CleanDatabaseScheduledTask.MigrationVersion;
+                    _config.SaveConfiguration();
+                    return;
+                }
+
                 _taskManager.SuspendTriggers = true;
                 CleanDatabaseScheduledTask.EnableUnavailableMessage = true;
                 
                 Task.Run(async () =>
                 {
-                    await Task.Delay(100).ConfigureAwait(false);
+                    await Task.Delay(1000).ConfigureAwait(false);
 
                     _taskManager.Execute<CleanDatabaseScheduledTask>();
                 });
