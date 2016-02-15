@@ -766,6 +766,10 @@ select {
         color: #fff;
     }
 
+div[data-role='page'] {
+    outline: none;
+}
+
 a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
     -webkit-font-smoothing: antialiased;
     -webkit-user-select: none;

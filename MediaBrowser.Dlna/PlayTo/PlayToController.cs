@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -33,6 +34,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IConfigurationManager _config;
 
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
@@ -58,7 +60,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     return false;
                 }
-
+               
                 return _device != null;
             }
         }
@@ -72,7 +74,7 @@ namespace MediaBrowser.Dlna.PlayTo
             get { return IsSessionActive; }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IConfigurationManager config)
         {
             _session = session;
             _sessionManager = sessionManager;
@@ -85,6 +87,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
+            _config = config;
             _accessToken = accessToken;
             _logger = logger;
             _creationTime = DateTime.UtcNow;
@@ -476,7 +479,7 @@ namespace MediaBrowser.Dlna.PlayTo
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToDlnaUrl(_serverAddress, _accessToken);
 
             var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _libraryManager)
-                .GetItemDidl(item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
+                .GetItemDidl(_config.GetDlnaConfiguration(), item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 
@@ -532,13 +535,23 @@ namespace MediaBrowser.Dlna.PlayTo
             return null;
         }
 
+        private ILogger GetStreamBuilderLogger()
+        {
+            if (_config.GetDlnaConfiguration().EnableDebugLog)
+            {
+                return _logger;
+            }
+
+            return new NullLogger();
+        }
+
         private PlaylistItem GetPlaylistItem(BaseItem item, List<MediaSourceInfo> mediaSources, DeviceProfile profile, string deviceId, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_logger).BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
@@ -558,7 +571,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_logger).BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,

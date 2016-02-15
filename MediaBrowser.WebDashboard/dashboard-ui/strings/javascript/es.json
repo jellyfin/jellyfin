@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Navegue o introduzca la ruta para la carpeta para el reloj. La carpeta debe tener permisos de escritura.",
     "OrganizePatternResult": "Resultado: {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "Reiniciar",
     "HeaderShutdown": "Apagar",
