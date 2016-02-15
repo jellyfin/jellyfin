@@ -228,7 +228,7 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                title: 'Value:'
+                label: 'Value:'
             }).then(function (text) {
                 var list = $(source).parents('.editableListviewContainer').find('.paperList');
                 var items = editableListViewValues(list);
