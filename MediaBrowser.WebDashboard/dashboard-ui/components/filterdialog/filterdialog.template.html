@@ -1,14 +1,13 @@
 ﻿<div style="margin: 0;padding:1.5em 2em;">
-    <h1>
+    <h2 style="margin-bottom: .5em;">
         ${HeaderFilters}
-    </h1>
-
+    </h2>
     <div class="paperCheckboxList">
-        <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
     </div>
 </div>

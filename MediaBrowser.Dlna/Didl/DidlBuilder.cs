@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Dlna.Didl
 {
@@ -56,7 +57,7 @@ namespace MediaBrowser.Dlna.Didl
             _user = user;
         }
 
-        public string GetItemDidl(BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(DlnaOptions options, BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var result = new XmlDocument();
 
@@ -73,12 +74,12 @@ namespace MediaBrowser.Dlna.Didl
 
             result.AppendChild(didl);
 
-            result.DocumentElement.AppendChild(GetItemElement(result, item, context, null, deviceId, filter, streamInfo));
+            result.DocumentElement.AppendChild(GetItemElement(options, result, item, context, null, deviceId, filter, streamInfo));
 
             return result.DocumentElement.OuterXml;
         }
 
-        public XmlElement GetItemElement(XmlDocument doc, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        public XmlElement GetItemElement(DlnaOptions options, XmlDocument doc, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var clientId = GetClientId(item, null);
 
@@ -112,11 +113,11 @@ namespace MediaBrowser.Dlna.Didl
             {
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddAudioResource(element, hasMediaSources, deviceId, filter, streamInfo);
+                    AddAudioResource(options, element, hasMediaSources, deviceId, filter, streamInfo);
                 }
                 else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddVideoResource(element, hasMediaSources, deviceId, filter, streamInfo);
+                    AddVideoResource(options, element, hasMediaSources, deviceId, filter, streamInfo);
                 }
             }
 
@@ -125,13 +126,23 @@ namespace MediaBrowser.Dlna.Didl
             return element;
         }
 
-        private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private ILogger GetStreamBuilderLogger(DlnaOptions options)
+        {
+            if (options.EnableDebugLog)
+            {
+                return _logger;
+            }
+
+            return new NullLogger();
+        }
+
+        private void AddVideoResource(DlnaOptions options, XmlElement container, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
 
-                streamInfo = new StreamBuilder(_logger).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
                 {
                     ItemId = GetClientId(video),
                     MediaSources = sources,
@@ -368,7 +379,7 @@ namespace MediaBrowser.Dlna.Didl
             return item.Name;
         }
 
-        private void AddAudioResource(XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddAudioResource(DlnaOptions options, XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -376,7 +387,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
 
-                streamInfo = new StreamBuilder(new NullLogger()).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
                {
                    ItemId = GetClientId(audio),
                    MediaSources = sources,

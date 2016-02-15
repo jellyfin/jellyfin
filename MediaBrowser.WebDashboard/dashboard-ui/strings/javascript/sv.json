@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Bl\u00e4ddra fram till eller ange s\u00f6kv\u00e4gen till den bevakade mappen. Katalogen m\u00e5ste vara tillg\u00e4nglig f\u00f6r skrivning.",
     "OrganizePatternResult": "Resultat: {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "Starta om",
     "HeaderShutdown": "St\u00e4ng av",

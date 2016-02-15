@@ -129,7 +129,7 @@
     "HeaderDeleteTaskTrigger": "Supprimer le d\u00e9clencheur de t\u00e2che",
     "MessageDeleteTaskTrigger": "\u00cates-vous s\u00fbr de vouloir supprimer ce d\u00e9clencheur de t\u00e2che?",
     "MessageNoPluginsInstalled": "Vous n'avez aucun plugin install\u00e9.",
-    "MessageNoPluginsDueToAppStore": "To manage plugins, please use the Emby web app.",
+    "MessageNoPluginsDueToAppStore": "Pour g\u00e9rer vos plugins, utilisez l'application web Emby.",
     "LabelVersionInstalled": "{0} install\u00e9(s)",
     "LabelNumberReviews": "{0} Critique(s)",
     "LabelFree": "Gratuit",
@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Parcourir ou saisir le chemin de votre r\u00e9pertoire de surveillance. Le r\u00e9pertoire doit \u00eatre accessible en \u00e9criture.",
     "OrganizePatternResult": "R\u00e9sultat : {0}",
     "AutoOrganizeError": "Erreur pendant l'organisation du fichier",
+    "FileOrganizeManually": "Organiser les fichiers",
     "ErrorOrganizingFileWithErrorCode": "Une erreur est survenue pendant l'orgnisation du fichier. Le code erreur: {0}.",
     "HeaderRestart": "Red\u00e9marrer",
     "HeaderShutdown": "\u00c9teindre",
@@ -647,7 +648,7 @@
     "ValueGuestStar": "R\u00f4le principal",
     "MediaInfoSize": "Taille",
     "MediaInfoPath": "Chemin",
-    "MediaInfoFile": "File",
+    "MediaInfoFile": "Fichier",
     "MediaInfoFormat": "Format",
     "MediaInfoContainer": "Conteneur",
     "MediaInfoDefault": "D\u00e9faut",
@@ -948,7 +949,7 @@
     "CinemaModeFeatureDescription": "Le mode Cin\u00e9ma, vous donne l'exp\u00e9rience d'une vraie salle, avec des bandes annonces, et des introductions avant le film.",
     "CoverArt": "Pochette",
     "ButtonOff": "Arr\u00eat",
-    "TitleHardwareAcceleration": "Hardware Acceleration",
-    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "TitleHardwareAcceleration": "Acc\u00e9l\u00e9ration mat\u00e9rielle",
+    "HardwareAccelerationWarning": "L'activation mat\u00e9rielle peut causer des instabilit\u00e9s dans certains environnements. Si vous avez des difficult\u00e9s pour lire des vid\u00e9os apr\u00e8s l'avoir activ\u00e9, vous devrez changer les param\u00e8tres de l\u2019acc\u00e9l\u00e9ration en automatique.",
+    "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros"
 }

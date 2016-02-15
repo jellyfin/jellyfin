@@ -1,9 +1,11 @@
 {
     "HeaderTaskTriggers": "D\u00e9clencheurs de t\u00e2ches",
-    "TabSmartMatches": "Smart Matches",
-    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
-    "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
-    "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
+    "TabSmartMatches": "Correspondances intelligentes",
+    "TabSmartMatchInfo": "Organiser vos correspondances intelligentes qui ont \u00e9t\u00e9 ajout\u00e9es \u00e0 l'aide du dialogue de l'auto-organisation",
+    "OptionRememberOrganizeCorrection": "Enregistrer et appliquer cette correction aux fichiers futurs avec des noms similaires",
+    "OptionConvertRecordingsToStreamingFormat": "Convertir automatiquement les enregistrements a un format facilement diffusable.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Les enregistrements seront convertis \u00e0 la vol\u00e9e en MP4 afin faciliter la lecture sur tous vos appareils.",
+    "FeatureRequiresEmbyPremiere": "Cette fonctionnalit\u00e9 requiert un compte Emby Premiere.",
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
@@ -1256,7 +1258,7 @@
     "LabelExtractChaptersDuringLibraryScan": "Extraire les images des chapitres pendant le scan de la biblioth\u00e8que",
     "LabelExtractChaptersDuringLibraryScanHelp": "Si activ\u00e9, les images de chapitres seront extraites lors de l'importation de vid\u00e9os pendant le scan de la librairie. Sinon elles seront extraites pendant la t\u00e2che programm\u00e9e, permettant de terminer plus rapidement les scans r\u00e9guliers de la librairie.",
     "LabelConnectGuestUserName": "Nom d'utilisateur Emby ou adresse email de l'invit\u00e9 :",
-    "LabelConnectUserName": "Emby username or email address:",
+    "LabelConnectUserName": "Nom d'utilisateur Emby ou adresse email:",
     "LabelConnectUserNameHelp": "Connectez cet utilisateur local \u00e0 un compte Emby pour activer l'acc\u00e8s par code Easy Pin depuis n'importe quelle application Emby sans avoir \u00e0 conna\u00eetre l'adresse IP du serveur.",
     "ButtonLearnMoreAboutEmbyConnect": "Plus d'infos sur Emby Connect",
     "LabelExternalPlayers": "Lecteurs externes:",
@@ -1532,6 +1534,6 @@
     "LabelDisplayName": "Nom d'affichage :",
     "HeaderNewRecording": "Nouvel enregistrement",
     "ButtonAdvanced": "Avanc\u00e9",
-    "LabelCodecIntrosPath": "Codec intros path:",
+    "LabelCodecIntrosPath": "Chemin du codec des intros:",
     "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
 }

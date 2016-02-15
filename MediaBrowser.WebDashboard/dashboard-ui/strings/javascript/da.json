@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "V\u00e6lg eller indtast stien til din \"watch folder\". Mappen m\u00e5 ikke v\u00e6re skrivebeskyttet.",
     "OrganizePatternResult": "Resultat: {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "Genstart",
     "HeaderShutdown": "Luk",
