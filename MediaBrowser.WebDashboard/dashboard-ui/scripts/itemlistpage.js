@@ -69,13 +69,12 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false,
                 addLayoutButton: true,
                 currentLayout: view,
-                viewIcon: 'filter-list',
                 sortButton: true,
-                layouts: 'Poster,PosterCard,Thumb'
+                layouts: 'Poster,PosterCard,Thumb',
+                filterButton: true
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -120,6 +119,10 @@
             var elem = page.querySelector('#items');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
+
+            $('.btnFilter', page).on('click', function () {
+                showFilterMenu(page);
+            });
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -208,18 +211,25 @@
         });
     }
 
+    function showFilterMenu(page) {
+
+        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+            var filterDialog = new filterDialogFactory({
+                query: getQuery()
+            });
+
+            Events.on(filterDialog, 'filterchange', function () {
+                reloadItems(page);
+            });
+
+            filterDialog.show();
+        });
+    }
+
     function updateFilterControls(page) {
 
         var query = getQuery();
-
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        });
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
@@ -241,24 +251,6 @@
     pageIdOn('pageinit', "itemListPage", function () {
 
         var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
