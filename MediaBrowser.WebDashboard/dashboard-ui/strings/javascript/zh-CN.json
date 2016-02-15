@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "\u6d4f\u89c8\u6216\u8f93\u5165\u4e00\u4e2a\u8def\u5f84\u7528\u4e8e\u76d1\u63a7\u6587\u4ef6\u5939\uff0c\u6b64\u6587\u4ef6\u5939\u5fc5\u987b\u53ef\u5199\u3002",
     "OrganizePatternResult": "\u7ed3\u679c\uff1a {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "\u91cd\u542f",
     "HeaderShutdown": "\u5173\u673a",

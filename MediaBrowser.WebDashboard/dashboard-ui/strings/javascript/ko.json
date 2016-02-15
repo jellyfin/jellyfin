@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Browse or enter the path to your watch folder. The folder must be writeable.",
     "OrganizePatternResult": "\uacb0\uacfc: {0}",
     "AutoOrganizeError": "\ud30c\uc77c \uad6c\uc131 \uc624\ub958",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "\ud30c\uc77c \uad6c\uc131\uc5d0 \uc624\ub958\uac00 \uc788\uc2b5\ub2c8\ub2e4. \uc624\ub958 \ucf54\ub4dc: {0}.",
     "HeaderRestart": "\ub2e4\uc2dc \uc2dc\uc791",
     "HeaderShutdown": "\uc885\ub8cc",

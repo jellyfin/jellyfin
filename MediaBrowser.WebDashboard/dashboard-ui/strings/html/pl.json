@@ -1,9 +1,11 @@
 {
     "HeaderTaskTriggers": "Wyzwalacze Zada\u0144",
     "TabSmartMatches": "Smart Matches",
-    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
     "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
     "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
+    "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
+    "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",

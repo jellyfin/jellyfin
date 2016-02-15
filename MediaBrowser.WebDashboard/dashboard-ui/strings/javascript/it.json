@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Sfoglia o inserire il percorso della cartella controllata. La cartella deve essere scrivibile.",
     "OrganizePatternResult": "Risultati: {0}",
     "AutoOrganizeError": "Errore Organizzazione File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "C'\u00e8 stato un errore nell'organizzare il file. Codice errore {0} .",
     "HeaderRestart": "Riavvia",
     "HeaderShutdown": "Spegni",

@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Vyberte nebo zadejte cestu k va\u0161\u00ed sledovan\u00e9 slo\u017ece. Slo\u017eka mus\u00ed b\u00fdt zapisovateln\u00e1.",
     "OrganizePatternResult": "V\u00fdsledek: {0}",
     "AutoOrganizeError": "Chyba p\u0159i uspo\u0159\u00e1d\u00e1n\u00ed souboru",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "Do\u0161lo k chyb\u011b p\u0159i za\u0159azen\u00ed souboru. K\u00f3d chyby: {0}.",
     "HeaderRestart": "Restart",
     "HeaderShutdown": "Vypnout",

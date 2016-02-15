@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Browse or enter the path to your watch folder. The folder must be writeable.",
     "OrganizePatternResult": "Result: {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "Restart",
     "HeaderShutdown": "Shutdown",
