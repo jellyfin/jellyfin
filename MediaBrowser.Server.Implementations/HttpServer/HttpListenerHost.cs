@@ -350,16 +350,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
-                if (string.Equals(GetExtension(urlString), "html", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.Write(GlobalResponse);
-                    httpRes.ContentType = "text/plain";
-                }
-                else
-                {
-                    httpRes.StatusCode = 503;
-                }
+                httpRes.StatusCode = 503;
+                httpRes.ContentType = "text/html";
+                httpRes.Write(GlobalResponse);
 
+                httpRes.Close();
                 return Task.FromResult(true);
             }
 
