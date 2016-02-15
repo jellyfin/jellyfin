@@ -235,7 +235,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
                 else
                 {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, item, null, null, deviceId, filter));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, item, null, null, deviceId, filter));
                 }
 
                 provided++;
@@ -261,7 +261,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                     }
                     else
                     {
-                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, childItem, item, serverItem.StubType, deviceId, filter));
+                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, childItem, item, serverItem.StubType, deviceId, filter));
                     }
                 }
             }
@@ -338,7 +338,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 }
                 else
                 {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(result, i, item, serverItem.StubType, deviceId, filter));
+                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, i, item, serverItem.StubType, deviceId, filter));
                 }
             }
 
