@@ -9,9 +9,48 @@
         <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
         <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
         <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
+
+        <paper-checkbox id="chkSpecialEpisode" class="episodeFilter hide">${OptionSpecialEpisode}</paper-checkbox>
+        <paper-checkbox id="chkMissingEpisode" class="episodeFilter hide">${OptionMissingEpisode}</paper-checkbox>
+        <paper-checkbox id="chkFutureEpisode" class="episodeFilter hide">${OptionUnairedEpisode}</paper-checkbox>
+    </div>
+    <div class="seriesStatus hide">
+        <br />
+        <h2 style="margin-bottom: .25em;">
+            ${HeaderStatus}
+        </h2>
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkStatus" id="chkStatusContinuing" data-filter="Continuing">${OptionContinuing}</paper-checkbox>
+            <paper-checkbox class="chkStatus" id="chkStatusEnded" data-filter="Ended">${OptionEnded}</paper-checkbox>
+        </div>
+    </div>
+    <br />
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="airdays hide">
+        <h2>${HeaderAirDays}</h2>
+
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkAirDays" id="chkSunday" data-filter="Sunday">${OptionSunday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkMonday" data-filter="Monday">${OptionMonday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkTuesday" data-filter="Tuesday">${OptionTuesday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkWednesday" data-filter="Wednesday">${OptionWednesday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkThursday" data-filter="Thursday">${OptionThursday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkFriday" data-filter="Friday">${OptionFriday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkSaturday" data-filter="Saturday">${OptionSaturday}</paper-checkbox>
+        </div>
+    </div>
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="features hide">
+        <h2>${HeaderFeatures}</h2>
+
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkFeatureFilter" id="chkSubtitle">${OptionHasSubtitles}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkTrailer">${OptionHasTrailer}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkSpecialFeature">${OptionHasSpecialFeatures}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkThemeSong">${OptionHasThemeSong}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkThemeVideo">${OptionHasThemeVideo}</paper-checkbox>
+        </div>
     </div>
 
-    <div class="players hide" style="margin-top:1.5em;">
+    <div class="players hide">
         <h2 style="margin-bottom: .25em;">
             ${HeaderNumberOfPlayers}
         </h2>
@@ -22,8 +61,7 @@
             <paper-radio-button class="radioPlayers" name="4">${Option4Player}</paper-radio-button>
         </paper-radio-group>
     </div>
-
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters hide" style="margin-top:2em;">
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters hide">
         <h2>${HeaderGenres}</h2>
 
         <div class="filterOptions">

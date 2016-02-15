@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series" data-require="jqmpanel,jqmcollapsible,scripts/tvrecommended,paper-tabs,neon-animated-pages,paper-checkbox">
+    <div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series" data-require="scripts/tvrecommended,paper-tabs,neon-animated-pages,paper-checkbox">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
@@ -115,136 +115,6 @@
                     </div>
                 </neon-animatable>
             </neon-animated-pages>
-        </div>
-
-        <div data-role="panel" class="viewPanel hide seriesViewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div>
-                    <h1>
-                        ${HeaderFilters}
-                    </h1>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
-                    </div>
-                </div>
-
-                <div>
-                    <h1>
-                        ${HeaderStatus}
-                    </h1>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkStatus" id="chkStatusContinuing" data-filter="Continuing">${OptionContinuing}</paper-checkbox>
-                        <paper-checkbox class="chkStatus" id="chkStatusEnded" data-filter="Ended">${OptionEnded}</paper-checkbox>
-                    </div>
-                </div>
-                <br />
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true">
-                    <h2>${HeaderAirDays}</h2>
-
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkAirDays" id="chkSunday" data-filter="Sunday">${OptionSunday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkMonday" data-filter="Monday">${OptionMonday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkTuesday" data-filter="Tuesday">${OptionTuesday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkWednesday" data-filter="Wednesday">${OptionWednesday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkThursday" data-filter="Thursday">${OptionThursday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkFriday" data-filter="Friday">${OptionFriday}</paper-checkbox>
-                        <paper-checkbox class="chkAirDays" id="chkSaturday" data-filter="Saturday">${OptionSaturday}</paper-checkbox>
-                    </div>
-                </div>
-                <div data-role="collapsible" data-collapsed="true" data-mini="true">
-                    <h2>${HeaderFeatures}</h2>
-
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkFeatureFilter" id="chkTrailer">${OptionHasTrailer}</paper-checkbox>
-                        <paper-checkbox class="chkFeatureFilter" id="chkSpecialFeature">${OptionHasSpecialFeatures}</paper-checkbox>
-                        <paper-checkbox class="chkFeatureFilter" id="chkThemeSong">${OptionHasThemeSong}</paper-checkbox>
-                        <paper-checkbox class="chkFeatureFilter" id="chkThemeVideo">${OptionHasThemeVideo}</paper-checkbox>
-                    </div>
-                </div>
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
-                    <h2>${HeaderGenres}</h2>
-
-                    <div class="filterOptions">
-                    </div>
-                </div>
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters">
-                    <h2>${HeaderParentalRatings}</h2>
-
-                    <div class="filterOptions">
-                    </div>
-                </div>
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters">
-                    <h2>${HeaderTags}</h2>
-
-                    <div class="filterOptions">
-                    </div>
-                </div>
-
-                <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters">
-                    <h2>${HeaderYears}</h2>
-
-                    <div class="filterOptions">
-                    </div>
-                </div>
-
-            </form>
-        </div>
-
-        <div data-role="panel" class="viewPanel episodesViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div>
-                    <h1>
-                        ${HeaderFilters}
-                    </h1>
-
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="Likes">${OptionLikes}</paper-checkbox>
-                        <paper-checkbox class="chkStandardFilter" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
-
-                        <paper-checkbox id="chkSpecialFeature">${OptionSpecialEpisode}</paper-checkbox>
-                        <paper-checkbox id="chkMissingEpisode">${OptionMissingEpisode}</paper-checkbox>
-                        <paper-checkbox id="chkFutureEpisode">${OptionUnairedEpisode}</paper-checkbox>
-                    </div>
-
-                </div>
-                <div>
-                    <h1>
-                        ${LabelVideoType}
-                    </h1>
-
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkVideoTypeFilter" data-filter="Bluray" id="chkBluray">${OptionBluray}</paper-checkbox>
-                        <paper-checkbox class="chkVideoTypeFilter" data-filter="Dvd" id="chkDvd">${OptionDvd}</paper-checkbox>
-                        <paper-checkbox class="chkVideoTypeFilter" data-filter="Iso" id="chkIso">${OptionIso}</paper-checkbox>
-                        <paper-checkbox class="chkHDFilter" data-filter="IsHD" id="chkHD">${OptionIsHD}</paper-checkbox>
-                        <paper-checkbox class="chkSDFilter" data-filter="IsSD" id="chkSD">${OptionIsSD}</paper-checkbox>
-                    </div>
-                </div>
-
-                <div>
-                    <h1>
-                        ${LabelFeatures}
-                    </h1>
-
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkFeatureFilter" id="chkSubtitle">${OptionHasSubtitles}</paper-checkbox>
-                    </div>
-                </div>
-            </form>
         </div>
 
         <div data-role="content">

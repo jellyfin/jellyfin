@@ -106,7 +106,33 @@
         $('.chkHDFilter', context).checked(query.IsHD == true);
         $('.chkSDFilter', context).checked(query.IsHD == false);
 
+        $('#chkSubtitle', context).checked(query.HasSubtitles == true);
+        $('#chkTrailer', context).checked(query.HasTrailer == true);
+        $('#chkThemeSong', context).checked(query.HasThemeSong == true);
+        $('#chkThemeVideo', context).checked(query.HasThemeVideo == true);
+        $('#chkSpecialFeature', context).checked(query.HasSpecialFeature == true);
+
+        $('#chkSpecialEpisode', context).checked(query.ParentIndexNumber == 0);
+        $('#chkMissingEpisode', context).checked(query.IsMissing == true);
+        $('#chkFutureEpisode', context).checked(query.IsUnaired == true);
+
         context.querySelector('.playersRadioGroup').selected = query.MinPlayers == null ? 'all' : query.MinPlayers;
+
+        $('.chkStatus', context).each(function () {
+
+            var filters = "," + (query.SeriesStatus || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+        });
+
+        $('.chkAirDays', context).each(function () {
+
+            var filters = "," + (query.AirDays || "");
+            var filterName = this.getAttribute('data-filter');
+
+            this.checked = filters.indexOf(',' + filterName) != -1;
+        });
     }
 
     function triggerChange(instance) {
@@ -212,12 +238,119 @@
             triggerChange(instance);
         });
 
+        $('.chkStatus', context).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.SeriesStatus || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.SeriesStatus = filters;
+            query.StartIndex = 0;
+            triggerChange(instance);
+        });
+
+        $('.chkAirDays', context).on('change', function () {
+
+            var filterName = this.getAttribute('data-filter');
+            var filters = query.AirDays || "";
+
+            filters = (',' + filters).replace(',' + filterName, '').substring(1);
+
+            if (this.checked) {
+                filters = filters ? (filters + ',' + filterName) : filterName;
+            }
+
+            query.AirDays = filters;
+            query.StartIndex = 0;
+            triggerChange(instance);
+        });
+
+        $('#chkTrailer', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? true : null;
+
+            triggerChange(instance);
+        });
+
+        $('#chkThemeSong', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeSong = this.checked ? true : null;
+
+            triggerChange(instance);
+        });
+
+        $('#chkSpecialFeature', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSpecialFeature = this.checked ? true : null;
+
+            triggerChange(instance);
+        });
+
+        $('#chkThemeVideo', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasThemeVideo = this.checked ? true : null;
+
+            triggerChange(instance);
+        });
+
+        $('#chkMissingEpisode', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.IsMissing = this.checked ? true : false;
+
+            triggerChange(instance);
+        });
+
+        $('#chkSpecialEpisode', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.ParentIndexNumber = this.checked ? 0 : null;
+
+            triggerChange(instance);
+        });
+
+        $('#chkFutureEpisode', context).on('change', function () {
+
+            query.StartIndex = 0;
+
+            if (this.checked) {
+                query.IsUnaired = true;
+                query.IsVirtualUnaired = null;
+            } else {
+                query.IsUnaired = null;
+                query.IsVirtualUnaired = false;
+            }
+
+            triggerChange(instance);
+        });
+
+        $('#chkSubtitle', context).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasSubtitles = this.checked ? true : null;
+
+            triggerChange(instance);
+        });
+
         context.querySelector('.playersRadioGroup').addEventListener('iron-select', function(e) {
 
             query.StartIndex = 0;
             var val = e.target.selected;
-            query.MinPlayers = val == "all" ? null : val;
-            triggerChange(instance);
+            var newValue = val == "all" ? null : val;
+            var changed = query.MinPlayers != newValue;
+            query.MinPlayers = newValue;
+            if (changed) {
+                triggerChange(instance);
+            }
         });
 
         context.addEventListener('change', function(e) {
@@ -313,12 +446,34 @@
             context.querySelector('.yearFilters').classList.remove('hide');
         }
 
-        if (options.mode == 'movies') {
+        if (options.mode == 'movies' || options.mode == 'episodes') {
             context.querySelector('.videoTypeFilters').classList.remove('hide');
         }
 
         if (options.mode == 'games') {
             context.querySelector('.players').classList.remove('hide');
+        }
+
+        if (options.mode == 'movies' || options.mode == 'series' || options.mode == 'games' || options.mode == 'episodes') {
+            context.querySelector('.features').classList.remove('hide');
+        }
+
+        if (options.mode == 'series') {
+            context.querySelector('.airdays').classList.remove('hide');
+            context.querySelector('.seriesStatus').classList.remove('hide');
+        }
+
+        if (options.mode == 'episodes') {
+            showByClass(context, 'episodeFilter');
+        }
+    }
+
+    function showByClass(context, className) {
+
+        var elems = context.querySelectorAll('.' + className);
+
+        for (var i = 0, length = elems.length; i < length; i++) {
+            elems[i].classList.remove('hide');
         }
     }
 
@@ -332,7 +487,7 @@
     }
 
     function enableDynamicFilters(mode) {
-        return mode == 'movies' || mode == 'games';
+        return mode == 'movies' || mode == 'games' || mode == 'series';
     }
 
     return function (options) {

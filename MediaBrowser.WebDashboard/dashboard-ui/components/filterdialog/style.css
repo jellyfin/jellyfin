@@ -2,11 +2,14 @@
     position: fixed !important;
     top: 5% !important;
     bottom: 5% !important;
-    margin: 0 !important;
+    left: 50%!important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 0 !important;
     border-radius: 0 !important;
     max-height: none !important;
     max-width: none !important;
-    min-width: 200px;
+    width: 200px;
 }
 
 @media all and (min-height: 300px) {
@@ -20,7 +23,16 @@
 @media all and (min-width: 300px) {
 
     .dynamicFilterDialog {
-        min-width: 240px;
+        width: 240px;
+        margin-left: -120px !important;
+    }
+}
+
+@media all and (min-width: 400px) {
+
+    .dynamicFilterDialog {
+        width: 300px;
+        margin-left: -150px !important;
     }
 }
 
