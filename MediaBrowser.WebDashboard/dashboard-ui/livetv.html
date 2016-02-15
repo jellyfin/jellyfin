@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="jqmpanel,scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,neon-animated-pages,paper-checkbox">
+    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,neon-animated-pages,paper-checkbox">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
@@ -34,31 +34,31 @@
                             <div class="activeProgramItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
-                        <div id="upcomingPrograms" class="homePageSection" style="margin-top:1em;">
+                        <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
                             <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
                             <div class="upcomingProgramItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
-                        <div id="upcomingTvMovies" class="homePageSection" style="margin-top:1em;">
+                        <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
                             <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingMovies}</h1>
-                                <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
+                                <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
                             <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
-                        <div id="upcomingSports" class="homePageSection" style="margin-top:1em;">
+                        <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
                             <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingSports}</h1>
-                                <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
+                                <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
                             <div class="upcomingSportsItems itemsContainer noautoinit"></div>
                             <br />
                         </div>
-                        <div id="upcomingKids" class="homePageSection" style="margin-top:1em;">
+                        <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
                             <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingForKids}</h1>
-                                <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
+                                <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
                             </div>
                             <div class="upcomingKidsItems itemsContainer noautoinit"></div>
                             <br />
@@ -66,7 +66,7 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent guideTabContent" style="width:auto;" data-index="1">
+                    <div class="pageTabContent guideTabContent" style="width: auto;" data-index="1">
                     </div>
                 </neon-animatable>
                 <neon-animatable>
@@ -75,7 +75,7 @@
                             <div class="listTopPaging">
                             </div>
                         </div>
-                        <div id="items" class="itemsContainer" style="max-width:800px;margin: 0 auto;"></div>
+                        <div id="items" class="itemsContainer" style="max-width: 800px; margin: 0 auto;"></div>
                     </div>
                 </neon-animatable>
                 <neon-animatable>
@@ -87,14 +87,16 @@
                         </div>
                         <div id="latestRecordings" class="homePageSection hide">
                             <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
+                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
                                 <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                             </div>
                             <div class="recordingItems itemsContainer"></div>
                             <br />
                         </div>
                         <div id="recordingGroups" style="display: none;" class="homePageSection">
-                            <h1 class="listHeader"><a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
+                            <h1 class="listHeader">
+                                <a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a>
+                            </h1>
                             <div id="recordingGroupItems"></div>
                         </div>
                     </div>
@@ -114,20 +116,6 @@
             </neon-animated-pages>
         </div>
 
-        <div data-role="panel" class="viewPanel channelViewPanel hide" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
-            <div class="ui-panel-inner">
-                <form>
-                    <div>
-                        <h1>${HeaderFilters}</h1>
-                        <div class="paperCheckboxList">
-                            <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
-                            <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
         <div data-role="content">
         </div>
     </div>

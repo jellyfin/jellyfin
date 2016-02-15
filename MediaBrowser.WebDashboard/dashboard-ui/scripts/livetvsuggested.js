@@ -162,7 +162,6 @@
                 depends.push('paper-icon-item');
                 depends.push('paper-item-body');
                 renderMethod = 'renderChannelsTab';
-                initMethod = 'initChannelsTab';
                 break;
             case 3:
                 depends.push('scripts/livetvrecordings');
