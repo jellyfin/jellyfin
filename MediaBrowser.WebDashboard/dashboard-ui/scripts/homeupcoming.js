@@ -108,7 +108,8 @@
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
-                context: 'home-upcoming'
+                context: 'home-upcoming',
+                overlayMoreButton: true
 
             });
             html += '</div>';
