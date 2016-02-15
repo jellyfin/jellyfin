@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "S\u00f8k igjennom eller velg sti for din Se mappe. Mappen m\u00e5 v\u00e6re skrivbar.",
     "OrganizePatternResult": "Resultat: {0}",
     "AutoOrganizeError": "Error Organizing File",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "There was an error organizing the file. Error code: {0}.",
     "HeaderRestart": "Omstart",
     "HeaderShutdown": "Sl\u00e5 Av",

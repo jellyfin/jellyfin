@@ -263,6 +263,7 @@
     "HeaderSelectWatchFolderHelp": "Przegl\u0105daj lub wprowad\u017a \u015bcie\u017ck\u0119 do obserwowanego folderu. Musisz posiadac tam prawa zapisu.",
     "OrganizePatternResult": "Wynik: {0}",
     "AutoOrganizeError": "Bl\u0105d przy organizacji pliku",
+    "FileOrganizeManually": "Organize File",
     "ErrorOrganizingFileWithErrorCode": "Wyst\u0105pi\u0142 b\u0142\u0105d przy organizacji pliku. Kod b\u0142\u0119du: {0}.",
     "HeaderRestart": "Restart",
     "HeaderShutdown": "Zamknij",

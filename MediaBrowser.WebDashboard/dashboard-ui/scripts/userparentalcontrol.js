@@ -124,7 +124,7 @@
 
             li += '</a>';
 
-            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '"></a>';
+            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '" data-icon="delete"></a>';
 
             li += '</li>';
 

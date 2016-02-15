@@ -1,9 +1,11 @@
 {
     "HeaderTaskTriggers": "\uc791\uc5c5 \ud2b8\ub9ac\uac70",
     "TabSmartMatches": "Smart Matches",
-    "LabelOrganizeSmartMatchOption": "In the future, organize all files into the selected series if the name contains",
     "TabSmartMatchInfo": "Manage your smart matches that were added using the Auto-Organize correction dialog",
     "OptionRememberOrganizeCorrection": "Save and apply this correction to future files with similiar names",
+    "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
+    "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "LabelExit": "\uc885\ub8cc",
     "LabelVisitCommunity": "\ucee4\ubba4\ub2c8\ud2f0 \ubc29\ubb38",
     "LabelGithub": "Github",
