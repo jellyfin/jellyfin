@@ -1,0 +1,30 @@
+﻿.dynamicFilterDialog {
+    position: fixed !important;
+    top: 5% !important;
+    bottom: 5% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    max-width: none !important;
+    min-width: 200px;
+}
+
+@media all and (min-height: 300px) {
+
+    .dynamicFilterDialog {
+        top: 10% !important;
+        bottom: 10% !important;
+    }
+}
+
+@media all and (min-width: 300px) {
+
+    .dynamicFilterDialog {
+        min-width: 240px;
+    }
+}
+
+.filterDialog paper-radio-button {
+    display: block;
+    padding-left: 0;
+}
