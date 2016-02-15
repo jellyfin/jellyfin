@@ -546,7 +546,7 @@
     }
 
     function showUserAtTop() {
-        return Dashboard.isConnectMode() || browserInfo.mobile;
+        return AppInfo.isNativeApp;
     }
 
     var requiresLibraryMenuRefresh = false;
