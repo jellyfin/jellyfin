@@ -435,8 +435,8 @@
 
     function setVisibility(context, options) {
 
-        if (options.mode == 'livetvchannels') {
-            hideByClass(context, 'nolivetvchannels');
+        if (options.mode == 'livetvchannels' || options.mode == 'albums' || options.mode == 'artists' || options.mode == 'albumartists' || options.mode == 'songs') {
+            hideByClass(context, 'videoStandard');
         }
 
         if (enableDynamicFilters(options.mode)) {
@@ -487,7 +487,7 @@
     }
 
     function enableDynamicFilters(mode) {
-        return mode == 'movies' || mode == 'games' || mode == 'series';
+        return mode == 'movies' || mode == 'games' || mode == 'series' || mode == 'albums' || mode == 'albumartists' || mode == 'artists' || mode == 'songs';
     }
 
     return function (options) {
