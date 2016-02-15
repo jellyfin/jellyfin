@@ -1,6 +1,6 @@
 ﻿define(['paperdialoghelper', 'events', 'paper-checkbox', 'jqmcollapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events) {
 
-    function renderOptions(context, selector, cssClass, items) {
+    function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
         var elem = context.querySelector(selector);
 
@@ -17,22 +17,12 @@
         //  style="margin: -.2em -.8em;"
         html += '<div class="paperCheckboxList">';
 
-        var index = 0;
-        var idPrefix = 'chk' + selector.substring(1);
-
         html += items.map(function (filter) {
 
             var itemHtml = '';
 
-            var id = idPrefix + index;
-            //itemHtml += '<div class="checkboxContainer">';
-            //itemHtml += '<input id="' + id + '" type="checkbox" data-filter="' + filter + '" data-role="none" class="' + cssClass + '" />';
-            //itemHtml += '<label for="' + id + '">' + filter + '</label>';
-            //itemHtml += '</div>';
-
-            itemHtml += '<paper-checkbox id="' + id + '" data-filter="' + filter + '" class="' + cssClass + '">' + filter + '</paper-checkbox>';
-
-            index++;
+            var checkedHtml = isCheckedFn(filter) ? ' checked' : '';
+            itemHtml += '<paper-checkbox' + checkedHtml + ' data-filter="' + filter + '" class="' + cssClass + '">' + filter + '</paper-checkbox>';
 
             return itemHtml;
 
@@ -43,17 +33,33 @@
         elem.querySelector('.filterOptions').innerHTML = html;
     }
 
-    function renderFilters(context, result) {
+    function renderFilters(context, result, query) {
 
         // If there's a huge number of these they will be really show to render
         if (result.Tags) {
             result.Tags.length = Math.min(result.Tags.length, 50);
         }
 
-        renderOptions(context, '.genreFilters', 'chkGenreFilter', result.Genres);
-        renderOptions(context, '.officialRatingFilters', 'chkOfficialRatingFilter', result.OfficialRatings);
-        renderOptions(context, '.tagFilters', 'chkTagFilter', result.Tags);
-        renderOptions(context, '.yearFilters', 'chkYearFilter', result.Years);
+        renderOptions(context, '.genreFilters', 'chkGenreFilter', result.Genres, function (i) {
+            var delimeter = '|';
+            return (delimeter + (query.Genres || '') + delimeter).indexOf(delimeter + i + delimeter) != -1;
+        });
+
+        renderOptions(context, '.officialRatingFilters', 'chkOfficialRatingFilter', result.OfficialRatings, function (i) {
+            var delimeter = '|';
+            return (delimeter + (query.OfficialRatings || '') + delimeter).indexOf(delimeter + i + delimeter) != -1;
+        });
+
+        renderOptions(context, '.tagFilters', 'chkTagFilter', result.Tags, function (i) {
+            var delimeter = '|';
+            return (delimeter + (query.Tags || '') + delimeter).indexOf(delimeter + i + delimeter) != -1;
+        });
+
+        renderOptions(context, '.yearFilters', 'chkYearFilter', result.Years, function (i) {
+
+            var delimeter = ',';
+            return (delimeter + (query.Years || '') + delimeter).indexOf(delimeter + i + delimeter) != -1;
+        });
     }
 
     function loadDynamicFilters(context, userId, itemQuery) {
@@ -67,7 +73,7 @@
 
         })).then(function (result) {
 
-            renderFilters(context, result);
+            renderFilters(context, result, itemQuery);
         });
 
     }
@@ -340,7 +346,7 @@
             triggerChange(instance);
         });
 
-        context.querySelector('.playersRadioGroup').addEventListener('iron-select', function(e) {
+        context.querySelector('.playersRadioGroup').addEventListener('iron-select', function (e) {
 
             query.StartIndex = 0;
             var val = e.target.selected;
@@ -352,7 +358,7 @@
             }
         });
 
-        context.addEventListener('change', function(e) {
+        context.addEventListener('change', function (e) {
 
             var chkGenreFilter = parentWithClass(e.target, 'chkGenreFilter');
             if (chkGenreFilter) {
