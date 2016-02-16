@@ -24,8 +24,8 @@
             $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevelForPlugins'));
         }
 
-        $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate).checkboxradio("refresh");
-        $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart).checkboxradio("refresh");
+        $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
+        $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart);
 
         if (systemInfo.CanSelfRestart) {
             $('#fldEnableAutomaticRestart', page).show();
@@ -34,12 +34,12 @@
         }
 
         $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
-        $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
+        $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging);
 
-        $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");
+        $('#chkRunAtStartup', page).checked(config.RunAtStartup);
 
-        $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching).checkboxradio("refresh");
-        $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification).checkboxradio("refresh");
+        $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
+        $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
         $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');
 
         Dashboard.hideLoadingMsg();

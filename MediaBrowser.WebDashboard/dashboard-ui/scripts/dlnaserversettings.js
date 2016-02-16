@@ -2,11 +2,11 @@
 
     function loadPage(page, config, users) {
 
-        $('#chkEnableServer', page).checked(config.EnableServer).checkboxradio("refresh");
-        $('#chkBlastAliveMessages', page).checked(config.BlastAliveMessages).checkboxradio("refresh");
+        $('#chkEnableServer', page).checked(config.EnableServer);
+        $('#chkBlastAliveMessages', page).checked(config.BlastAliveMessages);
         $('#txtBlastInterval', page).val(config.BlastAliveMessageIntervalSeconds);
 
-        $('#chkEnableMovieFolders', page).checked(config.EnableMovieFolders).checkboxradio("refresh");
+        $('#chkEnableMovieFolders', page).checked(config.EnableMovieFolders);
 
         var usersHtml = users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';

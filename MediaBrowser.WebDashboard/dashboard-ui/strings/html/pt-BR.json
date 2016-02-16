@@ -481,7 +481,7 @@
     "LabelEnableRealtimeMonitor": "Ativar monitoramento em tempo real",
     "LabelEnableRealtimeMonitorHelp": "As altera\u00e7\u00f5es ser\u00e3o processadas imediatamente em sistemas de arquivos suportados.",
     "ButtonScanLibrary": "Rastrear Biblioteca",
-    "HeaderNumberOfPlayers": "Reprodutores:",
+    "HeaderNumberOfPlayers": "Reprodutores",
     "OptionAnyNumberOfPlayers": "Qualquer",
     "Option1Player": "1+",
     "Option2Player": "2+",
