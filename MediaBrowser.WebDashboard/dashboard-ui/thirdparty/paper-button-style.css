@@ -187,16 +187,6 @@ paper-button.notext {
     color: #43A047;
 }
 
-.docspinner {
-    display: block;
-    margin-top: -14px;
-    margin-left: -14px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    z-index: 9999999;
-}
-
 /*paper-toast {
     background-color: #eee;
     color: #000;
