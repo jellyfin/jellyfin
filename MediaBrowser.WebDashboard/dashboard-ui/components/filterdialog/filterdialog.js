@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'events', 'paper-checkbox', 'jqmcollapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events) {
+﻿define(['paperdialoghelper', 'events', 'browser', 'paper-checkbox', 'jqmcollapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
@@ -84,9 +84,9 @@
 
         if (options.mode == 'livetvchannels') {
 
-            $('.chkFavorite', context).checked(query.IsFavorite == true);
-            $('.chkLikes', context).checked(query.IsLiked == true);
-            $('.chkDislikes', context).checked(query.IsDisliked == true);
+            context.querySelector('.chkFavorite').checked = query.IsFavorite == true;
+            context.querySelector('.chkLikes').checked = query.IsLiked == true;
+            context.querySelector('.chkDislikes').checked = query.IsDisliked == true;
 
         } else {
             $('.chkStandardFilter', context).each(function () {
@@ -95,7 +95,6 @@
                 var filterName = this.getAttribute('data-filter');
 
                 this.checked = filters.indexOf(',' + filterName) != -1;
-
             });
         }
 
@@ -107,15 +106,15 @@
             this.checked = filters.indexOf(',' + filterName) != -1;
         });
 
-        $('.chk3DFilter', context).checked(query.Is3D == true);
-        $('.chkHDFilter', context).checked(query.IsHD == true);
-        $('.chkSDFilter', context).checked(query.IsHD == false);
+        context.querySelector('.chk3DFilter').checked = query.Is3D == true;
+        context.querySelector('.chkHDFilter').checked = query.IsHD == true;
+        context.querySelector('.chkSDFilter').checked = query.IsHD == true;
 
-        $('#chkSubtitle', context).checked(query.HasSubtitles == true);
-        $('#chkTrailer', context).checked(query.HasTrailer == true);
-        $('#chkThemeSong', context).checked(query.HasThemeSong == true);
-        $('#chkThemeVideo', context).checked(query.HasThemeVideo == true);
-        $('#chkSpecialFeature', context).checked(query.HasSpecialFeature == true);
+        context.querySelector('#chkSubtitle').checked = query.HasSubtitles == true;
+        context.querySelector('#chkTrailer').checked = query.HasTrailer == true;
+        context.querySelector('#chkThemeSong').checked = query.HasThemeSong == true;
+        context.querySelector('#chkThemeVideo').checked = query.HasThemeVideo == true;
+        context.querySelector('#chkSpecialFeature').checked = query.HasSpecialFeature == true;
 
         $('#chkSpecialEpisode', context).checked(query.ParentIndexNumber == 0);
         $('#chkMissingEpisode', context).checked(query.IsMissing == true);
@@ -513,7 +512,8 @@
                         modal: false,
                         enableHistory: false,
                         entryAnimationDuration: 160,
-                        exitAnimationDuration: 200
+                        exitAnimationDuration: 200,
+                        autoFocus: false
                     });
 
                     dlg.classList.add('ui-body-a');
@@ -522,28 +522,34 @@
                     dlg.classList.add('formDialog');
                     dlg.classList.add('filterDialog');
 
-                    var html = '';
-
-                    html += Globalize.translateDocument(template);
-
-                    dlg.innerHTML = html;
+                    dlg.innerHTML = Globalize.translateDocument(template);
 
                     setVisibility(dlg, options);
                     document.body.appendChild(dlg);
 
                     // needed for jqm collapsibles
-                    $(dlg.querySelector('.filterDialogContent')).trigger('create');
+                    $(dlg.querySelectorAll('div[data-role="collapsible"]')).collapsible({});
 
                     paperDialogHelper.open(dlg);
 
                     dlg.addEventListener('iron-overlay-closed', resolve);
 
-                    updateFilterControls(dlg, options);
-                    bindEvents(self, dlg, options);
+                    var onTimeout = function () {
+                        updateFilterControls(dlg, options);
+                        bindEvents(self, dlg, options);
 
-                    if (enableDynamicFilters(options.mode)) {
-                        dlg.classList.add('dynamicFilterDialog');
-                        loadDynamicFilters(dlg, Dashboard.getCurrentUserId(), options.query);
+                        if (enableDynamicFilters(options.mode)) {
+                            dlg.classList.add('dynamicFilterDialog');
+                            loadDynamicFilters(dlg, Dashboard.getCurrentUserId(), options.query);
+                        }
+                    };
+
+                    // In browsers without native web components (FF/IE), there are some quirks with the checkboxes appearing incorrectly with no visible checkmark
+                    // Applying a delay after setting innerHTML seems to resolve this
+                    if (browser.animate) {
+                        onTimeout();
+                    } else {
+                        setTimeout(onTimeout, 100);
                     }
                 }
 

@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Ustawienia zapisane.",
     "AddUser": "Dodaj u\u017cytkownika",
     "Users": "U\u017cytkownicy",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Ta wtyczka nie ma \u017cadnych ustawie\u0144.",
     "NoPluginsInstalledMessage": "Nie masz \u017cadnych wtyczek zainstalowanych.",
     "BrowsePluginCatalogMessage": "Przejrzyj nasz katalog wtyczek \u017ceby zobaczy\u0107 dost\u0119pne wtyczki.",
+    "HeaderNewApiKey": "Nowy Klucz Api",
+    "LabelAppName": "Nazwa Aplikacji",
+    "LabelAppNameExample": "Przyk\u0142ad: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Przyznaj uprawnienia aplikacji do komunikacji z Serwerem Emby.",
     "MessageKeyEmailedTo": "Klucz wys\u0142any do {0}.",
     "MessageKeysLinked": "Klucz po\u0142\u0105czony.",
     "HeaderConfirmation": "Potwierdzenie",

@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Settaggi salvati.",
     "AddUser": "Aggiungi utente",
     "Users": "Utenti",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Questo Plugin non \u00e8 stato configurato.",
     "NoPluginsInstalledMessage": "Non ci sono Plugins installati.",
     "BrowsePluginCatalogMessage": "Sfoglia il catalogo dei Plugins.",
+    "HeaderNewApiKey": "Nuova Chiave Api",
+    "LabelAppName": "Nome app",
+    "LabelAppNameExample": "Esempio: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Concedere un permesso per applicazione al fine di comunicare con il Server Emby.",
     "MessageKeyEmailedTo": "Chiave inviata all'email {0}.",
     "MessageKeysLinked": "Chiave Collegata.",
     "HeaderConfirmation": "Conferma",

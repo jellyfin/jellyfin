@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Nastaven\u00ed ulo\u017eeno.",
     "AddUser": "P\u0159idat u\u017eivatele",
     "Users": "U\u017eivatel\u00e9",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Tento plugin nem\u00e1 nastaven\u00ed.",
     "NoPluginsInstalledMessage": "Nem\u00e1te nainstalov\u00e1n \u017e\u00e1dn\u00fd plugin.",
     "BrowsePluginCatalogMessage": "Prohl\u00e9dn\u011bte si n\u00e1\u0161 katalog, kde najdete dostupn\u00e9 pluginy.",
+    "HeaderNewApiKey": "Nov\u00fd kl\u00ed\u010d API",
+    "LabelAppName": "N\u00e1zev aplikace",
+    "LabelAppNameExample": "P\u0159\u00edklad: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Ud\u011blit povolen\u00ed aplikac\u00ed pro komunikaci s Emby Server.",
     "MessageKeyEmailedTo": "Kl\u00ed\u010d odesl\u00e1n na {0}",
     "MessageKeysLinked": "Kl\u00ed\u010de spojeny.",
     "HeaderConfirmation": "Potvrzen\u00ed",

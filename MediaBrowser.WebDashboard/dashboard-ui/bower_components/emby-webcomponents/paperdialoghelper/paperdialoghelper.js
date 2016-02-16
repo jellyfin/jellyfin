@@ -165,6 +165,13 @@
             }
         };
 
+        // too buggy in IE, not even worth it
+        if (browser.msie) {
+            dlg.animationConfig = null;
+            dlg.entryAnimation = null;
+            dlg.exitAnimation = null;
+        }
+
         dlg.classList.add('paperDialog');
 
         dlg.classList.add('scrollY');

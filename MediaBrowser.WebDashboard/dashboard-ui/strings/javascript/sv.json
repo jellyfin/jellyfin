@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Inst\u00e4llningarna sparade.",
     "AddUser": "Skapa anv\u00e4ndare",
     "Users": "Anv\u00e4ndare",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Detta till\u00e4gg har inga inst\u00e4llningar.",
     "NoPluginsInstalledMessage": "Du har inte installerat n\u00e5gra till\u00e4gg.",
     "BrowsePluginCatalogMessage": "Bes\u00f6k katalogen f\u00f6r att se tillg\u00e4ngliga till\u00e4gg.",
+    "HeaderNewApiKey": "Ny API-nyckel",
+    "LabelAppName": "Appens namn",
+    "LabelAppNameExample": "Exempel: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "Koden har epostats till  {0}.",
     "MessageKeysLinked": "Koderna har kopplats.",
     "HeaderConfirmation": "Bekr\u00e4ftelse",
