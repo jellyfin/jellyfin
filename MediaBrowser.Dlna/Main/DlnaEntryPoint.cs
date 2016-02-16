@@ -157,9 +157,9 @@ namespace MediaBrowser.Dlna.Main
                 //}
 
                 var addressString = address.ToString();
-                var guid = addressString.GetMD5();
+                var udn = addressString.GetMD5().ToString("N");
 
-                var descriptorURI = "/dlna/" + guid.ToString("N") + "/description.xml";
+                var descriptorURI = "/dlna/" + udn + "/description.xml";
 
                 var uri = new Uri(_appHost.GetLocalApiUrl(addressString) + descriptorURI);
 
@@ -170,12 +170,12 @@ namespace MediaBrowser.Dlna.Main
                     "urn:schemas-upnp-org:service:ContentDirectory:1", 
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
-                    "uuid:" + guid.ToString("N")
+                    "uuid:" + udn
                 };
 
-                _ssdpHandler.RegisterNotification(guid, uri, address, services);
+                _ssdpHandler.RegisterNotification(udn, uri, address, services);
 
-                _registeredServerIds.Add(guid.ToString("N"));
+                _registeredServerIds.Add(udn);
             }
         }
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.Dlna.Main
             {
                 try
                 {
-                    _ssdpHandler.UnregisterNotification(new Guid(id));
+                    _ssdpHandler.UnregisterNotification(id);
                 }
                 catch (Exception ex)
                 {

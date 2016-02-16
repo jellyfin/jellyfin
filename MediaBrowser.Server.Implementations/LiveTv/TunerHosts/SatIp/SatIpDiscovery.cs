@@ -41,29 +41,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
         {
-            //string server = null;
-            //if (e.Headers.TryGetValue("SERVER", out server) && server.IndexOf("HDHomeRun", StringComparison.OrdinalIgnoreCase) != -1)
-            //{
-            //    string location;
-            //    if (e.Headers.TryGetValue("Location", out location))
-            //    {
-            //        //_logger.Debug("HdHomerun found at {0}", location);
+            string st = null;
+            if (e.Headers.TryGetValue("ST", out st) && string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
+            {
+                string location;
+                if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
+                {
+                    _logger.Debug("SAT IP found at {0}", location);
 
-            //        // Just get the beginning of the url
-            //        Uri uri;
-            //        if (Uri.TryCreate(location, UriKind.Absolute, out uri))
-            //        {
-            //            var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
-            //                    .TrimEnd('/');
-
-            //            //_logger.Debug("HdHomerun api url: {0}", apiUrl);
-            //            AddDevice(apiUrl);
-            //        }
-            //    }
-            //}
+                    // Just get the beginning of the url
+                    AddDevice(location);
+                }
+            }
         }
 
-        private async void AddDevice(string url)
+        private async void AddDevice(string location)
         {
             await _semaphore.WaitAsync().ConfigureAwait(false);
 
@@ -71,24 +63,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             {
                 var options = GetConfiguration();
 
-                if (options.TunerHosts.Any(i =>
-                            string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) &&
-                            UriEquals(i.Url, url)))
-                {
-                    return;
-                }
+                //if (options.TunerHosts.Any(i =>
+                //            string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) &&
+                //            UriEquals(i.Url, url)))
+                //{
+                //    return;
+                //}
 
-                // Strip off the port
-                url = new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped).TrimEnd('/');
+                //// Strip off the port
+                //url = new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped).TrimEnd('/');
 
-                await TestUrl(url).ConfigureAwait(false);
-                
-                await _liveTvManager.SaveTunerHost(new TunerHostInfo
-                {
-                    Type = SatIpHost.DeviceType,
-                    Url = url
+                //await TestUrl(url).ConfigureAwait(false);
 
-                }).ConfigureAwait(false);
+                //await _liveTvManager.SaveTunerHost(new TunerHostInfo
+                //{
+                //    Type = SatIpHost.DeviceType,
+                //    Url = url
+
+                //}).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
