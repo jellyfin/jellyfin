@@ -1,4 +1,4 @@
-define(['paper-spinner', 'css!./loading'], function () {
+define(['layoutManager', 'paper-spinner', 'css!./loading'], function (layoutManager) {
 
     return {
         show: function () {
@@ -8,6 +8,10 @@ define(['paper-spinner', 'css!./loading'], function () {
 
                 elem = document.createElement("paper-spinner");
                 elem.classList.add('docspinner');
+
+                if (layoutManager.tv) {
+                    elem.classList.add('tv');
+                }
 
                 document.body.appendChild(elem);
             }
