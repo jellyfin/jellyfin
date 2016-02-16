@@ -1,7 +1,7 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
+    "ButtonLocalRefresh": "Lokaler Refresh",
+    "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
+    "ButtonFullRefresh": "Kompletter Refresh",
     "SettingsSaved": "Einstellungen gespeichert.",
     "AddUser": "Benutzer anlegen",
     "Users": "Benutzer",

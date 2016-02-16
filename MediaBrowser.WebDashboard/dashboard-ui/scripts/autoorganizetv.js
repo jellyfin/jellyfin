@@ -60,9 +60,9 @@
 
         var tvOptions = config.TvOptions;
 
-        $('#chkEnableTvSorting', page).checked(tvOptions.IsEnabled).checkboxradio('refresh');
-        $('#chkOverwriteExistingEpisodes', page).checked(tvOptions.OverwriteExistingEpisodes).checkboxradio('refresh');
-        $('#chkDeleteEmptyFolders', page).checked(tvOptions.DeleteEmptyFolders).checkboxradio('refresh');
+        $('#chkEnableTvSorting', page).checked(tvOptions.IsEnabled);
+        $('#chkOverwriteExistingEpisodes', page).checked(tvOptions.OverwriteExistingEpisodes);
+        $('#chkDeleteEmptyFolders', page).checked(tvOptions.DeleteEmptyFolders);
 
         $('#txtMinFileSize', page).val(tvOptions.MinFileSizeMb);
         $('#txtSeasonFolderPattern', page).val(tvOptions.SeasonFolderPattern).trigger('change');

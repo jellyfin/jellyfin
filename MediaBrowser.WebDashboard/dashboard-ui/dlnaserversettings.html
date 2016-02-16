@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server" data-require="scripts/dlnaserversettings,paper-input,jqmcheckbox">
+    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server" data-require="scripts/dlnaserversettings,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -19,14 +19,12 @@
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <label for="chkEnableServer">${LabelEnableDlnaServer}</label>
-                            <input type="checkbox" id="chkEnableServer" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableDlnaServerHelp}</div>
+                            <paper-checkbox id="chkEnableServer">${LabelEnableDlnaServer}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaServerHelp}</div>
                         </li>
                         <li>
-                            <label for="chkBlastAliveMessages">${LabelEnableBlastAliveMessages}</label>
-                            <input type="checkbox" id="chkBlastAliveMessages" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
+                            <paper-checkbox id="chkBlastAliveMessages">${LabelEnableBlastAliveMessages}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
                         </li>
                         <li>
                             <paper-input type="number" id="txtBlastInterval" min="1" max="300" label="${LabelBlastMessageInterval}"></paper-input>
@@ -38,9 +36,8 @@
                             <div class="fieldDescription">${LabelDefaultUserHelp}</div>
                         </li>
                         <li>
-                            <label for="chkEnableMovieFolders">${LabelEnableEnhancedMovies}</label>
-                            <input type="checkbox" id="chkEnableMovieFolders" data-mini="true" />
-                            <div class="fieldDescription">${LabelEnableEnhancedMoviesHelp}</div>
+                            <paper-checkbox id="chkEnableMovieFolders">${LabelEnableEnhancedMovies}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableEnhancedMoviesHelp}</div>
                         </li>
                     </ul>
                     <ul data-role="listview" class="ulForm">

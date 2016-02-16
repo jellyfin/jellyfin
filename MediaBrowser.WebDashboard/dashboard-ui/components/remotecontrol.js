@@ -835,8 +835,6 @@
                 context.querySelector('.libraryViewNav').classList.remove('hide');
             }
 
-            tabs.classList.add('bottom');
-            tabs.alignBottom = true;
             tabs.noSlide = true;
 
             tabs.addEventListener('iron-select', function (e) {
