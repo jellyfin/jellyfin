@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Configuraci\u00f3n guardada.",
     "AddUser": "Agregar usuario",
     "Users": "Usuarios",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "El complemento no requiere configuraci\u00f3n",
     "NoPluginsInstalledMessage": "No tiene complementos instalados.",
     "BrowsePluginCatalogMessage": "Explorar el catalogo de complementos para ver los complementos disponibles.",
+    "HeaderNewApiKey": "Nueva llave de API",
+    "LabelAppName": "Nombre del App",
+    "LabelAppNameExample": "Ejemplo: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Conceder acceso a una aplicaci\u00f3n para comunicarse con el Servidor Emby.",
     "MessageKeyEmailedTo": "Clave enviada por correo a {0}.",
     "MessageKeysLinked": "Llaves Vinculadas",
     "HeaderConfirmation": "Confirmaci\u00f3n",

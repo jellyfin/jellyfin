@@ -6,12 +6,12 @@ define([], function () {
 
             if (typeof options === 'string') {
                 options = {
-                    title: '',
+                    label: '',
                     text: options
                 };
             }
 
-            var result = prompt(options.title || '', options.text || '');
+            var result = prompt(options.label || '', options.text || '');
 
             if (result) {
                 resolve(result);

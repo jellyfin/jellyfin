@@ -36,7 +36,7 @@ namespace MediaBrowser.Dlna.Ssdp
         private Timer _notificationTimer;
 
         private bool _isDisposed;
-        private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
+        private readonly ConcurrentDictionary<string, List<UpnpDevice>> _devices = new ConcurrentDictionary<string, List<UpnpDevice>>();
 
         private readonly IApplicationHost _appHost;
 
@@ -451,7 +451,7 @@ namespace MediaBrowser.Dlna.Ssdp
             SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true);
         }
 
-        public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
+        public void RegisterNotification(string uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
         {
             var list = _devices.GetOrAdd(uuid, new List<UpnpDevice>());
 
@@ -461,7 +461,7 @@ namespace MediaBrowser.Dlna.Ssdp
             _logger.Debug("Registered mount {0} at {1}", uuid, descriptionUri);
         }
 
-        public void UnregisterNotification(Guid uuid)
+        public void UnregisterNotification(string uuid)
         {
             List<UpnpDevice> dl;
             if (_devices.TryRemove(uuid, out dl))

@@ -4,7 +4,7 @@
     <title>${TitleSupport}</title>
 </head>
 <body>
-    <div id="supporterKeyPage" data-role="page" class="page type-interior" data-require="jqmcollapsible,scripts/supporterkeypage">
+    <div id="supporterKeyPage" data-role="page" class="page type-interior" data-require="jqmcollapsible,scripts/supporterkeypage,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -36,8 +36,7 @@
 
                             <h1>${TabSupporterKey}</h1>
                             <div>
-                                <label for="txtSupporterKey">${LabelSupporterKey}</label>
-                                <input type="password" id="txtSupporterKey" name="txtSupporterKey" data-inline="true" />
+                                <paper-input type="password" id="txtSupporterKey" label="${LabelSupporterKey}" autocomplete="off"></paper-input>
                                 <div class="fieldDescription">
                                     ${LabelSupporterKeyHelp}
                                 </div>
@@ -65,8 +64,7 @@
                         <div>
                             <form id="lostKeyForm">
                                 <div style="margin: 1em 0;">
-                                    <label for="txtEmail">${LabelEmailAddress}</label>
-                                    <input type="email" required id="txtEmail" name="txtEmail" />
+                                    <paper-input type="email" required id="txtEmail" label="${LabelEmailAddress}"></paper-input>
                                     <div class="fieldDescription">${LabelSupporterEmailAddress}</div>
                                 </div>
                                 <p>
@@ -87,21 +85,17 @@
                                     ${MultipleKeyLinkingHelp}
                                 </p>
                                 <div style="margin: 1em 0;">
-                                    <label for="txtEmail">${LabelCurrentEmailAddress}</label>
-                                    <input type="email" required id="txtNewEmail" name="txtNewEmail" />
+                                    <paper-input type="email" required id="txtNewEmail" label="${LabelCurrentEmailAddress}"></paper-input>
                                     <div class="fieldDescription">
                                         ${LabelCurrentEmailAddressHelp}
                                     </div>
                                 </div>
-                                <p>
-                                    <label for="txtNewKey">${LabelNewSupporterKey}</label>
-                                    <input type="password" required="required" id="txtNewKey" name="txtNewKey" />
-                                </p>
-                                <p>
-
-                                    <label for="txtOldKey">${LabelOldSupporterKey}</label>
-                                    <input type="password" required="required" id="txtOldKey" name="txtOldKey" />
-                                </p>
+                                <div>
+                                    <paper-input type="password" required id="txtNewKey" label="${LabelNewSupporterKey}"></paper-input>
+                                </div>
+                                <div>
+                                    <paper-input type="password" required id="txtOldKey" label="${LabelOldSupporterKey}"></paper-input>
+                                </div>
                                 <p>
                                     <button type="submit" id="mbLinkKeysBtn" class="clearButton">
                                         <paper-button raised class="block submit"><iron-icon icon="check"></iron-icon><span>${ButtonLinkKeys}</span></paper-button>

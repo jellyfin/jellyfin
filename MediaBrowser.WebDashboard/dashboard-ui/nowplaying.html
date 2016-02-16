@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paper-tabs,paper-icon-button,paper-slider">
 
         <div class="remoteControlContent">
 
@@ -138,7 +138,7 @@
                 <div class="playlist itemsContainer" style="max-width: 800px; margin: 3em auto 0; padding-bottom: 200px;">
                 </div>
             </div>
-            <paper-tabs class="nowPlayingPagePaperTabs" hidescrollbuttons noink disabledrag>
+            <paper-tabs class="nowPlayingPagePaperTabs bottom hide" alignbottom hidescrollbuttons noink disabledrag>
                 <paper-tab>${TabNowPlaying}</paper-tab>
                 <paper-tab>${TabControls}</paper-tab>
                 <paper-tab>${TabPlaylist}</paper-tab>

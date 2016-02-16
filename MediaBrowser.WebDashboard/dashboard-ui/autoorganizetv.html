@@ -4,7 +4,7 @@
     <title>${TitleAutoOrganize}</title>
 </head>
 <body>
-    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmcollapsible,jqmtable,scripts/autoorganizetv,paper-input,jqmcheckbox">
+    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmcollapsible,jqmtable,scripts/autoorganizetv,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -20,8 +20,8 @@
                     <p>${AutoOrganizeTvHelp}</p>
                     <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
                         <li>
-                            <input type="checkbox" id="chkEnableTvSorting" name="chkEnableTvSorting" />
-                            <label for="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</label>
+                            <br />
+                            <paper-checkbox id="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</paper-checkbox>
                         </li>
                         <li>
                             <paper-input id="txtWatchFolder" label="${LabelWatchFolder}" style="width:85%;display:inline-block;"></paper-input>
@@ -41,8 +41,8 @@
                         <li>
                             <paper-input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" label="${LabelSeasonZeroFolderName}" required></paper-input>
                         </li>
-                    </ul>
-                    <div data-role="collapsible">
+                    </ul><br />
+                    <div data-role="collapsible" data-mini="true">
                         <h3>${HeaderEpisodeFilePattern}</h3>
                         <div>
                             <br />
@@ -133,7 +133,7 @@
 
                         </div>
                     </div>
-                    <br />
+                    <br /><br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="copyOrMoveFile" class="selectLabel">${LabelTransferMethod}</label>
@@ -144,17 +144,16 @@
                             <div class="fieldDescription">${LabelTransferMethodHelp}</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkOverwriteExistingEpisodes" name="chkOverwriteExistingEpisodes" />
-                            <label for="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</label>
+                            <br />
+                            <paper-checkbox type="checkbox" id="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</paper-checkbox>
                         </li>
                         <li>
                             <paper-input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" label="${LabelDeleteLeftOverFiles}"></paper-input>
                             <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
                         </li>
                         <li>
-                            <input type="checkbox" id="chkDeleteEmptyFolders" name="chkDeleteEmptyFolders" data-mini="true" />
-                            <label for="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</label>
-                            <div class="fieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
+                            <paper-checkbox id="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
                         </li>
                     </ul>
 

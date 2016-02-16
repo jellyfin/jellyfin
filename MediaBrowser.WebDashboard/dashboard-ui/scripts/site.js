@@ -458,39 +458,27 @@ var Dashboard = {
     showLoadingMsg: function () {
 
         Dashboard.loadingVisible = true;
-        var elem = document.querySelector('.docspinner');
 
-        if (elem) {
-
-            // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
-            elem.active = true;
-            elem.classList.remove('hide');
-
-        } else if (!Dashboard.loadingAdded) {
-
-            Dashboard.loadingAdded = true;
-
-            require(['paper-spinner'], function () {
-                elem = document.createElement("paper-spinner");
-                elem.classList.add('docspinner');
-
-                document.body.appendChild(elem);
-                elem.active = Dashboard.loadingVisible == true;
-            });
-        }
+        require(['loading'], function (loading) {
+            if (Dashboard.loadingVisible) {
+                loading.show();
+            } else {
+                loading.hide();
+            }
+        });
     },
 
     hideLoadingMsg: function () {
 
         Dashboard.loadingVisible = false;
 
-        var elem = document.querySelector('.docspinner');
-
-        if (elem) {
-
-            elem.active = false;
-            elem.classList.add('hide');
-        }
+        require(['loading'], function (loading) {
+            if (Dashboard.loadingVisible) {
+                loading.show();
+            } else {
+                loading.hide();
+            }
+        });
     },
 
     getModalLoadingMsg: function () {
@@ -537,28 +525,11 @@ var Dashboard = {
 
         if (typeof options == "string") {
 
-            require(['paper-toast'], function () {
-                var message = options;
+            require(['toast'], function (toast) {
 
-                Dashboard.toastId = Dashboard.toastId || 0;
-
-                var id = 'toast' + (Dashboard.toastId++);
-
-                var elem = document.createElement("paper-toast");
-                elem.setAttribute('text', message);
-                elem.id = id;
-
-                document.body.appendChild(elem);
-
-                // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-                // element onload never fires
-                setTimeout(function () {
-                    elem.show();
-                }, 300);
-
-                setTimeout(function () {
-                    elem.parentNode.removeChild(elem);
-                }, 5300);
+                toast({
+                    text: options
+                });
 
             });
 
@@ -1796,8 +1767,8 @@ var AppInfo = {};
 
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
-        if (!Dashboard.isRunningInCordova()) {
-            //bowerPath += window.dashboardVersion;
+        if (Dashboard.isConnectMode() && !Dashboard.isRunningInCordova()) {
+            bowerPath += window.dashboardVersion;
         }
 
         return bowerPath;
@@ -1996,6 +1967,8 @@ var AppInfo = {};
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
+        define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
+        define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {

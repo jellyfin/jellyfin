@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Indstillinger er gemt",
     "AddUser": "Tilf\u00f8j bruger",
     "Users": "Brugere",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Der er ingenting at konfigurere i dette plugin.",
     "NoPluginsInstalledMessage": "Der er ikke installeret nogle plugins.",
     "BrowsePluginCatalogMessage": "Gennemse vores plugin-katalog for at se tilg\u00e6ngelige plugins.",
+    "HeaderNewApiKey": "Ny Api n\u00f8gle",
+    "LabelAppName": "App navn",
+    "LabelAppNameExample": "F. eks: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Giv applikationen tilladelse til at kommunikere med Emby.",
     "MessageKeyEmailedTo": "N\u00f8gle sendt med e-mail til {0}.",
     "MessageKeysLinked": "N\u00f8gler sammenknyttet.",
     "HeaderConfirmation": "Bekr\u00e6ftelse",

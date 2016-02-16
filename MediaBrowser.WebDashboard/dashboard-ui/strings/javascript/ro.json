@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Settings saved.",
     "AddUser": "Add User",
     "Users": "Users",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "This plugin has nothing to configure.",
     "NoPluginsInstalledMessage": "You have no plugins installed.",
     "BrowsePluginCatalogMessage": "Browse our plugin catalog to view available plugins.",
+    "HeaderNewApiKey": "New Api Key",
+    "LabelAppName": "App name",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "Key emailed to {0}.",
     "MessageKeysLinked": "Keys linked.",
     "HeaderConfirmation": "Confirmation",

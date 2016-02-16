@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "\uc124\uc815\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "AddUser": "\uc0ac\uc6a9\uc790 \ucd94\uac00",
     "Users": "\uc0ac\uc6a9\uc790",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "\uc774 \ud50c\ub7ec\uadf8\uc778\uc740 \uc124\uc815\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.",
     "NoPluginsInstalledMessage": "\uc124\uce58\ud55c \ud50c\ub7ec\uadf8\uc778\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.",
     "BrowsePluginCatalogMessage": "\uc0ac\uc6a9 \uac00\ub2a5\ud55c \ud50c\ub7ec\uadf8\uc778\uc744 \ubcf4\ub824\uba74 \ud50c\ub7ec\uadf8\uc778 \uce74\ud0c8\ub85c\uadf8\ub97c \ud0d0\uc0c9\ud558\uc138\uc694.",
+    "HeaderNewApiKey": "\uc0c8 API \ud0a4",
+    "LabelAppName": "\uc571 \uc774\ub984",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Emby \uc11c\ubc84\uc640\uc758 \ud1b5\uc2e0\uc744 \uc704\ud574 \uc560\ud50c\ub9ac\ucf00\uc774\uc158 \uad8c\ud55c\uc744 \ubd80\uc5ec\ud569\ub2c8\ub2e4.",
     "MessageKeyEmailedTo": "\ud0a4\uac00 {0}\uc5d0\uac8c \uc774\uba54\uc77c\ub85c \uc804\uc1a1\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "MessageKeysLinked": "\ud0a4\uac00 \uc5f0\uacb0\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "HeaderConfirmation": "\ud655\uc778",

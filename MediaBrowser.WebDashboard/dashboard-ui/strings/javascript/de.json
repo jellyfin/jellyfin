@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Lokaler Refresh",
+    "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
+    "ButtonFullRefresh": "Kompletter Refresh",
     "SettingsSaved": "Einstellungen gespeichert.",
     "AddUser": "Benutzer anlegen",
     "Users": "Benutzer",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Bei diesem Plugin kann nichts eingestellt werden.",
     "NoPluginsInstalledMessage": "Du hast keine Plugins installiert.",
     "BrowsePluginCatalogMessage": "Durchsuche unsere Bibliothek, um alle verf\u00fcgbaren Plugins anzuzeigen.",
+    "HeaderNewApiKey": "Neuer API Schl\u00fcssel",
+    "LabelAppName": "App Name",
+    "LabelAppNameExample": "Beispiel: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Geben Sie einer Applikation die Erlaubnis mit dem Emby Server zu kommunizieren.",
     "MessageKeyEmailedTo": "E-Mail mit Zugangsschl\u00fcssel an: {0}.",
     "MessageKeysLinked": "Schl\u00fcssel verkn\u00fcpft.",
     "HeaderConfirmation": "Best\u00e4tigung",
