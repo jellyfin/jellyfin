@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 case OperatingSystem.Linux:
 
                     info.ArchiveType = "7z";
-                    info.Version = "20150917";
+                    info.Version = "20160215";
                     break;
                 case OperatingSystem.Osx:
 
@@ -119,12 +119,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.8.0-64bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.8.0-32bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
                             };
                         case Architecture.Arm:
                             return new[]

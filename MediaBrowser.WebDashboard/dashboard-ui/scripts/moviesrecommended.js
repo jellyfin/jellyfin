@@ -284,7 +284,6 @@
                 break;
             case 1:
                 depends.push('scripts/movies');
-                depends.push('scripts/queryfilters');
                 renderMethod = 'renderMoviesTab';
                 initMethod = 'initMoviesTab';
                 break;

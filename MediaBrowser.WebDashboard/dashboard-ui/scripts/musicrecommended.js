@@ -233,25 +233,20 @@
                 depends.push('scripts/musicalbums');
                 renderMethod = 'renderAlbumsTab';
                 initMethod = 'initAlbumsTab';
-                depends.push('scripts/queryfilters');
                 break;
             case 2:
                 depends.push('scripts/musicalbumartists');
                 renderMethod = 'renderAlbumArtistsTab';
                 initMethod = 'initAlbumArtistsTab';
-                depends.push('scripts/queryfilters');
                 break;
             case 3:
                 depends.push('scripts/musicartists');
                 renderMethod = 'renderArtistsTab';
                 initMethod = 'initArtistsTab';
-                depends.push('scripts/queryfilters');
                 break;
             case 4:
                 depends.push('scripts/songs');
                 renderMethod = 'renderSongsTab';
-                initMethod = 'initSongsTab';
-                depends.push('scripts/queryfilters');
                 depends.push('paper-icon-item');
                 depends.push('paper-item-body');
                 break;

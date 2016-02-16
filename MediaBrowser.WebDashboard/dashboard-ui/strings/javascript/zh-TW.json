@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "\u8a2d\u7f6e\u5df2\u4fdd\u5b58\u3002",
     "AddUser": "\u6dfb\u52a0\u7528\u6236",
     "Users": "\u7528\u6236",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "\u9019\u500b\u63d2\u4ef6\u6c92\u6709\u8a2d\u5b9a\u9078\u9805\u3002",
     "NoPluginsInstalledMessage": "\u4f60\u6c92\u6709\u5b89\u88dd\u63d2\u4ef6\u3002",
     "BrowsePluginCatalogMessage": "\u700f\u89bd\u6211\u5011\u7684\u63d2\u4ef6\u76ee\u9304\u4f86\u67e5\u770b\u53ef\u7528\u7684\u63d2\u4ef6\u3002",
+    "HeaderNewApiKey": "New Api Key",
+    "LabelAppName": "App name",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "Key emailed to {0}.",
     "MessageKeysLinked": "Keys linked.",
     "HeaderConfirmation": "Confirmation",

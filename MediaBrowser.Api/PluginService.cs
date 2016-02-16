@@ -208,7 +208,7 @@ namespace MediaBrowser.Api
 
                 foreach (var plugin in result)
                 {
-                    var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
+                    var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && string.Equals(i.guid.Replace("-", string.Empty), plugin.Id.Replace("-", string.Empty), StringComparison.OrdinalIgnoreCase));
 
                     if (pkg != null)
                     {
@@ -228,8 +228,9 @@ namespace MediaBrowser.Api
                         .ToList();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                //Logger.ErrorException("Error getting plugin list", ex);
                 // Play it safe here
                 if (requireAppStoreEnabled)
                 {

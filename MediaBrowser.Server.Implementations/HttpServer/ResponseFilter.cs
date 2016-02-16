@@ -61,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 if (!hasOptions.Options.ContainsKey("Server"))
                 {
                     hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1, UPnP/1.0 DLNADOC/1.50";
+                    //hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy

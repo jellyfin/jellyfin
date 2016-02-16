@@ -343,7 +343,7 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                title: Globalize.translate('LabelTag')
+                label: Globalize.translate('LabelTag')
 
             }).then(function (value) {
                 var tags = getBlockedTagsFromPage(page);
