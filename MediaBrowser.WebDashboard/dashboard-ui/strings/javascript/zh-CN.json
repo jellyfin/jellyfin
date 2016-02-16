@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "\u8bbe\u7f6e\u5df2\u4fdd\u5b58",
     "AddUser": "\u6dfb\u52a0\u7528\u6237",
     "Users": "\u7528\u6237",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "\u6b64\u63d2\u4ef6\u6ca1\u6709\u914d\u7f6e\u9009\u9879\u3002",
     "NoPluginsInstalledMessage": "\u4f60\u6ca1\u6709\u5b89\u88c5\u63d2\u4ef6\u3002",
     "BrowsePluginCatalogMessage": "\u6d4f\u89c8\u6211\u4eec\u7684\u63d2\u4ef6\u76ee\u5f55\u6765\u67e5\u770b\u73b0\u6709\u63d2\u4ef6\u3002",
+    "HeaderNewApiKey": "\u65b0Api \u5bc6\u94a5",
+    "LabelAppName": "APP\u540d\u79f0",
+    "LabelAppNameExample": "\u4f8b\u5982\uff1a Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "\u5e8f\u53f7\u901a\u8fc7\u7535\u5b50\u90ae\u4ef6\u53d1\u9001\u7ed9 {0}.",
     "MessageKeysLinked": "\u5e8f\u53f7\u5df2\u5173\u8054",
     "HeaderConfirmation": "\u786e\u8ba4",

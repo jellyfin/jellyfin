@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Configuraci\u00f3 guardada.",
     "AddUser": "Afegir Usuari",
     "Users": "Usuaris",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Aquest complement no necessita configuraci\u00f3.",
     "NoPluginsInstalledMessage": "No tens cap complement instal\u00b7lat.",
     "BrowsePluginCatalogMessage": "Consulta el nostre cat\u00e0leg per veure els complements disponibles.",
+    "HeaderNewApiKey": "Nova Clau Api",
+    "LabelAppName": "App name",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "Key emailed to {0}.",
     "MessageKeysLinked": "Keys linked.",
     "HeaderConfirmation": "Confirmation",

@@ -1,13 +1,112 @@
-﻿<div style="margin: 0;padding:1.5em 2em;">
-    <h2 style="margin-bottom: .5em;">
+﻿<div style="margin: 0;padding:1.5em 2em;" class="filterDialogContent">
+    <h2 style="margin-bottom: .25em;">
         ${HeaderFilters}
     </h2>
     <div class="paperCheckboxList">
-        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter nolivetvchannels" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
+        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
         <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
         <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
         <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
+
+        <paper-checkbox id="chkSpecialEpisode" class="episodeFilter hide">${OptionSpecialEpisode}</paper-checkbox>
+        <paper-checkbox id="chkMissingEpisode" class="episodeFilter hide">${OptionMissingEpisode}</paper-checkbox>
+        <paper-checkbox id="chkFutureEpisode" class="episodeFilter hide">${OptionUnairedEpisode}</paper-checkbox>
+    </div>
+    <div class="seriesStatus hide">
+        <br />
+        <h2 style="margin-bottom: .25em;">
+            ${HeaderStatus}
+        </h2>
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkStatus" id="chkStatusContinuing" data-filter="Continuing">${OptionContinuing}</paper-checkbox>
+            <paper-checkbox class="chkStatus" id="chkStatusEnded" data-filter="Ended">${OptionEnded}</paper-checkbox>
+        </div>
+    </div>
+    <br />
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="airdays hide">
+        <h2>${HeaderAirDays}</h2>
+
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkAirDays" id="chkSunday" data-filter="Sunday">${OptionSunday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkMonday" data-filter="Monday">${OptionMonday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkTuesday" data-filter="Tuesday">${OptionTuesday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkWednesday" data-filter="Wednesday">${OptionWednesday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkThursday" data-filter="Thursday">${OptionThursday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkFriday" data-filter="Friday">${OptionFriday}</paper-checkbox>
+            <paper-checkbox class="chkAirDays" id="chkSaturday" data-filter="Saturday">${OptionSaturday}</paper-checkbox>
+        </div>
+    </div>
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="features hide">
+        <h2>${HeaderFeatures}</h2>
+
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkFeatureFilter" id="chkSubtitle">${OptionHasSubtitles}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkTrailer">${OptionHasTrailer}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkSpecialFeature">${OptionHasSpecialFeatures}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkThemeSong">${OptionHasThemeSong}</paper-checkbox>
+            <paper-checkbox class="chkFeatureFilter" id="chkThemeVideo">${OptionHasThemeVideo}</paper-checkbox>
+        </div>
+    </div>
+
+    <div class="players hide">
+        <h2 style="margin-bottom: .25em;">
+            ${HeaderNumberOfPlayers}
+        </h2>
+        <paper-radio-group class="playersRadioGroup" selected="all">
+            <paper-radio-button class="radioPlayers" name="all">${OptionAnyNumberOfPlayers}</paper-radio-button>
+            <paper-radio-button class="radioPlayers" name="2">${Option2Player}</paper-radio-button>
+            <paper-radio-button class="radioPlayers" name="3">${Option3Player}</paper-radio-button>
+            <paper-radio-button class="radioPlayers" name="4">${Option4Player}</paper-radio-button>
+        </paper-radio-group>
+    </div>
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters hide">
+        <h2>${HeaderGenres}</h2>
+
+        <div class="filterOptions">
+        </div>
+    </div>
+
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters hide">
+        <h2>${HeaderParentalRatings}</h2>
+
+        <div class="filterOptions">
+        </div>
+    </div>
+
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters hide">
+        <h2>${HeaderTags}</h2>
+
+        <div class="filterOptions">
+        </div>
+    </div>
+
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters hide">
+        <h2>${HeaderTags}</h2>
+
+        <div class="filterOptions">
+        </div>
+    </div>
+
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="videoTypeFilters hide">
+        <h2>${HeaderVideoTypes}</h2>
+
+        <div class="paperCheckboxList">
+            <paper-checkbox class="chkVideoTypeFilter chkBluray" data-filter="Bluray">${OptionBluray}</paper-checkbox>
+            <paper-checkbox class="chkVideoTypeFilter chkDvd" data-filter="Dvd">${OptionDvd}</paper-checkbox>
+            <paper-checkbox class="chkVideoTypeFilter chkIso" data-filter="Iso">${OptionIso}</paper-checkbox>
+
+            <paper-checkbox class="chkHDFilter IsHD">${OptionIsHD}</paper-checkbox>
+            <paper-checkbox class="chkSDFilter IsHD">${OptionIsSD}</paper-checkbox>
+            <paper-checkbox class="chk3DFilter chk3D">${Option3D}</paper-checkbox>
+        </div>
+    </div>
+
+    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters hide">
+        <h2>${HeaderYears}</h2>
+
+        <div class="filterOptions">
+        </div>
     </div>
 </div>

@@ -3,10 +3,13 @@
     <div class="dialogHeaderTitle">
         ${ButtonEdit}
     </div>
-    <paper-button class="btnHeaderSave accent" tabindex="-1" style="margin-left:auto;">
-        <iron-icon icon="check"></iron-icon>
-        <span>${ButtonSave}</span>
-    </paper-button>
+    <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
+        <paper-button class="btnHeaderSave accent" tabindex="-1">
+            <iron-icon icon="check"></iron-icon>
+            <span>${ButtonSave}</span>
+        </paper-button>
+        <paper-icon-button icon="more-vert" tabindex="-1" class="btnMore"></paper-icon-button>
+    </div>
 </div>
 
 <form class="editItemMetadataForm editMetadataForm" style="margin:0;">

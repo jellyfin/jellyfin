@@ -32,7 +32,19 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             html += '<paper-icon-button tabindex="-1" icon="dialog:arrow-back" class="btnPromptExit"></paper-icon-button>';
         }
 
+        if (options.title) {
+            html += '<h2>';
+            html += options.title;
+            html += '</h2>';
+        }
+
         html += '<paper-input autoFocus class="txtPromptValue"></paper-input>';
+
+        if (options.description) {
+            html += '<div class="fieldDescription">';
+            html += options.description;
+            html += '</div>';
+        }
 
         // TODO: An actual form element should probably be added
         html += '<br/>';
@@ -53,8 +65,8 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             dlg.querySelector('.txtPromptValue').value = options.text;
         }
 
-        if (options.title) {
-            dlg.querySelector('.txtPromptValue').label = options.title;
+        if (options.label) {
+            dlg.querySelector('.txtPromptValue').label = options.label;
         }
 
         document.body.appendChild(dlg);

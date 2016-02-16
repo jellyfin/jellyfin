@@ -72,17 +72,16 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                title: Globalize.translate('LabelNewName'),
-                callback: function (newName) {
+                label: Globalize.translate('LabelNewName')
 
-                    if (newName && newName != virtualFolder.Name) {
+            }).then(function (newName) {
+                if (newName && newName != virtualFolder.Name) {
 
-                        var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
+                    var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
-                        ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).then(function () {
-                            reloadLibrary(page);
-                        });
-                    }
+                    ApiClient.renameVirtualFolder(virtualFolder.Name, newName, refreshAfterChange).then(function () {
+                        reloadLibrary(page);
+                    });
                 }
             });
 

@@ -208,7 +208,6 @@
                 break;
             case 3:
                 depends.push('scripts/tvshows');
-                depends.push('scripts/queryfilters');
                 renderMethod = 'renderSeriesTab';
                 initMethod = 'initSeriesTab';
                 break;

@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Innstillinger lagret",
     "AddUser": "Legg til bruker",
     "Users": "Brukere",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Dette programtillegget har ingenting \u00e5 konfigurere.",
     "NoPluginsInstalledMessage": "Du har ingen programtillegg installert.",
     "BrowsePluginCatalogMessage": "Browse v\u00e5r plugin-katalog for \u00e5 se tilgjengelige plugins",
+    "HeaderNewApiKey": "Ny Api N\u00f8kkel",
+    "LabelAppName": "Applikasjonsnavn",
+    "LabelAppNameExample": "Eksempel: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "N\u00f8kkel sendt til {0}",
     "MessageKeysLinked": "N\u00f8kler lenket.",
     "HeaderConfirmation": "Bekreftelse",

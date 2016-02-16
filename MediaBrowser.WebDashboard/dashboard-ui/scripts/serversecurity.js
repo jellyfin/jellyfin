@@ -95,28 +95,33 @@
         });
     }
 
-    function onSubmit() {
-        var form = this;
-        var page = $(form).parents('.page');
+    function showNewKeyPrompt(page) {
+        require(['prompt'], function (prompt) {
+            
+            // HeaderNewApiKeyHelp not used
 
-        Dashboard.showLoadingMsg();
+            prompt({
+                title: Globalize.translate('HeaderNewApiKey'),
+                label: Globalize.translate('LabelAppName'),
+                description: Globalize.translate('LabelAppNameExample')
 
-        ApiClient.ajax({
-            type: "POST",
-            url: ApiClient.getUrl('Auth/Keys', {
+            }).then(function (value) {
 
-                App: $('#txtAppName', form).val()
+                ApiClient.ajax({
+                    type: "POST",
+                    url: ApiClient.getUrl('Auth/Keys', {
 
-            })
+                        App: value
 
-        }).then(function () {
+                    })
 
-            $('.newKeyPanel', page).panel('close');
+                }).then(function () {
 
-            loadData(page);
+                    loadData(page);
+                });
+            });
+
         });
-
-        return false;
     }
 
     pageIdOn('pageinit', "serverSecurityPage", function () {
@@ -125,13 +130,9 @@
 
         $('.btnNewKey', page).on('click', function () {
 
-            $('.newKeyPanel', page).panel('toggle');
-
-            $('#txtAppName', page).val('').focus();
+            showNewKeyPrompt(page);
 
         });
-
-        $('.newKeyForm').off('submit', onSubmit).on('submit', onSubmit);
 
     });
     pageIdOn('pagebeforeshow', "serverSecurityPage", function () {

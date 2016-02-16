@@ -40,7 +40,7 @@
         return LibraryBrowser.getSavedQueryKey('episodes');
     }
 
-    function reloadItems(page, viewPanel) {
+    function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
@@ -57,20 +57,18 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false,
-                viewPanelClass: 'episodesViewPanel',
                 updatePageSizeSetting: false,
                 addLayoutButton: true,
-                viewIcon: 'filter-list',
                 sortButton: true,
                 currentLayout: view,
-                layouts: 'Poster,PosterCard'
+                layouts: 'Poster,PosterCard',
+                filterButton: true
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page, viewPanel);
+            updateFilterControls(page);
 
             if (view == "List") {
 
@@ -109,18 +107,22 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
                 getPageData().view = layout;
                 LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                reloadItems(page, viewPanel);
+                reloadItems(page);
+            });
+
+            $('.btnFilter', page).on('click', function () {
+                showFilterMenu(page);
             });
 
             // On callback make sure to set StartIndex = 0
@@ -163,7 +165,7 @@
                         id: 'VideoBitRate,SeriesSortName,SortName'
                     }],
                     callback: function () {
-                        reloadItems(page, viewPanel);
+                        reloadItems(page);
                     },
                     query: query
                 });
@@ -175,168 +177,31 @@
         });
     }
 
-    function updateFilterControls(tabContent, viewPanel) {
+    function showFilterMenu(page) {
+
+        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+            var filterDialog = new filterDialogFactory({
+                query: getQuery(),
+                mode: 'episodes'
+            });
+
+            Events.on(filterDialog, 'filterchange', function () {
+                reloadItems(page);
+            });
+
+            filterDialog.show();
+        });
+    }
+
+    function updateFilterControls(tabContent) {
 
         var query = getQuery();
-        $('.chkStandardFilter', viewPanel).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.toLowerCase().indexOf(',' + filterName.toLowerCase()) != -1;
-
-        });
-
-        $('.chkVideoTypeFilter', viewPanel).each(function () {
-
-            var filters = "," + (query.VideoTypes || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        });
-
-        $('#chkHD', viewPanel).checked(query.IsHD == true);
-        $('#chkSD', viewPanel).checked(query.IsHD == false);
-
-        $('#chkSubtitle', viewPanel).checked(query.HasSubtitles == true);
-        $('#chkTrailer', viewPanel).checked(query.HasTrailer == true);
-        $('#chkThemeSong', viewPanel).checked(query.HasThemeSong == true);
-        $('#chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true);
-        $('#chkSpecialFeature', viewPanel).checked(query.ParentIndexNumber == 0);
-
-        $('#chkMissingEpisode', viewPanel).checked(query.IsMissing == true);
-        $('#chkFutureEpisode', viewPanel).checked(query.IsUnaired == true);
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function initPage(tabContent, viewPanel) {
-
-        $('.chkStandardFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-
-        $('.chkVideoTypeFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.VideoTypes || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.VideoTypes = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkSubtitle', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasSubtitles = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkTrailer', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasTrailer = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkThemeSong', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeSong = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkThemeVideo', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeVideo = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkSpecialFeature', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.ParentIndexNumber = this.checked ? 0 : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkMissingEpisode', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.IsMissing = this.checked ? true : false;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkFutureEpisode', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-
-            if (this.checked) {
-                query.IsUnaired = true;
-                query.IsVirtualUnaired = null;
-            } else {
-                query.IsUnaired = null;
-                query.IsVirtualUnaired = false;
-            }
-
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkHD', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.IsHD = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('#chkSD', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.IsHD = this.checked ? false : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
+    function initPage(tabContent) {
 
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
@@ -344,35 +209,32 @@
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(tabContent, viewPanel);
+            reloadItems(tabContent);
 
         }).on('alphaclear', function (e) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(tabContent, viewPanel);
+            reloadItems(tabContent);
         });
 
         $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
-            reloadItems(tabContent, viewPanel);
-
+            reloadItems(tabContent);
         });
     }
 
     window.TvPage.initEpisodesTab = function (page, tabContent) {
 
-        var viewPanel = page.querySelector('.episodesViewPanel');
-        initPage(tabContent, viewPanel);
+        initPage(tabContent);
     };
 
     window.TvPage.renderEpisodesTab = function (page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
-            var viewPanel = page.querySelector('.episodesViewPanel');
-            reloadItems(tabContent, viewPanel);
-            updateFilterControls(tabContent, viewPanel);
+            reloadItems(tabContent);
+            updateFilterControls(tabContent);
         }
     };
 

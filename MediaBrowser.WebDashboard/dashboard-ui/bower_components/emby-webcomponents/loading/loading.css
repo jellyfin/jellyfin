@@ -1,0 +1,21 @@
+.docspinner {
+    margin-top: -4vh;
+    margin-left: -4vh;
+    width: 8vh;
+    height: 8vh;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 9999999;
+}
+
+    .docspinner.tv {
+        margin-top: -5vh;
+        margin-left: -5vh;
+        width: 10vh;
+        height: 10vh;
+    }
+
+.loadingHide {
+    display: none !important;
+}

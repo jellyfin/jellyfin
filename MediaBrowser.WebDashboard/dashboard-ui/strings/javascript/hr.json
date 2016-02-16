@@ -1,4 +1,7 @@
 {
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Postavke snimljene",
     "AddUser": "Dodaj korisnika",
     "Users": "Korisnici",
@@ -30,6 +33,10 @@
     "NoPluginConfigurationMessage": "Ovaj dodatak nema ni\u0161ta za podesiti.",
     "NoPluginsInstalledMessage": "Nemate instaliranih dodataka.",
     "BrowsePluginCatalogMessage": "Pregledajte dostupne dodatke u na\u0161em katalogu.",
+    "HeaderNewApiKey": "New Api Key",
+    "LabelAppName": "App name",
+    "LabelAppNameExample": "Example: Sickbeard, NzbDrone",
+    "HeaderNewApiKeyHelp": "Grant an application permission to communicate with Emby Server.",
     "MessageKeyEmailedTo": "Key emailed to {0}.",
     "MessageKeysLinked": "Keys linked.",
     "HeaderConfirmation": "Confirmation",
