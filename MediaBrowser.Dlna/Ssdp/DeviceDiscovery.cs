@@ -127,10 +127,12 @@ namespace MediaBrowser.Dlna.Ssdp
                             args.EndPoint = endPoint;
                             args.LocalEndPoint = new IPEndPoint(localIp, 0);
 
-                            if (!_ssdpHandler.IsSelfNotification(args))
+                            if (_ssdpHandler.IgnoreMessage(args, true))
                             {
-                                TryCreateDevice(args);
+                                return;
                             }
+
+                            TryCreateDevice(args);
                         }
                     }
 
