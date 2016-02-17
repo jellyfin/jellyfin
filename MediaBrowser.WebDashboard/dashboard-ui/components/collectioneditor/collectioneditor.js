@@ -122,7 +122,7 @@
         html += '<form class="newCollectionForm" style="margin:auto;">';
 
         html += '<div class="fldSelectCollection">';
-        html += '<label for="selectCollectionToAddTo">' + Globalize.translate('LabelSelectCollection') + '</label>';
+        html += '<label for="selectCollectionToAddTo" class="selectLabel">' + Globalize.translate('LabelSelectCollection') + '</label>';
         html += '<select id="selectCollectionToAddTo" data-mini="true"></select>';
         html += '</div>';
 
