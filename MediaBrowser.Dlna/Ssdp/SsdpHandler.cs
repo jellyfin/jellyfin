@@ -86,8 +86,25 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public event EventHandler<SsdpMessageEventArgs> MessageReceived;
 
-        private async void OnMessageReceived(SsdpMessageEventArgs args)
+        private async void OnMessageReceived(SsdpMessageEventArgs args, bool isMulticast)
         {
+            if (IgnoreMessage(args, isMulticast))
+            {
+                return;
+            }
+
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLog;
+            
+            if (enableDebugLogging)
+            {
+                var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
+                var headerText = string.Join(",", headerTexts.ToArray());
+
+                var protocol = isMulticast ? "Multicast" : "Unicast";
+                var localEndPointString = args.LocalEndPoint == null ? "null" : args.LocalEndPoint.ToString();
+                _logger.Debug("{0} message received from {1} on {3}. Protocol: {4} Headers: {2}", args.Method, args.EndPoint, headerText, localEndPointString, protocol);
+            }
+
             var headers = args.Headers;
             string st;
 
@@ -108,6 +125,44 @@ namespace MediaBrowser.Dlna.Ssdp
             EventHelper.FireEventIfNotNull(MessageReceived, this, args, _logger);
         }
 
+        internal bool IgnoreMessage(SsdpMessageEventArgs args, bool isMulticast)
+        {
+            string usn;
+            if (args.Headers.TryGetValue("USN", out usn))
+            {
+                // USN=uuid:b67df29b5c379445fde78c3774ab518d::urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1
+                if (RegisteredDevices.Select(i => i.USN).Contains(usn, StringComparer.OrdinalIgnoreCase))
+                {
+                    //var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
+                    //var headerText = string.Join(",", headerTexts.ToArray());
+
+                    //var protocol = isMulticast ? "Multicast" : "Unicast";
+                    //var localEndPointString = args.LocalEndPoint == null ? "null" : args.LocalEndPoint.ToString();
+                    //_logger.Debug("IGNORING {0} message received from {1} on {3}. Protocol: {4} Headers: {2}", args.Method, args.EndPoint, headerText, localEndPointString, protocol);
+                    
+                    return true;
+                }
+            }
+
+            string serverId;
+            if (args.Headers.TryGetValue("X-EMBY-SERVERID", out serverId))
+            {
+                if (string.Equals(serverId, _appHost.SystemId, StringComparison.OrdinalIgnoreCase))
+                {
+                    //var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
+                    //var headerText = string.Join(",", headerTexts.ToArray());
+
+                    //var protocol = isMulticast ? "Multicast" : "Unicast";
+                    //var localEndPointString = args.LocalEndPoint == null ? "null" : args.LocalEndPoint.ToString();
+                    //_logger.Debug("IGNORING {0} message received from {1} on {3}. Protocol: {4} Headers: {2}", args.Method, args.EndPoint, headerText, localEndPointString, protocol);
+
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
         public IEnumerable<UpnpDevice> RegisteredDevices
         {
             get
@@ -126,7 +181,7 @@ namespace MediaBrowser.Dlna.Ssdp
             RestartSocketListener();
             ReloadAliveNotifier();
 
-            //CreateUnicastClient();
+            CreateUnicastClient();
 
             SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
@@ -146,6 +201,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
+            values["X-EMBY-SERVERID"] = _appHost.SystemId;
 
             values["MAN"] = "\"ssdp:discover\"";
 
@@ -162,7 +218,7 @@ namespace MediaBrowser.Dlna.Ssdp
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
             SendDatagram(msg, _ssdpEndp, localIp, true);
 
-            //SendUnicastRequest(msg);
+            SendUnicastRequest(msg);
         }
 
         public async void SendDatagram(string msg,
@@ -324,20 +380,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 var args = SsdpHelper.ParseSsdpResponse(received);
                 args.EndPoint = endpoint;
 
-                if (IsSelfNotification(args))
-                {
-                    return;
-                }
-
-                if (enableDebugLogging)
-                {
-                    var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
-                    var headerText = string.Join(",", headerTexts.ToArray());
-
-                    _logger.Debug("{0} message received from {1} on {3}. Headers: {2}", args.Method, args.EndPoint, headerText, _multicastSocket.LocalEndPoint);
-                }
-
-                OnMessageReceived(args);
+                OnMessageReceived(args, true);
             }
             catch (ObjectDisposedException)
             {
@@ -355,26 +398,6 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 Receive();
             }
-        }
-
-        internal bool IsSelfNotification(SsdpMessageEventArgs args)
-        {
-            // Avoid responding to self search messages
-            //string serverId;
-            //if (args.Headers.TryGetValue("X-EMBYSERVERID", out serverId) &&
-            //    string.Equals(serverId, _appHost.SystemId, StringComparison.OrdinalIgnoreCase))
-            //{
-            //    return true;
-            //}
-
-            string server;
-            args.Headers.TryGetValue("SERVER", out server);
-
-            if (string.Equals(server, _serverSignature, StringComparison.OrdinalIgnoreCase))
-            {
-                //return true;
-            }
-            return false;
         }
 
         public void Dispose()
@@ -440,6 +463,7 @@ namespace MediaBrowser.Dlna.Ssdp
             values["NTS"] = "ssdp:" + type;
             values["NT"] = dev.Type;
             values["USN"] = dev.USN;
+            values["X-EMBY-SERVERID"] = _appHost.SystemId;
 
             if (logMessage)
             {
@@ -489,14 +513,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     _logger.ErrorException("Error creating unicast client", ex);
                 }
 
-                try
-                {
-                    UnicastSetBeginReceive();
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in UnicastSetBeginReceive", ex);
-                }
+                UnicastSetBeginReceive();
             }
         }
 
@@ -522,11 +539,18 @@ namespace MediaBrowser.Dlna.Ssdp
         /// </summary>
         private void UnicastSetBeginReceive()
         {
-            var ipRxEnd = new IPEndPoint(IPAddress.Any, _unicastPort);
-            var udpListener = new UdpState { EndPoint = ipRxEnd };
+            try
+            {
+                var ipRxEnd = new IPEndPoint(IPAddress.Any, _unicastPort);
+                var udpListener = new UdpState { EndPoint = ipRxEnd };
 
-            udpListener.UdpClient = _unicastClient;
-            _unicastClient.BeginReceive(UnicastReceiveCallback, udpListener);
+                udpListener.UdpClient = _unicastClient;
+                _unicastClient.BeginReceive(UnicastReceiveCallback, udpListener);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in UnicastSetBeginReceive", ex);
+            }
         }
 
         /// <summary>
@@ -540,14 +564,21 @@ namespace MediaBrowser.Dlna.Ssdp
             var endpoint = ((UdpState)(ar.AsyncState)).EndPoint;
             if (udpClient.Client != null)
             {
-                var responseBytes = udpClient.EndReceive(ar, ref endpoint);
-                var args = SsdpHelper.ParseSsdpResponse(responseBytes);
+                try
+                {
+                    var responseBytes = udpClient.EndReceive(ar, ref endpoint);
+                    var args = SsdpHelper.ParseSsdpResponse(responseBytes);
 
-                args.EndPoint = endpoint;
+                    args.EndPoint = endpoint;
 
-                OnMessageReceived(args);
+                    OnMessageReceived(args, false);
 
-                UnicastSetBeginReceive();
+                    UnicastSetBeginReceive();
+                }
+                catch (ObjectDisposedException)
+                {
+                    
+                }
             }
         }
 
@@ -564,13 +595,20 @@ namespace MediaBrowser.Dlna.Ssdp
             var ipSsdp = IPAddress.Parse(SSDPAddr);
             var ipTxEnd = new IPEndPoint(ipSsdp, SSDPPort);
 
-            for (var i = 0; i < 3; i++)
+            try
             {
-                if (i > 0)
+                for (var i = 0; i < 3; i++)
                 {
-                    await Task.Delay(50).ConfigureAwait(false);
+                    if (i > 0)
+                    {
+                        await Task.Delay(50).ConfigureAwait(false);
+                    }
+                    _unicastClient.Send(req, req.Length, ipTxEnd);
                 }
-                _unicastClient.Send(req, req.Length, ipTxEnd);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in SendUnicastRequest", ex);
             }
         }
 
