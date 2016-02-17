@@ -1,7 +1,16 @@
-﻿define(['paperdialoghelper'], function (paperDialogHelper) {
+define(['paperdialoghelper'], function (paperDialogHelper) {
 
     var currentRecognition;
+    var lang = 'grammar';
+    //var lang = 'en-US';
 
+    var commandgroups = getGrammarCommands(lang);
+
+
+    
+    /// <summary> Shuffle array. </summary>
+    /// <param name="array"> The array. </param>
+    /// <returns> array </returns>
     function shuffleArray(array) {
         var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -21,201 +30,61 @@
         return array;
     }
 
-    function getSampleCommands() {
+    /// <summary> Gets sample commands. </summary>
+    /// <returns> The sample commands. </returns>
+    function getSampleCommands(groupid) {
 
         return new Promise(function (resolve, reject) {
+
+            groupid = typeof (groupid) !== 'undefined' ? groupid : '';
 
             var commands = [];
+            commandgroups.map(function (group) {
+                if ((group.items && group.items.length > 0) && (groupid == group.groupid || groupid == '')) {
 
-            //commands.push('show my movies');
-            //commands.push('pull up my tv shows');
+                    group.items.map(function (item) {
 
-            commands.push('play my latest episodes');
-            commands.push('play next up');
-            commands.push('shuffle my favorite songs');
+                        if (item.commandtemplates && item.commandtemplates.length > 0) {
 
-            commands.push('show my tv guide');
-            commands.push('pull up my recordings');
-            commands.push('control chromecast');
-            commands.push('control [device name]');
-            commands.push('turn on display mirroring');
-            commands.push('turn off display mirroring');
-            commands.push('toggle display mirroring');
+                            item.commandtemplates.map(function (templates) {
+                                commands.push(templates);
+                            });
+                        }
+
+                    });
+                }
+            });
 
             resolve(shuffleArray(commands));
-        });
-    }
 
-    function processText(text) {
-
-        return new Promise(function (resolve, reject) {
-
-            require(['voice/textprocessor-en-us.js'], function (parseText) {
-
-                var result = parseText(text);
-
-                switch (result.action) {
-
-                    case 'show':
-                        showCommand(result);
-                        break;
-                    case 'play':
-                        playCommand(result);
-                        break;
-                    case 'shuffle':
-                        playCommand(result, true);
-                        break;
-                    case 'search':
-                        playCommand(result);
-                        break;
-                    case 'control':
-                        controlCommand(result);
-                        break;
-                    case 'enable':
-                        enableCommand(result);
-                        break;
-                    case 'disable':
-                        disableCommand(result);
-                        break;
-                    case 'toggle':
-                        toggleCommand(result);
-                        break;
-                    default:
-                        reject();
-                        return;
-                }
-
-                var dlg = currentDialog;
-                if (dlg) {
-                    paperDialogHelper.close(dlg);
-                }
-
-                resolve();
-            });
-        });
-    }
-
-    function showCommand(result) {
-
-        if (result.category == 'tvguide') {
-            Dashboard.navigate('livetv.html?tab=1');
-            return;
-        }
-
-        if (result.category == 'recordings') {
-            Dashboard.navigate('livetv.html?tab=3');
-            return;
-        }
-    }
-
-    function enableCommand(result) {
-
-        var what = result.what.toLowerCase();
-
-        if (what.indexOf('mirror') != -1) {
-            MediaController.enableDisplayMirroring(true);
-        }
-    }
-
-    function disableCommand(result) {
-
-        var what = result.what.toLowerCase();
-
-        if (what.indexOf('mirror') != -1) {
-            MediaController.enableDisplayMirroring(false);
-        }
-    }
-
-    function toggleCommand(result) {
-
-        var what = result.what.toLowerCase();
-
-        if (what.indexOf('mirror') != -1) {
-            MediaController.toggleDisplayMirroring();
-        }
-    }
-
-    function controlCommand(result) {
-
-        MediaController.trySetActiveDeviceName(result.what);
-    }
-
-    function playCommand(result, shuffle) {
-
-        var query = {
-
-            Limit: result.limit || 100,
-            UserId: result.userId,
-            ExcludeLocationTypes: "Virtual"
-        };
-
-        if (result.category == 'nextup') {
-
-            ApiClient.getNextUpEpisodes(query).then(function (queryResult) {
-
-                playItems(queryResult.Items, shuffle);
-
-            });
-            return;
-        }
-
-        if (shuffle) {
-            result.sortby = result.sortby ? 'Random,' + result.sortby : 'Random';
-        }
-
-        query.SortBy = result.sortby;
-        query.SortOrder = result.sortorder;
-        query.Recursive = true;
-
-        if (result.filters.indexOf('unplayed') != -1) {
-            query.IsPlayed = false;
-        }
-        if (result.filters.indexOf('played') != -1) {
-            query.IsPlayed = true;
-        }
-        if (result.filters.indexOf('favorite') != -1) {
-            query.Filters = 'IsFavorite';
-        }
-
-        if (result.itemType) {
-            query.IncludeItemTypes = result.itemType;
-        }
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (queryResult) {
-
-            playItems(queryResult.Items, shuffle);
-        });
-    }
-
-    function playItems(items, shuffle) {
-
-        if (shuffle) {
-            items = shuffleArray(items);
-        }
-
-        items = items.map(function (i) {
-            return i.Id;
         });
 
-        if (items.length) {
-            MediaController.play({
-                ids: items
-            });
-        } else {
-            Dashboard.alert({
-                message: Globalize.translate('MessageNoItemsFound')
-            });
+    }
+
+    /// <summary> Gets command group. </summary>
+    /// <param name="groupid"> The groupid. </param>
+    /// <returns> The command group. </returns>
+    function getCommandGroup(groupid) {
+        if (commandgroups) {
+            var idx = -1;
+            idx = commandgroups.map(function (e) { return e.groupid; }).indexOf(groupid);
+
+            if (idx > -1)
+                return commandgroups[idx];
+            else
+                return null;
         }
+        else
+            return null;
     }
 
-    function searchCommand(result) {
-
-
-    }
-
+    /// <summary> Renders the sample commands. </summary>
+    /// <param name="elem"> The element. </param>
+    /// <param name="commands"> The commands. </param>
+    /// <returns> . </returns>
     function renderSampleCommands(elem, commands) {
 
-        commands.length = Math.min(commands.length, 4);
+        commands.length = Math.min(commands.length, 6);
 
         commands = commands.map(function (c) {
 
@@ -227,7 +96,9 @@
     }
 
     var currentDialog;
-    function showVoiceHelp() {
+    /// <summary> Shows the voice help. </summary>
+    /// <returns> . </returns>
+    function showVoiceHelp(groupid, title) {
 
         var dlg = paperDialogHelper.createDialog({
             size: 'medium',
@@ -239,12 +110,17 @@
 
         var html = '';
         html += '<h2 class="dialogHeader">';
-        html += '<paper-fab icon="arrow-back" mini class="btnCancelVoiceInput" tabindex="-1"></paper-fab>';
+        html += '<paper-fab icon="arrow-back" mini class="btnCancelVoiceInput"></paper-fab>';
+        if (groupid) {
+            var grp = getCommandGroup(groupid);
+            if (grp)
+                html += '  ' + grp.name;
+        }
         html += '</h2>';
 
         html += '<div>';
 
-        var getCommandsPromise = getSampleCommands();
+        var getCommandsPromise = getSampleCommands(groupid);
 
         html += '<div class="voiceHelpContent">';
 
@@ -302,45 +178,75 @@
         });
     }
 
-    function showUnrecognizedCommandHelp() {
+    /// <summary> Hides the voice help. </summary>
+    /// <returns> . </returns>
+    function hideVoiceHelp() {
 
+        $('.voiceInputHelp').remove();
+    }
+
+    /// <summary> Shows the unrecognized command help. </summary>
+    /// <returns> . </returns>
+    function showUnrecognizedCommandHelp() {
+        //speak("I don't understend this command");
         $('.unrecognizedCommand').show();
         $('.defaultVoiceHelp').hide();
     }
 
-    function destroyCurrentRecognition() {
-
-        var recognition = currentRecognition;
-        if (recognition) {
-            recognition.cancelled = true;
-            recognition.abort();
-            currentRecognition = null;
-        }
-    }
-
+    /// <summary> Process the transcript described by text. </summary>
+    /// <param name="text"> The text. </param>
+    /// <returns> . </returns>
     function processTranscript(text, isCancelled) {
 
         $('.voiceInputText').html(text);
 
         if (text || AppInfo.isNativeApp) {
             $('.blockedMessage').hide();
-        } else {
+        }
+        else {
             $('.blockedMessage').show();
         }
 
         if (text) {
-            processText(text).catch(showUnrecognizedCommandHelp);
-        } else if (!isCancelled) {
+            require(['voice/voicecommands.js', 'voice/grammarprocessor.js'], function (voicecommands, grammarprocessor) {
+
+                var processor = grammarprocessor(commandgroups, text);
+                if (processor && processor.command) {
+                    voicecommands(processor)
+                        .then(function (result) {
+                            if (result.item.actionid === 'show' && result.item.sourceid === 'group') {
+                                var dlg = currentDialog;
+                                if (dlg)
+                                    showCommands(false, result)
+                                else
+                                    showCommands(true, result)
+                            }
+                        })
+                        .catch(showUnrecognizedCommandHelp);
+                }
+                else
+                    showUnrecognizedCommandHelp();
+
+                var dlg = currentDialog;
+                if (dlg) {
+                    PaperDialogHelper.close(dlg);
+                }
+            });
+
+        }
+        else if (!isCancelled) {
             showUnrecognizedCommandHelp();
         }
     }
 
+    /// <summary> Starts listening internal. </summary>
+    /// <returns> . </returns>
     function startListening(createUI) {
 
         destroyCurrentRecognition();
-
-        var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-
+        var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.oSpeechRecognition || window.msSpeechRecognition)();
+        recognition.lang = lang;
+        var groupid = '';
         //recognition.continuous = true;
         //recognition.interimResults = true;
 
@@ -360,25 +266,114 @@
 
         recognition.start();
         currentRecognition = recognition;
+        showCommands(createUI);
+    }
 
-        if (createUI !== false) {
-            require(['paper-fab', 'css!voice/voice.css'], showVoiceHelp);
+    /// <summary> Destroys the current recognition. </summary>
+    /// <returns> . </returns>
+    function destroyCurrentRecognition() {
+
+        var recognition = currentRecognition;
+        if (recognition) {
+            recognition.abort();
+            currentRecognition = null;
         }
     }
 
+    /// <summary> Cancel listener. </summary>
+    /// <returns> . </returns>
+    function cancelListener() {
+
+        destroyCurrentRecognition();
+        hideVoiceHelp();
+    }
+
+    /// <summary> Shows the commands. </summary>
+    /// <param name="createUI"> The create user interface. </param>
+    /// <returns> . </returns>
+    function showCommands(createUI, result) {
+        if (createUI !== false) {
+            //speak('Hello, what can I do for you?');
+            require(['paper-fab', 'css!voice/voice.css'], function () {
+                if (result)
+                    showVoiceHelp(result.groupid, result.name);
+                else
+                    showVoiceHelp();
+            });
+        }
+    }
+
+    /// <summary> Getgrammars the given language. </summary>
+    /// <param name="language"> The language. </param>
+    /// <returns> . </returns>
+    function getGrammarCommands(language) {
+
+        var file = "grammar";
+        if (language && language.length > 0)
+            file = language;
+
+        var grammar = (function () {
+            var grm = null;
+            $.ajax({
+                async: false,
+                global: false,
+                url: "voice/grammar/" + file + ".json",
+                dataType: "json",
+                success: function (data) {
+                    grm = data;
+                }
+            });
+            return grm;
+        })();
+        return grammar;
+    }
+
+    /// <summary> Speaks the given text. </summary>
+    /// <param name="text"> The text. </param>
+    /// <returns> . </returns>
+    function speak(text) {
+
+        if (!SpeechSynthesisUtterance) {
+            console.log('API not supported');
+        }
+
+        var utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.addEventListener('end', function () {
+            console.log('Synthesizing completed');
+        });
+
+        utterance.addEventListener('error', function (event) {
+            console.log('Synthesizing error');
+        });
+
+        console.log('Synthesizing the text: ' + text);
+        speechSynthesis.speak(utterance);
+    }
+
+
+    /// <summary> An enum constant representing the window. voice input manager option. </summary>
     window.VoiceInputManager = {
 
         isSupported: function () {
 
             if (AppInfo.isNativeApp) {
-                // TODO: Only return false for crosswalk
-                return false;
+                // Crashes on some amazon devices
+                if (window.device && (device.platform || '').toLowerCase().indexOf('amazon') != -1) {
+                    return false;
+                }
             }
 
-            return window.SpeechRecognition || window.webkitSpeechRecognition;
+            return window.SpeechRecognition ||
+                   window.webkitSpeechRecognition ||
+                   window.mozSpeechRecognition ||
+                   window.oSpeechRecognition ||
+                   window.msSpeechRecognition;
         },
 
-        startListening: startListening
+        startListening: startListening,
     };
 
 });
