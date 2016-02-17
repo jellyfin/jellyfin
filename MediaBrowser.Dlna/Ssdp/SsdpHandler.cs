@@ -144,7 +144,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     //var protocol = isMulticast ? "Multicast" : "Unicast";
                     //var localEndPointString = args.LocalEndPoint == null ? "null" : args.LocalEndPoint.ToString();
                     //_logger.Debug("IGNORING {0} message received from {1} on {3}. Protocol: {4} Headers: {2}", args.Method, args.EndPoint, headerText, localEndPointString, protocol);
-                    
+
                     return true;
                 }
             }
@@ -164,7 +164,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -303,9 +303,17 @@ namespace MediaBrowser.Dlna.Ssdp
 
                     var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-                    SendDatagram(msg, endpoint, null, false, 2);
-                    SendDatagram(msg, endpoint, new IPEndPoint(d.Address, 0), false, 2);
-                    //SendDatagram(header, values, endpoint, null, true);
+                    var ipEndPoint = endpoint as IPEndPoint;
+                    if (ipEndPoint != null)
+                    {
+                        SendUnicastRequest(msg, ipEndPoint);
+                    }
+                    else
+                    {
+                        SendDatagram(msg, endpoint, null, false, 2);
+                        SendDatagram(msg, endpoint, new IPEndPoint(d.Address, 0), false, 2);
+                        //SendDatagram(header, values, endpoint, null, true);
+                    }
 
                     if (enableDebugLogging)
                     {
@@ -583,12 +591,27 @@ namespace MediaBrowser.Dlna.Ssdp
                 }
                 catch (ObjectDisposedException)
                 {
-                    
+
                 }
             }
         }
 
-        private async void SendUnicastRequest(string request, int sendCount = 3)
+        private void SendUnicastRequest(string request, int sendCount = 3)
+        {
+            if (_unicastClient == null)
+            {
+                return;
+            }
+
+            _logger.Debug("Sending unicast search request");
+
+            var ipSsdp = IPAddress.Parse(SSDPAddr);
+            var ipTxEnd = new IPEndPoint(ipSsdp, SSDPPort);
+
+            SendUnicastRequest(request, ipTxEnd, sendCount);
+        }
+
+        private async void SendUnicastRequest(string request, IPEndPoint toEndPoint, int sendCount = 3)
         {
             if (_unicastClient == null)
             {
@@ -598,8 +621,6 @@ namespace MediaBrowser.Dlna.Ssdp
             _logger.Debug("Sending unicast search request");
 
             byte[] req = Encoding.ASCII.GetBytes(request);
-            var ipSsdp = IPAddress.Parse(SSDPAddr);
-            var ipTxEnd = new IPEndPoint(ipSsdp, SSDPPort);
 
             try
             {
@@ -609,7 +630,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     {
                         await Task.Delay(50).ConfigureAwait(false);
                     }
-                    _unicastClient.Send(req, req.Length, ipTxEnd);
+                    _unicastClient.Send(req, req.Length, toEndPoint);
                 }
             }
             catch (Exception ex)
