@@ -1071,90 +1071,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        public async Task<ConnectSupporterSummary> GetConnectSupporterSummary()
-        {
-            var url = GetConnectUrl("keyAssociation");
-
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None
-            };
-
-            var postData = new Dictionary<string, string>
-                {
-                    {"serverId", ConnectServerId},
-                    {"supporterKey", _securityManager.SupporterKey}
-                };
-
-            options.SetPostData(postData);
-
-            SetServerAccessToken(options);
-            SetApplicationHeader(options);
-
-            // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
-            {
-                return _json.DeserializeFromStream<ConnectSupporterSummary>(stream);
-            }
-        }
-
-        public async Task AddConnectSupporter(string id)
-        {
-            var url = GetConnectUrl("keyAssociation");
-
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None
-            };
-
-            var postData = new Dictionary<string, string>
-                {
-                    {"serverId", ConnectServerId},
-                    {"supporterKey", _securityManager.SupporterKey},
-                    {"userId", id}
-                };
-
-            options.SetPostData(postData);
-
-            SetServerAccessToken(options);
-            SetApplicationHeader(options);
-
-            // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "POST").ConfigureAwait(false)).Content)
-            {
-            }
-        }
-
-        public async Task RemoveConnectSupporter(string id)
-        {
-            var url = GetConnectUrl("keyAssociation");
-
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = CancellationToken.None
-            };
-
-            var postData = new Dictionary<string, string>
-                {
-                    {"serverId", ConnectServerId},
-                    {"supporterKey", _securityManager.SupporterKey},
-                    {"userId", id}
-                };
-
-            options.SetPostData(postData);
-
-            SetServerAccessToken(options);
-            SetApplicationHeader(options);
-
-            // No need to examine the response
-            using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
-            {
-            }
-        }
-
         public async Task Authenticate(string username, string passwordMd5)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -1188,9 +1104,9 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         async void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
-            var user = e.Argument;
+            //var user = e.Argument;
 
-            await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
+            //await TryUploadUserPreferences(user, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task TryUploadUserPreferences(User user, CancellationToken cancellationToken)
