@@ -621,7 +621,7 @@
         };
 
         self.queue = function (options) {
-            self.playWithCommnd(options, 'PlayLast');
+            self.playWithCommand(options, 'PlayLast');
         };
 
         self.queueNext = function (options) {
