@@ -182,8 +182,6 @@ namespace MediaBrowser.Model.Configuration
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
         public bool FindInternetTrailers { get; set; }
 
-        public string[] InsecureApps9 { get; set; }
-
         public bool SaveMetadataHidden { get; set; }
 
         public NameValuePair[] ContentTypes { get; set; }
@@ -255,11 +253,6 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
-
-            InsecureApps9 = new[]
-            {
-                "Windows Phone"
-            };
 
             MetadataOptions = new[]
             {
