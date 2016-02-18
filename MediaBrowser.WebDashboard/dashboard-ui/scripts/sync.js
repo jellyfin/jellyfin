@@ -1,4 +1,4 @@
-﻿(function (window, $) {
+﻿define([], function () {
 
     var currentDialogOptions;
 
@@ -52,7 +52,6 @@
         }).then(function () {
 
             paperDialogHelper.close(dlg);
-            $(window.SyncManager).trigger('jobsubmit');
             Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
     }
@@ -299,6 +298,17 @@
         };
     }
 
+    function setQualityFieldVisible(form, visible) {
+
+        if (visible) {
+            $('.fldQuality', form).show();
+            $('#selectQuality', form).attr('required', 'required');
+        } else {
+            $('.fldQuality', form).hide();
+            $('#selectQuality', form).removeAttr('required');
+        }
+    }
+
     function onProfileChange(form, profileId) {
 
         var options = currentDialogOptions || {};
@@ -337,25 +347,6 @@
         }
     }
 
-    function loadQualityOptions(form, targetId, dialogOptionsFn) {
-
-        dialogOptionsFn(targetId).then(function (options) {
-
-            renderTargetDialogOptions(form, options);
-        });
-    }
-
-    function setQualityFieldVisible(form, visible) {
-
-        if (visible) {
-            $('.fldQuality', form).show();
-            $('#selectQuality', form).attr('required', 'required');
-        } else {
-            $('.fldQuality', form).hide();
-            $('#selectQuality', form).removeAttr('required');
-        }
-    }
-
     function renderTargetDialogOptions(form, options) {
 
         currentDialogOptions = options;
@@ -385,78 +376,18 @@
         }).join('')).trigger('change');
     }
 
-    function isAvailable(item, user) {
+    function loadQualityOptions(form, targetId, dialogOptionsFn) {
 
-        if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
-            return false;
-        }
+        dialogOptionsFn(targetId).then(function (options) {
 
-        if (user && !user.Policy.EnableSync) {
-            return false;
-        }
-
-        return item.SupportsSync;
+            renderTargetDialogOptions(form, options);
+        });
     }
 
-    window.SyncManager = {
+    return {
 
         showMenu: showSyncMenu,
-        isAvailable: isAvailable,
         renderForm: renderForm,
         setJobValues: setJobValues
     };
-
-    function showSyncButtonsPerUser(page) {
-
-        var apiClient = window.ApiClient;
-
-        if (!apiClient || !apiClient.getCurrentUserId()) {
-            return;
-        }
-
-        Dashboard.getCurrentUser().then(function (user) {
-
-            var item = {
-                SupportsSync: true
-            };
-
-            if (isAvailable(item, user)) {
-                $('.categorySyncButton', page).removeClass('hide');
-            } else {
-                $('.categorySyncButton', page).addClass('hide');
-            }
-        });
-    }
-
-    function onCategorySyncButtonClick(page, button) {
-
-        var category = button.getAttribute('data-category');
-        var parentId = LibraryMenu.getTopParentId();
-
-        SyncManager.showMenu({
-            ParentId: parentId,
-            Category: category
-        });
-    }
-
-    $(document).on('pageinit', ".libraryPage", function () {
-
-        var page = this;
-
-        $('.categorySyncButton', page).on('click', function () {
-
-            onCategorySyncButtonClick(page, this);
-        });
-
-    }).on('pageshow', ".libraryPage", function () {
-
-        var page = this;
-
-        if (!Dashboard.isServerlessPage()) {
-            showSyncButtonsPerUser(page);
-        }
-
-    });
-
-
-})(window, jQuery);
+});

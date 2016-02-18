@@ -1,6 +1,6 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
-    window.PlaylistManager = {
+    return {
 
         showPanel: function (items) {
 
@@ -17,5 +17,4 @@
             return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
         }
     };
-
-})(jQuery, document);
+});

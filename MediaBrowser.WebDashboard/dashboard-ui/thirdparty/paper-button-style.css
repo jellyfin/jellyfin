@@ -240,7 +240,7 @@ paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
 }
 
 paper-tabs {
-    background-color: #111;
+    background-color: #080808;
     color: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }

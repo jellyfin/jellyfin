@@ -1,31 +1,7 @@
-﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
-    background-color: #080808;
-}
-
-    .viewMenuBar.semiTransparent {
-        background-color: rgba(15, 15, 15, .3);
-    }
-
-.background-theme-b, paper-dialog.background-theme-b {
-    background-color: #1A1A1A;
-}
-
-.defaultBackground .cardImage {
-    background-color: #303030;
-}
-
-.ui-body-b .visualCardBox {
-    background: rgba(56,56,56,.85);
-}
-
-.libraryViewNav {
+﻿.libraryViewNav {
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-    .libraryViewNav a {
+    .libraryViewNav a, paper-tab {
         font-weight: 500 !important;
     }
-
-paper-tab {
-    font-weight: 500 !important;
-}

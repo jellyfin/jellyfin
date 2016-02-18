@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="paper-input-addon-behavior.html">
 
@@ -28,7 +27,7 @@ The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--paper-input-container-invalid-color` | The foreground color of the error | `--google-red-500`
+`--paper-input-container-invalid-color` | The foreground color of the error | `--error-color`
 `--paper-input-error`                   | Mixin applied to the error        | `{}`
 -->
 
@@ -39,7 +38,7 @@ Custom property | Description | Default
         display: inline-block;
         visibility: hidden;
 
-        color: var(--paper-input-container-invalid-color, --google-red-500);
+        color: var(--paper-input-container-invalid-color, --error-color);
 
         @apply(--paper-font-caption);
         @apply(--paper-input-error);

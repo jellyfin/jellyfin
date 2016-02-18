@@ -55,7 +55,7 @@
 }
 
 .defaultBackground .cardImage {
-    background-color: #333;
+    background-color: #303030;
 }
 
 .homeTopViews .defaultBackground .cardImage {
@@ -109,7 +109,7 @@
 }
 
 .ui-body-b .visualCardBox {
-    background: rgba(40,40,40,.85);
+    background: rgba(56,56,56,.85);
     border-radius: 3px;
 }
 
