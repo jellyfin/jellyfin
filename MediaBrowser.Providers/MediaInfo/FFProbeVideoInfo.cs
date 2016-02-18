@@ -383,6 +383,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(data.OfficialRatingDescription) || isFullRefresh)
+            {
+                video.OfficialRatingDescription = data.OfficialRatingDescription;
+            }
+
             if (!video.LockedFields.Contains(MetadataFields.Genres))
             {
                 if (video.Genres.Count == 0 || isFullRefresh)
@@ -435,6 +440,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (!video.ParentIndexNumber.HasValue || isFullRefresh)
                 {
                     video.ParentIndexNumber = data.ParentIndexNumber;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(data.Name))
+            {
+                if (string.IsNullOrWhiteSpace(video.Name) || string.Equals(video.Name, Path.GetFileNameWithoutExtension(video.Path), StringComparison.OrdinalIgnoreCase))
+                {
+                    video.Name = data.Name;
                 }
             }
 
