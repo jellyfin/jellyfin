@@ -33,8 +33,8 @@
         if (infos.length > 0) {
             infos = infos.sort(function (a, b) {
 
-                a = a.OrganizerType + " " + a.Name;
-                b = b.OrganizerType + " " + b.Name;
+                a = a.OrganizerType + " " + (a.DisplayName || a.ItemName);
+                b = b.OrganizerType + " " + (b.DisplayName || b.ItemName);
 
                 if (a == b) {
                     return 0;
@@ -64,7 +64,7 @@
 
             html += '<paper-item-body two-line>';
 
-            html += "<div>" + info.DisplayName + "</div>";
+            html += "<div>" + (info.DisplayName || info.ItemName) + "</div>";
 
             html += info.MatchStrings.map(function (m) {
                 return "<div secondary>" + m + "</div>";
