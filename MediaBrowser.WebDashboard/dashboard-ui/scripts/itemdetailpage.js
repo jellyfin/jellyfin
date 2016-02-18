@@ -112,7 +112,7 @@
                 $('.btnPlayTrailer', page).addClass('hide');
             }
 
-            if (SyncManager.isAvailable(item, user)) {
+            if (LibraryBrowser.enableSync(item, user)) {
                 $('.btnSync', page).removeClass('hide');
             } else {
                 $('.btnSync', page).addClass('hide');
@@ -1987,8 +1987,10 @@
 
         $('.btnSync', page).on('click', function () {
 
-            SyncManager.showMenu({
-                items: [currentItem]
+            require(['syncDialog'], function (syncDialog) {
+                syncDialog.showMenu({
+                    items: [currentItem]
+                });
             });
         });
 

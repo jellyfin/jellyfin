@@ -1846,6 +1846,7 @@ var AppInfo = {};
         }
 
         paths.playlistManager = "scripts/playlistmanager";
+        paths.syncDialog = "scripts/sync";
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
         var md5Path = bowerPath + "/cryptojslib/components/md5-min";
@@ -2258,7 +2259,6 @@ var AppInfo = {};
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
         deps.push('scripts/alphapicker');
-        deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');

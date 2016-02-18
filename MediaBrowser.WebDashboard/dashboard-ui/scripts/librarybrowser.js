@@ -809,7 +809,7 @@
                     commands.push('refresh');
                 }
 
-                if (SyncManager.isAvailable(item, user)) {
+                if (LibraryBrowser.enableSync(item, user)) {
                     commands.push('sync');
                 }
 
@@ -1581,6 +1581,18 @@
                 return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
             },
 
+            enableSync: function(item, user) {
+                if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
+                    return false;
+                }
+
+                if (user && !user.Policy.EnableSync) {
+                    return false;
+                }
+
+                return item.SupportsSync;
+            },
+
             getItemCommands: function (item, options) {
 
                 var itemCommands = [];
@@ -1633,7 +1645,7 @@
                     itemCommands.push('delete');
                 }
 
-                if (SyncManager.isAvailable(item)) {
+                if (LibraryBrowser.enableSync(item)) {
                     itemCommands.push('sync');
                 }
 

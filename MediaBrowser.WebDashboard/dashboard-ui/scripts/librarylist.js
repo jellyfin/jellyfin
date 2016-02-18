@@ -542,11 +542,13 @@
                                 playAllFromHere(index, $(card).parents('.itemsContainer'), 'queue');
                                 break;
                             case 'sync':
-                                SyncManager.showMenu({
-                                    items: [
-                                    {
-                                        Id: itemId
-                                    }]
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: [
+                                        {
+                                            Id: itemId
+                                        }]
+                                    });
                                 });
                                 break;
                             case 'editsubtitles':
@@ -1199,12 +1201,14 @@
                                 hideSelections();
                                 break;
                             case 'sync':
-                                SyncManager.showMenu({
-                                    items: items.map(function (i) {
-                                        return {
-                                            Id: i
-                                        };
-                                    })
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: items.map(function (i) {
+                                            return {
+                                                Id: i
+                                            };
+                                        })
+                                    });
                                 });
                                 hideSelections();
                                 break;
@@ -1325,6 +1329,41 @@
         });
     }
 
+    function showSyncButtonsPerUser(page) {
+
+        var apiClient = window.ApiClient;
+
+        if (!apiClient || !apiClient.getCurrentUserId()) {
+            return;
+        }
+
+        Dashboard.getCurrentUser().then(function (user) {
+
+            var item = {
+                SupportsSync: true
+            };
+
+            if (LibraryBrowser.enableSync(item, user)) {
+                $('.categorySyncButton', page).removeClass('hide');
+            } else {
+                $('.categorySyncButton', page).addClass('hide');
+            }
+        });
+    }
+
+    function onCategorySyncButtonClick(page, button) {
+
+        var category = button.getAttribute('data-category');
+        var parentId = LibraryMenu.getTopParentId();
+
+        require(['syncDialog'], function (syncDialog) {
+            syncDialog.showMenu({
+                ParentId: parentId,
+                Category: category
+            });
+        });
+    }
+
     pageClassOn('pageinit', "libraryPage", function () {
 
         var page = this;
@@ -1336,6 +1375,20 @@
             $(itemsContainers[i]).createCardMenus();
         }
 
+        $('.categorySyncButton', page).on('click', function () {
+
+            onCategorySyncButtonClick(page, this);
+        });
+
+    });
+
+    pageClassOn('pageshow', "libraryPage", function () {
+
+        var page = this;
+
+        if (!Dashboard.isServerlessPage()) {
+            showSyncButtonsPerUser(page);
+        }
     });
 
     pageClassOn('pagebeforehide', "libraryPage", function () {
