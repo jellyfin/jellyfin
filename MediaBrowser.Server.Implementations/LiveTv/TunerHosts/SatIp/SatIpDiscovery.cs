@@ -42,7 +42,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
         {
             string st = null;
-            if (e.Headers.TryGetValue("ST", out st) && string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
+            string nt = null;
+            e.Headers.TryGetValue("ST", out st);
+            e.Headers.TryGetValue("NT", out nt);
+
+            if (string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(nt, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
             {
                 string location;
                 if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))

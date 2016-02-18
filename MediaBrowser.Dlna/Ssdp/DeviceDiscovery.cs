@@ -127,10 +127,14 @@ namespace MediaBrowser.Dlna.Ssdp
                             args.EndPoint = endPoint;
                             args.LocalEndPoint = new IPEndPoint(localIp, 0);
 
-                            if (!_ssdpHandler.IsSelfNotification(args))
+                            if (_ssdpHandler.IgnoreMessage(args, true))
                             {
-                                TryCreateDevice(args);
+                                return;
                             }
+
+                            _ssdpHandler.LogMessageReceived(args, true);
+
+                            TryCreateDevice(args);
                         }
                     }
 
@@ -215,14 +219,6 @@ namespace MediaBrowser.Dlna.Ssdp
                 string.IsNullOrEmpty(location))
             {
                 return;
-            }
-
-            if (_config.GetDlnaConfiguration().EnableDebugLog)
-            {
-                var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
-                var headerText = string.Join(",", headerTexts.ToArray());
-
-                _logger.Debug("{0} Device message received from {1}. Headers: {2}", args.Method, args.EndPoint, headerText);
             }
 
             EventHelper.FireEventIfNotNull(DeviceDiscovered, this, args, _logger);
