@@ -43,6 +43,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="test-attr-change">
+    <template>
+      <iron-selector id="selector" attr-for-selected="data-x" selected="x-1">
+        <div data-x="x-1" data-y="y-1">1</div>
+        <div data-x="x-2" data-y="y-2">2</div>
+        <div data-x="x-3" data-y="y-3">3</div>
+      </iron-selector>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="test-attr-change-multi">
+    <template>
+      <iron-selector multi id="selector"
+                     attr-for-selected="data-x"
+                     selected-values='["x-1","x-2"]'>
+        <div data-x="x-1" data-y="y-1">1</div>
+        <div data-x="x-2" data-y="y-2">2</div>
+        <div data-x="x-3" data-y="y-3">3</div>
+      </iron-selector>
+    </template>
+  </test-fixture>
+
   <script>
 
     suite('selected attributes', function() {
@@ -62,6 +84,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         s.selected = 4;
         // now selected attribute should be there
         assert.isTrue(s.children[4].hasAttribute('myattr'));
+      });
+
+    });
+
+    suite('changing attrForSelected', function() {
+
+      var s;
+
+      setup(function () {
+        s = fixture('test-attr-change');
+      });
+
+      test('changing selectedAttribute', function() {
+        Polymer.dom.flush();
+        s.attrForSelected = 'data-y';
+        assert.equal(s.selected, 'y-1');
+      });
+
+    });
+
+    suite('changing attrForSelected in multi', function() {
+
+      var s;
+
+      setup(function () {
+        s = fixture('test-attr-change-multi');
+      });
+
+      test('changing selectedAttribute', function() {
+        Polymer.dom.flush();
+        s.attrForSelected = 'data-y';
+        assert.equal(s.selectedValues.length, 2);
+        assert.equal(s.selectedValues[0],'y-1');
+        assert.equal(s.selectedValues[1],'y-2');
       });
 
     });

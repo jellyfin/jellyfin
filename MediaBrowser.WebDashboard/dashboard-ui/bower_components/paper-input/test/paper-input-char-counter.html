@@ -97,8 +97,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var counter = Polymer.dom(input.root).querySelector('paper-input-char-counter')
         assert.ok(counter, 'paper-input-char-counter exists');
 
-        // A new line counts as two characters.
-        assert.equal(counter._charCounterStr, input.value.length + 1, 'character counter shows the value length');
+        assert.equal(counter._charCounterStr, input.value.length, 'character counter shows the value length');
       });
 
     });

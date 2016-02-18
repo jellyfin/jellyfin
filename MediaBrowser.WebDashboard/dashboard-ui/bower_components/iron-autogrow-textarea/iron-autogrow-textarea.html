@@ -33,6 +33,7 @@ The following custom properties and mixins are available for styling:
 Custom property | Description | Default
 ----------------|-------------|----------
 `--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`
+`--iron-autogrow-textarea-placeholder` | Mixin applied to the textarea placeholder | `{}`
 
 @group Iron Elements
 @hero hero.svg
@@ -50,6 +51,7 @@ Custom property | Description | Default
       padding: 2px;
       -moz-appearance: textarea;
       -webkit-appearance: textarea;
+      overflow: hidden;
     }
 
     .mirror-text {
@@ -82,6 +84,21 @@ Custom property | Description | Default
       box-shadow: none;
     }
 
+    textarea::-webkit-input-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea:-moz-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea::-moz-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea:-ms-input-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
   </style>
   <template>
     <!-- the mirror sizes the input/textarea so it grows with typing -->
@@ -120,8 +137,6 @@ Custom property | Description | Default
 
       /**
        * Use this property instead of `value` for two-way data binding.
-       *
-       * @type {string|number|undefined|null}
        */
       bindValue: {
         observer: '_bindValueChanged',
@@ -191,6 +206,7 @@ Custom property | Description | Default
       value: {
         notify: true,
         type: String,
+        value: '',
         computed: '_computeValue(bindValue)'
       },
 
@@ -264,6 +280,10 @@ Custom property | Description | Default
      */
     set selectionEnd(value) {
       this.$.textarea.selectionEnd = value;
+    },
+	
+    ready: function() {
+      this.bindValue = this.value;
     },
 
     /**
