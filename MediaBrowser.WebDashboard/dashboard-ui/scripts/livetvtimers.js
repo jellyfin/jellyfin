@@ -22,7 +22,9 @@
     function renderTimers(page, timers) {
 
         LiveTvHelpers.getTimersHtml(timers).then(function (html) {
-            var elem = $('#items', page).html(html);
+            var elem = $('#items', page).html(html)[0];
+
+            ImageLoader.lazyChildren(elem);
 
             $('.btnDeleteTimer', elem).on('click', function () {
 
