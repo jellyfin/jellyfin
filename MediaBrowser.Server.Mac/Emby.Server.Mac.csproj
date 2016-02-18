@@ -1325,6 +1325,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\loading\loading.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\loading\loading.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\loading\loading.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\loading\loading.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css</Link>
     </BundleResource>
@@ -1351,6 +1357,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fastclick\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\fastclick\.bower.json</Link>
@@ -8279,6 +8288,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\filterdialog\filterdialog.template.html">
       <Link>Resources\dashboard-ui\components\filterdialog\filterdialog.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\filterdialog\style.css">
+      <Link>Resources\dashboard-ui\components\filterdialog\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\guestinviter\guestinviter.js">
       <Link>Resources\dashboard-ui\components\guestinviter\guestinviter.js</Link>
     </BundleResource>
@@ -9121,9 +9133,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\pluginspage.js">
       <Link>Resources\dashboard-ui\scripts\pluginspage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\queryfilters.js">
-      <Link>Resources\dashboard-ui\scripts\queryfilters.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\ratingdialog.js">
       <Link>Resources\dashboard-ui\scripts\ratingdialog.js</Link>
