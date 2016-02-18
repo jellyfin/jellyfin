@@ -324,7 +324,7 @@
     return {
         show: function (itemId, itemType, imageType) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentDeferred = deferred;
             hasChanges = false;

@@ -468,7 +468,10 @@
                                 });
                                 break;
                             case 'playlist':
-                                PlaylistManager.showPanel([itemId]);
+                                require(['playlistManager'], function (playlistManager) {
+
+                                    playlistManager.showPanel([itemId]);
+                                });
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems([itemId]);
@@ -1164,8 +1167,11 @@
                                 hideSelections();
                                 break;
                             case 'playlist':
-                                PlaylistManager.showPanel(items);
-                                hideSelections();
+                                require(['playlistManager'], function (playlistManager) {
+
+                                    playlistManager.showPanel(items);
+                                    hideSelections();
+                                });
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems(items).then(function () {

@@ -129,7 +129,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<Model.MediaInfo.MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
+        public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
 
@@ -175,7 +175,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException">ffprobe failed - streams and format are both null.</exception>
-        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath,
+        private async Task<MediaInfo> GetMediaInfoInternal(string inputPath,
             string primaryPath,
             MediaProtocol protocol,
             bool extractChapters,

@@ -6,7 +6,7 @@
 
         self.sync = function (apiClient, serverInfo, options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             reportOfflineActions(apiClient, serverInfo).then(function () {
 
@@ -36,7 +36,7 @@
 
             console.log('Begin reportOfflineActions');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -67,7 +67,7 @@
 
             console.log('Begin syncData');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -117,7 +117,7 @@
 
             console.log('Begin removeLocalItems');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             removeNextLocalItem(syncDataResult.ItemIdsToRemove, 0, serverId, deferred);
 
@@ -146,7 +146,7 @@
 
             console.log('Begin removeLocalItem');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -164,7 +164,7 @@
 
             console.log('Begin getNewMedia');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             apiClient.getReadySyncItems(apiClient.deviceId()).then(function (jobItems) {
 
@@ -201,7 +201,7 @@
 
             console.log('Begin getNewItem');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -240,7 +240,7 @@
         function downloadMedia(apiClient, jobItem, localItem, options) {
 
             console.log('Begin downloadMedia');
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -276,7 +276,7 @@
         function getImages(apiClient, jobItem, localItem) {
 
             console.log('Begin getImages');
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             getNextImage(0, apiClient, localItem, deferred);
 
@@ -348,7 +348,7 @@
         function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
 
             console.log('Begin downloadImage');
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -380,7 +380,7 @@
         function getSubtitles(apiClient, jobItem, localItem) {
 
             console.log('Begin getSubtitles');
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 
@@ -424,7 +424,7 @@
         function getItemSubtitle(file, apiClient, jobItem, localItem, mediaSource) {
 
             console.log('Begin getItemSubtitle');
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             var subtitleStream = mediaSource.MediaStreams.filter(function (m) {
                 return m.Type == 'Subtitle' && m.Index == file.Index;
@@ -461,7 +461,7 @@
         function syncUserItemAccess(syncDataResult, serverId) {
             console.log('Begin syncUserItemAccess');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             var itemIds = [];
             for (var id in syncDataResult.ItemUserAccess) {
@@ -494,7 +494,7 @@
         function syncUserAccessForItem(itemId, syncDataResult) {
             console.log('Begin syncUserAccessForItem');
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             require(['localassetmanager'], function () {
 

@@ -1,0 +1,22 @@
+﻿html, body, .ui-btn, .pageTitle {
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.viewMenuBar {
+    background-color: #000;
+}
+
+.libraryViewNav, .libraryViewNav paper-tabs {
+    background-color: transparent;
+    box-shadow: none;
+    text-transform: lowercase;
+    font-size: 240%;
+}
+
+    .libraryViewNav a, paper-tab {
+        font-weight: 400 !important;
+    }
+
+.background-theme-b, paper-dialog.background-theme-b {
+    background: #161616;
+}

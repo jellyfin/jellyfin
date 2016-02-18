@@ -336,7 +336,7 @@
     return {
         show: function (itemId) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentDeferred = deferred;
             hasChanges = false;

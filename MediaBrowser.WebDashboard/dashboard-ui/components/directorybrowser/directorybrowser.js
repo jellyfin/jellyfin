@@ -3,7 +3,7 @@
     var systemInfo;
     function getSystemInfo() {
 
-        var deferred = DeferredBuilder.Deferred();
+        var deferred = jQuery.Deferred();
 
         if (systemInfo) {
             deferred.resolveWith(null, [systemInfo]);
