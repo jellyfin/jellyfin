@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataimagespage,jqmcheckbox">
+    <div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataimagespage,jqmcheckbox,paper-checkbox">
 
         <div data-role="content">
 
@@ -63,54 +63,20 @@
                                     </div>
                                 </div>
 
-                                <fieldset class="imageSelections" data-role="controlgroup" style="border-bottom: 1px solid #ddd;">
-                                    <legend>${HeaderFetchImages}</legend>
-                                    <div class="imageType" data-imagetype="Primary" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadPrimary" name="chkDownloadPrimary" />
-                                        <label for="chkDownloadPrimary">${OptionDownloadPrimaryImage}</label>
-                                    </div>
+                                <div class="paperCheckboxListLabel">${HeaderFetchImages}</div>
+                                <div class="imageSelections paperCheckboxList">
 
+                                    <paper-checkbox class="imageType hide" data-imagetype="Primary">${OptionDownloadPrimaryImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Art">${OptionDownloadArtImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="BoxRear">${OptionDownloadBackImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Banner">${OptionDownloadBannerImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Box">${OptionDownloadBoxImage}</paper-checkbox>
 
-                                    <div class="imageType" data-imagetype="Art" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadArt" name="chkDownloadArt" />
-                                        <label for="chkDownloadArt">${OptionDownloadArtImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="BoxRear" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkBack" name="chkBack" />
-                                        <label for="chkBack">${OptionDownloadBackImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Banner" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadBanner" name="chkDownloadBanner" />
-                                        <label for="chkDownloadBanner">${OptionDownloadBannerImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Box" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadBox" name="chkDownloadBox" />
-                                        <label for="chkDownloadBox">${OptionDownloadBoxImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Disc" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadDisc" name="chkDownloadDisc" />
-                                        <label for="chkDownloadDisc">${OptionDownloadDiscImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Logo" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadLogo" name="chkDownloadLogo" />
-                                        <label for="chkDownloadLogo">${OptionDownloadLogoImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Menu" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadMenu" name="chkDownloadMenu" />
-                                        <label for="chkDownloadMenu">${OptionDownloadMenuImage}</label>
-                                    </div>
-
-                                    <div class="imageType" data-imagetype="Thumb" style="display: none;">
-                                        <input type="checkbox" data-mini="true" id="chkDownloadThumb" name="chkDownloadThumb" />
-                                        <label for="chkDownloadThumb">${OptionDownloadThumbImage}</label>
-                                    </div>
-                                </fieldset>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Disc">${OptionDownloadDiscImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Logo">${OptionDownloadLogoImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Menu">${OptionDownloadMenuImage}</paper-checkbox>
+                                    <paper-checkbox class="imageType hide" data-imagetype="Thumb">${OptionDownloadThumbImage}</paper-checkbox>
+                                </div>
                             </div>
                         </div>
 

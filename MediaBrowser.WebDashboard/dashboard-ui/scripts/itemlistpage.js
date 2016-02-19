@@ -115,6 +115,12 @@
 
                 html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
+            else if (view == "Thumb") {
+
+                posterOptions.preferThumb = true;
+                posterOptions.shape = "backdrop";
+                html = LibraryBrowser.getPosterViewHtml(posterOptions);
+            }
 
             var elem = page.querySelector('#items');
             elem.innerHTML = html + pagingHtml;
