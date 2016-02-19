@@ -196,6 +196,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
                         case "X_SATIPCAP":
                             {
+                                // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
                                 var value = reader.ReadElementContentAsString();
                                 // TODO
                                 break;
@@ -203,6 +204,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
                         case "X_SATIPM3U":
                             {
+                                // <satip:X_SATIPM3U xmlns:satip="urn:ses-com:satip">/channellist.lua?select=m3u</satip:X_SATIPM3U>
                                 info.M3UUrl = reader.ReadElementContentAsString();
                                 break;
                             }
