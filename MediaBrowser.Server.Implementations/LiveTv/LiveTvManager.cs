@@ -2343,7 +2343,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            await provider.Validate(info).ConfigureAwait(false);
+            var configurable = provider as IConfigurableTunerHost;
+            if (configurable != null)
+            {
+                await configurable.Validate(info).ConfigureAwait(false);
+            }
 
             var config = GetConfiguration();
 
