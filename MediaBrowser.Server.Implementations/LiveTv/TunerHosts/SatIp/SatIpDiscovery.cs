@@ -162,12 +162,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 throw new NotImplementedException();
             }
 
+            // Device hasn't implemented an m3u list
             if (string.IsNullOrWhiteSpace(result.M3UUrl))
             {
-                throw new NotImplementedException();
+                result.IsEnabled = false;
             }
 
-            if (!result.M3UUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            else if (!result.M3UUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 var fullM3uUrl = url.Substring(0, url.LastIndexOf('/'));
                 result.M3UUrl = fullM3uUrl + "/" + result.M3UUrl.TrimStart('/');
@@ -194,6 +195,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                                 break;
                             }
 
+                        case "satip:X_SATIPCAP":
                         case "X_SATIPCAP":
                             {
                                 // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
@@ -202,6 +204,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                                 break;
                             }
 
+                        case "satip:X_SATIPM3U":
                         case "X_SATIPM3U":
                             {
                                 // <satip:X_SATIPM3U xmlns:satip="urn:ses-com:satip">/channellist.lua?select=m3u</satip:X_SATIPM3U>
