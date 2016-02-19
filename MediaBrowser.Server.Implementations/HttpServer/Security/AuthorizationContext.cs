@@ -45,7 +45,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         {
             var auth = GetAuthorizationDictionary(httpReq);
 
-            string userId = null;
             string deviceId = null;
             string device = null;
             string client = null;
@@ -53,9 +52,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
             if (auth != null)
             {
-                // TODO: Remove this 
-                auth.TryGetValue("UserId", out userId);
-
                 auth.TryGetValue("DeviceId", out deviceId);
                 auth.TryGetValue("Device", out device);
                 auth.TryGetValue("Client", out client);
@@ -78,7 +74,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 Client = client,
                 Device = device,
                 DeviceId = deviceId,
-                UserId = userId,
                 Version = version,
                 Token = token
             };

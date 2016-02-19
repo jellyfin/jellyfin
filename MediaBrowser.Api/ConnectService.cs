@@ -1,10 +1,8 @@
-﻿using System;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Connect;
-using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,28 +73,6 @@ namespace MediaBrowser.Api
         public string ConnectUserId { get; set; }
     }
 
-    [Route("/Connect/Supporters", "GET")]
-    [Authenticated(Roles = "Admin")]
-    public class GetConnectSupporterSummary : IReturn<ConnectSupporterSummary>
-    {
-    }
-
-    [Route("/Connect/Supporters", "DELETE")]
-    [Authenticated(Roles = "Admin")]
-    public class RemoveConnectSupporter : IReturnVoid
-    {
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Connect/Supporters", "POST")]
-    [Authenticated(Roles = "Admin")]
-    public class AddConnectSupporter : IReturnVoid
-    {
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Id { get; set; }
-    }
-
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
@@ -106,35 +82,6 @@ namespace MediaBrowser.Api
         {
             _connectManager = connectManager;
             _userManager = userManager;
-        }
-
-        public async Task<object> Get(GetConnectSupporterSummary request)
-        {
-            var result = await _connectManager.GetConnectSupporterSummary().ConfigureAwait(false);
-            var existingConnectUserIds = result.Users.Select(i => i.Id).ToList();
-
-            result.EligibleUsers = _userManager.Users
-                .Where(i => !string.IsNullOrWhiteSpace(i.ConnectUserId))
-                .Where(i => !existingConnectUserIds.Contains(i.ConnectUserId, StringComparer.OrdinalIgnoreCase))
-                .OrderBy(i => i.Name)
-                .Select(i => _userManager.GetUserDto(i))
-                .ToList();
-
-            return ToOptimizedResult(result);
-        }
-
-        public void Delete(RemoveConnectSupporter request)
-        {
-            var task = _connectManager.RemoveConnectSupporter(request.Id);
-
-            Task.WaitAll(task);
-        }
-
-        public void Post(AddConnectSupporter request)
-        {
-            var task = _connectManager.AddConnectSupporter(request.Id);
-
-            Task.WaitAll(task);
         }
 
         public object Post(CreateConnectLink request)

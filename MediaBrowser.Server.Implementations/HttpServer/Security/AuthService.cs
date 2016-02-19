@@ -134,20 +134,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         private bool IsExemptFromAuthenticationToken(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues)
         {
-            if (!_config.Configuration.IsStartupWizardCompleted &&
-                authAttribtues.AllowBeforeStartupWizard)
+            if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
             {
                 return true;
             }
 
-            return _config.Configuration.InsecureApps9.Contains(auth.Client ?? string.Empty,
-                StringComparer.OrdinalIgnoreCase);
+            return false;
         }
 
         private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, AuthenticationInfo tokenInfo)
         {
-            if (!_config.Configuration.IsStartupWizardCompleted &&
-                authAttribtues.AllowBeforeStartupWizard)
+            if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
             {
                 return true;
             }
