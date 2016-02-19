@@ -55,23 +55,20 @@
 
         var html = '';
 
-        html += '<fieldset data-role="controlgroup">';
+        html += '<p class="paperCheckboxListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</p>';
 
-        html += '<legend>' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</legend>';
+        html += '<div class="paperCheckboxList">';
 
         for (var i = 0, length = items.length; i < length; i++) {
 
             var item = items[i];
 
-            var id = 'unratedItem' + i;
-
             var checkedAttribute = user.Policy.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
-            html += '<label for="' + id + '">' + item.name + '</label>';
+            html += '<paper-checkbox class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox"' + checkedAttribute + '>' + item.name + '</paper-checkbox>';
         }
 
-        html += '</fieldset>';
+        html += '</div>';
 
         $('.blockUnratedItems', page).html(html).trigger('create');
     }
@@ -201,11 +198,15 @@
 
         user.Policy.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
-        user.Policy.BlockUnratedItems = $('.chkUnratedItem:checked', page).map(function () {
+        user.Policy.BlockUnratedItems = $('.chkUnratedItem', page).get().filter(function(i) {
 
-            return this.getAttribute('data-itemtype');
+            return i.checked;
 
-        }).get();
+        }).map(function (i) {
+
+            return i.getAttribute('data-itemtype');
+
+        });
 
         user.Policy.AccessSchedules = getSchedulesFromPage(page);
 

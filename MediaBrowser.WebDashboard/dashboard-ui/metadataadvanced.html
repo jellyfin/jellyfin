@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataadvanced,paper-checkbox,paper-input,jqmcheckbox">
+    <div id="advancedMetadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataadvanced,paper-checkbox,paper-input">
 
         <div data-role="content">
 
@@ -27,8 +27,8 @@
                             <br />
                         </li>
                         <li>
-                            <label for="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</label>
-                            <input type="checkbox" id="chkSaveMetadataHidden" data-mini="true" />
+                            <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
+                            <br /><br />
                         </li>
                         <li>
                             <label for="selectDateAdded" class="selectLabel">${LabelDateAddedBehavior}</label>
@@ -45,14 +45,12 @@
                         <div>
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <input type="checkbox" id="chkEnableTmdbUpdates" data-mini="true" />
-                                    <label for="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
+                                    <paper-checkbox id="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</paper-checkbox>
+                                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
                                 </li>
                                 <li>
-                                    <input type="checkbox" id="chkEnableTvdbUpdates" data-mini="true" />
-                                    <label for="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</label>
-                                    <div class="fieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
+                                    <paper-checkbox id="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</paper-checkbox>
+                                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
                                 </li>
                             </ul>
                         </div>
@@ -64,25 +62,21 @@
                             <br />
                             <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
                                 <li>
-                                    <label>${HeaderExtractChapterImagesFor}</label>
-                                    <div data-role="controlgroup">
-                                        <input type="checkbox" id="chkChaptersMovies" />
-                                        <label for="chkChaptersMovies">${OptionMovies}</label>
+                                    <div class="paperCheckboxListLabel">${HeaderExtractChapterImagesFor}</div>
+                                    <div class="paperCheckboxList">
+                                        <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkChaptersEpisodes" />
-                                        <label for="chkChaptersEpisodes">${OptionEpisodes}</label>
+                                        <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkChaptersOtherVideos" />
-                                        <label for="chkChaptersOtherVideos">${OptionOtherVideos}</label>
+                                        <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
                                     </div>
-                                    <div class="fieldDescription">${ExtractChapterImagesHelp}</div>
+                                    <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
                                 </li>
                             </ul>
                             <br />
                             <div>
-                                <label for="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</label>
-                                <input type="checkbox" id="chkExtractChaptersDuringLibraryScan" />
-                                <div class="fieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
+                                <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
                             </div>
                             <br />
                         </div>
@@ -94,8 +88,7 @@
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label for="txtFanartApiKey">${LabelFanartApiKey}</label>
-                                    <input type="text" id="txtFanartApiKey" />
+                                    <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
                                     <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
                                     <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
                                 </li>
@@ -114,30 +107,23 @@
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label>${HeaderDownloadPeopleMetadataFor}</label>
-                                    <div data-role="controlgroup">
-                                        <input type="checkbox" id="chkPeopleActors" />
-                                        <label for="chkPeopleActors">${OptionActors}</label>
+                                    <div class="paperCheckboxListLabel">${HeaderDownloadPeopleMetadataFor}</div>
+                                    <div class="paperCheckboxList">
+                                        <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleComposers" />
-                                        <label for="chkPeopleComposers">${OptionComposers}</label>
+                                        <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleDirectors" />
-                                        <label for="chkPeopleDirectors">${OptionDirectors}</label>
+                                        <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleGuestStars" />
-                                        <label for="chkPeopleGuestStars">${OptionGuestStars}</label>
+                                        <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleProducers" />
-                                        <label for="chkPeopleProducers">${OptionProducers}</label>
+                                        <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleWriters" />
-                                        <label for="chkPeopleWriters">${OptionWriters}</label>
+                                        <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
 
-                                        <input type="checkbox" id="chkPeopleOthers" />
-                                        <label for="chkPeopleOthers">${OptionOthers}</label>
+                                        <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
                                     </div>
-                                    <div class="fieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                                    <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
                                 </li>
                             </ul>
                         </div>

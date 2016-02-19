@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.20
+// @version 0.7.21
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}
@@ -3420,10 +3420,7 @@ if (WebComponents.flags.shadow) {
         var unwrappedActiveElement = unwrap(this).ownerDocument.activeElement;
         if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
         var activeElement = wrap(unwrappedActiveElement);
-        if (activeElement === this.host) {
-          return null;
-        }
-        while (!this.contains(activeElement) && !this.host.contains(activeElement)) {
+        while (!this.contains(activeElement)) {
           while (activeElement.parentNode) {
             activeElement = activeElement.parentNode;
           }
@@ -6368,7 +6365,7 @@ window.HTMLImports.addModule(function(scope) {
       if (doc && this._mayParse.indexOf(doc) < 0) {
         this._mayParse.push(doc);
         var nodes = doc.querySelectorAll(this.parseSelectorsForNode(doc));
-        for (var i = 0, l = nodes.length, p = 0, n; i < l && (n = nodes[i]); i++) {
+        for (var i = 0, l = nodes.length, n; i < l && (n = nodes[i]); i++) {
           if (!this.isParsed(n)) {
             if (this.hasResource(n)) {
               return nodeIsImport(n) ? this.nextToParseInDoc(n.__doc, n) : n;

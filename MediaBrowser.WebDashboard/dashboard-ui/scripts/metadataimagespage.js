@@ -91,17 +91,17 @@
             var imageType = this.getAttribute('data-imagetype');
 
             if (metadataInfo.SupportedImageTypes.indexOf(imageType) == -1) {
-                $(this).hide();
+                this.classList.add('hide');
             } else {
-                $(this).show();
+                this.classList.remove('hide');
             }
 
             if (getImageConfig(config, imageType).Limit) {
 
-                $('input', this).checked(true).checkboxradio('refresh');
+                this.checked = true;
 
             } else {
-                $('input', this).checked(false).checkboxradio('refresh');
+                this.checked = false;
             }
         });
 
@@ -452,11 +452,11 @@
 
         });
 
-        config.ImageOptions = $('.imageType:visible input', form).get().map(function (c) {
+        config.ImageOptions = $('.imageType:not(.hide)', form).get().map(function (c) {
 
 
             return {
-                Type: $(c).parents('.imageType').attr('data-imagetype'),
+                Type: c.getAttribute('data-imagetype'),
                 Limit: c.checked ? 1 : 0,
                 MinWidth: 0
             };
