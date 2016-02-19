@@ -46,6 +46,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;List&lt;MediaSourceInfo&gt;&gt;.</returns>
         Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken);
+    }
+    public interface IConfigurableTunerHost
+    {
         /// <summary>
         /// Validates the specified information.
         /// </summary>
