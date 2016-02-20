@@ -2246,10 +2246,10 @@ var AppInfo = {};
             deps.push('registrationservices');
 
             deps.push('cordova/back');
-            deps.push('cordova/links');
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
+                deps.push('cordova/links');
             }
         }
 
