@@ -680,7 +680,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 foreach (var user in users)
                 {
-                    await OnPlaybackProgress(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                    await OnPlaybackProgress(user.Id, key, libraryItem, info).ConfigureAwait(false);
                 }
             }
 
@@ -712,16 +712,26 @@ namespace MediaBrowser.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
+        private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, PlaybackProgressInfo info)
         {
             var data = _userDataRepository.GetUserData(userId, userDataKey);
+
+            var positionTicks = info.PositionTicks;
 
             if (positionTicks.HasValue)
             {
                 _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
 
+                UpdatePlaybackSettings(info, data);
+
                 await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
+        }
+
+        private void UpdatePlaybackSettings(PlaybackProgressInfo info, UserItemData data)
+        {
+            data.AudioStreamIndex = info.AudioStreamIndex;
+            data.SubtitleStreamIndex = info.SubtitleStreamIndex;
         }
 
         /// <summary>
