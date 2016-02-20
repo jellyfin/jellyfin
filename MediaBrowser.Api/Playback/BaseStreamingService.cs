@@ -1462,6 +1462,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     // Duplicating ItemId because of MediaMonkey
                 }
+                else if (i == 24)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.CopyTimestamps = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -2021,6 +2028,11 @@ namespace MediaBrowser.Api.Playback
                     state.EstimateContentLength = transcodingProfile.EstimateContentLength;
                     state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+
+                    if (state.VideoRequest != null)
+                    {
+                        state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                    }
                 }
             }
         }
@@ -2184,9 +2196,9 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest != null)
             {
-                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase) && state.VideoRequest.CopyTimestamps)
                 {
-                    //inputModifier += " -noaccurate_seek";
+                    inputModifier += " -noaccurate_seek";
                 }
             }
             
