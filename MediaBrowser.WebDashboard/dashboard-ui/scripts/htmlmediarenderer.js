@@ -522,10 +522,11 @@
 
                 // Safari uses integers for the mode property
                 // http://www.jwplayer.com/html5/scripting/
+                // edit: not anymore
                 var useNumericMode = false;
 
                 if (!isNaN(allTracks[i].mode)) {
-                    useNumericMode = true;
+                    //useNumericMode = true;
                 }
 
                 if (useNumericMode) {
