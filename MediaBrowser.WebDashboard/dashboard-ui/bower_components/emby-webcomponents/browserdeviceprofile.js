@@ -198,7 +198,8 @@ define(['browser'], function (browser) {
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
-                Context: 'Streaming'
+                Context: 'Streaming',
+                CopyTimestamps: true
             });
         }
 

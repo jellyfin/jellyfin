@@ -705,7 +705,10 @@
                                 if (mediaUrl.indexOf('.mkv') == -1) {
                                     mediaUrl += '&EnableAutoStreamCopy=false';
                                 }
-                                startTimeTicksOffset = startPosition || 0;
+
+                                if (mediaUrl.toLowerCase().indexOf('copytimestamps=true') == -1) {
+                                    startTimeTicksOffset = startPosition || 0;
+                                }
 
                                 contentType = 'video/' + mediaSource.TranscodingContainer;
                             }

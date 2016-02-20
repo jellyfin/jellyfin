@@ -794,6 +794,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                 state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+
+                state.Options.CopyTimestamps = transcodingProfile.CopyTimestamps;
             }
         }
     }

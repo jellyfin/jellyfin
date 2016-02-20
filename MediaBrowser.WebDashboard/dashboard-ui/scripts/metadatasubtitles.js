@@ -2,11 +2,11 @@
 
     function loadPage(page, config, languages) {
 
-        $('#chkSubtitlesMovies', page).checked(config.DownloadMovieSubtitles).checkboxradio("refresh");
-        $('#chkSubtitlesEpisodes', page).checked(config.DownloadEpisodeSubtitles).checkboxradio("refresh");
+        $('#chkSubtitlesMovies', page).checked(config.DownloadMovieSubtitles);
+        $('#chkSubtitlesEpisodes', page).checked(config.DownloadEpisodeSubtitles);
 
-        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfGraphicalSubtitlesPresent).checkboxradio("refresh");
-        $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches).checkboxradio("refresh");
+        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfGraphicalSubtitlesPresent);
+        $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches);
 
         $('#txtOpenSubtitleUsername', page).val(config.OpenSubtitlesUsername);
         $('#txtOpenSubtitlePassword', page).val('');
@@ -18,19 +18,14 @@
 
     function populateLanguages(page, config, languages) {
 
-        var html = '<div data-role="controlgroup" style="margin:0;">';
+        var html = '';
 
         for (var i = 0, length = languages.length; i < length; i++) {
 
             var culture = languages[i];
 
-            var id = "chkSubtitleLanguage" + i;
-
-            html += '<label style="font-size:13px;" for="' + id + '">' + culture.DisplayName + '</label>';
-            html += '<input class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '" type="checkbox" id="' + id + '" />';
+            html += '<paper-checkbox class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '">' + culture.DisplayName + '</paper-checkbox>';
         }
-
-        html += '</div>';
 
         $('.downloadLanguages', page).html(html).trigger('create');
 
@@ -40,7 +35,7 @@
 
             this.checked = langs.indexOf(this.getAttribute('data-lang')) != -1;
 
-        }).checkboxradio('refresh');
+        });
     }
 
     function onSubmit() {
@@ -64,7 +59,11 @@
                 config.OpenSubtitlesPasswordHash = newPassword;
             }
 
-            config.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
+            config.DownloadLanguages = $('.chkLang', form).get().filter(function (c) {
+
+                return c.checked;
+
+            }).map(function (c) {
 
                 return c.getAttribute('data-lang');
 
