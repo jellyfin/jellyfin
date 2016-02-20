@@ -425,6 +425,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
+                playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 

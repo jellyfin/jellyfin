@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    switch (reader.Name)
+                    switch (reader.LocalName)
                     {
                         case "UDN":
                             {
