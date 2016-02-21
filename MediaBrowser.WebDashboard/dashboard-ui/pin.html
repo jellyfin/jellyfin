@@ -11,8 +11,7 @@
             <form style="margin: auto;">
                 <h1>${HeaderEnterPinCode}</h1>
 
-                <br />
-                <p>${ButtonEnterPinCodeHelp}</p>
+                <p style="margin-top:2em;">${ButtonEnterPinCodeHelp}</p>
 
                 <paper-input type="number" id="txtPin" pattern="[0-9]*" required="required" min="0" max="999999" step="1" label="${LabelPinCode}"></paper-input>
 
@@ -21,7 +20,7 @@
                     <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>
 
-                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                <paper-button raised class="cancel block btnCancel"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 <br />
                 <br />
             </form>

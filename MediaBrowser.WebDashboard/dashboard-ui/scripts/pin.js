@@ -47,6 +47,9 @@
 
         page.querySelector('form').addEventListener('submit', onSubmit);
 
+        page.querySelector('.btnCancel').addEventListener('click', function () {
+            Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+        });
     });
 
     pageIdOn('pageshow', 'pinEntryPage', function () {

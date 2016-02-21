@@ -1640,7 +1640,7 @@ var AppInfo = {};
                         Dashboard.showLoadingMsg();
 
                         return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.showLoadingMsg();
+                            Dashboard.hideLoadingMsg();
 
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;
@@ -1835,7 +1835,8 @@ var AppInfo = {};
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
-            paths.actionsheet = "scripts/actionsheet";
+
+            define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
         // hack for an android test before browserInfo is loaded

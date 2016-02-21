@@ -502,7 +502,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 }
             }
 
-            return series ?? new Series();
+            return series;
         }
 
         /// <summary>

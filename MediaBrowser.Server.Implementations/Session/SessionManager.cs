@@ -680,7 +680,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 foreach (var user in users)
                 {
-                    await OnPlaybackProgress(user.Id, key, libraryItem, info).ConfigureAwait(false);
+                    await OnPlaybackProgress(user, key, libraryItem, info).ConfigureAwait(false);
                 }
             }
 
@@ -712,9 +712,9 @@ namespace MediaBrowser.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, PlaybackProgressInfo info)
+        private async Task OnPlaybackProgress(User user, string userDataKey, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataRepository.GetUserData(userId, userDataKey);
+            var data = _userDataRepository.GetUserData(user.Id, userDataKey);
 
             var positionTicks = info.PositionTicks;
 
@@ -722,16 +722,31 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
 
-                UpdatePlaybackSettings(info, data);
+                UpdatePlaybackSettings(user, info, data);
 
-                await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
-        private void UpdatePlaybackSettings(PlaybackProgressInfo info, UserItemData data)
+        private void UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
         {
-            data.AudioStreamIndex = info.AudioStreamIndex;
-            data.SubtitleStreamIndex = info.SubtitleStreamIndex;
+            if (user.Configuration.RememberAudioSelections)
+            {
+                data.AudioStreamIndex = info.AudioStreamIndex;
+            }
+            else
+            {
+                data.AudioStreamIndex = null;
+            }
+
+            if (user.Configuration.RememberSubtitleSelections)
+            {
+                data.SubtitleStreamIndex = info.SubtitleStreamIndex;
+            }
+            else
+            {
+                data.SubtitleStreamIndex = null;
+            }
         }
 
         /// <summary>

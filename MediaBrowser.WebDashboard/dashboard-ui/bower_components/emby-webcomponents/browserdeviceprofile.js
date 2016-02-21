@@ -162,6 +162,15 @@ define(['browser'], function (browser) {
                 Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
                 Type: 'Audio'
             });
+
+            // aac also appears in the m4a container
+            if (audioFormat == 'aac') {
+                profile.DirectPlayProfiles.push({
+                    Container: 'm4a',
+                    AudioCodec: audioFormat,
+                    Type: 'Audio'
+                });
+            }
         });
 
         if (canPlayWebm) {

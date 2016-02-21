@@ -1879,3 +1879,7 @@ progress {
     text-align: center;
     color: #bbb;
 }
+
+.actionSheetMenuItem:hover {
+    background-color: #e8e8e8;
+}

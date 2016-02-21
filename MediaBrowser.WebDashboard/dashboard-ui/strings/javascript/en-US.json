@@ -48,6 +48,7 @@
     "ButtonSelectView": "Select view",
     "TitleSync": "Sync",
     "OptionAutomatic": "Auto",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "HeaderSelectDate": "Select Date",
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",

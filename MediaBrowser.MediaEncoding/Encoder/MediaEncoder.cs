@@ -934,7 +934,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
-                process.Dispose();
+                try
+                {
+                    process.Dispose();
+                }
+                catch (Exception ex)
+                {
+                }
             }
 
             private bool _disposed;

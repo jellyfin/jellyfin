@@ -121,3 +121,34 @@
 };
 
 $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
+
+(function () {
+
+    function loadUserInfo(page) {
+
+        Dashboard.getPluginSecurityInfo().then(function (info) {
+
+            if (info.IsMBSupporter) {
+                $('.supporterContainer', page).addClass('hide');
+            } else {
+                $('.supporterContainer', page).removeClass('hide');
+            }
+        });
+    }
+
+    $(document).on('pageinit', "#supporterKeyPage", function () {
+
+        var page = this;
+        $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
+        $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
+        $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
+
+        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/premiere" target="_blank">', '</a>'));
+
+    }).on('pageshow', "#supporterKeyPage", function () {
+
+        var page = this;
+        loadUserInfo(page);
+    });
+
+})();

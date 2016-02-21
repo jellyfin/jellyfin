@@ -6,7 +6,7 @@
 
         self.uploadImages = function (server) {
 
-            var deferred = jQuery.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             LocalAssetManager.getCameraPhotos().then(function (photos) {
 
@@ -77,7 +77,7 @@
 
         function uploadFile(file, apiClient) {
 
-            var deferred = jQuery.Deferred();
+            var deferred = DeferredBuilder.Deferred();
 
             require(['fileupload', "cryptojs-sha1"], function () {
 
