@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Indstillinger er gemt",
     "AddUser": "Tilf\u00f8j bruger",
     "Users": "Brugere",
@@ -958,5 +955,11 @@
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
     "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
 }

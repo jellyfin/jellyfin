@@ -971,5 +971,5 @@
     "ButtonFullRefresh": "Full refresh",
     "PinCodeInvalid": "Pin Code Error",
     "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

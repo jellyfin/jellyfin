@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Instellingen opgeslagen.",
     "AddUser": "Gebruiker toevoegen",
     "Users": "Gebruikers",
@@ -958,5 +955,11 @@
     "ButtonOff": "Uit",
     "TitleHardwareAcceleration": "Hardware versnelling",
     "HardwareAccelerationWarning": "Het inschakelen van hardware versnelling kan problemen veroorzaken in somige omgevingen. Als je problemen met video afspelen ondervindt na inschakelen, zet deze setting dan weer op Auto.",
-    "HeaderSelectCodecIntrosPath": "Selecteer het Codec intro's pad"
+    "HeaderSelectCodecIntrosPath": "Selecteer het Codec intro's pad",
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
 }
