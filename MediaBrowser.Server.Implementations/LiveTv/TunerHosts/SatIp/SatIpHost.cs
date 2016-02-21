@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -140,17 +141,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
         {
             var list = GetTunerHosts()
-            .Select(i => new LiveTvTunerInfo()
-            {
-                Name = Name,
-                SourceType = Type,
-                Status = LiveTvTunerStatus.Available,
-                Id = i.Url.GetMD5().ToString("N"),
-                Url = i.Url
-            })
+            .SelectMany(i => GetTunerInfos(i, cancellationToken))
             .ToList();
 
             return Task.FromResult(list);
+        }
+
+        public List<LiveTvTunerInfo> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            var satInfo = (SatIpTunerHostInfo) info;
+
+            var list = new List<LiveTvTunerInfo>();
+
+            for (var i = 0; i < satInfo.Tuners; i++)
+            {
+                list.Add(new LiveTvTunerInfo
+                {
+                    Name = satInfo.FriendlyName ?? Name,
+                    SourceType = Type,
+                    Status = LiveTvTunerStatus.Available,
+                    Id = info.Url.GetMD5().ToString("N") + i.ToString(CultureInfo.InvariantCulture),
+                    Url = info.Url
+                });
+            }
+
+            return list;
         }
     }
 }
