@@ -251,6 +251,13 @@ namespace MediaBrowser.Controller.Session
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
 
         /// <summary>
+        /// Creates the new session.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Task&lt;AuthenticationResult&gt;.</returns>
+        Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request);
+
+        /// <summary>
         /// Reports the capabilities.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>

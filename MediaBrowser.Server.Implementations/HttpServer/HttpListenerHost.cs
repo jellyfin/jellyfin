@@ -348,6 +348,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 return Task.FromResult(true);
             }
 
+            if (string.Equals(localPath, "/emby/pin", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl("web/pin.html");
+                return Task.FromResult(true);
+            }
+            
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
                 httpRes.StatusCode = 503;

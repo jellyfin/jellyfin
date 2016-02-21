@@ -415,23 +415,6 @@ namespace MediaBrowser.Api
         {
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
-            if (string.IsNullOrWhiteSpace(auth.Client))
-            {
-                auth.Client = "Unknown app";
-            }
-            if (string.IsNullOrWhiteSpace(auth.Device))
-            {
-                auth.Device = "Unknown device";
-            }
-            if (string.IsNullOrWhiteSpace(auth.Version))
-            {
-                auth.Version = "Unknown version";
-            }
-            if (string.IsNullOrWhiteSpace(auth.DeviceId))
-            {
-                auth.DeviceId = "Unknown device id";
-            }
-
             var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
             {
                 App = auth.Client,
