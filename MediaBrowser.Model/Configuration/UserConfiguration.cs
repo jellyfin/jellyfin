@@ -48,11 +48,17 @@ namespace MediaBrowser.Model.Configuration
         public bool HidePlayedInLatest { get; set; }
         public bool DisplayChannelsInline { get; set; }
 
+        public bool RememberAudioSelections { get; set; }
+        public bool RememberSubtitleSelections { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
         public UserConfiguration()
         {
+            RememberAudioSelections = true;
+            RememberSubtitleSelections = true;
+            
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
