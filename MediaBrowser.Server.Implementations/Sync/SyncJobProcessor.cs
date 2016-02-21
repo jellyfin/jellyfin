@@ -19,6 +19,7 @@ using MediaBrowser.Model.Sync;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -125,7 +126,23 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private string GetSyncJobItemName(BaseItem item)
         {
-            return item.Name;
+            var name = item.Name;
+            var episode = item as Episode;
+
+            if (episode != null)
+            {
+                if (episode.IndexNumber.HasValue)
+                {
+                    name = "E" + episode.IndexNumber.Value.ToString(CultureInfo.InvariantCulture) + " - " + name;
+                }
+
+                if (episode.ParentIndexNumber.HasValue)
+                {
+                    name = "S" + episode.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture) + ", " + name;
+                }
+            }
+
+            return name;
         }
 
         public Task UpdateJobStatus(string id)
@@ -699,7 +716,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var path = Path.Combine(temporaryPath, filename);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, cancellationToken).ConfigureAwait(false))
             {
