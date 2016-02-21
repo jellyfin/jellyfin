@@ -129,7 +129,7 @@
                 html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
             }
             else if (renderIcon && !center) {
-                html += '<iron-icon></iron-icon>';
+                html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
             }
             html += '<span>' + option.name + '</span>';
             html += '</' + itemTagName + '>';
