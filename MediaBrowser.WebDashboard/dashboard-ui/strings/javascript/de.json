@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Lokaler Refresh",
-    "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
-    "ButtonFullRefresh": "Kompletter Refresh",
     "SettingsSaved": "Einstellungen gespeichert.",
     "AddUser": "Benutzer anlegen",
     "Users": "Benutzer",
@@ -958,5 +955,11 @@
     "ButtonOff": "Ausschalten",
     "TitleHardwareAcceleration": "Hardware Beschleunigung",
     "HardwareAccelerationWarning": "Das Aktivieren der Hardwarebeschleunigung kann auf einigen Systemen zu Problemen f\u00fchren. Wenn Sie probleme w\u00e4hrend der Videowiedergabe feststellen, sollten Sie diese Einstellung zur\u00fcck auf \"Automatik\" stellen.",
-    "HeaderSelectCodecIntrosPath": "W\u00e4hlen Sie ein Codec Intro Verzeichnis"
+    "HeaderSelectCodecIntrosPath": "W\u00e4hlen Sie ein Codec Intro Verzeichnis",
+    "ButtonLocalRefresh": "Lokaler Refresh",
+    "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
+    "ButtonFullRefresh": "Kompletter Refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
 }

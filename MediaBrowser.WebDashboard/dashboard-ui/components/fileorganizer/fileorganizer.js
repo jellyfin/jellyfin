@@ -12,6 +12,13 @@
 
     function initEpisodeForm(context, item) {
 
+        if (!item.ExtractedName || item.ExtractedName.length < 4) {
+            context.querySelector('.fldRemember').classList.add('hide');
+        }
+        else {
+            context.querySelector('.fldRemember').classList.remove('hide');
+        }
+
         $('.inputFile', context).html(item.OriginalFileName);
 
         $('#txtSeason', context).val(item.ExtractedSeasonNumber);

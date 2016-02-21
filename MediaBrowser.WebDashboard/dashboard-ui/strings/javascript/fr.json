@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Param\u00e8tres sauvegard\u00e9s.",
     "AddUser": "Ajouter un utilisateur",
     "Users": "Utilisateurs",
@@ -958,5 +955,11 @@
     "ButtonOff": "Arr\u00eat",
     "TitleHardwareAcceleration": "Acc\u00e9l\u00e9ration mat\u00e9rielle",
     "HardwareAccelerationWarning": "L'activation mat\u00e9rielle peut causer des instabilit\u00e9s dans certains environnements. Si vous avez des difficult\u00e9s pour lire des vid\u00e9os apr\u00e8s l'avoir activ\u00e9, vous devrez changer les param\u00e8tres de l\u2019acc\u00e9l\u00e9ration en automatique.",
-    "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros"
+    "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros",
+    "ButtonLocalRefresh": "Actualisation locale",
+    "ButtonAddMissingData": "Ajouter uniquement les donn\u00e9es manquantes",
+    "ButtonFullRefresh": "Actualisation totale",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
 }

@@ -7,10 +7,10 @@
 }
 
 .libraryViewNav, .libraryViewNav paper-tabs {
-    background-color: transparent;
+    background-color: #161616;
     box-shadow: none;
     text-transform: lowercase;
-    font-size: 240%;
+    font-size: 220%;
 }
 
     .libraryViewNav a, paper-tab {
@@ -19,4 +19,24 @@
 
 .background-theme-b, paper-dialog.background-theme-b {
     background: #161616;
+}
+
+.libraryViewNav #selectionBar {
+    background-color: transparent !important;
+}
+
+.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+    color: #52B54B !important;
+}
+
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: transparent;
+}
+
+.libraryPage:not(.noSecondaryNavPage) {
+    padding-top: 105px !important;
+}
+
+.pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
+    padding-top: 108px !important;
 }

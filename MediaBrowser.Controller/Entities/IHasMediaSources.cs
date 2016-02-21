@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasMediaSources : IHasId
+    public interface IHasMediaSources : IHasUserData
     {
         /// <summary>
         /// Gets the media sources.

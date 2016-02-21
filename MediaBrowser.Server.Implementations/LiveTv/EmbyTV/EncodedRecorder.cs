@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 audioChannels = audioStream.Channels ?? audioChannels;
             }
-            return "-codec:a:0 aac -strict experimental -ab 320000 -ac " + audioChannels.ToString(CultureInfo.InvariantCulture);
+            return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)

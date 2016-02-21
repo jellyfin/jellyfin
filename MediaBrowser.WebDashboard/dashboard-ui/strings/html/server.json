@@ -1368,6 +1368,8 @@
     "TitleForgotPassword": "Forgot Password",
     "TitlePasswordReset": "Password Reset",
     "LabelPasswordRecoveryPinCode": "Pin code:",
+    "HeaderEnterPinCode": "Enter Pin Code",
+    "ButtonEnterPinCode": "Enter pin code",
     "HeaderPasswordReset": "Password Reset",
     "HeaderParentalRatings": "Parental Ratings",
     "HeaderVideoTypes": "Video Types",
@@ -1539,5 +1541,6 @@
     "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature.",
     "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
     "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
-    "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription."
+    "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
+    "ButtonEnterPinCodeHelp": "Sign in to an Emby TV app by entering the on-screen pin code."
 }

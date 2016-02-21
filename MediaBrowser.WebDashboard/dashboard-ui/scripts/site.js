@@ -2259,7 +2259,6 @@ var AppInfo = {};
 
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
-        deps.push('scripts/alphapicker');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');

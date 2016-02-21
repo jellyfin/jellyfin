@@ -546,7 +546,7 @@
     }
 
     function showUserAtTop() {
-        return AppInfo.isNativeApp;
+        return false;
     }
 
     var requiresLibraryMenuRefresh = false;
