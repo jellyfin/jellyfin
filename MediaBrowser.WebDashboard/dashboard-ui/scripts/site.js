@@ -1640,7 +1640,7 @@ var AppInfo = {};
                         Dashboard.showLoadingMsg();
 
                         return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.showLoadingMsg();
+                            Dashboard.hideLoadingMsg();
 
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;

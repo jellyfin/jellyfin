@@ -24,6 +24,13 @@
                         Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
                     }
                     break;
+                case MediaBrowser.ConnectionState.ServerUpdateNeeded:
+                    {
+                        Dashboard.alert({
+                            message: Globalize.translate('ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+                        });
+                    }
+                    break;
                 default:
                     showServerConnectionFailure();
                     break;
@@ -34,14 +41,10 @@
 
     function showServerConnectionFailure() {
 
-        // Need the timeout because jquery mobile will not show a popup while another is in process of closing
-        setTimeout(function () {
-            Dashboard.alert({
-                message: Globalize.translate("MessageUnableToConnectToServer"),
-                title: Globalize.translate("HeaderConnectionFailure")
-            });
-
-        }, 300);
+        Dashboard.alert({
+            message: Globalize.translate("MessageUnableToConnectToServer"),
+            title: Globalize.translate("HeaderConnectionFailure")
+        });
     }
 
     function getServerHtml(server) {
