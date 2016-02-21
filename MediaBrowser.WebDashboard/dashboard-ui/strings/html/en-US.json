@@ -60,6 +60,8 @@
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
+    "HeaderEnterPinCode": "Enter Pin Code",
+    "ButtonEnterPinCode": "Enter pin code",
     "HeaderSync": "Sync",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
@@ -1531,5 +1533,6 @@
     "HeaderNewRecording": "New Recording",
     "ButtonAdvanced": "Advanced",
     "LabelCodecIntrosPath": "Codec intros path:",
-    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature."
+    "LabelCodecIntrosPathHelp": "A folder containing video files. If an intro video file name matches the video codec, audio codec, audio profile, or a tag, then it will be played prior to the main feature.",
+    "ButtonEnterPinCodeHelp": "Sign in to an Emby TV app by entering the on-screen pin code."
 }
