@@ -801,11 +801,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (!string.IsNullOrWhiteSpace(info.ImagePath))
                 {
-                    item.SetImagePath(ImageType.Primary, info.ImagePath);
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.ImagePath,
+                        Type = ImageType.Primary,
+                        IsPlaceholder = true
+                    }, 0);
                 }
                 else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
                 {
-                    item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.ImageUrl,
+                        Type = ImageType.Primary,
+                        IsPlaceholder = true
+                    }, 0);
                 }
             }
 

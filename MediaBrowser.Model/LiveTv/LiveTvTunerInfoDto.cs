@@ -64,6 +64,12 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The clients.</value>
         public List<string> Clients { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can reset.
+        /// </summary>
+        /// <value><c>true</c> if this instance can reset; otherwise, <c>false</c>.</value>
+        public bool CanReset { get; set; }
+        
         public LiveTvTunerInfoDto()
         {
             Clients = new List<string>();

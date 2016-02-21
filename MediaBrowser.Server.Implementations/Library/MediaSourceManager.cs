@@ -276,7 +276,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user)
         {
-            if (userData.SubtitleStreamIndex.HasValue)
+            if (userData.SubtitleStreamIndex.HasValue && user.Configuration.RememberSubtitleSelections)
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -307,7 +307,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user)
         {
-            if (userData.AudioStreamIndex.HasValue)
+            if (userData.AudioStreamIndex.HasValue && user.Configuration.RememberAudioSelections)
             {
                 var index = userData.AudioStreamIndex.Value;
                 // Make sure the saved index is still valid
