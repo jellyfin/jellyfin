@@ -34,5 +34,9 @@ namespace MediaBrowser.Model.Entities
         /// The conductor
         /// </summary>
         public const string Conductor = "Conductor";
+        /// <summary>
+        /// The lyricist
+        /// </summary>
+        public const string Lyricist = "Lyricist";
     }
 }
