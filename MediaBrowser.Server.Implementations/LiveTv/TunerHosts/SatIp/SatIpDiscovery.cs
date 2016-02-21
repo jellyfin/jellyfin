@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -98,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             }
             catch (NotImplementedException)
             {
-                
+
             }
             catch (Exception ex)
             {
@@ -195,12 +196,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                                 break;
                             }
 
+                        case "friendlyName":
+                            {
+                                info.FriendlyName = reader.ReadElementContentAsString();
+                                break;
+                            }
+
                         case "satip:X_SATIPCAP":
                         case "X_SATIPCAP":
                             {
                                 // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
-                                var value = reader.ReadElementContentAsString();
-                                // TODO
+                                var value = reader.ReadElementContentAsString() ?? string.Empty;
+                                var parts = value.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (parts.Length == 2)
+                                {
+                                    int intValue;
+                                    if (int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
+                                    {
+                                        info.TunersAvailable = intValue;
+                                    }
+
+                                    if (int.TryParse(parts[0].Substring(parts[0].Length - 1), NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
+                                    {
+                                        info.Tuners = intValue;
+                                    }
+                                }
                                 break;
                             }
 
@@ -226,5 +246,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         public int Tuners { get; set; }
         public int TunersAvailable { get; set; }
         public string M3UUrl { get; set; }
+        public string FriendlyName { get; set; }
     }
 }
