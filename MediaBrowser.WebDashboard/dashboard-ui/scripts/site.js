@@ -1773,7 +1773,7 @@ var AppInfo = {};
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             chromecasthelpers: 'components/chromecasthelpers',
-            jQuery: bowerPath + '/jquery/dist/jquery.min',
+            jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
