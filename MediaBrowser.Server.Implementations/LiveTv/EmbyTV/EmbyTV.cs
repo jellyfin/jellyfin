@@ -771,6 +771,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         recordPath = Path.ChangeExtension(recordPath, ".mp4");
                     }
 
+                    _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
+
                     recording.Path = recordPath;
                     recording.Status = RecordingStatus.InProgress;
                     recording.DateLastUpdated = DateTime.UtcNow;
@@ -801,6 +803,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
                         result.Item2.Release();
                     }
+
+                    _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
                 }
             }
             catch (OperationCanceledException)
