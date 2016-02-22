@@ -1014,7 +1014,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(31))
             {
-                item.OfficialRating = reader.GetString(31);
+                item.OfficialRatingDescription = reader.GetString(31);
             }
 
             if (!reader.IsDBNull(32))

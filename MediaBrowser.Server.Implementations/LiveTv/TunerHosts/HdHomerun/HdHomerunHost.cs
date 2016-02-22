@@ -20,7 +20,7 @@ using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class HdHomerunHost : BaseTunerHost, ITunerHost
+    public class HdHomerunHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
         private readonly IHttpClient _httpClient;
 

@@ -78,7 +78,17 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if played; otherwise, <c>false</c>.</value>
         public bool Played { get; set; }
-
+        /// <summary>
+        /// Gets or sets the index of the audio stream.
+        /// </summary>
+        /// <value>The index of the audio stream.</value>
+        public int? AudioStreamIndex { get; set; }
+        /// <summary>
+        /// Gets or sets the index of the subtitle stream.
+        /// </summary>
+        /// <value>The index of the subtitle stream.</value>
+        public int? SubtitleStreamIndex { get; set; }
+    
         /// <summary>
         /// This is an interpreted property to indicate likes or dislikes
         /// This should never be serialized.
