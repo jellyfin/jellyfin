@@ -43,7 +43,7 @@
                     }
 
                     if (imgUrl) {
-                        html += '<paper-fab mini class="blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                        html += '<paper-fab mini class="blue lazy" data-src="' + imgUrl + '" style="background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
                     }
                     else if (program.IsKids) {
                         html += '<paper-fab mini style="background:#2196F3;" icon="person" item-icon></paper-fab>';

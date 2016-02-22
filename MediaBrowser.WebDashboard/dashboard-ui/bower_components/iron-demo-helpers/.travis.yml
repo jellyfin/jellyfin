@@ -1,0 +1,27 @@
+language: node_js
+sudo: false
+before_script:
+  - npm install -g bower polylint web-component-tester
+  - bower install
+  - polylint
+node_js: stable
+addons:
+  firefox: latest
+  apt:
+    sources:
+      - google-chrome
+      - ubuntu-toolchain-r-test
+    packages:
+      - google-chrome-stable
+      - g++-4.8
+  sauce_connect: true
+script:
+  - xvfb-run wct
+  - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"
+SAUCE_USERNAME=polymer-ci:
+  secure: MdclMoQBh7FSa11Mfw1Q7Gx5dYmsfHp5w3tSj5i798eMsrDrHIbmJwnYAIEHch4wpIteQL4dynfzWyfpU3S1WSCTR7vNsbzz8XlmT+t+Bk474XOsKQ/I+z1Fd3NMSNR73H/rJxH3nEJfDSR6TFKfoT/SAO0/yPE1taSvvYJV3dRD6A+ZrftgDzaDB3YukiE+OU4Hsk0Fy8JnF3Lb5iAl9jkd8G5i0IfYpcXJwlPq3C9krs7i/QhVCa/PI2TQNubihGnQc9oSVYxU4BV2oJ7JvEgPYLc21jL07c71Mr7Nl7ZCxnGqPYHxtwFMalBaenHg+CdnReOyh3CjbPhK/c0avX9Xgnpsex2pt3gXo98sZ0TBCfsEm/eKPpzxktAs2XwQXV3Xct1t8Oop4tbwUqgobXOSR3GM/YY8+FONr7D4NENtMiarujvywfhUK4dwc5sSY44uEocEUoYfcNEO3YAu0TyGhtjlTkhRscW6W10ASnLHQ3Vkg1/OOwBiQC1OSZHudffc11yY6rQGlD7K48n2TIu8yI8m2AyEXWxTF6XINCC80+rSNJEibiih1McGbwqACv71S6fBhCNdS2UXfO8MWDe6Lg7TgFXfLqkLRuNz+YR/Jpp9Kx5JgdDLbDvddSaOZII5WUcP+CjAwe+dOHXxuiIao18Y1AUs1K49zShukN8=
+env:
+  global:
+    - secure: ZdORgF+qeVeCULluFHTdv3rWkff5UZQB2R/XY4WlDX6VMNoa4ox+Bv9jEwC9dFISX3YGZP+jxA3EAm3vNUdnRfi0WgecISGpagRippqk6pj3sz1thsllVBZgxRo6x63BGog74zxE0Okv01p1gMF1xEmO7cKlkDl4Axo8H1CLU3zOaG3W8tuY9TMgghq9cJAi8ybsojh26LKWaD8UnOfyb406fjEtHMammJ0+mnCnqUFF4suEj0G3Pujld8DZsZG0A/xKCLfykPsIdEnsP823aCIJX99XE0clCd/FTlNTHRhgdcAFwc3jqOrRFwXkGG8aW0W+ciKFESwmS5cAZZ6an+4LsDoOLBlmReACNq85HAu45ID+xfIKuG4gROMwRdOeIH1Zh9SZ0szcnYO8/JsuxyoXHeaiQnHc0ZZ/bzO3AV5p1APflDi5V2/q4OdXRZ7K7CQNO7b3GQk1vvXWG+553BJLbyWv/D04NpvQbdQqI2Zt/SDTdb7zRQVDnk6rZuODe8LU4QtF7EaO5+KHWjOvEsEsstPS8NFelw6Iqv8sAMO7dErAjWFuDXCCyTGSN7PVLcOhVy2gnpAspX1OZ/rubsDjqe3tN3BHURlRoEq3wXs93ZHcakIIor8aVs1hLd1XeX46hGGoK215SiKoCJWN8Bs/0174hE2pDNuVG5Hm/VQ=
+    - secure: INTBdOGAsbGQ1aokMF/OX8SxTDlUH6VKcrdcOuVbu3aAllmMgOznRtOm8IbHa+c9Dn25nMEY7Nl9DvxA9EfkKbyKFCcwwYgzAtrs4U/9qmckw8yJikDyF06wwClxeXBDZr9qxHUarX770McBMfq+zOly6ls3v0TTrERO3MoV4dBJ+sj0Oj0TCjjt7hiaFq4xdSMpuGLoOdElL8zh+bgRj98R8uzOTYW4hdf80FZqO5gXOWMRDkZCI1Y4EDsAQSZQ9jDScT5qd4qYhujuFmAd1+a4EmRE+WF8Uvo2bwnm4/Fz8EEBYNzNQGftyTazXZqplhKlu1auTmOKxWadEWP2oD28FFFgnSyp/p9IzRi8DjKg7btumiL2bZOK5RFOP4OiN8+Fje7Hi9sA7utEunH8zqRYwZZehxQG3s/Ixi7wiOs9IoKxyjRpZTGMrb8tuCjsgtNTSsGbQ9Si3l/7q6zXd9ctC5F0HAhOANPUxqLt67NLxUDjp6mOcsdtEnB7hEGcC6g3NTGZnE6icTGi2f7SokK1dsxxoW8Z+FGWG+AT3FKTFJJlfoAx3Y/cSa/gI6/jyqheANbviD3qllrwvTCEjUPjMs0UoiLxEIb57aiY8cB1LplDnHQhZarXrOe1jcgOxs9H+YFaeSX6zL+WswLPwBvTgsvXuP018XBwBRpYbN8=
+    - CXX=g++-4.8

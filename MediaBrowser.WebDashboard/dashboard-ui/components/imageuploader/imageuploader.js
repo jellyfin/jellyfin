@@ -185,7 +185,7 @@
     return {
         show: function (itemId, options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentDeferred = deferred;
             hasChanges = false;

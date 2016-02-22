@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "\u8bbe\u7f6e\u5df2\u4fdd\u5b58",
     "AddUser": "\u6dfb\u52a0\u7528\u6237",
     "Users": "\u7528\u6237",
@@ -52,6 +49,7 @@
     "TitleSync": "\u540c\u6b65",
     "OptionAutomatic": "\u81ea\u52a8",
     "HeaderSelectDate": "Select Date",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "\u8bc6\u522b",
     "HeaderIdentifyItem": "\u8bc6\u522b\u9879",
     "LabelRecurringDonationCanBeCancelledHelp": "\u5728\u60a8\u7684PayPal\u8d26\u6237\u5185\u4efb\u4f55\u65f6\u5019\u90fd\u53ef\u4ee5\u53d6\u6d88\u7ecf\u5e38\u6027\u6350\u8d60\u3002",
@@ -958,5 +956,11 @@
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
     "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

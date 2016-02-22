@@ -1,6 +1,6 @@
 {
   "name": "iron-behaviors",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Provides a set of behaviors for the iron elements",
   "private": true,
   "authors": [
@@ -25,7 +25,7 @@
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
-    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "ignore": []

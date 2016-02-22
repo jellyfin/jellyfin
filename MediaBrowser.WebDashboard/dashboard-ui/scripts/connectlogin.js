@@ -53,6 +53,13 @@
                     loadMode(page, 'welcome');
                 }
                 break;
+            case MediaBrowser.ConnectionState.ServerUpdateNeeded:
+                {
+                    Dashboard.alert({
+                        message: Globalize.translate('ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+                    });
+                }
+                break;
             case MediaBrowser.ConnectionState.Unavailable:
                 {
                     Dashboard.alert({

@@ -5,7 +5,8 @@
         ServerSelection: 1,
         ServerSignIn: 2,
         SignedIn: 3,
-        ConnectSignIn: 4
+        ConnectSignIn: 4,
+        ServerUpdateNeeded: 5
     };
 
     var ConnectionMode = {
@@ -212,6 +213,16 @@
         var connectUser;
         self.connectUser = function () {
             return connectUser;
+        };
+
+        var minServerVersion = '3.0.5724';
+        self.minServerVersion = function (val) {
+
+            if (val) {
+                minServerVersion = val;
+            }
+
+            return minServerVersion;
         };
 
         self.appVersion = function () {
@@ -1014,6 +1025,30 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
+        function compareVersions(a, b) {
+
+            // -1 a is smaller
+            // 1 a is larger
+            // 0 equal
+            a = a.split('.');
+            b = b.split('.');
+
+            for (var i = 0, length = Math.max(a.length, b.length) ; i < length; i++) {
+                var aVal = parseInt(a[i] || '0');
+                var bVal = parseInt(b[i] || '0');
+
+                if (aVal < bVal) {
+                    return -1;
+                }
+
+                if (aVal > bVal) {
+                    return 1;
+                }
+            }
+
+            return 0;
+        }
+
         function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, resolve) {
 
             if (index >= tests.length) {
@@ -1052,8 +1087,18 @@
 
             tryConnect(address, timeout).then(function (result) {
 
-                console.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
-                onSuccessfulConnection(server, result, mode, options, resolve);
+                if (compareVersions(self.minServerVersion(), result.Version) == 1) {
+
+                    console.log('minServerVersion requirement not met. Server version: ' + result.Version);
+                    resolve({
+                        State: ConnectionState.ServerUpdateNeeded,
+                        Servers: [server]
+                    });
+
+                } else {
+                    console.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
+                    onSuccessfulConnection(server, result, mode, options, resolve);
+                }
 
             }, function () {
 

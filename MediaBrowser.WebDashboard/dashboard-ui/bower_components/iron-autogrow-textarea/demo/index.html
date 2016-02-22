@@ -18,46 +18,80 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <title>iron-autogrow-textarea demo</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../iron-autogrow-textarea.html">
-    <link rel="import" href="../../paper-styles/demo-pages.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+      iron-autogrow-textarea {
+        display: block;
+        width: 200px;
+        margin: 5px 0;
+      }
+
+      textarea {
+        width: 200px;
+      }
+
+      .vertical-section {
+        box-sizing: border-box;
+        width: 400px;
+        margin: 0;
+      }
+    </style>
   </head>
-  <style>
-    iron-autogrow-textarea {
-      width: 200px;
-    }
-  </style>
-  <body>
+  <body unresolved>
     <div class="vertical-section-container centered">
-      <h4>Updating the value imperatively</h4>
-      <template is="dom-bind">
-        <div class="vertical-section">
-          <iron-autogrow-textarea bind-value="{{bindValue}}" id="a1"></iron-autogrow-textarea>
-          <br><br>
+      <h3>An iron-autogrow-textarea grows automatically as more text is entered</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <iron-autogrow-textarea></iron-autogrow-textarea>
+        </template>
+      </demo-snippet>
 
-          <code>bind-value</code>: <span>[[bindValue]]</span>
+      <h3>The maximum height can be controlled either through the <i>max-rows</i>
+      property, or through a fixed max height</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <iron-autogrow-textarea max-rows="4" placeholder="scrolls after 4 rows"></iron-autogrow-textarea>
+          <iron-autogrow-textarea style="max-height: 50px;" placeholder="scrolls after 50px"></iron-autogrow-textarea>
+        </template>
+      </demo-snippet>
 
-          <p on-click="setValue">
-            set <code>bind-value</code> to: <br>
-            <textarea></textarea>
-            <button value="bindValue">set</button>
-            <br><br>
+      <h3>The initial height can also be controlled using the <i>rows</i> property,
+      or through a fixed height</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <iron-autogrow-textarea rows="4" placeholder="start with 4 rows"></iron-autogrow-textarea>
+          <iron-autogrow-textarea style="height: 50px;"></iron-autogrow-textarea>
+        </template>
+      </demo-snippet>
 
-            set <code>textarea.value</code> to: <br>
-            <textarea></textarea>
-            <button value="value">set</button>
-          </p>
-        </div>
-      </template>
+      <h3>Example of updating the value imperatively</h3>
+      <!-- TODO: replace this with a demo-snippet when https://github.com/webcomponents/webcomponentsjs/issues/362
+      is fixed -->
+      <div class="example">
+        <template is="dom-bind">
+          <div class="vertical-section">
+            <iron-autogrow-textarea bind-value="{{bindValue}}" id="a1"></iron-autogrow-textarea>
+            <br>
+            <code>bind-value</code>: <span>[[bindValue]]</span>
+            <p on-click="setValue">
+              Imperatively changing <code>bind-value</code> will also update
+              <code>textarea.value</code>:<br>
+              <textarea></textarea>
+              <button value="bindValue">set</button>
+              <br><br>
 
-      <h4>Custom</h4>
-      <div class="vertical-section">
-        <p>Scrolls after 4 rows:</p>
-        <iron-autogrow-textarea max-rows="4"></iron-autogrow-textarea>
-        <p>Initial height of 4 rows</p>
-        <iron-autogrow-textarea rows="4"></iron-autogrow-textarea>
+              Imperatively updating <code>textarea.value</code> will update
+              the display, but not update <code>bind-value</code>:<br>
+              <textarea></textarea>
+              <button value="value">set</button>
+            </p>
+          </div>
+        </template>
       </div>
     </div>
-
     <script>
       var scope = document.querySelector('template[is=dom-bind]');
 
@@ -67,13 +101,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         var inputValue = event.target.previousElementSibling.value;
         if (event.target.value == "bindValue") {
-          document.querySelector('iron-autogrow-textarea').bindValue = inputValue;
+          document.querySelector('#a1').bindValue = inputValue;
         } else {
-          document.querySelector('iron-autogrow-textarea').textarea.value = inputValue;
+          document.querySelector('#a1').textarea.value = inputValue;
         }
-
       }
     </script>
-
   </body>
 </html>

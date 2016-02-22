@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "\u039f\u03b9 \u03c1\u03c5\u03b8\u03bc\u03af\u03c3\u03b5\u03b9\u03c2 \u03b1\u03c0\u03bf\u03b8\u03b7\u03ba\u03b5\u03cd\u03c4\u03b7\u03ba\u03b1\u03bd",
     "AddUser": "\u03a0\u03c1\u03bf\u03c3\u03b8\u03ae\u03ba\u03b7 \u03c7\u03c1\u03ae\u03c3\u03c4\u03b7",
     "Users": "\u039f\u03b9 \u03c7\u03c1\u03ae\u03c3\u03c4\u03b5\u03c2",
@@ -52,6 +49,7 @@
     "TitleSync": "Sync",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Select Date",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
@@ -958,5 +956,11 @@
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
     "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

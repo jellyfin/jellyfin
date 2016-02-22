@@ -74,6 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('window\'s resize', function() {
         test('causes all iron-resize events to fire once', function() {
           window.dispatchEvent(new CustomEvent('resize'));
+          Polymer.dom.flush();
           expect(resizable.ironResizeCount).to.be.equal(2);
           expect(resizable.$.childResizable1.ironResizeCount).to.be.equal(2);
           expect(resizable.$.childResizable2.ironResizeCount).to.be.equal(2);

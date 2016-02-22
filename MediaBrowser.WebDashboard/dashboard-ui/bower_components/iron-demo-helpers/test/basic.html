@@ -22,65 +22,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </head>
 <body>
+  <!--
+    *** Important! ***
+    You'll notice that these tests don't use test-fixture. That's because
+    there's a problem stamping nested templates in IE/Safari 8. This
+    should eventually be patched in webcomponents.js, but in the meantime
+    we're going to run these tests "the old way".
 
-  <test-fixture id="empty-demo">
+    This is relevant because this means that you, as the test writer,
+    need to remember that an element's state is maintained between tests.
+    If you don't want this, either use a new element, or clean up after
+    your test.
+  -->
+
+  <demo-snippet id="emptyDemo"></demo-snippet>
+
+  <demo-snippet id="nativeDemo">
     <template>
-      <demo-snippet></demo-snippet>
+      <input disabled>
     </template>
-  </test-fixture>
+  </demo-snippet>
 
-  <test-fixture id="native-demo">
+  <demo-snippet id="customDemo">
     <template>
-      <demo-snippet>
-        <template>
-          <input disabled>
-        </template>
-      </demo-snippet>
+      <paper-checkbox disabled></paper-checkbox>
     </template>
-  </test-fixture>
+  </demo-snippet>
 
-  <test-fixture id="custom-demo">
+  <demo-snippet id="demoWithAttributes">
     <template>
-      <demo-snippet>
-        <template>
-          <paper-checkbox disabled></paper-checkbox>
-        </template>
-      </demo-snippet>
+      <input disabled type="date">
     </template>
-  </test-fixture>
-
-  <test-fixture id="demo-with-attributes">
-    <template>
-      <demo-snippet>
-        <template>
-          <input disabled type="date">
-        </template>
-      </demo-snippet>
-    </template>
-  </test-fixture>
-
+  </demo-snippet>
 
   <script>
-    // TODO(notwaldorf): Tests are currently very unhappy in IE
-    function isNotIE() {
-      return !navigator.userAgent.match(/MSIE/i);
-    }
-
     suite('display', function() {
       var emptyHeight;
 
       setup(function() {
-        var emptyDemo = fixture('empty-demo');
+        var emptyDemo = document.getElementById('emptyDemo');
         emptyHeight = emptyDemo.getBoundingClientRect().height;
       });
 
-      test('can render native elements', skipUnless(isNotIE, function() {
-        var element = fixture('native-demo');
+      test('can render native elements', function() {
+        var element = document.getElementById('nativeDemo');
 
         // Render the distributed children.
         Polymer.dom.flush();
 
         var rect = element.getBoundingClientRect();
+
         expect(rect.height).to.be.greaterThan(emptyHeight);
 
         // The demo is rendered in the light dom, so it should exist, and
@@ -93,15 +84,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var markdownElement = element.$.marked;
         expect(markdownElement.markdown).to.be.equal('```\n\n<input disabled>\n\n```');
-      }));
+      });
 
-      test('can render custom elements', skipUnless(isNotIE, function() {
-        var element = fixture('custom-demo');
+      test('can render custom elements', function() {
+        var element = document.getElementById('customDemo');
 
         // Render the distributed children.
         Polymer.dom.flush();
 
         var rect = element.getBoundingClientRect();
+
         expect(rect.height).to.be.greaterThan(emptyHeight);
 
         // The demo is rendered in the light dom, so it should exist, and
@@ -115,18 +107,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var markdownElement = element.$.marked;
         expect(markdownElement.markdown).to.be.equal(
             '```\n\n<paper-checkbox disabled></paper-checkbox>\n\n```');
-      }));
+      });
     });
 
     suite('parsing', function() {
-      var element;
-
-      setup(function() {
-        var element = fixture('demo-with-attributes');
-      });
-
-      test('preserves attributes', skipUnless(isNotIE, function() {
-        var element = fixture('demo-with-attributes');
+      test('preserves attributes', function() {
+        var element = document.getElementById('demoWithAttributes');
 
         // Render the distributed children.
         Polymer.dom.flush();
@@ -134,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var markdownElement = element.$.marked;
         expect(markdownElement.markdown).to.be.equal(
             '```\n\n<input disabled type="date">\n\n```');
-      }));
+      });
     });
   </script>
 </body>

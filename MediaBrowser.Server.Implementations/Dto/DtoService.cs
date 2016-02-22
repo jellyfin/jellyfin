@@ -639,6 +639,8 @@ namespace MediaBrowser.Server.Implementations.Dto
         private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type, int limit)
         {
             return item.GetImages(type)
+                // Convert to a list now in case GetImageCacheTag is slow
+                .ToList()
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i != null)
                 .Take(limit)

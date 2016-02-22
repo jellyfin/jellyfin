@@ -8,19 +8,17 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
-    public class M3UTunerHost : BaseTunerHost, ITunerHost
+    public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
@@ -46,65 +44,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var urlHash = info.Url.GetMD5().ToString("N");
-
-            // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
-            {
-                return GetChannels(reader, urlHash);
-            }
-        }
-
-        private List<M3UChannel> GetChannels(StreamReader reader, string urlHash)
-        {
-            var channels = new List<M3UChannel>();
-
-            string channnelName = null;
-            string channelNumber = null;
-            string line;
-
-            while ((line = reader.ReadLine()) != null)
-            {
-                line = line.Trim();
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-
-                if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
-                {
-                    line = line.Substring(8);
-                    Logger.Info("Found m3u channel: {0}", line);
-                    var parts = line.Split(new[] { ',' }, 2);
-                    channelNumber = parts[0];
-                    channnelName = parts[1];
-                }
-                else if (!string.IsNullOrWhiteSpace(channelNumber))
-                {
-                    channels.Add(new M3UChannel
-                    {
-                        Name = channnelName,
-                        Number = channelNumber,
-                        Id = ChannelIdPrefix + urlHash + line.GetMD5().ToString("N"),
-                        Path = line
-                    });
-
-                    channelNumber = null;
-                    channnelName = null;
-                }
-            }
-            return channels;
+            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(info.Url, ChannelIdPrefix, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
         {
-            var list = GetConfiguration().TunerHosts
-            .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
+            var list = GetTunerHosts()
             .Select(i => new LiveTvTunerInfo()
             {
                 Name = Name,
@@ -125,18 +70,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return sources.First();
         }
 
-        class M3UChannel : ChannelInfo
-        {
-            public string Path { get; set; }
-
-            public M3UChannel()
-            {
-            }
-        }
-
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, _fileSystem, _httpClient).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
             {
 
             }
@@ -145,15 +81,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         protected override bool IsValidChannelId(string channelId)
         {
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
-        {
-            if (info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return _httpClient.Get(info.Url, cancellationToken);
-            }
-            return Task.FromResult(_fileSystem.OpenRead(info.Url));
         }
 
         protected override async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)

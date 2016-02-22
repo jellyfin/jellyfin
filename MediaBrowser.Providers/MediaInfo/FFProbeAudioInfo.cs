@@ -125,9 +125,9 @@ namespace MediaBrowser.Providers.MediaInfo
         private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
         {
             // Only set Name if title was found in the dictionary
-            if (!string.IsNullOrEmpty(data.Title))
+            if (!string.IsNullOrEmpty(data.Name))
             {
-                audio.Name = data.Title;
+                audio.Name = data.Name;
             }
 
             if (!audio.LockedFields.Contains(MetadataFields.Cast))

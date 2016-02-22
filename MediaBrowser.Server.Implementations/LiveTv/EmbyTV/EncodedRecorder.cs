@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
-            var commandLineArgs = "-fflags +genpts -i \"{0}\" -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\" -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 audioChannels = audioStream.Channels ?? audioChannels;
             }
-            return "-codec:a:0 aac -strict experimental -ab 320000 -ac " + audioChannels.ToString(CultureInfo.InvariantCulture);
+            return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)

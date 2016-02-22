@@ -2,17 +2,17 @@
 
     function loadAdvancedConfig(page, config) {
 
-        $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden).checkboxradio("refresh");
+        $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden);
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
 
-        $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata).checkboxradio("refresh");
-        $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata).checkboxradio("refresh");
-        $('#chkPeopleDirectors', page).checked(config.PeopleMetadataOptions.DownloadDirectorMetadata).checkboxradio("refresh");
-        $('#chkPeopleProducers', page).checked(config.PeopleMetadataOptions.DownloadProducerMetadata).checkboxradio("refresh");
-        $('#chkPeopleWriters', page).checked(config.PeopleMetadataOptions.DownloadWriterMetadata).checkboxradio("refresh");
-        $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata).checkboxradio("refresh");
-        $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata).checkboxradio("refresh");
+        $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata);
+        $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata);
+        $('#chkPeopleDirectors', page).checked(config.PeopleMetadataOptions.DownloadDirectorMetadata);
+        $('#chkPeopleProducers', page).checked(config.PeopleMetadataOptions.DownloadProducerMetadata);
+        $('#chkPeopleWriters', page).checked(config.PeopleMetadataOptions.DownloadWriterMetadata);
+        $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata);
+        $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata);
 
         Dashboard.hideLoadingMsg();
     }
@@ -24,27 +24,27 @@
 
     function loadTmdbConfig(page, config) {
 
-        $('#chkEnableTmdbUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+        $('#chkEnableTmdbUpdates', page).checked(config.EnableAutomaticUpdates);
     }
 
     function loadTvdbConfig(page, config) {
 
-        $('#chkEnableTvdbUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+        $('#chkEnableTvdbUpdates', page).checked(config.EnableAutomaticUpdates);
     }
 
     function loadFanartConfig(page, config) {
 
-        $('#chkEnableFanartUpdates', page).checked(config.EnableAutomaticUpdates).checkboxradio("refresh");
+        $('#chkEnableFanartUpdates', page).checked(config.EnableAutomaticUpdates);
         $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
     function loadChapters(page, config, providers) {
 
-        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction).checkboxradio("refresh");
-        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction).checkboxradio("refresh");
-        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction).checkboxradio("refresh");
+        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction);
+        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction);
+        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction);
 
-        $('#chkExtractChaptersDuringLibraryScan', page).checked(config.ExtractDuringLibraryScan).checkboxradio("refresh");
+        $('#chkExtractChaptersDuringLibraryScan', page).checked(config.ExtractDuringLibraryScan);
 
         Dashboard.hideLoadingMsg();
     }

@@ -144,7 +144,9 @@
         var timers = result.Items;
 
         LiveTvHelpers.getTimersHtml(timers).then(function(html) {
-            var elem = $('.scheduleTab', page).html(html);
+            var elem = $('.scheduleTab', page).html(html)[0];
+
+            ImageLoader.lazyChildren(elem);
 
             $('.btnDeleteTimer', elem).on('click', function () {
 

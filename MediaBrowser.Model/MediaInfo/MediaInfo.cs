@@ -10,11 +10,6 @@ namespace MediaBrowser.Model.MediaInfo
         public List<ChapterInfo> Chapters { get; set; }
 
         /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>The title.</value>
-        public string Title { get; set; }
-        /// <summary>
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
@@ -46,6 +41,11 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The official rating.</value>
         public string OfficialRating { get; set; }
+        /// <summary>
+        /// Gets or sets the official rating description.
+        /// </summary>
+        /// <value>The official rating description.</value>
+        public string OfficialRatingDescription { get; set; }
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>

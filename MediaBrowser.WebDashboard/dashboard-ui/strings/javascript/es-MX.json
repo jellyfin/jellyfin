@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Configuraci\u00f3n guardada.",
     "AddUser": "Agregar usuario",
     "Users": "Usuarios",
@@ -52,6 +49,7 @@
     "TitleSync": "Sinc",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Seleccionar fecha",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "Identificar",
     "HeaderIdentifyItem": "Identificar \u00cdtem",
     "LabelRecurringDonationCanBeCancelledHelp": "Las donaciones recurrentes pueden ser canceladas en cualquier momento desde su cuenta PayPal.",
@@ -866,8 +864,8 @@
     "HeaderTopPlugins": "Complementos Destacados",
     "ButtonRecord": "Grabar",
     "ButtonOther": "Otros",
-    "HeaderSortBy": "Ordenar Por:",
-    "HeaderSortOrder": "Ordenado Por:",
+    "HeaderSortBy": "Ordenar Por",
+    "HeaderSortOrder": "Ordenado Por",
     "OptionAscending": "Ascendente",
     "OptionDescending": "Descendente",
     "OptionNameSort": "Nombre",
@@ -958,5 +956,11 @@
     "ButtonOff": "Apagar",
     "TitleHardwareAcceleration": "Aceleraci\u00f3n por Hardware",
     "HardwareAccelerationWarning": "Habilitar la aceleraci\u00f3n por hardware puede ocasionar inestabilidad en algunos ambientes. Si tiene dificultad para reproducir algunos videos despu\u00e9s de habilitar esta opci\u00f3n, tendr\u00e1 que regresar la configuraci\u00f3n a Auto.",
-    "HeaderSelectCodecIntrosPath": "Seleccionar Trayectoria de Intros de C\u00f3dec"
+    "HeaderSelectCodecIntrosPath": "Seleccionar Trayectoria de Intros de C\u00f3dec",
+    "ButtonLocalRefresh": "Actualizaci\u00f3n local",
+    "ButtonAddMissingData": "S\u00f3lo agregar datos faltantes",
+    "ButtonFullRefresh": "Actualizaci\u00f3n completa",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

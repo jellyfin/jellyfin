@@ -1,0 +1,344 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <title>iron-flex-behavior tests</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../iron-flex-layout.html">
+
+    <style is="custom-style">
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        width: 300px;
+        min-height: 50px;
+        background-color: #ccc;
+      }
+      .container > div {
+        width: 50px;
+        min-height: 50px; /* so that it can grow in vertical layouts. */
+      }
+      /* IE11 does not calculate flex proportions correctly in a vertical
+       * layout if the children just have a min-height. For those tests,
+       * use a fixed height instead. */
+      .container > div.fixed-height {
+        min-height: 0;
+        height: 50px;
+      }
+      .relative { @apply(--layout-relative); }
+      .container.relative > div {
+        min-width: 50px;
+        min-height: 50px;
+        width: inherit;
+      }
+      .container.small { width: 120px; }
+      .container.tall { height: 300px; }
+
+      #c1 { background-color: #E91E63; }
+      #c2 { background-color: #03A9F4; }
+      #c3 { background-color: #CDDC39; }
+
+      .horizontal { @apply(--layout-horizontal); }
+      .horizontal-reverse { @apply(--layout-horizontal-reverse); }
+      .vertical { @apply(--layout-vertical); }
+      .vertical-reverse { @apply(--layout-vertical-reverse); }
+      .wrap { @apply(--layout-wrap); }
+      .wrap-reverse { @apply(--layout-wrap-reverse); }
+      .flex { @apply(--layout-flex); }
+      .flex2 { @apply(--layout-flex-2); }
+      .flex3 { @apply(--layout-flex-3); }
+      .center { @apply(--layout-center); }
+      .start { @apply(--layout-start); }
+      .end { @apply(--layout-end); }
+      .start-justified { @apply(--layout-start-justified); }
+      .center-justified { @apply(--layout-center-justified); }
+      .end-justified { @apply(--layout-end-justified); }
+      .justified { @apply(--layout-justified); }
+      .around-justified { @apply(--layout-around-justified); }
+      .fit { @apply(--layout-fit); }
+    </style>
+  </head>
+  <body>
+    <test-fixture id="basic">
+      <template>
+        <div class="container">
+          <div id="c1"></div>
+          <div id="c2"></div>
+          <div id="c3"></div>
+        </div>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="flex">
+      <template>
+        <div class="container">
+          <div id="c1" class="fixed-height"></div>
+          <div id="c2" class="fixed-height"></div>
+          <div id="c3" class="fixed-height"></div>
+        </div>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="single-child">
+      <template>
+        <div class="container">
+          <div id="c1"></div>
+        </div>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="positioning">
+      <template>
+        <div class="container relative">
+          <div id="c1"></div>
+        </div>
+      </template>
+    </test-fixture>
+    <script>
+      function positionEquals(node, top, bottom, left, right) {
+        var rect = node.getBoundingClientRect();
+        return rect.top === top && rect.bottom === bottom
+            && rect.left === left && rect.right === right;
+      }
+      suite('basic layout', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('basic');
+        });
+
+        test('--layout-horizontal', function() {
+          container.classList.add('horizontal');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          // |c1| |c2| |c3|
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 100, 150), "child 3 position ok");
+        });
+
+        test('--layout-horizontal-reverse', function() {
+          container.classList.add('horizontal-reverse');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          //     |c3| |c2| |c1|
+          assert.isTrue(positionEquals(c1, 0, 50, 250, 300), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 200, 250), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 150, 200), "child 3 position ok");
+        });
+
+        test('--layout-vertical', function() {
+          container.classList.add('vertical');
+          assert.isTrue(positionEquals(container, 0, 150, 0, 300), "container position ok");
+          // vertically, |c1| |c2| |c3|
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 50, 100, 0, 50), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 100, 150, 0, 50), "child 3 position ok");
+        });
+
+        test('--layout-vertical-reverse', function() {
+          container.classList.add('vertical-reverse');
+          assert.isTrue(positionEquals(container, 0, 150, 0, 300), "container position ok");
+          // vertically, |c3| |c2| |c1|
+          assert.isTrue(positionEquals(c1, 100, 150, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 50, 100, 0, 50), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 0, 50), "child 3 position ok");
+        });
+
+        test('--layout-wrap', function() {
+          container.classList.add('horizontal');
+          container.classList.add('wrap');
+          container.classList.add('small');
+          assert.isTrue(positionEquals(container, 0, 100, 0, 120), "container position ok");
+          // |c1| |c2|
+          // |c3|
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 50, 100, 0, 50), "child 3 position ok");
+        });
+
+        test('--layout-wrap-reverse', function() {
+          container.classList.add('horizontal');
+          container.classList.add('wrap-reverse');
+          container.classList.add('small');
+          assert.isTrue(positionEquals(container, 0, 100, 0, 120), "container position ok");
+          // |c3|
+          // |c1| |c2|
+          assert.isTrue(positionEquals(c1, 50, 100, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 50, 100, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 0, 50), "child 3 position ok");
+        });
+      });
+
+      suite('flex', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('flex');
+        });
+
+        test('--layout-flex child in a horizontal layout', function() {
+          container.classList.add('horizontal');
+          c2.classList.add('flex');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          // |c1| |    c2    | |c3|
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 250), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 250, 300), "child 3 position ok");
+        });
+
+        test('--layout-flex child in a vertical layout', function() {
+          container.classList.add('vertical');
+          container.classList.add('tall');
+          c2.classList.add('flex');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          // vertically, |c1| |    c2    | |c3|
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 50, 250, 0, 50), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 250, 300, 0, 50), "child 3 position ok");
+        });
+
+        test('--layout-flex, --layout-flex-2, --layout-flex-3 in a horizontal layout', function() {
+          container.classList.add('horizontal');
+          c1.classList.add('flex');
+          c2.classList.add('flex2');
+          c3.classList.add('flex3');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          // |c1| | c2 | |  c3  |
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 150), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 150, 300), "child 3 position ok");
+        });
+
+        test('--layout-flex, --layout-flex-2, --layout-flex-3 in a vertical layout', function() {
+          container.classList.add('vertical');
+          container.classList.add('tall');
+          c1.classList.add('flex');
+          c2.classList.add('flex2');
+          c3.classList.add('flex3');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          // vertically, |c1| | c2 | |  c3  |
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 50, 150, 0, 50), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 150, 300, 0, 50), "child 3 position ok");
+        });
+      });
+
+      suite('alignment', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('single-child');
+          container.classList.add('horizontal');
+        });
+
+        test('stretch (default)', function() {
+          container.classList.add('tall');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 300, 0, 50), "child 1 position ok");
+        });
+
+        test('--layout-center', function() {
+          container.classList.add('center');
+          container.classList.add('tall');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, center, center + 50, 0, 50), "child 1 position ok");
+        });
+
+        test('--layout-start', function() {
+          container.classList.add('start');
+          container.classList.add('tall');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+        });
+
+        test('--layout-end', function() {
+          container.classList.add('end');
+          container.classList.add('tall');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(c1, 250, 300, 0, 50), "child 1 position ok");
+        });
+
+        test('--layout-start-justified', function() {
+          container.classList.add('start-justified');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+        });
+
+        test('--layout-end-justified', function() {
+          container.classList.add('end-justified');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 50, 250, 300), "child 1 position ok");
+        });
+
+        test('--layout-center-justified', function() {
+          container.classList.add('center-justified');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, 0, 50, center, center + 50), "child 1 position ok");
+        });
+      });
+
+      suite('justification', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('flex');
+          container.classList.add('horizontal');
+        });
+
+        test('--layout-justified', function() {
+          container.classList.add('justified');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, center, center + 50), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 0, 50, 250, 300), "child 3 position ok");
+        });
+
+        test('--layout-around-justified', function() {
+          container.classList.add('around-justified');
+          assert.isTrue(positionEquals(container, 0, 50, 0, 300), "container position ok");
+          var spacing = (300 - 50 * 3) / 6;
+          // Every child gets `spacing` on its left and right side.
+          assert.isTrue(positionEquals(c1, 0, 50, spacing, spacing + 50), "child 1 position ok");
+          var end = spacing + 50 + spacing;
+          assert.isTrue(positionEquals(c2, 0, 50, end + spacing, end + spacing + 50), "child 2 position ok");
+          end = end + spacing + 50 + spacing;
+          assert.isTrue(positionEquals(c3, 0, 50, end + spacing, end + spacing + 50), "child 3 position ok");
+        });
+      });
+
+      suite('positioning', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('positioning');
+          container.classList.add('tall');
+
+        });
+
+        test('--layout-fit', function() {
+          c1.classList.add('fit');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "container position ok");
+          assert.isTrue(positionEquals(container, 0, 300, 0, 300), "child 1 position ok");
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -365,12 +365,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     listeners: {
       'addon-attached': '_onAddonAttached',
-      'focus': '_onFocus'
     },
-
-    observers: [
-      '_focusedControlStateChanged(focused)'
-    ],
 
     keyBindings: {
       'shift+tab:keydown': '_onShiftTabDown'
@@ -440,12 +435,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Forward focus to inputElement
+     * Forward focus to inputElement. Overriden from IronControlState.
      */
-    _onFocus: function() {
-      if (!this._shiftTabPressed) {
+    _focusBlurHandler: function(event) {
+      if (this._shiftTabPressed)
+        return;
+
+      Polymer.IronControlState._focusBlurHandler.call(this, event);
+
+      // Forward the focus to the nested input.
+      if (this.focused)
         this._focusableElement.focus();
-      }
     },
 
     /**
@@ -495,24 +495,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     _computeAlwaysFloatLabel: function(alwaysFloatLabel, placeholder) {
       return placeholder || alwaysFloatLabel;
-    },
-
-    _focusedControlStateChanged: function(focused) {
-      // IronControlState stops the focus and blur events in order to redispatch them on the host
-      // element, but paper-input-container listens to those events. Since there are more
-      // pending work on focus/blur in IronControlState, I'm putting in this hack to get the
-      // input focus state working for now.
-      if (!this.$.container) {
-        this.$.container = Polymer.dom(this.root).querySelector('paper-input-container');
-        if (!this.$.container) {
-          return;
-        }
-      }
-      if (focused) {
-        this.$.container._onFocus();
-      } else {
-        this.$.container._onBlur();
-      }
     },
 
     _updateAriaLabelledBy: function() {

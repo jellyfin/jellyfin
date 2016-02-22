@@ -43,7 +43,7 @@ html .ui-panel-page-container-a {
 html .ui-bar-a a,
 html .ui-body-a a,
 html body .ui-group-theme-a a {
-    color: #3388cc /*{a-link-color}*/;
+    color: #388E3C /*{a-link-color}*/;
     font-weight: bold;
 }
 
@@ -51,21 +51,21 @@ html body .ui-group-theme-a a {
     html .ui-bar-a a:visited,
     html .ui-body-a a:visited,
     html body .ui-group-theme-a a:visited {
-        color: #3388cc /*{a-link-visited}*/;
+        color: #388E3C /*{a-link-visited}*/;
     }
 
     .ui-page-theme-a a:hover,
     html .ui-bar-a a:hover,
     html .ui-body-a a:hover,
     html body .ui-group-theme-a a:hover {
-        color: #005599 /*{a-link-hover}*/;
+        color: #1B5E20 /*{a-link-hover}*/;
     }
 
     .ui-page-theme-a a:active,
     html .ui-bar-a a:active,
     html .ui-body-a a:active,
     html body .ui-group-theme-a a:active {
-        color: #005599 /*{a-link-active}*/;
+        color: #1B5E20 /*{a-link-active}*/;
     }
 
 /* Button up */
@@ -171,20 +171,20 @@ html .ui-panel-page-container-b {
 
 /* Links */
 .ui-body-b a {
-    color: #22aadd /*{b-link-color}*/;
+    color: #52B54B /*{b-link-color}*/;
     font-weight: bold;
 }
 
     .ui-body-b a:visited {
-        color: #22aadd /*{b-link-visited}*/;
+        color: #52B54B /*{b-link-visited}*/;
     }
 
     .ui-body-b a:hover {
-        color: #0088bb /*{b-link-hover}*/;
+        color: #2E7D32 /*{b-link-hover}*/;
     }
 
     .ui-body-b a:active {
-        color: #0088bb /*{b-link-active}*/;
+        color: #2E7D32 /*{b-link-active}*/;
     }
 
 /* Button up */
@@ -1878,4 +1878,8 @@ progress {
     padding: 25px;
     text-align: center;
     color: #bbb;
+}
+
+.actionSheetMenuItem:hover {
+    background-color: #e8e8e8;
 }

@@ -680,7 +680,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 foreach (var user in users)
                 {
-                    await OnPlaybackProgress(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                    await OnPlaybackProgress(user, key, libraryItem, info).ConfigureAwait(false);
                 }
             }
 
@@ -712,15 +712,40 @@ namespace MediaBrowser.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private async Task OnPlaybackProgress(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
+        private async Task OnPlaybackProgress(User user, string userDataKey, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataRepository.GetUserData(userId, userDataKey);
+            var data = _userDataRepository.GetUserData(user.Id, userDataKey);
+
+            var positionTicks = info.PositionTicks;
 
             if (positionTicks.HasValue)
             {
                 _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
 
-                await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                UpdatePlaybackSettings(user, info, data);
+
+                await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        private void UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
+        {
+            if (user.Configuration.RememberAudioSelections)
+            {
+                data.AudioStreamIndex = info.AudioStreamIndex;
+            }
+            else
+            {
+                data.AudioStreamIndex = null;
+            }
+
+            if (user.Configuration.RememberSubtitleSelections)
+            {
+                data.SubtitleStreamIndex = info.SubtitleStreamIndex;
+            }
+            else
+            {
+                data.SubtitleStreamIndex = null;
             }
         }
 
@@ -1268,7 +1293,17 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
-        public async Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
+        public Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
+        {
+            return AuthenticateNewSessionInternal(request, true);
+        }
+
+        public Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request)
+        {
+            return AuthenticateNewSessionInternal(request, false);
+        }
+
+        private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
             var user = _userManager.Users
                 .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
@@ -1281,13 +1316,16 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
-            var result = await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
-
-            if (!result)
+            if (enforcePassword)
             {
-                EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+                var result = await _userManager.AuthenticateUser(request.Username, request.PasswordSha1, request.PasswordMd5, request.RemoteEndPoint).ConfigureAwait(false);
 
-                throw new SecurityException("Invalid user or password entered.");
+                if (!result)
+                {
+                    EventHelper.FireEventIfNotNull(AuthenticationFailed, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
+
+                    throw new SecurityException("Invalid user or password entered.");
+                }
             }
 
             var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
@@ -1310,7 +1348,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
         }
-
+        
+        
         private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string appVersion, string deviceName)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery

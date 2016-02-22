@@ -1,7 +1,4 @@
 {
-    "ButtonLocalRefresh": "Local refresh",
-    "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh",
     "SettingsSaved": "Inst\u00e4llningarna sparade.",
     "AddUser": "Skapa anv\u00e4ndare",
     "Users": "Anv\u00e4ndare",
@@ -52,6 +49,7 @@
     "TitleSync": "Sync",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Select Date",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "Identifiera",
     "HeaderIdentifyItem": "Identifiera objekt",
     "LabelRecurringDonationCanBeCancelledHelp": "St\u00e5ende donationer kan avbrytas n\u00e4r som helst via ditt PayPal-konto.",
@@ -958,5 +956,11 @@
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
     "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
-    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path"
+    "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
+    "ButtonLocalRefresh": "Local refresh",
+    "ButtonAddMissingData": "Add missing data only",
+    "ButtonFullRefresh": "Full refresh",
+    "PinCodeInvalid": "Pin Code Error",
+    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

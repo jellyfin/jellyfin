@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Connect;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Session;
 using ServiceStack;
 
 namespace MediaBrowser.Api
@@ -13,6 +18,8 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "DeviceId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string DeviceId { get; set; }
+        [ApiMember(Name = "AppName", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string AppName { get; set; }
     }
 
     [Route("/Auth/Pin", "GET", Summary = "Gets pin status")]
@@ -35,7 +42,7 @@ namespace MediaBrowser.Api
 
     [Route("/Auth/Pin/Validate", "POST", Summary = "Validates a pin")]
     [Authenticated]
-    public class ValidatePinRequest : IReturnVoid
+    public class ValidatePinRequest : IReturn<SessionInfoDto>
     {
         [ApiMember(Name = "Pin", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Pin { get; set; }
@@ -43,10 +50,27 @@ namespace MediaBrowser.Api
 
     public class PinLoginService : BaseApiService
     {
-        private readonly ConcurrentDictionary<string, MyPinStatus> _activeRequests = new ConcurrentDictionary<string, MyPinStatus>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, MyPinStatus> _activeRequests = new ConcurrentDictionary<string, MyPinStatus>(StringComparer.OrdinalIgnoreCase);
+        private readonly ISessionManager _sessionManager;
+        private readonly IUserManager _userManager;
+
+        public PinLoginService(ISessionManager sessionManager, IUserManager userManager)
+        {
+            _sessionManager = sessionManager;
+            _userManager = userManager;
+        }
 
         public object Post(CreatePinRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.DeviceId))
+            {
+                throw new ArgumentNullException("DeviceId");
+            }
+            if (string.IsNullOrWhiteSpace(request.AppName))
+            {
+                throw new ArgumentNullException("AppName");
+            }
+
             var pin = GetNewPin();
 
             var value = new MyPinStatus
@@ -55,7 +79,8 @@ namespace MediaBrowser.Api
                 IsConfirmed = false,
                 IsExpired = false,
                 Pin = pin,
-                DeviceId = request.DeviceId
+                DeviceId = request.DeviceId,
+                AppName = request.AppName
             };
 
             _activeRequests.AddOrUpdate(pin, value, (k, v) => value);
@@ -75,6 +100,7 @@ namespace MediaBrowser.Api
 
             if (!_activeRequests.TryGetValue(request.Pin, out status))
             {
+                Logger.Debug("Pin {0} not found.", request.Pin);
                 throw new ResourceNotFoundException();
             }
 
@@ -88,12 +114,13 @@ namespace MediaBrowser.Api
             });
         }
 
-        public object Post(ExchangePinRequest request)
+        public async Task<object> Post(ExchangePinRequest request)
         {
             MyPinStatus status;
 
             if (!_activeRequests.TryGetValue(request.Pin, out status))
             {
+                Logger.Debug("Pin {0} not found.", request.Pin);
                 throw new ResourceNotFoundException();
             }
 
@@ -104,14 +131,24 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException();
             }
 
-            return ToOptimizedResult(new PinExchangeResult
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var user = _userManager.GetUserById(status.UserId);
+
+            var result = await _sessionManager.CreateNewSession(new AuthenticationRequest
             {
-                // TODO: Add access token
-                UserId = status.UserId
-            });
+                App = auth.Client,
+                AppVersion = auth.Version,
+                DeviceId = auth.DeviceId,
+                DeviceName = auth.Device,
+                RemoteEndPoint = Request.RemoteIp,
+                Username = user.Name
+
+            }).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
-        public void Post(ValidatePinRequest request)
+        public object Post(ValidatePinRequest request)
         {
             MyPinStatus status;
 
@@ -124,12 +161,18 @@ namespace MediaBrowser.Api
 
             status.IsConfirmed = true;
             status.UserId = AuthorizationContext.GetAuthorizationInfo(Request).UserId;
+
+            return ToOptimizedResult(new ValidatePinResult
+            {
+                AppName = status.AppName
+            });
         }
 
         private void EnsureValid(string requestedDeviceId, MyPinStatus status)
         {
             if (!string.Equals(requestedDeviceId, status.DeviceId, StringComparison.OrdinalIgnoreCase))
             {
+                Logger.Debug("Pin device Id's do not match. requestedDeviceId: {0}, status.DeviceId: {1}", requestedDeviceId, status.DeviceId);
                 throw new ResourceNotFoundException();
             }
 
@@ -145,6 +188,7 @@ namespace MediaBrowser.Api
 
             if (status.IsExpired)
             {
+                Logger.Debug("Pin {0} is expired", status.Pin);
                 throw new ResourceNotFoundException();
             }
         }
@@ -163,16 +207,7 @@ namespace MediaBrowser.Api
 
         private string GetNewPinInternal()
         {
-            var length = 5;
-            var pin = string.Empty;
-
-            while (pin.Length < length)
-            {
-                var digit = new Random().Next(0, 9);
-                pin += digit.ToString(CultureInfo.InvariantCulture);
-            }
-
-            return pin;
+            return new Random().Next(10000, 99999).ToString(CultureInfo.InvariantCulture);
         }
 
         private bool IsPinActive(string pin)
@@ -181,15 +216,15 @@ namespace MediaBrowser.Api
 
             if (!_activeRequests.TryGetValue(pin, out status))
             {
-                return true;
+                return false;
             }
 
             if (status.IsExpired)
             {
-                return true;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         public class MyPinStatus : PinStatusResult
@@ -197,6 +232,12 @@ namespace MediaBrowser.Api
             public DateTime CreationTimeUtc { get; set; }
             public string DeviceId { get; set; }
             public string UserId { get; set; }
+            public string AppName { get; set; }
         }
+    }
+
+    public class ValidatePinResult
+    {
+        public string AppName { get; set; }
     }
 }

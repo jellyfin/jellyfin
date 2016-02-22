@@ -343,6 +343,12 @@
         var items = [];
 
         items.push({
+            name: Globalize.translate('ButtonEditImages'),
+            id: 'images',
+            ironIcon: 'photo'
+        });
+
+        items.push({
             name: Globalize.translate('ButtonIdentify'),
             id: 'identify',
             ironIcon: 'info'
@@ -368,6 +374,9 @@
                             break;
                         case 'refresh':
                             showRefreshMenu(context, button);
+                            break;
+                        case 'images':
+                            LibraryBrowser.editImages(currentItem.Id);
                             break;
                         default:
                             break;

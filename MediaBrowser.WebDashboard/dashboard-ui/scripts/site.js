@@ -1640,7 +1640,7 @@ var AppInfo = {};
                         Dashboard.showLoadingMsg();
 
                         return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.showLoadingMsg();
+                            Dashboard.hideLoadingMsg();
 
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;
@@ -1835,7 +1835,8 @@ var AppInfo = {};
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
-            paths.actionsheet = "scripts/actionsheet";
+
+            define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
         // hack for an android test before browserInfo is loaded
@@ -1844,6 +1845,9 @@ var AppInfo = {};
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
         }
+
+        paths.playlistManager = "scripts/playlistmanager";
+        paths.syncDialog = "scripts/sync";
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
         var md5Path = bowerPath + "/cryptojslib/components/md5-min";
@@ -1955,7 +1959,6 @@ var AppInfo = {};
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
             define("fileupload", [apiClientBowerPath + "/fileupload"]);
         }
-        define("apiclient-deferred", ["legacy/deferred"]);
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
         define("contentuploader", [apiClientBowerPath + "/sync/contentuploader"]);
@@ -2228,6 +2231,8 @@ var AppInfo = {};
             deps.push('css!devices/android/android.css');
         } else if (AppInfo.isNativeApp && browserInfo.safari) {
             deps.push('css!devices/ios/ios.css');
+        } else if (AppInfo.isNativeApp && browserInfo.edge) {
+            deps.push('css!devices/windowsphone/wp.css');
         } else if (!browserInfo.android) {
             deps.push('css!devices/android/android.css');
         }
@@ -2245,6 +2250,7 @@ var AppInfo = {};
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
+                deps.push('cordova/links');
             }
         }
 
@@ -2254,9 +2260,6 @@ var AppInfo = {};
 
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
-        deps.push('scripts/alphapicker');
-        deps.push('scripts/playlistmanager');
-        deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
@@ -2279,7 +2282,6 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
-            postInitDependencies.push('apiclient-deferred');
 
             if (Dashboard.isRunningInCordova()) {
 

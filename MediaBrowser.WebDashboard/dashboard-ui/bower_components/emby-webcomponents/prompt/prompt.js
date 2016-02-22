@@ -38,7 +38,9 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             html += '</h2>';
         }
 
-        html += '<paper-input autoFocus class="txtPromptValue"></paper-input>';
+        html += '<form>';
+
+        html += '<paper-input autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"></paper-input>';
 
         if (options.description) {
             html += '<div class="fieldDescription">';
@@ -46,7 +48,6 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             html += '</div>';
         }
 
-        // TODO: An actual form element should probably be added
         html += '<br/>';
         if (raisedButtons) {
             html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + globalize.translate(dialogText.buttonOk) + '</span></paper-button>';
@@ -56,25 +57,32 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             html += '<paper-button class="btnPromptExit">' + globalize.translate(dialogText.buttonCancel) + '</paper-button>';
             html += '</div>';
         }
+        html += '</form>';
 
         html += '</div>';
 
         dlg.innerHTML = html;
 
-        if (options.text) {
-            dlg.querySelector('.txtPromptValue').value = options.text;
-        }
-
-        if (options.label) {
-            dlg.querySelector('.txtPromptValue').label = options.label;
-        }
-
         document.body.appendChild(dlg);
 
-        dlg.querySelector('.btnSubmit').addEventListener('click', function (e) {
+        dlg.querySelector('form').addEventListener('submit', function (e) {
 
             submitValue = dlg.querySelector('.txtPromptValue').value;
             paperdialoghelper.close(dlg);
+            e.preventDefault();
+            return false;
+        });
+
+        dlg.querySelector('.btnSubmit').addEventListener('click', function (e) {
+
+            // Do a fake form submit this the button isn't a real submit button
+            var fakeSubmit = document.createElement('input');
+            fakeSubmit.setAttribute('type', 'submit');
+            fakeSubmit.style.display = 'none';
+            var form = dlg.querySelector('form');
+            form.appendChild(fakeSubmit);
+            fakeSubmit.click();
+            form.removeChild(fakeSubmit);
         });
 
         dlg.querySelector('.btnPromptExit').addEventListener('click', function (e) {
