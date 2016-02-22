@@ -30,9 +30,9 @@
 
         var location = virtualFolder.Locations[index];
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation')).then(function () {
 
                 var refreshAfterChange = currentOptions.refresh;
 
@@ -45,7 +45,7 @@
 
                     Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
                 });
-            }
+            });
         });
     }
 

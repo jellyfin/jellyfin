@@ -53,17 +53,16 @@
             msg += virtualFolder.Locations.join("<br/>");
         }
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderRemoveMediaFolder'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(msg, Globalize.translate('HeaderRemoveMediaFolder')).then(function () {
 
                 var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
                 ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).then(function () {
                     reloadLibrary(page);
                 });
-            }
-
+            });
         });
     }
 

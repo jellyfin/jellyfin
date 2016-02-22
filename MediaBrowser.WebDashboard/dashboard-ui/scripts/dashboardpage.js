@@ -971,27 +971,27 @@
 
     restart: function () {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart')).then(function () {
+
                 $('#btnRestartServer').buttonEnabled(false);
                 $('#btnShutdown').buttonEnabled(false);
                 Dashboard.restartServer();
-            }
-
+            });
         });
     },
 
     shutdown: function () {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown')).then(function () {
+
                 $('#btnRestartServer').buttonEnabled(false);
                 $('#btnShutdown').buttonEnabled(false);
                 ApiClient.shutdownServer();
-            }
-
+            });
         });
     }
 };
