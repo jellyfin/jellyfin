@@ -103,7 +103,7 @@
 
         // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
         var renderIcon = itemsWithIcons.length;
-        var center = options.title && (!itemsWithIcons.length || itemsWithIcons.length != options.items.length);
+        var center = options.title && (!itemsWithIcons.length /*|| itemsWithIcons.length != options.items.length*/);
 
         if (center) {
             dlg.classList.add('centered');
