@@ -59,9 +59,9 @@ function Update-FodyConfig($addinName, $project)
 
 function Fix-ReferencesCopyLocal($package, $project)
 {
-    Write-Host "Fix-ReferencesCopyLocal $($package.Id)"
+    Write-Host "Fix-ReferencesCopyLocal $addinName"
     $asms = $package.AssemblyReferences | %{$_.Name}
- 
+
     foreach ($reference in $project.Object.References)
     {
         if ($asms -contains $reference.Name + ".dll")
@@ -81,7 +81,6 @@ function UnlockWeaversXml($project)
     {
         $fodyWeaversProjectItem.Open("{7651A701-06E5-11D1-8EBD-00A0C90F26EA}")
         $fodyWeaversProjectItem.Save()
-		$fodyWeaversProjectItem.Document.Close()
     }   
 }
 
