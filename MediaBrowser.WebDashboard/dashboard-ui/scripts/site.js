@@ -2017,8 +2017,10 @@ var AppInfo = {};
 
         if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
     }
 
