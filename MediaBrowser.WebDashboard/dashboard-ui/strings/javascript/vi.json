@@ -49,6 +49,7 @@
     "TitleSync": "Sync",
     "OptionAutomatic": "T\u1ef1 \u0111\u1ed9ng",
     "HeaderSelectDate": "Select Date",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
@@ -961,5 +962,5 @@
     "ButtonFullRefresh": "Full refresh",
     "PinCodeInvalid": "Pin Code Error",
     "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }

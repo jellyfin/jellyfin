@@ -49,6 +49,7 @@
     "TitleSync": "Sync",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Select Date",
+    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
     "ButtonIdentify": "Identify",
     "HeaderIdentifyItem": "Identify Item",
     "LabelRecurringDonationCanBeCancelledHelp": "Dona\u021biile recurente pot fi anulate \u00een orice moment din contul dvs. PayPal.",
@@ -961,5 +962,5 @@
     "ButtonFullRefresh": "Full refresh",
     "PinCodeInvalid": "Pin Code Error",
     "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically login."
+    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
 }
