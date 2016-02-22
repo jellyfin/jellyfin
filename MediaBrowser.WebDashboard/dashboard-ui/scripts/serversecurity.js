@@ -2,10 +2,9 @@
 
     function revoke(page, key) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRevokeApiKey'), Globalize.translate('HeaderConfirmRevokeApiKey'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
-
+            confirm(Globalize.translate('MessageConfirmRevokeApiKey'), Globalize.translate('HeaderConfirmRevokeApiKey')).then(function () {
                 Dashboard.showLoadingMsg();
 
                 ApiClient.ajax({
@@ -16,7 +15,7 @@
 
                     loadData(page);
                 });
-            }
+            });
 
         });
     }

@@ -169,14 +169,11 @@ var ScheduledTaskPage = {
 
     confirmDeleteTrigger: function (index) {
 
-        Dashboard.confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger'), function (result) {
-
-            if (result) {
+        require(['confirm'], function (confirm) {
+            confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger')).then(function () {
                 ScheduledTaskPage.deleteTrigger(index);
-            }
-
+            });
         });
-
     },
 
     deleteTrigger: function (index) {

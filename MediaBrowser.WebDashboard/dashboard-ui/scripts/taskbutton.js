@@ -95,15 +95,14 @@
             msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
             msg += '</div>';
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderConfirmation'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
-
+                confirm(msg, Globalize.translate('HeaderConfirmation')).then(function () {
                     appStorage.setItem(key, expectedValue);
                     onScheduledTaskMessageConfirmed(button, id);
-                }
-            });
+                });
 
+            });
         }
     }
 
