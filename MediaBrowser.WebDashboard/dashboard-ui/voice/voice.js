@@ -6,8 +6,6 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
 
     var commandgroups = getGrammarCommands(lang);
 
-
-    
     /// <summary> Shuffle array. </summary>
     /// <param name="array"> The array. </param>
     /// <returns> array </returns>

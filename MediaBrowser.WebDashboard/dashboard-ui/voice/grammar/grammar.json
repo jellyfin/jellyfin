@@ -141,6 +141,19 @@
           "Play my music",
           "Listen to my music "
         ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "latestmovies",
+        "command": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest movies|latest films)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest movies|latest films)",
+        "filters": [ "unplayed" ],
+        "sortBy": "datecreated",
+        "sortOrder": "Descending",
+        "commandtemplates": [
+          "Play my latest movies",
+          "Play latest films" 
+        ]
       }
     ]
   },
@@ -181,13 +194,14 @@
       {
         "actionid": "shuffle",
         "sourceid": "music",
-        "command": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
-        "altcommand": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?",
+        "command": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music|favorite songs)\\s?(?<ArtistName>.*)?\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music|favorite songs)\\s?(?<ArtistName>.*)?",
         "shuffle": true,
         "commandtemplates": [
           "Play music",
           "Play my music",
-          "Listen to my music "
+          "Listen to my music ",
+          "shuffle my favorite songs"
         ]
       }
     ]
@@ -221,8 +235,11 @@
       {
         "actionid": "play",
         "sourceid": "latestepisodes",
-        "command": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<text>latest episodes)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
-        "altcommand": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<text>latest episodes)",
+        "command": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest episodes)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest episodes)",
+        "filters": [ "unplayed" ],
+        "sortBy": "datecreated",
+        "sortOrder": "Descending",
         "commandtemplates": [ "Play my latest episodes" ]
       }
     ]
@@ -266,12 +283,12 @@
         "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv scheduled)",
         "commandtemplates": [ "Show live tv scheduled" ]
       },
-       {
+      {
         "actionid": "show",
         "sourceid": "livetv",
         "menuid": "series",
         "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv series)",
-        "commandtemplates": ["Show live tv series"]
+        "commandtemplates": [ "Show live tv series" ]
       }
     ]
   },
