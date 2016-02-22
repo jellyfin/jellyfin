@@ -27,7 +27,7 @@
         $('#txtUserName', page).val(user.Name);
         $('#txtConnectUserName', page).val(currentUser.ConnectUserName);
 
-        $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator).checkboxradio("refresh");
+        $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator);
 
         $('#chkDisabled', page).checked(user.Policy.IsDisabled).checkboxradio("refresh");
         $('#chkIsHidden', page).checked(user.Policy.IsHidden).checkboxradio("refresh");

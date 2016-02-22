@@ -88,7 +88,7 @@
                 return {
                     name: name,
                     id: t.id,
-                    ironIcon: 'tablet-android'
+                    ironIcon: playerInfo.id == t.id ? 'check' : null
                 };
 
             });
