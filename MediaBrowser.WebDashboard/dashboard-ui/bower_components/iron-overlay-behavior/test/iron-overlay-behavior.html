@@ -134,13 +134,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('open() triggers iron-resize', function(done) {
+          // Ignore the iron-resize on attached.
+          var callCount = -1;
           // Ignore iron-resize triggered by window resize.
-          var callCount = 0;
           window.addEventListener('resize', function() { callCount--; }, true);
           overlay.addEventListener('iron-resize', function() { callCount++; });
           runAfterOpen(overlay, function() {
-            assert.equal(callCount, 1, 'iron-resize should be called once');
+            assert.equal(callCount, 1, 'iron-resize called once before iron-overlay-opened');
             done();
+          });
+        });
+
+        test('close() triggers iron-resize', function(done) {
+          runAfterOpen(overlay, function() {
+            var spy = sinon.stub();
+            overlay.addEventListener('iron-resize', spy);
+            runAfterClose(overlay, function() {
+              assert.equal(spy.callCount, 1, 'iron-resize called once before iron-overlay-closed');
+              done();
+            });
           });
         });
 
@@ -158,13 +170,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('open overlay triggers iron-resize when its content changes', function(done) {
           runAfterOpen(overlay, function() {
-            // Ignore iron-resize triggered by window resize.
-            var callCount = 0;
-            window.addEventListener('resize', function() { callCount--; }, true);
-            overlay.addEventListener('iron-resize', function() { callCount++; });
+            var spy = sinon.stub();
+            overlay.addEventListener('iron-resize', spy);
             Polymer.dom(overlay).appendChild(document.createElement('div'));
             overlay.async(function() {
-              assert.equal(callCount, 1, 'iron-resize should be called once');
+              assert.equal(spy.callCount, 1, 'iron-resize should be called once');
               done();
             }, 10);
           });

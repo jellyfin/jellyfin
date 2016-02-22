@@ -7,97 +7,45 @@
         var profile = {};
 
         profile.MaxStreamingBitrate = bitrateSetting;
-        profile.MaxStaticBitrate = 40000000;
-        profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
+        profile.MaxStaticBitrate = 100000000;
+        profile.MusicStreamingTranscodingBitrate = 192000;
 
         profile.DirectPlayProfiles = [];
 
         profile.DirectPlayProfiles.push({
-            Container: 'mkv,mov,mp4,m4v,wmv',
+            Container: 'm4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm,wtv,dvr-ms',
             Type: 'Video'
         });
 
         profile.DirectPlayProfiles.push({
-            Container: 'aac,mp3,flac,wma',
+            Container: 'aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac',
             Type: 'Audio'
         });
 
         profile.TranscodingProfiles = [];
 
         profile.TranscodingProfiles.push({
-            Container: 'ts',
+            Container: 'mkv',
             Type: 'Video',
-            AudioCodec: 'aac',
+            AudioCodec: 'aac,mp3,ac3',
             VideoCodec: 'h264',
-            Context: 'Streaming',
-            Protocol: 'hls'
+            Context: 'Streaming'
         });
 
         profile.TranscodingProfiles.push({
-            Container: 'aac',
+            Container: 'mp3',
             Type: 'Audio',
-            AudioCodec: 'aac',
+            AudioCodec: 'mp3',
             Context: 'Streaming',
-            Protocol: 'hls'
+            Protocol: 'http'
         });
 
         profile.ContainerProfiles = [];
 
-        var audioConditions = [];
-
-        var maxAudioChannels = '6';
-
-        audioConditions.push({
-            Condition: 'LessThanEqual',
-            Property: 'AudioChannels',
-            Value: maxAudioChannels
-        });
-
         profile.CodecProfiles = [];
-        profile.CodecProfiles.push({
-            Type: 'Audio',
-            Conditions: audioConditions
-        });
-
-        profile.CodecProfiles.push({
-            Type: 'VideoAudio',
-            Codec: 'mp3',
-            Conditions: [{
-                Condition: 'LessThanEqual',
-                Property: 'AudioChannels',
-                Value: maxAudioChannels
-            }]
-        });
-
-        profile.CodecProfiles.push({
-            Type: 'VideoAudio',
-            Codec: 'aac',
-            Conditions: [
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: maxAudioChannels
-                }
-            ]
-        });
-
-        profile.CodecProfiles.push({
-            Type: 'Video',
-            Codec: 'h264',
-            Conditions: [
-            {
-                Condition: 'EqualsAny',
-                Property: 'VideoProfile',
-                Value: 'high|main|baseline|constrained baseline'
-            },
-            {
-                Condition: 'LessThanEqual',
-                Property: 'VideoLevel',
-                Value: '50'
-            }]
-        });
 
         // Subtitle profiles
+        // External vtt or burn in
         profile.SubtitleProfiles = [];
         profile.SubtitleProfiles.push({
             Format: 'srt',
@@ -137,6 +85,10 @@
         });
         profile.SubtitleProfiles.push({
             Format: 'idx',
+            Method: 'Embed'
+        });
+        profile.SubtitleProfiles.push({
+            Format: 'smi',
             Method: 'Embed'
         });
 

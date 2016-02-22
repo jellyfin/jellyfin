@@ -77,12 +77,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       suite('when the focused state is disabled', function() {
-        setup(function() {
-          focusTarget.disabled = true;
-        });
-
         test('will not be focusable', function() {
+          var blurSpy = sinon.spy(focusTarget, 'blur');
+          MockInteractions.focus(focusTarget);
+          focusTarget.disabled = true;
           expect(focusTarget.getAttribute('tabindex')).to.be.eql('-1');
+          expect(blurSpy.called).to.be.eql(true);
         });
       });
     });
