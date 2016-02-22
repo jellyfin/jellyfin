@@ -551,25 +551,6 @@ var Dashboard = {
         }
     },
 
-    confirm: function (message, title, callback) {
-
-        // Cordova
-        if (browserInfo.mobile && message.indexOf('<') == -1) {
-
-            var confirmed = confirm(message);
-
-            if (callback) {
-                callback(confirmed);
-            }
-
-        } else {
-
-            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
-                Dashboard.confirmInternal(message, title, true, callback);
-            });
-        }
-    },
-
     confirmInternal: function (message, title, showCancel, callback) {
 
         var dlg = document.createElement('paper-dialog');
@@ -2468,6 +2449,7 @@ function addLegacyDependencies(depends, url) {
         depends.push('jqmpopup');
         depends.push('jqmcollapsible');
         depends.push('jqmcheckbox');
+        depends.push('legacy/dashboard');
     }
 
     depends.push('jqmcontrolgroup');

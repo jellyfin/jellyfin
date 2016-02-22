@@ -1,6 +1,6 @@
 {
   "name": "paper-item",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "A material-design styled list item",
   "authors": [
     "The Polymer Authors"
@@ -31,22 +31,20 @@
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
     "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "iron-icons": "PolymerElements/iron-icons#^1.0.0",
-    "paper-checkbox": "PolymerElements/paper-checkbox#^1.0.0",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0",
-    "paper-input": "PolymerElements/paper-input#^1.0.0",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "Polymer/web-component-tester#^3.4.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0"
   },
-  "_release": "1.1.3",
+  "_release": "1.1.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.3",
-    "commit": "280c2e703315a6f1f707bec6fd0b1e0b80fee8f4"
+    "tag": "v1.1.4",
+    "commit": "5dcf21d5f7c13bafa24122c73aac28bd86213191"
   },
   "_source": "git://github.com/PolymerElements/paper-item.git",
   "_target": "^1.0.0",

@@ -1236,9 +1236,9 @@
 
         var msg = Globalize.translate('MessageTheSelectedItemsWillBeGrouped');
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderGroupVersions'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(msg, Globalize.translate('HeaderGroupVersions')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -1253,7 +1253,7 @@
                     hideSelections();
                     $('.itemsContainer', page).trigger('needsrefresh');
                 });
-            }
+            });
         });
     }
 

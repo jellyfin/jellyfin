@@ -63,6 +63,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="focusables">
+      <template>
+        <test-overlay tabindex="-1">
+          <h2>Focusables (no tabindex)</h2>
+          <div>
+            <input class="focusable1" placeholder="1 (nested)">
+          </div>
+          <button class="focusable2">1</button>
+          <button disabled> disabled button</button>
+          <div tabindex="-1">not focusable</div>
+          <button class="focusable3">2</button>
+        </test-overlay>
+        <test-overlay tabindex="-1">
+          <h2>Focusables (with tabindex)</h2>
+          <div tabindex="-1">not focusable</div>
+          <div tabindex="3" class="focusable3">3</div>
+          <div tabindex="4" class="focusable4">4</div>
+          <div tabindex="5" class="focusable5">5</div>
+          <div>
+            <div tabindex="1" class="focusable1">1 (nested)</div>
+            <div tabindex="6" class="focusable6">6 (nested)</div>
+          </div>
+          <div tabindex="2" class="focusable2">2</div>
+        </test-overlay>
+      </template>
+    </test-fixture>
+
     <test-fixture id="backdrop">
       <template>
         <test-overlay with-backdrop>
@@ -385,6 +412,86 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(Polymer.dom(overlay).querySelector('[autofocus]'), document.activeElement, '<button autofocus> is focused');
             assert.equal(focusSpy.callCount, 0, 'button in body did not get the focus');
             document.body.removeChild(button);
+            done();
+          });
+        });
+
+      });
+
+      suite('focusable nodes', function() {
+        var overlay, overlayWithTabIndex;
+
+        setup(function() {
+          var f = fixture('focusables');
+          overlay = f[0];
+          overlayWithTabIndex = f[1];
+        });
+
+        test('_focusableNodes returns nodes that are focusable', function() {
+          var focusableNodes = overlay._focusableNodes;
+          assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
+          assert.equal(focusableNodes[0], Polymer.dom(overlay).querySelector('.focusable1'));
+          assert.equal(focusableNodes[1], Polymer.dom(overlay).querySelector('.focusable2'));
+          assert.equal(focusableNodes[2], Polymer.dom(overlay).querySelector('.focusable3'));
+        });
+
+        test('_focusableNodes includes overlay if it has a valid tabindex', function() {
+          overlay.setAttribute('tabindex', '0');
+          var focusableNodes = overlay._focusableNodes;
+          assert.equal(focusableNodes.length, 4, '4 focusable nodes');
+          assert.notEqual(focusableNodes.indexOf(overlay), -1, 'overlay is included');
+        });
+
+        test('_focusableNodes respects the tabindex order', function() {
+          var focusableNodes = overlayWithTabIndex._focusableNodes;
+          assert.equal(focusableNodes.length, 6, '6 nodes are focusable');
+          assert.equal(focusableNodes[0], Polymer.dom(overlayWithTabIndex).querySelector('.focusable1'));
+          assert.equal(focusableNodes[1], Polymer.dom(overlayWithTabIndex).querySelector('.focusable2'));
+          assert.equal(focusableNodes[2], Polymer.dom(overlayWithTabIndex).querySelector('.focusable3'));
+          assert.equal(focusableNodes[3], Polymer.dom(overlayWithTabIndex).querySelector('.focusable4'));
+          assert.equal(focusableNodes[4], Polymer.dom(overlayWithTabIndex).querySelector('.focusable5'));
+          assert.equal(focusableNodes[5], Polymer.dom(overlayWithTabIndex).querySelector('.focusable6'));
+        });
+
+        test('first focusable is focused if no [autofocus] node is present', function(done) {
+          runAfterOpen(overlay, function() {
+            assert.equal(Polymer.dom(overlay).querySelector('.focusable1'), document.activeElement, 'focusable1 is focused');
+            done();
+          });
+        });
+
+        test('with-backdrop: TAB & Shift+TAB wrap focus', function(done) {
+          overlay.withBackdrop = true;
+          var focusableNodes = overlay._focusableNodes;
+          runAfterOpen(overlay, function() {
+            // Go to last element.
+            MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
+            // Simulate TAB & focus out of overlay.
+            MockInteractions.pressAndReleaseKeyOn(document, 9);
+            MockInteractions.focus(document.body);
+            assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
+            // Simulate Shift+TAB & focus out of overlay.
+            MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
+            MockInteractions.focus(document.body);
+            assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
+            done();
+          });
+        });
+
+        test('with-backdrop: TAB & Shift+TAB wrap focus respecting tabindex', function(done) {
+          overlayWithTabIndex.withBackdrop = true;
+          var focusableNodes = overlayWithTabIndex._focusableNodes;
+          runAfterOpen(overlayWithTabIndex, function() {
+            // Go to last element.
+            MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
+            // Simulate TAB & focus out of overlay.
+            MockInteractions.pressAndReleaseKeyOn(document, 9);
+            MockInteractions.focus(document.body);
+            assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
+            // Simulate Shift+TAB & focus out of overlay.
+            MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
+            MockInteractions.focus(document.body);
+            assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
             done();
           });
         });
