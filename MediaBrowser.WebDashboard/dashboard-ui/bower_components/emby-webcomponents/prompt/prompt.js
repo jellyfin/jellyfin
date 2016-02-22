@@ -1,6 +1,13 @@
-define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager, globalize, dialogText) {
+define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager, dialogText) {
 
-    function show(options, resolve, reject) {
+    return function (options) {
+
+        if (typeof options === 'string') {
+            options = {
+                title: '',
+                text: options
+            };
+        }
 
         var dialogOptions = {
             removeOnClose: true
@@ -50,11 +57,11 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
 
         html += '<br/>';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + globalize.translate(dialogText.buttonOk) + '</span></paper-button>';
+            html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + dialogText.get('Ok') + '</span></paper-button>';
         } else {
             html += '<div style="text-align:right;">';
-            html += '<paper-button class="btnSubmit">' + globalize.translate(dialogText.buttonOk) + '</paper-button>';
-            html += '<paper-button class="btnPromptExit">' + globalize.translate(dialogText.buttonCancel) + '</paper-button>';
+            html += '<paper-button class="btnSubmit">' + dialogText.get('Ok') + '</paper-button>';
+            html += '<paper-button class="btnPromptExit">' + dialogText.get('Cancel') + '</paper-button>';
             html += '</div>';
         }
         html += '</form>';
@@ -90,32 +97,13 @@ define(['paperdialoghelper', 'layoutManager', 'globalize', 'dialogText', 'html!.
             paperdialoghelper.close(dlg);
         });
 
-        dlg.addEventListener('iron-overlay-closed', function () {
-
+        return paperdialoghelper.open(dlg).then(function () {
             var value = submitValue;
             if (value) {
-                resolve(value);
+                return value;
             } else {
-                reject();
+                return Promise.reject();
             }
         });
-
-        paperdialoghelper.open(dlg);
-    }
-
-    return function (options) {
-
-        return new Promise(function (resolve, reject) {
-
-            if (typeof options === 'string') {
-                options = {
-                    title: '',
-                    text: options
-                };
-            }
-
-            show(options, resolve, reject);
-        });
-
     };
 });

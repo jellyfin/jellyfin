@@ -4,17 +4,17 @@ define([], function () {
 
         if (typeof options === 'string') {
             options = {
-                label: '',
+                title: '',
                 text: options
             };
         }
 
-        var result = prompt(options.label || '', options.text || '');
+        var result = confirm(options.text);
 
         if (result) {
-            return Promise.resolve(result);
+            return Promise.resolve();
         } else {
-            return Promise.reject(result);
+            return Promise.reject();
         }
     };
 });

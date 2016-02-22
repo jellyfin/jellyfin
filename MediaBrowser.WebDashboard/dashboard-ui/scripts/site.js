@@ -713,18 +713,12 @@ var Dashboard = {
 
         if (!apiClient) {
 
-            return new Promise(function (resolve, reject) {
-
-                reject();
-            });
+            return Promise.reject();
         }
 
         var cachedInfo = Dashboard.pluginSecurityInfo;
         if (cachedInfo) {
-            return new Promise(function (resolve, reject) {
-
-                resolve(cachedInfo);
-            });
+            return Promise.resolve(cachedInfo);
         }
 
         return apiClient.ajax({
@@ -2002,14 +1996,15 @@ var AppInfo = {};
             return Globalize;
         });
 
-        define('dialogText', [], getDialogText());
+        define('dialogText', ['globalize'], getDialogText());
     }
 
     function getDialogText() {
-        return function () {
+        return function (globalize) {
             return {
-                buttonOk: 'ButtonOk',
-                buttonCancel: 'ButtonCancel'
+                get: function (text) {
+                    return globalize.translate('Button' + text);
+                }
             };
         };
     }
