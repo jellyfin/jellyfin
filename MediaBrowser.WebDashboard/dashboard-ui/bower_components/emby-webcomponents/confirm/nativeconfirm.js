@@ -1,5 +1,10 @@
 define([], function () {
 
+    function replaceAll(str, find, replace) {
+
+        return str.split(find).join(replace);
+    }
+
     return function (options) {
 
         if (typeof options === 'string') {
@@ -9,7 +14,8 @@ define([], function () {
             };
         }
 
-        var result = confirm(options.text);
+        var text = replaceAll(options.text || '', '<br/>', '\n');
+        var result = confirm(text);
 
         if (result) {
             return Promise.resolve();

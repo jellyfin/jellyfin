@@ -134,8 +134,8 @@ distances[i][0] = i;
 }
 for (var j = 0; j < columnCount; j++)
 distances[0][j] = j;
-for (var i = 1; i < rowCount; i++) {
-for (var j = 1; j < columnCount; j++) {
+for (i = 1; i < rowCount; i++) {
+for (j = 1; j < columnCount; j++) {
 if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1]))
 distances[i][j] = distances[i - 1][j - 1];
 else {
@@ -215,7 +215,7 @@ return [splice];
 } else if (oldStart == oldEnd)
 return [newSplice(currentStart, [], currentEnd - currentStart)];
 var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
-var splice = undefined;
+splice = undefined;
 var splices = [];
 var index = currentStart;
 var oldIndex = oldStart;
@@ -381,7 +381,7 @@ return { getInnerHTML: getInnerHTML };
 var nativeInsertBefore = Element.prototype.insertBefore;
 var nativeAppendChild = Element.prototype.appendChild;
 var nativeRemoveChild = Element.prototype.removeChild;
-var TreeApi = Polymer.TreeApi = {
+Polymer.TreeApi = {
 arrayCopyChildNodes: function (parent) {
 var copy = [], i = 0;
 for (var n = parent.firstChild; n; n = n.nextSibling) {
@@ -1438,7 +1438,6 @@ return this.node.classList.contains.apply(this.node.classList, arguments);
 'use strict';
 var DomApi = Polymer.DomApi.ctor;
 var Settings = Polymer.Settings;
-var hasDomApi = Polymer.DomApi.hasDomApi;
 DomApi.EffectiveNodesObserver = function (domApi) {
 this.domApi = domApi;
 this.node = this.domApi.node;
@@ -1491,7 +1490,7 @@ if (this._hasListeners()) {
 this._scheduleNotify();
 }
 },
-_notify: function (mxns) {
+_notify: function () {
 this._beforeCallListeners();
 this._callListeners();
 },
@@ -1562,8 +1561,8 @@ for (var j = 0, n; j < s.removed.length && (n = s.removed[j]); j++) {
 info.removedNodes.push(n);
 }
 }
-for (var i = 0, s; i < splices.length && (s = splices[i]); i++) {
-for (var j = s.index; j < s.index + s.addedCount; j++) {
+for (i = 0, s; i < splices.length && (s = splices[i]); i++) {
+for (j = s.index; j < s.index + s.addedCount; j++) {
 info.addedNodes.push(newNodes[j]);
 }
 }
@@ -1581,7 +1580,6 @@ enableShadowAttributeTracking: function () {
 if (Settings.useShadow) {
 var baseSetup = DomApi.EffectiveNodesObserver.prototype._setup;
 var baseCleanup = DomApi.EffectiveNodesObserver.prototype._cleanup;
-var beforeCallListeners = DomApi.EffectiveNodesObserver.prototype._beforeCallListeners;
 Polymer.Base.extend(DomApi.EffectiveNodesObserver.prototype, {
 _setup: function () {
 if (!this._observer) {
@@ -1896,7 +1894,7 @@ d -= s.addedCount;
 }
 for (var i = 0, s, next; i < splices.length && (s = splices[i]); i++) {
 next = composed[s.index];
-for (var j = s.index, n; j < s.index + s.addedCount; j++) {
+for (j = s.index, n; j < s.index + s.addedCount; j++) {
 n = children[j];
 TreeApi.Composed.insertBefore(container, n, next);
 composed.splice(j, 0, n);
