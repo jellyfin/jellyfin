@@ -48,12 +48,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private List<M3UChannel> GetChannels(StreamReader reader, string urlHash, string channelIdPrefix)
         {
             var channels = new List<M3UChannel>();
-
-            string channnelName = null;
-            string channelNumber = null;
             string line;
-            string imageUrl = null;
-            while ((line = reader.ReadLine()) != null)
+            string extInf = "";
+             while ((line = reader.ReadLine()) != null)
             {
                 line = line.Trim();
                 if (string.IsNullOrWhiteSpace(line))
@@ -68,29 +65,47 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
                 {
-                    line = line.Substring(8);
-                    _logger.Info("Found m3u channel: {0}", line);
-                    var parts = line.Split(new[] { ',' }, 2);
-                    channelNumber = parts[0].Trim().Split(' ')[0] ?? "0";
-                    channnelName = FindProperty("tvg-name", line, parts[1]);
-                    imageUrl = FindProperty("tvg-logo", line, null);
+                    extInf = line.Substring(8).Trim();
+                    _logger.Info("Found m3u channel: {0}", extInf);
                 }
-                else if (!string.IsNullOrWhiteSpace(channelNumber))
-                {
-                    channels.Add(new M3UChannel
-                    {
-                        Name = channnelName,
-                        Number = channelNumber,
-                        Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N"),
-                        ImageUrl = imageUrl
-                    });
-
-                    imageUrl = null;
-                    channelNumber = null;
-                    channnelName = null;
+                else if (!string.IsNullOrWhiteSpace(extInf))
+                {   
+                    var channel = GetChannelnfo(extInf);
+                    channel.Id = line;
+                    channels.Add(channel);
+                    extInf = "";
                 }
             }
             return channels;
+        }
+        public M3UChannel GetChannelnfo(string extInf)
+        {
+            var titleIndex = extInf.LastIndexOf(',');
+            var channel = new M3UChannel();
+
+            channel.Number = extInf.Trim().Split(' ')[0] ?? "0";
+            channel.Name = extInf.Substring(titleIndex + 1);
+            
+            if(channel.Number == "-1") { channel.Number = "0"; }         
+
+            //Check for channel number with the format from SatIp            
+            int number;                   
+            var numberIndex = channel.Name.IndexOf('.');
+            if (numberIndex > 0)
+            {
+                if (int.TryParse(channel.Name.Substring(0, numberIndex), out number))
+                {
+                    channel.Number = number.ToString();
+                    channel.Name = channel.Name.Substring(numberIndex + 1);
+                }
+            }
+            channel.ImageUrl = FindProperty("tvg-logo", extInf, null);
+            channel.Number = FindProperty("tvg-id", extInf, channel.Number);
+            channel.Number = FindProperty("channel-id", extInf, channel.Number);
+            channel.Name = FindProperty("tvg-name", extInf, channel.Name);
+            channel.Name = FindProperty("tvg-id", extInf, channel.Name);
+            return channel;
+
         }
         public string FindProperty(string property, string properties, string defaultResult = "")
         {
