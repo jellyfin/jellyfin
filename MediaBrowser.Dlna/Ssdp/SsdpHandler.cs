@@ -593,6 +593,10 @@ namespace MediaBrowser.Dlna.Ssdp
                 {
 
                 }
+                catch (SocketException)
+                {
+
+                }
             }
         }
 
