@@ -250,7 +250,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
 
                 var dlg = currentDialog;
                 if (dlg) {
-                    PaperDialogHelper.close(dlg);
+                    paperDialogHelper.close(dlg);
                 }
             });
 
