@@ -71,7 +71,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 else if (!string.IsNullOrWhiteSpace(extInf))
                 {   
                     var channel = GetChannelnfo(extInf);
-                    channel.Id = line;
+                    channel.Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N");
+                    channel.Path = line;
                     channels.Add(channel);
                     extInf = "";
                 }
