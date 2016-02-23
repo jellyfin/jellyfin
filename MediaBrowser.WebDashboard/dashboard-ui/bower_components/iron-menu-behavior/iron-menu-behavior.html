@@ -273,6 +273,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _onUpKey: function(event) {
       // up and down arrows moves the focus
       this._focusPrevious();
+      event.detail.keyboardEvent.preventDefault();
     },
 
     /**
@@ -282,6 +283,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     _onDownKey: function(event) {
       this._focusNext();
+      event.detail.keyboardEvent.preventDefault();
     },
 
     /**

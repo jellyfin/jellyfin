@@ -8,9 +8,9 @@
 
     function deleteSeriesTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmSeriesCancellation'), Globalize.translate('HeaderConfirmSeriesCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmSeriesCancellation'), Globalize.translate('HeaderConfirmSeriesCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -20,8 +20,7 @@
 
                     reload(page);
                 });
-            }
-
+            });
         });
     }
 

@@ -4,16 +4,18 @@
 
         var msg = Globalize.translate('DeleteUserConfirmation');
 
-        Dashboard.confirm(msg, Globalize.translate('DeleteUser'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(msg, Globalize.translate('DeleteUser')).then(function () {
+
                 Dashboard.showLoadingMsg();
 
                 ApiClient.deleteUser(id).then(function () {
 
                     loadData(page);
                 });
-            }
+            });
+
         });
     }
 

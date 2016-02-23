@@ -58,23 +58,31 @@
 
             var info = infos[i];
 
-            html += '<paper-icon-item>';
-
-            html += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
-
-            html += '<paper-item-body two-line>';
-
-            html += "<div>" + (info.DisplayName || info.ItemName) + "</div>";
+            var matchStringIndex = 0;
 
             html += info.MatchStrings.map(function (m) {
-                return "<div secondary>" + m + "</div>";
+
+                var matchStringHtml = '';
+                matchStringHtml += '<paper-icon-item>';
+
+                matchStringHtml += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
+
+                matchStringHtml += '<paper-item-body two-line>';
+
+                matchStringHtml += "<div>" + (info.DisplayName || info.ItemName) + "</div>";
+
+                matchStringHtml += "<div secondary>" + m + "</div>";
+
+                matchStringHtml += '</paper-item-body>';
+
+                matchStringHtml += '<paper-icon-button icon="delete" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"></paper-icon-button>';
+
+                matchStringHtml += '</paper-icon-item>';
+                matchStringIndex++;
+
+                return matchStringHtml;
+
             }).join('');
-
-            html += '</paper-item-body>';
-
-            html += '<paper-icon-button icon="delete" class="btnDeleteMatchEntry" data-index="' + i + '" title="' + Globalize.translate('ButtonDelete') + '"></paper-icon-button>';
-
-            html += '</paper-icon-item>';
         }
 
         if (infos.length) {
@@ -101,14 +109,14 @@
 
             var button = this;
             var index = parseInt(button.getAttribute('data-index'));
+            var matchIndex = parseInt(button.getAttribute('data-matchindex'));
 
             var info = currentResult.Items[index];
-            var entries = info.MatchStrings.map(function (m) {
-                return {
-                    Name: info.ItemName,
-                    Value: m
-                };
-            });
+            var entries = [
+            {
+                Name: info.ItemName,
+                Value: info.MatchStrings[matchIndex]
+            }];
 
             ApiClient.deleteSmartMatchEntries(entries).then(function () {
 

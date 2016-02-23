@@ -24,8 +24,9 @@
                 <button type="submit" data-role="none" class="clearButton">
                     <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>
-
-                <paper-button raised class="cancel block btnCancel" onclick="LoginPage.cancelLogin();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                <div style="margin-top:.5em;">
+                    <paper-button raised class="cancel block btnCancel" onclick="LoginPage.cancelLogin();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
                 <br />
                 <br />
             </form>
@@ -41,7 +42,7 @@
                 </div>
             </div>
 
-            <div class="readOnlyContent" style="margin: 0 auto 1em;">
+            <div class="readOnlyContent" style="margin: .5em auto 1em;">
                 <paper-button raised class="cancel block btnForgotPassword" onclick="LoginPage.cancelLogin();"><iron-icon icon="info"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
 
                 <div class="connectButtons" style="display:none;">

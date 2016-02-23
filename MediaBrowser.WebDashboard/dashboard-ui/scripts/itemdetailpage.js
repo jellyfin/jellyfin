@@ -1886,9 +1886,9 @@
 
         var id = getParameterByName('id');
 
-        Dashboard.confirm("Are you sure you wish to split the media sources into separate items?", "Split Media Apart", function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm("Are you sure you wish to split the media sources into separate items?", "Split Media Apart").then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -1902,7 +1902,7 @@
 
                     reload(page);
                 });
-            }
+            });
         });
     }
 
@@ -1951,9 +1951,9 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -1963,8 +1963,7 @@
 
                     reload(page);
                 });
-            }
-
+            });
         });
     }
 

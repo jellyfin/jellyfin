@@ -4,9 +4,9 @@
 
         var message = Globalize.translate('MessageConfirmResetTuner');
 
-        Dashboard.confirm(message, Globalize.translate('HeaderResetTuner'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(message, Globalize.translate('HeaderResetTuner')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -16,7 +16,7 @@
 
                     reload(page);
                 });
-            }
+            });
         });
     }
 
@@ -231,9 +231,9 @@
 
         var message = Globalize.translate('MessageConfirmDeleteTunerDevice');
 
-        Dashboard.confirm(message, Globalize.translate('HeaderDeleteDevice'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(message, Globalize.translate('HeaderDeleteDevice')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -247,7 +247,7 @@
 
                     reload(page);
                 });
-            }
+            });
         });
     }
 
@@ -333,9 +333,9 @@
 
         var message = Globalize.translate('MessageConfirmDeleteGuideProvider');
 
-        Dashboard.confirm(message, Globalize.translate('HeaderDeleteProvider'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(message, Globalize.translate('HeaderDeleteProvider')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -353,7 +353,7 @@
 
                     reload(page);
                 });
-            }
+            });
         });
     }
 

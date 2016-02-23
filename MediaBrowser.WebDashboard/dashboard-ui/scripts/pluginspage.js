@@ -4,16 +4,15 @@
 
         var msg = Globalize.translate('UninstallPluginConfirmation').replace("{0}", name);
 
-        Dashboard.confirm(msg, Globalize.translate('UninstallPluginHeader'), function (result) {
-
-            if (result) {
+        require(['confirm'], function (confirm) {
+            confirm(msg, Globalize.translate('UninstallPluginHeader')).then(function () {
                 Dashboard.showLoadingMsg();
 
                 ApiClient.uninstallPlugin(uniqueid).then(function () {
 
                     reloadList(page);
                 });
-            }
+            });
         });
     }
 

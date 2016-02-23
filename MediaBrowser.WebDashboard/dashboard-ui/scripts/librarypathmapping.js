@@ -4,9 +4,9 @@
 
     function remove(page, index) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmPathSubstitutionDeletion'), Globalize.translate('HeaderConfirmDeletion'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmPathSubstitutionDeletion'), Globalize.translate('HeaderConfirmDeletion')).then(function () {
 
                 ApiClient.getServerConfiguration().then(function (config) {
 
@@ -17,11 +17,8 @@
                         reload(page);
                     });
                 });
-            }
-
+            });
         });
-
-
     }
 
     function addSubstitution(page, config) {

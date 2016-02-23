@@ -32,9 +32,9 @@
 
         var message = Globalize.translate('MessageFileWillBeDeleted') + '<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
 
-        Dashboard.confirm(message, Globalize.translate('HeaderDeleteFile'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(message, Globalize.translate('HeaderDeleteFile')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -45,8 +45,7 @@
                     reloadItems(page);
 
                 }, onApiFailure);
-            }
-
+            });
         });
     }
 
@@ -91,9 +90,9 @@
 
         message += '<p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
 
-        Dashboard.confirm(message, Globalize.translate('HeaderOrganizeFile'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(message, Globalize.translate('HeaderOrganizeFile')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -104,7 +103,7 @@
                     reloadItems(page);
 
                 }, onApiFailure);
-            }
+            });
         });
     }
 

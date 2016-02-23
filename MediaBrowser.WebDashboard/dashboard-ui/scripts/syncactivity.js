@@ -4,9 +4,10 @@
 
         var msg = Globalize.translate('CancelSyncJobConfirmation');
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderCancelSyncJob'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(msg, Globalize.translate('HeaderCancelSyncJob')).then(function () {
+
                 Dashboard.showLoadingMsg();
 
                 ApiClient.ajax({
@@ -18,7 +19,7 @@
 
                     reloadData(page);
                 });
-            }
+            });
         });
     }
 

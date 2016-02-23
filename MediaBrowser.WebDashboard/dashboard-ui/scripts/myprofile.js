@@ -192,17 +192,16 @@
 
         $('#btnDeleteImage', page).on('click', function () {
 
-            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage')).then(function () {
 
                     Dashboard.showLoadingMsg();
 
                     var userId = getParameterByName("userId");
 
                     ApiClient.deleteUserImage(userId, "primary").then(processImageChangeResult);
-                }
-
+                });
             });
         });
 
@@ -376,9 +375,10 @@
 
             var page = $($.mobile.activePage)[0];
 
-            Dashboard.confirm(msg, Globalize.translate('PasswordResetHeader'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(msg, Globalize.translate('PasswordResetHeader')).then(function () {
+
                     var userId = getParameterByName("userId");
 
                     Dashboard.showLoadingMsg();
@@ -395,7 +395,7 @@
                         loadUser(page);
 
                     });
-                }
+                });
             });
 
         };
@@ -406,9 +406,10 @@
 
             var page = $($.mobile.activePage)[0];
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderPinCodeReset'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(msg, Globalize.translate('HeaderPinCodeReset')).then(function () {
+
                     var userId = getParameterByName("userId");
 
                     Dashboard.showLoadingMsg();
@@ -425,9 +426,8 @@
                         loadUser(page);
 
                     });
-                }
+                });
             });
-
         };
     }
 

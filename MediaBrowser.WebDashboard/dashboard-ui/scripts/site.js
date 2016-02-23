@@ -551,25 +551,6 @@ var Dashboard = {
         }
     },
 
-    confirm: function (message, title, callback) {
-
-        // Cordova
-        if (browserInfo.mobile && message.indexOf('<') == -1) {
-
-            var confirmed = confirm(message);
-
-            if (callback) {
-                callback(confirmed);
-            }
-
-        } else {
-
-            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
-                Dashboard.confirmInternal(message, title, true, callback);
-            });
-        }
-    },
-
     confirmInternal: function (message, title, showCancel, callback) {
 
         var dlg = document.createElement('paper-dialog');
@@ -713,18 +694,12 @@ var Dashboard = {
 
         if (!apiClient) {
 
-            return new Promise(function (resolve, reject) {
-
-                reject();
-            });
+            return Promise.reject();
         }
 
         var cachedInfo = Dashboard.pluginSecurityInfo;
         if (cachedInfo) {
-            return new Promise(function (resolve, reject) {
-
-                resolve(cachedInfo);
-            });
+            return Promise.resolve(cachedInfo);
         }
 
         return apiClient.ajax({
@@ -1798,7 +1773,7 @@ var AppInfo = {};
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             chromecasthelpers: 'components/chromecasthelpers',
-            jQuery: bowerPath + '/jquery/dist/jquery.min',
+            jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -2002,14 +1977,15 @@ var AppInfo = {};
             return Globalize;
         });
 
-        define('dialogText', [], getDialogText());
+        define('dialogText', ['globalize'], getDialogText());
     }
 
     function getDialogText() {
-        return function () {
+        return function (globalize) {
             return {
-                buttonOk: 'ButtonOk',
-                buttonCancel: 'ButtonCancel'
+                get: function (text) {
+                    return globalize.translate('Button' + text);
+                }
             };
         };
     }
@@ -2020,10 +1996,12 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (browser.mobile) {
+        if (browser.mobile || browser.msie) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
     }
 
@@ -2471,6 +2449,7 @@ function addLegacyDependencies(depends, url) {
         depends.push('jqmpopup');
         depends.push('jqmcollapsible');
         depends.push('jqmcheckbox');
+        depends.push('legacy/dashboard');
     }
 
     depends.push('jqmcontrolgroup');

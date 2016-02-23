@@ -37,7 +37,7 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg2video" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="aac" videoCodec="h264" type="Video" />
     <DirectPlayProfile container="mp4,mov,mkv" audioCodec="aac,ac3" videoCodec="h264,mpeg4,mpeg2video" type="Video" />
@@ -47,9 +47,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" />
+    <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">

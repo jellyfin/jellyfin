@@ -869,9 +869,9 @@
                         title = Globalize.translate('HeaderDeleteItems');
                     }
 
-                    Dashboard.confirm(msg, title, function (result) {
+                    require(['confirm'], function (confirm) {
 
-                        if (result) {
+                        confirm(msg, title).then(function () {
 
                             var promises = itemIds.map(function (itemId) {
                                 ApiClient.deleteItem(itemId);
@@ -879,10 +879,8 @@
                             });
 
                             resolve();
+                        }, reject);
 
-                        } else {
-                            reject();
-                        }
                     });
                 });
             },
