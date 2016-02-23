@@ -865,6 +865,15 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
                 {
+                    if (state.VideoStream != null && state.VideoStream.Width.HasValue)
+                    {
+                        // This is hacky but not sure how to get the exact subtitle resolution
+                        double height = state.VideoStream.Width.Value;
+                        height /= 16;
+                        height *= 9;
+
+                        arg += string.Format(" -canvas_size {0}:{1}", state.VideoStream.Width.Value.ToString(CultureInfo.InvariantCulture), Convert.ToInt32(height).ToString(CultureInfo.InvariantCulture));
+                    }
                     arg += " -i \"" + state.SubtitleStream.Path + "\"";
                 }
             }
