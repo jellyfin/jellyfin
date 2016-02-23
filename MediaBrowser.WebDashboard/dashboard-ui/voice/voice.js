@@ -1,10 +1,36 @@
 define(['paperdialoghelper'], function (paperDialogHelper) {
 
     var currentRecognition;
-    var lang = 'grammar';
-    //var lang = 'en-US';
+    var lang = 'en-US';
 
-    var commandgroups = getGrammarCommands(lang);
+    var commandgroups;
+
+    function getCommandGroups() {
+    
+        if (commandgroups) {
+            return Promise.resolve(commandgroups);
+        }
+
+        return new Promise(function (resolve, reject) {
+
+            var file = "grammar";
+            //if (language && language.length > 0)
+            //    file = language;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "voice/grammar/" + file + ".json", true);
+
+            xhr.onload = function (e) {
+
+                commandgroups = JSON.parse(this.response);
+                resolve(commandgroups);
+            }
+
+            xhr.onerror = reject;
+
+            xhr.send();
+        });
+    }
 
     /// <summary> Shuffle array. </summary>
     /// <param name="array"> The array. </param>
@@ -32,12 +58,11 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
     /// <returns> The sample commands. </returns>
     function getSampleCommands(groupid) {
 
-        return new Promise(function (resolve, reject) {
-
+        return getCommandGroups().then(function (commandGroups) {
             groupid = typeof (groupid) !== 'undefined' ? groupid : '';
 
             var commands = [];
-            commandgroups.map(function (group) {
+            commandGroups.map(function (group) {
                 if ((group.items && group.items.length > 0) && (groupid == group.groupid || groupid == '')) {
 
                     group.items.map(function (item) {
@@ -53,10 +78,8 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
                 }
             });
 
-            resolve(shuffleArray(commands));
-
+            return shuffleArray(commands);
         });
-
     }
 
     /// <summary> Gets command group. </summary>
@@ -82,7 +105,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
     /// <returns> . </returns>
     function renderSampleCommands(elem, commands) {
 
-        commands.length = Math.min(commands.length, 6);
+        commands.length = Math.min(commands.length, 4);
 
         commands = commands.map(function (c) {
 
@@ -124,7 +147,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
 
         html += '<div class="defaultVoiceHelp">';
 
-        html += '<h1>' + Globalize.translate('HeaderSaySomethingLike') + '</h1>';
+        html += '<h1 style="margin-bottom:1.25em;">' + Globalize.translate('HeaderSaySomethingLike') + '</h1>';
 
         html += '<div class="exampleCommands">';
         html += '</div>';
@@ -301,31 +324,6 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
         }
     }
 
-    /// <summary> Getgrammars the given language. </summary>
-    /// <param name="language"> The language. </param>
-    /// <returns> . </returns>
-    function getGrammarCommands(language) {
-
-        var file = "grammar";
-        if (language && language.length > 0)
-            file = language;
-
-        var grammar = (function () {
-            var grm = null;
-            $.ajax({
-                async: false,
-                global: false,
-                url: "voice/grammar/" + file + ".json",
-                dataType: "json",
-                success: function (data) {
-                    grm = data;
-                }
-            });
-            return grm;
-        })();
-        return grammar;
-    }
-
     /// <summary> Speaks the given text. </summary>
     /// <param name="text"> The text. </param>
     /// <returns> . </returns>
@@ -353,7 +351,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
 
 
     /// <summary> An enum constant representing the window. voice input manager option. </summary>
-    window.VoiceInputManager = {
+    return {
 
         isSupported: function () {
 
@@ -371,7 +369,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
                    window.msSpeechRecognition;
         },
 
-        startListening: startListening,
+        startListening: startListening
     };
 
 });

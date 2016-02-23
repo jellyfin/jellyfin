@@ -8,56 +8,56 @@
         "sourceid": "group",
         "groupid": "movie",
         "command": "(?<action>show|display|view)\\s?(?<source>Movie)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show Movie based commands" ]
+        "commandtemplates": [ "Show movie commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "music",
         "command": "(?<action>show|display|view)\\s?(?<source>Music)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show Music based commands" ]
+        "commandtemplates": [ "Show music commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "picture",
         "command": "(?<action>show|display|view)\\s?(?<source>Picture)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show Picture based commands" ]
+        "commandtemplates": [ "Show photo commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "tvseries",
         "command": "(?<action>show|display|view)\\s?(?<source>TV series)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show TV series based commands" ]
+        "commandtemplates": [ "Show tv library commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "home",
         "command": "(?<action>show|display|view)\\s?(?<source>home page)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show home page based commands" ]
+        "commandtemplates": [ "Show home screen commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "general",
         "command": "(?<action>show|display|view)\\s?(?<source>general)?\\s?(?<text>group commands)",
-        "commandtemplates": [ "Show general group commands" ]
+        "commandtemplates": [ "Show general commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "devices",
         "command": "(?<action>show|display|view)\\s?(?<source>devices)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show devices based commands" ]
+        "commandtemplates": [ "Show device commands" ]
       },
       {
         "actionid": "show",
         "sourceid": "group",
         "groupid": "livetv",
         "command": "(?<action>show|display|view)\\s?(?<source>live tv)?\\s?(?<text>based commands)",
-        "commandtemplates": [ "Show Live TV based commands" ]
+        "commandtemplates": [ "Show live tv commands" ]
       }
     ]
   },
