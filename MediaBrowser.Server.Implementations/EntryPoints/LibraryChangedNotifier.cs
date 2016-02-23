@@ -213,8 +213,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 if (userSessions.Count > 0)
                 {
-                    var info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
-                                                    foldersRemovedFrom, id);
+                    LibraryUpdateInfo info;
+
+                    try
+                    {
+                         info = GetLibraryUpdateInfo(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo,
+                                                        foldersRemovedFrom, id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in GetLibraryUpdateInfo", ex);
+                        return;
+                    }
 
                     foreach (var userSession in userSessions)
                     {
