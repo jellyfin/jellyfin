@@ -473,7 +473,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor, string foregroundLayer)
         {
             var filename = originalPath;
 
@@ -505,6 +505,11 @@ namespace Emby.Drawing
             if (!string.IsNullOrEmpty(backgroundColor))
             {
                 filename += "b=" + backgroundColor;
+            }
+
+            if (!string.IsNullOrEmpty(foregroundLayer))
+            {
+                filename += "fl=" + foregroundLayer;
             }
 
             filename += "v=" + Version;

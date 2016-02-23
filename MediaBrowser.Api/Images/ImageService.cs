@@ -624,6 +624,7 @@ namespace MediaBrowser.Api.Images
                 PercentPlayed = request.PercentPlayed ?? 0,
                 UnplayedCount = request.UnplayedCount,
                 BackgroundColor = request.BackgroundColor,
+                ForegroundLayer = request.ForegroundLayer,
                 SupportedOutputFormats = supportedFormats
             };
 
