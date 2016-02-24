@@ -38,6 +38,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="has-value">
+      <template>
+        <iron-autogrow-textarea value="foobar"></iron-autogrow-textarea>
+      </template>
+    </test-fixture>
+
     <test-fixture id="rows">
       <template>
         <iron-autogrow-textarea rows="3"></iron-autogrow-textarea>
@@ -59,6 +65,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('can set an initial bindValue', function() {
           var autogrow = fixture('has-bindValue');
           assert.equal(autogrow.textarea.value, 'foobar', 'textarea value equals to initial bindValue');
+          assert.equal(autogrow.value, 'foobar', 'value equals to initial bindValue');
+        });
+
+        test('can set an initial value', function() {
+          var autogrow = fixture('has-value');
+          assert.equal(autogrow.textarea.value, 'foobar', 'textarea value equals to initial bindValue');
+          assert.equal(autogrow.bindValue, 'foobar', 'textarea bindValue equals to initial value');
+        });
+
+        test('can update the value', function() {
+          var autogrow = fixture('has-bindValue');
+          assert.equal(autogrow.textarea.value, 'foobar', 'textarea value equals to initial bindValue');
+          autogrow.value = 'batman';
+          assert.equal(autogrow.textarea.value, 'batman', 'textarea value is updated');
+          assert.equal(autogrow.bindValue, 'batman', 'bindValue is updated');
+          assert.equal(autogrow.value, 'batman', 'value is updated');
+        });
+
+        test('can update the bindValue', function() {
+          var autogrow = fixture('has-bindValue');
+          assert.equal(autogrow.textarea.value, 'foobar', 'textarea value equals to initial bindValue');
+          autogrow.bindValue = 'batman';
+          assert.equal(autogrow.textarea.value, 'batman', 'textarea value is updated');
+          assert.equal(autogrow.bindValue, 'batman', 'bindValue is updated');
+          assert.equal(autogrow.value, 'batman', 'value is updated');
         });
 
         test('can set an initial number of rows', function() {

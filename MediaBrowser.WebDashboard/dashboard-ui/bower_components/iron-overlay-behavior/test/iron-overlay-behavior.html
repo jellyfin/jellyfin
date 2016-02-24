@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html">
     <link rel="import" href="test-overlay.html">
     <link rel="import" href="test-overlay2.html">
+    <link rel="import" href="test-buttons.html">
 
     <style is="custom-style">
       iron-overlay-backdrop {
@@ -111,6 +112,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </test-overlay2>
       </template>
     </test-fixture>
+
+    <test-buttons id="buttons"></test-buttons>
+    <input id="focusInput" placeholder="focus input">
 
     <script>
       function runAfterOpen(overlay, callback) {
@@ -453,13 +457,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(focusableNodes[5], Polymer.dom(overlayWithTabIndex).querySelector('.focusable6'));
         });
 
-        test('first focusable is focused if no [autofocus] node is present', function(done) {
-          runAfterOpen(overlay, function() {
-            assert.equal(Polymer.dom(overlay).querySelector('.focusable1'), document.activeElement, 'focusable1 is focused');
-            done();
-          });
-        });
-
         test('with-backdrop: TAB & Shift+TAB wrap focus', function(done) {
           overlay.withBackdrop = true;
           var focusableNodes = overlay._focusableNodes;
@@ -493,6 +490,109 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             MockInteractions.focus(document.body);
             assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
             done();
+          });
+        });
+
+      });
+
+      suite('Polymer.IronOverlayManager.deepActiveElement', function() {
+
+        test('handles document.body', function () {
+          document.body.focus();
+          assert.equal(Polymer.IronOverlayManager.deepActiveElement, document.body);
+        });
+
+        test('handles light dom', function () {
+          var focusable = document.getElementById('focusInput');
+          focusable.focus();
+          assert.equal(Polymer.IronOverlayManager.deepActiveElement, focusable, 'input is handled');
+          focusable.blur();
+        });
+
+        test('handles shadow dom', function () {
+          var focusable = document.getElementById('buttons').$.button0;
+          focusable.focus();
+          assert.equal(Polymer.IronOverlayManager.deepActiveElement, focusable);
+          focusable.blur();
+        });
+
+      });
+
+      suite('restore-focus-on-close', function() {
+
+        var overlay;
+        setup(function () {
+          overlay = fixture('autofocus');
+          overlay.restoreFocusOnClose = true;
+        });
+
+        teardown(function () {
+          // No matter what, return the focus to body!
+          document.body.focus();
+        });
+
+        test('does not return focus on close by default (restore-focus-on-close=false)', function(done) {
+          overlay.restoreFocusOnClose = false;
+          var focusable = document.getElementById('focusInput');
+          focusable.focus();
+          runAfterOpen(overlay, function() {
+            runAfterClose(overlay, function() {
+              assert.notEqual(Polymer.IronOverlayManager.deepActiveElement, focusable, 'focus is not restored to focusable');
+              done();
+            });
+          });
+        });
+
+        test('overlay returns focus on close', function(done) {
+          var focusable = document.getElementById('focusInput');
+          focusable.focus();
+          runAfterOpen(overlay, function() {
+            runAfterClose(overlay, function() {
+              assert.equal(Polymer.IronOverlayManager.deepActiveElement, focusable, 'focus restored to focusable');
+              done();
+            });
+          });
+        });
+
+        test('overlay returns focus on close (ShadowDOM)', function(done) {
+          var focusable = document.getElementById('buttons').$.button0;
+          focusable.focus();
+          runAfterOpen(overlay, function() {
+            runAfterClose(overlay, function() {
+              assert.equal(Polymer.IronOverlayManager.deepActiveElement, focusable, 'focus restored to focusable');
+              done();
+            });
+          });
+        });
+
+        test('overlay does not return focus to elements contained in another overlay', function(done) {
+          var overlay2 = fixture('basic');
+          // So it doesn't interfere with focus changes.
+          overlay2.noAutoFocus = true;
+          var focusable = document.createElement('input');
+          runAfterOpen(overlay2,function () {
+            Polymer.dom(overlay2).appendChild(focusable);
+            focusable.focus();
+            runAfterOpen(overlay, function() {
+              runAfterClose(overlay, function() {
+                assert.notEqual(Polymer.IronOverlayManager.deepActiveElement, focusable, 'focus not restored to focusable inside overlay2');
+                done();
+              });
+            });
+          });
+        });
+
+        test('overlay does not return focus to elements that are not in the body anymore', function(done) {
+          var focusable = document.createElement('input');
+          document.body.appendChild(focusable);
+          focusable.focus();
+          var focusSpy = sinon.spy(focusable, 'focus');
+          runAfterOpen(overlay, function() {
+            document.body.removeChild(focusable);
+            runAfterClose(overlay, function() {
+              assert.isFalse(focusSpy.called, 'focus not called');
+              done();
+            });
           });
         });
 
@@ -548,9 +648,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('manager.getBackdrops() immediately updated on opened changes', function() {
           overlay.opened = true;
-          assert.equal(overlay._manager.getBackdrops().length, 1, 'overlay added to manager backdrops');
+          assert.equal(Polymer.IronOverlayManager.getBackdrops().length, 1, 'overlay added to manager backdrops');
           overlay.opened = false;
-          assert.equal(overlay._manager.getBackdrops().length, 0, 'overlay removed from manager backdrops');
+          assert.equal(Polymer.IronOverlayManager.getBackdrops().length, 0, 'overlay removed from manager backdrops');
         });
 
         test('updating with-backdrop to false closes backdrop', function(done) {
