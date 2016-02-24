@@ -234,7 +234,7 @@ namespace Emby.Drawing
             var quality = options.Quality;
 
             var outputFormat = GetOutputFormat(options.SupportedOutputFormats[0]);
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor, options.ForegroundLayer);
 
             var semaphore = GetLock(cacheFilePath);
 
