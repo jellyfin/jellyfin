@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Implementations.Networking
             Logger = logger;
         }
 
-		private volatile List<IPAddress> _localIpAddresses;
+		private List<IPAddress> _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
         /// <summary>
@@ -29,24 +29,20 @@ namespace MediaBrowser.Common.Implementations.Networking
         /// <returns>IPAddress.</returns>
 		public IEnumerable<IPAddress> GetLocalIpAddresses()
         {
-            const int cacheMinutes = 3;
-            var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+            const int cacheMinutes = 5;
 
-            if (_localIpAddresses == null || forceRefresh)
+            lock (_localIpAddressSyncLock)
             {
-                lock (_localIpAddressSyncLock)
+                var forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+
+                if (_localIpAddresses == null || forceRefresh)
                 {
-                    forceRefresh = (DateTime.UtcNow - _lastRefresh).TotalMinutes >= cacheMinutes;
+                    var addresses = GetLocalIpAddressesInternal().ToList();
 
-                    if (_localIpAddresses == null || forceRefresh)
-                    {
-                        var addresses = GetLocalIpAddressesInternal().ToList();
+                    _localIpAddresses = addresses;
+                    _lastRefresh = DateTime.UtcNow;
 
-                        _localIpAddresses = addresses;
-                        _lastRefresh = DateTime.UtcNow;
-
-                        return addresses;
-                    }
+                    return addresses;
                 }
             }
 
