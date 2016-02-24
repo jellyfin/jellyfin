@@ -13,7 +13,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         where T : class
     {
         private readonly object _fileDataLock = new object();
-        private volatile List<T> _items;
+        private List<T> _items;
         private readonly IJsonSerializer _jsonSerializer;
         protected readonly ILogger Logger;
         private readonly string _dataPath;
@@ -31,17 +31,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public IReadOnlyList<T> GetAll()
         {
-            if (_items == null)
+            lock (_fileDataLock)
             {
-                lock (_fileDataLock)
+                if (_items == null)
                 {
-                    if (_items == null)
-                    {
-                        _items = GetItemsFromFile(_dataPath);
-                    }
+                    _items = GetItemsFromFile(_dataPath);
                 }
+                return _items;
             }
-            return _items;
         }
 
         private List<T> GetItemsFromFile(string path)
