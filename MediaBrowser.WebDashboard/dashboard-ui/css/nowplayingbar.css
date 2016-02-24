@@ -195,16 +195,17 @@
 .nowPlayingBarPositionSlider {
     position: relative;
     top: -15px;
-}
-
-.nowPlayingBarPositionSlider #sliderContainer {
     width: 100%;
-    margin-left: 0 !important;
 }
 
-.nowPlayingBarPositionSlider #progressContainer {
-    background-color: transparent !important;
-}
+    .nowPlayingBarPositionSlider #sliderContainer {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .nowPlayingBarPositionSlider #progressContainer {
+        background-color: transparent !important;
+    }
 
 .nowPlayingBarRight {
     position: relative;
