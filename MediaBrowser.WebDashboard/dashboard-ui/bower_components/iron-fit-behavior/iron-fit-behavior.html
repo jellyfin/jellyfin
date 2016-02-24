@@ -171,14 +171,14 @@ CSS properties               | Action
      * the memoized data.
      */
     resetFit: function() {
-      if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
-        this.sizingTarget.style.maxHeight = '';
-        this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
-      }
       if (!this._fitInfo || !this._fitInfo.sizedBy.width) {
         this.sizingTarget.style.maxWidth = '';
-        this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       }
+      if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
+        this.sizingTarget.style.maxHeight = '';
+      }
+      this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
+      this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       if (this._fitInfo) {
         this.style.position = this._fitInfo.positionedBy.css;
       }
@@ -239,18 +239,30 @@ CSS properties               | Action
      * `position:fixed`.
      */
     center: function() {
-      if (!this._fitInfo.positionedBy.vertically || !this._fitInfo.positionedBy.horizontally) {
-        // need position:fixed to center
-        this.style.position = 'fixed';
+      var positionedBy = this._fitInfo.positionedBy;
+      if (positionedBy.vertically && positionedBy.horizontally) {
+        // Already positioned.
+        return;
       }
-      if (!this._fitInfo.positionedBy.vertically) {
-        var top = (this._fitHeight - this.offsetHeight) / 2 + this._fitTop;
-        top -= this._fitInfo.margin.top;
+      // Need position:fixed to center
+      this.style.position = 'fixed';
+      // Take into account the offset caused by parents that create stacking
+      // contexts (e.g. with transform: translate3d). Translate to 0,0 and
+      // measure the bounding rect.
+      if (!positionedBy.vertically) {
+        this.style.top = '0px';
+      }
+      if (!positionedBy.horizontally) {
+        this.style.left = '0px';
+      }
+      // It will take in consideration margins and transforms
+      var rect = this.getBoundingClientRect();
+      if (!positionedBy.vertically) {
+        var top = this._fitTop - rect.top + (this._fitHeight - rect.height) / 2;
         this.style.top = top + 'px';
       }
-      if (!this._fitInfo.positionedBy.horizontally) {
-        var left = (this._fitWidth - this.offsetWidth) / 2 + this._fitLeft;
-        left -= this._fitInfo.margin.left;
+      if (!positionedBy.horizontally) {
+        var left = this._fitLeft - rect.left + (this._fitWidth - rect.width) / 2;
         this.style.left = left + 'px';
       }
     }
