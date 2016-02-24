@@ -66,7 +66,10 @@ namespace MediaBrowser.Api.Images
 
         [ApiMember(Name = "BackgroundColor", Description = "Optional. Apply a background color for transparent images.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string BackgroundColor { get; set; }
-        
+
+        [ApiMember(Name = "ForegroundLayer", Description = "Optional. Apply a foreground layer on top of the image.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ForegroundLayer { get; set; }
+
         public ImageRequest()
         {
             EnableImageEnhancers = true;
