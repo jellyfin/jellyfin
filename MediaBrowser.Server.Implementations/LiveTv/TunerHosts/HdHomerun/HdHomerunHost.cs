@@ -66,7 +66,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         Name = i.GuideName,
                         Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
                         Id = ChannelIdPrefix + i.GuideNumber.ToString(CultureInfo.InvariantCulture) + '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N"),
-                        IsFavorite = i.Favorite
+                        IsFavorite = i.Favorite,
+                        TunerHostId = info.Id
 
                     });
 

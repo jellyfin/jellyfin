@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         {
             var satInfo = (SatIpTunerHostInfo) tuner;
 
-            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(satInfo.M3UUrl, ChannelIdPrefix, cancellationToken).ConfigureAwait(false);
+            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(satInfo.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
         }
 
         public static string DeviceType

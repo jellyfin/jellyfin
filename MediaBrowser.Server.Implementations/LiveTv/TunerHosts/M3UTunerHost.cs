@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(info.Url, ChannelIdPrefix, cancellationToken).ConfigureAwait(false);
+            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(info.Url, ChannelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
