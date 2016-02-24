@@ -57,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var tagStreamType = isAudio ? "audio" : "video";
+            var tagStreamType = isAudio ? "info" : "video";
 
             if (data.streams != null)
             {
@@ -81,10 +81,27 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             FetchGenres(info, tags);
-            var overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
+            var shortOverview = FFProbeHelpers.GetDictionaryValue(tags, "description");
+            var overview = FFProbeHelpers.GetDictionaryValue(tags, "synopsis");
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = shortOverview;
+                shortOverview = null;
+            }
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
+            }
+
             if (!string.IsNullOrWhiteSpace(overview))
             {
                 info.Overview = overview;
+            }
+
+            if (!string.IsNullOrWhiteSpace(shortOverview))
+            {
+                info.ShortOverview = shortOverview;
             }
 
             var title = FFProbeHelpers.GetDictionaryValue(tags, "title");
@@ -105,13 +122,15 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 SetAudioRuntimeTicks(data, info);
 
-                // tags are normally located under data.format, but we've seen some cases with ogg where they're part of the audio stream
+                // tags are normally located under data.format, but we've seen some cases with ogg where they're part of the info stream
                 // so let's create a combined list of both
 
                 SetAudioInfoFromTags(info, tags);
             }
             else
             {
+                FetchStudios(info, tags, "copyright");
+
                 var iTunEXTC = FFProbeHelpers.GetDictionaryValue(tags, "iTunEXTC");
                 if (!string.IsNullOrWhiteSpace(iTunEXTC))
                 {
@@ -124,13 +143,13 @@ namespace MediaBrowser.MediaEncoding.Probing
                         info.OfficialRatingDescription = parts[3];
                     }
                 }
-                
+
                 var itunesXml = FFProbeHelpers.GetDictionaryValue(tags, "iTunMOVI");
                 if (!string.IsNullOrWhiteSpace(itunesXml))
                 {
                     FetchFromItunesInfo(itunesXml, info);
                 }
-                
+
                 if (data.format != null && !string.IsNullOrEmpty(data.format.duration))
                 {
                     info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
@@ -157,7 +176,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
         /// </summary>
-        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
@@ -190,7 +209,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
             }
 
-            if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(streamInfo.codec_type, "info", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Audio;
 
@@ -438,8 +457,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (result.streams != null)
             {
-                // Get the first audio stream
-                var stream = result.streams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
+                // Get the first info stream
+                var stream = result.streams.FirstOrDefault(s => string.Equals(s.codec_type, "info", StringComparison.OrdinalIgnoreCase));
 
                 if (stream != null)
                 {
@@ -703,10 +722,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <summary>
         /// Gets the studios from the tags collection
         /// </summary>
-        /// <param name="audio">The audio.</param>
+        /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
         /// <param name="tagName">Name of the tag.</param>
-        private void FetchStudios(Model.MediaInfo.MediaInfo audio, Dictionary<string, string> tags, string tagName)
+        private void FetchStudios(MediaInfo info, Dictionary<string, string> tags, string tagName)
         {
             var val = FFProbeHelpers.GetDictionaryValue(tags, tagName);
 
@@ -717,19 +736,19 @@ namespace MediaBrowser.MediaEncoding.Probing
                 foreach (var studio in studios)
                 {
                     // Sometimes the artist name is listed here, account for that
-                    if (audio.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase))
+                    if (info.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
-                    if (audio.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
+                    if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    audio.Studios.Add(studio);
+                    info.Studios.Add(studio);
                 }
 
-                audio.Studios = audio.Studios
+                info.Studios = info.Studios
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
