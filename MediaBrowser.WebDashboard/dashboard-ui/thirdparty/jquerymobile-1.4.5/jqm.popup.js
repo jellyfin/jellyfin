@@ -912,7 +912,7 @@
                 // remove nav bindings
                 this.window.off(currentOptions.closeEvents);
                 // unbind click handlers added when history is disabled
-                this.element.undelegate(currentOptions.closeLinkSelector, currentOptions.closeLinkEvents);
+                this.element.off(currentOptions.closeLinkEvents, currentOptions.closeLinkSelector);
 
                 this._close(immediate);
             },
@@ -955,7 +955,7 @@
                     // back link clicks so we can close the popup instead of
                     // relying on history to do it for us
                     self.element
-                        .delegate(currentOptions.closeLinkSelector, currentOptions.closeLinkEvents, function (theEvent) {
+                        .on(currentOptions.closeLinkEvents, currentOptions.closeLinkSelector, function (theEvent) {
                             self.close();
                             theEvent.preventDefault();
                         });

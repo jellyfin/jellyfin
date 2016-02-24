@@ -412,7 +412,7 @@
                         eventName = match[1] + instance.eventNamespace,
                         selector = match[2];
                     if (selector) {
-                        delegateElement.delegate(selector, eventName, handlerProxy);
+                        delegateElement.on(eventName, selector, handlerProxy);
                     } else {
                         element.on(eventName, handlerProxy);
                     }
@@ -421,7 +421,7 @@
 
             _off: function (element, eventName) {
                 eventName = (eventName || "").split(" ").join(this.eventNamespace + " ") + this.eventNamespace;
-                element.unbind(eventName).undelegate(eventName);
+                element.off(eventName).off(eventName);
             },
 
             _trigger: function (type, event, data) {

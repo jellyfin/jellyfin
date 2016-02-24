@@ -404,7 +404,7 @@ var Dashboard = {
         }
 
         if (options.forceShow) {
-            elem.slideDown(400);
+            elem.show();
         }
 
         elem.html(options.html);
@@ -427,7 +427,7 @@ var Dashboard = {
             setTimeout(function () { // give the DOM time to catch up
 
                 if (!parentElem.html()) {
-                    footer.slideUp();
+                    footer.hide();
                 }
 
             }, 50);
