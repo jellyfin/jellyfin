@@ -155,6 +155,7 @@ namespace Emby.Drawing.ImageMagick
                         AutoOrientImage(originalImage);
                     }
 
+                    AddForegroundLayer(originalImage, options);
                     DrawIndicator(originalImage, width, height, options);
 
                     originalImage.CurrentImage.CompressionQuality = quality;
@@ -177,6 +178,8 @@ namespace Emby.Drawing.ImageMagick
                         }
 
                         wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
+
+                        AddForegroundLayer(wand, options);
                         DrawIndicator(wand, width, height, options);
 
                         wand.CurrentImage.CompressionQuality = quality;
@@ -187,6 +190,16 @@ namespace Emby.Drawing.ImageMagick
                 }
             }
             SaveDelay();
+        }
+
+        private void AddForegroundLayer(MagickWand wand, ImageProcessingOptions options)
+        {
+            if (string.IsNullOrWhiteSpace(options.ForegroundLayer))
+            {
+                return;
+            }
+            
+            // TODO
         }
 
         private void AutoOrientImage(MagickWand wand)

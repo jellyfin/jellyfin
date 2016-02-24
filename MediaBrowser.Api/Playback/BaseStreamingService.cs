@@ -477,7 +477,7 @@ namespace MediaBrowser.Api.Playback
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && !state.VideoRequest.CopyTimestamps)
             {
                 var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
@@ -604,6 +604,10 @@ namespace MediaBrowser.Api.Playback
         {
             var seconds = Math.Round(TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds);
 
+            var setPtsParam = state.VideoRequest.CopyTimestamps
+                ? string.Empty
+                : string.Format(",setpts=PTS -{0}/TB", seconds.ToString(UsCulture));
+
             if (state.SubtitleStream.IsExternal)
             {
                 var subtitlePath = state.SubtitleStream.Path;
@@ -621,18 +625,18 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // TODO: Perhaps also use original_size=1920x800 ??
-                return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
+                return string.Format("subtitles=filename='{0}'{1}{2}",
                     MediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
-                    seconds.ToString(UsCulture));
+                    setPtsParam);
             }
 
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
+            return string.Format("subtitles='{0}:si={1}'{2}",
                 MediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
-                seconds.ToString(UsCulture));
+                setPtsParam);
         }
 
         /// <summary>
