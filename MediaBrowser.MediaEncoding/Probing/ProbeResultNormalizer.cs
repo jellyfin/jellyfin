@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
 using CommonIO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
@@ -170,7 +173,215 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void FetchFromItunesInfo(string xml, MediaInfo info)
         {
+            // Make things simpler and strip out the dtd
+            xml = xml.Substring(xml.IndexOf("<plist", StringComparison.OrdinalIgnoreCase));
+            xml = "<?xml version=\"1.0\"?>" + xml;
+
             // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Janus Bager Kristensen</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Sacha Goedegebure</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
+            {
+                using (var streamReader = new StreamReader(stream))
+                {
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader))
+                    {
+                        reader.MoveToContent();
+
+                        // Loop through each element
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "dict":
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            ReadFromDictNode(subtree, info);
+                                        }
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ReadFromDictNode(XmlReader reader, MediaInfo info)
+        {
+            reader.MoveToContent();
+
+            string currentKey = null;
+            List<NameValuePair> pairs = new List<NameValuePair>();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "key":
+                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            {
+                                ProcessPairs(currentKey, pairs, info);
+                            }
+                            currentKey = reader.ReadElementContentAsString();
+                            pairs = new List<NameValuePair>();
+                            break;
+                        case "string":
+                            var value = reader.ReadElementContentAsString();
+                            if (!string.IsNullOrWhiteSpace(value))
+                            {
+                                pairs.Add(new NameValuePair
+                                {
+                                    Name = value,
+                                    Value = value
+                                });
+                            }
+                            break;
+                        case "array":
+                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            {
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    pairs.AddRange(ReadValueArray(subtree));
+                                }
+                            }
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private List<NameValuePair> ReadValueArray(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            List<NameValuePair> pairs = new List<NameValuePair>();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "dict":
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                var dict = GetNameValuePair(subtree);
+                                if (dict != null)
+                                {
+                                    pairs.Add(dict);
+                                }
+                            }
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return pairs;
+        }
+
+        private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
+        {
+            if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.Studios.Add(pair.Value);
+                }
+
+                info.Studios = info.Studios
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+            }
+            else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Writer
+                    });
+                }
+            }
+            else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Producer
+                    });
+                }
+            }
+            else if (string.Equals(key, "directors", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Director
+                    });
+                }
+            }
+        }
+
+        private NameValuePair GetNameValuePair(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            string name = null;
+            string value = null;
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "key":
+                            name = reader.ReadElementContentAsString();
+                            break;
+                        case "string":
+                            value = reader.ReadElementContentAsString();
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return new NameValuePair
+            {
+                Name = name,
+                Value = value
+            };
         }
 
         /// <summary>
