@@ -476,6 +476,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\photos.html">
       <Link>Resources\dashboard-ui\photos.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\pin.html">
+      <Link>Resources\dashboard-ui\pin.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\playbackconfiguration.html">
       <Link>Resources\dashboard-ui\playbackconfiguration.html</Link>
     </BundleResource>
@@ -1316,6 +1319,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\visibleinviewport.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\actionsheet\actionsheet.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\actionsheet\actionsheet.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\actionsheet\actionsheet.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\actionsheet\actionsheet.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\confirm\confirm.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\confirm\confirm.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\confirm\nativeconfirm.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\confirm\nativeconfirm.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js</Link>
     </BundleResource>
@@ -1324,6 +1339,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\persistentimagefetcher.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\loading\loading.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\loading\loading.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\loading\loading.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\loading\loading.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css</Link>
@@ -1351,6 +1372,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\fastclick\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\fastclick\.bower.json</Link>
@@ -1868,6 +1892,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-demo-helpers\.gitignore">
       <Link>Resources\dashboard-ui\bower_components\iron-demo-helpers\.gitignore</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-demo-helpers\.travis.yml">
+      <Link>Resources\dashboard-ui\bower_components\iron-demo-helpers\.travis.yml</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-demo-helpers\CONTRIBUTING.md">
       <Link>Resources\dashboard-ui\bower_components\iron-demo-helpers\CONTRIBUTING.md</Link>
     </BundleResource>
@@ -2003,6 +2030,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\index.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout-classes.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout-classes.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout.html">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout.html</Link>
     </BundleResource>
@@ -2012,11 +2042,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\classes\iron-shadow-flex-layout.html">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\classes\iron-shadow-flex-layout.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\demo\demo-snippet.html">
-      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\demo\demo-snippet.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\demo\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\test\index.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\test\index.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\test\iron-flex-layout-classes.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\test\iron-flex-layout-classes.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-flex-layout\test\iron-flex-layout.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-flex-layout\test\iron-flex-layout.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-form-element-behavior\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-form-element-behavior\.bower.json</Link>
@@ -2486,6 +2522,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-resizable-behavior\.gitignore">
       <Link>Resources\dashboard-ui\bower_components\iron-resizable-behavior\.gitignore</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-resizable-behavior\.travis.yml">
+      <Link>Resources\dashboard-ui\bower_components\iron-resizable-behavior\.travis.yml</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-resizable-behavior\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\iron-resizable-behavior\CONTRIBUTING.md</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-resizable-behavior\README.md">
       <Link>Resources\dashboard-ui\bower_components\iron-resizable-behavior\README.md</Link>
     </BundleResource>
@@ -2642,41 +2684,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\jquery\.bower.json</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.editorconfig">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.editorconfig</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.gitattributes">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.gitattributes</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.jscsrc">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.jscsrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.jshintignore">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.jshintignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.jshintrc">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.jshintrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.mailmap">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.mailmap</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.npmignore">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.npmignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.travis.yml">
-      <Link>Resources\dashboard-ui\bower_components\jquery\.travis.yml</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\AUTHORS.txt">
       <Link>Resources\dashboard-ui\bower_components\jquery\AUTHORS.txt</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\CONTRIBUTING.md">
-      <Link>Resources\dashboard-ui\bower_components\jquery\CONTRIBUTING.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\Gruntfile.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\Gruntfile.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\LICENSE.txt">
       <Link>Resources\dashboard-ui\bower_components\jquery\LICENSE.txt</Link>
@@ -2684,8 +2693,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\README.md">
       <Link>Resources\dashboard-ui\bower_components\jquery\README.md</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\package.json">
-      <Link>Resources\dashboard-ui\bower_components\jquery\package.json</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\bower.json">
+      <Link>Resources\dashboard-ui\bower_components\jquery\bower.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.js</Link>
@@ -2696,44 +2705,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.min.map">
       <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.min.map</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\npo\npo.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\npo\npo.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.slim.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.slim.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit\LICENSE.txt">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit\LICENSE.txt</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit\MIT-LICENSE.txt">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit\MIT-LICENSE.txt</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit\qunit.css">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit\qunit.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit\qunit.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit\qunit.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit-assert-step\MIT-LICENSE.txt">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit-assert-step\MIT-LICENSE.txt</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\qunit-assert-step\qunit-assert-step.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\qunit-assert-step\qunit-assert-step.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\requirejs\require.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\requirejs\require.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\sinon\sinon-1.14.1.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\sinon\sinon-1.14.1.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\sizzle\LICENSE.txt">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\sizzle\LICENSE.txt</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.min.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.min.map">
-      <Link>Resources\dashboard-ui\bower_components\jquery\external\sizzle\dist\sizzle.min.map</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.map">
+      <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.map</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\.jshintrc">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\.jshintrc</Link>
@@ -2801,6 +2780,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\serialize.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\serialize.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\support.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\support.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\traversing.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\traversing.js</Link>
     </BundleResource>
@@ -2839,6 +2821,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\attributes\val.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\attributes\val.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\core\DOMEval.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\core\DOMEval.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\core\access.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\core\access.js</Link>
@@ -2879,11 +2864,23 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\data\Data.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\data\Data.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\data\accepts.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\data\accepts.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\data\support.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\data\support.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\deferred\exceptionHook.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\deferred\exceptionHook.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\effects\Tween.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\effects\Tween.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\effects\animatedSelector.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\effects\animatedSelector.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\effects\support.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\effects\support.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\event\ajax.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\event\ajax.js</Link>
@@ -2912,6 +2909,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\manipulation\buildFragment.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\manipulation\buildFragment.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\manipulation\createSafeFragment.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\src\manipulation\createSafeFragment.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\manipulation\getAll.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\manipulation\getAll.js</Link>
     </BundleResource>
@@ -2929,366 +2929,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\traversing\findFilter.js">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\traversing\findFilter.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\.jshintrc">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\.jshintrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\delegatetest.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\delegatetest.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\hovertest.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\hovertest.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\index.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\jquery.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\jquery.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\localfile.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\localfile.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\networkerror.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\networkerror.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\promises_aplus_adapter.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\promises_aplus_adapter.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\readywait.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\readywait.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\xhtml.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\xhtml.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\1x1.jpg">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\1x1.jpg</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\atom+xml.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\atom+xml.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\badcall.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\badcall.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\badjson.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\badjson.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\cleanScript.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\cleanScript.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\dashboard.xml">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\dashboard.xml</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\echoData.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\echoData.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\echoQuery.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\echoQuery.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\errorWithJSON.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\errorWithJSON.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\errorWithText.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\errorWithText.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\etag.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\etag.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\headers.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\headers.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\if_modified_since.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\if_modified_since.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\iframe.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\iframe.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\jquery-1.9.1.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\jquery-1.9.1.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\json.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\json.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\json_obj.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\json_obj.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\jsonp.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\jsonp.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\name.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\name.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\name.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\name.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\nocontent.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\nocontent.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\params_html.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\params_html.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\readywaitasset.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\readywaitasset.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\readywaitloader.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\readywaitloader.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\script.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\script.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\statusText.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\statusText.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\test.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\test.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\test.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\test.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\test2.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\test2.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\test3.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\test3.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\testbar.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\testbar.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\testinit.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\testinit.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\testrunner.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\testrunner.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\testsuite.css">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\testsuite.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\text.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\text.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\with_fries.xml">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\with_fries.xml</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\with_fries_over_jsonp.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\with_fries_over_jsonp.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\ajax\content-type.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\ajax\content-type.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\ajax\evalScript.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\ajax\evalScript.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\ajax\method.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\ajax\method.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\ajax\onunload.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\ajax\onunload.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\ajax\unreleasedXHR.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\ajax\unreleasedXHR.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\core\aliased.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\core\aliased.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\core\cc_on.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\core\cc_on.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\core\dont_return.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\core\dont_return.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\core\dynamic_ready.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\core\dynamic_ready.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\core\onready.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\core\onready.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\css\cssWidthBeforeDocReady.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\css\cssWidthBeforeDocReady.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\data\dataAttrs.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\data\dataAttrs.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\dimensions\documentLarge.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\dimensions\documentLarge.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\focusElem.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\focusElem.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\focusinCrossFrame.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\focusinCrossFrame.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\interactiveReady.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\interactiveReady.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\longLoadScript.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\longLoadScript.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\onbeforeunload.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\onbeforeunload.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\promiseReady.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\promiseReady.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\syncReady.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\syncReady.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\event\triggerunload.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\event\triggerunload.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\manipulation\iframe-denied.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\manipulation\iframe-denied.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\absolute.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\absolute.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\body.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\body.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\fixed.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\fixed.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\relative.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\relative.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\scroll.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\scroll.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\static.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\static.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\offset\table.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\offset\table.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\selector\html5_selector.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\selector\html5_selector.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\selector\sizzle_cache.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\selector\sizzle_cache.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\bodyBackground.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\bodyBackground.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\csp-clean.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\csp-clean.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\csp-log.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\csp-log.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\csp.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\csp.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\csp.php">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\csp.php</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\data\support\getComputedSupport.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\data\support\getComputedSupport.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\integration\gh-1764-fullscreen.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\integration\gh-1764-fullscreen.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\integration\gh-2343-ie-radio-click.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\integration\gh-2343-ie-radio-click.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen-iframe.css">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen-iframe.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen-iframe.html">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen-iframe.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\integration\data\gh-1764-fullscreen.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\.jshintrc">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\.jshintrc</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_missing.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_missing.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_passed.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_passed.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_present_originally.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\document_present_originally.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\iterable_with_native_symbol.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\iterable_with_native_symbol.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\iterable_with_symbol_polyfill.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\iterable_with_symbol_polyfill.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_global_not_created.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_global_not_created.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_iterability_es6.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_iterability_es6.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_jquery.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\node_smoke_tests\lib\ensure_jquery.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\ajax.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\ajax.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\attributes.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\attributes.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\basic.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\basic.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\callbacks.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\callbacks.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\core.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\core.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\css.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\css.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\data.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\data.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\deferred.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\deferred.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\deprecated.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\deprecated.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\dimensions.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\dimensions.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\effects.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\effects.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\event.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\event.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\exports.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\exports.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\manipulation.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\manipulation.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\offset.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\offset.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\queue.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\queue.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\ready.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\ready.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\selector.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\selector.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\serialize.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\serialize.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\support.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\support.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\traversing.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\traversing.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\test\unit\wrap.js">
-      <Link>Resources\dashboard-ui\bower_components\jquery\test\unit\wrap.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jstree\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\jstree\.bower.json</Link>
@@ -8279,6 +7919,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\filterdialog\filterdialog.template.html">
       <Link>Resources\dashboard-ui\components\filterdialog\filterdialog.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\filterdialog\style.css">
+      <Link>Resources\dashboard-ui\components\filterdialog\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\guestinviter\guestinviter.js">
       <Link>Resources\dashboard-ui\components\guestinviter\guestinviter.js</Link>
     </BundleResource>
@@ -8762,20 +8405,20 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\windowsphone\wp.css">
+      <Link>Resources\dashboard-ui\devices\windowsphone\wp.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\files\dummy.mp4">
       <Link>Resources\dashboard-ui\files\dummy.mp4</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\buttonenabled.js">
       <Link>Resources\dashboard-ui\legacy\buttonenabled.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\deferred.js">
-      <Link>Resources\dashboard-ui\legacy\deferred.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\dashboard.js">
+      <Link>Resources\dashboard-ui\legacy\dashboard.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\aboutpage.js">
       <Link>Resources\dashboard-ui\scripts\aboutpage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\actionsheet.js">
-      <Link>Resources\dashboard-ui\scripts\actionsheet.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\addpluginpage.js">
       <Link>Resources\dashboard-ui\scripts\addpluginpage.js</Link>
@@ -9104,6 +8747,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\photos.js">
       <Link>Resources\dashboard-ui\scripts\photos.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\pin.js">
+      <Link>Resources\dashboard-ui\scripts\pin.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\playbackconfiguration.js">
       <Link>Resources\dashboard-ui\scripts\playbackconfiguration.js</Link>
     </BundleResource>
@@ -9121,9 +8767,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\pluginspage.js">
       <Link>Resources\dashboard-ui\scripts\pluginspage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\queryfilters.js">
-      <Link>Resources\dashboard-ui\scripts\queryfilters.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\ratingdialog.js">
       <Link>Resources\dashboard-ui\scripts\ratingdialog.js</Link>
@@ -9920,14 +9563,50 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.min.js">
       <Link>Resources\dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.min.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\textprocessor-en-us.js">
-      <Link>Resources\dashboard-ui\voice\textprocessor-en-us.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\Readme.md">
+      <Link>Resources\dashboard-ui\voice\Readme.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\grammarprocessor.js">
+      <Link>Resources\dashboard-ui\voice\grammarprocessor.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voice.css">
       <Link>Resources\dashboard-ui\voice\voice.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voice.js">
       <Link>Resources\dashboard-ui\voice\voice.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voicecommands.js">
+      <Link>Resources\dashboard-ui\voice\voicecommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voicedialog.js">
+      <Link>Resources\dashboard-ui\voice\voicedialog.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\controlcommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\controlcommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\disablecommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\disablecommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\enablecommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\enablecommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\playcommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\playcommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\searchcommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\searchcommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\showcommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\showcommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\commands\togglecommands.js">
+      <Link>Resources\dashboard-ui\voice\commands\togglecommands.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\grammar\en-US.json">
+      <Link>Resources\dashboard-ui\voice\grammar\en-US.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\grammar\grammar.json">
+      <Link>Resources\dashboard-ui\voice\grammar\grammar.json</Link>
     </BundleResource>
   </ItemGroup>
 </Project>
