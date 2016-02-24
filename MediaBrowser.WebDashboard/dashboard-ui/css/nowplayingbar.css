@@ -192,12 +192,9 @@
     display: none;
 }
 
-.nowPlayingBarPositionSlider paper-progress {
-    height: 3px !important;
-}
-
-.nowPlayingBarPositionSlider #sliderBar {
-    padding-top: 0;
+.nowPlayingBarPositionSlider {
+    position: relative;
+    top: -15px;
 }
 
 .nowPlayingBarPositionSlider #sliderContainer {
@@ -205,17 +202,8 @@
     margin-left: 0 !important;
 }
 
-.nowPlayingBarPositionSlider #sliderKnob {
-    top: -15px !important;
-}
-
 .nowPlayingBarPositionSlider #progressContainer {
     background-color: transparent !important;
-}
-
-.nowPlayingBarPositionSlider #sliderKnobInner {
-    width: 14px;
-    height: 14px;
 }
 
 .nowPlayingBarRight {

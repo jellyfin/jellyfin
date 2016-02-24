@@ -61,6 +61,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </demo-snippet>
 
+  <h3>Use <code>restore-focus-on-close</code> to return the focus to the element that opened the overlay when it gets closed.</h3>
+  <demo-snippet>
+    <template>
+      <button onclick="returnFocus.open()">Overlay that restores focus</button>
+      <simple-overlay id="returnFocus" restore-focus-on-close>
+        <p>Hello world!</p>
+        <button onclick="returnFocus.close()">Close</button>
+      </simple-overlay>
+    </template>
+  </demo-snippet>
+
   <h3>The child with <code>autofocus</code> gets focused when opening the overlay.</h3>
   <demo-snippet>
     <template>

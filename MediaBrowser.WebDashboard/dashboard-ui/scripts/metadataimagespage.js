@@ -234,25 +234,22 @@
             return;
         }
 
-        html += '<fieldset data-role="controlgroup">';
-        html += '<legend>' + Globalize.translate('LabelMetadataSavers') + '</legend>';
+        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataSavers') + '</div>';
+        html += '<div class="paperCheckboxList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
 
-            var id = 'chkMetadataSaver' + i;
-
             var isChecked = config.DisabledMetadataSavers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkMetadataSaver" type="checkbox" name="' + id + '" id="' + id + '" data-mini="true"' + isChecked + ' data-pluginname="' + plugin.Name + '">';
-            html += '<label for="' + id + '">' + plugin.Name + '</label>';
+            html += '<paper-checkbox class="chkMetadataSaver"' + isChecked + ' data-pluginname="' + plugin.Name + '">' + plugin.Name + '</paper-checkbox>';
         }
 
-        html += '</fieldset>';
-        html += '<div class="fieldDescription">' + Globalize.translate('LabelMetadataSaversHelp') + '</div>';
+        html += '</div>';
+        html += '<div class="fieldDescription" style="margin-top:.25em;">' + Globalize.translate('LabelMetadataSaversHelp') + '</div>';
 
-        $('.metadataSavers', page).html(html).show().trigger('create');
+        page.querySelector('.metadataSavers').innerHTML = html;
     }
 
     function renderMetadataFetchers(page, type, config, metadataInfo) {
@@ -416,7 +413,11 @@
 
     function saveSettingsIntoConfig(form, config) {
 
-        config.DisabledMetadataSavers = $('.chkMetadataSaver:not(:checked)', form).get().map(function (c) {
+        config.DisabledMetadataSavers = $('.chkMetadataSaver', form).get().filter(function (c) {
+
+            return !c.checked;
+
+        }).map(function (c) {
 
             return c.getAttribute('data-pluginname');
 

@@ -58,6 +58,14 @@
 
             var info = infos[i];
 
+            html += '<paper-icon-item>';
+
+            html += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
+
+            html += (info.DisplayName || info.ItemName);
+
+            html += '</paper-icon-item>';
+
             var matchStringIndex = 0;
 
             html += info.MatchStrings.map(function (m) {
@@ -65,11 +73,7 @@
                 var matchStringHtml = '';
                 matchStringHtml += '<paper-icon-item>';
 
-                matchStringHtml += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
-
-                matchStringHtml += '<paper-item-body two-line>';
-
-                matchStringHtml += "<div>" + (info.DisplayName || info.ItemName) + "</div>";
+                matchStringHtml += '<paper-item-body>';
 
                 matchStringHtml += "<div secondary>" + m + "</div>";
 

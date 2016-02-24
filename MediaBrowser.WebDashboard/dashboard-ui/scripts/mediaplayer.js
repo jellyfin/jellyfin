@@ -418,7 +418,8 @@
                 tracks.push({
                     url: textStreamUrl,
                     language: (textStream.Language || 'und'),
-                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex,
+                    index: textStream.Index
                 });
             }
 

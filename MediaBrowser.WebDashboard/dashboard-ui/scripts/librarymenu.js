@@ -29,7 +29,7 @@
             html += '</div>';
         }
 
-        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
+        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
 
         html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
@@ -136,9 +136,9 @@
                 }
             }
 
-            requirejs(['voice/voice'], function () {
+            require(['voice/voice'], function (voice) {
 
-                if (VoiceInputManager.isSupported()) {
+                if (voice.isSupported()) {
                     header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
@@ -159,6 +159,12 @@
         }
     }
 
+    function showVoice() {
+        require(['voice/voice'], function (voice) {
+            voice.startListening();
+        });
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
@@ -170,6 +176,11 @@
         var headerBackButton = document.querySelector('.headerBackButton');
         if (headerBackButton) {
             headerBackButton.addEventListener('click', onBackClick);
+        }
+
+        var headerVoiceButton = document.querySelector('.headerVoiceButton');
+        if (headerVoiceButton) {
+            headerVoiceButton.addEventListener('click', showVoice);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
@@ -904,7 +915,7 @@
             return;
         }
 
-        requirejs(["headroom"], function () {
+        require(["headroom"], function () {
 
             // construct an instance of Headroom, passing the element
             var headroom = new Headroom(elem, {

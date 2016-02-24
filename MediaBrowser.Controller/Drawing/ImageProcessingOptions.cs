@@ -39,6 +39,7 @@ namespace MediaBrowser.Controller.Drawing
         public double PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
+        public string ForegroundLayer { get; set; }
 
         public bool HasDefaultOptions(string originalImagePath)
         {
@@ -83,7 +84,8 @@ namespace MediaBrowser.Controller.Drawing
                 !AddPlayedIndicator &&
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
-                string.IsNullOrEmpty(BackgroundColor);
+                string.IsNullOrEmpty(BackgroundColor) &&
+                string.IsNullOrEmpty(ForegroundLayer);
         }
 
         private bool IsFormatSupported(string originalImagePath)

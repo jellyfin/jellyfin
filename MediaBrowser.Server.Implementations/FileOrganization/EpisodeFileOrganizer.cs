@@ -135,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             if (previousResult != null)
             {
                 // Don't keep saving the same result over and over if nothing has changed
-                if (previousResult.Status == result.Status && result.Status != FileSortingStatus.Success)
+                if (previousResult.Status == result.Status && previousResult.StatusMessage == result.StatusMessage && result.Status != FileSortingStatus.Success)
                 {
                     return previousResult;
                 }
