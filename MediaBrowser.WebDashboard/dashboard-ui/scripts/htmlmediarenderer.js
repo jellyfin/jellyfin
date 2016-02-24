@@ -4,6 +4,7 @@
     var hlsPlayer;
     var requiresSettingStartTimeOnStart;
     var subtitleTrackIndexToSetOnPlaying;
+    var currentTrackList;
 
     function htmlMediaRenderer(options) {
 
@@ -375,11 +376,12 @@
                 }
 
                 tracks = tracks || [];
+                currentTrackList = tracks;
 
                 var currentTrackIndex = -1;
                 for (var i = 0, length = tracks.length; i < length; i++) {
                     if (tracks[i].isDefault) {
-                        currentTrackIndex = i;
+                        currentTrackIndex = tracks[i].index;
                         break;
                     }
                 }
@@ -423,7 +425,8 @@
 
                 var defaultAttribute = t.isDefault ? ' default' : '';
 
-                return '<track kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
+                var label = t.language || 'und';
+                return '<track id="textTrack' + t.index + '" label="' + label + '" kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
 
             }).join('');
 
@@ -500,22 +503,43 @@
             return supportsTextTracks;
         };
 
-        self.setCurrentTrackElement = function (trackIndex) {
+        self.setCurrentTrackElement = function (streamIndex) {
 
-            console.log('Setting new text track index to: ' + trackIndex);
+            console.log('Setting new text track index to: ' + streamIndex);
 
             var allTracks = mediaElement.textTracks; // get list of tracks
 
             var modes = ['disabled', 'showing', 'hidden'];
+            var expectedId = 'textTrack' + streamIndex;
+
+            var track = streamIndex == -1 ? null : currentTrackList.filter(function (t) {
+                return t.index == streamIndex;
+            })[0];
+            var trackIndex = streamIndex == -1 || !track ? -1 : currentTrackList.indexOf(track);
 
             for (var i = 0; i < allTracks.length; i++) {
 
+                var currentTrack = allTracks[i];
+
+                console.log('currentTrack id: ' + currentTrack.id);
+
                 var mode;
 
-                if (trackIndex == i) {
-                    mode = 1; // show this track
+                console.log('expectedId: ' + expectedId + '--currentTrack.Id:' + currentTrack.id);
+
+                // IE doesn't support track id
+                if (browserInfo.msie) {
+                    if (trackIndex == i) {
+                        mode = 1; // show this track
+                    } else {
+                        mode = 0; // hide all other tracks
+                    }
                 } else {
-                    mode = 0; // hide all other tracks
+                    if (currentTrack.id == expectedId) {
+                        mode = 1; // show this track
+                    } else {
+                        mode = 0; // hide all other tracks
+                    }
                 }
 
                 console.log('Setting track ' + i + ' mode to: ' + mode);
@@ -525,14 +549,14 @@
                 // edit: not anymore
                 var useNumericMode = false;
 
-                if (!isNaN(allTracks[i].mode)) {
+                if (!isNaN(currentTrack.mode)) {
                     //useNumericMode = true;
                 }
 
                 if (useNumericMode) {
-                    allTracks[i].mode = mode;
+                    currentTrack.mode = mode;
                 } else {
-                    allTracks[i].mode = modes[mode];
+                    currentTrack.mode = modes[mode];
                 }
             }
         };

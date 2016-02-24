@@ -1544,5 +1544,6 @@
     "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
     "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "ButtonEnterPinCodeHelp": "Sign in to an Emby TV app by entering the on-screen pin code.",
-    "FileExtension": "File extension"
+    "FileExtension": "File extension",
+    "OptionReplaceExistingImages": "Replace existing images"
 }

@@ -47,7 +47,7 @@
                 dataType: 'json',
                 data: {
 
-                    ConnectUsername: $('#txtConnectUsername', dlg).val(),
+                    ConnectUsername: dlg.querySelector('#txtConnectUsername').value,
                     EnabledLibraries: shareExcludes.join(','),
                     SendingUserId: Dashboard.getCurrentUserId(),
                     EnableLiveTv: false

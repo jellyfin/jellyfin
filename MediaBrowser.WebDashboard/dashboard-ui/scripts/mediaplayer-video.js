@@ -320,17 +320,7 @@
 
         self.setCurrentTrackElement = function (index) {
 
-            var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
-                return s.DeliveryMethod == 'External';
-            });
-
-            var newStream = textStreams.filter(function (s) {
-                return s.Index == index;
-            })[0];
-
-            var trackIndex = newStream ? textStreams.indexOf(newStream) : -1;
-
-            self.currentMediaRenderer.setCurrentTrackElement(trackIndex);
+            self.currentMediaRenderer.setCurrentTrackElement(index);
         };
 
         self.updateTextStreamUrls = function (startPositionTicks) {

@@ -1,0 +1,347 @@
+﻿[
+  {
+    "groupid": "general",
+    "name": "General commands",
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "movie",
+        "command": "(?<action>show|display|view)\\s?(?<source>Movie)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show movie commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "music",
+        "command": "(?<action>show|display|view)\\s?(?<source>Music)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show music commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "picture",
+        "command": "(?<action>show|display|view)\\s?(?<source>Picture)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show photo commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "tvseries",
+        "command": "(?<action>show|display|view)\\s?(?<source>TV series)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show tv library commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "home",
+        "command": "(?<action>show|display|view)\\s?(?<source>home page)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show home screen commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "general",
+        "command": "(?<action>show|display|view)\\s?(?<source>general)?\\s?(?<text>group commands)",
+        "commandtemplates": [ "Show general commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "devices",
+        "command": "(?<action>show|display|view)\\s?(?<source>devices)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show device commands" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "group",
+        "groupid": "livetv",
+        "command": "(?<action>show|display|view)\\s?(?<source>live tv)?\\s?(?<text>based commands)",
+        "commandtemplates": [ "Show live tv commands" ]
+      }
+    ]
+  },
+  {
+    "groupid": "home",
+    "name": "Home commands",
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "home",
+        "menuid": "home",
+        "command": "(?<action> show|display|view)\\s?(?<menu>home)",
+        "commandtemplates": [ "Show home" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "home",
+        "menuid": "nextup",
+        "command": "(?<action> show|display|view)\\s?(?<menu>next up)",
+        "commandtemplates": [ "Show next up" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "home",
+        "menuid": "favorites",
+        "command": "(?<action> show|display|view)\\s?(?<menu>favorites)",
+        "commandtemplates": [ "Show favorites" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "home",
+        "menuid": "upcoming",
+        "command": "(?<action> show|display|view)\\s?(?<menu>upcoming)",
+        "commandtemplates": [ "Show upcoming" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "home",
+        "menuid": "nowplaying",
+        "command": "(?<action> show|display|view)\\s?(?<menu>now playing)",
+        "commandtemplates": [ "Show now playing" ]
+      }
+    ]
+  },
+  {
+    "groupid": "movie",
+    "name": "Movie based commands",
+    "defaultValues": {
+      "sourceid": "movies",
+      "itemType": "Movie",
+      "filters": [ ],
+      "sortBy": "",
+      "sortOrder": "Ascending"
+    },
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "movies",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>movies)\\s?(?<MovieName>.*)?",
+        "altcommand": "(?<action>show|display|go to|view)\\s?(?<determiner1>the)?\\s?(?<source>movie)\\s?(?<MovieName>.*)?",
+        "itemName": "",
+        "commandtemplates": [
+          "Show movies",
+          "Show my movies",
+          "Show the movie [movie name]"
+        ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "movies",
+        "command": "(?<action>play|Listen to)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play|Listen to)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?",
+        "itemName": "",
+        "itemType": "Audio",
+        "shuffle": false,
+        "filters": [ ],
+        "sortBy": "",
+        "sortOrder": "Ascending",
+        "commandtemplates": [
+          "Play music",
+          "Play my music",
+          "Listen to my music "
+        ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "latestmovies",
+        "command": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest movies|latest films)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest movies|latest films)",
+        "filters": [ "unplayed" ],
+        "sortBy": "datecreated",
+        "sortOrder": "Descending",
+        "commandtemplates": [
+          "Play my latest movies",
+          "Play latest films" 
+        ]
+      }
+    ]
+  },
+  {
+    "groupid": "music",
+    "name": "Music based commands",
+    "defaultValues": {
+      "itemName": "",
+      "itemType": "Audio",
+      "shuffle": false,
+      "filters": [ ],
+      "sortBy": "",
+      "sortOrder": "Ascending"
+    },
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "music",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>(music|songs))\\s?(?<SongName>.*)?",
+        "commandtemplates": [
+          "Show music",
+          "Show my music",
+          "Show my songs"
+        ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "music",
+        "command": "(?<action>play|Listen to)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play|Listen to)\\s?(?<determiner1>my|me)?\\s?(?<source> music)\\s?(?<ArtistName>.*)?",
+        "itemName": "",
+        "commandtemplates": [
+          "Play music",
+          "Play my music",
+          "Listen to my music "
+        ]
+      },
+      {
+        "actionid": "shuffle",
+        "sourceid": "music",
+        "command": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music|favorite songs)\\s?(?<ArtistName>.*)?\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>shuffle)\\s?(?<determiner1>my|me)?\\s?(?<source> music|favorite songs)\\s?(?<ArtistName>.*)?",
+        "shuffle": true,
+        "commandtemplates": [
+          "Play music",
+          "Play my music",
+          "Listen to my music ",
+          "shuffle my favorite songs"
+        ]
+      }
+    ]
+  },
+  {
+    "groupid": "tvseries",
+    "name": "TV series based commands",
+    "defaultValues": {
+      "itemType": "Series",
+      "filters": [ ],
+      "sortBy": "",
+      "sortOrder": "Ascending"
+    },
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "tvseries",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>(tv series))\\s?(?<SerieName>.*)?",
+        "commandtemplates": [
+          "Show tv series",
+          "Show my tv series"
+        ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "nextup",
+        "command": "(?<action>play|Listen to)\\s?(?<source> next up)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play|Listen to)\\s?(?<source> next up)",
+        "commandtemplates": [ "Play next up" ]
+      },
+      {
+        "actionid": "play",
+        "sourceid": "latestepisodes",
+        "command": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest episodes)\\s?(?<deviceaction>on device|to device)\\s?(?<Devicename>.*)",
+        "altcommand": "(?<action>play)\\s?(?<determiner1>my|me)?\\s?(?<source>latest episodes)",
+        "filters": [ "unplayed" ],
+        "sortBy": "datecreated",
+        "sortOrder": "Descending",
+        "commandtemplates": [ "Play my latest episodes" ]
+      }
+    ]
+  },
+  {
+    "groupid": "livetv",
+    "name": "Live TV based commands",
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "suggestions",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv|live tv suggestions)",
+        "commandtemplates": [ "Show live tv" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "guide",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv guide)",
+        "commandtemplates": [ "Show live tv guide" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "channels",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv channels)",
+        "commandtemplates": [ "Show live tv channels" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "recordings",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv recordings)",
+        "commandtemplates": [ "Show live tv recordings" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "scheduled",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv scheduled)",
+        "commandtemplates": [ "Show live tv scheduled" ]
+      },
+      {
+        "actionid": "show",
+        "sourceid": "livetv",
+        "menuid": "series",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>Live tv series)",
+        "commandtemplates": [ "Show live tv series" ]
+      }
+    ]
+  },
+  {
+    "groupid": "picture",
+    "name": "Picture based commands",
+    "defaultValues": {
+      "itemType": "Picture",
+      "shuffle": false,
+      "filters": [ ],
+      "sortBy": "",
+      "sortOrder": "Ascending"
+    },
+    "items": [
+      {
+        "actionid": "show",
+        "sourceid": "tvseries",
+        "command": "(?<action>show|display|go to|view)\\s?(?<determiner1>my|me)?\\s?(?<source>pictures)",
+        "commandtemplates": [
+          "Show pictures",
+          "Show my pictures"
+        ]
+      }
+    ]
+  },
+  {
+    "groupid": "devices",
+    "name": "Devices based commands",
+    "items": [
+      {
+        "actionid": "enable",
+        "deviceid": "displaymirroring",
+        "command": "(?<action> enable|turn on)\\s?(?<device>display mirroring)",
+        "commandtemplates": [ "Turn on display mirroring", "Enable display mirroring" ]
+      },
+      {
+        "actionid": "disable",
+        "deviceid": "displaymirroring",
+        "command": "(?<action> disable|turn off)\\s?(?<device>display mirroring)",
+        "commandtemplates": [ "Turn off display mirroring", "Disable display mirroring" ]
+      },
+      {
+        "actionid": "toggle",
+        "deviceid": "displaymirroring",
+        "command": "(?<action>toggle)\\s?(?<device>display mirroring)",
+        "commandtemplates": [ "Toggle display mirroring" ]
+      },
+      {
+        "actionid": "control",
+        "command": "(?<action>control)\\s?(?<Devicename>.*)",
+        "commandtemplates": [ "Control [Device Name]" ]
+      }
+    ]
+  }
+
+]
