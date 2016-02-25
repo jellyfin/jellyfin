@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance can reset; otherwise, <c>false</c>.</value>
         public bool CanReset { get; set; }
-
+        
         public LiveTvTunerInfo()
         {
             Clients = new List<string>();

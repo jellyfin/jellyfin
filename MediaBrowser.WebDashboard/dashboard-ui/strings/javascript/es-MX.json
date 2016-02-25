@@ -49,7 +49,7 @@
     "TitleSync": "Sinc",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Seleccionar fecha",
-    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
+    "ServerUpdateNeeded": "Este Servidor Emby necesita ser actualizado. Para descargar la ultima versi\u00f3n, por favor visite {0}",
     "ButtonIdentify": "Identificar",
     "HeaderIdentifyItem": "Identificar \u00cdtem",
     "LabelRecurringDonationCanBeCancelledHelp": "Las donaciones recurrentes pueden ser canceladas en cualquier momento desde su cuenta PayPal.",
@@ -959,8 +959,5 @@
     "HeaderSelectCodecIntrosPath": "Seleccionar Trayectoria de Intros de C\u00f3dec",
     "ButtonLocalRefresh": "Actualizaci\u00f3n local",
     "ButtonAddMissingData": "S\u00f3lo agregar datos faltantes",
-    "ButtonFullRefresh": "Actualizaci\u00f3n completa",
-    "PinCodeInvalid": "Pin Code Error",
-    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
+    "ButtonFullRefresh": "Actualizaci\u00f3n completa"
 }

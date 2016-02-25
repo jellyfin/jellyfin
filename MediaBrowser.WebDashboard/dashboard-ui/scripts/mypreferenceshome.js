@@ -224,7 +224,9 @@
 
                     Dashboard.hideLoadingMsg();
                     if (!AppInfo.enableAutoSave) {
-                        Dashboard.alert(Globalize.translate('SettingsSaved'));
+                        require(['toast'], function (toast) {
+                            toast(Globalize.translate('SettingsSaved'));
+                        });
                     }
 
                 }, function () {

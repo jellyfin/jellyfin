@@ -116,7 +116,9 @@
                 });
 
             } else {
-                Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('DefaultErrorMessage'));
+                });
             }
 
             Dashboard.hideLoadingMsg();

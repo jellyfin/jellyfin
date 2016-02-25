@@ -276,13 +276,6 @@
         console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
 
-        //Dashboard.alert({
-
-        //    title: Globalize.translate("Error"),
-        //    message: Globalize.translate("ErrorLaunchingChromecast")
-
-        //});
-
         sendConnectionResult(false);
     };
 

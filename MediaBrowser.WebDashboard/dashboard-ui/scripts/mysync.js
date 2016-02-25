@@ -27,7 +27,9 @@
         require(['localsync'], function () {
 
             LocalSync.sync();
-            Dashboard.alert(Globalize.translate('MessageSyncStarted'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageSyncStarted'));
+            });
             refreshSyncStatus(page);
         });
     }

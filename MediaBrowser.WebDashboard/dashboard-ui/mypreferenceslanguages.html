@@ -14,7 +14,7 @@
 
                 <div class="detailSection">
                     <h1>
-                        ${HeaderAudioSettings}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                        ${HeaderAudioSettings}
                     </h1>
                     <div class="detailSectionContent">
                         <br />
@@ -28,7 +28,7 @@
                 </div>
                 <div class="detailSection">
                     <h1>
-                        ${HeaderSubtitleSettings}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                        ${HeaderSubtitleSettings}
                     </h1>
                     <div class="detailSectionContent">
                         <br />
@@ -83,9 +83,10 @@
                             <label for="selectMaxChromecastBitrate" class="selectLabel">${LabelMaxChromecastBitrate}</label>
                             <select id="selectMaxChromecastBitrate" data-mini="true"></select>
                         </div>
-
-                        <div class="fldExternalPlayer" style="display: none;">
-                            <br />
+                        <div style="margin-top:2em;">
+                            <paper-checkbox class="chkEpisodeAutoPlay">${OptionPlayNextEpisodeAutomatically}</paper-checkbox>
+                        </div>
+                        <div class="fldExternalPlayer" style="margin-top:2em;display: none;">
                             <paper-checkbox class="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</paper-checkbox>
                             <div class="fieldDescription paperCheckboxFieldDescription">
                                 <div style="display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
@@ -98,10 +99,6 @@
                 <button type="submit" data-role="none" class="clearButton block btnSave hide">
                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                 </button>
-
-                <p>
-                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
-                </p>
             </form>
         </div>
     </div>

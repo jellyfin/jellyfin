@@ -854,7 +854,9 @@
 
                 });
 
-                Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageRefreshQueued'));
+                });
             },
 
             deleteItems: function (itemIds) {

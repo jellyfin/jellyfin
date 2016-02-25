@@ -49,7 +49,7 @@
     "TitleSync": "Synchronisation",
     "OptionAutomatic": "Auto",
     "HeaderSelectDate": "Datum w\u00e4hlen",
-    "ServerUpdateNeeded": "This Emby Server needs to be updated. To download the latest version, please visit {0}",
+    "ServerUpdateNeeded": "Dieser Emby Server muss aktualisiert werden. Um die neueste Version herunterzuladen, besuchen sie bitte {0}",
     "ButtonIdentify": "Identifizieren",
     "HeaderIdentifyItem": "Identifiziere Element",
     "LabelRecurringDonationCanBeCancelledHelp": "Fortlaufende Spenden k\u00f6nnen jederzeit \u00fcber deinen PayPal Account gek\u00fcndigt werden.",
@@ -406,7 +406,7 @@
     "HeaderAlert": "Alarm",
     "MessagePleaseRestart": "Dr\u00fccke auf Neustart um das Update abzuschlie\u00dfen",
     "ButtonRestart": "Neu starten",
-    "MessagePleaseRefreshPage": "Bitte aktualisieren Sie diese Seite um neue Updated vom Emby Server zu erhalten.",
+    "MessagePleaseRefreshPage": "Bitte aktualisieren Sie diese Seite um Aktualisierungen von Emby Server zu erhalten.",
     "ButtonHide": "Verstecke",
     "MessageSettingsSaved": "Einstellungen gespeichert",
     "ButtonSignOut": "Abmelden",
@@ -959,8 +959,5 @@
     "HeaderSelectCodecIntrosPath": "W\u00e4hlen Sie ein Codec Intro Verzeichnis",
     "ButtonLocalRefresh": "Lokaler Refresh",
     "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
-    "ButtonFullRefresh": "Kompletter Refresh",
-    "PinCodeInvalid": "Pin Code Error",
-    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
+    "ButtonFullRefresh": "Kompletter Refresh"
 }

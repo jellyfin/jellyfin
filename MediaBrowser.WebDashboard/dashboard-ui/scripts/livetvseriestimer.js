@@ -13,7 +13,9 @@
                 ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
 
                     reload(page);
                 });
@@ -116,7 +118,9 @@
 
             ApiClient.updateLiveTvSeriesTimer(item).then(function () {
                 Dashboard.hideLoadingMsg();
-                Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageRecordingSaved'));
+                });
             });
         });
 

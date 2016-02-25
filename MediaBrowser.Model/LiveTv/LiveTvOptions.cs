@@ -32,6 +32,8 @@ namespace MediaBrowser.Model.LiveTv
         public bool ImportFavoritesOnly { get; set; }
         public bool IsEnabled { get; set; }
 
+        public int DataVersion { get; set; }
+
         public TunerHostInfo()
         {
             IsEnabled = true;

@@ -191,7 +191,9 @@
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert(Globalize.translate('SettingsSaved'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('SettingsSaved'));
+        });
     }
 
     function saveUser(user, page) {

@@ -11,12 +11,16 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.alert(Globalize.translate('MessageFileNotFound'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageFileNotFound'));
+                });
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.alert(Globalize.translate('MessageFileReadError'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageFileReadError'));
+                });
                 break;
         };
     }

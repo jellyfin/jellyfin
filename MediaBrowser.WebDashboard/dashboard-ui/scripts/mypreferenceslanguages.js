@@ -25,6 +25,7 @@
 
             $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "");
             $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "");
+            page.querySelector('.chkEpisodeAutoPlay').checked = user.Configuration.EnableNextEpisodeAutoPlay || false;
         });
 
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
@@ -93,6 +94,7 @@
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
+        user.Configuration.EnableNextEpisodeAutoPlay = page.querySelector('.chkEpisodeAutoPlay').checked;
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
@@ -123,7 +125,9 @@
 
                 Dashboard.hideLoadingMsg();
                 if (!AppInfo.enableAutoSave) {
-                    Dashboard.alert(Globalize.translate('SettingsSaved'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('SettingsSaved'));
+                    });
                 }
 
             }, function () {

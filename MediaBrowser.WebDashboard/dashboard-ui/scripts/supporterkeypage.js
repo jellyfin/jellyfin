@@ -83,9 +83,13 @@
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
             if (result.Success) {
-                Dashboard.alert(Globalize.translate('MessageKeysLinked'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageKeysLinked'));
+                });
             } else {
-                Dashboard.alert(result.ErrorMessage);
+                require(['toast'], function (toast) {
+                    toast(result.ErrorMessage);
+                });
             }
             console.log(result);
 
@@ -107,9 +111,13 @@
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
             if (result.Success) {
-                Dashboard.alert(Globalize.translate('MessageKeyEmailedTo').replace("{0}", email));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageKeyEmailedTo').replace("{0}", email));
+                });
             } else {
-                Dashboard.alert(result.ErrorMessage);
+                require(['toast'], function (toast) {
+                    toast(result.ErrorMessage);
+                });
             }
             console.log(result);
 

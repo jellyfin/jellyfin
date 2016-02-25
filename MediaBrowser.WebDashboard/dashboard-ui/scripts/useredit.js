@@ -150,7 +150,9 @@
         var enteredConnectUsername = $('#txtConnectUserName', page).val();
 
         if (currentConnectUsername == enteredConnectUsername) {
-            Dashboard.alert(Globalize.translate('SettingsSaved'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('SettingsSaved'));
+            });
         } else {
 
             updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {

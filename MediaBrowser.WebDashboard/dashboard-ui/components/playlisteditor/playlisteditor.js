@@ -74,7 +74,9 @@
             Dashboard.hideLoadingMsg();
 
             paperDialogHelper.close(dlg);
-            Dashboard.alert(Globalize.translate('MessageAddedToPlaylistSuccess'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageAddedToPlaylistSuccess'));
+            });
 
         });
     }

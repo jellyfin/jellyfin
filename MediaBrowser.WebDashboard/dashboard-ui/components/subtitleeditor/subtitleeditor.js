@@ -56,7 +56,9 @@
 
         }).then(function () {
 
-            Dashboard.alert(Globalize.translate('MessageDownloadQueued'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageDownloadQueued'));
+            });
         });
     }
 
