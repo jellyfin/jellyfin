@@ -6,7 +6,6 @@
  import DemuxerInline from '../demux/demuxer-inline';
  import Event from '../events';
  import EventEmitter from 'events';
- import MP4Remuxer from '../remux/mp4-remuxer';
 
 var DemuxerWorker = function (self) {
   // observer setup
@@ -19,13 +18,13 @@ var DemuxerWorker = function (self) {
     observer.removeListener(event, ...data);
   };
   self.addEventListener('message', function (ev) {
-    //console.log('demuxer cmd:' + ev.data.cmd);
-    switch (ev.data.cmd) {
+    var data = ev.data;
+    //console.log('demuxer cmd:' + data.cmd);
+    switch (data.cmd) {
       case 'init':
-        self.demuxer = new DemuxerInline(observer,MP4Remuxer);
+        self.demuxer = new DemuxerInline(observer, data.typeSupported);
         break;
       case 'demux':
-        var data = ev.data;
         self.demuxer.push(new Uint8Array(data.data), data.audioCodec, data.videoCodec, data.timeOffset, data.cc, data.level, data.sn, data.duration);
         break;
       default:
@@ -33,31 +32,15 @@ var DemuxerWorker = function (self) {
     }
   });
 
-  // listen to events triggered by TS Demuxer
+  // listen to events triggered by Demuxer
   observer.on(Event.FRAG_PARSING_INIT_SEGMENT, function(ev, data) {
-    var objData = {event: ev};
-    var objTransferable = [];
-    if (data.audioCodec) {
-      objData.audioCodec = data.audioCodec;
-      objData.audioMoov = data.audioMoov.buffer;
-      objData.audioChannelCount = data.audioChannelCount;
-      objTransferable.push(objData.audioMoov);
-    }
-    if (data.videoCodec) {
-      objData.videoCodec = data.videoCodec;
-      objData.videoMoov = data.videoMoov.buffer;
-      objData.videoWidth = data.videoWidth;
-      objData.videoHeight = data.videoHeight;
-      objTransferable.push(objData.videoMoov);
-    }
-    // pass moov as transferable object (no copy)
-    self.postMessage(objData,objTransferable);
+    self.postMessage({event: ev, tracks : data.tracks, unique : data.unique });
   });
 
   observer.on(Event.FRAG_PARSING_DATA, function(ev, data) {
-    var objData = {event: ev, type: data.type, startPTS: data.startPTS, endPTS: data.endPTS, startDTS: data.startDTS, endDTS: data.endDTS, moof: data.moof.buffer, mdat: data.mdat.buffer, nb: data.nb};
-    // pass moof/mdat data as transferable object (no copy)
-    self.postMessage(objData, [objData.moof, objData.mdat]);
+    var objData = {event: ev, type: data.type, startPTS: data.startPTS, endPTS: data.endPTS, startDTS: data.startDTS, endDTS: data.endDTS, data1: data.data1.buffer, data2: data.data2.buffer, nb: data.nb};
+    // pass data1/data2 as transferable object (no copy)
+    self.postMessage(objData, [objData.data1, objData.data2]);
   });
 
   observer.on(Event.FRAG_PARSED, function(event) {

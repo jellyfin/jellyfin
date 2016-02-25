@@ -249,7 +249,7 @@ class ExpGolomb {
         let sarRatio;
         const aspectRatioIdc = this.readUByte();
         switch (aspectRatioIdc) {
-          //case 1: sarRatio = [1,1]; break;
+          case 1: sarRatio = [1,1]; break;
           case 2: sarRatio = [12,11]; break;
           case 3: sarRatio = [10,11]; break;
           case 4: sarRatio = [16,11]; break;
@@ -276,7 +276,7 @@ class ExpGolomb {
       }
     }
     return {
-      width: (((picWidthInMbsMinus1 + 1) * 16) - frameCropLeftOffset * 2 - frameCropRightOffset * 2) * sarScale,
+      width: Math.ceil((((picWidthInMbsMinus1 + 1) * 16) - frameCropLeftOffset * 2 - frameCropRightOffset * 2) * sarScale),
       height: ((2 - frameMbsOnlyFlag) * (picHeightInMapUnitsMinus1 + 1) * 16) - ((frameMbsOnlyFlag? 2 : 4) * (frameCropTopOffset + frameCropBottomOffset))
     };
   }

@@ -6,7 +6,8 @@
       "folder_exclude_patterns": [
         ".git",
         "node_modules",
-        "dist"
+        "dist",
+        "lib"
         ],
       "file_exclude_patterns": [
         ".gitignore",

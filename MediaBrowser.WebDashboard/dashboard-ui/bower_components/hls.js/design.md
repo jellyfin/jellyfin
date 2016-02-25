@@ -13,22 +13,32 @@ design idea is pretty simple :
     - definition of Hls.Events
   - [src/errors.js][]
     - definition of Hls.ErrorTypes and Hls.ErrorDetails
-  - [src/controller/mse-media-controller.js][]
+  - [src/controller/stream-controller.js][]
     - in charge of:
       - ensuring that buffer is filled as per defined quality selection logic.
-      - monitoring current playback quality level (buffer controller maintains a map between media position and quality level)
     - if buffer is not filled up appropriately (i.e. as per defined maximum buffer size, or as per defined quality level), buffer controller will trigger the following actions:
         - retrieve "not buffered" media position greater then current playback position. this is performed by comparing video.buffered and video.currentTime.
         - retrieve URL of fragment matching with this media position, and appropriate quality level
-        - trigger fragment loading
-        - monitor fragment loading speed:
+        - trigger FRAG_LOADING event
+        - monitor fragment loading speed (by monitoring data received from FRAG_LOAD_PROGRESS event)
          - "expected time of fragment load completion" is computed using "fragment loading instant bandwidth".
          - this time is compared to the "expected time of buffer starvation".
          - if we have less than 2 fragments buffered and if "expected time of fragment load completion" is bigger than "expected time of buffer starvation" and also bigger than duration needed to load fragment at next quality level (determined by auto quality switch algorithm), current fragment loading is aborted, and an emergency switch down is triggered.
-        - trigger fragment parsing (TS demuxing and remuxing in MP4 boxes) upon loading completion
-        - trigger MP4 boxes appending in [SourceBuffer](http://www.w3.org/TR/media-source/#sourcebuffer) upon fragment parsing completion.
-
-      buffer controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.
+        - trigger fragment demuxing on FRAG_LOADED
+        - trigger BUFFER_RESET on MANIFEST_PARSED or startLoad()        
+        - trigger BUFFER_CODECS on FRAG_PARSING_INIT_SEGMENT
+        - trigger BUFFER_APPENDING on FRAG_PARSING_DATA
+        - once FRAG_PARSED is received an all segments have been appended (BUFFER_APPENDED) then buffer controller will recheck whether it needs to buffer more data.
+      - monitor current playback quality level (buffer controller maintains a map between media position and quality level)        
+      stream controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.
+  - [src/controller/buffer-controller.js][]
+    - in charge of:
+        - resetting media buffer upon BUFFER_RESET event reception
+        - initializing [SourceBuffer](http://www.w3.org/TR/media-source/#sourcebuffer) with appropriate codecs info upon BUFFER_CODECS event reception
+        - appending MP4 boxes in [SourceBuffer](http://www.w3.org/TR/media-source/#sourcebuffer) upon BUFFER_APPENDING
+        - trigger BUFFER_APPENDED event upon successful buffer appending
+        - flushing specified buffer range upon reception of BUFFER_FLUSHING event
+        - trigger BUFFER_FLUSHED event upon successful buffer flushing
 
   - [src/controller/fps-controller.js][]
     - in charge of monitoring frame rate, and fire FPS_DROP event in case FPS drop exceeds configured threshold. disabled for now.
@@ -117,9 +127,10 @@ design idea is pretty simple :
 [src/errors.js]: src/errors.js
 [src/stats.js]: src/stats.js
 [src/controller/abr-controller.js]: src/controller/abr-controller.js
+[src/controller/buffer-controller.js]: src/controller/buffer-controller.js
 [src/controller/fps-controller.js]: src/controller/fps-controller.js
 [src/controller/level-controller.js]: src/controller/level-controller.js
-[src/controller/mse-media-controller.js]: src/controller/mse-media-controller.js
+[src/controller/stream-controller.js]: src/controller/stream-controller.js
 [src/crypt/aes.js]: src/crypt/aes.js
 [src/crypt/aes128-decrypter.js]: src/crypt/aes128-decrypter.js
 [src/crypt/decrypter.js]: src/crypt/decrypter.js
@@ -157,7 +168,7 @@ design idea is pretty simple :
   - ```FRAG_LOAD_ERROR``` is raised by [src/loader/fragment-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][].
     - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
-  - ```FRAG_LOOP_LOADING_ERROR``` is raised by [src/controller/mse-media-controller.js][] upon detection of same fragment being requested in loop. this could happen with badly formatted fragments.
+  - ```FRAG_LOOP_LOADING_ERROR``` is raised by [src/controller/stream-controller.js][] upon detection of same fragment being requested in loop. this could happen with badly formatted fragments.
     - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
   - ```FRAG_LOAD_TIMEOUT``` is raised by [src/loader/fragment-loader.js][] upon xhr timeout detected by [src/utils/xhr-loader.js][].
@@ -165,5 +176,7 @@ design idea is pretty simple :
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
   - ```FRAG_PARSING_ERROR``` is raised by [src/demux/tsdemuxer.js][] upon TS parsing error. this error is not fatal.
   - ```FRAG_DECRYPT_ERROR``` is raised by [src/demux/demuxer.js][] upon fragment decrypting error. this error is fatal.
-  - ```BUFFER_APPEND_ERROR``` is raised by [src/controller/mse-media-controller.js][] when an exception is raised when calling sourceBuffer.appendBuffer(). this error is non fatal and become fatal after config.appendErrorMaxRetry retries. when fatal, a call to ```hls.recoverMediaError()``` could help recover it.
-  - ```BUFFER_APPENDING_ERROR``` is raised by [src/controller/mse-media-controller.js][] after SourceBuffer appending error. this error is fatal and a call to ```hls.recoverMediaError()``` could help recover it.
+  - ```BUFFER_APPEND_ERROR``` is raised by [src/controller/buffer-controller.js][] when an exception is raised when calling sourceBuffer.appendBuffer(). this error is non fatal and become fatal after config.appendErrorMaxRetry retries. when fatal, a call to ```hls.recoverMediaError()``` could help recover it.
+  - ```BUFFER_APPENDING_ERROR``` is raised by [src/controller/buffer-controller.js][] after SourceBuffer appending error. this error is fatal and a call to ```hls.recoverMediaError()``` could help recover it.
+  - ```BUFFER_STALLED_ERROR``` is raised by [src/controller/stream-controller.js][] if playback is stalling because of buffer underrun
+  - ```BUFFER_FULL_ERROR``` is raised by [src/controller/buffer-controller.js][] if sourcebuffer is full

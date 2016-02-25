@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/dailymotion/hls.js.svg?branch=master)](https://travis-ci.org/dailymotion/hls.js)
+[![npm][npm-image]][npm-url]
 # hls.js
 hls.js is a JavaScript library which implements an [HTTP Live Streaming] client.
 It relies on [HTML5 video][] and [MediaSource Extensions][] for playback.
@@ -7,7 +8,7 @@ it works by transmuxing MPEG-2 Transport Stream into ISO BMFF (MP4) fragments.
 this transmuxing could be performed asynchronously using [Web Worker] if available in the browser.
 
 hls.js does not need any player, it works directly on top of a standard HTML```<video>```element.
- 
+
 hls.js is written in [ECMAScript6], and transpiled in ECMAScript5 using [Babel].
 
 [HTML5 video]: http://www.html5rocks.com/en/tutorials/video/basics/
@@ -36,11 +37,11 @@ hls.js is (being) integrated in the following players:
 
  - [MediaElement.js] (http://mediaelementjs.com/)  through [#1609
 ] (https://github.com/johndyer/mediaelement/issues/1609)
- 
+
 
 ## Dependencies
 
-No external JS libs are needed. 
+No external JS libs are needed.
 prepackaged build is included in the [dist] (dist) folder:
 
  - [hls.js] (dist/hls.js)
@@ -48,17 +49,8 @@ prepackaged build is included in the [dist] (dist) folder:
 
 if you want to bundle the application yourself, use node
 
-```sh
-git clone https://github.com/dailymotion/hls.js.git
-# setup dev environnement
-cd hls.js
-npm install
-# build dist/hls.js, watch file change for rebuild and launch demo page
-npm run dev
-# lint
-npm run lint
-# minify
-npm run minify
+```
+npm install hls.js
 ```
 
 ## Installation
@@ -77,7 +69,8 @@ as of today, it is supported on:
 
  * Chrome for Android 34+
  * Chrome for Desktop 34+
- * Firefox for Desktop 38+ (with ```media.mediasource.whitelist=false``` in about:config)
+ * Firefox for Android 41+
+ * Firefox for Desktop 42+
  * IE11+ for Windows 8.1
  * Safari for Mac 8+ (beta)
 
@@ -164,6 +157,17 @@ hls.js can be configured and controlled easily, click [here](API.md) for details
 
 Pull requests are welcome. Here is a quick guide on how to start.
 
+ - First, checkout the repository and install required dependencies
+```sh
+git clone https://github.com/dailymotion/hls.js.git
+# setup dev environnement
+cd hls.js
+npm install
+# build dist/hls.js, watch file change for rebuild and launch demo page
+npm run dev
+# lint
+npm run lint
+```
  - Use [EditorConfig](http://editorconfig.org/) or at least stay consistent to the file formats defined in the `.editorconfig` file.
  - Develop in a topic branch, not master
  - Don't commit the updated `dist/hls.js` file in your PR. We'll take care of generating an updated build right before releasing a new tagged version.
@@ -172,3 +176,5 @@ Pull requests are welcome. Here is a quick guide on how to start.
 
 click [here](design.md) for details.
 
+[npm-image]: https://img.shields.io/npm/v/hls.js.svg?style=flat
+[npm-url]: https://npmjs.org/package/hls.js
