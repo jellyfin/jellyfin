@@ -78,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+                            string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideos<Video>(parent, files, directoryService, false);
             }
@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             var resolverResult = resolver.Resolve(files.Select(i => new FileMetadata
             {
                 Id = i.FullName,
-                IsFolder = false
+                IsFolder = i.IsDirectory
 
             }).ToList(), suppportMultiEditions).ToList();
 
@@ -169,7 +169,26 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 result.Items.Add(videoItem);
             }
 
+            result.ExtraFiles.AddRange(files.Where(i => !ContainsFile(resolverResult, i)));
+
             return result;
+        }
+
+        private bool ContainsFile(List<VideoInfo> result, FileSystemMetadata file)
+        {
+            return result.Any(i => ContainsFile(i, file));
+        }
+
+        private bool ContainsFile(VideoInfo result, FileSystemMetadata file)
+        {
+            return result.Files.Any(i => ContainsFile(i, file)) ||
+                result.AlternateVersions.Any(i => ContainsFile(i, file)) ||
+                result.Extras.Any(i => ContainsFile(i, file));
+        }
+
+        private bool ContainsFile(VideoFileInfo result, FileSystemMetadata file)
+        {
+            return string.Equals(result.Path, file.FullName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

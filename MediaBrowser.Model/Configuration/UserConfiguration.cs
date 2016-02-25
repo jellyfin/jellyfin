@@ -50,14 +50,14 @@ namespace MediaBrowser.Model.Configuration
 
         public bool RememberAudioSelections { get; set; }
         public bool RememberSubtitleSelections { get; set; }
-        public bool EnableEpisodeAutoQueue { get; set; }
+        public bool EnableNextEpisodeAutoPlay { get; set; }
     
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
         public UserConfiguration()
         {
-            EnableEpisodeAutoQueue = true;
+            EnableNextEpisodeAutoPlay = true;
             RememberAudioSelections = true;
             RememberSubtitleSelections = true;
             
