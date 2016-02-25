@@ -23,7 +23,6 @@
     this.remuxerClass = remuxerClass;
     this.lastCC = 0;
     this.remuxer = new this.remuxerClass(observer);
-    this._userData = [];
   }
 
   static probe(data) {
@@ -40,8 +39,8 @@
     this._pmtId = -1;
     this.lastAacPTS = null;
     this.aacOverFlow = null;
-    this._avcTrack = {type: 'video', id :-1, sequenceNumber: 0, samples : [], len : 0, nbNalu : 0};
-    this._aacTrack = {type: 'audio', id :-1, sequenceNumber: 0, samples : [], len : 0};
+    this._avcTrack = {container : 'video/mp2t', type: 'video', id :-1, sequenceNumber: 0, samples : [], len : 0, nbNalu : 0};
+    this._aacTrack = {container : 'video/mp2t', type: 'audio', id :-1, sequenceNumber: 0, samples : [], len : 0};
     this._id3Track = {type: 'id3', id :-1, sequenceNumber: 0, samples : [], len : 0};
     this._txtTrack = {type: 'text', id: -1, sequenceNumber: 0, samples: [], len: 0};
     this.remuxer.switchLevel();
@@ -55,7 +54,9 @@
   // feed incoming data to the front of the parsing pipeline
   push(data, audioCodec, videoCodec, timeOffset, cc, level, sn, duration) {
     var avcData, aacData, id3Data,
-        start, len = data.length, stt, pid, atf, offset;
+        start, len = data.length, stt, pid, atf, offset,
+        codecsOnly = this.remuxer.passthrough;
+
     this.audioCodec = audioCodec;
     this.videoCodec = videoCodec;
     this.timeOffset = timeOffset;
@@ -108,6 +109,15 @@
             if (stt) {
               if (avcData) {
                 this._parseAVCPES(this._parsePES(avcData));
+                if (codecsOnly) {
+                  // if we have video codec info AND
+                  // if audio PID is undefined OR if we have audio codec info,
+                  // we have all codec info !
+                  if (this._avcTrack.codec && (aacId === -1 || this._aacTrack.codec)) {
+                    this.remux(data);
+                    return;
+                  }
+                }
               }
               avcData = {data: [], size: 0};
             }
@@ -119,6 +129,15 @@
             if (stt) {
               if (aacData) {
                 this._parseAACPES(this._parsePES(aacData));
+                if (codecsOnly) {
+                  // here we now that we have audio codec info
+                  // if video PID is undefined OR if we have video codec info,
+                  // we have all codec infos !
+                  if (this._aacTrack.codec && (avcId === -1 || this._avcTrack.codec)) {
+                    this.remux(data);
+                    return;
+                  }
+                }
               }
               aacData = {data: [], size: 0};
             }
@@ -166,11 +185,11 @@
     if (id3Data) {
       this._parseID3PES(this._parsePES(id3Data));
     }
-    this.remux();
+    this.remux(null);
   }
 
-  remux() {
-    this.remuxer.remux(this._aacTrack, this._avcTrack, this._id3Track, this._txtTrack, this.timeOffset, this.contiguous);
+  remux(data) {
+    this.remuxer.remux(this._aacTrack, this._avcTrack, this._id3Track, this._txtTrack, this.timeOffset, this.contiguous, data);
   }
 
   destroy() {
@@ -223,9 +242,9 @@
   }
 
   _parsePES(stream) {
-    var i = 0, frag, pesFlags, pesPrefix, pesLen, pesHdrLen, pesData, pesPts, pesDts, payloadStartOffset;
+    var i = 0, frag, pesFlags, pesPrefix, pesLen, pesHdrLen, pesData, pesPts, pesDts, payloadStartOffset, data = stream.data;
     //retrieve PTS/DTS from first fragment
-    frag = stream.data[0];
+    frag = data[0];
     pesPrefix = (frag[0] << 16) + (frag[1] << 8) + frag[2];
     if (pesPrefix === 1) {
       pesLen = (frag[4] << 8) + frag[5];
@@ -261,16 +280,27 @@
       }
       pesHdrLen = frag[8];
       payloadStartOffset = pesHdrLen + 9;
-      // trim PES header
-      stream.data[0] = stream.data[0].subarray(payloadStartOffset);
+
       stream.size -= payloadStartOffset;
       //reassemble PES packet
       pesData = new Uint8Array(stream.size);
-      // reassemble the packet
-      while (stream.data.length) {
-        frag = stream.data.shift();
+      while (data.length) {
+        frag = data.shift();
+        var len = frag.byteLength;
+        if (payloadStartOffset) {
+          if (payloadStartOffset > len) {
+            // trim full frag if PES header bigger than frag
+            payloadStartOffset-=len;
+            continue;
+          } else {
+            // trim partial frag if PES header smaller than frag
+            frag = frag.subarray(payloadStartOffset);
+            len-=payloadStartOffset;
+            payloadStartOffset = 0;
+          }
+        }
         pesData.set(frag, i);
-        i += frag.byteLength;
+        i+=len;
       }
       return {data: pesData, pts: pesPts, dts: pesDts, len: pesLen};
     } else {

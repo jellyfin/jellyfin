@@ -1890,7 +1890,7 @@ var AppInfo = {};
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
 
-        define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
+        define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);

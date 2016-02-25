@@ -1189,6 +1189,13 @@ paper-input + .fieldDescription {
     margin-bottom: 30px !important;
 }
 
+.ui-content {
+    border-width: 0;
+    overflow: visible;
+    overflow-x: hidden;
+    padding: 1em;
+}
+
 .page > .ui-content, .pageWithAbsoluteTabs .pageTabContent {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;

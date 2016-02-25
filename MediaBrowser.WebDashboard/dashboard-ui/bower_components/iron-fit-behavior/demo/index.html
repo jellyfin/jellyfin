@@ -24,8 +24,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style>
 
       .sized {
-        width: 50%;
-        height: 50%;
+        max-width: 50%;
+        max-height: 50%;
+        padding: 20px;
       }
 
     </style>
@@ -33,8 +34,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body unresolved>
 
-    <simple-fit auto-fit-on-attach class="sized">
-      centered in window
+    <simple-fit id="myFit" auto-fit-on-attach class="sized" onclick="myFit.refit()">
+        Centered in window.<br><br>
+        Resize the window and click here to refit.
     </simple-fit>
 
   </body>

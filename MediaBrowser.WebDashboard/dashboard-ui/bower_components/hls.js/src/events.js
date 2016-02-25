@@ -7,6 +7,20 @@ module.exports = {
   MEDIA_DETACHING: 'hlsMediaDetaching',
   // fired when MediaSource has been detached from media element - data: { }
   MEDIA_DETACHED: 'hlsMediaDetached',
+  // fired when we buffer is going to be resetted
+  BUFFER_RESET: 'hlsBufferReset',
+  // fired when we know about the codecs that we need buffers for to push into - data: {tracks : { container, codec, levelCodec, initSegment, metadata }}
+  BUFFER_CODECS: 'hlsBufferCodecs',
+  // fired when we append a segment to the buffer - data: { segment: segment object }
+  BUFFER_APPENDING: 'hlsBufferAppending',
+  // fired when we are done with appending a media segment to the buffer
+  BUFFER_APPENDED: 'hlsBufferAppended',
+  // fired when the stream is finished and we want to notify the media buffer that there will be no more data
+  BUFFER_EOS: 'hlsBufferEos',
+  // fired when the media buffer should be flushed - data {startOffset, endOffset}
+  BUFFER_FLUSHING: 'hlsBufferFlushing',
+  // fired when the media has been flushed
+  BUFFER_FLUSHED: 'hlsBufferFlushed',
   // fired to signal that a manifest loading starts - data: { url : manifestURL}
   MANIFEST_LOADING: 'hlsManifestLoading',
   // fired after manifest has been loaded - data: { levels : [available quality levels] , url : manifestURL, stats : { trequest, tfirst, tload, mtime}}
@@ -37,7 +51,7 @@ module.exports = {
   FRAG_PARSING_USERDATA: 'hlsFragParsingUserdata',
   // fired when parsing id3 is completed - data: { samples : [ id3 samples pes ] }
   FRAG_PARSING_METADATA: 'hlsFragParsingMetadata',
-  // fired when moof/mdat have been extracted from fragment - data: { moof : moof MP4 box, mdat : mdat MP4 box}
+  // fired when data have been extracted from fragment - data: { data1 : moof MP4 box or TS fragments, data2 : mdat MP4 box or null}
   FRAG_PARSING_DATA: 'hlsFragParsingData',
   // fired when fragment parsing is completed - data: undefined
   FRAG_PARSED: 'hlsFragParsed',

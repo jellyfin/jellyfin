@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.LiveTv
 
         public int PrePaddingSeconds { get; set; }
         public int PostPaddingSeconds { get; set; }
-        
+
         public LiveTvOptions()
         {
             EnableMovieProviders = true;
@@ -31,7 +31,6 @@ namespace MediaBrowser.Model.LiveTv
         public string Type { get; set; }
         public bool ImportFavoritesOnly { get; set; }
         public bool IsEnabled { get; set; }
-        public string GuideGroup { get; set; }
 
         public TunerHostInfo()
         {
@@ -49,6 +48,14 @@ namespace MediaBrowser.Model.LiveTv
         public string ZipCode { get; set; }
         public string Country { get; set; }
         public string Path { get; set; }
-        public string GuideGroup { get; set; }
+
+        public string[] EnabledTuners { get; set; }
+        public bool EnableAllTuners { get; set; }
+
+        public ListingsProviderInfo()
+        {
+            EnabledTuners = new string[] { };
+            EnableAllTuners = true;
+        }
     }
 }

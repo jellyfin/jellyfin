@@ -12,6 +12,7 @@
         var self = this;
 
         function onEnded() {
+            destroyCustomTrack();
             Events.trigger(self, 'ended');
         }
 
@@ -31,6 +32,7 @@
             //        }
             //    }
             //}
+            updateSubtitleText(this.currentTime * 1000);
 
             Events.trigger(self, 'timeupdate');
         }
@@ -67,6 +69,8 @@
         }
 
         function onError(e) {
+
+            destroyCustomTrack();
 
             var elem = e.target;
             var errorCode = elem.error ? elem.error.code : '';
@@ -271,6 +275,9 @@
         };
 
         self.stop = function () {
+
+            destroyCustomTrack();
+
             if (mediaElement) {
                 mediaElement.pause();
 
@@ -421,6 +428,7 @@
         };
 
         function setTracks(elem, tracks) {
+
             var html = tracks.map(function (t) {
 
                 var defaultAttribute = t.isDefault ? ' default' : '';
@@ -430,9 +438,7 @@
 
             }).join('');
 
-            if (html) {
-                elem.innerHTML = html;
-            }
+            elem.innerHTML = html;
         }
 
         self.currentSrc = function () {
@@ -503,20 +509,127 @@
             return supportsTextTracks;
         };
 
+        function enableNativeTrackSupport(track) {
+
+            if (browserInfo.safari) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function destroyCustomTrack() {
+
+            var videoSubtitlesElem = document.querySelector('.videoSubtitles');
+            if (videoSubtitlesElem) {
+                videoSubtitlesElem.parentNode.removeChild(videoSubtitlesElem);
+            }
+
+            currentSubtitlesElement = null;
+            currentTrackEvents = null;
+            customTrackIndex = -1;
+        }
+
+        function fetchSubtitles(track) {
+
+            return ApiClient.ajax({
+                url: track.url.replace('.vtt', '.js'),
+                type: 'GET',
+                dataType: 'json'
+            });
+        }
+
+        function setTrackForCustomDisplay(track) {
+
+            if (!track) {
+                destroyCustomTrack();
+                return;
+            }
+
+            // if already playing this track, skip
+            if (customTrackIndex == track.index) {
+                return;
+            }
+
+            destroyCustomTrack();
+            customTrackIndex = track.index;
+
+            // download the track json
+            fetchSubtitles(track).then(function (data) {
+
+                // show in ui
+                console.log('downloaded ' + data.TrackEvents.length + ' track events');
+                currentTrackEvents = data.TrackEvents;
+            });
+        }
+
+        var currentSubtitlesElement;
+        var currentTrackEvents;
+        var customTrackIndex = -1;
+        var lastCustomTrackMs = 0;
+        function updateSubtitleText(timeMs) {
+
+            var trackEvents = currentTrackEvents;
+            if (!trackEvents) {
+                return;
+            }
+
+            if (!currentSubtitlesElement) {
+                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
+                if (!videoSubtitlesElem) {
+                    videoSubtitlesElem = document.createElement('div');
+                    videoSubtitlesElem.classList.add('videoSubtitles');
+                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
+                    document.body.appendChild(videoSubtitlesElem);
+                }
+                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
+            }
+
+            if (lastCustomTrackMs > 0) {
+                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
+                    return;
+                }
+            }
+
+            var positionTicks = timeMs * 10000;
+            for (var i = 0, length = trackEvents.length; i < length; i++) {
+
+                var caption = trackEvents[i];
+                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
+                    currentSubtitlesElement.innerHTML = caption.Text;
+                    currentSubtitlesElement.classList.remove('hide');
+                    return;
+                }
+            }
+
+            currentSubtitlesElement.innerHTML = '';
+            currentSubtitlesElement.classList.add('hide');
+        }
+
         self.setCurrentTrackElement = function (streamIndex) {
 
             console.log('Setting new text track index to: ' + streamIndex);
 
-            var allTracks = mediaElement.textTracks; // get list of tracks
-
-            var modes = ['disabled', 'showing', 'hidden'];
-            var expectedId = 'textTrack' + streamIndex;
-
             var track = streamIndex == -1 ? null : currentTrackList.filter(function (t) {
                 return t.index == streamIndex;
             })[0];
-            var trackIndex = streamIndex == -1 || !track ? -1 : currentTrackList.indexOf(track);
 
+            if (enableNativeTrackSupport(track)) {
+
+                setTrackForCustomDisplay(null);
+            } else {
+                setTrackForCustomDisplay(track);
+
+                // null these out to disable the player's native display (handled below)
+                streamIndex = -1;
+                track = null;
+            }
+
+            var expectedId = 'textTrack' + streamIndex;
+            var trackIndex = streamIndex == -1 || !track ? -1 : currentTrackList.indexOf(track);
+            var modes = ['disabled', 'showing', 'hidden'];
+
+            var allTracks = mediaElement.textTracks; // get list of tracks
             for (var i = 0; i < allTracks.length; i++) {
 
                 var currentTrack = allTracks[i];

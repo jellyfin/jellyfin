@@ -64,6 +64,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 FileSize = new FileInfo(path).Length
             };
 
+            if (_libraryMonitor.IsPathLocked(path))
+            {
+                result.Status = FileSortingStatus.Failure;
+                result.StatusMessage = "Path is locked by other processes. Please try again later.";
+                return result;
+            }
+
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
             var resolver = new Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
 

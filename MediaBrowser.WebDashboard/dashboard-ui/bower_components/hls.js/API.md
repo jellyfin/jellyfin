@@ -182,8 +182,8 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
 ```js
 
    var config = {
-      debug : false,
       autoStartLoad : true,
+      debug : false,
       defaultAudioCodec : undefined,
       maxBufferLength : 30,
       maxMaxBufferLength : 600,
@@ -203,8 +203,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       fragLoadingTimeOut : 20000,
       fragLoadingMaxRetry : 6,
       fragLoadingRetryDelay : 500,
-      fpsDroppedMonitoringPeriod : 5000,
-      fpsDroppedMonitoringThreshold : 0.2,
+      startFragPrefech : false,
       appendErrorMaxRetry : 3,
       loader : customLoader,
       fLoader: customFragmentLoader,
@@ -323,6 +322,11 @@ max nb of load retry
 initial delay between XmlHttpRequest error and first load retry (in ms)
 any I/O error will trigger retries every 500ms,1s,2s,4s,8s, ... capped to 64s (exponential backoff)
 
+prefetch start fragment although media not attached
+#### ```startFragPrefetch```
+(default false)
+
+start prefetching start fragment although media not attached yet
 
 max nb of append retry
 #### ```appendErrorMaxRetry```

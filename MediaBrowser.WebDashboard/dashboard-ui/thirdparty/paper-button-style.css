@@ -7,6 +7,7 @@
 
     paper-button.block {
         display: block;
+        margin: .25em 0;
     }
 
     paper-button.blue {
