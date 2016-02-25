@@ -959,8 +959,5 @@
     "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros",
     "ButtonLocalRefresh": "Actualisation locale",
     "ButtonAddMissingData": "Ajouter uniquement les donn\u00e9es manquantes",
-    "ButtonFullRefresh": "Actualisation totale",
-    "PinCodeInvalid": "Pin Code Error",
-    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
+    "ButtonFullRefresh": "Actualisation totale"
 }

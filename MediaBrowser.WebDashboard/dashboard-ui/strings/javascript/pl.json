@@ -959,8 +959,5 @@
     "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
     "ButtonLocalRefresh": "Lokalne od\u015bwierzenie",
     "ButtonAddMissingData": "Dodaj tylko brakuj\u0105ce informacje",
-    "ButtonFullRefresh": "Pe\u0142ne od\u015bwierzenie",
-    "PinCodeInvalid": "Pin Code Error",
-    "PinCodeInvalidMessage": "Invalid or expired pin code entered. Please try again.",
-    "PinCodeConfirmedMessage": "Pin code confirmed. {0} will automatically sign you in."
+    "ButtonFullRefresh": "Pe\u0142ne od\u015bwierzenie"
 }
