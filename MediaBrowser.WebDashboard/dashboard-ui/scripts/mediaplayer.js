@@ -516,7 +516,7 @@
 
                 promise = ApiClient.getCurrentUser().then(function(user) {
                     
-                    if (!user.Configuration.EnableEpisodeAutoQueue) {
+                    if (!user.Configuration.EnableNextEpisodeAutoPlay) {
                         return null;
                     }
 
