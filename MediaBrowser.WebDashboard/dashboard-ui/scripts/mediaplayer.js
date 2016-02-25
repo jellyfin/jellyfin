@@ -514,46 +514,47 @@
             }
             else if (smart && firstItem.Type == "Episode" && items.length == 1) {
 
-                promise = ApiClient.getEpisodes(firstItem.SeriesId, {
-                    IsVirtualUnaired: false,
-                    IsMissing: false,
-                    UserId: ApiClient.getCurrentUserId(),
-                    Fields: getItemFields
+                promise = ApiClient.getCurrentUser().then(function(user) {
+                    
+                    if (!user.Configuration.EnableEpisodeAutoQueue) {
+                        return null;
+                    }
 
-                }).then(function (episodesResult) {
+                    return ApiClient.getEpisodes(firstItem.SeriesId, {
+                        IsVirtualUnaired: false,
+                        IsMissing: false,
+                        UserId: ApiClient.getCurrentUserId(),
+                        Fields: getItemFields
 
-                    var foundItem = false;
-                    episodesResult.Items = episodesResult.Items.filter(function (e) {
+                    }).then(function (episodesResult) {
 
-                        if (foundItem) {
-                            return true;
-                        }
-                        if (e.Id == firstItem.Id) {
-                            foundItem = true;
-                            return true;
-                        }
+                        var foundItem = false;
+                        episodesResult.Items = episodesResult.Items.filter(function (e) {
 
-                        return false;
+                            if (foundItem) {
+                                return true;
+                            }
+                            if (e.Id == firstItem.Id) {
+                                foundItem = true;
+                                return true;
+                            }
+
+                            return false;
+                        });
+                        episodesResult.TotalRecordCount = episodesResult.Items.length;
+                        return episodesResult;
                     });
-                    episodesResult.TotalRecordCount = episodesResult.Items.length;
-                    return episodesResult;
                 });
             }
 
             if (promise) {
-                return new Promise(function (resolve, reject) {
+                return promise.then(function (result) {
 
-                    promise.then(function (result) {
-
-                        resolve(result.Items);
-                    });
+                    return result ? result.Items : items;
                 });
             } else {
 
-                return new Promise(function (resolve, reject) {
-
-                    resolve(items);
-                });
+                return Promise.resolve(items);
             }
         }
 

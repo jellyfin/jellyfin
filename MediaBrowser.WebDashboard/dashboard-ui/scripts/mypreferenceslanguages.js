@@ -25,6 +25,7 @@
 
             $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "");
             $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "");
+            page.querySelector('.chkEpisodeAutoPlay').checked = user.Configuration.EnableEpisodeAutoQueue;
         });
 
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
@@ -93,6 +94,7 @@
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
+        user.Configuration.EnableEpisodeAutoQueue = page.querySelector('.chkEpisodeAutoPlay').checked;
 
         AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
