@@ -48,6 +48,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private const string ChannelIdPrefix = "hdhr_";
 
+        private string GetChannelId(TunerHostInfo info, Channels i)
+        {
+            var id = ChannelIdPrefix + i.GuideNumber.ToString(CultureInfo.InvariantCulture);
+
+            if (info.DataVersion >= 1)
+            {
+                id += '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N");
+            }
+
+            return id;
+        }
+
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
@@ -65,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         Name = i.GuideName,
                         Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
-                        Id = ChannelIdPrefix + i.GuideNumber.ToString(CultureInfo.InvariantCulture) + '_' + (i.GuideName ?? string.Empty).GetMD5().ToString("N"),
+                        Id = GetChannelId(info, i),
                         IsFavorite = i.Favorite,
                         TunerHostId = info.Id
 

@@ -11,7 +11,7 @@
                     Fields: "PrimaryImageAspectRatio,SyncInfo",
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
-                    Limit: LibraryBrowser.getDefaultPageSize()
+                    Limit: 200
                 },
                 view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('List', 'List')
             };
@@ -31,7 +31,6 @@
 
         return LibraryBrowser.getSavedQueryKey();
     }
-
 
     function reloadItems(page, item) {
 
