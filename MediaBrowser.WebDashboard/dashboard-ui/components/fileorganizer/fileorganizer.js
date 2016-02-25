@@ -29,6 +29,7 @@
         context.querySelector('#txtSeason').value = item.ExtractedSeasonNumber;
         context.querySelector('#txtEpisode').value = item.ExtractedEpisodeNumber;
         context.querySelector('#txtEndingEpisode').value = item.ExtractedEndingEpisodeNumber;
+        context.querySelector('.extractedName').value = item.ExtractedName;
 
         extractedName = item.ExtractedName;
         extractedYear = item.ExtractedYear;
