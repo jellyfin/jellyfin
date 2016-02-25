@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PropertyChanged</name>
+    </assembly>
+    <members>
+        <member name="T:PropertyChanged.AlsoNotifyForAttribute">
+            <summary>
+            Injects this property to be notified when a dependent property is set.
+            </summary>
+        </member>
+        <member name="M:PropertyChanged.AlsoNotifyForAttribute.#ctor(System.String)">
+            <summary>
+             Initializes a new instance of <see cref="T:PropertyChanged.DependsOnAttribute"/>.
+            </summary>
+            <param name="property">A property that will be notified for.</param>
+        </member>
+        <member name="M:PropertyChanged.AlsoNotifyForAttribute.#ctor(System.String,System.String[])">
+            <summary>
+             Initializes a new instance of <see cref="T:PropertyChanged.DependsOnAttribute"/>.
+            </summary>
+            <param name="property">A property that will be notified for.</param>
+            <param name="otherProperties">The properties that will be notified for.</param>
+        </member>
+        <member name="T:PropertyChanged.FilterTypeAttribute">
+            <summary>
+            Defines filters on which types to include in the 
+            weaving process. These filters are Regex based and 
+            are matched against the Type.FullName
+            </summary>
+        </member>
+        <member name="M:PropertyChanged.FilterTypeAttribute.#ctor(System.String)">
+            <summary>
+             Initializes a new instance of <see cref="T:PropertyChanged.FilterTypeAttribute"/>.
+            </summary>
+            <param name="filter">The filter to apply to the types in this
+             assembly. Matching is done by the Regex.IsMatch method using
+             the Type.FullName as input for the Matching method.
+             </param>
+        </member>
+        <member name="T:PropertyChanged.DependsOnAttribute">
+            <summary>
+            Injects this property to be notified when a dependent property is set.
+            </summary>
+        </member>
+        <member name="M:PropertyChanged.DependsOnAttribute.#ctor(System.String)">
+            <summary>
+             Initializes a new instance of <see cref="T:PropertyChanged.DependsOnAttribute"/>.
+            </summary>
+            <param name="dependency">A property that the assigned property depends on.</param>
+        </member>
+        <member name="M:PropertyChanged.DependsOnAttribute.#ctor(System.String,System.String[])">
+            <summary>
+             Initializes a new instance of <see cref="T:PropertyChanged.DependsOnAttribute"/>.
+            </summary>
+            <param name="dependency">A property that the assigned property depends on.</param>
+            <param name="otherDependencies">The properties that the assigned property depends on.</param>
+        </member>
+        <member name="T:PropertyChanged.DoNotNotifyAttribute">
+            <summary>
+            Exclude a <see cref="T:System.Type"/> or property from notification.
+            </summary>
+        </member>
+        <member name="T:PropertyChanged.DoNotCheckEqualityAttribute">
+            <summary>
+            Skip equality check before change notification
+            </summary>
+        </member>
+        <member name="T:PropertyChanged.DoNotSetChangedAttribute">
+            <summary>
+            Exclude a <see cref="T:System.Type"/> or property from IsChanged flagging.
+            </summary>
+        </member>
+        <member name="T:PropertyChanged.ImplementPropertyChangedAttribute">
+            <summary>
+            Specifies that PropertyChanged Notification will be added to a class.
+            <para>
+            PropertyChanged.Fody will weave the <see cref="T:System.ComponentModel.INotifyPropertyChanged"/> interface and implementation into the class.
+            When the value of a property changes, the PropertyChanged notification will be raised automatically
+            </para>
+            <para>
+            see https://github.com/Fody/PropertyChanged <see href="https://github.com/Fody/PropertyChanged">(link)</see> for more information.
+            </para>
+            </summary>
+        </member>
+    </members>
+</doc>
