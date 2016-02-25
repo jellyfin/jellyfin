@@ -60,7 +60,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var tagStreamType = isAudio ? "info" : "video";
+            var tagStreamType = isAudio ? "audio" : "video";
 
             if (data.streams != null)
             {
@@ -420,7 +420,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
             }
 
-            if (string.Equals(streamInfo.codec_type, "info", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Audio;
 
@@ -664,12 +664,12 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, Model.MediaInfo.MediaInfo data)
+        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
         {
             if (result.streams != null)
             {
                 // Get the first info stream
-                var stream = result.streams.FirstOrDefault(s => string.Equals(s.codec_type, "info", StringComparison.OrdinalIgnoreCase));
+                var stream = result.streams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
 
                 if (stream != null)
                 {
