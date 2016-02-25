@@ -80,15 +80,24 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.alert(Globalize.translate('FileNotFound'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileNotFound'));
+                });
                 break;
             case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.alert(Globalize.translate('FileReadError'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileReadError'));
+                });
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.alert(Globalize.translate('FileReadError'));
+            {
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileReadError'));
+                });
+                break;
+            }
         };
     }
 
@@ -100,7 +109,9 @@
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
-        Dashboard.alert(Globalize.translate('FileReadCancelled'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('FileReadCancelled'));
+        });
     }
 
     function setFiles(page, files) {
@@ -300,7 +311,9 @@
 
                 Dashboard.hideLoadingMsg();
 
-                Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageSettingsSaved'));
+                });
                 loadUser(page);
             });
         });
@@ -317,7 +330,9 @@
 
             Dashboard.hideLoadingMsg();
 
-            Dashboard.alert(Globalize.translate('PasswordSaved'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('PasswordSaved'));
+            });
             loadUser(page);
 
         }, function() {
@@ -343,7 +358,9 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.alert(Globalize.translate('PasswordMatchError'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('PasswordMatchError'));
+                });
             } else {
 
                 Dashboard.showLoadingMsg();

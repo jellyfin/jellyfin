@@ -31,7 +31,9 @@
 
         }, function () {
 
-            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            });
         });
 
         return false;

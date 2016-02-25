@@ -17,7 +17,9 @@
 
         }, function () {
 
-            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            });
         });
     }
 
@@ -43,7 +45,9 @@
 
                 }, function () {
 
-                    Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('DefaultErrorMessage'));
+                    });
                 });
             });
         });

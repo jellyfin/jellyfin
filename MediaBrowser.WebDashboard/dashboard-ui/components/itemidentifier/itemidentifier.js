@@ -48,7 +48,9 @@
         });
 
         if (!hasId && !lookupInfo.Name) {
-            Dashboard.alert(Globalize.translate('MessagePleaseEnterNameOrId'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessagePleaseEnterNameOrId'));
+            });
             return;
         }
 

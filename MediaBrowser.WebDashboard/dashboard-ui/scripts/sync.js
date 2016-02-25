@@ -20,7 +20,9 @@
 
         if (!target) {
 
-            Dashboard.alert(Globalize.translate('MessagePleaseSelectDeviceToSyncTo'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessagePleaseSelectDeviceToSyncTo'));
+            });
             return;
         }
 
@@ -52,7 +54,9 @@
         }).then(function () {
 
             paperDialogHelper.close(dlg);
-            Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageSyncJobCreated'));
+            });
         });
     }
 

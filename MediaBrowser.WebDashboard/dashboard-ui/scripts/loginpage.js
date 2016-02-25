@@ -121,7 +121,9 @@
             Dashboard.hideLoadingMsg();
 
             setTimeout(function () {
-                Dashboard.alert(Globalize.translate('MessageInvalidUser'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageInvalidUser'));
+                });
             }, 300);
         });
 

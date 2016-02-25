@@ -759,7 +759,9 @@
             }, currentPlayer);
 
             $('input', form).val('');
-            Dashboard.alert('Message sent.');
+            require(['toast'], function (toast) {
+                toast('Message sent.');
+            });
 
             e.preventDefault();
             e.stopPropagation();
@@ -780,7 +782,9 @@
             }, currentPlayer);
 
             $('input', form).val('');
-            Dashboard.alert('Text sent.');
+            require(['toast'], function (toast) {
+                toast('Text sent.');
+            });
 
             e.preventDefault();
             e.stopPropagation();

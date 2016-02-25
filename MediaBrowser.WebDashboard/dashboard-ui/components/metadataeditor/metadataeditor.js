@@ -15,7 +15,9 @@
 
         function afterContentTypeUpdated() {
 
-            Dashboard.alert(Globalize.translate('MessageItemSaved'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageItemSaved'));
+            });
 
             Dashboard.hideLoadingMsg();
             closeDialog(true);

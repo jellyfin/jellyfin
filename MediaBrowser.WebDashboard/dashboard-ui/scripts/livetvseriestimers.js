@@ -16,7 +16,9 @@
 
                 ApiClient.cancelLiveTvSeriesTimer(id).then(function () {
 
-                    Dashboard.alert(Globalize.translate('MessageSeriesCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageSeriesCancelled'));
+                    });
 
                     reload(page);
                 });

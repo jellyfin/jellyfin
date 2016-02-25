@@ -73,7 +73,9 @@
 
             paperDialogHelper.close(dlg);
 
-            Dashboard.alert(Globalize.translate('MessageItemsAdded'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageItemsAdded'));
+            });
         });
     }
 

@@ -21,8 +21,8 @@ define([], function () {
             });
         }
         else {
-            Dashboard.alert({
-                message: Globalize.translate('MessageNoItemsFound')
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageNoItemsFound'));
             });
         }
     }
