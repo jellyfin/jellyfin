@@ -210,9 +210,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            if (list.Count > 0)
+            foreach (var provider in GetListingProviders())
             {
-                foreach (var provider in GetListingProviders())
+                var enabledChannels = list
+                    .Where(i => IsListingProviderEnabledForTuner(provider.Item2, i.TunerHostId))
+                    .ToList();
+
+                if (enabledChannels.Count > 0)
                 {
                     try
                     {
@@ -228,6 +232,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
             }
+
             _channelCache = list;
             return list;
         }
@@ -489,6 +494,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        private bool IsListingProviderEnabledForTuner(ListingsProviderInfo info, string tunerHostId)
+        {
+            return info.EnableAllTuners || info.EnabledTuners.Contains(tunerHostId ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+
         private async Task<IEnumerable<ProgramInfo>> GetProgramsAsyncInternal(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
@@ -496,6 +506,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var provider in GetListingProviders())
             {
+                if (!IsListingProviderEnabledForTuner(provider.Item2, channel.TunerHostId))
+                {
+                    continue;
+                }
+
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 

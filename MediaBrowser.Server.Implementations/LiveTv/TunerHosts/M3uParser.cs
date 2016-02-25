@@ -25,14 +25,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             _httpClient = httpClient;
         }
 
-        public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, CancellationToken cancellationToken)
+        public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
         {
             var urlHash = url.GetMD5().ToString("N");
 
             // Read the file and display it line by line.
             using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, urlHash, channelIdPrefix);
+                return GetChannels(reader, urlHash, channelIdPrefix, tunerHostId);
             }
         }
 
@@ -45,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(_fileSystem.OpenRead(url));
         }
 
-        private List<M3UChannel> GetChannels(StreamReader reader, string urlHash, string channelIdPrefix)
+        private List<M3UChannel> GetChannels(StreamReader reader, string urlHash, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<M3UChannel>();
             string line;
@@ -69,8 +69,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     _logger.Info("Found m3u channel: {0}", extInf);
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf))
-                {   
-                    var channel = GetChannelnfo(extInf);
+                {
+                    var channel = GetChannelnfo(extInf, tunerHostId);
                     channel.Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N");
                     channel.Path = line;
                     channels.Add(channel);
@@ -79,10 +79,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             }
             return channels;
         }
-        public M3UChannel GetChannelnfo(string extInf)
+        private M3UChannel GetChannelnfo(string extInf, string tunerHostId)
         {
             var titleIndex = extInf.LastIndexOf(',');
             var channel = new M3UChannel();
+            channel.TunerHostId = tunerHostId;
 
             channel.Number = extInf.Trim().Split(' ')[0] ?? "0";
             channel.Name = extInf.Substring(titleIndex + 1);
@@ -108,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return channel;
 
         }
-        public string FindProperty(string property, string properties, string defaultResult = "")
+        private string FindProperty(string property, string properties, string defaultResult = "")
         {
             var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
             var matches = reg.Matches(properties);

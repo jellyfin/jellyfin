@@ -78,6 +78,12 @@ namespace MediaBrowser.Server.Implementations.IO
             TemporarilyIgnore(path);
         }
 
+        public bool IsPathLocked(string path)
+        {
+            var lockedPaths = _tempIgnoredPaths.Keys.ToList();
+            return lockedPaths.Any(i => string.Equals(i, path, StringComparison.OrdinalIgnoreCase) || _fileSystem.ContainsSubPath(i, path));
+        }
+
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
             if (string.IsNullOrEmpty(path))
