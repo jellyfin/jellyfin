@@ -15,6 +15,12 @@
         </div>
         <paper-icon-button id="btnNewSeries" icon="add" title="${ButtonNew}"></paper-icon-button>
     </div>
+    <div class="fldSelectSeriesFolder hide" style="margin: 1em 0 1em;">
+        <div style="width:100%;display:inline-block;">
+            <label for="selectSeriesFolder" class="selectLabel">Series Root Folder</label>
+            <select id="selectSeriesFolder" data-mini="true" required="required"></select>
+        </div>
+    </div>
     <div style="margin: 1em 0;">
         <paper-input id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"></paper-input>
     </div>
