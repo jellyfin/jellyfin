@@ -24,19 +24,18 @@
             context.querySelector('.fldRemember').classList.remove('hide');
         }
 
-        $('.inputFile', context).html(item.OriginalFileName);
+        context.querySelector('.inputFile').innerHTML = item.OriginalFileName;
 
-        $('#txtSeason', context).val(item.ExtractedSeasonNumber);
-        $('#txtEpisode', context).val(item.ExtractedEpisodeNumber);
-        $('#txtEndingEpisode', context).val(item.ExtractedEndingEpisodeNumber);
-        $('.extractedName', context).html(item.ExtractedName);
+        context.querySelector('#txtSeason').value = item.ExtractedSeasonNumber;
+        context.querySelector('#txtEpisode').value = item.ExtractedEpisodeNumber;
+        context.querySelector('#txtEndingEpisode').value = item.ExtractedEndingEpisodeNumber;
 
         extractedName = item.ExtractedName;
         extractedYear = item.ExtractedYear;
 
-        $('#chkRememberCorrection', context).val(false);
+        context.querySelector('#chkRememberCorrection').checked = false;
 
-        $('#hfResultId', context).val(item.Id);
+        context.querySelector('#hfResultId').value = item.Id;
 
         ApiClient.getItems(null, {
             recursive: true,
@@ -53,7 +52,7 @@
 
             existingSeriesHtml = '<option value=""></option>' + existingSeriesHtml;
 
-            $('#selectSeries', context).html(existingSeriesHtml);
+            context.querySelector('#selectSeries').innerHTML = existingSeriesHtml;
 
         }, onApiFailure);
     }
@@ -62,15 +61,15 @@
 
         Dashboard.showLoadingMsg();
 
-        var resultId = $('#hfResultId', dlg).val();
+        var resultId = dlg.querySelector('#hfResultId').value;
 
         var options = {
 
-            SeriesId: $('#selectSeries', dlg).val(),
-            SeasonNumber: $('#txtSeason', dlg).val(),
-            EpisodeNumber: $('#txtEpisode', dlg).val(),
-            EndingEpisodeNumber: $('#txtEndingEpisode', dlg).val(),
-            RememberCorrection: $('#chkRememberCorrection', dlg).checked()
+            SeriesId: dlg.querySelector('#selectSeries').value,
+            SeasonNumber: dlg.querySelector('#txtSeason').value,
+            EpisodeNumber: dlg.querySelector('#txtEpisode').value,
+            EndingEpisodeNumber: dlg.querySelector('#txtEndingEpisode').value,
+            RememberCorrection: dlg.querySelector('#chkRememberCorrection').checked
         };
 
         ApiClient.performEpisodeOrganization(resultId, options).then(function () {
@@ -89,16 +88,12 @@
 
             itemidentifier.showFindNew(extractedName, extractedYear, 'Series').then(function (newItem) {
 
-                currentNewItem = newItem;
-
-                var seriesHtml = existingSeriesHtml;
-
-                if (currentNewItem != null) {
+                if (newItem != null) {
+                    currentNewItem = newItem;
+                    var seriesHtml = existingSeriesHtml;
                     seriesHtml = seriesHtml + '<option selected value="##NEW##">' + currentNewItem.Name + '</option>';
+                    dlg.querySelector('#selectSeries').innerHTML = seriesHtml;
                 }
-
-                $('#selectSeries', dlg).html(seriesHtml);
-
             });
         });
     }
