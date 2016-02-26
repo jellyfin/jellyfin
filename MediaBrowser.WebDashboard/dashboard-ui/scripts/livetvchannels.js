@@ -2,8 +2,8 @@
 
     var data = {};
 
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -20,14 +20,17 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('channels');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('channels');
+        }
+        return context.savedQueryKey;
     }
 
     function getChannelsHtml(channels) {
@@ -40,7 +43,7 @@
 
     function renderChannels(page, result) {
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
             startIndex: query.StartIndex,
@@ -71,7 +74,7 @@
             showFilterMenu(page);
         });
 
-        LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+        LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
     }
 
     function showFilterMenu(page) {
@@ -79,7 +82,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(page),
                 mode: 'livetvchannels'
             });
 
@@ -95,7 +98,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         query.UserId = Dashboard.getCurrentUserId();
 

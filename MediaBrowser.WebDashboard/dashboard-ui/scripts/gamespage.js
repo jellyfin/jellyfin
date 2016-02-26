@@ -2,8 +2,8 @@
 
     var data = {};
 
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -28,21 +28,24 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('movies');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('games');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
@@ -59,7 +62,7 @@
                 filterButton: true
             }));
 
-            var view = getPageData().view;
+            var view = getPageData(page).view;
 
             if (view == "List") {
 
@@ -108,7 +111,7 @@
                 showFilterMenu(page);
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -119,7 +122,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(page),
                 mode: 'games'
             });
 
@@ -137,7 +140,7 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -145,7 +148,7 @@
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
@@ -154,7 +157,7 @@
     }).on('pagebeforeshow', "#gamesPage", function () {
 
         var page = this;
-        var query = getQuery();
+        var query = getQuery(page);
         query.ParentId = LibraryMenu.getTopParentId();
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -165,7 +168,7 @@
             query.StartIndex = 0;
         }
 
-        var viewkey = getSavedQueryKey();
+        var viewkey = getSavedQueryKey(page);
 
         LibraryBrowser.loadSavedQueryValues(viewkey, query);
 

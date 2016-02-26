@@ -4,8 +4,8 @@
 
     var data = {};
 
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -25,26 +25,42 @@
             pageData.query.NameStartsWithOrGreater = '';
             pageData.view = LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-            pageData.query.ParentId = getParameterByName('parentId');
+            pageData.query.ParentId = getParam(context, 'parentId');
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData;
     }
 
-    function getQuery() {
+    function getParam(context, name) {
 
-        return getPageData().query;
+        if (!context.pageParams) {
+            context.pageParams = {};
+        }
+
+        if (!context.pageParams[name]) {
+            context.pageParams[name] = getParameterByName(name);
+        }
+
+        return context.pageParams[name];
     }
-    function getSavedQueryKey() {
 
-        return LibraryBrowser.getSavedQueryKey();
+    function getQuery(context) {
+
+        return getPageData(context).query;
+    }
+    function getSavedQueryKey(context) {
+
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('items');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
         var userId = Dashboard.getCurrentUserId();
 
         var parentItemPromise = query.ParentId ?
@@ -62,7 +78,7 @@
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
 
-            var view = getPageData().view;
+            var view = getPageData(page).view;
 
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -81,7 +97,7 @@
 
             updateFilterControls(page);
 
-            var context = getParameterByName('context');
+            var context = getParam(page, 'context');
 
             var posterOptions = {
                 items: result.Items,
@@ -141,8 +157,8 @@
             });
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
-                getPageData().view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                getPageData(page).view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(page), layout);
                 reloadItems(page);
             });
 
@@ -192,7 +208,7 @@
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getParameterByName('parentId'), query);
+            LibraryBrowser.saveQueryValues(getParam(page, 'parentId'), query);
 
             var name = item.Name;
 
@@ -222,7 +238,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery()
+                query: getQuery(page)
             });
 
             Events.on(filterDialog, 'filterchange', function () {
@@ -235,15 +251,15 @@
 
     function updateFilterControls(page) {
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
     function onListItemClick(e) {
 
-        var query = getQuery();
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
+        var query = getQuery(page);
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
@@ -260,7 +276,7 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -268,7 +284,7 @@
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
@@ -284,7 +300,7 @@
 
         reloadItems(page);
         updateFilterControls(page);
-        LibraryMenu.setBackButtonVisible(getParameterByName('context'));
+        LibraryMenu.setBackButtonVisible(getParam(page, 'context'));
 
     });
 

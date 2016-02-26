@@ -2,8 +2,8 @@
 
     var data = {};
 
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -28,24 +28,27 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('movies');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('movies');
+        }
+        return context.savedQueryKey;
     }
 
-    function reloadItems(page, viewPanel) {
+    function reloadItems(context) {
 
         Dashboard.showLoadingMsg();
 
         var userId = Dashboard.getCurrentUserId();
 
-        var query = getQuery();
-        var view = getPageData().view;
+        var query = getQuery(context);
+        var view = getPageData(context).view;
 
         ApiClient.getItems(userId, query).then(function (result) {
 
@@ -67,9 +70,9 @@
                 filterButton: true
             });
 
-            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+            context.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
+            updateFilterControls(context);
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -144,38 +147,38 @@
                 });
             }
 
-            var elem = page.querySelector('.itemsContainer');
+            var elem = context.querySelector('.itemsContainer');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
 
-            $('.btnNextPage', page).on('click', function () {
+            $('.btnNextPage', context).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(context);
             });
 
-            $('.btnPreviousPage', page).on('click', function () {
+            $('.btnPreviousPage', context).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(context);
             });
 
-            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+            $('.btnChangeLayout', context).on('layoutchange', function (e, layout) {
 
                 if (layout == 'Timeline') {
-                    getQuery().SortBy = 'ProductionYear,PremiereDate,SortName';
-                    getQuery().SortOrder = 'Descending';
+                    getQuery(context).SortBy = 'ProductionYear,PremiereDate,SortName';
+                    getQuery(context).SortOrder = 'Descending';
                 }
 
-                getPageData().view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                reloadItems(page);
+                getPageData(context).view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(context), layout);
+                reloadItems(context);
             });
 
-            $('.btnFilter', page).on('click', function () {
-                showFilterMenu(page);
+            $('.btnFilter', context).on('click', function () {
+                showFilterMenu(context);
             });
 
             // On callback make sure to set StartIndex = 0
-            $('.btnSort', page).on('click', function () {
+            $('.btnSort', context).on('click', function () {
                 LibraryBrowser.showSortMenu({
                     items: [{
                         name: Globalize.translate('OptionNameSort'),
@@ -230,65 +233,65 @@
                         id: 'VideoBitRate,SortName'
                     }],
                     callback: function () {
-                        reloadItems(page);
+                        reloadItems(context);
                     },
                     query: query
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
 
-            LibraryBrowser.setLastRefreshed(page);
+            LibraryBrowser.setLastRefreshed(context);
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function showFilterMenu(page) {
+    function showFilterMenu(context) {
 
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(context),
                 mode: 'movies'
             });
 
             Events.on(filterDialog, 'filterchange', function () {
-                reloadItems(page);
+                reloadItems(context);
             });
 
             filterDialog.show();
         });
     }
 
-    function updateFilterControls(tabContent) {
+    function updateFilterControls(context) {
 
-        var query = getQuery();
+        var query = getQuery(context);
 
-        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+        $('.alphabetPicker', context).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function initPage(tabContent) {
+    function initPage(context) {
 
-        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', context).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(context);
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(tabContent);
+            reloadItems(context);
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(context);
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(tabContent);
+            reloadItems(context);
         });
 
-        $('.itemsContainer', tabContent).on('needsrefresh', function () {
+        $('.itemsContainer', context).on('needsrefresh', function () {
 
-            reloadItems(tabContent);
+            reloadItems(context);
         });
     }
 

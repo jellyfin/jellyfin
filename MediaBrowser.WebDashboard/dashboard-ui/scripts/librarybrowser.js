@@ -2947,14 +2947,7 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    var fireCallbackOnClose = false;
-
-                    paperDialogHelper.open(dlg).then(function () {
-
-                        if (options.callback && fireCallbackOnClose) {
-                            options.callback();
-                        }
-                    });
+                    paperDialogHelper.open(dlg);
 
                     $('.groupSortBy', dlg).on('iron-select', function () {
 
@@ -2965,7 +2958,7 @@
                         options.query.StartIndex = 0;
 
                         if (options.callback && changed) {
-                            fireCallbackOnClose = true;
+                            options.callback();
                         }
                     });
 
@@ -2978,7 +2971,7 @@
                         options.query.StartIndex = 0;
 
                         if (options.callback && changed) {
-                            fireCallbackOnClose = true;
+                            options.callback();
                         }
                     });
                 });

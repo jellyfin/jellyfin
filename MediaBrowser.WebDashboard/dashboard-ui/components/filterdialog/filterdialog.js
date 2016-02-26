@@ -510,7 +510,6 @@
                     var dlg = paperDialogHelper.createDialog({
                         removeOnClose: true,
                         modal: false,
-                        enableHistory: false,
                         entryAnimationDuration: 160,
                         exitAnimationDuration: 200,
                         autoFocus: false
