@@ -2916,7 +2916,7 @@
 
                     var html = '';
 
-                    html += '<div style="margin:0;padding:1em 1em .7em;">';
+                    html += '<div style="margin:0;padding:1.25em 1.25em 1.5em;">';
 
                     html += '<h2 style="margin:0 0 .5em;">';
                     html += Globalize.translate('HeaderSortBy');
@@ -2940,9 +2940,9 @@
                     html += '</paper-radio-group>';
                     html += '</div>';
 
-                    html += '<div class="buttons">';
-                    html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-                    html += '</div>';
+                    //html += '<div class="buttons">';
+                    //html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
+                    //html += '</div>';
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
