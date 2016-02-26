@@ -283,12 +283,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
                     {
-                        personEntity.SetImage(new ItemImageInfo
-                        {
-                            Path = person.ImageUrl,
-                            Type = ImageType.Primary,
-                            IsPlaceholder = true
-                        }, 0);
+                        await AddPersonImage(personEntity, person.ImageUrl, cancellationToken).ConfigureAwait(false);
 
                         saveEntity = true;
                         updateType = updateType | ItemUpdateType.ImageUpdate;
@@ -299,6 +294,23 @@ namespace MediaBrowser.Providers.Manager
                         await personEntity.UpdateToRepository(updateType, cancellationToken).ConfigureAwait(false);
                     }
                 }
+            }
+        }
+
+        private async Task AddPersonImage(Person personEntity, string imageUrl, CancellationToken cancellationToken)
+        {
+            if (ServerConfigurationManager.Configuration.DownloadImagesInAdvance)
+            {
+                await ProviderManager.SaveImage(personEntity, imageUrl, null, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                personEntity.SetImage(new ItemImageInfo
+                {
+                    Path = imageUrl,
+                    Type = ImageType.Primary,
+                    IsPlaceholder = true
+                }, 0);
             }
         }
 
