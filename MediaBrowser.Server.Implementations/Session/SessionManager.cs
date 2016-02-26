@@ -983,6 +983,26 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
+            if (user != null && command.ItemIds.Length == 1 && user.Configuration.EnableNextEpisodeAutoPlay)
+            {
+                var episode = _libraryManager.GetItemById(command.ItemIds[0]) as Episode;
+                if (episode != null)
+                {
+                    var series = episode.Series;
+                    if (series != null)
+                    {
+                        var episodes = series.GetEpisodes(user, false, false)
+                            .SkipWhile(i => i.Id != episode.Id)
+                            .ToList();
+
+                        if (episodes.Count > 0)
+                        {
+                            command.ItemIds = episodes.Select(i => i.Id.ToString("N")).ToArray();
+                        }
+                    }
+                }
+            }
+
             var controllingSession = GetSession(controllingSessionId);
             AssertCanControl(session, controllingSession);
             if (controllingSession.UserId.HasValue)
