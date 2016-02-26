@@ -2,9 +2,9 @@
 
     var data = {};
 
-    function getQuery() {
+    function getQuery(context) {
 
-        var key = getSavedQueryKey();
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -27,16 +27,19 @@
         return pageData.query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('trailers');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('trailers');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
         query.UserId = Dashboard.getCurrentUserId();
 
         ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).then(function (result) {
@@ -130,7 +133,7 @@
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -141,7 +144,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery()
+                query: getQuery(page)
             });
 
             Events.on(filterDialog, 'filterchange', function () {
@@ -154,7 +157,7 @@
 
     function updateFilterControls(tabContent) {
 
-        var query = getQuery();
+        var query = getQuery(tabContent);
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
@@ -163,7 +166,7 @@
 
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -171,7 +174,7 @@
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(page);
             query.NameStartsWithOrGreater = '';
 
             reloadItems(tabContent);

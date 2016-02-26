@@ -4,7 +4,7 @@
     <title>${TitleScheduledTasks}</title>
 </head>
 <body>
-    <div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jqmpopup,scripts/scheduledtaskpage">
+    <div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jqmpopup,scripts/scheduledtaskpage,paper-input">
         <div data-role="content">
             <div class="content-primary">
 
@@ -56,8 +56,8 @@
                             </select>
                         </li>
                         <li id="fldTimeOfDay">
-                            <label for="txtTimeOfDay">${LabelTime}</label>
-                            <input type="time" id="txtTimeOfDay" name="txtTimeOfDay" required="required" />
+                            <paper-input type="time" id="txtTimeOfDay" name="txtTimeOfDay" required="required" label="${LabelTime}"></paper-input>
+                            <div class="fieldDescription timeFieldExample"></div>
                         </li>
                         <li id="fldSelectSystemEvent">
                             <label for="selectSystemEvent" class="selectLabel">${LabelEvent}</label>
@@ -81,8 +81,7 @@
                             </select>
                         </li>
                         <li>
-                            <label for="txtTimeLimit">${LabelTimeLimitHours}</label>
-                            <input id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" />
+                            <paper-input id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" label="${LabelTimeLimitHours}"></paper-input>
                         </li>
                         <li>
                             <button type="submit" data-theme="b" data-icon="check">

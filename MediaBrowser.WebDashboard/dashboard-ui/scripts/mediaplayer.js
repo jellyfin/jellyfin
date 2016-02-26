@@ -313,7 +313,7 @@
 
             // viblast can help us here
             //return true;
-            return window.MediaSource != null && !browserInfo.firefox;
+            return window.MediaSource;
         };
 
         self.changeStream = function (ticks, params) {

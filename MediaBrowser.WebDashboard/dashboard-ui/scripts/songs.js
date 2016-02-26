@@ -3,8 +3,8 @@
     var defaultSortBy = "Album,SortName";
 
     var data = {};
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -28,21 +28,24 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('songs');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('songs');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -132,7 +135,7 @@
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -143,7 +146,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(page),
                 mode: 'songs'
             });
 

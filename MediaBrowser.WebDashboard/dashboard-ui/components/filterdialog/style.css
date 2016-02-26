@@ -22,8 +22,8 @@
 
     .dynamicFilterDialog {
         width: auto;
-        left: 10vw !important;
-        right: 10vw !important;
+        left: 15vw !important;
+        right: 15vw !important;
         margin-left: 0 !important;
     }
 }

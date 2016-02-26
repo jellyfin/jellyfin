@@ -198,8 +198,15 @@ namespace Emby.Drawing.ImageMagick
             {
                 return;
             }
-            
-            // TODO
+
+            Double opacity;
+            if (!Double.TryParse(options.ForegroundLayer, out opacity)) opacity = .4;
+
+            using (var pixel = new PixelWand("#000", opacity))
+            using (var overlay = new MagickWand(wand.CurrentImage.Width, wand.CurrentImage.Height, pixel))
+            {
+                wand.CurrentImage.CompositeImage(overlay, CompositeOperator.OverCompositeOp, 0, 0);
+            }
         }
 
         private void AutoOrientImage(MagickWand wand)
