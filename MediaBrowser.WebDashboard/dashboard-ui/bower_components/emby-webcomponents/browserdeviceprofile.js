@@ -40,7 +40,6 @@ define(['browser'], function (browser) {
         if (window.MediaSource != null) {
             // text tracks don’t work with this in firefox
             return true;
-            //return !browser.firefox;
         }
 
         return false;
