@@ -1,5 +1,10 @@
 ﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-input', 'paper-button'], function (paperDialogHelper) {
 
+    var extractedName;
+    var extractedYear;
+    var currentNewItem;
+    var existingSeriesHtml;
+
     function onApiFailure(e) {
 
         Dashboard.hideLoadingMsg();
@@ -24,6 +29,10 @@
         $('#txtSeason', context).val(item.ExtractedSeasonNumber);
         $('#txtEpisode', context).val(item.ExtractedEpisodeNumber);
         $('#txtEndingEpisode', context).val(item.ExtractedEndingEpisodeNumber);
+        $('.extractedName', context).html(item.ExtractedName);
+
+        extractedName = item.ExtractedName;
+        extractedYear = item.ExtractedYear;
 
         $('#chkRememberCorrection', context).val(false);
 
@@ -36,15 +45,15 @@
 
         }).then(function (result) {
 
-            var seriesHtml = result.Items.map(function (s) {
+            existingSeriesHtml = result.Items.map(function (s) {
 
                 return '<option value="' + s.Id + '">' + s.Name + '</option>';
 
             }).join('');
 
-            seriesHtml = '<option value=""></option>' + seriesHtml;
+            existingSeriesHtml = '<option value=""></option>' + existingSeriesHtml;
 
-            $('#selectSeries', context).html(seriesHtml);
+            $('#selectSeries', context).html(existingSeriesHtml);
 
         }, onApiFailure);
     }
@@ -74,9 +83,34 @@
         }, onApiFailure);
     }
 
+    function showNewSeriesDialog(dlg) {
+
+        require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+
+            itemidentifier.showFindNew(extractedName, extractedYear, 'Series').then(function (newItem) {
+
+                currentNewItem = newItem;
+
+                var seriesHtml = existingSeriesHtml;
+
+                if (currentNewItem != null) {
+                    seriesHtml = seriesHtml + '<option selected value="##NEW##">' + currentNewItem.Name + '</option>';
+                }
+
+                $('#selectSeries', dlg).html(seriesHtml);
+
+            });
+        });
+    }
+
     return {
         show: function (item) {
             return new Promise(function (resolve, reject) {
+
+                extractedName = null;
+                extractedYear = null;
+                currentNewItem = null;
+                existingSeriesHtml = null;
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'components/fileorganizer/fileorganizer.template.html', true);
@@ -125,6 +159,11 @@
 
                         e.preventDefault();
                         return false;
+                    });
+
+                    dlg.querySelector('#btnNewSeries').addEventListener('click', function (e) {
+
+                        showNewSeriesDialog(dlg);
                     });
 
                     initEpisodeForm(dlg, item);

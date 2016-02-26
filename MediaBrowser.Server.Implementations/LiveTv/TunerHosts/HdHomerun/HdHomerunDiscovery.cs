@@ -90,7 +90,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 await _liveTvManager.SaveTunerHost(new TunerHostInfo
                 {
                     Type = HdHomerunHost.DeviceType,
-                    Url = url
+                    Url = url,
+                    DataVersion = 1
 
                 }).ConfigureAwait(false);
             }

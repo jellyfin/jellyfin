@@ -338,6 +338,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return series.GetEpisodes(user, false, false);
             }
 
+            var season = item as Season;
+            if (season != null)
+            {
+                return season.GetEpisodes(user, false, false);
+            }
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
@@ -377,6 +383,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             await EnsureSyncJobItems(null, cancellationToken).ConfigureAwait(false);
 
+            // Look job items that are supposedly transfering, but need to be requeued because the synced files have been deleted somehow
+            await HandleDeletedSyncFiles(cancellationToken).ConfigureAwait(false);
+
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
@@ -387,6 +396,28 @@ namespace MediaBrowser.Server.Implementations.Sync
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
 
             CleanDeadSyncFiles();
+        }
+
+        private async Task HandleDeletedSyncFiles(CancellationToken cancellationToken)
+        {
+            // Look job items that are supposedly transfering, but need to be requeued because the synced files have been deleted somehow
+            var result = _syncManager.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new[] { SyncJobItemStatus.ReadyToTransfer, SyncJobItemStatus.Transferring },
+                AddMetadata = false
+            });
+
+            foreach (var item in result.Items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (string.IsNullOrWhiteSpace(item.OutputPath) || !_fileSystem.FileExists(item.OutputPath))
+                {
+                    item.Status = SyncJobItemStatus.Queued;
+                    await _syncManager.UpdateSyncJobItemInternal(item).ConfigureAwait(false);
+                    await UpdateJobStatus(item.JobId).ConfigureAwait(false);
+                }
+            }
         }
 
         private void CleanDeadSyncFiles()

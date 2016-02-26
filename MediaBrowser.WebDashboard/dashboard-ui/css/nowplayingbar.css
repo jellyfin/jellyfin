@@ -286,10 +286,6 @@
         height: 3px !important;
     }
 
-    .nowPlayingBarPositionSlider #sliderKnob {
-        top: -15px !important;
-    }
-
     .toggleRepeatButton {
         display: none;
     }

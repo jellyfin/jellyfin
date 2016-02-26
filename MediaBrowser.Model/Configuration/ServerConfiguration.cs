@@ -204,6 +204,8 @@ namespace MediaBrowser.Model.Configuration
 
         public int MigrationVersion { get; set; }
 
+        public bool DownloadImagesInAdvance { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
