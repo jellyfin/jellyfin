@@ -1545,5 +1545,5 @@
     "OptionReplaceExistingImages": "Replace existing images",
     "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
     "OptionDownloadImagesInAdvance": "Download all images in advance",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most secondary images are not downloaded until requested by an Emby app. Enable this option to download all images in advance, as new media is imported."
+    "OptionDownloadImagesInAdvanceHelp": "By default, most secondary images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported."
 }

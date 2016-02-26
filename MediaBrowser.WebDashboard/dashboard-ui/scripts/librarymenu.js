@@ -76,7 +76,7 @@
         var hasImage;
 
         if (user && user.name) {
-            if (user.imageUrl && AppInfo.enableUserImage) {
+            if (user.imageUrl) {
 
                 var userButtonHeight = 26;
 
@@ -292,7 +292,7 @@
 
         var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
 
-        var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+        var hasUserImage = user.imageUrl;
 
         if (userAtTop) {
 

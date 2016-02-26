@@ -668,7 +668,7 @@ var Dashboard = {
         var html = '';
         var imgWidth = 48;
 
-        if (user.imageUrl && AppInfo.enableUserImage) {
+        if (user.imageUrl) {
             var url = user.imageUrl;
 
             if (user.supportsImageParams) {
@@ -1514,7 +1514,6 @@ var AppInfo = {};
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
             AppInfo.enableTvEpisodesTab = true;
-            AppInfo.enableMovieTrailersTab = true;
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -1544,7 +1543,6 @@ var AppInfo = {};
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
-        AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
@@ -1694,10 +1692,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableTvEpisodesTab) {
             elem.classList.add('tvEpisodesTabDisabled');
-        }
-
-        if (!AppInfo.enableMovieTrailersTab) {
-            elem.classList.add('movieTrailersTabDisabled');
         }
 
         if (!AppInfo.enableSupporterMembership) {

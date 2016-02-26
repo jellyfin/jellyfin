@@ -969,5 +969,6 @@
     "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
-    "ButtonFullRefresh": "Full refresh"
+    "ButtonFullRefresh": "Full refresh",
+    "ValueExample": "1:00 PM"
 }

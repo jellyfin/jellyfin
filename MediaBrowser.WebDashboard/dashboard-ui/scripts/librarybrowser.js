@@ -2149,7 +2149,7 @@
 
                 if (coverImage) {
                     imageCssClass += " coveredCardImage";
-                    if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
+                    if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program' || item.Type == 'Recording') {
                         imageCssClass += " noScale";
                     }
                 }

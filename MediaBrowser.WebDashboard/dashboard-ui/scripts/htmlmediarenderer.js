@@ -417,6 +417,9 @@
                     playNow = true;
                 }
 
+                // This is needed in setCurrentTrackElement
+                currentSrc = val;
+
                 self.setCurrentTrackElement(currentTrackIndex);
             }
 
@@ -513,6 +516,12 @@
 
             if (browserInfo.safari) {
                 return false;
+            }
+
+            if (browserInfo.firefox) {
+                if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
+                    return false;
+                }
             }
 
             return true;
