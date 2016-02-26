@@ -970,5 +970,6 @@
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
     "ButtonFullRefresh": "Full refresh",
-    "ValueExample": "1:00 PM"
+    "ValueExample": "1:00 PM",
+    "ButtonGotIt": "Got It"
 }

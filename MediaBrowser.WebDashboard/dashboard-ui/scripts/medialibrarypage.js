@@ -2,9 +2,11 @@
 
     function changeCollectionType(page, virtualFolder) {
 
-        Dashboard.alert({
-            message: Globalize.translate('HeaderChangeFolderTypeHelp'),
-            title: Globalize.translate('HeaderChangeFolderType')
+        require(['alert'], function (alert) {
+            alert({
+                title: Globalize.translate('HeaderChangeFolderType'),
+                text: Globalize.translate('HeaderChangeFolderTypeHelp')
+            });
         });
     }
 
