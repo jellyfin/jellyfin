@@ -696,8 +696,21 @@ namespace MediaBrowser.Server.Implementations.IO
 
             foreach (var watcher in _fileSystemWatchers.Values.ToList())
             {
+                watcher.Created -= watcher_Changed;
+                watcher.Deleted -= watcher_Changed;
+                watcher.Renamed -= watcher_Changed;
                 watcher.Changed -= watcher_Changed;
-                watcher.EnableRaisingEvents = false;
+
+                try
+                {
+                    watcher.EnableRaisingEvents = false;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Seeing this under mono on linux sometimes
+                    // Collection was modified; enumeration operation may not execute.
+                }
+
                 watcher.Dispose();
             }
 
