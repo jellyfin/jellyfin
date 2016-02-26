@@ -300,17 +300,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
 
-                try
+                if (!string.IsNullOrWhiteSpace(remove.Path))
                 {
-                    _fileSystem.DeleteFile(remove.Path);
-                }
-                catch (DirectoryNotFoundException)
-                {
+                    try
+                    {
+                        _fileSystem.DeleteFile(remove.Path);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
 
-                }
-                catch (FileNotFoundException)
-                {
+                    }
+                    catch (FileNotFoundException)
+                    {
 
+                    }
                 }
                 _recordingProvider.Delete(remove);
             }
@@ -726,6 +729,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)).Trim() + ".ts";
 
             recordPath = Path.Combine(recordPath, recordingFileName);
+            recordPath = EnsureFileUnique(recordPath);
             _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
 
             var recordingId = info.Id.GetMD5().ToString("N");
@@ -857,6 +861,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _timerProvider.Delete(timer);
                 _recordingProvider.Delete(recording);
             }
+        }
+
+        private string EnsureFileUnique(string path)
+        {
+            var originalPath = path;
+            var index = 1;
+
+            while (_fileSystem.FileExists(path))
+            {
+                var parent = Path.GetDirectoryName(originalPath);
+                var name = Path.GetFileNameWithoutExtension(originalPath);
+                name += "-" + index.ToString(CultureInfo.InvariantCulture);
+
+                path = Path.ChangeExtension(Path.Combine(parent, name), Path.GetExtension(originalPath));
+                index++;
+            }
+
+            return path;
         }
 
         private async Task<IRecorder> GetRecorder()
