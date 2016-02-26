@@ -559,6 +559,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             jobItem.Status = SyncJobItemStatus.Synced;
             jobItem.Progress = 100;
 
+            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+
+            var processor = GetSyncJobProcessor();
+
+            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
+
             if (!string.IsNullOrWhiteSpace(jobItem.TemporaryPath))
             {
                 try
@@ -573,12 +579,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                     _logger.ErrorException("Error deleting temporary job file: {0}", ex, jobItem.OutputPath);
                 }
             }
-
-            await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
-
-            var processor = GetSyncJobProcessor();
-
-            await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
 
         private SyncJobProcessor GetSyncJobProcessor()
@@ -1015,7 +1015,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var jobItem = _repo.GetJobItem(id);
 
-            if (jobItem.Status != SyncJobItemStatus.Queued && jobItem.Status != SyncJobItemStatus.ReadyToTransfer && jobItem.Status != SyncJobItemStatus.Converting && jobItem.Status != SyncJobItemStatus.Failed && jobItem.Status != SyncJobItemStatus.Synced)
+            if (jobItem.Status != SyncJobItemStatus.Queued && jobItem.Status != SyncJobItemStatus.ReadyToTransfer && jobItem.Status != SyncJobItemStatus.Converting && jobItem.Status != SyncJobItemStatus.Failed && jobItem.Status != SyncJobItemStatus.Synced && jobItem.Status != SyncJobItemStatus.Transferring)
             {
                 throw new ArgumentException("Operation is not valid for this job item");
             }
