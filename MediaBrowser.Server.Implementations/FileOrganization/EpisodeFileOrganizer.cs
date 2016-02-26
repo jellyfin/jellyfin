@@ -157,7 +157,43 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             var result = _organizationService.GetResult(request.ResultId);
 
-            var series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
+            Series series = null;
+
+            if (request.NewSeriesProviderIdsDictionary.Count > 0)
+            {
+                // We're having a new series here
+                SeriesInfo seriesRequest = new SeriesInfo();
+                seriesRequest.ProviderIds = request.NewSeriesProviderIdsDictionary;
+
+                var refreshOptions = new MetadataRefreshOptions(_fileSystem);
+                series = new Series();
+                series.Id = Guid.NewGuid();
+                series.Name = request.NewSeriesName;
+
+                int year;
+                if (int.TryParse(request.NewSeriesYear, out year))
+                {
+                    series.ProductionYear = year;
+                }
+
+                var seriesFolderName = series.Name;
+                if (series.ProductionYear.HasValue)
+                {
+                    seriesFolderName = string.Format("{0} ({1})", seriesFolderName, series.ProductionYear);
+                }
+
+                series.Path = Path.Combine(request.TargetFolder, seriesFolderName);
+
+                series.ProviderIds = request.NewSeriesProviderIdsDictionary;
+
+                await series.RefreshMetadata(refreshOptions, cancellationToken);
+            }
+
+            if (series == null)
+            {
+                // Existing Series
+                series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
+            }
 
             await OrganizeEpisode(result.OriginalPath,
                 series,
