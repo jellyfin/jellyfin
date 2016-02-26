@@ -338,6 +338,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return series.GetEpisodes(user, false, false);
             }
 
+            var season = item as Season;
+            if (season != null)
+            {
+                return season.GetEpisodes(user, false, false);
+            }
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
