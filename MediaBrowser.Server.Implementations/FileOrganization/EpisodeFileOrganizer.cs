@@ -159,11 +159,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             Series series = null;
 
-            if (request.NewSeriesProviderIdsDictionary.Count > 0)
+            if (request.NewSeriesProviderIds.Count > 0)
             {
                 // We're having a new series here
                 SeriesInfo seriesRequest = new SeriesInfo();
-                seriesRequest.ProviderIds = request.NewSeriesProviderIdsDictionary;
+                seriesRequest.ProviderIds = request.NewSeriesProviderIds;
 
                 var refreshOptions = new MetadataRefreshOptions(_fileSystem);
                 series = new Series();
@@ -184,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                 series.Path = Path.Combine(request.TargetFolder, seriesFolderName);
 
-                series.ProviderIds = request.NewSeriesProviderIdsDictionary;
+                series.ProviderIds = request.NewSeriesProviderIds;
 
                 await series.RefreshMetadata(refreshOptions, cancellationToken);
             }
