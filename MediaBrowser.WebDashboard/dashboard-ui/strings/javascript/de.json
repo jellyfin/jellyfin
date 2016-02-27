@@ -959,5 +959,7 @@
     "HeaderSelectCodecIntrosPath": "W\u00e4hlen Sie ein Codec Intro Verzeichnis",
     "ButtonLocalRefresh": "Lokaler Refresh",
     "ButtonAddMissingData": "Nur fehlende Daten hinzuf\u00fcgen",
-    "ButtonFullRefresh": "Kompletter Refresh"
+    "ButtonFullRefresh": "Kompletter Refresh",
+    "ValueExample": "1:00 PM",
+    "ButtonGotIt": "Got It"
 }

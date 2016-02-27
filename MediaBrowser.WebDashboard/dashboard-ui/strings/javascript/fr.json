@@ -959,5 +959,7 @@
     "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros",
     "ButtonLocalRefresh": "Actualisation locale",
     "ButtonAddMissingData": "Ajouter uniquement les donn\u00e9es manquantes",
-    "ButtonFullRefresh": "Actualisation totale"
+    "ButtonFullRefresh": "Actualisation totale",
+    "ValueExample": "1:00 PM",
+    "ButtonGotIt": "Got It"
 }

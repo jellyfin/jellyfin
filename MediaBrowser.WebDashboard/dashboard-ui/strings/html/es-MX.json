@@ -1527,5 +1527,7 @@
     "FeatureRequiresEmbyPremiere": "Esta caracter\u00edstica requiere de una suscripci\u00f3n activa de Emby Premiere.",
     "FileExtension": "Extensi\u00f3n del archivo",
     "OptionReplaceExistingImages": "Reemplazar im\u00e1genes existentes",
-    "OptionPlayNextEpisodeAutomatically": "Play next episode automatically"
+    "OptionPlayNextEpisodeAutomatically": "Reproducir el siguiente episodio autom\u00e1ticamente",
+    "OptionDownloadImagesInAdvance": "Descargar todas las im\u00e1genes desde el inicio.",
+    "OptionDownloadImagesInAdvanceHelp": "Por defecto, la mayor\u00eda de las im\u00e1genes secundarias son descargadas solo cuando son solicitadas por alguna app Emby. Habilitar esta opci\u00f3n descargara todas las im\u00e1genes desde el inicio, conforme se vayan agregando mas medios."
 }

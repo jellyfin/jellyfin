@@ -1527,5 +1527,7 @@
     "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "FileExtension": "File extension",
     "OptionReplaceExistingImages": "Skriv \u00f6ver befintliga bilder",
-    "OptionPlayNextEpisodeAutomatically": "Play next episode automatically"
+    "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
+    "OptionDownloadImagesInAdvance": "Download all images in advance",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most secondary images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported."
 }

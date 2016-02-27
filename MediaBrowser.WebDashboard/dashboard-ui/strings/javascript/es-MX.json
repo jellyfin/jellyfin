@@ -959,5 +959,7 @@
     "HeaderSelectCodecIntrosPath": "Seleccionar Trayectoria de Intros de C\u00f3dec",
     "ButtonLocalRefresh": "Actualizaci\u00f3n local",
     "ButtonAddMissingData": "S\u00f3lo agregar datos faltantes",
-    "ButtonFullRefresh": "Actualizaci\u00f3n completa"
+    "ButtonFullRefresh": "Actualizaci\u00f3n completa",
+    "ValueExample": "1:00 PM",
+    "ButtonGotIt": "Hecho"
 }
