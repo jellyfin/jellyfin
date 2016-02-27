@@ -157,6 +157,24 @@ namespace MediaBrowser.Api.Library
 
         public void Post(OrganizeEpisode request)
         {
+            var dicNewProviderIds = new Dictionary<string, string>();
+
+            if (!string.IsNullOrEmpty(request.NewSeriesProviderIds))
+            {
+                var str = request.NewSeriesProviderIds.Replace("{", "").Replace("}", "").Replace("\"", "");
+
+                foreach (var item in str.Split(','))
+                {
+                    var itemArr = item.Split(':');
+                    if (itemArr.Length > 1)
+                    {
+                        var key = itemArr[0].Trim();
+                        var val = itemArr[1].Trim();
+                        dicNewProviderIds.Add(key, val);
+                    }
+                }
+            }
+
             var task = _iFileOrganizationService.PerformEpisodeOrganization(new EpisodeFileOrganizationRequest
             {
                 EndingEpisodeNumber = request.EndingEpisodeNumber,
@@ -167,7 +185,7 @@ namespace MediaBrowser.Api.Library
                 SeriesId = request.SeriesId,
                 NewSeriesName = request.NewSeriesName,
                 NewSeriesYear = request.NewSeriesYear,
-                NewSeriesProviderIds = request.NewSeriesProviderIds,
+                NewSeriesProviderIdsDictionary = dicNewProviderIds,
                 TargetFolder = request.TargetFolder
             });
 
