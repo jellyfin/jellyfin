@@ -350,7 +350,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             foreach (var source in list)
             {
-                Normalize(source, item.ChannelType == ChannelType.TV);
+                Normalize(source, service, item.ChannelType == ChannelType.TV);
             }
 
             return list;
@@ -379,12 +379,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 MediaSourceInfo info;
                 bool isVideo;
+                ILiveTvService service;
 
                 if (isChannel)
                 {
                     var channel = GetInternalChannel(id);
                     isVideo = channel.ChannelType == ChannelType.TV;
-                    var service = GetService(channel);
+                    service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
                     info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
@@ -400,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     var recording = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
                     isVideo = !string.Equals(recording.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
-                    var service = GetService(recording);
+                    service = GetService(recording);
 
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.ExternalId);
                     info = await service.GetRecordingStream(recording.ExternalId, null, cancellationToken).ConfigureAwait(false);
@@ -415,7 +416,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
-                Normalize(info, isVideo);
+                Normalize(info, service, isVideo);
 
                 var data = new LiveStreamData
                 {
@@ -440,7 +441,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private void Normalize(MediaSourceInfo mediaSource, bool isVideo)
+        private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {
             if (mediaSource.MediaStreams.Count == 0)
             {
@@ -536,6 +537,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     mediaSource.Bitrate = total;
                 }
+            }
+
+            if (!(service is EmbyTV.EmbyTV))
+            {
+                // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
+                mediaSource.SupportsDirectStream = true;
             }
         }
 
