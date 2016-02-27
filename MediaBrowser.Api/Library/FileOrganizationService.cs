@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.Library
                 SeriesId = request.SeriesId,
                 NewSeriesName = request.NewSeriesName,
                 NewSeriesYear = request.NewSeriesYear,
-                NewSeriesProviderIdsDictionary = dicNewProviderIds,
+                NewSeriesProviderIds = dicNewProviderIds,
                 TargetFolder = request.TargetFolder
             });
 

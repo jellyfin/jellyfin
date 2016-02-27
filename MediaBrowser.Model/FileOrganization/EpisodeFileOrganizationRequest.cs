@@ -21,6 +21,6 @@ namespace MediaBrowser.Model.FileOrganization
 
         public string TargetFolder { get; set; }
 
-        public Dictionary<string, string> NewSeriesProviderIdsDictionary { get; set; }
+        public Dictionary<string, string> NewSeriesProviderIds { get; set; }
     }
 }
