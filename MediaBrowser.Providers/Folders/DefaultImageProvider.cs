@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "collections.jpg";
+                //return urlPrefix + "collections.jpg";
             }
             if (string.IsNullOrWhiteSpace(viewType))
             {

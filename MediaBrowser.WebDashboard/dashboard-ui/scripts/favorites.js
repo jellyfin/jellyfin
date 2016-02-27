@@ -52,7 +52,7 @@
             options.Limit = screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6);
 
             if (enableScrollX()) {
-                options.Limit = 12;
+                options.Limit = 16;
             }
         }
 

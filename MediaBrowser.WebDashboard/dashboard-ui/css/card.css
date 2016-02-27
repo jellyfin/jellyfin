@@ -47,7 +47,7 @@
     margin: 4px;
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-width: 600px) {
 
     .cardBox {
         margin: 1px;

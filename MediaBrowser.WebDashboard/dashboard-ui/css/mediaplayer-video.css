@@ -365,22 +365,3 @@ video::-webkit-media-text-track-background {
     /*Style the text itself*/
     margin-top: -2.5em;
 }
-
-.videoSubtitles {
-    position: fixed;
-    z-index: 99997;
-    bottom: 10%;
-    text-align: center;
-    font-size: 400%;
-    left: 0;
-    right: 0;
-    color: #fff;
-}
-
-.videoSubtitlesInner {
-    max-width: 70%;
-    background-color: rgba(0,0,0,.8);
-    padding: .25em;
-    margin: auto;
-    display: inline-block;
-}

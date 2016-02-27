@@ -2947,7 +2947,11 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    paperDialogHelper.open(dlg);
+                    // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
+                    var delay = browserInfo.animate ? 0 : 100;
+                    setTimeout(function() {
+                        paperDialogHelper.open(dlg);
+                    }, delay);
 
                     $('.groupSortBy', dlg).on('iron-select', function () {
 
