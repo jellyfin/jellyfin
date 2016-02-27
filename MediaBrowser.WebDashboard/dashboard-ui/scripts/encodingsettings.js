@@ -34,10 +34,11 @@
 
         if ($('#selectVideoDecoder', form).val()) {
 
-            Dashboard.alert({
-                callback: onDecoderConfirmed,
-                title: Globalize.translate('TitleHardwareAcceleration'),
-                message: Globalize.translate('HardwareAccelerationWarning')
+            require(['alert'], function (alert) {
+                alert({
+                    title: Globalize.translate('TitleHardwareAcceleration'),
+                    text: Globalize.translate('HardwareAccelerationWarning')
+                }).then(onDecoderConfirmed);
             });
 
         } else {

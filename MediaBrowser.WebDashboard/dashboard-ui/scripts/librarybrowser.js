@@ -2149,7 +2149,7 @@
 
                 if (coverImage) {
                     imageCssClass += " coveredCardImage";
-                    if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
+                    if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program' || item.Type == 'Recording') {
                         imageCssClass += " noScale";
                     }
                 }
@@ -2916,7 +2916,7 @@
 
                     var html = '';
 
-                    html += '<div style="margin:0;padding:1em 1em .7em;">';
+                    html += '<div style="margin:0;padding:1.25em 1.25em 1.5em;">';
 
                     html += '<h2 style="margin:0 0 .5em;">';
                     html += Globalize.translate('HeaderSortBy');
@@ -2940,21 +2940,18 @@
                     html += '</paper-radio-group>';
                     html += '</div>';
 
-                    html += '<div class="buttons">';
-                    html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-                    html += '</div>';
+                    //html += '<div class="buttons">';
+                    //html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
+                    //html += '</div>';
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    var fireCallbackOnClose = false;
-
-                    paperDialogHelper.open(dlg).then(function () {
-
-                        if (options.callback && fireCallbackOnClose) {
-                            options.callback();
-                        }
-                    });
+                    // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
+                    var delay = browserInfo.animate ? 0 : 100;
+                    setTimeout(function() {
+                        paperDialogHelper.open(dlg);
+                    }, delay);
 
                     $('.groupSortBy', dlg).on('iron-select', function () {
 
@@ -2965,7 +2962,7 @@
                         options.query.StartIndex = 0;
 
                         if (options.callback && changed) {
-                            fireCallbackOnClose = true;
+                            options.callback();
                         }
                     });
 
@@ -2978,7 +2975,7 @@
                         options.query.StartIndex = 0;
 
                         if (options.callback && changed) {
-                            fireCallbackOnClose = true;
+                            options.callback();
                         }
                     });
                 });

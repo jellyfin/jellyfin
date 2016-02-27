@@ -2,8 +2,8 @@
 
     var data = {};
 
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -28,28 +28,31 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('series');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('series');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
 
-            var view = getPageData().view;
+            var view = getPageData(page).view;
 
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -151,8 +154,8 @@
             });
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
-                getPageData().view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                getPageData(page).view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(page), layout);
                 reloadItems(page);
             });
 
@@ -202,7 +205,7 @@
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
             LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
@@ -214,7 +217,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(page),
                 mode: 'series'
             });
 
@@ -228,7 +231,7 @@
 
     function updateFilterControls(tabContent) {
 
-        var query = getQuery();
+        var query = getQuery(tabContent);
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWith);
     }
 
@@ -236,7 +239,7 @@
 
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(tabContent);
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -244,7 +247,7 @@
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(tabContent);
             query.NameStartsWithOrGreater = '';
 
             reloadItems(tabContent);

@@ -4,7 +4,8 @@
     var query = {
 
         UserId: Dashboard.getCurrentUserId(),
-        StartIndex: 0
+        StartIndex: 0,
+        Fields: "CanDelete,PrimaryImageAspectRatio"
     };
 
     function reloadItems(page) {

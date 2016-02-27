@@ -318,7 +318,11 @@ var ScheduledTaskPage = {
 
     $(document).on('pageinit', "#scheduledTaskPage", function () {
 
+        var page = this;
+
         $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        page.querySelector('.timeFieldExample').innerHTML = Globalize.translate('ValueExample', '1:00 PM');
 
     }).on('pageshow', "#scheduledTaskPage", function () {
 

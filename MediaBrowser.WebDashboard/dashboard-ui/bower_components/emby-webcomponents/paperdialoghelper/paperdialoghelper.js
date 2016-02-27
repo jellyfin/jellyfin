@@ -166,7 +166,7 @@
         };
 
         // too buggy in IE, not even worth it
-        if (browser.msie) {
+        if (!browser.animate) {
             dlg.animationConfig = null;
             dlg.entryAnimation = null;
             dlg.exitAnimation = null;

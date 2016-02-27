@@ -540,59 +540,12 @@ var Dashboard = {
             return;
         }
 
-        if (browserInfo.mobile && options.message.indexOf('<') == -1) {
-
-            alert(options.message);
-
-            if (options.callback) {
-                options.callback();
-            }
-
-        } else {
-            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
-                Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
-            });
-        }
-    },
-
-    confirmInternal: function (message, title, showCancel, callback) {
-
-        var dlg = document.createElement('paper-dialog');
-
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
-        dlg.entryAnimation = 'fade-in-animation';
-        dlg.exitAnimation = 'fade-out-animation';
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-
-        var html = '';
-        html += '<h2>' + title + '</h2>';
-        html += '<div>' + message + '</div>';
-        html += '<div class="buttons">';
-
-        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
-
-        if (showCancel) {
-            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
-        }
-
-        html += '</div>';
-
-        dlg.innerHTML = html;
-        document.body.appendChild(dlg);
-
-        // Has to be assigned a z-index after the call to .open() 
-        dlg.addEventListener('iron-overlay-closed', function (e) {
-
-            var confirmed = dlg.closingReason.confirmed;
-            dlg.parentNode.removeChild(dlg);
-
-            if (callback) {
-                callback(confirmed);
-            }
+        require(['alert'], function (alert) {
+            alert({
+                title: options.title || Globalize.translate('HeaderAlert'),
+                text: options.message
+            }).then(options.callback || function () { });
         });
-
-        dlg.open();
     },
 
     refreshSystemInfoFromServer: function () {
@@ -668,7 +621,7 @@ var Dashboard = {
         var html = '';
         var imgWidth = 48;
 
-        if (user.imageUrl && AppInfo.enableUserImage) {
+        if (user.imageUrl) {
             var url = user.imageUrl;
 
             if (user.supportsImageParams) {
@@ -1514,7 +1467,6 @@ var AppInfo = {};
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
             AppInfo.enableTvEpisodesTab = true;
-            AppInfo.enableMovieTrailersTab = true;
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -1544,7 +1496,6 @@ var AppInfo = {};
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
-        AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
@@ -1694,10 +1645,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableTvEpisodesTab) {
             elem.classList.add('tvEpisodesTabDisabled');
-        }
-
-        if (!AppInfo.enableMovieTrailersTab) {
-            elem.classList.add('movieTrailersTabDisabled');
         }
 
         if (!AppInfo.enableSupporterMembership) {
@@ -2003,9 +1950,11 @@ var AppInfo = {};
         if (browser.mobile || browser.msie) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
     }
 

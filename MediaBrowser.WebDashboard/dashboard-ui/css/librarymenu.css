@@ -403,12 +403,12 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
     .darkDrawer .sidebarLinkIcon {
-        color: #ccc !important;
+        color: #eee !important;
     }
 
     .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
         color: #fff !important;
-        font-weight: 300 !important;
+        font-weight: normal !important;
     }
 
     .darkDrawer .sidebarHeader {

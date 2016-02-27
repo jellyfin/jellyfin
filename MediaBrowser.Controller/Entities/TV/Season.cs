@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
@@ -6,6 +7,7 @@ using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -125,6 +127,30 @@ namespace MediaBrowser.Controller.Entities.TV
         public bool IsSpecialSeason
         {
             get { return (IndexNumber ?? -1) == 0; }
+        }
+
+        public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        {
+            var user = query.User;
+
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+            IEnumerable<BaseItem> items;
+
+            if (query.User == null)
+            {
+                items = query.Recursive
+                   ? GetRecursiveChildren(filter)
+                   : Children.Where(filter);
+            }
+            else
+            {
+                items = GetEpisodes(query.User).Where(filter);
+            }
+
+            var result = PostFilterAndSort(items, query);
+
+            return Task.FromResult(result);
         }
 
         /// <summary>
