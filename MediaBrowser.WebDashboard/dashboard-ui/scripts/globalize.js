@@ -2,7 +2,7 @@
 
     var dictionaries = {};
 
-    function getUrl(name, culture) {
+    function getUrl(culture) {
 
         var parts = culture.split('-');
         if (parts.length == 2) {
@@ -10,24 +10,24 @@
             culture = parts.join('-');
         }
 
-        return 'strings/' + name + '/' + culture + '.json';
+        return 'strings/' + culture + '.json';
     }
-    function getDictionary(name, culture) {
+    function getDictionary(culture) {
 
-        return dictionaries[getUrl(name, culture)];
+        return dictionaries[getUrl(culture)];
     }
 
-    function loadDictionary(name, culture) {
+    function loadDictionary(culture) {
 
         return new Promise(function (resolve, reject) {
 
-            if (getDictionary(name, culture)) {
-                console.log('Globalize loadDictionary resolved: ' + name);
+            if (getDictionary(culture)) {
+                console.log('Globalize loadDictionary resolved.');
                 resolve();
                 return;
             }
 
-            var url = getUrl(name, culture);
+            var url = getUrl(culture);
 
             var requestUrl = url + "?v=" + AppInfo.appVersion;
 
@@ -42,11 +42,11 @@
 
                 // Grab the english version
                 var xhr2 = new XMLHttpRequest();
-                xhr2.open('GET', getUrl(name, 'en-US'), true);
+                xhr2.open('GET', getUrl('en-US'), true);
 
                 xhr2.onload = function (e) {
                     dictionaries[url] = JSON.parse(this.response);
-                    console.log('Globalize loadDictionary resolved: ' + name);
+                    console.log('Globalize loadDictionary resolved.');
                     resolve();
                 };
 
@@ -60,7 +60,7 @@
                 if (this.status < 400) {
 
                     dictionaries[url] = JSON.parse(this.response);
-                    console.log('Globalize loadDictionary resolved: ' + name);
+                    console.log('Globalize loadDictionary resolved.');
                     resolve();
 
                 } else {
@@ -80,7 +80,7 @@
         console.log('Setting culture to ' + value);
         currentCulture = value;
 
-        return Promise.all([loadDictionary('html', value), loadDictionary('javascript', value)]);
+        return loadDictionary(value);
     }
 
     function normalizeLocaleName(culture) {
@@ -133,11 +133,9 @@
         });
     }
 
-    function translateDocument(html, dictionaryName) {
+    function translateDocument(html) {
 
-        dictionaryName = dictionaryName || 'html';
-
-        var glossary = getDictionary(dictionaryName, currentCulture) || {};
+        var glossary = getDictionary(currentCulture) || {};
         return translateHtml(html, glossary);
     }
 
@@ -171,7 +169,7 @@
     window.Globalize = {
         translate: function (key) {
 
-            var glossary = getDictionary('javascript', currentCulture) || {};
+            var glossary = getDictionary(currentCulture) || {};
             var val = glossary[key] || key;
 
             for (var i = 1; i < arguments.length; i++) {
