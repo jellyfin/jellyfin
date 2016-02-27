@@ -32,8 +32,6 @@
             //        }
             //    }
             //}
-            updateSubtitleText(this.currentTime * 1000);
-
             Events.trigger(self, 'timeupdate');
         }
 
@@ -527,15 +525,21 @@
             return true;
         }
 
-        function destroyCustomTrack() {
+        function destroyCustomTrack(isPlaying) {
 
-            var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-            if (videoSubtitlesElem) {
-                videoSubtitlesElem.parentNode.removeChild(videoSubtitlesElem);
+            if (isPlaying) {
+
+                var allTracks = mediaElement.textTracks; // get list of tracks
+                for (var i = 0; i < allTracks.length; i++) {
+
+                    var currentTrack = allTracks[i];
+
+                    if (currentTrack.label.indexOf('manualTrack') != -1) {
+                        currentTrack.mode = 'disabled';
+                    }
+                }
             }
 
-            currentSubtitlesElement = null;
-            currentTrackEvents = null;
             customTrackIndex = -1;
         }
 
@@ -548,10 +552,12 @@
             });
         }
 
+        var customTrackIndex = -1;
+
         function setTrackForCustomDisplay(track) {
 
             if (!track) {
-                destroyCustomTrack();
+                destroyCustomTrack(true);
                 return;
             }
 
@@ -560,59 +566,48 @@
                 return;
             }
 
-            destroyCustomTrack();
+            destroyCustomTrack(true);
             customTrackIndex = track.index;
-
-            // download the track json
-            fetchSubtitles(track).then(function (data) {
-
-                // show in ui
-                console.log('downloaded ' + data.TrackEvents.length + ' track events');
-                currentTrackEvents = data.TrackEvents;
-            });
+            renderTracksEvents(track);
         }
 
-        var currentSubtitlesElement;
-        var currentTrackEvents;
-        var customTrackIndex = -1;
-        var lastCustomTrackMs = 0;
-        function updateSubtitleText(timeMs) {
+        function renderTracksEvents(track) {
 
-            var trackEvents = currentTrackEvents;
-            if (!trackEvents) {
-                return;
-            }
+            var trackElement = null;
+            var expectedId = 'manualTrack' + track.index;
 
-            if (!currentSubtitlesElement) {
-                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-                if (!videoSubtitlesElem) {
-                    videoSubtitlesElem = document.createElement('div');
-                    videoSubtitlesElem.classList.add('videoSubtitles');
-                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
-                    document.body.appendChild(videoSubtitlesElem);
-                }
-                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
-            }
+            var allTracks = mediaElement.textTracks; // get list of tracks
+            for (var i = 0; i < allTracks.length; i++) {
 
-            if (lastCustomTrackMs > 0) {
-                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
-                    return;
+                var currentTrack = allTracks[i];
+
+                if (currentTrack.label == expectedId) {
+                    trackElement = currentTrack;
+                    break;
+                } else {
+                    currentTrack.mode = 'disabled';
                 }
             }
 
-            var positionTicks = timeMs * 10000;
-            for (var i = 0, length = trackEvents.length; i < length; i++) {
+            if (!trackElement) {
+                trackElement = mediaElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
+                trackElement.label = 'manualTrack' + track.index;
 
-                var caption = trackEvents[i];
-                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
-                    currentSubtitlesElement.innerHTML = caption.Text;
-                    currentSubtitlesElement.classList.remove('hide');
-                    return;
-                }
+                // download the track json
+                fetchSubtitles(track).then(function(data) {
+
+                    // show in ui
+                    console.log('downloaded ' + data.TrackEvents.length + ' track events');
+                    // add some cues to show the text
+                    // in safari, the cues need to be added before setting the track mode to showing
+                    data.TrackEvents.forEach(function(trackEvent) {
+                        trackElement.addCue(new VTTCue(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
+                    });
+                    trackElement.mode = 'showing';
+                });
+            } else {
+                trackElement.mode = 'showing';
             }
-
-            currentSubtitlesElement.innerHTML = '';
-            currentSubtitlesElement.classList.add('hide');
         }
 
         self.setCurrentTrackElement = function (streamIndex) {
@@ -657,6 +652,10 @@
                         mode = 0; // hide all other tracks
                     }
                 } else {
+
+                    if (currentTrack.label.indexOf('manualTrack') != -1) {
+                        continue;
+                    }
                     if (currentTrack.id == expectedId) {
                         mode = 1; // show this track
                     } else {
