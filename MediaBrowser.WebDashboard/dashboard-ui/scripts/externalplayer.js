@@ -400,14 +400,11 @@
 
     function getExternalPlayers(url, mimeType) {
 
-        var deferred = $.Deferred();
-
         var players = [
             { name: 'Vlc', url: 'vlc://' + url, id: 'vlc' }
         ];
-        deferred.resolveWith(null, [players]);
 
-        return deferred.promise();
+        return Promise.resolve(players);
     }
 
     function showPlayerSelectionMenu(item, url, mimeType) {
