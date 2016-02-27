@@ -200,6 +200,15 @@ define(['browser'], function (browser) {
             });
         });
 
+        profile.TranscodingProfiles.push({
+            Container: 'mp4',
+            Type: 'Video',
+            AudioCodec: videoAudioCodecs.join(','),
+            VideoCodec: 'h264',
+            Context: 'Streaming',
+            Protocol: 'http'
+        });
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
         if (canPlayMkv && !browser.mobile) {
             profile.TranscodingProfiles.push({
