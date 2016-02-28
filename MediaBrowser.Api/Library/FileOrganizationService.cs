@@ -6,6 +6,7 @@ using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Library
 {
@@ -118,9 +119,14 @@ namespace MediaBrowser.Api.Library
     {
         private readonly IFileOrganizationService _iFileOrganizationService;
 
-        public FileOrganizationService(IFileOrganizationService iFileOrganizationService)
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        public FileOrganizationService(IFileOrganizationService iFileOrganizationService, IJsonSerializer jsonSerializer)
         {
             _iFileOrganizationService = iFileOrganizationService;
+            _jsonSerializer = jsonSerializer;
         }
 
         public object Get(GetFileOrganizationActivity request)
@@ -161,18 +167,7 @@ namespace MediaBrowser.Api.Library
 
             if (!string.IsNullOrEmpty(request.NewSeriesProviderIds))
             {
-                var str = request.NewSeriesProviderIds.Replace("{", "").Replace("}", "").Replace("\"", "");
-
-                foreach (var item in str.Split(','))
-                {
-                    var itemArr = item.Split(':');
-                    if (itemArr.Length > 1)
-                    {
-                        var key = itemArr[0].Trim();
-                        var val = itemArr[1].Trim();
-                        dicNewProviderIds.Add(key, val);
-                    }
-                }
+                dicNewProviderIds = _jsonSerializer.DeserializeFromString<Dictionary<string, string>>(request.NewSeriesProviderIds);
             }
 
             var task = _iFileOrganizationService.PerformEpisodeOrganization(new EpisodeFileOrganizationRequest
