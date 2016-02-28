@@ -414,6 +414,18 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
+    function onEditorClick(e) {
+        var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
+        if (btnRemoveFromEditorList) {
+            removeElementFromListview(btnRemoveFromEditorList);
+        }
+
+        var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
+        if (btnAddTextItem) {
+            addElementToEditableListview(btnAddTextItem);
+        }
+    }
+
     function init(context) {
 
         $('.btnCancel', context).on('click', function () {
@@ -440,19 +452,8 @@
             }
         });
 
-        context.addEventListener('click', function (e) {
-
-            var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
-            if (btnRemoveFromEditorList) {
-                removeElementFromListview(btnRemoveFromEditorList);
-            }
-
-            var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
-            if (btnAddTextItem) {
-                addElementToEditableListview(btnAddTextItem);
-            }
-
-        });
+        context.removeEventListener('click', onEditorClick);
+        context.addEventListener('click', onEditorClick);
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);
 
@@ -1239,7 +1240,7 @@
                     paperDialogHelper.open(dlg);
 
                     dlg.addEventListener('iron-overlay-closed', function () {
-                        bindItemChanged(context);
+                        unbindItemChanged(dlg);
                         resolve();
                     });
 
