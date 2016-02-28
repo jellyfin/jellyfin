@@ -96,30 +96,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            string model = null;
-
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
-                Url = string.Format("{0}/", GetApiUrl(info, false)),
+                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken,
                 CacheLength = TimeSpan.FromDays(1),
                 CacheMode = CacheMode.Unconditional,
                 TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
             }))
             {
-                using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
-                {
-                    while (!sr.EndOfStream)
-                    {
-                        string line = StripXML(sr.ReadLine());
-                        if (line.StartsWith("Model:")) { model = line.Replace("Model: ", ""); }
-                        //if (line.StartsWith("Device ID:")) { deviceID = line.Replace("Device ID: ", ""); }
-                        //if (line.StartsWith("Firmware:")) { firmware = line.Replace("Firmware: ", ""); }
-                    }
-                }
-            }
+                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-            return model;
+                return response.ModelNumber;
+            }
         }
 
         public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
@@ -437,6 +426,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
 
             return info.Any(i => i.Status == LiveTvTunerStatus.Available);
+        }
+
+        public class DiscoverResponse
+        {
+            public string FriendlyName { get; set; }
+            public string ModelNumber { get; set; }
+            public string FirmwareName { get; set; }
+            public string FirmwareVersion { get; set; }
+            public string DeviceID { get; set; }
+            public string DeviceAuth { get; set; }
+            public string BaseURL { get; set; }
+            public string LineupURL { get; set; }
         }
     }
 }
