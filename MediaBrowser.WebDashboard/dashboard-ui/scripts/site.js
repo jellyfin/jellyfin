@@ -1725,6 +1725,7 @@ var AppInfo = {};
             humanedate: 'components/humanedate',
             chromecasthelpers: 'components/chromecasthelpers',
             jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
+            jQueryFull: bowerPath + '/jquery/dist/jquery.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -2403,6 +2404,7 @@ function addLegacyDependencies(depends, url) {
         depends.push('jqmcollapsible');
         depends.push('jqmcheckbox');
         depends.push('legacy/dashboard');
+        depends.push('jQueryFull');
     }
 
     depends.push('jqmcontrolgroup');
