@@ -132,6 +132,11 @@ namespace MediaBrowser.Dlna.Ssdp
 
         internal bool IgnoreMessage(SsdpMessageEventArgs args, bool isMulticast)
         {
+            if (!isMulticast)
+            {
+                return false;
+            }
+
             string usn;
             if (args.Headers.TryGetValue("USN", out usn))
             {

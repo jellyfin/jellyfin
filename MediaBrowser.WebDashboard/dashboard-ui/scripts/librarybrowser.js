@@ -1730,7 +1730,11 @@
                 var result = {};
                 result.screenWidth = screenWidth;
 
-                if (!AppInfo.hasLowImageBandwidth) {
+                if (AppInfo.hasLowImageBandwidth) {
+                    if (!AppInfo.isNativeApp) {
+                        screenWidth *= .7;
+                    }
+                } else {
                     screenWidth *= 1.2;
                 }
 
