@@ -76,8 +76,8 @@ namespace MediaBrowser.Api.Library
         [ApiMember(Name = "RememberCorrection", Description = "Whether or not to apply the same correction to future episodes of the same series.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool RememberCorrection { get; set; }
 
-        [ApiMember(Name = "NewSeriesProviderIds", Description = "A list of provider IDs identifying a new series.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string NewSeriesProviderIds { get; set; }
+        [ApiMember(Name = "NewSeriesProviderIds", Description = "A list of provider IDs identifying a new series.", IsRequired = false, DataType = "Dictionary<string, string>", ParameterType = "query", Verb = "POST")]
+        public Dictionary<string, string> NewSeriesProviderIds { get; set; }
 
         [ApiMember(Name = "NewSeriesName", Description = "Name of a series to add.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string NewSeriesName { get; set; }
@@ -165,9 +165,9 @@ namespace MediaBrowser.Api.Library
         {
             var dicNewProviderIds = new Dictionary<string, string>();
 
-            if (!string.IsNullOrEmpty(request.NewSeriesProviderIds))
+            if (request.NewSeriesProviderIds != null)
             {
-                dicNewProviderIds = _jsonSerializer.DeserializeFromString<Dictionary<string, string>>(request.NewSeriesProviderIds);
+                dicNewProviderIds = request.NewSeriesProviderIds;
             }
 
             var task = _iFileOrganizationService.PerformEpisodeOrganization(new EpisodeFileOrganizationRequest
