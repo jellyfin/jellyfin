@@ -1119,11 +1119,13 @@
 
         self.performEpisodeOrganization = function (id, options) {
 
-            var url = self.getUrl("Library/FileOrganizations/" + id + "/Episode/Organize", options || {});
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/Episode/Organize");
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify(options),
+                contentType: 'application/json'
             });
         };
 
