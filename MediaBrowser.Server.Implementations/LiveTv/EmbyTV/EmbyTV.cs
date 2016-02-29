@@ -778,7 +778,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 try
                 {
                     // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
-                    await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
+                    //await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
 
                     var duration = recordingEndDate - DateTime.UtcNow;
 
