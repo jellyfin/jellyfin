@@ -88,10 +88,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
+            onStarted();
+
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
-
-            onStarted();
 
             // Wait for the file to exist before proceeeding
             while (!_hasExited)
