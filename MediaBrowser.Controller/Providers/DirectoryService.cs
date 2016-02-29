@@ -63,7 +63,8 @@ namespace MediaBrowser.Controller.Providers
                 try
                 {
                     // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
-					var list = _fileSystem.GetFileSystemEntries(path);
+					var list = _fileSystem.GetFileSystemEntries(path)
+                        .ToList();
 
                     // Seeing dupes on some users file system for some reason
                     foreach (var item in list)

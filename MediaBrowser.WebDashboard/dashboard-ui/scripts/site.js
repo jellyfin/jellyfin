@@ -1901,6 +1901,7 @@ var AppInfo = {};
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
         define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
+        define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {
