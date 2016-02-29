@@ -1539,6 +1539,9 @@ var AppInfo = {};
 
     function onApiClientCreated(e, newApiClient) {
         initializeApiClient(newApiClient);
+
+        // This is not included in jQuery slim
+        $.ajax = newApiClient.ajax;
     }
 
     //localStorage.clear();
@@ -1725,7 +1728,6 @@ var AppInfo = {};
             humanedate: 'components/humanedate',
             chromecasthelpers: 'components/chromecasthelpers',
             jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
-            jQueryFull: bowerPath + '/jquery/dist/jquery.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -1899,6 +1901,7 @@ var AppInfo = {};
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
         define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
+        define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {
@@ -2182,7 +2185,7 @@ var AppInfo = {};
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
-                deps.push('cordova/links');
+                deps.push('cordova/android/links');
             }
         }
 
@@ -2404,7 +2407,6 @@ function addLegacyDependencies(depends, url) {
         depends.push('jqmcollapsible');
         depends.push('jqmcheckbox');
         depends.push('legacy/dashboard');
-        depends.push('jQueryFull');
     }
 
     depends.push('jqmcontrolgroup');

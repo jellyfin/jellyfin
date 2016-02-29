@@ -37,7 +37,7 @@ define(['browser'], function (browser) {
     }
 
     function canPlayHlsWithMSE() {
-        if (window.MediaSource != null) {
+        if (window.MediaSource != null && !browser.firefox) {
             // text tracks don’t work with this in firefox
             return true;
         }
@@ -198,15 +198,6 @@ define(['browser'], function (browser) {
                 Context: 'Static',
                 Protocol: 'http'
             });
-        });
-
-        profile.TranscodingProfiles.push({
-            Container: 'mp4',
-            Type: 'Video',
-            AudioCodec: videoAudioCodecs.join(','),
-            VideoCodec: 'h264',
-            Context: 'Streaming',
-            Protocol: 'http'
         });
 
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it

@@ -49,6 +49,13 @@
         return pos;
     }
 
+    function addCenterFocus(dlg) {
+
+        require(['scrollHelper'], function (scrollHelper) {
+            scrollHelper.centerFocus.on(dlg.querySelector('.actionSheetScroller'), false);
+        });
+    }
+
     function show(options) {
 
         // items
@@ -152,6 +159,10 @@
             dlg.style.position = 'fixed';
             dlg.style.left = pos.left + 'px';
             dlg.style.top = pos.top + 'px';
+        }
+
+        if (layoutManager.tv) {
+            addCenterFocus(dlg);
         }
 
         document.body.appendChild(dlg);
