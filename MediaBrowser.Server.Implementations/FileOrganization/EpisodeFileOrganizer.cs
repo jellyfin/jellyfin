@@ -286,16 +286,29 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 if (options.TvOptions.CopyOriginalFile && fileExists && IsSameEpisode(sourcePath, newPath))
                 {
-                    _logger.Info("File {0} already copied to new path {1}, stopping organization", sourcePath, newPath);
+                    var msg = string.Format("File '{0}' already copied to new path '{1}', stopping organization", sourcePath, newPath);
+                    _logger.Info(msg);
                     result.Status = FileSortingStatus.SkippedExisting;
-                    result.StatusMessage = string.Empty;
+                    result.StatusMessage = msg;
                     return;
                 }
 
-                if (fileExists || otherDuplicatePaths.Count > 0)
+                if (fileExists)
                 {
+                    var msg = string.Format("File '{0}' already exists as '{1}', stopping organization", sourcePath, newPath);
+                    _logger.Info(msg);
                     result.Status = FileSortingStatus.SkippedExisting;
-                    result.StatusMessage = string.Empty;
+                    result.StatusMessage = msg;
+                    result.TargetPath = newPath;
+                    return;
+                }
+
+                if (otherDuplicatePaths.Count > 0)
+                {
+                    var msg = string.Format("File '{0}' already exists as '{1}', stopping organization", sourcePath, otherDuplicatePaths);
+                    _logger.Info(msg);
+                    result.Status = FileSortingStatus.SkippedExisting;
+                    result.StatusMessage = msg;
                     result.DuplicatePaths = otherDuplicatePaths;
                     return;
                 }
