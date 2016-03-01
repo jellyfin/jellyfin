@@ -951,6 +951,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 public string stationID { get; set; }
                 public List<Program> programs { get; set; }
                 public MetadataSchedule metadata { get; set; }
+
+                public Day()
+                {
+                    programs = new List<Program>();
+                }
             }
 
             //
