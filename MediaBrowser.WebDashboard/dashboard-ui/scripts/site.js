@@ -1500,7 +1500,6 @@ var AppInfo = {};
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
-        AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1903,6 +1902,8 @@ var AppInfo = {};
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
+        define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
+
         // alias
         define("historyManager", [], function () {
             return {
@@ -1933,6 +1934,39 @@ var AppInfo = {};
         });
 
         define('dialogText', ['globalize'], getDialogText());
+    }
+
+    function updateAppSettings(appSettings) {
+
+        appSettings.enableExternalPlayers = function (val) {
+
+            if (val != null) {
+                appSettings.set('externalplayers', val.toString());
+            }
+
+            return appSettings.get('externalplayers') == 'true';
+        };
+
+        appSettings.enableCinemaMode = function (val) {
+
+            if (val != null) {
+                appSettings.set('enableCinemaMode', val.toString());
+            }
+
+            val = appSettings.get('enableCinemaMode');
+
+            if (val) {
+                return val != 'false';
+            }
+
+            if (browserInfo.mobile) {
+                return false;
+            }
+
+            return true;
+        };
+
+        return appSettings;
     }
 
     function getDialogText() {
@@ -2067,7 +2101,6 @@ var AppInfo = {};
         deps.push('connectionmanagerfactory');
         deps.push('credentialprovider');
 
-        deps.push('scripts/appsettings');
         deps.push('scripts/extensions');
 
         require(deps, function (connectionManagerExports, credentialProviderFactory) {

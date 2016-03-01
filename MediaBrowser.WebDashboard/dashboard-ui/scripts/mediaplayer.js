@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, setInterval, window) {
+define(['appSettings'], function (appSettings) {
 
     function mediaPlayer() {
 
@@ -189,7 +189,7 @@
 
                 require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
 
-                    var bitrateSetting = AppSettings.maxStreamingBitrate();
+                    var bitrateSetting = appSettings.maxStreamingBitrate();
 
                     if (!maxHeight) {
                         maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
@@ -514,8 +514,8 @@
             }
             else if (smart && firstItem.Type == "Episode" && items.length == 1) {
 
-                promise = ApiClient.getCurrentUser().then(function(user) {
-                    
+                promise = ApiClient.getCurrentUser().then(function (user) {
+
                     if (!user.Configuration.EnableNextEpisodeAutoPlay) {
                         return null;
                     }
@@ -600,7 +600,7 @@
                 Dashboard.showLoadingMsg();
             }
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !AppSettings.enableCinemaMode()) {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !appSettings.enableCinemaMode()) {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);
@@ -825,14 +825,14 @@
 
             var bitrateDetectionKey = ApiClient.serverAddress();
 
-            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
+            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
                     console.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
-                    AppSettings.maxStreamingBitrate(bitrate);
+                    appSettings.maxStreamingBitrate(bitrate);
 
                     onBitrateDetected();
 
@@ -1732,5 +1732,4 @@
     window.MediaController.registerPlayer(window.MediaPlayer);
     window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
 
-
-})(document, setTimeout, clearTimeout, screen, setInterval, window);
+});

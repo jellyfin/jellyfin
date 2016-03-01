@@ -154,6 +154,13 @@
         });
     }
 
+    function displayPreferencesKey() {
+        if (AppInfo.isNativeApp) {
+            return 'Emby Mobile';
+        }
+
+        return 'webclient';
+    }
     function saveUser(page, user, displayPreferences) {
 
         user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
@@ -200,7 +207,7 @@
         displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
         displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
 
-        return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).then(function () {
+        return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, displayPreferencesKey()).then(function () {
 
             return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
         });
@@ -218,7 +225,7 @@
 
         ApiClient.getUser(userId).then(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (displayPreferences) {
+            ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (displayPreferences) {
 
                 saveUser(page, user, displayPreferences).then(function () {
 
@@ -308,7 +315,7 @@
 
         ApiClient.getUser(userId).then(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, AppSettings.displayPreferencesKey()).then(function (result) {
+            ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
 
                 loadForm(page, user, result);
 
@@ -319,7 +326,7 @@
     pageIdOn('pagebeforehide', "homeScreenPreferencesPage", function () {
 
         var page = this;
-        
+
         if (AppInfo.enableAutoSave) {
             save(page);
         }

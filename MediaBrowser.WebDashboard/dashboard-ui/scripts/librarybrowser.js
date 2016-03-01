@@ -1,4 +1,4 @@
-﻿define(['playlistManager'], function (playlistManager) {
+﻿define(['playlistManager', 'appSettings'], function (playlistManager, appSettings) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -666,7 +666,7 @@
 
             showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
-                var externalPlayers = AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers();
+                var externalPlayers = AppInfo.supportsExternalPlayers && appSettings.enableExternalPlayers();
 
                 if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 

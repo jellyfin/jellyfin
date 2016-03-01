@@ -1,8 +1,8 @@
-﻿define(['paper-slider', 'paper-button'], function () {
+﻿define(['appSettings', 'paper-slider', 'paper-button'], function (appSettings) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
-        var bitrateSetting = AppSettings.maxStreamingBitrate();
+        var bitrateSetting = appSettings.maxStreamingBitrate();
 
         var profile = {};
 

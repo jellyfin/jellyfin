@@ -35,6 +35,47 @@ define(['appStorage'], function (appStorage) {
 
             return parseInt(get('preferredVideoBitrate') || '') || 1500000;
         },
+        maxChromecastBitrate: function (val) {
+
+            if (val != null) {
+                set('chromecastBitrate1', val);
+            }
+
+            val = get('chromecastBitrate1');
+
+            return val ? parseInt(val) : null;
+        },
+        syncOnlyOnWifi: function (val) {
+
+            if (val != null) {
+                set('syncOnlyOnWifi', val.toString());
+            }
+
+            return get('syncOnlyOnWifi') != 'false';
+        },
+        syncPath: function (val) {
+
+            if (val != null) {
+                set('syncPath', val);
+            }
+
+            return get('syncPath');
+        },
+
+        cameraUploadServers: function (val) {
+
+            if (val != null) {
+                set('cameraUploadServers', val.join(','));
+            }
+
+            val = get('cameraUploadServers');
+
+            if (val) {
+                return val.split(',');
+            }
+
+            return [];
+        },
         set: set,
         get: get
     };
