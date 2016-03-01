@@ -460,7 +460,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 SortBy = sortOrders.ToArray(),
                 SortOrder = sort.SortOrder,
                 User = user,
-                Filter = FilterUnsupportedContent
+                Filter = FilterUnsupportedContent,
+                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music }
 
             }).ConfigureAwait(false);
 

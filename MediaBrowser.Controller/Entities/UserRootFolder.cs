@@ -30,7 +30,8 @@ namespace MediaBrowser.Controller.Entities
 
             var result = await UserViewManager.GetUserViews(new UserViewQuery
             {
-                UserId = query.User.Id.ToString("N")
+                UserId = query.User.Id.ToString("N"),
+                PresetViews = query.PresetViews
 
             }, CancellationToken.None).ConfigureAwait(false);
 

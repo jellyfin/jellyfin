@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
         public int? MinIndexNumber { get; set; }
         public double? MinCriticRating { get; set; }
         public double? MinCommunityRating { get; set; }
-       
+
         public string[] ChannelIds { get; set; }
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
@@ -112,7 +112,8 @@ namespace MediaBrowser.Controller.Entities
         public string[] TopParentIds { get; set; }
 
         public LocationType[] ExcludeLocationTypes { get; set; }
-        
+        public string[] PresetViews { get; set; }
+
         public InternalItemsQuery()
         {
             BlockUnratedItems = new UnratedItem[] { };
@@ -137,6 +138,7 @@ namespace MediaBrowser.Controller.Entities
             TopParentIds = new string[] { };
             ExcludeTags = new string[] { };
             ExcludeLocationTypes = new LocationType[] { };
+            PresetViews = new string[] { };
         }
 
         public InternalItemsQuery(User user)
@@ -153,7 +155,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 ExcludeTags = policy.BlockedTags;
-                
+
                 User = user;
             }
         }
