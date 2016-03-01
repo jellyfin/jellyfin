@@ -664,7 +664,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
-                item = LibraryManager.RootFolder.FindByPath(path);
+                item = LibraryManager.FindByPath(path);
 
                 path = Path.GetDirectoryName(path);
             }
