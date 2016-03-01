@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _fileSystem = fileSystem;
         }
 
-        public async Task Record(MediaSourceInfo mediaSource, string targetFile, Action onStarted, CancellationToken cancellationToken)
+        public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions()
             {
@@ -42,7 +42,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Copying recording stream to file stream");
 
-                    await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    var durationToken = new CancellationTokenSource(duration);
+                    var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+
+                    await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
                 }
             }
         }

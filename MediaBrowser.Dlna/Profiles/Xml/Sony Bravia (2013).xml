@@ -24,8 +24,8 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>10000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>10000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>12000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>12000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
   <MusicSyncBitrate>128000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
