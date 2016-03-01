@@ -31,8 +31,8 @@ namespace MediaBrowser.Dlna.Profiles
             MaxIconWidth = 48;
             MaxIconHeight = 48;
 
-            MaxStreamingBitrate = 10000000;
-            MaxStaticBitrate = 10000000;
+            MaxStreamingBitrate = 12000000;
+            MaxStaticBitrate = 12000000;
             MusicStreamingTranscodingBitrate = 128000;
             MusicSyncBitrate = 128000;
 
