@@ -85,8 +85,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
             try
             {
-                var uri = new Uri(location);
-
                 lock (_nonRendererUrls)
                 {
                     if ((DateTime.UtcNow - _lastRendererClear).TotalMinutes >= 10)
@@ -101,6 +99,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                 }
 
+                var uri = new Uri(location);
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
                 if (device.RendererCommands == null)

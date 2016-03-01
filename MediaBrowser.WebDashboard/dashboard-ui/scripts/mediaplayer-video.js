@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appSettings'], function (appSettings) {
 
     function createVideoPlayer(self) {
 
@@ -152,7 +152,7 @@
                 })[0];
                 var videoWidth = videoStream ? videoStream.Width : null;
 
-                var options = qualityoptions.getVideoQualityOptions(AppSettings.maxStreamingBitrate(), videoWidth);
+                var options = qualityoptions.getVideoQualityOptions(appSettings.maxStreamingBitrate(), videoWidth);
 
                 if (isStatic) {
                     options[0].name = "Direct";
@@ -602,8 +602,8 @@
 
         self.onQualityOptionSelected = function (bitrate) {
 
-            AppSettings.maxStreamingBitrate(bitrate);
-            AppSettings.enableAutomaticBitrateDetection(false);
+            appSettings.maxStreamingBitrate(bitrate);
+            appSettings.enableAutomaticBitrateDetection(false);
 
             self.changeStream(self.getCurrentTicks(), {
                 Bitrate: bitrate
@@ -1271,4 +1271,4 @@
 
     createVideoPlayer(MediaPlayer);
 
-})();
+});

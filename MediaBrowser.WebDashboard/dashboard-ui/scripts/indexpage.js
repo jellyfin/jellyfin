@@ -132,12 +132,20 @@
     var homePageDismissValue = '14';
     var homePageTourKey = 'homePageTour';
 
+    function displayPreferencesKey() {
+        if (AppInfo.isNativeApp) {
+            return 'Emby Mobile';
+        }
+
+        return 'webclient';
+    }
+
     function dismissWelcome(page, userId) {
 
         getDisplayPreferences('home', userId).then(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, AppSettings.displayPreferencesKey());
+            ApiClient.updateDisplayPreferences('home', result, userId, displayPreferencesKey());
         });
     }
 
@@ -316,7 +324,7 @@
 
     function getDisplayPreferences(key, userId) {
 
-        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey());
+        return ApiClient.getDisplayPreferences(key, userId, displayPreferencesKey());
     }
 
     window.HomePage = {

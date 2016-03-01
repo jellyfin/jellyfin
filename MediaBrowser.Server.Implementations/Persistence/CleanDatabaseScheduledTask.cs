@@ -239,7 +239,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     typeof(Year).Name, 
                     typeof(Channel).Name, 
                     typeof(AggregateFolder).Name, 
-                    typeof(CollectionFolder).Name
+                    typeof(CollectionFolder).Name, 
+
+                    // LiveTVManager handles recordings
+                    typeof(LiveTvAudioRecording).Name, 
+                    typeof(LiveTvVideoRecording).Name
                 }
             });
 

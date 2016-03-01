@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define([], function () {
 
     function loadForm(page, user) {
 
@@ -9,7 +9,7 @@
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '');
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '');
 
-        $('#selectLanguage', page).val(AppSettings.displayLanguage());
+        //$('#selectLanguage', page).val(AppSettings.displayLanguage());
 
         Dashboard.hideLoadingMsg();
     }
@@ -20,7 +20,7 @@
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
         user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
-        AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
+        //AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
@@ -115,4 +115,4 @@
 
     });
 
-})(jQuery, window, document);
+});

@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['appSettings'], function (appSettings) {
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;
@@ -350,7 +350,7 @@
             receiverName: receiverName
         });
 
-        var bitrateSetting = AppSettings.maxChromecastBitrate();
+        var bitrateSetting = appSettings.maxChromecastBitrate();
         if (bitrateSetting) {
             message.maxBitrate = bitrateSetting;
         }

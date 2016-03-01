@@ -102,15 +102,9 @@
 
         return new Promise(function (resolve, reject) {
 
-            if (AppInfo.isNativeApp) {
+            if (Dashboard.isConnectMode()) {
 
                 resolve(navigator.language || navigator.userLanguage);
-
-            } else if (AppInfo.supportsUserDisplayLanguageSetting) {
-
-                console.log('AppInfo.supportsUserDisplayLanguageSetting is true');
-
-                resolve(AppSettings.displayLanguage());
 
             } else {
 

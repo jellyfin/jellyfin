@@ -132,11 +132,6 @@ namespace MediaBrowser.Dlna.Ssdp
 
         internal bool IgnoreMessage(SsdpMessageEventArgs args, bool isMulticast)
         {
-            if (!isMulticast)
-            {
-                return false;
-            }
-
             string usn;
             if (args.Headers.TryGetValue("USN", out usn))
             {
@@ -243,7 +238,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (i > 0)
                 {
-                    await Task.Delay(200).ConfigureAwait(false);
+                    await Task.Delay(500).ConfigureAwait(false);
                 }
 
                 var dgram = new Datagram(endpoint, localAddress, _logger, msg, isBroadcast, enableDebugLogging);
@@ -308,17 +303,9 @@ namespace MediaBrowser.Dlna.Ssdp
 
                     var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-                    var ipEndPoint = endpoint as IPEndPoint;
-                    if (ipEndPoint != null)
-                    {
-                        SendUnicastRequest(msg, ipEndPoint);
-                    }
-                    else
-                    {
-                        SendDatagram(msg, endpoint, null, false, 2);
-                        SendDatagram(msg, endpoint, new IPEndPoint(d.Address, 0), false, 2);
-                        //SendDatagram(header, values, endpoint, null, true);
-                    }
+                    SendDatagram(msg, endpoint, null, false, 2);
+                    SendDatagram(msg, endpoint, new IPEndPoint(d.Address, 0), false, 2);
+                    //SendDatagram(header, values, endpoint, null, true);
 
                     if (enableDebugLogging)
                     {
@@ -481,7 +468,6 @@ namespace MediaBrowser.Dlna.Ssdp
             values["NTS"] = "ssdp:" + type;
             values["NT"] = dev.Type;
             values["USN"] = dev.USN;
-            values["X-EMBY-SERVERID"] = _appHost.SystemId;
 
             if (logMessage)
             {
@@ -490,7 +476,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true);
+            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, 1);
             //SendUnicastRequest(msg, 1);
         }
 
@@ -612,8 +598,6 @@ namespace MediaBrowser.Dlna.Ssdp
                 return;
             }
 
-            _logger.Debug("Sending unicast search request");
-
             var ipSsdp = IPAddress.Parse(SSDPAddr);
             var ipTxEnd = new IPEndPoint(ipSsdp, SSDPPort);
 
@@ -627,7 +611,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 return;
             }
 
-            _logger.Debug("Sending unicast search request");
+            //_logger.Debug("Sending unicast request");
 
             byte[] req = Encoding.ASCII.GetBytes(request);
 

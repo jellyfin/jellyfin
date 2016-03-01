@@ -308,6 +308,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     throw new ArgumentException("Unrecognized category: " + category);
             }
 
+            if (parent == null)
+            {
+                return new List<BaseItem>();
+            }
+
             query.User = user;
 
             var result = await parent.GetItems(query).ConfigureAwait(false);

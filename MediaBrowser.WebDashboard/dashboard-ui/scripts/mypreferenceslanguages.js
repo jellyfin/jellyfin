@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['appSettings'], function (appSettings) {
 
     function populateLanguages(select, languages) {
 
@@ -31,12 +31,12 @@
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
-        page.querySelector('.chkEnableCinemaMode').checked = AppSettings.enableCinemaMode();
-        page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
+        page.querySelector('.chkEnableCinemaMode').checked = appSettings.enableCinemaMode();
+        page.querySelector('.chkExternalVideoPlayer').checked = appSettings.enableExternalPlayers();
 
         require(['qualityoptions'], function (qualityoptions) {
 
-            var bitrateOptions = qualityoptions.getVideoQualityOptions(AppSettings.maxStreamingBitrate()).map(function (i) {
+            var bitrateOptions = qualityoptions.getVideoQualityOptions(appSettings.maxStreamingBitrate()).map(function (i) {
 
                 return '<option value="' + i.bitrate + '">' + i.name + '</option>';
 
@@ -47,13 +47,13 @@
             $('#selectMaxBitrate', page).html(bitrateOptions);
             $('#selectMaxChromecastBitrate', page).html(bitrateOptions);
 
-            if (AppSettings.enableAutomaticBitrateDetection()) {
+            if (appSettings.enableAutomaticBitrateDetection()) {
                 $('#selectMaxBitrate', page).val('');
             } else {
-                $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate());
+                $('#selectMaxBitrate', page).val(appSettings.maxStreamingBitrate());
             }
 
-            $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate());
+            $('#selectMaxChromecastBitrate', page).val(appSettings.maxChromecastBitrate());
 
             Dashboard.hideLoadingMsg();
         });
@@ -95,23 +95,23 @@
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
         user.Configuration.EnableNextEpisodeAutoPlay = page.querySelector('.chkEpisodeAutoPlay').checked;
-
-        AppSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
+        appSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
         return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
     function save(page) {
-        AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
+
+        appSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
         if ($('#selectMaxBitrate', page).val()) {
-            AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
-            AppSettings.enableAutomaticBitrateDetection(false);
+            appSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+            appSettings.enableAutomaticBitrateDetection(false);
         } else {
-            AppSettings.enableAutomaticBitrateDetection(true);
+            appSettings.enableAutomaticBitrateDetection(true);
         }
 
-        AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
+        appSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -196,4 +196,4 @@
         }
     });
 
-})(jQuery, window, document);
+});

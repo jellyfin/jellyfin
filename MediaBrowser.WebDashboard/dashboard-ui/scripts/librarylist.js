@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['appSettings'], function (appSettings) {
 
     var showOverlayTimeout;
 
@@ -338,7 +338,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers()) {
+                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && appSettings.enableExternalPlayers()) {
                     items.push({
                         name: Globalize.translate('ButtonPlayExternalPlayer'),
                         id: 'externalplayer',
@@ -1496,4 +1496,4 @@
     Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
     Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
-})(jQuery, document, window);
+});
