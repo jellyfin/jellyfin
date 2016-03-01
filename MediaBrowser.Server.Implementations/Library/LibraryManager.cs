@@ -788,6 +788,23 @@ namespace MediaBrowser.Server.Implementations.Library
             return _userRootFolder;
         }
 
+        public BaseItem FindByPath(string path)
+        {
+            var query = new InternalItemsQuery
+            {
+                Path = path
+            };
+
+            var items = GetItemIds(query).Select(GetItemById).Where(i => i != null).ToArray();
+
+            if (items.Length == 1)
+            {
+                return items[0];
+            }
+            
+            return RootFolder.FindByPath(path);
+        }
+
         /// <summary>
         /// Gets a Person
         /// </summary>

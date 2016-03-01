@@ -45,6 +45,8 @@ namespace MediaBrowser.Controller.Entities
         public string NameLessThan { get; set; }
         public string NameContains { get; set; }
 
+        public string Path { get; set; }
+        
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
         public string[] ItemIds { get; set; }
