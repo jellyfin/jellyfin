@@ -453,32 +453,16 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 sortOrders.Add(ItemSortBy.SortName);
             }
 
-            QueryResult<BaseItem> queryResult;
-
-            if (folder is UserRootFolder)
+            var queryResult = await folder.GetItems(new InternalItemsQuery
             {
-                var views = await _userViewManager.GetUserViews(new UserViewQuery { UserId = user.Id.ToString("N"), PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music } }, CancellationToken.None)
-                            .ConfigureAwait(false);
+                Limit = limit,
+                StartIndex = startIndex,
+                SortBy = sortOrders.ToArray(),
+                SortOrder = sort.SortOrder,
+                User = user,
+                Filter = FilterUnsupportedContent
 
-                queryResult = new QueryResult<BaseItem>
-                {
-                    Items = views.Cast<BaseItem>().ToArray()
-                };
-                queryResult.TotalRecordCount = queryResult.Items.Length;
-            }
-            else
-            {
-                queryResult = await folder.GetItems(new InternalItemsQuery
-               {
-                   Limit = limit,
-                   StartIndex = startIndex,
-                   SortBy = sortOrders.ToArray(),
-                   SortOrder = sort.SortOrder,
-                   User = user,
-                   Filter = FilterUnsupportedContent
-
-               }).ConfigureAwait(false);
-            }
+            }).ConfigureAwait(false);
 
             var options = _config.GetDlnaConfiguration();
 
