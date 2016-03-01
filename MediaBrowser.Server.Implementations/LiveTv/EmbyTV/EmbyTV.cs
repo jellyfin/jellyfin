@@ -103,8 +103,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged;
 
-        private readonly ConcurrentDictionary<string, CancellationTokenSource> _activeRecordings =
-            new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
+            new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
         public string Name
         {
@@ -268,11 +268,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _timerProvider.Delete(remove);
             }
-            CancellationTokenSource cancellationTokenSource;
+            ActiveRecordingInfo activeRecordingInfo;
 
-            if (_activeRecordings.TryGetValue(timerId, out cancellationTokenSource))
+            if (_activeRecordings.TryGetValue(timerId, out activeRecordingInfo))
             {
-                cancellationTokenSource.Cancel();
+                activeRecordingInfo.CancellationTokenSource.Cancel();
             }
         }
 
@@ -653,11 +653,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     return;
                 }
 
-                var cancellationTokenSource = new CancellationTokenSource();
-
-                if (_activeRecordings.TryAdd(timer.Id, cancellationTokenSource))
+                var activeRecordingInfo = new ActiveRecordingInfo
                 {
-                    await RecordStream(timer, recordingEndDate, cancellationTokenSource.Token).ConfigureAwait(false);
+                    CancellationTokenSource = new CancellationTokenSource(),
+                    TimerId = timer.Id
+                };
+
+                if (_activeRecordings.TryAdd(timer.Id, activeRecordingInfo))
+                {
+                    await RecordStream(timer, recordingEndDate, activeRecordingInfo, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
                 }
                 else
                 {
@@ -674,7 +678,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, CancellationToken cancellationToken)
+        private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
         {
             if (timer == null)
             {
@@ -729,8 +733,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)).Trim() + ".ts";
 
             recordPath = Path.Combine(recordPath, recordingFileName);
-            recordPath = EnsureFileUnique(recordPath);
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
 
             var recordingId = info.Id.GetMD5().ToString("N");
             var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.Id, recordingId, StringComparison.OrdinalIgnoreCase));
@@ -788,6 +790,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
                         recordPath = Path.ChangeExtension(recordPath, ".mp4");
                     }
+                    recordPath = EnsureFileUnique(recordPath, timer.Id);
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
+                    activeRecordingInfo.Path = recordPath;
 
                     _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
 
@@ -798,9 +803,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-                    var durationToken = new CancellationTokenSource(duration);
-                    var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-
                     _logger.Info("Writing file to path: " + recordPath);
                     _logger.Info("Opening recording stream from tuner provider");
 
@@ -810,10 +812,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         isResourceOpen = false;
                     };
 
-                    await recorder.Record(mediaStreamInfo, recordPath, onStarted, linkedToken).ConfigureAwait(false);
+                    await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
                     recording.Status = RecordingStatus.Completed;
-                    _logger.Info("Recording completed");
+                    _logger.Info("Recording completed: {0}", recordPath);
                 }
                 finally
                 {
@@ -827,17 +829,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             catch (OperationCanceledException)
             {
-                _logger.Info("Recording stopped");
+                _logger.Info("Recording stopped: {0}", recordPath);
                 recording.Status = RecordingStatus.Completed;
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error recording", ex);
+                _logger.ErrorException("Error recording to {0}", ex, recordPath);
                 recording.Status = RecordingStatus.Error;
             }
             finally
             {
-                CancellationTokenSource removed;
+                ActiveRecordingInfo removed;
                 _activeRecordings.TryRemove(timer.Id, out removed);
             }
 
@@ -863,12 +865,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private string EnsureFileUnique(string path)
+        private string EnsureFileUnique(string path, string timerId)
         {
             var originalPath = path;
             var index = 1;
 
-            while (_fileSystem.FileExists(path))
+            while (FileExists(path, timerId))
             {
                 var parent = Path.GetDirectoryName(originalPath);
                 var name = Path.GetFileNameWithoutExtension(originalPath);
@@ -879,6 +881,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             return path;
+        }
+
+        private bool FileExists(string path, string timerId)
+        {
+            if (_fileSystem.FileExists(path))
+            {
+                return true;
+            }
+
+            var hasRecordingAtPath = _activeRecordings.Values.ToList().Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.TimerId, timerId, StringComparison.OrdinalIgnoreCase));
+
+            if (hasRecordingAtPath)
+            {
+                return true;
+            }
+            return false;
         }
 
         private async Task<IRecorder> GetRecorder()
@@ -1064,7 +1082,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             foreach (var pair in _activeRecordings.ToList())
             {
-                pair.Value.Cancel();
+                pair.Value.CancellationTokenSource.Cancel();
             }
         }
 
@@ -1080,6 +1098,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 IsValid = true,
                 IsRegistered = true
             });
+        }
+
+        class ActiveRecordingInfo
+        {
+            public string Path { get; set; }
+            public string TimerId { get; set; }
+            public CancellationTokenSource CancellationTokenSource { get; set; }
         }
     }
 }

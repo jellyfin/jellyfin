@@ -56,13 +56,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     name += " " + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
                 }
 
-                if (addHyphen)
-                {
-                    name += " -";
-                }
-
                 if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
                 {
+                    if (addHyphen)
+                    {
+                        name += " -";
+                    }
+
                     name += " " + info.EpisodeTitle;
                 }
             }
