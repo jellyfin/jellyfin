@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'performanceManager', 'browser', 'layoutManager', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, performanceManager, browser, layoutManager) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, browser, layoutManager) {
 
     function paperDialogHashHandler(dlg, hash, resolve) {
 
@@ -143,7 +143,7 @@
         // seeing max call stack size exceeded in the debugger with this
         dlg.setAttribute('noAutoFocus', 'noAutoFocus');
 
-        var defaultEntryAnimation = performanceManager.getAnimationPerformance() <= 1 ? 'fade-in-animation' : 'scale-up-animation';
+        var defaultEntryAnimation = browser.animate ? 'scale-up-animation' : 'fade-in-animation';
         dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
         dlg.exitAnimation = 'fade-out-animation';
 
