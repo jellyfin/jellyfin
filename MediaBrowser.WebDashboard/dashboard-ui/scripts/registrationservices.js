@@ -18,7 +18,7 @@
                     appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                     resolve();
                 }
-                else if ((new Date().getTime() - lastMessage) > 345600000) {
+                else if ((new Date().getTime() - lastMessage) > 259200000) {
 
                     showPlaybackOverlay(resolve, reject);
                 } else {

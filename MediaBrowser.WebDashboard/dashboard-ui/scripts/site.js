@@ -1738,7 +1738,6 @@ var AppInfo = {};
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
-            performanceManager: embyWebComponentsBowerPath + "/performancemanager",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
