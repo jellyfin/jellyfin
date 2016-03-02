@@ -1489,70 +1489,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, List<ItemFields> fields, User user = null)
+        public async Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, List<ItemFields> fields, User user = null)
         {
-            var program = (LiveTvProgram)item;
+            var recordingTuples = new List<Tuple<BaseItemDto, string, string>>();
 
-            dto.StartDate = program.StartDate;
-            dto.EpisodeTitle = program.EpisodeTitle;
+            foreach (var tuple in tuples)
+            {
+                var program = (LiveTvProgram)tuple.Item1;
+                var dto = tuple.Item2;
 
-            if (program.IsRepeat)
-            {
-                dto.IsRepeat = program.IsRepeat;
-            }
-            if (program.IsMovie)
-            {
-                dto.IsMovie = program.IsMovie;
-            }
-            if (program.IsSeries)
-            {
-                dto.IsSeries = program.IsSeries;
-            }
-            if (program.IsSports)
-            {
-                dto.IsSports = program.IsSports;
-            }
-            if (program.IsLive)
-            {
-                dto.IsLive = program.IsLive;
-            }
-            if (program.IsNews)
-            {
-                dto.IsNews = program.IsNews;
-            }
-            if (program.IsKids)
-            {
-                dto.IsKids = program.IsKids;
-            }
-            if (program.IsPremiere)
-            {
-                dto.IsPremiere = program.IsPremiere;
-            }
+                dto.StartDate = program.StartDate;
+                dto.EpisodeTitle = program.EpisodeTitle;
 
-            if (fields.Contains(ItemFields.ChannelInfo))
-            {
-                var channel = GetInternalChannel(program.ChannelId);
-
-                if (channel != null)
+                if (program.IsRepeat)
                 {
-                    dto.ChannelName = channel.Name;
-                    dto.MediaType = channel.MediaType;
+                    dto.IsRepeat = program.IsRepeat;
+                }
+                if (program.IsMovie)
+                {
+                    dto.IsMovie = program.IsMovie;
+                }
+                if (program.IsSeries)
+                {
+                    dto.IsSeries = program.IsSeries;
+                }
+                if (program.IsSports)
+                {
+                    dto.IsSports = program.IsSports;
+                }
+                if (program.IsLive)
+                {
+                    dto.IsLive = program.IsLive;
+                }
+                if (program.IsNews)
+                {
+                    dto.IsNews = program.IsNews;
+                }
+                if (program.IsKids)
+                {
+                    dto.IsKids = program.IsKids;
+                }
+                if (program.IsPremiere)
+                {
+                    dto.IsPremiere = program.IsPremiere;
+                }
 
-                    if (channel.HasImage(ImageType.Primary))
+                if (fields.Contains(ItemFields.ChannelInfo))
+                {
+                    var channel = GetInternalChannel(program.ChannelId);
+
+                    if (channel != null)
                     {
-                        dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                        dto.ChannelName = channel.Name;
+                        dto.MediaType = channel.MediaType;
+
+                        if (channel.HasImage(ImageType.Primary))
+                        {
+                            dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                        }
                     }
                 }
+
+                var service = GetService(program);
+                var serviceName = service == null ? null : service.Name;
+
+                if (fields.Contains(ItemFields.ServiceName))
+                {
+                    dto.ServiceName = serviceName;
+                }
+
+                recordingTuples.Add(new Tuple<BaseItemDto, string, string>(dto, serviceName, program.ExternalId));
             }
 
-            if (fields.Contains(ItemFields.ServiceName))
-            {
-                var service = GetService(program);
-                if (service != null)
-                {
-                    dto.ServiceName = service.Name;
-                }
-            }
+            await AddRecordingInfo(recordingTuples, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, User user = null)
