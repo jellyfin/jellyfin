@@ -1904,6 +1904,7 @@ var AppInfo = {};
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
+        define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {
@@ -1934,6 +1935,12 @@ var AppInfo = {};
             return Globalize;
         });
 
+        define('apiClientResolver', [], function () {
+            return function () {
+                return window.ApiClient;
+            };
+        });
+
         define('dialogText', ['globalize'], getDialogText());
     }
 
@@ -1946,25 +1953,6 @@ var AppInfo = {};
             }
 
             return appSettings.get('externalplayers') == 'true';
-        };
-
-        appSettings.enableCinemaMode = function (val) {
-
-            if (val != null) {
-                appSettings.set('enableCinemaMode', val.toString());
-            }
-
-            val = appSettings.get('enableCinemaMode');
-
-            if (val) {
-                return val != 'false';
-            }
-
-            if (browserInfo.mobile) {
-                return false;
-            }
-
-            return true;
         };
 
         return appSettings;

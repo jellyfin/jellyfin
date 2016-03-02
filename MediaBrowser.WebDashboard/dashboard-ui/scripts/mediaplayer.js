@@ -1,4 +1,4 @@
-define(['appSettings'], function (appSettings) {
+define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     function mediaPlayer() {
 
@@ -600,7 +600,7 @@ define(['appSettings'], function (appSettings) {
                 Dashboard.showLoadingMsg();
             }
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !appSettings.enableCinemaMode()) {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !userSettings.enableCinemaMode()) {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);
