@@ -16,13 +16,11 @@
     }
   ],
   "icons": [ {
-    "src": "images/icon-144x144.png",
+    "src": "css/images/touchicon144.png",
     "sizes": "144x144",
     "type": "image/png",
     "density": "3.0"
   }],
   "display": "standalone",
-  "display": "standalone",
-  "theme_color": "#52B54B",
-  "start_image": "images/start-image.png"
+  "theme_color": "#52B54B"
 }

@@ -1,6 +1,6 @@
 {
   "name": "iron-demo-helpers",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Utility classes to make building demo pages easier",
   "authors": [
     "The Polymer Authors"
@@ -37,11 +37,11 @@
     "paper-styles": "PolymerElements/paper-styles#^1.1.0",
     "paper-checkbox": "PolymerElements/paper-checkbox#^1.0.0"
   },
-  "_release": "1.1.0",
+  "_release": "1.1.1",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.0",
-    "commit": "ea98e51e3ac7b52dd53cea05d3f027b3a41388ad"
+    "tag": "v1.1.1",
+    "commit": "49584de566eae4f6c31cd1078ce0407b53c601eb"
   },
   "_source": "git://github.com/polymerelements/iron-demo-helpers.git",
   "_target": "^1.0.0",

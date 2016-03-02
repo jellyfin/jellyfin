@@ -4,7 +4,7 @@
     <title>${TitleServer}</title>
 </head>
 <body>
-    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings" data-require="jqmcollapsible,scripts/dashboardgeneral,paper-textarea,paper-input">
+    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings" data-require="emby-collapsible,scripts/dashboardgeneral,paper-textarea,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -34,38 +34,32 @@
                     </div>
                     <br /><br />
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderAdvanced}</h2>
-                        <div>
-                            <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display:inline-block;width:85%;"></paper-input>
-                                    <paper-icon-button id="btnSelectCachePath" icon="search">${ButtonSelectDirectory}</paper-icon-button>
-                                    <div class="fieldDescription">${LabelCachePathHelp}</div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                    <emby-collapsible title="${HeaderAdvanced}">
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display:inline-block;width:85%;"></paper-input>
+                                <paper-icon-button id="btnSelectCachePath" icon="search">${ButtonSelectDirectory}</paper-icon-button>
+                                <div class="fieldDescription">${LabelCachePathHelp}</div>
+                            </li>
+                        </ul>
+                    </emby-collapsible>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderBranding}</h2>
-                        <div>
-                            <p>${HeaderBrandingHelp}</p>
-                            <br />
+                    <emby-collapsible title="${HeaderBranding}">
+                        <p>${HeaderBrandingHelp}</p>
+                        <br />
 
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
-                                    <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
-                                </li>
-                                <li>
-                                    <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
-                                    <div class="fieldDescription">${LabelCustomCssHelp}</div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
+                                <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
+                            </li>
+                            <li>
+                                <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
+                                <div class="fieldDescription">${LabelCustomCssHelp}</div>
+                            </li>
+                        </ul>
+                    </emby-collapsible>
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>

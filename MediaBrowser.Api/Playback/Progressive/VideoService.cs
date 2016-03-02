@@ -148,6 +148,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                     args += " -bsf:v h264_mp4toannexb";
                 }
 
+                if (state.RunTimeTicks.HasValue && state.VideoRequest.CopyTimestamps)
+                {
+                    args += " -copyts -avoid_negative_ts disabled -start_at_zero";
+                }
+                
                 return args;
             }
 

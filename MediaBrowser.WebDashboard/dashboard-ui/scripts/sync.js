@@ -81,7 +81,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['paper-checkbox', 'paper-input', 'jqmcollapsible'], function () {
+            require(['paper-checkbox', 'paper-input', 'emby-collapsible'], function () {
                 renderFormInternal(options);
                 resolve();
             });
@@ -162,8 +162,7 @@
             dialogOptions.Options.indexOf('ItemLimit') != -1) {
 
             html += '<br/>';
-            html += '<div data-role="collapsible" data-mini="true">';
-            html += '<h2>' + Globalize.translate('HeaderAdvanced') + '</h2>';
+            html += '<emby-collapsible title="' + Globalize.translate('HeaderAdvanced') + '">';
             html += '<div style="padding:0 0 1em;">';
             if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
                 html += '<br/>';
@@ -179,14 +178,14 @@
                 html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
                 html += '</div>';
             }
-            html += '</div>';
+            html += '</emby-collapsible>';
             html += '</div>';
         }
 
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html).trigger('create');
+        $(elem).html(html);
 
         $('#selectSyncTarget', elem).on('change', function () {
 

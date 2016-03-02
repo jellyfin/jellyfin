@@ -1878,3 +1878,27 @@ progress {
 .actionSheetMenuItem:hover {
     background-color: #e8e8e8;
 }
+
+emby-collapsible>.style-scope {
+    margin: .5em 0;
+}
+
+.ui-body-a .emby-collapsible-button {
+    border: 1px solid #ddd;
+    background-color: #f2f2f2;
+    text-transform: none;
+}
+
+.ui-body-a .emby-collapsible-title {
+    margin: .25em 0;
+    color: #000;
+    padding: 0 0 0 .25em;
+    font-weight: 500;
+}
+
+.ui-body-a .emby-collapsible-content {
+    border: 1px solid #ddd;
+    border-width: 0 1px 1px 1px;
+    padding: 1em 1.25em;
+    background-color: #fff;
+}

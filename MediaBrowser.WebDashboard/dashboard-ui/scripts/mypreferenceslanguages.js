@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     function populateLanguages(select, languages) {
 
@@ -31,7 +31,7 @@
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
-        page.querySelector('.chkEnableCinemaMode').checked = appSettings.enableCinemaMode();
+        page.querySelector('.chkEnableCinemaMode').checked = userSettings.enableCinemaMode();
         page.querySelector('.chkExternalVideoPlayer').checked = appSettings.enableExternalPlayers();
 
         require(['qualityoptions'], function (qualityoptions) {
@@ -95,7 +95,7 @@
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
         user.Configuration.EnableNextEpisodeAutoPlay = page.querySelector('.chkEpisodeAutoPlay').checked;
-        appSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
+        userSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
 
         return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }

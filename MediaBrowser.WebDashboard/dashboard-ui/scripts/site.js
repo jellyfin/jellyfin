@@ -1491,7 +1491,7 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
+        AppInfo.supportsDownloading = !(AppInfo.isNativeApp);
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
@@ -1842,6 +1842,7 @@ var AppInfo = {};
         define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
+        define("emby-collapsible", ["html!" + bowerPath + "/emby-collapsible/emby-collapsible.html"]);
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
@@ -1903,6 +1904,7 @@ var AppInfo = {};
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
+        define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {
@@ -1933,6 +1935,12 @@ var AppInfo = {};
             return Globalize;
         });
 
+        define('apiClientResolver', [], function () {
+            return function () {
+                return window.ApiClient;
+            };
+        });
+
         define('dialogText', ['globalize'], getDialogText());
     }
 
@@ -1945,25 +1953,6 @@ var AppInfo = {};
             }
 
             return appSettings.get('externalplayers') == 'true';
-        };
-
-        appSettings.enableCinemaMode = function (val) {
-
-            if (val != null) {
-                appSettings.set('enableCinemaMode', val.toString());
-            }
-
-            val = appSettings.get('enableCinemaMode');
-
-            if (val) {
-                return val != 'false';
-            }
-
-            if (browserInfo.mobile) {
-                return false;
-            }
-
-            return true;
         };
 
         return appSettings;

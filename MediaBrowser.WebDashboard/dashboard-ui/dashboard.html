@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="jqmcollapsible,scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab">
+    <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapsible">
 
         <div data-role="content">
             <div class="content-primary">
@@ -23,6 +23,8 @@
 
                     <div class="readOnlyContent dashboardHomeLeftColumn">
 
+                        <div>
+                        </div>
                         <div>
                             <h1>${HeaderServerInformation}</h1>
                             <div class="paperList" style="padding:1em;">
@@ -57,15 +59,17 @@
 
                         <p class="supporterIconContainer" style="padding-left: .5em;margin: 1em 0 0;">
                         </p>
-                        <div id="collapsiblePendingInstallations" data-role="collapsible" data-collapsed="false" style="margin-top: 2em; display: none;">
-                            <h3>${HeaderPendingInstallations}</h3>
-                            <p>${LabelComponentsUpdated}</p>
-                            <div id="pendingInstallations">
-                            </div>
-                            <p>${MessagePleaseRestartServerToFinishUpdating}</p>
-                            <div class="btnRestartContainer hide">
-                                <paper-button raised class="submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></paper-button>
-                            </div>
+
+                        <div id="collapsiblePendingInstallations" style="margin-top: 2em; display: none;">
+                            <emby-collapsible title="${HeaderPendingInstallations}" expanded>
+                                <p>${LabelComponentsUpdated}</p>
+                                <div id="pendingInstallations">
+                                </div>
+                                <p>${MessagePleaseRestartServerToFinishUpdating}</p>
+                                <div class="btnRestartContainer hide">
+                                    <paper-button raised class="submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></paper-button>
+                                </div>
+                            </emby-collapsible>
                         </div>
 
                         <div class="activeDevicesCollapsible" style="margin-top: 2em;">
@@ -74,35 +78,32 @@
                             </div>
                         </div>
 
-                        <div id="runningTasksCollapsible" data-role="collapsible" data-collapsed="false" style="margin-top: 1em; display: none;">
-                            <h3>${HeaderRunningTasks}</h3>
-                            <div>
+                        <div id="runningTasksCollapsible" style="margin-top: 2em; display: none;">
+                            <emby-collapsible title="${HeaderRunningTasks}" expanded>
                                 <div id="divRunningTasks">
                                 </div>
-                            </div>
+                            </emby-collapsible>
                         </div>
 
-                        <div data-role="collapsible" data-collapsed="true">
-                            <h3>${HeaderPaths}</h3>
-                            <div>
-                                <p>
-                                    <b>${LabelCache}</b><br />
-                                    <span id="cachePath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelLogs}</b><br />
-                                    <span id="logPath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelMetadata}</b><br />
-                                    <span id="metadataPath"></span>
-                                </p>
-                                <p>
-                                    <b>${LabelTranscodingTemporaryFiles}</b><br />
-                                    <span id="transcodingTemporaryPath"></span>
-                                </p>
-                            </div>
-                        </div>
+                        <br />
+                        <emby-collapsible title="${HeaderPaths}">
+                            <p>
+                                <b>${LabelCache}</b><br />
+                                <span id="cachePath"></span>
+                            </p>
+                            <p>
+                                <b>${LabelLogs}</b><br />
+                                <span id="logPath"></span>
+                            </p>
+                            <p>
+                                <b>${LabelMetadata}</b><br />
+                                <span id="metadataPath"></span>
+                            </p>
+                            <p>
+                                <b>${LabelTranscodingTemporaryFiles}</b><br />
+                                <span id="transcodingTemporaryPath"></span>
+                            </p>
+                        </emby-collapsible>
                     </div>
 
                     <div class="readOnlyContent dashboardHomeRightColumn firstDashboardHomeRightColumn">
