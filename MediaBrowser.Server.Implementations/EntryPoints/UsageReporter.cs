@@ -57,7 +57,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 CancellationToken = cancellationToken,
 
                 // Seeing block length errors
-                EnableHttpCompression = false
+                EnableHttpCompression = false,
+
+                LogRequest = false
             };
 
             options.SetPostData(data);
@@ -99,7 +101,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 CancellationToken = cancellationToken,
 
                 // Seeing block length errors
-                EnableHttpCompression = false
+                EnableHttpCompression = false,
+
+                LogRequest = false
             };
 
             options.SetPostData(data);
