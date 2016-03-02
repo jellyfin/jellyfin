@@ -10,11 +10,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 if (string.Equals(quality, "medium", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileBitrate = Math.Min(Convert.ToInt32(profileBitrate.Value * .7), 4000000);
+                    profileBitrate = Math.Min(profileBitrate.Value, 4000000);
                 }
                 else if (string.Equals(quality, "low", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileBitrate = Math.Min(Convert.ToInt32(profileBitrate.Value * .5), 1500000);
+                    profileBitrate = Math.Min(profileBitrate.Value, 1500000);
                 }
             }
 
