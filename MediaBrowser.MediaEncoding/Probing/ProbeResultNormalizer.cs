@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Xml;
 using CommonIO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
@@ -27,7 +30,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType videoType, bool isAudio, string path, MediaProtocol protocol)
         {
-            var info = new Model.MediaInfo.MediaInfo
+            var info = new MediaInfo
             {
                 Path = path,
                 Protocol = protocol
@@ -56,40 +59,100 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (isAudio)
+            var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var tagStreamType = isAudio ? "audio" : "video";
+
+            if (data.streams != null)
             {
-                SetAudioRuntimeTicks(data, info);
+                var tagStream = data.streams.FirstOrDefault(i => string.Equals(i.codec_type, tagStreamType, StringComparison.OrdinalIgnoreCase));
 
-                var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                // tags are normally located under data.format, but we've seen some cases with ogg where they're part of the audio stream
-                // so let's create a combined list of both
-
-                if (data.streams != null)
+                if (tagStream != null && tagStream.tags != null)
                 {
-                    var audioStream = data.streams.FirstOrDefault(i => string.Equals(i.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
-
-                    if (audioStream != null && audioStream.tags != null)
-                    {
-                        foreach (var pair in audioStream.tags)
-                        {
-                            tags[pair.Key] = pair.Value;
-                        }
-                    }
-                }
-
-                if (data.format != null && data.format.tags != null)
-                {
-                    foreach (var pair in data.format.tags)
+                    foreach (var pair in tagStream.tags)
                     {
                         tags[pair.Key] = pair.Value;
                     }
                 }
+            }
+
+            if (data.format != null && data.format.tags != null)
+            {
+                foreach (var pair in data.format.tags)
+                {
+                    tags[pair.Key] = pair.Value;
+                }
+            }
+
+            FetchGenres(info, tags);
+            var shortOverview = FFProbeHelpers.GetDictionaryValue(tags, "description");
+            var overview = FFProbeHelpers.GetDictionaryValue(tags, "synopsis");
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = shortOverview;
+                shortOverview = null;
+            }
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
+            }
+
+            if (!string.IsNullOrWhiteSpace(overview))
+            {
+                info.Overview = overview;
+            }
+
+            if (!string.IsNullOrWhiteSpace(shortOverview))
+            {
+                info.ShortOverview = shortOverview;
+            }
+
+            var title = FFProbeHelpers.GetDictionaryValue(tags, "title");
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                info.Name = title;
+            }
+
+            info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
+
+            // Several different forms of retaildate
+            info.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date");
+
+            if (isAudio)
+            {
+                SetAudioRuntimeTicks(data, info);
+
+                // tags are normally located under data.format, but we've seen some cases with ogg where they're part of the info stream
+                // so let's create a combined list of both
 
                 SetAudioInfoFromTags(info, tags);
             }
             else
             {
+                FetchStudios(info, tags, "copyright");
+
+                var iTunEXTC = FFProbeHelpers.GetDictionaryValue(tags, "iTunEXTC");
+                if (!string.IsNullOrWhiteSpace(iTunEXTC))
+                {
+                    var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    // Example 
+                    // mpaa|G|100|For crude humor
+                    if (parts.Length == 4)
+                    {
+                        info.OfficialRating = parts[1];
+                        info.OfficialRatingDescription = parts[3];
+                    }
+                }
+
+                var itunesXml = FFProbeHelpers.GetDictionaryValue(tags, "iTunMOVI");
+                if (!string.IsNullOrWhiteSpace(itunesXml))
+                {
+                    FetchFromItunesInfo(itunesXml, info);
+                }
+
                 if (data.format != null && !string.IsNullOrEmpty(data.format.duration))
                 {
                     info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
@@ -108,10 +171,223 @@ namespace MediaBrowser.MediaEncoding.Probing
             return info;
         }
 
+        private void FetchFromItunesInfo(string xml, MediaInfo info)
+        {
+            // Make things simpler and strip out the dtd
+            xml = xml.Substring(xml.IndexOf("<plist", StringComparison.OrdinalIgnoreCase));
+            xml = "<?xml version=\"1.0\"?>" + xml;
+
+            // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Janus Bager Kristensen</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Sacha Goedegebure</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml)))
+            {
+                using (var streamReader = new StreamReader(stream))
+                {
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader))
+                    {
+                        reader.MoveToContent();
+
+                        // Loop through each element
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "dict":
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            ReadFromDictNode(subtree, info);
+                                        }
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ReadFromDictNode(XmlReader reader, MediaInfo info)
+        {
+            reader.MoveToContent();
+
+            string currentKey = null;
+            List<NameValuePair> pairs = new List<NameValuePair>();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "key":
+                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            {
+                                ProcessPairs(currentKey, pairs, info);
+                            }
+                            currentKey = reader.ReadElementContentAsString();
+                            pairs = new List<NameValuePair>();
+                            break;
+                        case "string":
+                            var value = reader.ReadElementContentAsString();
+                            if (!string.IsNullOrWhiteSpace(value))
+                            {
+                                pairs.Add(new NameValuePair
+                                {
+                                    Name = value,
+                                    Value = value
+                                });
+                            }
+                            break;
+                        case "array":
+                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            {
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    pairs.AddRange(ReadValueArray(subtree));
+                                }
+                            }
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private List<NameValuePair> ReadValueArray(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            List<NameValuePair> pairs = new List<NameValuePair>();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "dict":
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                var dict = GetNameValuePair(subtree);
+                                if (dict != null)
+                                {
+                                    pairs.Add(dict);
+                                }
+                            }
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            return pairs;
+        }
+
+        private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
+        {
+            if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.Studios.Add(pair.Value);
+                }
+
+                info.Studios = info.Studios
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+            }
+            else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Writer
+                    });
+                }
+            }
+            else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Producer
+                    });
+                }
+            }
+            else if (string.Equals(key, "directors", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var pair in pairs)
+                {
+                    info.People.Add(new BaseItemPerson
+                    {
+                        Name = pair.Value,
+                        Type = PersonType.Director
+                    });
+                }
+            }
+        }
+
+        private NameValuePair GetNameValuePair(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            string name = null;
+            string value = null;
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "key":
+                            name = reader.ReadElementContentAsString();
+                            break;
+                        case "string":
+                            value = reader.ReadElementContentAsString();
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return new NameValuePair
+            {
+                Name = name,
+                Value = value
+            };
+        }
+
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
         /// </summary>
-        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
@@ -176,7 +452,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
+                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 
@@ -388,11 +664,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, Model.MediaInfo.MediaInfo data)
+        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
         {
             if (result.streams != null)
             {
-                // Get the first audio stream
+                // Get the first info stream
                 var stream = result.streams.FirstOrDefault(s => string.Equals(s.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
 
                 if (stream != null)
@@ -430,16 +706,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void SetAudioInfoFromTags(Model.MediaInfo.MediaInfo audio, Dictionary<string, string> tags)
+        private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
-            var title = FFProbeHelpers.GetDictionaryValue(tags, "title");
-
-            // Only set Name if title was found in the dictionary
-            if (!string.IsNullOrEmpty(title))
-            {
-                audio.Title = title;
-            }
-
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
             if (!string.IsNullOrWhiteSpace(composer))
             {
@@ -455,6 +723,26 @@ namespace MediaBrowser.MediaEncoding.Probing
                 foreach (var person in Split(conductor, false))
                 {
                     audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                }
+            }
+
+            var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+
+            if (!string.IsNullOrWhiteSpace(lyricist))
+            {
+                foreach (var person in Split(lyricist, false))
+                {
+                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                }
+            }
+            // Check for writer some music is tagged that way as alternative to composer/lyricist
+            var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
+
+            if (!string.IsNullOrWhiteSpace(writer))
+            {
+                foreach (var person in Split(writer, false))
+                {
+                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
             }
 
@@ -511,21 +799,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Disc number
             audio.ParentIndexNumber = GetDictionaryDiscValue(tags, "disc");
 
-            audio.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
-
-            // Several different forms of retaildate
-            audio.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "date");
-
             // If we don't have a ProductionYear try and get it from PremiereDate
             if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
             {
                 audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
-
-            FetchGenres(audio, tags);
 
             // There's several values in tags may or may not be present
             FetchStudios(audio, tags, "organization");
@@ -655,10 +933,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <summary>
         /// Gets the studios from the tags collection
         /// </summary>
-        /// <param name="audio">The audio.</param>
+        /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
         /// <param name="tagName">Name of the tag.</param>
-        private void FetchStudios(Model.MediaInfo.MediaInfo audio, Dictionary<string, string> tags, string tagName)
+        private void FetchStudios(MediaInfo info, Dictionary<string, string> tags, string tagName)
         {
             var val = FFProbeHelpers.GetDictionaryValue(tags, tagName);
 
@@ -669,19 +947,19 @@ namespace MediaBrowser.MediaEncoding.Probing
                 foreach (var studio in studios)
                 {
                     // Sometimes the artist name is listed here, account for that
-                    if (audio.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase))
+                    if (info.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
-                    if (audio.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
+                    if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    audio.Studios.Add(studio);
+                    info.Studios.Add(studio);
                 }
 
-                audio.Studios = audio.Studios
+                info.Studios = info.Studios
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
@@ -693,7 +971,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>
-        private void FetchGenres(Model.MediaInfo.MediaInfo info, Dictionary<string, string> tags)
+        private void FetchGenres(MediaInfo info, Dictionary<string, string> tags)
         {
             var val = FFProbeHelpers.GetDictionaryValue(tags, "genre");
 
@@ -764,7 +1042,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
 
-        private void FetchWtvInfo(Model.MediaInfo.MediaInfo video, InternalMediaInfoResult data)
+        private void FetchWtvInfo(MediaInfo video, InternalMediaInfoResult data)
         {
             if (data.format == null || data.format.tags == null)
             {
@@ -775,15 +1053,16 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(genres))
             {
-                //genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "genre");
-            }
-
-            if (!string.IsNullOrWhiteSpace(genres))
-            {
-                video.Genres = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                var genreList = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(i => i.Trim())
                     .ToList();
+
+                // If this is empty then don't overwrite genres that might have been fetched earlier
+                if (genreList.Count > 0)
+                {
+                    video.Genres = genreList;
+                }
             }
 
             var officialRating = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/ParentalRating");

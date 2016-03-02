@@ -57,6 +57,13 @@ namespace MediaBrowser.Controller.Library
         Person GetPerson(string name);
 
         /// <summary>
+        /// Finds the by path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem FindByPath(string path);
+        
+        /// <summary>
         /// Gets the artist.
         /// </summary>
         /// <param name="name">The name.</param>

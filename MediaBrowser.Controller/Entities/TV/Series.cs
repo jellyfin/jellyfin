@@ -157,6 +157,32 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasons(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
+        public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        {
+            var user = query.User;
+
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+            IEnumerable<BaseItem> items;
+
+            if (query.User == null)
+            {
+                items = query.Recursive
+                   ? GetRecursiveChildren(filter)
+                   : Children.Where(filter);
+            }
+            else
+            {
+                items = query.Recursive
+                   ? GetRecursiveChildren(user, filter)
+                   : GetSeasons(user).Where(filter);
+            }
+
+            var result = PostFilterAndSort(items, query);
+
+            return Task.FromResult(result);
+        }
+
         public IEnumerable<Season> GetSeasons(User user, bool includeMissingSeasons, bool includeVirtualUnaired)
         {
             var seasons = base.GetChildren(user, true)

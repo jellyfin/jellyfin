@@ -178,7 +178,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SourceType = info.SourceType,
                 Status = info.Status,
                 ChannelName = channelName,
-                Url = info.Url
+                Url = info.Url,
+                CanReset = info.CanReset
             };
 
             if (!string.IsNullOrEmpty(info.ChannelId))

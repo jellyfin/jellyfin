@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.People
 
                     var requestCount = _requestCount;
 
-                    if (requestCount >= 10)
+                    if (requestCount >= 20)
                     {
                         //_logger.Debug("Throttling Tmdb people");
 

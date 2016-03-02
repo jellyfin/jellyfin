@@ -60,8 +60,8 @@ namespace MediaBrowser.Dlna.Profiles
                 new DirectPlayProfile
                 {
                     Container = "ts",
-                    VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    VideoCodec = "h264,mpeg2video",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile

@@ -64,6 +64,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 FileSize = new FileInfo(path).Length
             };
 
+            if (_libraryMonitor.IsPathLocked(path))
+            {
+                result.Status = FileSortingStatus.Failure;
+                result.StatusMessage = "Path is locked by other processes. Please try again later.";
+                return result;
+            }
+
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
             var resolver = new Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
 
@@ -135,7 +142,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             if (previousResult != null)
             {
                 // Don't keep saving the same result over and over if nothing has changed
-                if (previousResult.Status == result.Status && result.Status != FileSortingStatus.Success)
+                if (previousResult.Status == result.Status && previousResult.StatusMessage == result.StatusMessage && result.Status != FileSortingStatus.Success)
                 {
                     return previousResult;
                 }
@@ -150,7 +157,43 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             var result = _organizationService.GetResult(request.ResultId);
 
-            var series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
+            Series series = null;
+
+            if (request.NewSeriesProviderIds.Count > 0)
+            {
+                // We're having a new series here
+                SeriesInfo seriesRequest = new SeriesInfo();
+                seriesRequest.ProviderIds = request.NewSeriesProviderIds;
+
+                var refreshOptions = new MetadataRefreshOptions(_fileSystem);
+                series = new Series();
+                series.Id = Guid.NewGuid();
+                series.Name = request.NewSeriesName;
+
+                int year;
+                if (int.TryParse(request.NewSeriesYear, out year))
+                {
+                    series.ProductionYear = year;
+                }
+
+                var seriesFolderName = series.Name;
+                if (series.ProductionYear.HasValue)
+                {
+                    seriesFolderName = string.Format("{0} ({1})", seriesFolderName, series.ProductionYear);
+                }
+
+                series.Path = Path.Combine(request.TargetFolder, seriesFolderName);
+
+                series.ProviderIds = request.NewSeriesProviderIds;
+
+                await series.RefreshMetadata(refreshOptions, cancellationToken);
+            }
+
+            if (series == null)
+            {
+                // Existing Series
+                series = (Series)_libraryManager.GetItemById(new Guid(request.SeriesId));
+            }
 
             await OrganizeEpisode(result.OriginalPath,
                 series,
@@ -243,16 +286,29 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             {
                 if (options.TvOptions.CopyOriginalFile && fileExists && IsSameEpisode(sourcePath, newPath))
                 {
-                    _logger.Info("File {0} already copied to new path {1}, stopping organization", sourcePath, newPath);
+                    var msg = string.Format("File '{0}' already copied to new path '{1}', stopping organization", sourcePath, newPath);
+                    _logger.Info(msg);
                     result.Status = FileSortingStatus.SkippedExisting;
-                    result.StatusMessage = string.Empty;
+                    result.StatusMessage = msg;
                     return;
                 }
 
-                if (fileExists || otherDuplicatePaths.Count > 0)
+                if (fileExists)
                 {
+                    var msg = string.Format("File '{0}' already exists as '{1}', stopping organization", sourcePath, newPath);
+                    _logger.Info(msg);
                     result.Status = FileSortingStatus.SkippedExisting;
-                    result.StatusMessage = string.Empty;
+                    result.StatusMessage = msg;
+                    result.TargetPath = newPath;
+                    return;
+                }
+
+                if (otherDuplicatePaths.Count > 0)
+                {
+                    var msg = string.Format("File '{0}' already exists as '{1}', stopping organization", sourcePath, otherDuplicatePaths);
+                    _logger.Info(msg);
+                    result.Status = FileSortingStatus.SkippedExisting;
+                    result.StatusMessage = msg;
                     result.DuplicatePaths = otherDuplicatePaths;
                     return;
                 }
@@ -502,7 +558,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 }
             }
 
-            return series ?? new Series();
+            return series;
         }
 
         /// <summary>

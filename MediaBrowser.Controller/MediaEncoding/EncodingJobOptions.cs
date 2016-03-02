@@ -44,6 +44,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? CpuCoreLimit { get; set; }
         public bool ReadInputAtNativeFramerate { get; set; }
         public SubtitleDeliveryMethod SubtitleMethod { get; set; }
+        public bool CopyTimestamps { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has fixed resolution.

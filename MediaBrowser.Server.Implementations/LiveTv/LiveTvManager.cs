@@ -350,7 +350,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             foreach (var source in list)
             {
-                Normalize(source, item.ChannelType == ChannelType.TV);
+                Normalize(source, service, item.ChannelType == ChannelType.TV);
             }
 
             return list;
@@ -379,12 +379,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 MediaSourceInfo info;
                 bool isVideo;
+                ILiveTvService service;
 
                 if (isChannel)
                 {
                     var channel = GetInternalChannel(id);
                     isVideo = channel.ChannelType == ChannelType.TV;
-                    var service = GetService(channel);
+                    service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
                     info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
@@ -400,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     var recording = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
                     isVideo = !string.Equals(recording.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
-                    var service = GetService(recording);
+                    service = GetService(recording);
 
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.ExternalId);
                     info = await service.GetRecordingStream(recording.ExternalId, null, cancellationToken).ConfigureAwait(false);
@@ -415,7 +416,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
-                Normalize(info, isVideo);
+                Normalize(info, service, isVideo);
 
                 var data = new LiveStreamData
                 {
@@ -440,7 +441,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private void Normalize(MediaSourceInfo mediaSource, bool isVideo)
+        private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {
             if (mediaSource.MediaStreams.Count == 0)
             {
@@ -536,6 +537,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     mediaSource.Bitrate = total;
                 }
+            }
+
+            if (!(service is EmbyTV.EmbyTV))
+            {
+                // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
+                mediaSource.SupportsDirectStream = true;
             }
         }
 
@@ -801,11 +808,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (!string.IsNullOrWhiteSpace(info.ImagePath))
                 {
-                    item.SetImagePath(ImageType.Primary, info.ImagePath);
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.ImagePath,
+                        Type = ImageType.Primary,
+                        IsPlaceholder = true
+                    }, 0);
                 }
                 else if (!string.IsNullOrWhiteSpace(info.ImageUrl))
                 {
-                    item.SetImagePath(ImageType.Primary, info.ImageUrl);
+                    item.SetImage(new ItemImageInfo
+                    {
+                        Path = info.ImageUrl,
+                        Type = ImageType.Primary,
+                        IsPlaceholder = true
+                    }, 0);
                 }
             }
 
@@ -1472,70 +1489,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, List<ItemFields> fields, User user = null)
+        public async Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, List<ItemFields> fields, User user = null)
         {
-            var program = (LiveTvProgram)item;
+            var recordingTuples = new List<Tuple<BaseItemDto, string, string>>();
 
-            dto.StartDate = program.StartDate;
-            dto.EpisodeTitle = program.EpisodeTitle;
+            foreach (var tuple in tuples)
+            {
+                var program = (LiveTvProgram)tuple.Item1;
+                var dto = tuple.Item2;
 
-            if (program.IsRepeat)
-            {
-                dto.IsRepeat = program.IsRepeat;
-            }
-            if (program.IsMovie)
-            {
-                dto.IsMovie = program.IsMovie;
-            }
-            if (program.IsSeries)
-            {
-                dto.IsSeries = program.IsSeries;
-            }
-            if (program.IsSports)
-            {
-                dto.IsSports = program.IsSports;
-            }
-            if (program.IsLive)
-            {
-                dto.IsLive = program.IsLive;
-            }
-            if (program.IsNews)
-            {
-                dto.IsNews = program.IsNews;
-            }
-            if (program.IsKids)
-            {
-                dto.IsKids = program.IsKids;
-            }
-            if (program.IsPremiere)
-            {
-                dto.IsPremiere = program.IsPremiere;
-            }
+                dto.StartDate = program.StartDate;
+                dto.EpisodeTitle = program.EpisodeTitle;
 
-            if (fields.Contains(ItemFields.ChannelInfo))
-            {
-                var channel = GetInternalChannel(program.ChannelId);
-
-                if (channel != null)
+                if (program.IsRepeat)
                 {
-                    dto.ChannelName = channel.Name;
-                    dto.MediaType = channel.MediaType;
+                    dto.IsRepeat = program.IsRepeat;
+                }
+                if (program.IsMovie)
+                {
+                    dto.IsMovie = program.IsMovie;
+                }
+                if (program.IsSeries)
+                {
+                    dto.IsSeries = program.IsSeries;
+                }
+                if (program.IsSports)
+                {
+                    dto.IsSports = program.IsSports;
+                }
+                if (program.IsLive)
+                {
+                    dto.IsLive = program.IsLive;
+                }
+                if (program.IsNews)
+                {
+                    dto.IsNews = program.IsNews;
+                }
+                if (program.IsKids)
+                {
+                    dto.IsKids = program.IsKids;
+                }
+                if (program.IsPremiere)
+                {
+                    dto.IsPremiere = program.IsPremiere;
+                }
 
-                    if (channel.HasImage(ImageType.Primary))
+                if (fields.Contains(ItemFields.ChannelInfo))
+                {
+                    var channel = GetInternalChannel(program.ChannelId);
+
+                    if (channel != null)
                     {
-                        dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                        dto.ChannelName = channel.Name;
+                        dto.MediaType = channel.MediaType;
+
+                        if (channel.HasImage(ImageType.Primary))
+                        {
+                            dto.ChannelPrimaryImageTag = _tvDtoService.GetImageTag(channel);
+                        }
                     }
                 }
+
+                var service = GetService(program);
+                var serviceName = service == null ? null : service.Name;
+
+                if (fields.Contains(ItemFields.ServiceName))
+                {
+                    dto.ServiceName = serviceName;
+                }
+
+                recordingTuples.Add(new Tuple<BaseItemDto, string, string>(dto, serviceName, program.ExternalId));
             }
 
-            if (fields.Contains(ItemFields.ServiceName))
-            {
-                var service = GetService(program);
-                if (service != null)
-                {
-                    dto.ServiceName = service.Name;
-                }
-            }
+            await AddRecordingInfo(recordingTuples, CancellationToken.None).ConfigureAwait(false);
         }
 
         public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, User user = null)
@@ -2343,7 +2369,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            await provider.Validate(info).ConfigureAwait(false);
+            var configurable = provider as IConfigurableTunerHost;
+            if (configurable != null)
+            {
+                await configurable.Validate(info).ConfigureAwait(false);
+            }
 
             var config = GetConfiguration();
 
