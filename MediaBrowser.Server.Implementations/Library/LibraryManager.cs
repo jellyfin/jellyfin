@@ -788,6 +788,29 @@ namespace MediaBrowser.Server.Implementations.Library
             return _userRootFolder;
         }
 
+        public BaseItem FindByPath(string path)
+        {
+            var query = new InternalItemsQuery
+            {
+                Path = path
+            };
+
+            // Only use the database result if there's exactly one item, otherwise we run the risk of returning old data that hasn't been cleaned yet.
+            var items = GetItemIds(query).Select(GetItemById).Where(i => i != null).ToArray();
+
+            if (items.Length == 1)
+            {
+                return items[0];
+            }
+
+            if (items.Length == 0)
+            {
+                return null;
+            }
+            
+            return RootFolder.FindByPath(path);
+        }
+
         /// <summary>
         /// Gets a Person
         /// </summary>
