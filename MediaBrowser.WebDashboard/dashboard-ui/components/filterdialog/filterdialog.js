@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'events', 'browser', 'paper-checkbox', 'jqmcollapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser) {
+﻿define(['paperdialoghelper', 'events', 'browser', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
@@ -525,9 +525,6 @@
 
                     setVisibility(dlg, options);
                     document.body.appendChild(dlg);
-
-                    // needed for jqm collapsibles
-                    $(dlg.querySelectorAll('div[data-role="collapsible"]')).collapsible({});
 
                     paperDialogHelper.open(dlg);
 
