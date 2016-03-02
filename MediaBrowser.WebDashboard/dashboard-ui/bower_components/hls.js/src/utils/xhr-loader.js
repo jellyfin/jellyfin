@@ -43,19 +43,18 @@ class XhrLoader {
     this.timeout = timeout;
     this.maxRetry = maxRetry;
     this.retryDelay = retryDelay;
-    this.timeoutHandle = window.setTimeout(this.loadtimeout.bind(this), timeout);
     this.loadInternal();
   }
 
   loadInternal() {
     var xhr;
-    
+
     if (typeof XDomainRequest !== 'undefined') {
        xhr = this.loader = new XDomainRequest();
     } else {
        xhr = this.loader = new XMLHttpRequest();
     }
-    
+
     xhr.onloadend = this.loadend.bind(this);
     xhr.onprogress = this.loadprogress.bind(this);
 
@@ -69,6 +68,7 @@ class XhrLoader {
     if (this.xhrSetup) {
       this.xhrSetup(xhr, this.url);
     }
+    this.timeoutHandle = window.setTimeout(this.loadtimeout.bind(this), this.timeout);
     xhr.send();
   }
 

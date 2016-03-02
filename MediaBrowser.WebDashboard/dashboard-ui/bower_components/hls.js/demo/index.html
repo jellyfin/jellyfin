@@ -213,7 +213,7 @@ $(document).ready(function() {
    $('#autoRecoverError').prop( "checked", autoRecoverError );
    $('#enableWorker').prop( "checked", enableWorker );
    $('#levelCapping').val(levelCapping);
-   $('#defaultAudioCodec').val(defaultAudioCodec);
+   $('#defaultAudioCodec').val(defaultAudioCodec || "undefined");
 });
 
 
@@ -937,7 +937,7 @@ function timeRangesToString(r) {
     for (var i = 0; i < sURLVariables.length; i++) {
       var sParameterName = sURLVariables[i].split('=');
       if (sParameterName[0] == sParam) {
-        return sParameterName[1];
+        return "undefined" == sParameterName[1] ? undefined : sParameterName[1];
       }
     }
     return defaultValue;
