@@ -4,6 +4,7 @@
     var hlsPlayer;
     var requiresSettingStartTimeOnStart;
     var subtitleTrackIndexToSetOnPlaying;
+    var currentTrackList;
 
     function htmlMediaRenderer(options) {
 
@@ -11,6 +12,7 @@
         var self = this;
 
         function onEnded() {
+            destroyCustomTrack();
             Events.trigger(self, 'ended');
         }
 
@@ -30,7 +32,6 @@
             //        }
             //    }
             //}
-
             Events.trigger(self, 'timeupdate');
         }
 
@@ -66,6 +67,8 @@
         }
 
         function onError(e) {
+
+            destroyCustomTrack();
 
             var elem = e.target;
             var errorCode = elem.error ? elem.error.code : '';
@@ -270,6 +273,9 @@
         };
 
         self.stop = function () {
+
+            destroyCustomTrack();
+
             if (mediaElement) {
                 mediaElement.pause();
 
@@ -375,11 +381,12 @@
                 }
 
                 tracks = tracks || [];
+                currentTrackList = tracks;
 
                 var currentTrackIndex = -1;
                 for (var i = 0, length = tracks.length; i < length; i++) {
                     if (tracks[i].isDefault) {
-                        currentTrackIndex = i;
+                        currentTrackIndex = tracks[i].index;
                         break;
                     }
                 }
@@ -408,6 +415,9 @@
                     playNow = true;
                 }
 
+                // This is needed in setCurrentTrackElement
+                currentSrc = val;
+
                 self.setCurrentTrackElement(currentTrackIndex);
             }
 
@@ -419,17 +429,17 @@
         };
 
         function setTracks(elem, tracks) {
+
             var html = tracks.map(function (t) {
 
                 var defaultAttribute = t.isDefault ? ' default' : '';
 
-                return '<track kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
+                var label = t.language || 'und';
+                return '<track id="textTrack' + t.index + '" label="' + label + '" kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
 
             }).join('');
 
-            if (html) {
-                elem.innerHTML = html;
-            }
+            elem.innerHTML = html;
         }
 
         self.currentSrc = function () {
@@ -500,38 +510,174 @@
             return supportsTextTracks;
         };
 
-        self.setCurrentTrackElement = function (trackIndex) {
+        function enableNativeTrackSupport(track) {
 
-            console.log('Setting new text track index to: ' + trackIndex);
+            if (browserInfo.safari) {
+                return false;
+            }
+
+            if (browserInfo.firefox) {
+                if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function destroyCustomTrack(isPlaying) {
+
+            if (isPlaying) {
+
+                var allTracks = mediaElement.textTracks; // get list of tracks
+                for (var i = 0; i < allTracks.length; i++) {
+
+                    var currentTrack = allTracks[i];
+
+                    if (currentTrack.label.indexOf('manualTrack') != -1) {
+                        currentTrack.mode = 'disabled';
+                    }
+                }
+            }
+
+            customTrackIndex = -1;
+        }
+
+        function fetchSubtitles(track) {
+
+            return ApiClient.ajax({
+                url: track.url.replace('.vtt', '.js'),
+                type: 'GET',
+                dataType: 'json'
+            });
+        }
+
+        var customTrackIndex = -1;
+
+        function setTrackForCustomDisplay(track) {
+
+            if (!track) {
+                destroyCustomTrack(true);
+                return;
+            }
+
+            // if already playing this track, skip
+            if (customTrackIndex == track.index) {
+                return;
+            }
+
+            destroyCustomTrack(true);
+            customTrackIndex = track.index;
+            renderTracksEvents(track);
+        }
+
+        function renderTracksEvents(track) {
+
+            var trackElement = null;
+            var expectedId = 'manualTrack' + track.index;
 
             var allTracks = mediaElement.textTracks; // get list of tracks
+            for (var i = 0; i < allTracks.length; i++) {
 
+                var currentTrack = allTracks[i];
+
+                if (currentTrack.label == expectedId) {
+                    trackElement = currentTrack;
+                    break;
+                } else {
+                    currentTrack.mode = 'disabled';
+                }
+            }
+
+            if (!trackElement) {
+                trackElement = mediaElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
+                trackElement.label = 'manualTrack' + track.index;
+
+                // download the track json
+                fetchSubtitles(track).then(function(data) {
+
+                    // show in ui
+                    console.log('downloaded ' + data.TrackEvents.length + ' track events');
+                    // add some cues to show the text
+                    // in safari, the cues need to be added before setting the track mode to showing
+                    data.TrackEvents.forEach(function(trackEvent) {
+                        trackElement.addCue(new VTTCue(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
+                    });
+                    trackElement.mode = 'showing';
+                });
+            } else {
+                trackElement.mode = 'showing';
+            }
+        }
+
+        self.setCurrentTrackElement = function (streamIndex) {
+
+            console.log('Setting new text track index to: ' + streamIndex);
+
+            var track = streamIndex == -1 ? null : currentTrackList.filter(function (t) {
+                return t.index == streamIndex;
+            })[0];
+
+            if (enableNativeTrackSupport(track)) {
+
+                setTrackForCustomDisplay(null);
+            } else {
+                setTrackForCustomDisplay(track);
+
+                // null these out to disable the player's native display (handled below)
+                streamIndex = -1;
+                track = null;
+            }
+
+            var expectedId = 'textTrack' + streamIndex;
+            var trackIndex = streamIndex == -1 || !track ? -1 : currentTrackList.indexOf(track);
             var modes = ['disabled', 'showing', 'hidden'];
 
+            var allTracks = mediaElement.textTracks; // get list of tracks
             for (var i = 0; i < allTracks.length; i++) {
+
+                var currentTrack = allTracks[i];
+
+                console.log('currentTrack id: ' + currentTrack.id);
 
                 var mode;
 
-                if (trackIndex == i) {
-                    mode = 1; // show this track
+                console.log('expectedId: ' + expectedId + '--currentTrack.Id:' + currentTrack.id);
+
+                // IE doesn't support track id
+                if (browserInfo.msie) {
+                    if (trackIndex == i) {
+                        mode = 1; // show this track
+                    } else {
+                        mode = 0; // hide all other tracks
+                    }
                 } else {
-                    mode = 0; // hide all other tracks
+
+                    if (currentTrack.label.indexOf('manualTrack') != -1) {
+                        continue;
+                    }
+                    if (currentTrack.id == expectedId) {
+                        mode = 1; // show this track
+                    } else {
+                        mode = 0; // hide all other tracks
+                    }
                 }
 
                 console.log('Setting track ' + i + ' mode to: ' + mode);
 
                 // Safari uses integers for the mode property
                 // http://www.jwplayer.com/html5/scripting/
+                // edit: not anymore
                 var useNumericMode = false;
 
-                if (!isNaN(allTracks[i].mode)) {
-                    useNumericMode = true;
+                if (!isNaN(currentTrack.mode)) {
+                    //useNumericMode = true;
                 }
 
                 if (useNumericMode) {
-                    allTracks[i].mode = mode;
+                    currentTrack.mode = mode;
                 } else {
-                    allTracks[i].mode = modes[mode];
+                    currentTrack.mode = modes[mode];
                 }
             }
         };

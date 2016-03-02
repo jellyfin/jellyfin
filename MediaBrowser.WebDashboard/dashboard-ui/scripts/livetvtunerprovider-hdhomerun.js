@@ -30,7 +30,8 @@
             Type: 'hdhomerun',
             Url: page.querySelector('.txtDevicePath').value,
             ImportFavoritesOnly: page.querySelector('.chkFavorite').checked,
-            IsEnabled: page.querySelector('.chkEnabled').checked
+            IsEnabled: page.querySelector('.chkEnabled').checked,
+            DataVersion: 1
         };
 
         var id = getParameterByName('id');

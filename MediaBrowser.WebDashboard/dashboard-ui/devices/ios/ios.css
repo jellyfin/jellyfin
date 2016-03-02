@@ -242,3 +242,7 @@ div.cardBox {
 .localSyncStatus .labelSyncStatus {
     display: none !important;
 }
+
+.videoSubtitles {
+    font-size: 200% !important;
+}

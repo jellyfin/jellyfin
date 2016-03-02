@@ -119,17 +119,18 @@
             var type = this.getAttribute('data-imagetype');
             var index = this.getAttribute('data-index');
             index = index == "null" ? null : parseInt(index);
-            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('HeaderDeleteImage'), function (result) {
 
-                if (result) {
+            require(['confirm'], function (confirm) {
+
+                confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('HeaderDeleteImage')).then(function () {
+
                     ApiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
 
                         hasChanges = true;
                         reload(page);
 
                     });
-                }
-
+                });
             });
         });
 
@@ -297,7 +298,7 @@
     return {
         show: function (itemId, options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentDeferred = deferred;
             hasChanges = false;

@@ -17,7 +17,9 @@
 
         }, function () {
 
-            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            });
         });
     }
 
@@ -30,9 +32,9 @@
 
         var location = virtualFolder.Locations[index];
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation')).then(function () {
 
                 var refreshAfterChange = currentOptions.refresh;
 
@@ -43,9 +45,11 @@
 
                 }, function () {
 
-                    Dashboard.alert(Globalize.translate('DefaultErrorMessage'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('DefaultErrorMessage'));
+                    });
                 });
-            }
+            });
         });
     }
 
@@ -134,7 +138,7 @@
 
         self.show = function (options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentOptions = options;
             currentDeferred = deferred;

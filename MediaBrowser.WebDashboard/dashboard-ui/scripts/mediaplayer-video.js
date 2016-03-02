@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appSettings'], function (appSettings) {
 
     function createVideoPlayer(self) {
 
@@ -152,7 +152,7 @@
                 })[0];
                 var videoWidth = videoStream ? videoStream.Width : null;
 
-                var options = qualityoptions.getVideoQualityOptions(AppSettings.maxStreamingBitrate(), videoWidth);
+                var options = qualityoptions.getVideoQualityOptions(appSettings.maxStreamingBitrate(), videoWidth);
 
                 if (isStatic) {
                     options[0].name = "Direct";
@@ -320,17 +320,7 @@
 
         self.setCurrentTrackElement = function (index) {
 
-            var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
-                return s.DeliveryMethod == 'External';
-            });
-
-            var newStream = textStreams.filter(function (s) {
-                return s.Index == index;
-            })[0];
-
-            var trackIndex = newStream ? textStreams.indexOf(newStream) : -1;
-
-            self.currentMediaRenderer.setCurrentTrackElement(trackIndex);
+            self.currentMediaRenderer.setCurrentTrackElement(index);
         };
 
         self.updateTextStreamUrls = function (startPositionTicks) {
@@ -612,8 +602,8 @@
 
         self.onQualityOptionSelected = function (bitrate) {
 
-            AppSettings.maxStreamingBitrate(bitrate);
-            AppSettings.enableAutomaticBitrateDetection(false);
+            appSettings.maxStreamingBitrate(bitrate);
+            appSettings.enableAutomaticBitrateDetection(false);
 
             self.changeStream(self.getCurrentTicks(), {
                 Bitrate: bitrate
@@ -1281,4 +1271,4 @@
 
     createVideoPlayer(MediaPlayer);
 
-})();
+});

@@ -15,7 +15,9 @@
 
         function afterContentTypeUpdated() {
 
-            Dashboard.alert(Globalize.translate('MessageItemSaved'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageItemSaved'));
+            });
 
             Dashboard.hideLoadingMsg();
             closeDialog(true);
@@ -343,6 +345,12 @@
         var items = [];
 
         items.push({
+            name: Globalize.translate('ButtonEditImages'),
+            id: 'images',
+            ironIcon: 'photo'
+        });
+
+        items.push({
             name: Globalize.translate('ButtonIdentify'),
             id: 'identify',
             ironIcon: 'info'
@@ -368,6 +376,9 @@
                             break;
                         case 'refresh':
                             showRefreshMenu(context, button);
+                            break;
+                        case 'images':
+                            LibraryBrowser.editImages(currentItem.Id);
                             break;
                         default:
                             break;
@@ -403,6 +414,18 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
+    function onEditorClick(e) {
+        var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
+        if (btnRemoveFromEditorList) {
+            removeElementFromListview(btnRemoveFromEditorList);
+        }
+
+        var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
+        if (btnAddTextItem) {
+            addElementToEditableListview(btnAddTextItem);
+        }
+    }
+
     function init(context) {
 
         $('.btnCancel', context).on('click', function () {
@@ -429,19 +452,8 @@
             }
         });
 
-        context.addEventListener('click', function (e) {
-
-            var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
-            if (btnRemoveFromEditorList) {
-                removeElementFromListview(btnRemoveFromEditorList);
-            }
-
-            var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
-            if (btnAddTextItem) {
-                addElementToEditableListview(btnAddTextItem);
-            }
-
-        });
+        context.removeEventListener('click', onEditorClick);
+        context.addEventListener('click', onEditorClick);
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);
 
@@ -1228,7 +1240,7 @@
                     paperDialogHelper.open(dlg);
 
                     dlg.addEventListener('iron-overlay-closed', function () {
-                        bindItemChanged(context);
+                        unbindItemChanged(dlg);
                         resolve();
                     });
 

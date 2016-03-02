@@ -99,7 +99,7 @@
             userId: Dashboard.getCurrentUserId(),
             limit: 12,
             IsInProgress: false,
-            Fields: 'CanDelete'
+            Fields: 'CanDelete,PrimaryImageAspectRatio'
 
         }).then(function (result) {
 

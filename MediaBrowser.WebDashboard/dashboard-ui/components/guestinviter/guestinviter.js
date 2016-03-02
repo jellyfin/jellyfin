@@ -1,23 +1,19 @@
-﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'jqmcollapsible'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'jqmcollapsible', 'paper-checkbox'], function (paperDialogHelper) {
 
     function renderLibrarySharingList(context, result) {
 
         var folderHtml = '';
 
-        folderHtml += '<div data-role="controlgroup">';
+        folderHtml += '<div class="paperCheckboxList">';
 
         folderHtml += result.Items.map(function (i) {
 
             var currentHtml = '';
 
-            var id = 'chkShareFolder' + i.Id;
-
-            currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
-
             var isChecked = true;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<input data-mini="true" class="chkShareFolder" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
+            currentHtml += '<paper-checkbox class="chkShareFolder" data-folderid="' + i.Id + '" type="checkbox"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
 
             return currentHtml;
 
@@ -25,7 +21,7 @@
 
         folderHtml += '</div>';
 
-        $('.librarySharingList', context).html(folderHtml).trigger('create');
+        context.querySelector('.librarySharingList').innerHTML = folderHtml;
     }
 
     function inviteUser(dlg) {
@@ -34,7 +30,11 @@
 
         ApiClient.getJSON(ApiClient.getUrl("Channels", {})).then(function (channelsResult) {
 
-            var shareExcludes = $(".chkShareFolder:checked", dlg).get().map(function (i) {
+            var shareExcludes = $(".chkShareFolder", dlg).get().filter(function (i) {
+
+                return i.checked;
+
+            }).map(function (i) {
 
                 return i.getAttribute('data-folderid');
             });
@@ -47,7 +47,7 @@
                 dataType: 'json',
                 data: {
 
-                    ConnectUsername: $('#txtConnectUsername', dlg).val(),
+                    ConnectUsername: dlg.querySelector('#txtConnectUsername').value,
                     EnabledLibraries: shareExcludes.join(','),
                     SendingUserId: Dashboard.getCurrentUserId(),
                     EnableLiveTv: false

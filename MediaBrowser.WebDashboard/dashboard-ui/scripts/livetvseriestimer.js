@@ -4,21 +4,22 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.cancelLiveTvTimer(id).then(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
 
                     reload(page);
                 });
-            }
-
+            });
         });
     }
 
@@ -117,7 +118,9 @@
 
             ApiClient.updateLiveTvSeriesTimer(item).then(function () {
                 Dashboard.hideLoadingMsg();
-                Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageRecordingSaved'));
+                });
             });
         });
 
@@ -144,7 +147,9 @@
         var timers = result.Items;
 
         LiveTvHelpers.getTimersHtml(timers).then(function(html) {
-            var elem = $('.scheduleTab', page).html(html);
+            var elem = $('.scheduleTab', page).html(html)[0];
+
+            ImageLoader.lazyChildren(elem);
 
             $('.btnDeleteTimer', elem).on('click', function () {
 

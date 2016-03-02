@@ -6,6 +6,7 @@ using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Library
 {
@@ -54,7 +55,7 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Library/FileOrganizations/{Id}/Episode/Organize", "POST", Summary = "Performs an organization")]
+    [Route("/Library/FileOrganizations/{Id}/Episode/Organize", "POST", Summary = "Performs organization of a tv episode")]
     public class OrganizeEpisode
     {
         [ApiMember(Name = "Id", Description = "Result Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -74,6 +75,18 @@ namespace MediaBrowser.Api.Library
 
         [ApiMember(Name = "RememberCorrection", Description = "Whether or not to apply the same correction to future episodes of the same series.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool RememberCorrection { get; set; }
+
+        [ApiMember(Name = "NewSeriesProviderIds", Description = "A list of provider IDs identifying a new series.", IsRequired = false, DataType = "Dictionary<string, string>", ParameterType = "query", Verb = "POST")]
+        public Dictionary<string, string> NewSeriesProviderIds { get; set; }
+
+        [ApiMember(Name = "NewSeriesName", Description = "Name of a series to add.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string NewSeriesName { get; set; }
+
+        [ApiMember(Name = "NewSeriesYear", Description = "Year of a series to add.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string NewSeriesYear { get; set; }
+
+        [ApiMember(Name = "TargetFolder", Description = "Target Folder", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string TargetFolder { get; set; }
     }
 
     [Route("/Library/FileOrganizations/SmartMatches", "GET", Summary = "Gets smart match entries")]
@@ -106,9 +119,14 @@ namespace MediaBrowser.Api.Library
     {
         private readonly IFileOrganizationService _iFileOrganizationService;
 
-        public FileOrganizationService(IFileOrganizationService iFileOrganizationService)
+        /// The _json serializer
+        /// </summary>
+        private readonly IJsonSerializer _jsonSerializer;
+
+        public FileOrganizationService(IFileOrganizationService iFileOrganizationService, IJsonSerializer jsonSerializer)
         {
             _iFileOrganizationService = iFileOrganizationService;
+            _jsonSerializer = jsonSerializer;
         }
 
         public object Get(GetFileOrganizationActivity request)
@@ -145,6 +163,13 @@ namespace MediaBrowser.Api.Library
 
         public void Post(OrganizeEpisode request)
         {
+            var dicNewProviderIds = new Dictionary<string, string>();
+
+            if (request.NewSeriesProviderIds != null)
+            {
+                dicNewProviderIds = request.NewSeriesProviderIds;
+            }
+
             var task = _iFileOrganizationService.PerformEpisodeOrganization(new EpisodeFileOrganizationRequest
             {
                 EndingEpisodeNumber = request.EndingEpisodeNumber,
@@ -152,8 +177,16 @@ namespace MediaBrowser.Api.Library
                 RememberCorrection = request.RememberCorrection,
                 ResultId = request.Id,
                 SeasonNumber = request.SeasonNumber,
-                SeriesId = request.SeriesId
+                SeriesId = request.SeriesId,
+                NewSeriesName = request.NewSeriesName,
+                NewSeriesYear = request.NewSeriesYear,
+                NewSeriesProviderIds = dicNewProviderIds,
+                TargetFolder = request.TargetFolder
             });
+
+            // For async processing (close dialog early instead of waiting until the file has been copied)
+            //var tasks = new Task[] { task };
+            //Task.WaitAll(tasks, 8000);
 
             Task.WaitAll(task);
         }

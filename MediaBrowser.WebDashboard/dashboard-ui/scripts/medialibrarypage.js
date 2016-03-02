@@ -2,9 +2,11 @@
 
     function changeCollectionType(page, virtualFolder) {
 
-        Dashboard.alert({
-            message: Globalize.translate('HeaderChangeFolderTypeHelp'),
-            title: Globalize.translate('HeaderChangeFolderType')
+        require(['alert'], function (alert) {
+            alert({
+                title: Globalize.translate('HeaderChangeFolderType'),
+                text: Globalize.translate('HeaderChangeFolderTypeHelp')
+            });
         });
     }
 
@@ -53,17 +55,16 @@
             msg += virtualFolder.Locations.join("<br/>");
         }
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderRemoveMediaFolder'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(msg, Globalize.translate('HeaderRemoveMediaFolder')).then(function () {
 
                 var refreshAfterChange = shouldRefreshLibraryAfterChanges(page);
 
                 ApiClient.removeVirtualFolder(virtualFolder.Name, refreshAfterChange).then(function () {
                     reloadLibrary(page);
                 });
-            }
-
+            });
         });
     }
 

@@ -41,7 +41,7 @@
     </Reference>
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.7\lib\net45\CommonIO.dll</HintPath>
+      <HintPath>..\packages\CommonIO.1.0.0.8\lib\net45\CommonIO.dll</HintPath>
     </Reference>
     <Reference Include="DvdLib">
       <HintPath>..\packages\MediaBrowser.BdInfo.1.0.0.10\lib\net35\DvdLib.dll</HintPath>

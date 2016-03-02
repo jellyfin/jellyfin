@@ -6,6 +6,7 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
@@ -90,12 +91,14 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <value>The task manager.</value>
         private ITaskManager TaskManager { get; set; }
 
+        private readonly IServerConfigurationManager _config;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskService" /> class.
         /// </summary>
         /// <param name="taskManager">The task manager.</param>
-        /// <exception cref="System.ArgumentNullException">taskManager</exception>
-        public ScheduledTaskService(ITaskManager taskManager)
+        /// <exception cref="ArgumentNullException">taskManager</exception>
+        public ScheduledTaskService(ITaskManager taskManager, IServerConfigurationManager config)
         {
             if (taskManager == null)
             {
@@ -103,6 +106,7 @@ namespace MediaBrowser.Api.ScheduledTasks
             }
 
             TaskManager = taskManager;
+            _config = config;
         }
 
         /// <summary>
@@ -192,6 +196,20 @@ namespace MediaBrowser.Api.ScheduledTasks
             if (task == null)
             {
                 throw new ResourceNotFoundException("Task not found");
+            }
+
+            var hasKey = task.ScheduledTask as IHasKey;
+            if (hasKey != null)
+            {
+                if (string.Equals(hasKey.Key, "SystemUpdateTask", StringComparison.OrdinalIgnoreCase))
+                {
+                    // This is a hack for now just to get the update application function to work when auto-update is disabled
+                    if (!_config.Configuration.EnableAutoUpdate)
+                    {
+                        _config.Configuration.EnableAutoUpdate = true;
+                        _config.SaveConfiguration();
+                    }
+                }
             }
 
             TaskManager.Execute(task);

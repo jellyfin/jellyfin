@@ -29,13 +29,11 @@
             html += '</div>';
         }
 
-        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
+        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
 
         html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
-        if (!showUserAtTop()) {
-            html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
-        }
+        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
 
         if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
@@ -76,7 +74,7 @@
         var hasImage;
 
         if (user && user.name) {
-            if (user.imageUrl && AppInfo.enableUserImage) {
+            if (user.imageUrl) {
 
                 var userButtonHeight = 26;
 
@@ -136,9 +134,9 @@
                 }
             }
 
-            requirejs(['voice/voice'], function () {
+            require(['voice/voice'], function (voice) {
 
-                if (VoiceInputManager.isSupported()) {
+                if (voice.isSupported()) {
                     header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
@@ -159,6 +157,12 @@
         }
     }
 
+    function showVoice() {
+        require(['voice/voice'], function (voice) {
+            voice.startListening();
+        });
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
@@ -170,6 +174,11 @@
         var headerBackButton = document.querySelector('.headerBackButton');
         if (headerBackButton) {
             headerBackButton.addEventListener('click', onBackClick);
+        }
+
+        var headerVoiceButton = document.querySelector('.headerVoiceButton');
+        if (headerVoiceButton) {
+            headerVoiceButton.addEventListener('click', showVoice);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
@@ -277,44 +286,14 @@
 
         var html = '';
 
-        var userAtTop = showUserAtTop();
-
         var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
 
-        var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+        html += '<div style="margin-top:5px;"></div>';
 
-        if (userAtTop) {
-
-            html += '<div class="drawerUserPanel">';
-
-            var imgWidth = 40;
-
-            if (hasUserImage) {
-                var url = user.imageUrl;
-                if (user.supportsImageParams) {
-                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
-                    html += '<div class="lazy drawerUserPanelUserImage" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;"></div>';
-                }
-            } else {
-                html += '<div class="drawerUserPanelUserImage"><iron-icon icon="person" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;"></iron-icon></div>';
-            }
-
-            html += '<div class="drawerUserPanelUserName">';
-            html += user.name;
-            html += '</div>';
-
-            html += '</div>';
-
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="index.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="home" class="sidebarLinkIcon" style="color:#2196F3;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
-
-        } else {
-            html += '<div style="margin-top:5px;"></div>';
-
-            html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
-            html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
-            html += Globalize.translate('ButtonHome');
-            html += '</a>';
-        }
+        html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
+        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
+        html += Globalize.translate('ButtonHome');
+        html += '</a>';
 
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
@@ -375,7 +354,7 @@
 
         html += '<div class="sidebarDivider"></div>';
 
-        if (user.localUser && showUserAtTop()) {
+        if (user.localUser && (AppInfo.isNativeApp && browserInfo.android)) {
             html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
@@ -385,7 +364,7 @@
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
-        if (showUserAtTop()) {
+        if (user.localUser) {
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
@@ -543,10 +522,6 @@
         } else {
             $('.lnkMySync').addClass('hide');
         }
-    }
-
-    function showUserAtTop() {
-        return AppInfo.isNativeApp;
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -904,7 +879,7 @@
             return;
         }
 
-        requirejs(["headroom"], function () {
+        require(["headroom"], function () {
 
             // construct an instance of Headroom, passing the element
             var headroom = new Headroom(elem, {

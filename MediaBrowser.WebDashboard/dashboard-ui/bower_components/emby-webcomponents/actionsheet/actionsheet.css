@@ -1,0 +1,54 @@
+.actionSheet {
+    display: flex;
+    justify-content: center;
+}
+
+    .actionSheet.centered .actionSheetContent {
+        text-align: center;
+        align-items: center;
+    }
+
+.actionSheetContent {
+    margin: 0 !important;
+    padding: 1em 1em !important;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+}
+
+.actionSheetMenuItem {
+    padding: .4em .5em;
+    margin: 0;
+    text-transform: none;
+    text-align: inherit;
+    display: flex;
+    justify-content: center;
+    font-weight: inherit;
+}
+
+.actionSheetItemIcon {
+    margin-right: 1.5em !important;
+}
+
+.actionSheetScroller {
+    max-height: 60%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Override default style being applied by polymer */
+    margin-bottom: 0 !important;
+    scroll-behavior: smooth;
+}
+
+    .actionSheetScroller::-webkit-scrollbar, .actionSheetScroller::-webkit-scrollbar {
+        width: 0 !important;
+        display: none;
+    }
+
+h1.actionSheetTitle {
+    margin: .5em 0 1em !important;
+}
+
+h2.actionSheetTitle {
+    margin: .25em 0 .55em !important;
+}

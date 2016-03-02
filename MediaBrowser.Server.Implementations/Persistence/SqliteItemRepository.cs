@@ -130,6 +130,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID)",
                                 "create index if not exists idx_TypedBaseItems on TypedBaseItems(guid)",
+                                "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
@@ -1014,7 +1015,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(31))
             {
-                item.OfficialRating = reader.GetString(31);
+                item.OfficialRatingDescription = reader.GetString(31);
             }
 
             if (!reader.IsDBNull(32))
@@ -1802,6 +1803,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("ParentId=@ParentId");
                 cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = query.ParentId.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Path))
+            {
+                whereClauses.Add("Path=@Path");
+                cmd.Parameters.Add(cmd, "@Path", DbType.String).Value = query.Path;
             }
 
             if (query.MinEndDate.HasValue)

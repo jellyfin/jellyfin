@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
     <title>Emby</title>
 </head>
@@ -14,7 +14,7 @@
 
                 <div class="detailSection">
                     <h1>
-                        ${HeaderLanguagePreferences}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                        ${HeaderAudioSettings}
                     </h1>
                     <div class="detailSectionContent">
                         <br />
@@ -24,27 +24,34 @@
                         </div>
                         <br />
                         <paper-checkbox class="chkPlayDefaultAudioTrack">${LabelPlayDefaultAudioTrack}</paper-checkbox>
-                        <br /><br /><br />
+                    </div>
+                </div>
+                <div class="detailSection">
+                    <h1>
+                        ${HeaderSubtitleSettings}
+                    </h1>
+                    <div class="detailSectionContent">
+                        <br />
                         <div>
                             <label for="selectSubtitleLanguage" class="selectLabel">${LabelSubtitleLanguagePreference}</label>
                             <select id="selectSubtitleLanguage" data-mini="true"></select>
                         </div>
                         <br />
                         <div>
-                            <label for="selectSubtitlePlaybackMode" class="selectLabel">${LabelSubtitlePlaybackMode}</label>
-                            <select id="selectSubtitlePlaybackMode" data-mini="true">
-                                <option value="Default">${OptionDefaultSubtitles}</option>
-                                <option value="Smart">${OptionSmartSubtitles}</option>
-                                <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
-                                <option value="Always">${OptionAlwaysPlaySubtitles}</option>
-                                <option value="None">${OptionNoSubtitles}</option>
-                            </select>
-                            <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
-                            <div class="fieldDescription subtitlesSmartHelp subtitlesHelp" style="display: none;">${OptionSmartSubtitlesHelp}</div>
-                            <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
-                            <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
-                            <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
-                        </div>
+                        </div>  <br />
+                        <label for="selectSubtitlePlaybackMode" class="selectLabel">${LabelSubtitlePlaybackMode}</label>
+                        <select id="selectSubtitlePlaybackMode" data-mini="true">
+                            <option value="Default">${OptionDefaultSubtitles}</option>
+                            <option value="Smart">${OptionSmartSubtitles}</option>
+                            <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
+                            <option value="Always">${OptionAlwaysPlaySubtitles}</option>
+                            <option value="None">${OptionNoSubtitles}</option>
+                        </select>
+                        <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesSmartHelp subtitlesHelp" style="display: none;">${OptionSmartSubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
+                        <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
                     </div>
 
                 </div>
@@ -74,12 +81,12 @@
                         <br />
                         <div>
                             <label for="selectMaxChromecastBitrate" class="selectLabel">${LabelMaxChromecastBitrate}</label>
-                            <select id="selectMaxChromecastBitrate" data-mini="true">
-                            </select>
+                            <select id="selectMaxChromecastBitrate" data-mini="true"></select>
                         </div>
-
-                        <div class="fldExternalPlayer" style="display: none;">
-                            <br />
+                        <div style="margin-top:2em;">
+                            <paper-checkbox class="chkEpisodeAutoPlay">${OptionPlayNextEpisodeAutomatically}</paper-checkbox>
+                        </div>
+                        <div class="fldExternalPlayer" style="margin-top:2em;display: none;">
                             <paper-checkbox class="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</paper-checkbox>
                             <div class="fieldDescription paperCheckboxFieldDescription">
                                 <div style="display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
@@ -92,10 +99,6 @@
                 <button type="submit" data-role="none" class="clearButton block btnSave hide">
                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                 </button>
-                
-                <p>
-                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
-                </p>
             </form>
         </div>
     </div>

@@ -1119,11 +1119,13 @@
 
         self.performEpisodeOrganization = function (id, options) {
 
-            var url = self.getUrl("Library/FileOrganizations/" + id + "/Episode/Organize", options || {});
+            var url = self.getUrl("Library/FileOrganizations/" + id + "/Episode/Organize");
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify(options),
+                contentType: 'application/json'
             });
         };
 
@@ -3442,6 +3444,58 @@
                 url: url,
                 data: JSON.stringify(postData),
                 contentType: "application/json"
+            });
+        };
+
+        self.createPin = function () {
+
+            return self.ajax({
+                type: "POST",
+                url: self.getUrl('Auth/Pin'),
+                data: {
+                    deviceId: self.deviceId(),
+                    appName: self.appName()
+                },
+                dataType: "json"
+            });
+        };
+
+        self.getPinStatus = function (pinInfo) {
+
+            var queryString = {
+                deviceId: pinInfo.DeviceId,
+                pin: pinInfo.Pin
+            };
+
+            return self.ajax({
+                type: 'GET',
+                url: self.getUrl('Auth/Pin', queryString),
+                dataType: 'json'
+            });
+        };
+
+        function exchangePin(pinInfo) {
+
+            return self.ajax({
+                type: 'POST',
+                url: self.getUrl('Auth/Pin/Exchange'),
+                data: {
+                    deviceId: pinInfo.DeviceId,
+                    pin: pinInfo.Pin
+                },
+                dataType: 'json'
+            });
+        }
+
+        self.exchangePin = function (pinInfo) {
+
+            return exchangePin(pinInfo).then(function (result) {
+
+                if (self.onAuthenticated) {
+                    self.onAuthenticated(self, result);
+                }
+
+                return result;
             });
         };
     };

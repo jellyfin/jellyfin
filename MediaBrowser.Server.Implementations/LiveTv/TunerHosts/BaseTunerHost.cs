@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return list;
         }
 
-        private List<TunerHostInfo> GetTunerHosts()
+        protected virtual List<TunerHostInfo> GetTunerHosts()
         {
             return GetConfiguration().TunerHosts
                 .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))

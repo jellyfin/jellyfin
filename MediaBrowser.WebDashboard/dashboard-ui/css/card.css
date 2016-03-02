@@ -44,26 +44,29 @@
 }
 
 .cardBox {
-    margin: 1px;
+    margin: 4px;
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-width: 600px) {
 
     .cardBox {
         margin: 1px;
     }
 }
 
+@media all and (min-width: 800px) {
+
+    .cardImage {
+        border-radius: 2px;
+    }
+}
+
 .defaultBackground .cardImage {
-    background-color: #333;
+    background-color: #303030;
 }
 
 .homeTopViews .defaultBackground .cardImage {
     background-color: #181818;
-}
-
-.homeTopViews .cardImage {
-    border-radius: 2px;
 }
 
 .cardOverlayButtonContainer {
@@ -109,7 +112,7 @@
 }
 
 .ui-body-b .visualCardBox {
-    background: rgba(40,40,40,.85);
+    background: rgba(56,56,56,.85);
     border-radius: 3px;
 }
 

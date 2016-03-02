@@ -32,6 +32,7 @@ namespace MediaBrowser.Model.Dlna
         public string VideoProfile { get; set; }
 
         public bool? Cabac { get; set; }
+        public bool CopyTimestamps { get; set; }
         public string AudioCodec { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -231,6 +232,8 @@ namespace MediaBrowser.Model.Dlna
             {
                 list.Add(new NameValuePair("ItemId", item.ItemId));
             }
+
+            list.Add(new NameValuePair("CopyTimestamps", (item.CopyTimestamps).ToString().ToLower()));
             
             return list;
         }
@@ -269,7 +272,7 @@ namespace MediaBrowser.Model.Dlna
             // HLS will preserve timestamps so we can just grab the full subtitle stream
             long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
                 ? 0
-				: (this.PlayMethod == PlayMethod.Transcode ? StartPositionTicks : 0);
+				: (PlayMethod == PlayMethod.Transcode && !CopyTimestamps ? StartPositionTicks : 0);
 
             // First add the selected track
             if (SubtitleStreamIndex.HasValue)

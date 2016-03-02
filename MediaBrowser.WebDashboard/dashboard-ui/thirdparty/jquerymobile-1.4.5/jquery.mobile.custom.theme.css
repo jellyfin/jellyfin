@@ -261,13 +261,6 @@ div.ui-mobile-viewport {
         display: inline-block;
     }
 
-.ui-content {
-    border-width: 0;
-    overflow: visible;
-    overflow-x: hidden;
-    padding: 1em;
-}
-
 /* Buttons and icons */
 .ui-btn, ul[data-role="listview"] a + a {
     font-size: 16px;

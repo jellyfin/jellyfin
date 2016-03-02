@@ -200,11 +200,11 @@
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #101010;
+    background-color: #080808;
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(18, 18, 18, .55);
+        background-color: rgba(15, 15, 15, .3);
     }
 
 .paperLibraryViewNav {
@@ -403,12 +403,12 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
     .darkDrawer .sidebarLinkIcon {
-        color: #ccc !important;
+        color: #eee !important;
     }
 
     .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
         color: #fff !important;
-        font-weight: 300 !important;
+        font-weight: normal !important;
     }
 
     .darkDrawer .sidebarHeader {

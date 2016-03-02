@@ -4,20 +4,21 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.cancelLiveTvTimer(id).then(function () {
 
-                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
 
                     Dashboard.navigate('livetv.html');
                 });
-            }
-
+            });
         });
     }
 
@@ -79,7 +80,9 @@
 
             ApiClient.updateLiveTvTimer(item).then(function () {
                 Dashboard.hideLoadingMsg();
-                Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageRecordingSaved'));
+                });
             });
         });
 

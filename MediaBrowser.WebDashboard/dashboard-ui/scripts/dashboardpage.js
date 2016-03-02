@@ -330,22 +330,16 @@
 
             html += '</div>';
 
-            html += '<div class="sessionUserInfo">';
+            html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
 
-            var userImage = DashboardPage.getUserImage(session);
-            if (userImage) {
-                html += '<div class="sessionUserImage" data-src="' + userImage + '">';
-                html += '<img src="' + userImage + '" />';
-            } else {
-                html += '<div class="sessionUserImage">';
-            }
-            html += '</div>';
+            html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
 
-            html += '<div class="sessionUserName">';
-            html += DashboardPage.getUsersHtml(session);
-            html += '</div>';
+            //if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
 
-            html += '</div>';
+            //    html += '<div class="sessionTranscodingFramerate">' + session.TranscodingInfo.Framerate + ' fps</div>';
+            //} else {
+            //    html += '<div class="sessionTranscodingFramerate"></div>';
+            //}
 
             var nowPlayingName = DashboardPage.getNowPlayingName(session);
 
@@ -372,22 +366,23 @@
 
             html += '</div>';
 
-            html += '<div class="cardOverlayTarget">';
-
-            html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
-            html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
-
-            if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
-
-                html += '<div class="sessionTranscodingFramerate">' + session.TranscodingInfo.Framerate + ' fps</div>';
-            } else {
-                html += '<div class="sessionTranscodingFramerate"></div>';
-            }
-            html += '</div>';
-
             html += '</div>';
 
             // cardScalable
+            html += '</div>';
+
+            html += '<div style="padding:1em;border-top:1px solid #eee;background:#fff;text-align:center;text-transform:uppercase;display:flex;align-items:center;justify-content:center;">';
+
+            var userImage = DashboardPage.getUserImage(session);
+            if (userImage) {
+                html += '<img style="border-radius:50px;margin-right:.5em;" src="' + userImage + '" />';
+            } else {
+                html += '<div style="height:24px;"></div>';
+            }
+
+            html += '<div class="sessionUserName">';
+            html += DashboardPage.getUsersHtml(session) || '&nbsp;';
+            html += '</div>';
             html += '</div>';
 
             // cardBox
@@ -395,10 +390,9 @@
 
             // card
             html += '</div>';
-
         }
 
-        parentElement.append(html).createSessionItemMenus().trigger('create');
+        parentElement.append(html);
 
         $('.deadSession', parentElement).remove();
     },
@@ -407,7 +401,7 @@
 
         var html = '';
 
-        html += '<div>';
+        //html += '<div>';
 
         if (session.TranscodingInfo && session.TranscodingInfo.IsAudioDirect && session.TranscodingInfo.IsVideoDirect) {
             html += Globalize.translate('LabelPlayMethodDirectStream');
@@ -416,47 +410,47 @@
             html += Globalize.translate('LabelPlayMethodTranscoding');
         }
         else if (session.PlayState.PlayMethod == 'DirectStream') {
-            html += Globalize.translate('LabelPlayMethodDirectStream');
+            html += Globalize.translate('LabelPlayMethodDirectPlay');
         }
         else if (session.PlayState.PlayMethod == 'DirectPlay') {
             html += Globalize.translate('LabelPlayMethodDirectPlay');
         }
 
-        html += '</div>';
+        //html += '</div>';
 
-        if (session.TranscodingInfo) {
+        //if (session.TranscodingInfo) {
 
-            html += '<br/>';
+        //    html += '<br/>';
 
-            var line = [];
+        //    var line = [];
 
-            if (session.TranscodingInfo.Container) {
+        //    if (session.TranscodingInfo.Container) {
 
-                line.push(session.TranscodingInfo.Container);
-            }
-            if (session.TranscodingInfo.Bitrate) {
+        //        line.push(session.TranscodingInfo.Container);
+        //    }
+        //    if (session.TranscodingInfo.Bitrate) {
 
-                if (session.TranscodingInfo.Bitrate > 1000000) {
-                    line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
-                } else {
-                    line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
-                }
-            }
-            if (line.length) {
+        //        if (session.TranscodingInfo.Bitrate > 1000000) {
+        //            line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
+        //        } else {
+        //            line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
+        //        }
+        //    }
+        //    if (line.length) {
 
-                html += '<div>' + line.join(' ') + '</div>';
-            }
+        //        html += '<div>' + line.join(' ') + '</div>';
+        //    }
 
-            if (session.TranscodingInfo.VideoCodec) {
+        //    if (session.TranscodingInfo.VideoCodec) {
 
-                html += '<div>' + Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec) + '</div>';
-            }
-            if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
+        //        html += '<div>' + Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec) + '</div>';
+        //    }
+        //    if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
 
-                html += '<div>' + Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec) + '</div>';
-            }
+        //        html += '<div>' + Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec) + '</div>';
+        //    }
 
-        }
+        //}
 
         return html;
     },
@@ -587,7 +581,7 @@
         $('.sessionNowPlayingStreamInfo', row).html(DashboardPage.getSessionNowPlayingStreamInfo(session));
         $('.sessionNowPlayingTime', row).html(DashboardPage.getSessionNowPlayingTime(session));
 
-        $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session));
+        $('.sessionUserName', row).html(DashboardPage.getUsersHtml(session) || '&nbsp;');
 
         $('.sessionAppSecondaryText', row).html(DashboardPage.getAppSecondaryText(session));
 
@@ -971,103 +965,32 @@
 
     restart: function () {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart')).then(function () {
+
                 $('#btnRestartServer').buttonEnabled(false);
                 $('#btnShutdown').buttonEnabled(false);
                 Dashboard.restartServer();
-            }
-
+            });
         });
     },
 
     shutdown: function () {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown')).then(function () {
+
                 $('#btnRestartServer').buttonEnabled(false);
                 $('#btnShutdown').buttonEnabled(false);
                 ApiClient.shutdownServer();
-            }
-
+            });
         });
     }
 };
 
 $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
-
-(function ($, document, window) {
-
-    var showOverlayTimeout;
-
-    function onHoverOut() {
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        var elem = this.querySelector('.cardOverlayTarget');
-
-        if ($(elem).is(':visible')) {
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                Velocity.animate(elem, { "height": "0" },
-                {
-                    complete: function () {
-                        $(elem).hide();
-                    }
-                });
-            });
-        }
-    }
-
-    $.fn.createSessionItemMenus = function () {
-
-        function onShowTimerExpired(elem) {
-
-            if ($('.itemSelectionPanel:visible', elem).length) {
-                return;
-            }
-
-            var innerElem = $('.cardOverlayTarget', elem);
-
-            innerElem.show().each(function () {
-
-                this.style.height = 0;
-
-            }).animate({ "height": "100%" }, "fast");
-        }
-
-        function onHoverIn() {
-
-            if (showOverlayTimeout) {
-                clearTimeout(showOverlayTimeout);
-                showOverlayTimeout = null;
-            }
-
-            var elem = this;
-
-            showOverlayTimeout = setTimeout(function () {
-
-                onShowTimerExpired(elem);
-
-            }, 1000);
-        }
-
-        if (AppInfo.isTouchPreferred) {
-            /* browser with either Touch Events of Pointer Events
-               running on touch-capable device */
-            return this;
-        }
-
-        return this.off('mouseenter', '.playingSession', onHoverIn).off('mouseleave', '.playingSession', onHoverOut).on('mouseenter', '.playingSession', onHoverIn).on('mouseleave', '.playingSession', onHoverOut);
-    };
-
-})(jQuery, document, window);
-
 
 (function ($, document, window) {
 

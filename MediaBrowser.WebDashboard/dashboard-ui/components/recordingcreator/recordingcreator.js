@@ -358,7 +358,9 @@
                 dlg.addEventListener('iron-overlay-closed', function () {
 
                     if (recordingCreated) {
-                        Dashboard.alert(Globalize.translate('MessageRecordingScheduled'));
+                        require(['toast'], function (toast) {
+                            toast(Globalize.translate('MessageRecordingScheduled'));
+                        });
                         resolve();
                     } else {
                         reject();

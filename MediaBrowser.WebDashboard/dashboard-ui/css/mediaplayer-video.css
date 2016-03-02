@@ -122,19 +122,19 @@
 
 @media all and (max-width: 400px) {
     .videoPositionSlider {
-        width: 220px;
+        width: 200px;
     }
 }
 
 @media all and (max-width: 350px) {
     .videoPositionSlider {
-        width: 200px;
+        width: 180px;
     }
 }
 
 @media all and (max-width: 320px) {
     .videoPositionSlider {
-        width: 170px;
+        width: 120px;
     }
 }
 
@@ -253,6 +253,12 @@
     }
 
     .videoTopControlsLogo {
+        display: none !important;
+    }
+}
+
+@media all and (max-width: 500px) {
+    .videoControls .currentTime {
         display: none !important;
     }
 }

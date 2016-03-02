@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -343,11 +344,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Adds the information to program dto.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="dto">The dto.</param>
+        /// <param name="programs">The programs.</param>
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
-        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, List<ItemFields> fields, User user = null);
+        /// <returns>Task.</returns>
+        Task AddInfoToProgramDto(List<Tuple<BaseItem,BaseItemDto>> programs, List<ItemFields> fields, User user = null);
         /// <summary>
         /// Saves the tuner host.
         /// </summary>

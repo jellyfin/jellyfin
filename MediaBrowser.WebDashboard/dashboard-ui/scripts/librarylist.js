@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['appSettings'], function (appSettings) {
 
     var showOverlayTimeout;
 
@@ -338,7 +338,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && AppSettings.enableExternalPlayers()) {
+                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && appSettings.enableExternalPlayers()) {
                     items.push({
                         name: Globalize.translate('ButtonPlayExternalPlayer'),
                         id: 'externalplayer',
@@ -468,7 +468,10 @@
                                 });
                                 break;
                             case 'playlist':
-                                PlaylistManager.showPanel([itemId]);
+                                require(['playlistManager'], function (playlistManager) {
+
+                                    playlistManager.showPanel([itemId]);
+                                });
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems([itemId]);
@@ -539,11 +542,13 @@
                                 playAllFromHere(index, $(card).parents('.itemsContainer'), 'queue');
                                 break;
                             case 'sync':
-                                SyncManager.showMenu({
-                                    items: [
-                                    {
-                                        Id: itemId
-                                    }]
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: [
+                                        {
+                                            Id: itemId
+                                        }]
+                                    });
                                 });
                                 break;
                             case 'editsubtitles':
@@ -1164,8 +1169,11 @@
                                 hideSelections();
                                 break;
                             case 'playlist':
-                                PlaylistManager.showPanel(items);
-                                hideSelections();
+                                require(['playlistManager'], function (playlistManager) {
+
+                                    playlistManager.showPanel(items);
+                                    hideSelections();
+                                });
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems(items).then(function () {
@@ -1193,12 +1201,14 @@
                                 hideSelections();
                                 break;
                             case 'sync':
-                                SyncManager.showMenu({
-                                    items: items.map(function (i) {
-                                        return {
-                                            Id: i
-                                        };
-                                    })
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: items.map(function (i) {
+                                            return {
+                                                Id: i
+                                            };
+                                        })
+                                    });
                                 });
                                 hideSelections();
                                 break;
@@ -1226,9 +1236,9 @@
 
         var msg = Globalize.translate('MessageTheSelectedItemsWillBeGrouped');
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderGroupVersions'), function (confirmResult) {
+        require(['confirm'], function (confirm) {
 
-            if (confirmResult) {
+            confirm(msg, Globalize.translate('HeaderGroupVersions')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -1243,7 +1253,7 @@
                     hideSelections();
                     $('.itemsContainer', page).trigger('needsrefresh');
                 });
-            }
+            });
         });
     }
 
@@ -1319,6 +1329,41 @@
         });
     }
 
+    function showSyncButtonsPerUser(page) {
+
+        var apiClient = window.ApiClient;
+
+        if (!apiClient || !apiClient.getCurrentUserId()) {
+            return;
+        }
+
+        Dashboard.getCurrentUser().then(function (user) {
+
+            var item = {
+                SupportsSync: true
+            };
+
+            if (LibraryBrowser.enableSync(item, user)) {
+                $('.categorySyncButton', page).removeClass('hide');
+            } else {
+                $('.categorySyncButton', page).addClass('hide');
+            }
+        });
+    }
+
+    function onCategorySyncButtonClick(page, button) {
+
+        var category = button.getAttribute('data-category');
+        var parentId = LibraryMenu.getTopParentId();
+
+        require(['syncDialog'], function (syncDialog) {
+            syncDialog.showMenu({
+                ParentId: parentId,
+                Category: category
+            });
+        });
+    }
+
     pageClassOn('pageinit', "libraryPage", function () {
 
         var page = this;
@@ -1330,6 +1375,20 @@
             $(itemsContainers[i]).createCardMenus();
         }
 
+        $('.categorySyncButton', page).on('click', function () {
+
+            onCategorySyncButtonClick(page, this);
+        });
+
+    });
+
+    pageClassOn('pageshow', "libraryPage", function () {
+
+        var page = this;
+
+        if (!Dashboard.isServerlessPage()) {
+            showSyncButtonsPerUser(page);
+        }
     });
 
     pageClassOn('pagebeforehide', "libraryPage", function () {
@@ -1437,4 +1496,4 @@
     Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
     Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
-})(jQuery, document, window);
+});

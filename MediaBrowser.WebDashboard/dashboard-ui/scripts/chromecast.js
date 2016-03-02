@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['appSettings'], function (appSettings) {
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;
@@ -276,13 +276,6 @@
         console.log("chromecast launch error");
         this.deviceState = DEVICE_STATE.ERROR;
 
-        //Dashboard.alert({
-
-        //    title: Globalize.translate("Error"),
-        //    message: Globalize.translate("ErrorLaunchingChromecast")
-
-        //});
-
         sendConnectionResult(false);
     };
 
@@ -357,7 +350,7 @@
             receiverName: receiverName
         });
 
-        var bitrateSetting = AppSettings.maxChromecastBitrate();
+        var bitrateSetting = appSettings.maxChromecastBitrate();
         if (bitrateSetting) {
             message.maxBitrate = bitrateSetting;
         }
@@ -621,7 +614,7 @@
         };
 
         self.queue = function (options) {
-            self.playWithCommnd(options, 'PlayLast');
+            self.playWithCommand(options, 'PlayLast');
         };
 
         self.queueNext = function (options) {

@@ -46,6 +46,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         height: 200px;
       }
 
+      .sized-xy {
+        width: 200px;
+        height: 200px;
+      }
+
       .positioned-left {
         position: absolute;
         left: 100px;
@@ -83,6 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
 
+
     <test-fixture id="absolute">
       <template>
         <test-fit auto-fit-on-attach class="absolute">
@@ -104,6 +110,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <test-fit auto-fit-on-attach class="sized-x">
           Sized (x), auto center/center
         </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="with-max-width">
+      <template>
+        <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
+          <test-fit auto-fit-on-attach class="with-max-width el">
+            with-max-width, auto center/center
+          </test-fit>
+        </div>
       </template>
     </test-fixture>
 
@@ -137,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <test-fixture id="constrain-target">
       <template>
         <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
-          <test-fit auto-fit-on-attach class="el">
+          <test-fit auto-fit-on-attach class="el sized-xy">
             <div>
               Auto center/center to parent element
             </div>
@@ -221,6 +237,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var rect = el.getBoundingClientRect();
           assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
           assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('sized element with transformed parent is centered in viewport', function() {
+          var constrain = fixture('constrain-target');
+          var el = Polymer.dom(constrain).querySelector('.el');
+          var rectBefore = el.getBoundingClientRect();
+          constrain.style.transform = 'translate3d(5px, 5px, 0)';
+          el.center();
+          var rectAfter = el.getBoundingClientRect();
+          assert.equal(rectBefore.top, rectAfter.top, 'top ok');
+          assert.equal(rectBefore.bottom, rectAfter.bottom, 'bottom ok');
+          assert.equal(rectBefore.left, rectAfter.left, 'left ok');
+          assert.equal(rectBefore.right, rectAfter.right, 'right ok');
         });
 
         test('scrolling element is centered in viewport', function() {
@@ -353,6 +382,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var constrain = fixture('constrain-target');
           var el = Polymer.dom(constrain).querySelector('.el')
           makeScrolling(el);
+          el.fitInto = constrain;
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          var crect = constrain.getBoundingClientRect();
+          assert.closeTo(rect.left - crect.left - (crect.right - rect.right), 0, 5, 'centered horizontally in fitInto');
+          assert.closeTo(rect.top - crect.top - (crect.bottom - rect.bottom), 0, 5, 'centered vertically in fitInto');
+        });
+
+        test('element with max-width centers in another element', function() {
+          var constrain = fixture('with-max-width');
+          var el = Polymer.dom(constrain).querySelector('.el');
           el.fitInto = constrain;
           el.refit();
           var rect = el.getBoundingClientRect();

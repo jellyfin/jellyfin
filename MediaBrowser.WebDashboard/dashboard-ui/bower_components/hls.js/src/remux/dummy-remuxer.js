@@ -8,6 +8,10 @@ class DummyRemuxer {
     this.observer = observer;
   }
 
+  get passthrough() {
+    return false;
+  }
+
   get timescale() {
     return this.PES_TIMESCALE;
   }

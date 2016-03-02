@@ -1,11 +1,11 @@
-﻿(function ($, window, document) {
+﻿define(['appSettings'], function (appSettings) {
 
     function loadForm(page, user) {
 
-        page.querySelector('#txtSyncPath').value = AppSettings.syncPath();
-        page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
+        page.querySelector('#txtSyncPath').value = appSettings.syncPath();
+        page.querySelector('#chkWifi').checked = appSettings.syncOnlyOnWifi();
 
-        var uploadServers = AppSettings.cameraUploadServers();
+        var uploadServers = appSettings.cameraUploadServers();
 
         page.querySelector('.uploadServerList').innerHTML = ConnectionManager.getSavedServers().map(function (s) {
 
@@ -21,10 +21,10 @@
 
     function saveUser(page, user) {
 
-        AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
-        AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
+        appSettings.syncPath(page.querySelector('#txtSyncPath').value);
+        appSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
 
-        AppSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
+        appSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
 
             return i.checked;
 
@@ -34,7 +34,9 @@
         }));
 
         Dashboard.hideLoadingMsg();
-        Dashboard.alert(Globalize.translate('SettingsSaved'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('SettingsSaved'));
+        });
     }
 
     function onSubmit() {
@@ -90,4 +92,4 @@
         }
     });
 
-})(jQuery, window, document);
+});

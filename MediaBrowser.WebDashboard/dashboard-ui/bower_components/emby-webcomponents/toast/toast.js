@@ -4,6 +4,12 @@ define(['paper-toast'], function () {
 
     return function (options) {
 
+        if (typeof options === 'string') {
+            options = {
+                text: options
+            };
+        }
+
         var elem = document.createElement("paper-toast");
         elem.setAttribute('text', options.text);
         elem.id = 'toast' + (toastId++);

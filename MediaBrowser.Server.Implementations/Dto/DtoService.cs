@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Dto
@@ -92,10 +93,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             var syncDictionary = GetSyncedItemProgressDictionary(syncJobItems);
 
             var list = new List<BaseItemDto>();
+            var programTuples = new List<Tuple<BaseItem, BaseItemDto>> { };
 
             foreach (var item in items)
             {
                 var dto = GetBaseItemDtoInternal(item, options, syncDictionary, user, owner);
+
+                if (item is LiveTvProgram)
+                {
+                    programTuples.Add(new Tuple<BaseItem, BaseItemDto>(item, dto));
+                }
 
                 var byName = item as IItemByName;
 
@@ -118,6 +125,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 list.Add(dto);
             }
 
+            if (programTuples.Count > 0)
+            {
+                var task = _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user);
+                Task.WaitAll(task);
+            }
+
             return list;
         }
 
@@ -138,6 +151,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             var syncProgress = GetSyncedItemProgress(options);
 
             var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user, owner);
+
+            if (item is LiveTvProgram)
+            {
+                var list = new List<Tuple<BaseItem, BaseItemDto>> { new Tuple<BaseItem, BaseItemDto>(item, dto) };
+                var task = _livetvManager().AddInfoToProgramDto(list, options.Fields, user);
+                Task.WaitAll(task);
+            }
 
             var byName = item as IItemByName;
 
@@ -393,11 +413,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 _livetvManager().AddInfoToRecordingDto(item, dto, user);
             }
 
-            else if (item is LiveTvProgram)
-            {
-                _livetvManager().AddInfoToProgramDto(item, dto, fields, user);
-            }
-
             return dto;
         }
 
@@ -639,6 +654,8 @@ namespace MediaBrowser.Server.Implementations.Dto
         private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type, int limit)
         {
             return item.GetImages(type)
+                // Convert to a list now in case GetImageCacheTag is slow
+                .ToList()
                 .Select(p => GetImageCacheTag(item, p))
                 .Where(i => i != null)
                 .Take(limit)

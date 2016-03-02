@@ -345,7 +345,6 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(bowerPath, "grunt");
             DeleteFoldersByName(bowerPath, "rollups");
 
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "external"), true);
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
           
             DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));

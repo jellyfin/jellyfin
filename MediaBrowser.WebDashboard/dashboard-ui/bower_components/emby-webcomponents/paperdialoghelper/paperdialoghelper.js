@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'performanceManager', 'browser', 'layoutManager', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, performanceManager, browser, layoutManager) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, browser, layoutManager) {
 
     function paperDialogHashHandler(dlg, hash, resolve) {
 
@@ -136,14 +136,14 @@
         // but not needed here since this is already on top of an existing dialog
         // but skip it in IE because it's causing the entire browser to hang
         // Also have to disable for firefox because it's causing select elements to not be clickable
-        if (!browser.msie && !browser.firefox && options.modal !== false) {
+        if (options.modal !== false) {
             dlg.setAttribute('modal', 'modal');
         }
 
         // seeing max call stack size exceeded in the debugger with this
         dlg.setAttribute('noAutoFocus', 'noAutoFocus');
 
-        var defaultEntryAnimation = performanceManager.getAnimationPerformance() <= 1 ? 'fade-in-animation' : 'scale-up-animation';
+        var defaultEntryAnimation = browser.animate ? 'scale-up-animation' : 'fade-in-animation';
         dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
         dlg.exitAnimation = 'fade-out-animation';
 
@@ -166,7 +166,7 @@
         };
 
         // too buggy in IE, not even worth it
-        if (browser.msie) {
+        if (!browser.animate) {
             dlg.animationConfig = null;
             dlg.entryAnimation = null;
             dlg.exitAnimation = null;

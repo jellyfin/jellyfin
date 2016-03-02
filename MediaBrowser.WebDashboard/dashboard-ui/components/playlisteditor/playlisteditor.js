@@ -74,7 +74,9 @@
             Dashboard.hideLoadingMsg();
 
             paperDialogHelper.close(dlg);
-            Dashboard.alert(Globalize.translate('MessageAddedToPlaylistSuccess'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageAddedToPlaylistSuccess'));
+            });
 
         });
     }
@@ -130,7 +132,7 @@
         html += '<form style="margin:auto;">';
 
         html += '<div class="fldSelectPlaylist">';
-        html += '<label for="selectPlaylistToAddTo">' + Globalize.translate('LabelSelectPlaylist') + '</label>';
+        html += '<label for="selectPlaylistToAddTo" class="selectLabel">' + Globalize.translate('LabelSelectPlaylist') + '</label>';
         html += '<select id="selectPlaylistToAddTo" data-mini="true"></select>';
         html += '</div>';
 

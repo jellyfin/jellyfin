@@ -19,6 +19,7 @@ using MediaBrowser.Model.Sync;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -125,7 +126,23 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private string GetSyncJobItemName(BaseItem item)
         {
-            return item.Name;
+            var name = item.Name;
+            var episode = item as Episode;
+
+            if (episode != null)
+            {
+                if (episode.IndexNumber.HasValue)
+                {
+                    name = "E" + episode.IndexNumber.Value.ToString(CultureInfo.InvariantCulture) + " - " + name;
+                }
+
+                if (episode.ParentIndexNumber.HasValue)
+                {
+                    name = "S" + episode.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture) + ", " + name;
+                }
+            }
+
+            return name;
         }
 
         public Task UpdateJobStatus(string id)
@@ -291,6 +308,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                     throw new ArgumentException("Unrecognized category: " + category);
             }
 
+            if (parent == null)
+            {
+                return new List<BaseItem>();
+            }
+
             query.User = user;
 
             var result = await parent.GetItems(query).ConfigureAwait(false);
@@ -319,6 +341,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             if (series != null)
             {
                 return series.GetEpisodes(user, false, false);
+            }
+
+            var season = item as Season;
+            if (season != null)
+            {
+                return season.GetEpisodes(user, false, false);
             }
 
             if (item.IsFolder)
@@ -360,6 +388,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             await EnsureSyncJobItems(null, cancellationToken).ConfigureAwait(false);
 
+            // Look job items that are supposedly transfering, but need to be requeued because the synced files have been deleted somehow
+            await HandleDeletedSyncFiles(cancellationToken).ConfigureAwait(false);
+
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
@@ -370,6 +401,28 @@ namespace MediaBrowser.Server.Implementations.Sync
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
 
             CleanDeadSyncFiles();
+        }
+
+        private async Task HandleDeletedSyncFiles(CancellationToken cancellationToken)
+        {
+            // Look job items that are supposedly transfering, but need to be requeued because the synced files have been deleted somehow
+            var result = _syncManager.GetJobItems(new SyncJobItemQuery
+            {
+                Statuses = new[] { SyncJobItemStatus.ReadyToTransfer, SyncJobItemStatus.Transferring },
+                AddMetadata = false
+            });
+
+            foreach (var item in result.Items)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (string.IsNullOrWhiteSpace(item.OutputPath) || !_fileSystem.FileExists(item.OutputPath))
+                {
+                    item.Status = SyncJobItemStatus.Queued;
+                    await _syncManager.UpdateSyncJobItemInternal(item).ConfigureAwait(false);
+                    await UpdateJobStatus(item.JobId).ConfigureAwait(false);
+                }
+            }
         }
 
         private void CleanDeadSyncFiles()
@@ -699,7 +752,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var path = Path.Combine(temporaryPath, filename);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, cancellationToken).ConfigureAwait(false))
             {

@@ -80,9 +80,9 @@
 
     function deleteProfile(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmProfileDeletion'), Globalize.translate('HeaderConfirmProfileDeletion'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmProfileDeletion'), Globalize.translate('HeaderConfirmProfileDeletion')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -96,10 +96,8 @@
 
                     loadProfiles(page);
                 });
-            }
-
+            });
         });
-
     }
 
     $(document).on('pageshow', "#dlnaProfilesPage", function () {

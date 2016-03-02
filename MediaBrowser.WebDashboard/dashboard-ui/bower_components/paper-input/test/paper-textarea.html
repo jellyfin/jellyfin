@@ -32,12 +32,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-  <test-fixture id="has-tabindex">
-    <template>
-      <paper-textarea tabindex="0"></paper-textarea>
-    </template>
-  </test-fixture>
-
   <test-fixture id="label">
     <template>
       <paper-textarea label="foo"></paper-textarea>
@@ -139,33 +133,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         input = fixture('basic');
       });
 
-      test('focus/blur events fired on host element', function() {
-        var nFocusEvents = 0;
-        var nBlurEvents = 0;
+      // At the moment, it is very hard to correctly fire exactly
+      // one focus/blur events on a paper-textarea. This is because
+      // when a paper-textarea is focused, it needs to focus
+      // its underlying native textarea, which will also fire a `blur`
+      // event.
+      test('focus events fired on host element', function() {
         input.addEventListener('focus', function(event) {
-          nFocusEvents += 1;
           assert(input.focused, 'input is focused');
-          MockInteractions.blur(input.inputElement.textarea);
         });
-        input.addEventListener('blur', function() {
-          nBlurEvents += 1;
-          assert(!input.focused, 'input is blurred');
-        });
-        MockInteractions.focus(input.inputElement.textarea);
-        assert.isTrue(nFocusEvents >= 1, 'focus event fired');
-        assert.isTrue(nBlurEvents >= 1, 'blur event fired')
+        MockInteractions.focus(input);
       });
 
-      test('focus a textarea with tabindex', function(done) {
-        var input = fixture('has-tabindex');
-        flush(function() {
-          assert.notEqual(document.activeElement, input._focusableElement);
-          MockInteractions.focus(input);
-          setTimeout(function() {
-            assert.equal(document.activeElement, input.shadowRoot ? input : input._focusableElement);
-            done();
-          }, 1);
-        })
+      test('focus events fired on host element if nested element is focused', function() {
+        input.addEventListener('focus', function(event) {
+          assert(input.focused, 'input is focused');
+        });
+        MockInteractions.focus(input.inputElement.textarea);
+      });
+
+      test('blur events fired on host element', function() {
+        MockInteractions.focus(input);
+        input.addEventListener('blur', function(event) {
+          assert(!input.focused, 'input is blurred');
+        });
+        MockInteractions.blur(input);
+      });
+
+      test('blur events fired on host element nested element is blurred', function() {
+        MockInteractions.focus(input);
+        input.addEventListener('blur', function(event) {
+          assert(!input.focused, 'input is blurred');
+        });
+        MockInteractions.blur(input.inputElement.textarea);
+      });
+
+      test('focusing then bluring sets the focused attribute correctly', function() {
+        MockInteractions.focus(input);
+        assert(input.focused, 'input is focused');
+        MockInteractions.blur(input);
+        assert(!input.focused, 'input is blurred');
+        MockInteractions.focus(input.inputElement.textarea);
+        assert(input.focused, 'input is focused');
+        MockInteractions.blur(input.inputElement.textarea);
+        assert(!input.focused, 'input is blurred');
       });
     });
 

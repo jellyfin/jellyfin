@@ -53,6 +53,13 @@
                     loadMode(page, 'welcome');
                 }
                 break;
+            case MediaBrowser.ConnectionState.ServerUpdateNeeded:
+                {
+                    Dashboard.alert({
+                        message: Globalize.translate('ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+                    });
+                }
+                break;
             case MediaBrowser.ConnectionState.Unavailable:
                 {
                     Dashboard.alert({
@@ -249,8 +256,10 @@
 
         if (AppInfo.isNativeApp) {
             terms.classList.add('hide');
+            page.querySelector('.tvAppInfo').classList.add('hide');
         } else {
             terms.classList.remove('hide');
+            page.querySelector('.tvAppInfo').classList.remove('hide');
         }
 
     }).on('pagebeforeshow', "#connectLoginPage", function () {

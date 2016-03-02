@@ -12,9 +12,9 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 -->
 
-[![Build Status](https://travis-ci.org/PolymerElements/paper-input.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-input)
+[![Build status](https://travis-ci.org/PolymerElements/paper-input.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-input)
 
-_[Demo and API Docs](https://elements.polymer-project.org/elements/paper-input)_
+_[Demo and API docs](https://elements.polymer-project.org/elements/paper-input)_
 
 
 ##&lt;paper-input&gt;
@@ -162,8 +162,8 @@ The following custom properties and mixins are available for styling:
 | Custom property | Description | Default |
 | --- | --- | --- |
 | `--paper-input-container-color` | Label and underline color when the input is not focused | `--secondary-text-color` |
-| `--paper-input-container-focus-color` | Label and underline color when the input is focused | `--default-primary-color` |
-| `--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--google-red-500` |
+| `--paper-input-container-focus-color` | Label and underline color when the input is focused | `--primary-color` |
+| `--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--error-color` |
 | `--paper-input-container-input-color` | Input foreground color | `--primary-text-color` |
 | `--paper-input-container` | Mixin applied to the container | `{}` |
 | `--paper-input-container-disabled` | Mixin applied to the container when it's disabled | `{}` |
@@ -200,7 +200,7 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--paper-input-container-invalid-color` | The foreground color of the error | `--google-red-500` |
+| `--paper-input-container-invalid-color` | The foreground color of the error | `--error-color` |
 | `--paper-input-error` | Mixin applied to the error | `{}` |
 
 

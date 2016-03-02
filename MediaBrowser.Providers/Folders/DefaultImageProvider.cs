@@ -25,8 +25,7 @@ namespace MediaBrowser.Providers.Folders
         {
             return new List<ImageType>
             {
-                ImageType.Primary,
-                ImageType.Thumb
+                ImageType.Primary
             };
         }
 
@@ -57,13 +56,6 @@ namespace MediaBrowser.Providers.Folders
                           ProviderName = Name,
                           Url = url,
                           Type = ImageType.Primary
-                     },
-
-                     new RemoteImageInfo
-                     {
-                          ProviderName = Name,
-                          Url = url,
-                          Type = ImageType.Thumb
                      }
                 });
             }
@@ -121,7 +113,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "collections.jpg";
+                //return urlPrefix + "collections.jpg";
             }
             if (string.IsNullOrWhiteSpace(viewType))
             {

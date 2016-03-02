@@ -1,6 +1,6 @@
 {
   "name": "iron-flex-layout",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Provide flexbox-based layouts",
   "keywords": [
     "web-components",
@@ -21,11 +21,11 @@
     "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
-    "paper-styles": "polymerelements/paper-styles#^1.0.0",
-    "marked-element": "polymerelements/marked-element#^1.0.0",
-    "prism-element": "PolymerElements/prism-element#^1.0.0",
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "iron-component-page": "polymerelements/iron-component-page#^1.0.0"
+    "web-component-tester": "^4.0.0"
   },
   "ignore": []
 }

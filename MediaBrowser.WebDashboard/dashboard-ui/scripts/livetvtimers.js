@@ -2,27 +2,30 @@
 
     function deleteTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.cancelLiveTvTimer(id).then(function () {
 
-                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
 
                     reload(page);
                 });
-            }
-
+            });
         });
     }
 
     function renderTimers(page, timers) {
 
         LiveTvHelpers.getTimersHtml(timers).then(function (html) {
-            var elem = $('#items', page).html(html);
+            var elem = $('#items', page).html(html)[0];
+
+            ImageLoader.lazyChildren(elem);
 
             $('.btnDeleteTimer', elem).on('click', function () {
 

@@ -192,31 +192,20 @@
     display: none;
 }
 
-.nowPlayingBarPositionSlider paper-progress {
-    height: 3px !important;
-}
-
-.nowPlayingBarPositionSlider #sliderBar {
-    padding-top: 0;
-}
-
-.nowPlayingBarPositionSlider #sliderContainer {
+.nowPlayingBarPositionSlider {
+    position: relative;
+    top: -15px;
     width: 100%;
-    margin-left: 0 !important;
 }
 
-.nowPlayingBarPositionSlider #sliderKnob {
-    top: -15px !important;
-}
+    .nowPlayingBarPositionSlider #sliderContainer {
+        width: 100%;
+        margin-left: 0 !important;
+    }
 
-.nowPlayingBarPositionSlider #progressContainer {
-    background-color: transparent !important;
-}
-
-.nowPlayingBarPositionSlider #sliderKnobInner {
-    width: 14px;
-    height: 14px;
-}
+    .nowPlayingBarPositionSlider #progressContainer {
+        background-color: transparent !important;
+    }
 
 .nowPlayingBarRight {
     position: relative;
@@ -295,10 +284,6 @@
 
     .nowPlayingBarPositionSlider paper-progress {
         height: 3px !important;
-    }
-
-    .nowPlayingBarPositionSlider #sliderKnob {
-        top: -15px !important;
     }
 
     .toggleRepeatButton {

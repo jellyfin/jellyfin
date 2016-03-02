@@ -31,7 +31,9 @@
 
         }, function () {
 
-            Dashboard.alert(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            });
         });
 
         return false;
@@ -180,7 +182,7 @@
 
         self.show = function (options) {
 
-            var deferred = DeferredBuilder.Deferred();
+            var deferred = jQuery.Deferred();
 
             currentOptions = options;
             currentDeferred = deferred;

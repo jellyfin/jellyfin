@@ -25,9 +25,7 @@
         </div>
     </div>
     <br />
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="airdays hide">
-        <h2>${HeaderAirDays}</h2>
-
+    <emby-collapsible title="${HeaderAirDays}" class="airdays hide">
         <div class="paperCheckboxList">
             <paper-checkbox class="chkAirDays" id="chkSunday" data-filter="Sunday">${OptionSunday}</paper-checkbox>
             <paper-checkbox class="chkAirDays" id="chkMonday" data-filter="Monday">${OptionMonday}</paper-checkbox>
@@ -37,10 +35,8 @@
             <paper-checkbox class="chkAirDays" id="chkFriday" data-filter="Friday">${OptionFriday}</paper-checkbox>
             <paper-checkbox class="chkAirDays" id="chkSaturday" data-filter="Saturday">${OptionSaturday}</paper-checkbox>
         </div>
-    </div>
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="features hide">
-        <h2>${HeaderFeatures}</h2>
-
+    </emby-collapsible>
+    <emby-collapsible title="${HeaderFeatures}" class="features hide">
         <div class="paperCheckboxList">
             <paper-checkbox class="chkFeatureFilter" id="chkSubtitle">${OptionHasSubtitles}</paper-checkbox>
             <paper-checkbox class="chkFeatureFilter" id="chkTrailer">${OptionHasTrailer}</paper-checkbox>
@@ -48,7 +44,7 @@
             <paper-checkbox class="chkFeatureFilter" id="chkThemeSong">${OptionHasThemeSong}</paper-checkbox>
             <paper-checkbox class="chkFeatureFilter" id="chkThemeVideo">${OptionHasThemeVideo}</paper-checkbox>
         </div>
-    </div>
+    </emby-collapsible>
 
     <div class="players hide">
         <h2 style="margin-bottom: .25em;">
@@ -61,37 +57,22 @@
             <paper-radio-button class="radioPlayers" name="4">${Option4Player}</paper-radio-button>
         </paper-radio-group>
     </div>
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters hide">
-        <h2>${HeaderGenres}</h2>
-
+    <emby-collapsible title="${HeaderGenres}" class="genreFilters hide">
         <div class="filterOptions">
         </div>
-    </div>
+    </emby-collapsible>
 
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="officialRatingFilters hide">
-        <h2>${HeaderParentalRatings}</h2>
-
+    <emby-collapsible title="${HeaderParentalRatings}" class="officialRatingFilters hide">
         <div class="filterOptions">
         </div>
-    </div>
+    </emby-collapsible>
 
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters hide">
-        <h2>${HeaderTags}</h2>
-
+    <emby-collapsible title="${HeaderTags}" class="tagFilters hide">
         <div class="filterOptions">
         </div>
-    </div>
+    </emby-collapsible>
 
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="tagFilters hide">
-        <h2>${HeaderTags}</h2>
-
-        <div class="filterOptions">
-        </div>
-    </div>
-
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="videoTypeFilters hide">
-        <h2>${HeaderVideoTypes}</h2>
-
+    <emby-collapsible title="${HeaderVideoTypes}" class="videoTypeFilters hide">
         <div class="paperCheckboxList">
             <paper-checkbox class="chkVideoTypeFilter chkBluray" data-filter="Bluray">${OptionBluray}</paper-checkbox>
             <paper-checkbox class="chkVideoTypeFilter chkDvd" data-filter="Dvd">${OptionDvd}</paper-checkbox>
@@ -101,12 +82,10 @@
             <paper-checkbox class="chkSDFilter IsHD">${OptionIsSD}</paper-checkbox>
             <paper-checkbox class="chk3DFilter chk3D">${Option3D}</paper-checkbox>
         </div>
-    </div>
+    </emby-collapsible>
 
-    <div data-role="collapsible" data-collapsed="true" data-mini="true" class="yearFilters hide">
-        <h2>${HeaderYears}</h2>
-
+    <emby-collapsible title="${HeaderYears}" class="yearFilters hide">
         <div class="filterOptions">
         </div>
-    </div>
+    </emby-collapsible>
 </div>

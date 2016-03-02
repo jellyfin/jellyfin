@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, setInterval, window) {
+define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     function mediaPlayer() {
 
@@ -189,7 +189,7 @@
 
                 require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
 
-                    var bitrateSetting = AppSettings.maxStreamingBitrate();
+                    var bitrateSetting = appSettings.maxStreamingBitrate();
 
                     if (!maxHeight) {
                         maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
@@ -313,7 +313,7 @@
 
             // viblast can help us here
             //return true;
-            return window.MediaSource != null && !browserInfo.firefox;
+            return window.MediaSource && !browserInfo.firefox;
         };
 
         self.changeStream = function (ticks, params) {
@@ -418,7 +418,8 @@
                 tracks.push({
                     url: textStreamUrl,
                     language: (textStream.Language || 'und'),
-                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex,
+                    index: textStream.Index
                 });
             }
 
@@ -513,46 +514,47 @@
             }
             else if (smart && firstItem.Type == "Episode" && items.length == 1) {
 
-                promise = ApiClient.getEpisodes(firstItem.SeriesId, {
-                    IsVirtualUnaired: false,
-                    IsMissing: false,
-                    UserId: ApiClient.getCurrentUserId(),
-                    Fields: getItemFields
+                promise = ApiClient.getCurrentUser().then(function (user) {
 
-                }).then(function (episodesResult) {
+                    if (!user.Configuration.EnableNextEpisodeAutoPlay) {
+                        return null;
+                    }
 
-                    var foundItem = false;
-                    episodesResult.Items = episodesResult.Items.filter(function (e) {
+                    return ApiClient.getEpisodes(firstItem.SeriesId, {
+                        IsVirtualUnaired: false,
+                        IsMissing: false,
+                        UserId: ApiClient.getCurrentUserId(),
+                        Fields: getItemFields
 
-                        if (foundItem) {
-                            return true;
-                        }
-                        if (e.Id == firstItem.Id) {
-                            foundItem = true;
-                            return true;
-                        }
+                    }).then(function (episodesResult) {
 
-                        return false;
+                        var foundItem = false;
+                        episodesResult.Items = episodesResult.Items.filter(function (e) {
+
+                            if (foundItem) {
+                                return true;
+                            }
+                            if (e.Id == firstItem.Id) {
+                                foundItem = true;
+                                return true;
+                            }
+
+                            return false;
+                        });
+                        episodesResult.TotalRecordCount = episodesResult.Items.length;
+                        return episodesResult;
                     });
-                    episodesResult.TotalRecordCount = episodesResult.Items.length;
-                    return episodesResult;
                 });
             }
 
             if (promise) {
-                return new Promise(function (resolve, reject) {
+                return promise.then(function (result) {
 
-                    promise.then(function (result) {
-
-                        resolve(result.Items);
-                    });
+                    return result ? result.Items : items;
                 });
             } else {
 
-                return new Promise(function (resolve, reject) {
-
-                    resolve(items);
-                });
+                return Promise.resolve(items);
             }
         }
 
@@ -598,7 +600,7 @@
                 Dashboard.showLoadingMsg();
             }
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !AppSettings.enableCinemaMode()) {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !userSettings.enableCinemaMode()) {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);
@@ -705,7 +707,10 @@
                                 if (mediaUrl.indexOf('.mkv') == -1) {
                                     mediaUrl += '&EnableAutoStreamCopy=false';
                                 }
-                                startTimeTicksOffset = startPosition || 0;
+
+                                if (mediaUrl.toLowerCase().indexOf('copytimestamps=true') == -1) {
+                                    startTimeTicksOffset = startPosition || 0;
+                                }
 
                                 contentType = 'video/' + mediaSource.TranscodingContainer;
                             }
@@ -820,14 +825,14 @@
 
             var bitrateDetectionKey = ApiClient.serverAddress();
 
-            if (item.MediaType == 'Video' && AppSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
+            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
                     console.log('Max bitrate auto detected to ' + bitrate);
                     self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
-                    AppSettings.maxStreamingBitrate(bitrate);
+                    appSettings.maxStreamingBitrate(bitrate);
 
                     onBitrateDetected();
 
@@ -1727,5 +1732,4 @@
     window.MediaController.registerPlayer(window.MediaPlayer);
     window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
 
-
-})(document, setTimeout, clearTimeout, screen, setInterval, window);
+});

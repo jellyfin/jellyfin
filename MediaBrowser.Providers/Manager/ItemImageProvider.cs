@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.Manager
@@ -520,6 +521,16 @@ namespace MediaBrowser.Providers.Manager
 
         private bool EnableImageStub(IHasImages item, ImageType type)
         {
+            if (item is LiveTvProgram)
+            {
+                return true;
+            }
+
+            if (_config.Configuration.DownloadImagesInAdvance)
+            {
+                return false;
+            }
+
             if (item.LocationType == LocationType.Remote || item.LocationType == LocationType.Virtual)
             {
                 return true;

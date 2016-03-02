@@ -20,7 +20,10 @@ class AbrController extends EventHandler {
 
   onFragLoadProgress(data) {
     var stats = data.stats;
-    if (stats.aborted === undefined) {
+    // only update stats if first frag loading
+    // if same frag is loaded multiple times, it might be in browser cache, and loaded quickly
+    // and leading to wrong bw estimation
+    if (stats.aborted === undefined && data.frag.loadCounter === 1) {
       this.lastfetchduration = (performance.now() - stats.trequest) / 1000;
       this.lastfetchlevel = data.frag.level;
       this.lastbw = (stats.loaded * 8) / this.lastfetchduration;

@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
     <title>Emby</title>
 </head>
@@ -20,6 +20,7 @@
                         <div>
                             <label for="selectLanguage" class="selectLabel">${LabelPreferredDisplayLanguage}</label>
                             <select id="selectLanguage" data-mini="true">
+                                <option value="">${OptionAuto}</option>
                                 <option value="ar">Arabic</option>
                                 <option value="bg-BG">Bulgarian (Bulgaria)</option>
                                 <option value="ca">Catalan</option>
@@ -96,7 +97,7 @@
 
                 <div class="detailSection requiresUserPreferences">
                     <h1>
-                        ${HeaderDisplay}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                        ${HeaderDisplay}
                     </h1>
                     <div class="detailSectionContent">
                         <br />
@@ -118,10 +119,6 @@
                 <button type="submit" data-role="none" class="clearButton block btnSave hide">
                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                 </button>
-
-                <p>
-                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
-                </p>
             </form>
         </div>
     </div>

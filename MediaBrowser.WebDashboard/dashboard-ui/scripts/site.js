@@ -404,7 +404,7 @@ var Dashboard = {
         }
 
         if (options.forceShow) {
-            elem.slideDown(400);
+            elem.show();
         }
 
         elem.html(options.html);
@@ -427,7 +427,7 @@ var Dashboard = {
             setTimeout(function () { // give the DOM time to catch up
 
                 if (!parentElem.html()) {
-                    footer.slideUp();
+                    footer.hide();
                 }
 
             }, 50);
@@ -511,14 +511,18 @@ var Dashboard = {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('MessageSettingsSaved'));
+        });
     },
 
     processServerConfigurationUpdateResult: function (result) {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('MessageSettingsSaved'));
+        });
     },
 
     alert: function (options) {
@@ -536,78 +540,12 @@ var Dashboard = {
             return;
         }
 
-        if (browserInfo.mobile && options.message.indexOf('<') == -1) {
-
-            alert(options.message);
-
-            if (options.callback) {
-                options.callback();
-            }
-
-        } else {
-            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
-                Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
-            });
-        }
-    },
-
-    confirm: function (message, title, callback) {
-
-        // Cordova
-        if (browserInfo.mobile && message.indexOf('<') == -1) {
-
-            var confirmed = confirm(message);
-
-            if (callback) {
-                callback(confirmed);
-            }
-
-        } else {
-
-            require(['paper-dialog', 'fade-in-animation', 'fade-out-animation'], function () {
-                Dashboard.confirmInternal(message, title, true, callback);
-            });
-        }
-    },
-
-    confirmInternal: function (message, title, showCancel, callback) {
-
-        var dlg = document.createElement('paper-dialog');
-
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
-        dlg.entryAnimation = 'fade-in-animation';
-        dlg.exitAnimation = 'fade-out-animation';
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-
-        var html = '';
-        html += '<h2>' + title + '</h2>';
-        html += '<div>' + message + '</div>';
-        html += '<div class="buttons">';
-
-        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
-
-        if (showCancel) {
-            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
-        }
-
-        html += '</div>';
-
-        dlg.innerHTML = html;
-        document.body.appendChild(dlg);
-
-        // Has to be assigned a z-index after the call to .open() 
-        dlg.addEventListener('iron-overlay-closed', function (e) {
-
-            var confirmed = dlg.closingReason.confirmed;
-            dlg.parentNode.removeChild(dlg);
-
-            if (callback) {
-                callback(confirmed);
-            }
+        require(['alert'], function (alert) {
+            alert({
+                title: options.title || Globalize.translate('HeaderAlert'),
+                text: options.message
+            }).then(options.callback || function () { });
         });
-
-        dlg.open();
     },
 
     refreshSystemInfoFromServer: function () {
@@ -683,7 +621,7 @@ var Dashboard = {
         var html = '';
         var imgWidth = 48;
 
-        if (user.imageUrl && AppInfo.enableUserImage) {
+        if (user.imageUrl) {
             var url = user.imageUrl;
 
             if (user.supportsImageParams) {
@@ -713,18 +651,12 @@ var Dashboard = {
 
         if (!apiClient) {
 
-            return new Promise(function (resolve, reject) {
-
-                reject();
-            });
+            return Promise.reject();
         }
 
         var cachedInfo = Dashboard.pluginSecurityInfo;
         if (cachedInfo) {
-            return new Promise(function (resolve, reject) {
-
-                resolve(cachedInfo);
-            });
+            return Promise.resolve(cachedInfo);
         }
 
         return apiClient.ajax({
@@ -1535,7 +1467,6 @@ var AppInfo = {};
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
             AppInfo.enableTvEpisodesTab = true;
-            AppInfo.enableMovieTrailersTab = true;
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -1560,17 +1491,15 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
+        AppInfo.supportsDownloading = !(AppInfo.isNativeApp);
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
-        AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
-        AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1609,6 +1538,9 @@ var AppInfo = {};
 
     function onApiClientCreated(e, newApiClient) {
         initializeApiClient(newApiClient);
+
+        // This is not included in jQuery slim
+        $.ajax = newApiClient.ajax;
     }
 
     //localStorage.clear();
@@ -1640,7 +1572,7 @@ var AppInfo = {};
                         Dashboard.showLoadingMsg();
 
                         return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.showLoadingMsg();
+                            Dashboard.hideLoadingMsg();
 
                             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                                 window.ApiClient = result.ApiClient;
@@ -1715,10 +1647,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableTvEpisodesTab) {
             elem.classList.add('tvEpisodesTabDisabled');
-        }
-
-        if (!AppInfo.enableMovieTrailersTab) {
-            elem.classList.add('movieTrailersTabDisabled');
         }
 
         if (!AppInfo.enableSupporterMembership) {
@@ -1798,7 +1726,7 @@ var AppInfo = {};
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             chromecasthelpers: 'components/chromecasthelpers',
-            jQuery: bowerPath + '/jquery/dist/jquery.min',
+            jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -1810,7 +1738,6 @@ var AppInfo = {};
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
-            performanceManager: embyWebComponentsBowerPath + "/performancemanager",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
@@ -1835,7 +1762,8 @@ var AppInfo = {};
             paths.sharingwidget = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
-            paths.actionsheet = "scripts/actionsheet";
+
+            define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
         // hack for an android test before browserInfo is loaded
@@ -1844,6 +1772,9 @@ var AppInfo = {};
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
         }
+
+        paths.playlistManager = "scripts/playlistmanager";
+        paths.syncDialog = "scripts/sync";
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
         var md5Path = bowerPath + "/cryptojslib/components/md5-min";
@@ -1910,8 +1841,9 @@ var AppInfo = {};
         define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
+        define("emby-collapsible", ["html!" + bowerPath + "/emby-collapsible/emby-collapsible.html"]);
 
-        define("jstree", [bowerPath + "/jstree/dist/jstree.min", "css!thirdparty/jstree/themes/default/style.min.css"]);
+        define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
@@ -1955,7 +1887,6 @@ var AppInfo = {};
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
             define("fileupload", [apiClientBowerPath + "/fileupload"]);
         }
-        define("apiclient-deferred", ["legacy/deferred"]);
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
         define("contentuploader", [apiClientBowerPath + "/sync/contentuploader"]);
@@ -1969,6 +1900,10 @@ var AppInfo = {};
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
         define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
+        define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
+
+        define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
+        define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
 
         // alias
         define("historyManager", [], function () {
@@ -1999,14 +1934,35 @@ var AppInfo = {};
             return Globalize;
         });
 
-        define('dialogText', [], getDialogText());
+        define('apiClientResolver', [], function () {
+            return function () {
+                return window.ApiClient;
+            };
+        });
+
+        define('dialogText', ['globalize'], getDialogText());
+    }
+
+    function updateAppSettings(appSettings) {
+
+        appSettings.enableExternalPlayers = function (val) {
+
+            if (val != null) {
+                appSettings.set('externalplayers', val.toString());
+            }
+
+            return appSettings.get('externalplayers') == 'true';
+        };
+
+        return appSettings;
     }
 
     function getDialogText() {
-        return function () {
+        return function (globalize) {
             return {
-                buttonOk: 'ButtonOk',
-                buttonCancel: 'ButtonCancel'
+                get: function (text) {
+                    return globalize.translate('Button' + text);
+                }
             };
         };
     }
@@ -2017,10 +1973,14 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (browser.mobile) {
+        if (browser.mobile || browser.msie) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
     }
 
@@ -2129,7 +2089,6 @@ var AppInfo = {};
         deps.push('connectionmanagerfactory');
         deps.push('credentialprovider');
 
-        deps.push('scripts/appsettings');
         deps.push('scripts/extensions');
 
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
@@ -2228,6 +2187,8 @@ var AppInfo = {};
             deps.push('css!devices/android/android.css');
         } else if (AppInfo.isNativeApp && browserInfo.safari) {
             deps.push('css!devices/ios/ios.css');
+        } else if (AppInfo.isNativeApp && browserInfo.edge) {
+            deps.push('css!devices/windowsphone/wp.css');
         } else if (!browserInfo.android) {
             deps.push('css!devices/android/android.css');
         }
@@ -2245,6 +2206,7 @@ var AppInfo = {};
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');
+                deps.push('cordova/android/links');
             }
         }
 
@@ -2254,9 +2216,6 @@ var AppInfo = {};
 
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
-        deps.push('scripts/alphapicker');
-        deps.push('scripts/playlistmanager');
-        deps.push('scripts/sync');
         deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
@@ -2279,7 +2238,6 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
-            postInitDependencies.push('apiclient-deferred');
 
             if (Dashboard.isRunningInCordova()) {
 
@@ -2469,6 +2427,7 @@ function addLegacyDependencies(depends, url) {
         depends.push('jqmpopup');
         depends.push('jqmcollapsible');
         depends.push('jqmcheckbox');
+        depends.push('legacy/dashboard');
     }
 
     depends.push('jqmcontrolgroup');

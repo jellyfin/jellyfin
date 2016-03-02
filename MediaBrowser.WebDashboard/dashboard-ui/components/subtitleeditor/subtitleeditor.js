@@ -56,7 +56,9 @@
 
         }).then(function () {
 
-            Dashboard.alert(Globalize.translate('MessageDownloadQueued'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageDownloadQueued'));
+            });
         });
     }
 
@@ -64,9 +66,9 @@
 
         var msg = Globalize.translate('MessageAreYouSureDeleteSubtitles');
 
-        Dashboard.confirm(msg, Globalize.translate('HeaderConfirmDeletion'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(msg, Globalize.translate('HeaderConfirmDeletion')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -82,8 +84,7 @@
 
                     reload(page, itemId);
                 });
-
-            }
+            });
         });
     }
 

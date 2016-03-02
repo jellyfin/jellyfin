@@ -169,14 +169,11 @@ var ScheduledTaskPage = {
 
     confirmDeleteTrigger: function (index) {
 
-        Dashboard.confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger'), function (result) {
-
-            if (result) {
+        require(['confirm'], function (confirm) {
+            confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger')).then(function () {
                 ScheduledTaskPage.deleteTrigger(index);
-            }
-
+            });
         });
-
     },
 
     deleteTrigger: function (index) {
@@ -321,7 +318,11 @@ var ScheduledTaskPage = {
 
     $(document).on('pageinit', "#scheduledTaskPage", function () {
 
+        var page = this;
+
         $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        page.querySelector('.timeFieldExample').innerHTML = Globalize.translate('ValueExample', '1:00 PM');
 
     }).on('pageshow', "#scheduledTaskPage", function () {
 

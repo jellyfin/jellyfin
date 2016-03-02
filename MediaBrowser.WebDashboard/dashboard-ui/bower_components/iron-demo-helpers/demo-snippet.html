@@ -9,11 +9,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../prism-element/prism-highlighter.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-styles/shadow.html">
-
+<link rel="import" href="../prism-element/prism-highlighter.html">
 
 <!--
 `demo-snippet` is a helper element that displays the source of a code snippet and
@@ -61,7 +62,7 @@ Custom property | Description | Default
       }
 
       .demo {
-        border-bottom: 1px solid #e5e5e5;
+        border-bottom: 1px solid var(--google-grey-300);
         background-color: white;
         margin: 0;
         padding: 20px;
@@ -69,9 +70,9 @@ Custom property | Description | Default
       }
 
       .code {
-        padding: 0 20px;
+        padding: 20px;
         margin: 0;
-        background-color: #fafafa;
+        background-color: var(--google-grey-100);
         font-size: 13px;
         overflow: auto;
         @apply(--demo-snippet-code);
@@ -81,6 +82,17 @@ Custom property | Description | Default
         margin: 0;
         padding: 0 0 10px 0;
       }
+
+      .code-container {
+        position: relative;
+      }
+
+      paper-icon-button {
+        position: absolute;
+        top: 0;
+        right: 0px;
+      }
+
     </style>
 
     <prism-highlighter></prism-highlighter>
@@ -89,12 +101,22 @@ Custom property | Description | Default
       <content id="content"></content>
     </div>
 
-    <marked-element markdown=[[_markdown]] id="marked">
-      <div class="markdown-html code"></div>
-    </marked-element>
+    <div class="code-container">
+      <marked-element markdown=[[_markdown]] id="marked">
+        <div class="markdown-html code" id="code"></div>
+      </marked-element>
+      <paper-icon-button
+          id="copyButton"
+          icon="content-copy"
+          title="copy to clipboard"
+          on-tap="_copyToClipboard">
+      </paper-icon-button>
+    </div>
   </template>
 
   <script>
+    'use strict';
+
     Polymer({
       is: 'demo-snippet',
 
@@ -114,9 +136,7 @@ Custom property | Description | Default
           return;
         }
 
-        // TODO(noms): When marked-element/issues/23 lands, this will become
-        // a public method and will need to be updated.
-        var snippet = this.$.marked._unindent(template.innerHTML);
+        var snippet = this.$.marked.unindent(template.innerHTML);
 
         // Boolean properties are displayed as checked="", so remove the ="" bit.
         snippet = snippet.replace(/=""/g, '');
@@ -125,6 +145,34 @@ Custom property | Description | Default
 
         // Stamp the template.
         Polymer.dom(this).appendChild(document.importNode(template.content, true));
+      },
+
+      _copyToClipboard: function() {
+        // From https://github.com/google/material-design-lite/blob/master/docs/_assets/snippets.js
+        var snipRange = document.createRange();
+        snipRange.selectNodeContents(this.$.code);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(snipRange);
+        var result = false;
+        try {
+          result = document.execCommand('copy');
+          this.$.copyButton.icon = 'done';
+        } catch (err) {
+          // Copy command is not available
+          console.error(err);
+          this.$.copyButton.icon = 'error';
+        }
+
+        // Return to the copy button after a second.
+        setTimeout(this._resetCopyButtonState.bind(this), 1000);
+
+        selection.removeAllRanges();
+        return result;
+      },
+
+      _resetCopyButtonState: function() {
+        this.$.copyButton.icon = 'content-copy';
       }
     });
   </script>

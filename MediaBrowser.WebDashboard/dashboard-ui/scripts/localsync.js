@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appSettings'], function (appSettings) {
 
     var syncPromise;
 
@@ -22,7 +22,7 @@
 
                     LocalSync.normalizeSyncOptions(options);
 
-                    options.cameraUploadServers = AppSettings.cameraUploadServers();
+                    options.cameraUploadServers = appSettings.cameraUploadServers();
 
                     syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).then(function () {
 
@@ -39,7 +39,7 @@
         },
 
         normalizeSyncOptions: function (options) {
-            
+
         },
 
         getSyncStatus: function () {
@@ -50,4 +50,5 @@
             return 'Idle';
         }
     };
-})();
+
+});

@@ -8,20 +8,21 @@
 
     function deleteSeriesTimer(page, id) {
 
-        Dashboard.confirm(Globalize.translate('MessageConfirmSeriesCancellation'), Globalize.translate('HeaderConfirmSeriesCancellation'), function (result) {
+        require(['confirm'], function (confirm) {
 
-            if (result) {
+            confirm(Globalize.translate('MessageConfirmSeriesCancellation'), Globalize.translate('HeaderConfirmSeriesCancellation')).then(function () {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.cancelLiveTvSeriesTimer(id).then(function () {
 
-                    Dashboard.alert(Globalize.translate('MessageSeriesCancelled'));
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageSeriesCancelled'));
+                    });
 
                     reload(page);
                 });
-            }
-
+            });
         });
     }
 

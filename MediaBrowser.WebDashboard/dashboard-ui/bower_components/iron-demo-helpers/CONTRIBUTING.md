@@ -5,6 +5,11 @@ https://github.com/PolymerElements/ContributionGuide/blob/master/CONTRIBUTING.md
 
 If you edit that file, it will get updated everywhere else.
 If you edit this file, your changes will get overridden :)
+
+You can however override the jsbin link with one that's customized to this
+specific element:
+
+jsbin=https://jsbin.com/cagaye/edit?html,output
 -->
 # Polymer Elements
 ## Guide for Contributors
@@ -41,7 +46,7 @@ Polymer Elements are built in the open, and the Polymer authors eagerly encourag
  3. Click the `paper-foo` element.
  ```
 
- 2. **A reduced test case that demonstrates the problem.** If possible, please include the test case as a JSBin. Start with this template to easily import and use relevant Polymer Elements: [http://jsbin.com/cagaye](http://jsbin.com/cagaye/edit?html,output).
+ 2. **A reduced test case that demonstrates the problem.** If possible, please include the test case as a JSBin. Start with this template to easily import and use relevant Polymer Elements: [https://jsbin.com/cagaye/edit?html,output](https://jsbin.com/cagaye/edit?html,output).
 
  3. **A list of browsers where the problem occurs.** This can be skipped if the problem is the same across all browsers.
 
@@ -51,14 +56,14 @@ Polymer Elements are built in the open, and the Polymer authors eagerly encourag
 
 When submitting pull requests, please provide:
 
- 1. **A reference to the corresponding issue** or issues that will be closed by the pull request. Please refer to these issues using the following syntax:
+ 1. **A reference to the corresponding issue** or issues that will be closed by the pull request. Please refer to these issues in the pull request description using the following syntax:
 
  ```markdown
  (For a single issue)
  Fixes #20
 
  (For multiple issues)
- Fixes #32, #40
+ Fixes #32, fixes #40
  ```
 
  2. **A succinct description of the design** used to fix any related issues. For example:

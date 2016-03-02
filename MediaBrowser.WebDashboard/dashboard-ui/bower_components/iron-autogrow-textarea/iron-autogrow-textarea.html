@@ -23,9 +23,6 @@ Example:
 
     <iron-autogrow-textarea></iron-autogrow-textarea>
 
-Because the `textarea`'s `value` property is not observable, you should use
-this element's `bind-value` instead for imperative updates.
-
 ### Styling
 
 The following custom properties and mixins are available for styling:
@@ -33,6 +30,7 @@ The following custom properties and mixins are available for styling:
 Custom property | Description | Default
 ----------------|-------------|----------
 `--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`
+`--iron-autogrow-textarea-placeholder` | Mixin applied to the textarea placeholder | `{}`
 
 @group Iron Elements
 @hero hero.svg
@@ -50,6 +48,7 @@ Custom property | Description | Default
       padding: 2px;
       -moz-appearance: textarea;
       -webkit-appearance: textarea;
+      overflow: hidden;
     }
 
     .mirror-text {
@@ -82,6 +81,21 @@ Custom property | Description | Default
       box-shadow: none;
     }
 
+    textarea::-webkit-input-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea:-moz-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea::-moz-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
+
+    textarea:-ms-input-placeholder {
+      @apply(--iron-autogrow-textarea-placeholder);
+    }
   </style>
   <template>
     <!-- the mirror sizes the input/textarea so it grows with typing -->
@@ -91,6 +105,7 @@ Custom property | Description | Default
     <!-- size the input/textarea with a div, because the textarea has intrinsic size in ff -->
     <div class="textarea-container fit">
       <textarea id="textarea"
+        name$="[[name]]"
         autocomplete$="[[autocomplete]]"
         autofocus$="[[autofocus]]"
         inputmode$="[[inputmode]]"
@@ -120,8 +135,8 @@ Custom property | Description | Default
 
       /**
        * Use this property instead of `value` for two-way data binding.
-       *
-       * @type {string|number|undefined|null}
+       * This property will be deprecated in the future. Use `value` instead.
+       * @type {string|number}
        */
       bindValue: {
         observer: '_bindValueChanged',
@@ -179,22 +194,6 @@ Custom property | Description | Default
       },
 
       /**
-       * Bound to the textarea's `name` attribute.
-       */
-      name: {
-        type: String
-      },
-
-      /**
-       * The value for this input, same as `bindValue`
-       */
-      value: {
-        notify: true,
-        type: String,
-        computed: '_computeValue(bindValue)'
-      },
-
-      /**
        * Bound to the textarea's `placeholder` attribute.
        */
       placeholder: {
@@ -227,6 +226,10 @@ Custom property | Description | Default
     listeners: {
       'input': '_onInput'
     },
+
+    observers: [
+      '_onValueChanged(value)'
+    ],
 
     /**
      * Returns the underlying textarea.
@@ -304,6 +307,7 @@ Custom property | Description | Default
         textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
       }
 
+      this.value = this.bindValue;
       this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -342,8 +346,8 @@ Custom property | Description | Default
       this.$.mirror.innerHTML = this._constrain(this.tokens);
     },
 
-    _computeValue: function() {
-      return this.bindValue;
+    _onValueChanged: function() {
+      this.bindValue = this.value;
     }
   });
 </script>

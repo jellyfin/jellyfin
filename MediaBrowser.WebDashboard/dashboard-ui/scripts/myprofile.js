@@ -80,15 +80,24 @@
 
         switch (evt.target.error.code) {
             case evt.target.error.NOT_FOUND_ERR:
-                Dashboard.alert(Globalize.translate('FileNotFound'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileNotFound'));
+                });
                 break;
             case evt.target.error.NOT_READABLE_ERR:
-                Dashboard.alert(Globalize.translate('FileReadError'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileReadError'));
+                });
                 break;
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-                Dashboard.alert(Globalize.translate('FileReadError'));
+            {
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('FileReadError'));
+                });
+                break;
+            }
         };
     }
 
@@ -100,7 +109,9 @@
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
-        Dashboard.alert(Globalize.translate('FileReadCancelled'));
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('FileReadCancelled'));
+        });
     }
 
     function setFiles(page, files) {
@@ -192,17 +203,16 @@
 
         $('#btnDeleteImage', page).on('click', function () {
 
-            Dashboard.confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(Globalize.translate('DeleteImageConfirmation'), Globalize.translate('DeleteImage')).then(function () {
 
                     Dashboard.showLoadingMsg();
 
                     var userId = getParameterByName("userId");
 
                     ApiClient.deleteUserImage(userId, "primary").then(processImageChangeResult);
-                }
-
+                });
             });
         });
 
@@ -301,7 +311,9 @@
 
                 Dashboard.hideLoadingMsg();
 
-                Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageSettingsSaved'));
+                });
                 loadUser(page);
             });
         });
@@ -318,7 +330,9 @@
 
             Dashboard.hideLoadingMsg();
 
-            Dashboard.alert(Globalize.translate('PasswordSaved'));
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('PasswordSaved'));
+            });
             loadUser(page);
 
         }, function() {
@@ -344,7 +358,9 @@
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
-                Dashboard.alert(Globalize.translate('PasswordMatchError'));
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('PasswordMatchError'));
+                });
             } else {
 
                 Dashboard.showLoadingMsg();
@@ -376,9 +392,10 @@
 
             var page = $($.mobile.activePage)[0];
 
-            Dashboard.confirm(msg, Globalize.translate('PasswordResetHeader'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(msg, Globalize.translate('PasswordResetHeader')).then(function () {
+
                     var userId = getParameterByName("userId");
 
                     Dashboard.showLoadingMsg();
@@ -395,7 +412,7 @@
                         loadUser(page);
 
                     });
-                }
+                });
             });
 
         };
@@ -406,9 +423,10 @@
 
             var page = $($.mobile.activePage)[0];
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderPinCodeReset'), function (result) {
+            require(['confirm'], function (confirm) {
 
-                if (result) {
+                confirm(msg, Globalize.translate('HeaderPinCodeReset')).then(function () {
+
                     var userId = getParameterByName("userId");
 
                     Dashboard.showLoadingMsg();
@@ -425,9 +443,8 @@
                         loadUser(page);
 
                     });
-                }
+                });
             });
-
         };
     }
 

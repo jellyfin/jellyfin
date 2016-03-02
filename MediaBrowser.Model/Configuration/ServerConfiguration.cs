@@ -182,8 +182,6 @@ namespace MediaBrowser.Model.Configuration
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
         public bool FindInternetTrailers { get; set; }
 
-        public string[] InsecureApps9 { get; set; }
-
         public bool SaveMetadataHidden { get; set; }
 
         public NameValuePair[] ContentTypes { get; set; }
@@ -206,6 +204,8 @@ namespace MediaBrowser.Model.Configuration
 
         public int MigrationVersion { get; set; }
 
+        public bool DownloadImagesInAdvance { get; set; }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -255,11 +255,6 @@ namespace MediaBrowser.Model.Configuration
             UICulture = "en-us";
 
             PeopleMetadataOptions = new PeopleMetadataOptions();
-
-            InsecureApps9 = new[]
-            {
-                "Windows Phone"
-            };
 
             MetadataOptions = new[]
             {

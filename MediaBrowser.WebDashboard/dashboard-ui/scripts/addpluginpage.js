@@ -259,7 +259,17 @@
             msg += '<br/>';
             msg += Globalize.translate('PleaseConfirmPluginInstallation');
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderConfirmPluginInstallation'), alertCallback);
+            require(['confirm'], function (confirm) {
+
+                confirm(msg, Globalize.translate('HeaderConfirmPluginInstallation')).then(function () {
+
+                    alertCallback(true);
+                }, function () {
+
+                    alertCallback(false);
+                });
+
+            });
 
         } else {
             alertCallback(true);

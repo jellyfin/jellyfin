@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-fit-behavior/iron-fit-behavior.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="iron-overlay-backdrop.html">
@@ -118,6 +119,23 @@ context. You should place this element as a child of `<body>` whenever possible.
         type: Object
       },
 
+      /**
+       * The HTMLElement that will be firing relevant KeyboardEvents.
+       * Used for capturing esc and tab. Overridden from `IronA11yKeysBehavior`.
+       */
+      keyEventTarget: {
+        type: Object,
+        value: document
+      },
+
+      /**
+       * Set to true to enable restoring of focus when overlay is closed.
+       */
+      restoreFocusOnClose: {
+        type: Boolean,
+        value: false
+      },
+
       _manager: {
         type: Object,
         value: Polymer.IronOverlayManager
@@ -130,13 +148,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       },
 
-      _boundOnCaptureKeydown: {
-        type: Function,
-        value: function() {
-          return this._onCaptureKeydown.bind(this);
-        }
-      },
-
       _boundOnCaptureFocus: {
         type: Function,
         value: function() {
@@ -144,11 +155,19 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       },
 
-      /** @type {?Node} */
+      /**
+       * The node being focused.
+       * @type {?Node}
+       */
       _focusedChild: {
         type: Object
       }
 
+    },
+
+    keyBindings: {
+      'esc': '__onEsc',
+      'tab': '__onTab'
     },
 
     listeners: {
@@ -157,31 +176,92 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * The backdrop element.
-     * @type Node
+     * @type {Node}
      */
     get backdropElement() {
       return this._manager.backdropElement;
     },
 
+    /**
+     * Returns the node to give focus to.
+     * @type {Node}
+     */
     get _focusNode() {
       return this._focusedChild || Polymer.dom(this).querySelector('[autofocus]') || this;
     },
 
+    /**
+     * Array of nodes that can receive focus (overlay included), ordered by `tabindex`.
+     * This is used to retrieve which is the first and last focusable nodes in order
+     * to wrap the focus for overlays `with-backdrop`.
+     *
+     * If you know what is your content (specifically the first and last focusable children),
+     * you can override this method to return only `[firstFocusable, lastFocusable];`
+     * @type {[Node]}
+     * @protected
+     */
+    get _focusableNodes() {
+      // Elements that can be focused even if they have [disabled] attribute.
+      var FOCUSABLE_WITH_DISABLED = [
+        'a[href]',
+        'area[href]',
+        'iframe',
+        '[tabindex]',
+        '[contentEditable=true]'
+      ];
+
+      // Elements that cannot be focused if they have [disabled] attribute.
+      var FOCUSABLE_WITHOUT_DISABLED = [
+        'input',
+        'select',
+        'textarea',
+        'button'
+      ];
+
+      // Discard elements with tabindex=-1 (makes them not focusable).
+      var selector = FOCUSABLE_WITH_DISABLED.join(':not([tabindex="-1"]),') +
+        ':not([tabindex="-1"]),' +
+        FOCUSABLE_WITHOUT_DISABLED.join(':not([disabled]):not([tabindex="-1"]),') +
+        ':not([disabled]):not([tabindex="-1"])';
+
+      var focusables = Polymer.dom(this).querySelectorAll(selector);
+      if (this.tabIndex >= 0) {
+        // Insert at the beginning because we might have all elements with tabIndex = 0,
+        // and the overlay should be the first of the list.
+        focusables.splice(0, 0, this);
+      }
+      // Sort by tabindex.
+      return focusables.sort(function (a, b) {
+        if (a.tabIndex === b.tabIndex) {
+          return 0;
+        }
+        if (a.tabIndex === 0 || a.tabIndex > b.tabIndex) {
+          return 1;
+        }
+        return -1;
+      });
+    },
+
     ready: function() {
-      // with-backdrop need tabindex to be set in order to trap the focus.
+      // with-backdrop needs tabindex to be set in order to trap the focus.
       // If it is not set, IronOverlayBehavior will set it, and remove it if with-backdrop = false.
       this.__shouldRemoveTabIndex = false;
+      // Used for wrapping the focus on TAB / Shift+TAB.
+      this.__firstFocusableNode = this.__lastFocusableNode = null;
       this._ensureSetup();
     },
 
     attached: function() {
       // Call _openedChanged here so that position can be computed correctly.
-      if (this._callOpenedWhenReady) {
+      if (this.opened) {
         this._openedChanged();
       }
+      this._observer = Polymer.dom(this).observeNodes(this._onNodesChange);
     },
 
     detached: function() {
+      Polymer.dom(this).unobserveNodes(this._observer);
+      this._observer = null;
       this.opened = false;
       this._manager.trackBackdrop(this);
       this._manager.removeOverlay(this);
@@ -213,9 +293,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * Cancels the overlay.
+     * @param {?Event} event The original event
      */
-    cancel: function() {
-      var cancelEvent = this.fire('iron-overlay-canceled', undefined, {cancelable: true});
+    cancel: function(event) {
+      var cancelEvent = this.fire('iron-overlay-canceled', event, {cancelable: true});
       if (cancelEvent.defaultPrevented) {
         return;
       }
@@ -238,12 +319,10 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.removeAttribute('aria-hidden');
       } else {
         this.setAttribute('aria-hidden', 'true');
-        Polymer.dom(this).unobserveNodes(this._observer);
       }
 
       // wait to call after ready only if we're initially open
       if (!this._overlaySetup) {
-        this._callOpenedWhenReady = this.opened;
         return;
       }
 
@@ -318,22 +397,30 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    _toggleListeners: function () {
+    _toggleListeners: function() {
       this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
-      this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
       this._toggleListener(this.opened, document, 'focus', this._boundOnCaptureFocus, true);
     },
 
     // tasks which must occur before opening; e.g. making the element visible
     _prepareRenderOpened: function() {
+
       this._manager.addOverlay(this);
 
+      // Needed to calculate the size of the overlay so that transitions on its size
+      // will have the correct starting points.
       this._preparePositioning();
       this.fit();
       this._finishPositioning();
 
       if (this.withBackdrop) {
         this.backdropElement.prepare();
+      }
+
+      // Safari will apply the focus to the autofocus element when displayed for the first time,
+      // so we blur it. Later, _applyFocus will set the focus if necessary.
+      if (this.noAutoFocus && document.activeElement === this._focusNode) {
+        this._focusNode.blur();
       }
     },
 
@@ -354,23 +441,24 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _finishRenderOpened: function() {
-      // focus the child node with [autofocus]
+      // This ensures the overlay is visible before we set the focus
+      // (by calling _onIronResize -> refit).
+      this.notifyResize();
+      // Focus the child node with [autofocus]
       this._applyFocus();
 
-      this._observer = Polymer.dom(this).observeNodes(this.notifyResize);
       this.fire('iron-overlay-opened');
     },
 
     _finishRenderClosed: function() {
-      // hide the overlay and remove the backdrop
+      // Hide the overlay and remove the backdrop.
       this.resetFit();
       this.style.display = 'none';
       this._manager.removeOverlay(this);
 
-      this._focusedChild = null;
       this._applyFocus();
-
       this.notifyResize();
+
       this.fire('iron-overlay-closed', this.closingReason);
     },
 
@@ -383,8 +471,9 @@ context. You should place this element as a child of `<body>` whenever possible.
     _finishPositioning: function() {
       this.style.display = 'none';
       this.style.transform = this.style.webkitTransform = '';
-      // force layout to avoid application of transform
-      /** @suppress {suspiciousCode} */ this.offsetWidth;
+      // Force layout layout to avoid application of transform.
+      // Set offsetWidth to itself so that compilers won't remove it.
+      this.offsetWidth = this.offsetWidth;
       this.style.transition = this.style.webkitTransition = '';
     },
 
@@ -395,6 +484,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       } else {
         this._focusNode.blur();
+        this._focusedChild = null;
         this._manager.focusOverlay();
       }
     },
@@ -405,23 +495,13 @@ context. You should place this element as a child of `<body>` whenever possible.
         if (this.noCancelOnOutsideClick) {
           this._applyFocus();
         } else {
-          this.cancel();
+          this.cancel(event);
         }
       }
     },
 
-    _onCaptureKeydown: function(event) {
-      var ESC = 27;
-      if (this._manager.currentOverlay() === this &&
-          !this.noCancelOnEscKey &&
-          event.keyCode === ESC) {
-        this.cancel();
-      }
-    },
-
     _onCaptureFocus: function (event) {
-      if (this._manager.currentOverlay() === this &&
-          this.withBackdrop) {
+      if (this._manager.currentOverlay() === this && this.withBackdrop) {
         var path = Polymer.dom(event).path;
         if (path.indexOf(this) === -1) {
           event.stopPropagation();
@@ -436,28 +516,72 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened) {
         this.refit();
       }
+    },
+
+    /**
+     * @protected
+     * Will call notifyResize if overlay is opened.
+     * Can be overridden in order to avoid multiple observers on the same node.
+     */
+    _onNodesChange: function() {
+      if (this.opened) {
+        this.notifyResize();
+      }
+      // Store it so we don't query too much.
+      var focusableNodes = this._focusableNodes;
+      this.__firstFocusableNode = focusableNodes[0];
+      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
+    },
+
+    __onEsc: function(event) {
+      // Not opened or not on top, so return.
+      if (this._manager.currentOverlay() !== this) {
+        return;
+      }
+      if (!this.noCancelOnEscKey) {
+        this.cancel(event);
+      }
+    },
+
+    __onTab: function(event) {
+      // Not opened or not on top, so return.
+      if (this._manager.currentOverlay() !== this) {
+        return;
+      }
+      // TAB wraps from last to first focusable.
+      // Shift + TAB wraps from first to last focusable.
+      var shift = event.detail.keyboardEvent.shiftKey;
+      var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
+      var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
+      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
+        // We set here the _focusedChild so that _onCaptureFocus will handle the
+        // wrapping of the focus (the next event after tab is focus).
+        this._focusedChild = nodeToSet;
+      }
     }
-
-/**
- * Fired after the `iron-overlay` opens.
- * @event iron-overlay-opened
- */
-
-/**
- * Fired when the `iron-overlay` is canceled, but before it is closed.
- * Cancel the event to prevent the `iron-overlay` from closing.
- * @event iron-overlay-canceled
- */
-
-/**
- * Fired after the `iron-overlay` closes.
- * @event iron-overlay-closed
- * @param {{canceled: (boolean|undefined)}} set to the `closingReason` attribute
- */
   };
 
   /** @polymerBehavior */
-  Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
+  Polymer.IronOverlayBehavior = [Polymer.IronA11yKeysBehavior, Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
 
+  /**
+  * Fired after the `iron-overlay` opens.
+  * @event iron-overlay-opened
+  */
+
+  /**
+  * Fired when the `iron-overlay` is canceled, but before it is closed.
+  * Cancel the event to prevent the `iron-overlay` from closing.
+  * @event iron-overlay-canceled
+  * @param {Event} event The closing of the `iron-overlay` can be prevented
+  * by calling `event.preventDefault()`. The `event.detail` is the original event that originated
+  * the canceling (e.g. ESC keyboard event or click event outside the `iron-overlay`).
+  */
+
+  /**
+  * Fired after the `iron-overlay` closes.
+  * @event iron-overlay-closed
+  * @param {{canceled: (boolean|undefined)}} closingReason Contains `canceled` (whether the overlay was canceled).
+  */
 
 </script>

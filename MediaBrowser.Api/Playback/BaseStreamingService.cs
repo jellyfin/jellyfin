@@ -477,7 +477,7 @@ namespace MediaBrowser.Api.Playback
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && !state.VideoRequest.CopyTimestamps)
             {
                 var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
@@ -604,6 +604,10 @@ namespace MediaBrowser.Api.Playback
         {
             var seconds = Math.Round(TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds);
 
+            var setPtsParam = state.VideoRequest.CopyTimestamps
+                ? string.Empty
+                : string.Format(",setpts=PTS -{0}/TB", seconds.ToString(UsCulture));
+
             if (state.SubtitleStream.IsExternal)
             {
                 var subtitlePath = state.SubtitleStream.Path;
@@ -621,18 +625,18 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // TODO: Perhaps also use original_size=1920x800 ??
-                return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
+                return string.Format("subtitles=filename='{0}'{1}{2}",
                     MediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
-                    seconds.ToString(UsCulture));
+                    setPtsParam);
             }
 
             var mediaPath = state.MediaPath ?? string.Empty;
 
-            return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
+            return string.Format("subtitles='{0}:si={1}'{2}",
                 MediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
-                seconds.ToString(UsCulture));
+                setPtsParam);
         }
 
         /// <summary>
@@ -865,6 +869,15 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
                 {
+                    if (state.VideoStream != null && state.VideoStream.Width.HasValue)
+                    {
+                        // This is hacky but not sure how to get the exact subtitle resolution
+                        double height = state.VideoStream.Width.Value;
+                        height /= 16;
+                        height *= 9;
+
+                        arg += string.Format(" -canvas_size {0}:{1}", state.VideoStream.Width.Value.ToString(CultureInfo.InvariantCulture), Convert.ToInt32(height).ToString(CultureInfo.InvariantCulture));
+                    }
                     arg += " -i \"" + state.SubtitleStream.Path + "\"";
                 }
             }
@@ -1462,6 +1475,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     // Duplicating ItemId because of MediaMonkey
                 }
+                else if (i == 24)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.CopyTimestamps = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -2021,6 +2041,11 @@ namespace MediaBrowser.Api.Playback
                     state.EstimateContentLength = transcodingProfile.EstimateContentLength;
                     state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+
+                    if (state.VideoRequest != null)
+                    {
+                        state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                    }
                 }
             }
         }
@@ -2184,9 +2209,9 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest != null)
             {
-                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase) && state.VideoRequest.CopyTimestamps)
                 {
-                    //inputModifier += " -noaccurate_seek";
+                    inputModifier += " -noaccurate_seek";
                 }
             }
             

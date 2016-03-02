@@ -1,8 +1,8 @@
 ﻿(function ($, document) {
 
     var data = {};
-    function getPageData() {
-        var key = getSavedQueryKey();
+    function getPageData(context) {
+        var key = getSavedQueryKey(context);
         var pageData = data[key];
 
         if (!pageData) {
@@ -27,21 +27,24 @@
         return pageData;
     }
 
-    function getQuery() {
+    function getQuery(context) {
 
-        return getPageData().query;
+        return getPageData(context).query;
     }
 
-    function getSavedQueryKey() {
+    function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getSavedQueryKey('albums');
+        if (!context.savedQueryKey) {
+            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('albums');
+        }
+        return context.savedQueryKey;
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
@@ -49,7 +52,7 @@
             window.scrollTo(0, 0);
 
             var html = '';
-            var view = getPageData().view;
+            var view = getPageData(page).view;
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
@@ -133,12 +136,12 @@
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
 
                 if (layout == 'Timeline') {
-                    getQuery().SortBy = 'ProductionYear,PremiereDate,SortName';
-                    getQuery().SortOrder = 'Descending';
+                    getQuery(page).SortBy = 'ProductionYear,PremiereDate,SortName';
+                    getQuery(page).SortOrder = 'Descending';
                 }
 
-                getPageData().view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                getPageData(page).view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(page), layout);
                 reloadItems(page);
             });
 
@@ -176,7 +179,7 @@
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
             LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
@@ -187,7 +190,7 @@
         require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
             var filterDialog = new filterDialogFactory({
-                query: getQuery(),
+                query: getQuery(page),
                 mode: 'albums'
             });
 
@@ -201,7 +204,7 @@
 
     function updateFilterControls(page) {
 
-        var query = getQuery();
+        var query = getQuery(page);
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
@@ -210,7 +213,7 @@
 
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
-            var query = getQuery();
+            var query = getQuery(tabContent);
 
             if (query.SortBy.indexOf('AlbumArtist') == -1) {
                 query.NameStartsWithOrGreater = character;
@@ -226,7 +229,7 @@
 
         }).on('alphaclear', function (e) {
 
-            var query = getQuery();
+            var query = getQuery(tabContent);
 
             query.NameStartsWithOrGreater = '';
             query.AlbumArtistStartsWithOrGreater = '';

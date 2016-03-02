@@ -2495,7 +2495,7 @@
 				t = this;
 				if(d.length) {
 					if(animation && d.children(".jstree-children").length) {
-						d.children(".jstree-children").stop(true, true);
+						//d.children(".jstree-children").stop(true, true);
 					}
 					if(obj.children.length && !this._firstChild(d.children('.jstree-children')[0])) {
 						this.draw_children(obj);
@@ -2511,11 +2511,8 @@
 						d
 							.children(".jstree-children").css("display","none").end()
 							.removeClass("jstree-closed").addClass("jstree-open").attr("aria-expanded", true)
-							.children(".jstree-children").stop(true, true)
-								.slideDown(animation, function () {
-									this.style.display = "";
-									t.trigger("after_open", { "node" : obj });
-								});
+							.children(".jstree-children").show();
+						t.trigger("after_open", { "node": obj });
 					}
 				}
 				obj.state.opened = true;
@@ -2603,11 +2600,9 @@
 					d
 						.children(".jstree-children").attr("style","display:block !important").end()
 						.removeClass("jstree-open").addClass("jstree-closed").attr("aria-expanded", false)
-						.children(".jstree-children").stop(true, true).slideUp(animation, function () {
-							this.style.display = "";
-							d.children('.jstree-children').remove();
-							t.trigger("after_close", { "node" : obj });
-						});
+						.children(".jstree-children").hide();
+					d.children('.jstree-children').remove();
+					t.trigger("after_close", { "node": obj });
 				}
 			}
 			obj.state.opened = false;
