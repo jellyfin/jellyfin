@@ -920,12 +920,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 if (recording.IsSeries)
                 {
-                    // this is to account for the library monitor holding a lock for additional time after the change is complete.
-                    // ideally this shouldn't be hard-coded
-                    await Task.Delay(30000).ConfigureAwait(false);
-
                     try
                     {
+                        // this is to account for the library monitor holding a lock for additional time after the change is complete.
+                        // ideally this shouldn't be hard-coded
+                        await Task.Delay(30000).ConfigureAwait(false);
+
                         var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
 
                         var result = await organize.OrganizeEpisodeFile(recording.Path, CancellationToken.None).ConfigureAwait(false);
