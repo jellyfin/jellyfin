@@ -408,6 +408,11 @@
         }
         else if (session.PlayState.PlayMethod == 'Transcode') {
             html += Globalize.translate('LabelPlayMethodTranscoding');
+
+            if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
+
+                html += ' - '+session.TranscodingInfo.Framerate + ' fps';
+            }
         }
         else if (session.PlayState.PlayMethod == 'DirectStream') {
             html += Globalize.translate('LabelPlayMethodDirectPlay');

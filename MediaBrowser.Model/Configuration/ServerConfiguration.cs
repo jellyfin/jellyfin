@@ -205,6 +205,8 @@ namespace MediaBrowser.Model.Configuration
         public int MigrationVersion { get; set; }
 
         public bool DownloadImagesInAdvance { get; set; }
+
+        public bool EnableAnonymousUsageReporting { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -221,6 +223,7 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableDashboardResourceMinification = true;
+            EnableAnonymousUsageReporting = true;
 
             EnableAutomaticRestart = true;
             DenyIFrameEmbedding = true;

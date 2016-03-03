@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -23,18 +24,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-
-        private readonly TimeSpan _frequency = TimeSpan.FromHours(24);
+        private readonly IServerConfigurationManager _config;
 
         private readonly ConcurrentDictionary<Guid, ClientInfo> _apps = new ConcurrentDictionary<Guid, ClientInfo>();
 
-        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager)
+        public UsageEntryPoint(ILogger logger, IApplicationHost applicationHost, IHttpClient httpClient, ISessionManager sessionManager, IUserManager userManager, IServerConfigurationManager config)
         {
             _logger = logger;
             _applicationHost = applicationHost;
             _httpClient = httpClient;
             _sessionManager = sessionManager;
             _userManager = userManager;
+            _config = config;
 
             _sessionManager.SessionStarted += _sessionManager_SessionStarted;
         }
@@ -64,6 +65,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private async void ReportNewSession(ClientInfo client)
         {
+            if (!_config.Configuration.EnableAnonymousUsageReporting)
+            {
+                return;
+            }
+
             try
             {
                 await new UsageReporter(_applicationHost, _httpClient, _userManager, _logger)
@@ -106,6 +112,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private async void OnTimerFired()
         {
+            if (!_config.Configuration.EnableAnonymousUsageReporting)
+            {
+                return;
+            }
+
             try
             {
                 await new UsageReporter(_applicationHost, _httpClient, _userManager, _logger)
