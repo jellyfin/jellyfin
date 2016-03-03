@@ -40,9 +40,9 @@
     "ButtonPrivacyPolicy": "Privacy policy",
     "ButtonTermsOfService": "Terms of Service",
     "HeaderDeveloperOptions": "Developer Options",
-    "OptionEnableWebClientResponseCache": "Enable web client response caching",
-    "OptionDisableForDevelopmentHelp": "Configure these as needed for web client development purposes.",
-    "OptionEnableWebClientResourceMinification": "Enable web client resource minification",
+    "OptionEnableWebClientResponseCache": "Enable web response caching",
+    "OptionDisableForDevelopmentHelp": "Configure these as needed for web development purposes.",
+    "OptionEnableWebClientResourceMinification": "Enable web resource minification",
     "LabelDashboardSourcePath": "Web client source path:",
     "LabelDashboardSourcePathHelp": "If running the server from source, specify the path to the dashboard-ui folder. All web client files will be served from this location.",
     "ButtonConvertMedia": "Convert media",
@@ -2505,5 +2505,7 @@
     "ButtonAddMissingData": "Add missing data only",
     "ButtonFullRefresh": "Full refresh",
     "ValueExample": "1:00 PM",
-    "ButtonGotIt": "Got It"
+    "ButtonGotIt": "Got It",
+    "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
+    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software."
 }

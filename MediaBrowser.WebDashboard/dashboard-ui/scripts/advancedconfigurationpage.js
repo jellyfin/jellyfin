@@ -26,6 +26,7 @@
 
         $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
         $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart);
+        $('#chkUsageData', page).checked(config.EnableAnonymousUsageReporting);
 
         if (systemInfo.CanSelfRestart) {
             $('#fldEnableAutomaticRestart', page).show();
@@ -58,6 +59,7 @@
             config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
             config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
+            config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
 
             config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
