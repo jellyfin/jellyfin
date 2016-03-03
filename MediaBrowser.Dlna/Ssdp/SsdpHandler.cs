@@ -136,7 +136,7 @@ namespace MediaBrowser.Dlna.Ssdp
             if (args.Headers.TryGetValue("USN", out usn))
             {
                 // USN=uuid:b67df29b5c379445fde78c3774ab518d::urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1
-                if (RegisteredDevices.Select(i => i.USN).Contains(usn, StringComparer.OrdinalIgnoreCase))
+                if (RegisteredDevices.Any(i => string.Equals(i.USN, usn, StringComparison.OrdinalIgnoreCase)))
                 {
                     //var headerTexts = args.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value));
                     //var headerText = string.Join(",", headerTexts.ToArray());
