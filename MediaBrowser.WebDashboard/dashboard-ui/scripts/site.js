@@ -1912,6 +1912,9 @@ var AppInfo = {};
                     state.navigate = false;
                     history.pushState(state, title, url);
                     jQuery.onStatePushed(state);
+                },
+                enableNativeHistory: function () {
+                    return true;
                 }
             };
         });

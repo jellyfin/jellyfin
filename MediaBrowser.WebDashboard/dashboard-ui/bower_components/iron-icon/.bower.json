@@ -31,14 +31,14 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "homepage": "https://github.com/PolymerElements/iron-icon",
+  "homepage": "https://github.com/polymerelements/iron-icon",
   "_release": "1.0.7",
   "_resolution": {
     "type": "version",
     "tag": "v1.0.7",
     "commit": "6f4d152dc3998a6cc12a5a585a654f893dc99381"
   },
-  "_source": "git://github.com/PolymerElements/iron-icon.git",
+  "_source": "git://github.com/polymerelements/iron-icon.git",
   "_target": "^1.0.0",
-  "_originalSource": "PolymerElements/iron-icon"
+  "_originalSource": "polymerelements/iron-icon"
 }
