@@ -173,10 +173,12 @@
     <Compile Include="TV\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
+    <Compile Include="TV\MovieDbProviderBase.cs" />
     <Compile Include="TV\MovieDbEpisodeImageProvider.cs" />
     <Compile Include="TV\MovieDbSeasonProvider.cs" />
     <Compile Include="TV\MovieDbSeriesImageProvider.cs" />
     <Compile Include="TV\MovieDbSeriesProvider.cs" />
+    <Compile Include="TV\MovieDbEpisodeProvider.cs" />
     <Compile Include="TV\OmdbEpisodeProvider.cs" />
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TvdbEpisodeImageProvider.cs" />
