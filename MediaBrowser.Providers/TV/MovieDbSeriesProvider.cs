@@ -302,11 +302,10 @@ namespace MediaBrowser.Providers.TV
             if (!string.IsNullOrEmpty(language))
             {
                 url += string.Format("&language={0}", language);
-            }
 
-            var includeImageLanguageParam = MovieDbProvider.GetImageLanguagesParam(language);
-            // Get images in english and with no language
-            url += "&include_image_language=" + includeImageLanguageParam;
+                // Get images in english and with no language
+                url += "&include_image_language=" + MovieDbProvider.GetImageLanguagesParam(language);
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -333,7 +332,13 @@ namespace MediaBrowser.Providers.TV
             {
                 _logger.Info("MovieDbSeriesProvider couldn't find meta for language " + language + ". Trying English...");
 
-                url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
+                url = string.Format(GetTvInfo3, id, MovieDbProvider.ApiKey) + "&language=en";
+
+                if (!string.IsNullOrEmpty(language))
+                {
+                    // Get images in english and with no language
+                    url += "&include_image_language=" + MovieDbProvider.GetImageLanguagesParam(language);
+                }
 
                 using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions
                 {
@@ -359,10 +364,6 @@ namespace MediaBrowser.Providers.TV
             {
                 throw new ArgumentNullException("tmdbId");
             }
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException("language");
-            }
 
             var path = GetDataFilePath(tmdbId, language);
 
@@ -386,15 +387,10 @@ namespace MediaBrowser.Providers.TV
             {
                 throw new ArgumentNullException("tmdbId");
             }
-            if (string.IsNullOrEmpty(preferredLanguage))
-            {
-                throw new ArgumentNullException("preferredLanguage");
-            }
 
             var path = GetSeriesDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
-            var filename = string.Format("series-{0}.json",
-                preferredLanguage ?? string.Empty);
+            var filename = string.Format("series-{0}.json", preferredLanguage ?? string.Empty);
 
             return Path.Combine(path, filename);
         }
