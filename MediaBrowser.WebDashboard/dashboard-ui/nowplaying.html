@@ -31,7 +31,7 @@
                         <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
                         <div class="nowPlayingPageTimeContainer">
                             <div>
-                                <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider"></paper-slider>
+                                <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" style="width: 100%;"></paper-slider>
                             </div>
                             <div style="text-align:left;">
                                 <div class="positionTime" style="float:left;"></div>
@@ -56,9 +56,6 @@
                             <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
                             <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
                         </div>
-                        <!--<div class="buttonsRow3">
-                            <paper-fab icon="info" class="btnCommand videoButton subdued" title="${ButtonOsd}" data-command="ToggleOsdMenu"></paper-fab>
-                        </div>-->
                         <div>
                             <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
                             <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
@@ -90,14 +87,10 @@
                     <br />
                     <div>
                         <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
-                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>-->
                         <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
                     </div>
                     <div>
                         <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
-                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>-->
                         <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
                     </div>
                 </div>
