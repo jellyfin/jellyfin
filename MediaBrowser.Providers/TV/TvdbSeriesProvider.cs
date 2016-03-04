@@ -160,19 +160,19 @@ namespace MediaBrowser.Providers.TV
             var series = result.Item;
 
             string id;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id) && !string.IsNullOrEmpty(id))
             {
                 series.SetProviderId(MetadataProviders.Tvdb, id);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
             {
                 series.SetProviderId(MetadataProviders.Imdb, id);
             }
 
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-			var seriesXmlPath = GetSeriesXmlPath (seriesProviderIds, metadataLanguage);
+            var seriesXmlPath = GetSeriesXmlPath(seriesProviderIds, metadataLanguage);
             var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
 
             FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
@@ -320,7 +320,7 @@ namespace MediaBrowser.Providers.TV
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
             string id;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -329,7 +329,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -340,7 +340,7 @@ namespace MediaBrowser.Providers.TV
             return false;
         }
 
-        private SemaphoreSlim _ensureSemaphore = new SemaphoreSlim(1,1);
+        private SemaphoreSlim _ensureSemaphore = new SemaphoreSlim(1, 1);
         internal async Task<string> EnsureSeriesInfo(Dictionary<string, string> seriesProviderIds, string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             await _ensureSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -348,7 +348,7 @@ namespace MediaBrowser.Providers.TV
             try
             {
                 string seriesId;
-                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
                 {
                     var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
@@ -362,7 +362,7 @@ namespace MediaBrowser.Providers.TV
                     return seriesDataPath;
                 }
 
-                if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
                 {
                     var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
@@ -1300,14 +1300,14 @@ namespace MediaBrowser.Providers.TV
         internal static string GetSeriesDataPath(IApplicationPaths appPaths, Dictionary<string, string> seriesProviderIds)
         {
             string seriesId;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
             {
                 var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
 
                 return seriesDataPath;
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
             {
                 var seriesDataPath = Path.Combine(GetSeriesDataPath(appPaths), seriesId);
 
@@ -1317,14 +1317,14 @@ namespace MediaBrowser.Providers.TV
             return null;
         }
 
-		public string GetSeriesXmlPath(Dictionary<string, string> seriesProviderIds, string language)
-		{
-			var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
+        public string GetSeriesXmlPath(Dictionary<string, string> seriesProviderIds, string language)
+        {
+            var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-			var seriesXmlFilename = language.ToLower() + ".xml";
+            var seriesXmlFilename = language.ToLower() + ".xml";
 
-			return Path.Combine (seriesDataPath, seriesXmlFilename);
-		}
+            return Path.Combine(seriesDataPath, seriesXmlFilename);
+        }
 
         /// <summary>
         /// Gets the series data path.
