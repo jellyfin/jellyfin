@@ -27,6 +27,11 @@ namespace MediaBrowser.Providers.TV
 
         public static TvdbSeasonIdentity? ParseIdentity(string id)
         {
+            if (id == null)
+            {
+                return null;
+            }
+
             try
             {
                 var parts = id.Split(':');
