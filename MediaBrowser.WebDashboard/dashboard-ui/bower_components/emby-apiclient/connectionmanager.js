@@ -1519,23 +1519,20 @@
 
             return self.getAvailableServers().then(function (servers) {
 
+                var currentServerId = apiClient.serverInfo().Id;
                 var matchedServers = servers.filter(function (s) {
-                    return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
+                    return stringEqualsIgnoreCase(s.Id, currentServerId);
                 });
 
-                if (!matchedServers.length) {
-                    return {};
-                }
+                var match = matchedServers.length ? matchedServers[0] : null;
+                var dateLastLocalConnection = match ? match.DateLastLocalConnection : null;
+                if (!dateLastLocalConnection) {
 
-                var match = matchedServers[0];
-
-                if (!match.DateLastLocalConnection) {
-
-                    return ApiClient.getJSON(ApiClient.getUrl('System/Endpoint')).then(function (info) {
+                    return apiClient.getJSON(apiClient.getUrl('System/Endpoint')).then(function (info) {
 
                         if (info.IsInNetwork) {
 
-                            updateDateLastLocalConnection(match.Id);
+                            updateDateLastLocalConnection(currentServerId);
                             return apiClient.getRegistrationInfo(feature);
                         } else {
                             return {};
