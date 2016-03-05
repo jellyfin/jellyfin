@@ -586,8 +586,8 @@ Custom property | Description | Default
             this.notifyResize();
           }
           if (e.propertyName === 'transform' && this.selected === 'drawer') {
-            var focusedChild = this._getAutoFocusedNode();
-            focusedChild && focusedChild.focus();
+            //var focusedChild = this._getAutoFocusedNode();
+            //focusedChild && focusedChild.focus();
           }
         },
 
@@ -827,7 +827,7 @@ Custom property | Description | Default
             focusedChildCameFromDrawer = path.shift() === drawerContent;
           }
           if (!focusedChildCameFromDrawer && autoFocusedNode) {
-            autoFocusedNode.focus();
+            //autoFocusedNode.focus();
           }
         },
 
