@@ -1729,7 +1729,9 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     window.MediaPlayer = new mediaPlayer();
 
-    window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
+    window.MediaPlayer.init = function() {
+        window.MediaController.registerPlayer(window.MediaPlayer);
+        window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
+    };
 
 });

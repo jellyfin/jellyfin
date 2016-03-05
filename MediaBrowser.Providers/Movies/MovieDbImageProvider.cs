@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var list = new List<RemoteImageInfo>();
 
-            var results = await FetchImages((BaseItem)item, _jsonSerializer, cancellationToken).ConfigureAwait(false);
+            var results = await FetchImages((BaseItem)item, null, _jsonSerializer, cancellationToken).ConfigureAwait(false);
 
             if (results == null)
             {
@@ -183,14 +183,13 @@ namespace MediaBrowser.Providers.Movies
         /// Fetches the images.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="language">The language.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
-            CancellationToken cancellationToken)
+        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, string language, IJsonSerializer jsonSerializer, CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-            var language = item.GetPreferredMetadataLanguage();
 
             if (string.IsNullOrWhiteSpace(tmdbId))
             {

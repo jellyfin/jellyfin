@@ -49,7 +49,7 @@
         }).then(function (html) {
 
             var elem = page.querySelector('.providerTemplate');
-            elem.innerHTML = Globalize.translateDocument(html);
+            elem.innerHTML = Globalize.translateHtml(html);
 
             init(page, type);
         });

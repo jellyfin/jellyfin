@@ -33,7 +33,7 @@ var Dashboard = {
             html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
         }
 
-        return Globalize.translateDocument(html, 'html');
+        return Globalize.translateHtml(html, 'core');
     },
 
     isConnectMode: function () {
@@ -1740,6 +1740,7 @@ var AppInfo = {};
             hammer: bowerPath + "/hammerjs/hammer.min",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
+            globalize: embyWebComponentsBowerPath + "/globalize",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
@@ -1933,10 +1934,6 @@ var AppInfo = {};
             return ConnectionManager;
         });
 
-        define("globalize", [], function () {
-            return Globalize;
-        });
-
         define('apiClientResolver', [], function () {
             return function () {
                 return window.ApiClient;
@@ -2047,7 +2044,6 @@ var AppInfo = {};
         }
 
         deps.push('scripts/mediacontroller');
-        deps.push('scripts/globalize');
 
         deps.push('paper-drawer-panel');
 
@@ -2103,7 +2099,6 @@ var AppInfo = {};
 
             var promises = [];
             deps = [];
-            deps.push('scripts/mediaplayer');
             deps.push('emby-icons');
             deps.push('paper-icon-button');
             deps.push('paper-button');
@@ -2111,7 +2106,6 @@ var AppInfo = {};
 
             promises.push(getRequirePromise(deps));
 
-            promises.push(Globalize.ensure());
             promises.push(createConnectionManager(credentialProviderFactory, Dashboard.capabilities()));
 
             Promise.all(promises).then(function () {
@@ -2119,58 +2113,80 @@ var AppInfo = {};
                 console.log('initAfterDependencies promises resolved');
                 MediaController.init();
 
-                document.title = Globalize.translateDocument(document.title, 'html');
+                require(['globalize'], function (globalize) {
 
-                var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+                    window.Globalize = globalize;
 
-                if (mainDrawerPanelContent) {
-
-                    var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
-                    newHtml = newHtml.substring(0, newHtml.length - 3);
-
-                    var srch = 'data-require=';
-                    var index = newHtml.indexOf(srch);
-                    var depends;
-
-                    if (index != -1) {
-
-                        var requireAttribute = newHtml.substring(index + srch.length + 1);
-
-                        requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
-                        depends = requireAttribute.split(',');
-                    }
-
-                    depends = depends || [];
-
-                    if (newHtml.indexOf('type-interior') != -1) {
-                        addLegacyDependencies(depends, window.location.href);
-                    }
-
-                    require(depends, function () {
-
-                        // TODO: This needs to be deprecated, but it's used heavily
-                        $.fn.checked = function (value) {
-                            if (value === true || value === false) {
-                                // Set the value of the checkbox
-                                return $(this).each(function () {
-                                    this.checked = value;
-                                });
-                            } else {
-                                // Return check state
-                                return this.length && this[0].checked;
-                            }
-                        };
-
-                        // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                        $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
-                        onAppReady();
-                    });
-                    return;
-                }
-
-                onAppReady();
+                    loadCoreDictionary(globalize).then(onGlobalizeInit);
+                });
             });
         });
+    }
+
+    function loadCoreDictionary(globalize) {
+
+        var baseUrl = 'strings/';
+
+        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'en-AR', 'en-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
+
+        var translations = languages.map(function (i) {
+            return {
+                lang: i,
+                path: baseUrl + i + '.json'
+            };
+        });
+
+        globalize.defaultModule('core');
+
+        return globalize.loadStrings({
+            name: 'core',
+            translations: translations
+        });
+    }
+
+    function onGlobalizeInit() {
+        document.title = Globalize.translateHtml(document.title, 'core');
+
+        var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+
+        if (mainDrawerPanelContent) {
+
+            var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
+            newHtml = newHtml.substring(0, newHtml.length - 3);
+
+            var srch = 'data-require=';
+            var index = newHtml.indexOf(srch);
+            var depends;
+
+            if (index != -1) {
+
+                var requireAttribute = newHtml.substring(index + srch.length + 1);
+
+                requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
+                depends = requireAttribute.split(',');
+            }
+
+            depends = depends || [];
+
+            depends.push('scripts/mediaplayer');
+            depends.push('legacy/fnchecked');
+
+            if (newHtml.indexOf('type-interior') != -1) {
+                addLegacyDependencies(depends, window.location.href);
+            }
+
+            require(depends, function () {
+
+                MediaPlayer.init();
+
+                // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
+                $(mainDrawerPanelContent).html(Globalize.translateHtml(newHtml, 'core'));
+                onAppReady();
+            });
+            return;
+        }
+
+        onAppReady();
     }
 
     function onAppReady() {

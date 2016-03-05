@@ -23,11 +23,13 @@
 
         function onBackCommand(e) {
 
-            inputManager.off(dlg, onBackCommand);
+            if (e.detail.command == 'back') {
+                inputManager.off(dlg, onBackCommand);
 
-            self.closedByBack = true;
-            dlg.close();
-            e.preventDefault();
+                self.closedByBack = true;
+                dlg.close();
+                e.preventDefault();
+            }
         }
 
         function onDialogClosed() {

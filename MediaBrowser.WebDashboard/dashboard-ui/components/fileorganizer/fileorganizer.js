@@ -193,7 +193,7 @@
 
                     var html = '';
 
-                    html += Globalize.translateDocument(template);
+                    html += Globalize.translateHtml(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);

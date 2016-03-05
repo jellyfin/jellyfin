@@ -1232,7 +1232,7 @@
 
                     var html = '';
 
-                    html += Globalize.translateDocument(template);
+                    html += Globalize.translateHtml(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
@@ -1267,7 +1267,7 @@
 
                     var template = this.response;
 
-                    elem.innerHTML = Globalize.translateDocument(template);
+                    elem.innerHTML = Globalize.translateHtml(template);
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 

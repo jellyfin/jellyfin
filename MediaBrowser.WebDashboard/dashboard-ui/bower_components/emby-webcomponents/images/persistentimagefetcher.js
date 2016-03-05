@@ -1,13 +1,23 @@
 define(['cryptojs-md5'], function () {
 
-    function setImageIntoElement(elem, url) {
+    function loadImage(elem, url) {
 
         if (elem.tagName !== "IMG") {
 
-            elem.style.backgroundImage = "url('" + url + "')";
+            return new Promise(function (resolve, reject) {
+
+                var tmp = new Image();
+
+                tmp.onload = function () {
+                    elem.style.backgroundImage = "url('" + url + "')";
+                    resolve(elem);
+                };
+                tmp.src = url;
+            });
 
         } else {
             elem.setAttribute("src", url);
+            return Promise.resolve(elem);
         }
     }
 
@@ -151,12 +161,10 @@ define(['cryptojs-md5'], function () {
 
             return getImageUrl(url).then(function (localUrl) {
 
-                setImageIntoElement(elem, localUrl);
-                return elem;
+                return loadImage(elem, localUrl);
 
             }, function () {
-                setImageIntoElement(elem, url);
-                return elem;
+                return loadImage(elem, url);
             });
         }
     };

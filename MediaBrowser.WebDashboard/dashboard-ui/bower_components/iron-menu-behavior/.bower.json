@@ -1,6 +1,6 @@
 {
   "name": "iron-menu-behavior",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Provides accessible menu behavior",
   "authors": "The Polymer Authors",
   "keywords": [
@@ -34,11 +34,11 @@
     "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.1.3",
+  "_release": "1.1.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.3",
-    "commit": "9372abaa7925669fd1a34e9e73c973ed70a05f2f"
+    "tag": "v1.1.4",
+    "commit": "637c4ae4654b53d4ca29ba97239c1ffba13cfc93"
   },
   "_source": "git://github.com/polymerelements/iron-menu-behavior.git",
   "_target": "^1.0.0",
