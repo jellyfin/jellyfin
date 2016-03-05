@@ -1,6 +1,6 @@
 {
   "name": "paper-drawer-panel",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A responsive drawer panel",
   "authors": [
     "The Polymer Authors"
@@ -28,8 +28,9 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "paper-button": "PolymerElements/paper-button#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "polymer/web-component-tester#^3.4.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "main": "paper-drawer-panel.html",

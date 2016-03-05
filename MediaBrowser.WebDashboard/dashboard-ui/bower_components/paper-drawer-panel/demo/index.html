@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    
+
     <link rel="import" href="../../paper-styles/demo-pages.html">
     <link rel="import" href="../../paper-button/paper-button.html">
     <link rel="import" href="../paper-drawer-panel.html">
@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style is="custom-style">
 
       #paperDrawerPanel [main] {
+        text-align: center;
         background-color: var(--google-grey-100);
       }
 
@@ -42,13 +43,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         white-space: nowrap;
       }
 
+      button {
+        display: block;
+        line-height: 40px;
+        background-color: transparent;
+        border: none;
+        font-size: 14px;
+        margin: 20px;
+      }
+
     </style>
   </head>
 
   <body unresolved>
 
-    <paper-drawer-panel id="paperDrawerPanel">
-      <div drawer></div>
+    <paper-drawer-panel id="paperDrawerPanel" force-narrow>
+      <div drawer>
+        <button tabindex="0">Options</button>
+        <button tabindex="0">Settings</button>
+        <button tabindex="0" paper-drawer-toggle>Close drawer</button>
+      </div>
       <div main>
         <div>
           <paper-button onclick="flipDrawer()" raised>flip drawer</paper-button>

@@ -6,8 +6,8 @@ before_script:
   - polylint
 env:
   global:
-    - secure: PLe0gvvFLKijrgyroIeymIP14SikK6RobNUOqHyUiLDCh9S2/vSBJUp8U5TYkVmpxMr+rcKXpfIhYt/bne97bARTnMjRQUa+rlraek6EPXyFILDsyaTosYD7rmY2f8ViiW+CM3eUA+ym0P8tvYONdTx+CEdO7S6esotfq3LHrLw=
-    - secure: U4i/ZSfd87xQ+0YZCKxk3knQQk23V/2IxtSrvY42OnaGi10uz04Cad5XMuBcB1kCyRkAP/e9flQyp4iLaDpG+edm2fxJNPqXepWjtMr0rVFr2LoQ7dPAQCFkzO25dSiO+Wj4ffDO//hwgF5Xl/BXnyRBfSEjURZXr4EP+NjoMWU=
+    - secure: Cyo7MV8FASyf2EZyrSmDbmoZmopQhuTbV79Ntl6eDq6JxEOAApULHn6W+ht0tvmaA+L2cRNq3Z4uvy3tbZCI5SCgQuEKLDJFoghzNp4Izc54bBlJzsxMjcgxEEMbw1jDIKp+PJ+1+8oyT5H1NogcGoNWcvMCjn+8Vl64/999mhw=
+    - secure: dI3wfjJoooFlq6Kb8V1fkbc9N5jrvw7dExN4tp4KlvJFiXIvgb823jEyLGnK/oeVLwP9yncvOYxiG/enNbjpk6fId3zjwptN2H1am3pIsPQASOZJ0Pwvwa1dX7EYGk2kxOwY1pyX4is/QRVDrlUkLm3YAPOFfYJEiVB7m6TNFIo=
     - CXX=g++-4.8
 node_js: stable
 addons:
