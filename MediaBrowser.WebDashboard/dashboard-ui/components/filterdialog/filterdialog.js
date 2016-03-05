@@ -521,7 +521,7 @@
                     dlg.classList.add('formDialog');
                     dlg.classList.add('filterDialog');
 
-                    dlg.innerHTML = Globalize.translateHtml(template);
+                    dlg.innerHTML = Globalize.translateDocument(template);
 
                     setVisibility(dlg, options);
                     document.body.appendChild(dlg);

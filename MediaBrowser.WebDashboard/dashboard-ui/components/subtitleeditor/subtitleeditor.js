@@ -370,7 +370,7 @@
                 html += '</div>';
 
                 html += '<div class="editorContent">';
-                html += Globalize.translateHtml(template);
+                html += Globalize.translateDocument(template);
                 html += '</div>';
 
                 dlg.innerHTML = html;

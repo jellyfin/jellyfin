@@ -22,7 +22,7 @@
 
             var html = this.response;
             var elem = page.querySelector('.providerTemplate');
-            elem.innerHTML = Globalize.translateHtml(html);
+            elem.innerHTML = Globalize.translateDocument(html);
             $(elem).trigger('create');
 
             init(page, type, providerId);

@@ -106,7 +106,7 @@
 
                     var html = '';
 
-                    html += Globalize.translateHtml(template);
+                    html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);

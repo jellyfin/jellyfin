@@ -23,7 +23,7 @@
                     var html = '';
                     var submitted = false;
 
-                    html += Globalize.translateHtml(template);
+                    html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);

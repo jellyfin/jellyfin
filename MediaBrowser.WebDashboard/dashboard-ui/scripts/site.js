@@ -33,7 +33,7 @@ var Dashboard = {
             html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
         }
 
-        return Globalize.translateHtml(html, 'core');
+        return Globalize.translateDocument(html, 'core');
     },
 
     isConnectMode: function () {
@@ -2145,7 +2145,7 @@ var AppInfo = {};
     }
 
     function onGlobalizeInit() {
-        document.title = Globalize.translateHtml(document.title, 'core');
+        document.title = Globalize.translateDocument(document.title, 'core');
 
         var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
 
@@ -2180,7 +2180,7 @@ var AppInfo = {};
                 MediaPlayer.init();
 
                 // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                $(mainDrawerPanelContent).html(Globalize.translateHtml(newHtml, 'core'));
+                $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'core'));
                 onAppReady();
             });
             return;
