@@ -215,7 +215,7 @@
                 html += '</h2>';
 
                 html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                html += Globalize.translateDocument(template);
+                html += Globalize.translateHtml(template);
                 html += '</div>';
 
                 dlg.innerHTML = html;

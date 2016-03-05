@@ -295,7 +295,7 @@
                 dlg.classList.add('background-theme-b');
 
                 var html = '';
-                html += Globalize.translateDocument(template);
+                html += Globalize.translateHtml(template);
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -361,7 +361,7 @@
             dlg.classList.add('background-theme-a');
 
             var html = '';
-            html += Globalize.translateDocument(template);
+            html += Globalize.translateHtml(template);
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
