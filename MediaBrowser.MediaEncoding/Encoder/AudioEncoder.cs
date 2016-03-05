@@ -35,9 +35,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(UsCulture));
             }
 
-            if (state.OutputAudioSampleRate.HasValue)
+            // opus will fail on 44100
+            if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
-                audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture));
+                if (state.OutputAudioSampleRate.HasValue)
+                {
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(UsCulture));
+                }
             }
 
             const string vn = " -vn";
