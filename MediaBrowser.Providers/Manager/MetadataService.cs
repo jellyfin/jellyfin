@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.Manager
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
 
-			var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
+            var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
 
             // Start by validating images
             try
@@ -301,17 +301,23 @@ namespace MediaBrowser.Providers.Manager
         {
             if (ServerConfigurationManager.Configuration.DownloadImagesInAdvance)
             {
-                await ProviderManager.SaveImage(personEntity, imageUrl, null, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                personEntity.SetImage(new ItemImageInfo
+                try
                 {
-                    Path = imageUrl,
-                    Type = ImageType.Primary,
-                    IsPlaceholder = true
-                }, 0);
+                    await ProviderManager.SaveImage(personEntity, imageUrl, null, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in AddPersonImage", ex);
+                }
             }
+
+            personEntity.SetImage(new ItemImageInfo
+            {
+                Path = imageUrl,
+                Type = ImageType.Primary,
+                IsPlaceholder = true
+            }, 0);
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
