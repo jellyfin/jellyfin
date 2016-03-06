@@ -761,7 +761,7 @@ namespace MediaBrowser.Model.Dlna
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
-                if (profile.Method != SubtitleDeliveryMethod.External)
+                if (profile.Method != SubtitleDeliveryMethod.External && profile.Method != SubtitleDeliveryMethod.Hls)
                 {
                     continue;
                 }
@@ -771,7 +771,8 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                if ((profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)) ||
+                    (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
                     bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 
