@@ -529,7 +529,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 "subs" :
                 null;
 
-            AppendPlaylist(builder, playlistUrl, totalBitrate, subtitleGroup);
+            AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream))
             {
@@ -540,12 +540,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var newBitrate = totalBitrate - variation;
                 var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
-                AppendPlaylist(builder, variantUrl, newBitrate, subtitleGroup);
+                AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
 
                 variation *= 2;
                 newBitrate = totalBitrate - variation;
                 variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
-                AppendPlaylist(builder, variantUrl, newBitrate, subtitleGroup);
+                AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
             }
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
@@ -635,9 +635,15 @@ namespace MediaBrowser.Api.Playback.Hls
             //return state.VideoRequest.VideoBitRate.HasValue;
         }
 
-        private void AppendPlaylist(StringBuilder builder, string url, int bitrate, string subtitleGroup)
+        private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(UsCulture);
+            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(UsCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(UsCulture);
+
+            // tvos wants resolution, codecs, framerate
+            //if (state.TargetFramerate.HasValue)
+            //{
+            //    header += string.Format(",FRAME-RATE=\"{0}\"", state.TargetFramerate.Value.ToString(CultureInfo.InvariantCulture));
+            //}
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
@@ -694,6 +700,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
+            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling((segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength)).ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
