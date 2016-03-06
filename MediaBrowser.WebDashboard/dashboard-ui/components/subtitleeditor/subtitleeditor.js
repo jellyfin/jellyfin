@@ -157,7 +157,7 @@
             html += '</div>';
         }
 
-        var elem = $('.subtitleList', page).html(html).trigger('create');
+        var elem = $('.subtitleList', page).html(html);
 
         $('.btnViewSubtitles', elem).on('click', function () {
 
@@ -267,7 +267,7 @@
             html += '</div>';
         }
 
-        var elem = $('.subtitleResults', page).html(html).trigger('create');
+        var elem = $('.subtitleResults', page).html(html);
 
         $('.btnViewSubtitle', elem).on('click', function () {
 

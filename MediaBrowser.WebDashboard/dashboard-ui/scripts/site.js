@@ -1846,7 +1846,9 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js'], function() {
+            $.mobile.filterHtml = Dashboard.filterHtml;
+        });
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -2039,10 +2041,6 @@ var AppInfo = {};
         var deps = [];
         deps.push('events');
 
-        if (!window.fetch) {
-            deps.push('fetch');
-        }
-
         deps.push('scripts/mediacontroller');
 
         deps.push('paper-drawer-panel');
@@ -2090,6 +2088,10 @@ var AppInfo = {};
 
         deps.push('scripts/extensions');
 
+        if (!window.fetch) {
+            deps.push('fetch');
+        }
+
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
             window.MediaBrowser = window.MediaBrowser || {};
@@ -2099,9 +2101,6 @@ var AppInfo = {};
 
             var promises = [];
             deps = [];
-            deps.push('emby-icons');
-            deps.push('paper-icon-button');
-            deps.push('paper-button');
             deps.push('jQuery');
 
             promises.push(getRequirePromise(deps));
@@ -2246,8 +2245,6 @@ var AppInfo = {};
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
-
-            $.mobile.filterHtml = Dashboard.filterHtml;
 
             $.mobile.initializePage();
 
@@ -2422,9 +2419,7 @@ var AppInfo = {};
             setAppInfo();
             setDocumentClasses();
 
-            getHostingAppInfo().then(function (hostingAppInfo) {
-                init(hostingAppInfo);
-            });
+            getHostingAppInfo().then(init);
         });
     }
 

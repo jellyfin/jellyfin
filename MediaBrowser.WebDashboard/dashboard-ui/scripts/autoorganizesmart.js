@@ -93,7 +93,7 @@
             html += "</div>";
         }
 
-        $('.divMatchInfos', page).html(html).trigger('create');
+        $('.divMatchInfos', page).html(html);
     }
 
     function onApiFailure(e) {

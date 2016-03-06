@@ -575,7 +575,7 @@
             html += '</div>';
         }
 
-        var elem = $('.externalIds', context).html(html).trigger('create');
+        var elem = $('.externalIds', context).html(html);
 
         $('.txtExternalId', elem).on('change', onExternalIdChange).trigger('change');
     }

@@ -87,7 +87,7 @@
             html += getSearchResultHtml(result, i);
         }
 
-        var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
+        var elem = $('.identificationSearchResultList', page).html(html);
 
         $('.searchImage', elem).on('click', function () {
 
@@ -266,7 +266,7 @@
                 $('#txtLookupYear', page).val(item.ProductionYear);
             }
 
-            $('.identifyProviderIds', page).html(html).trigger('create');
+            $('.identifyProviderIds', page).html(html);
 
             page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
         });

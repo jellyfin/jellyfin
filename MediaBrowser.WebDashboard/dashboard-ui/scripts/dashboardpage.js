@@ -171,7 +171,7 @@
 
             html = html.join('') + pagingHtml;
 
-            var elem = $('.latestNewsItems', page).html(html).trigger('create');
+            var elem = $('.latestNewsItems', page).html(html);
 
             $('.btnNextPage', elem).on('click', function () {
                 DashboardPage.newsStartIndex += query.Limit;
@@ -769,7 +769,7 @@
         }
 
 
-        $('#divRunningTasks', page).html(html).trigger('create');
+        $('#divRunningTasks', page).html(html);
     },
 
     renderUrls: function (page, systemInfo) {
@@ -912,7 +912,7 @@
                 html += '<button type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">' + Globalize.translate('ButtonUpdateNow') + '</button>';
             }
 
-            elem.html(html).trigger('create');
+            elem.html(html);
 
         });
     },
@@ -1060,7 +1060,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             });
         }
 
-        $(elem).html(html).trigger('create');
+        $(elem).html(html);
 
         $('.btnNextPage', elem).on('click', function () {
             reloadData(elem, startIndex + limit, limit);

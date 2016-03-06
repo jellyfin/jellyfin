@@ -55,7 +55,7 @@
 
                 html += '</div>';
 
-                $('.serverLogs', page).html(html).trigger('create');
+                $('.serverLogs', page).html(html);
                 Dashboard.hideLoadingMsg();
 
             });
