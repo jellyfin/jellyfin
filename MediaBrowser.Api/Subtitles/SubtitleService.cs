@@ -175,7 +175,7 @@ namespace MediaBrowser.Api.Subtitles
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
-                var url = string.Format("stream.srt?StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
+                var url = string.Format("stream.vtt?StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),
                     accessToken);
