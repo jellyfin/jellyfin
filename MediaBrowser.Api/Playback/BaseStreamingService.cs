@@ -1482,6 +1482,17 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.CopyTimestamps = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 25)
+                {
+                    if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
+                    {
+                        SubtitleDeliveryMethod method;
+                        if (Enum.TryParse(val, out method))
+                        {
+                            videoRequest.SubtitleMethod = method;
+                        }
+                    }
+                }
             }
         }
 
