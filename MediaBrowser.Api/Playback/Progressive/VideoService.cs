@@ -13,6 +13,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using CommonIO;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -161,7 +162,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             args += keyFrameArg;
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
             var hasCopyTs = false;
             // Add resolution params, if specified
