@@ -65,6 +65,7 @@
         browser.mobile = true;
     }
 
+    browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') != -1;
     browser.animate = document.documentElement.animate != null;
 
     return browser;

@@ -33,7 +33,7 @@ var Dashboard = {
             html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
         }
 
-        return Globalize.translateHtml(html, 'core');
+        return Globalize.translateDocument(html, 'core');
     },
 
     isConnectMode: function () {
@@ -1846,7 +1846,9 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js'], function() {
+            $.mobile.filterHtml = Dashboard.filterHtml;
+        });
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -1973,7 +1975,7 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (browser.mobile || browser.msie) {
+        if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -2039,10 +2041,6 @@ var AppInfo = {};
         var deps = [];
         deps.push('events');
 
-        if (!window.fetch) {
-            deps.push('fetch');
-        }
-
         deps.push('scripts/mediacontroller');
 
         deps.push('paper-drawer-panel');
@@ -2090,6 +2088,10 @@ var AppInfo = {};
 
         deps.push('scripts/extensions');
 
+        if (!window.fetch) {
+            deps.push('fetch');
+        }
+
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
             window.MediaBrowser = window.MediaBrowser || {};
@@ -2099,9 +2101,6 @@ var AppInfo = {};
 
             var promises = [];
             deps = [];
-            deps.push('emby-icons');
-            deps.push('paper-icon-button');
-            deps.push('paper-button');
             deps.push('jQuery');
 
             promises.push(getRequirePromise(deps));
@@ -2145,7 +2144,7 @@ var AppInfo = {};
     }
 
     function onGlobalizeInit() {
-        document.title = Globalize.translateHtml(document.title, 'core');
+        document.title = Globalize.translateDocument(document.title, 'core');
 
         var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
 
@@ -2180,7 +2179,7 @@ var AppInfo = {};
                 MediaPlayer.init();
 
                 // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                $(mainDrawerPanelContent).html(Globalize.translateHtml(newHtml, 'core'));
+                $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'core'));
                 onAppReady();
             });
             return;
@@ -2246,8 +2245,6 @@ var AppInfo = {};
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
-
-            $.mobile.filterHtml = Dashboard.filterHtml;
 
             $.mobile.initializePage();
 
@@ -2422,9 +2419,7 @@ var AppInfo = {};
             setAppInfo();
             setDocumentClasses();
 
-            getHostingAppInfo().then(function (hostingAppInfo) {
-                init(hostingAppInfo);
-            });
+            getHostingAppInfo().then(init);
         });
     }
 

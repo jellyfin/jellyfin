@@ -160,7 +160,7 @@
             $('.servicesSection', page).hide();
         }
 
-        $('.servicesList', page).html(servicesToDisplay.map(getServiceHtml).join('')).trigger('create');
+        $('.servicesList', page).html(servicesToDisplay.map(getServiceHtml).join(''));
 
         var tuners = [];
         for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {

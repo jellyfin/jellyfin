@@ -238,6 +238,7 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
     return {
         getString: translate,
         translate: translate,
+        translateDocument: translateHtml,
         translateHtml: translateHtml,
         loadStrings: loadTranslations,
         defaultModule: defaultModule

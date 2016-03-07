@@ -476,7 +476,7 @@
 
             var template = this.response;
             var tabContent = options.element;
-            tabContent.innerHTML = Globalize.translateHtml(template);
+            tabContent.innerHTML = Globalize.translateDocument(template);
 
             tabContent.querySelector('.programGrid').addEventListener('scroll', function (e) {
 

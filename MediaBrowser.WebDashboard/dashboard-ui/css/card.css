@@ -57,7 +57,7 @@
 @media all and (min-width: 800px) {
 
     .cardImage {
-        border-radius: 2px;
+        border-radius: 3px;
     }
 }
 

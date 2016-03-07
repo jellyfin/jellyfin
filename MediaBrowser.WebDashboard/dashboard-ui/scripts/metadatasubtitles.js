@@ -27,7 +27,7 @@
             html += '<paper-checkbox class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '">' + culture.DisplayName + '</paper-checkbox>';
         }
 
-        $('.downloadLanguages', page).html(html).trigger('create');
+        $('.downloadLanguages', page).html(html);
 
         var langs = config.DownloadLanguages || [];
 

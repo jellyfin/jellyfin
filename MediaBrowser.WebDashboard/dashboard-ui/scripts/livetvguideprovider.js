@@ -22,8 +22,7 @@
 
             var html = this.response;
             var elem = page.querySelector('.providerTemplate');
-            elem.innerHTML = Globalize.translateHtml(html);
-            $(elem).trigger('create');
+            elem.innerHTML = Globalize.translateDocument(html);
 
             init(page, type, providerId);
         }

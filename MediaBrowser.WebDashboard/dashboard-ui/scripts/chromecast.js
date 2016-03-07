@@ -178,7 +178,7 @@
             }, 300);
 
         }
-        else if (message.type && message.type.indexOf('playback') == 0) {
+        else if (message.type) {
             Events.trigger(this, message.type, [message.data]);
 
         }
@@ -518,6 +518,22 @@
             var state = self.getPlayerStateInternal(data);
 
             Events.trigger(self, "positionchange", [state]);
+        });
+
+        Events.on(castPlayer, "volumechange", function (e, data) {
+
+            console.log('cc: volumechange');
+            var state = self.getPlayerStateInternal(data);
+
+            Events.trigger(self, "volumechange", [state]);
+        });
+
+        Events.on(castPlayer, "playstatechange", function (e, data) {
+
+            console.log('cc: playstatechange');
+            var state = self.getPlayerStateInternal(data);
+
+            Events.trigger(self, "playstatechange", [state]);
         });
 
         self.play = function (options) {

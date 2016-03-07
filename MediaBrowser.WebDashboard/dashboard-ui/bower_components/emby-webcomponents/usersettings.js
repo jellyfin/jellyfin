@@ -62,13 +62,22 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
             return self.get('language');
         };
 
-        self.skipLength = function (val) {
+        self.skipBackLength = function (val) {
 
             if (val != null) {
-                self.set('skipLength', val.toString());
+                self.set('skipBackLength', val.toString());
             }
 
-            return parseInt(self.get('skipLength') || '15000');
+            return parseInt(self.get('skipBackLength') || '15000');
+        };
+
+        self.skipForwardLength = function (val) {
+
+            if (val != null) {
+                self.set('skipForwardLength', val.toString());
+            }
+
+            return parseInt(self.get('skipForwardLength') || '15000');
         };
 
         self.serverConfig = function (config) {

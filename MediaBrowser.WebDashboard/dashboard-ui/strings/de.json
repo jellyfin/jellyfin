@@ -260,7 +260,6 @@
     "TabTrailers": "Trailer",
     "LabelArtists": "Interpreten:",
     "LabelArtistsHelp": "Trenne mehrere Eintr\u00e4ge durch ;",
-    "HeaderLatestMovies": "Neueste Filme",
     "HeaderLatestTrailers": "Neueste Trailer",
     "OptionHasSpecialFeatures": "Besonderes Merkmal",
     "OptionImdbRating": "IMDb Bewertung",
@@ -1488,7 +1487,6 @@
     "OptionSyncLosslessAudioOriginal": "Synchronisiere verlustfreie Audio in originaler Qualit\u00e4t",
     "HeaderMetadata": "Metadaten",
     "HeaderRecordingOptions": "Aufnahme Einstellungen",
-    "ButtonShare": "Teilen",
     "HeaderUpcomingForKids": "Vorschau f\u00fcr Kinder",
     "HeaderSetupLiveTV": "Live TV einrichten",
     "LabelTunerType": "Tuner Typ:",
@@ -2228,6 +2226,7 @@
     "MessageThankYouForConnectSignUp": "Vielen Dank f\u00fcr Ihre Anmeldung bei Emby Connect. Eine Emails mit weiteren Schritten zur Anmeldung Ihres neuen Kontos wird Ihnen in K\u00fcrze zugestellt. Bitte best\u00e4tigen Sie Ihr Konto und kehren Sie dann hier her zur\u00fcck um sich anzumelden.",
     "HeaderShare": "Teilen",
     "ButtonShareHelp": "Teilen Sie eine Website mit Medieninformationen in einem sozialen Netzwerk. Medien werden niemals \u00f6ffentlich geteilt.",
+    "ButtonShare": "Teilen",
     "HeaderConfirm": "Best\u00e4tigen",
     "MessageConfirmDeleteTunerDevice": "M\u00f6chten Sie dieses Ger\u00e4t wirklich l\u00f6schen?",
     "MessageConfirmDeleteGuideProvider": "M\u00f6chten Sie diese Quelle wirklich l\u00f6schen?",
@@ -2274,6 +2273,7 @@
     "ButtonViewNewApp": "Zeige neue App",
     "HeaderEmbyForAndroidHasMoved": "Emby f\u00fcr Android ist umgezogen!",
     "MessageEmbyForAndroidHasMoved": "Emby f\u00fcr Android ist innerhalb des App-Stores umgezogen! Bitte schauen Sie sich die neue App an! Sie k\u00f6nnen alternativ diese App so lange verwenden, wie Sie es m\u00f6chten.",
+    "HeaderLatestMovies": "Neueste Filme",
     "EmbyPremiereMonthly": "Monatliche Emby Premiere",
     "EmbyPremiereMonthlyWithPrice": "Emby Premium Monatlich {0}",
     "HeaderEmailAddress": "E-Mail Adresse",
@@ -2325,5 +2325,5 @@
     "ValueExample": "13:00 Uhr",
     "ButtonGotIt": "Verstanden",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
-    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software."
+    "OptionEnableAnonymousUsageReportingHelp": "Erlauben SIe Emby anonyme Nutzerdaten wie installierte Pluging, Versionen der Emby Apps etc. zu sammeln. Diese Informationen werden nur zur Verbesserung der Software verwendet."
 }

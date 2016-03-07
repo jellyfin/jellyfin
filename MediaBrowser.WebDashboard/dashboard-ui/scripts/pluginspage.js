@@ -146,10 +146,10 @@
                 html += '</div>';
             }
 
-            $('.installedPlugins', page).html(html).trigger('create');
+            $('.installedPlugins', page).html(html);
         } else {
 
-            var elem = $('.installedPlugins', page).html(html).trigger('create');
+            var elem = $('.installedPlugins', page).html(html);
 
             $('.noConfigPluginCard', elem).on('click', function () {
                 showNoConfigurationMessage();

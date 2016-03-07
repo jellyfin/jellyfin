@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'jqmcollapsible', 'paper-checkbox'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'emby-collapsible', 'paper-checkbox'], function (paperDialogHelper) {
 
     function renderLibrarySharingList(context, result) {
 
@@ -106,12 +106,10 @@
 
                     var html = '';
 
-                    html += Globalize.translateHtml(template);
+                    html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
-                    // needed for the collapsible
-                    $(dlg.querySelector('form')).trigger('create');
 
                     paperDialogHelper.open(dlg);
 

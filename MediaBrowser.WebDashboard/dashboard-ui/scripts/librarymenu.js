@@ -1,4 +1,4 @@
-﻿(function (window, document, $, devicePixelRatio) {
+﻿define(['imageLoader', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader) {
 
     function renderHeader() {
 
@@ -48,9 +48,7 @@
 
         document.body.appendChild(viewMenuBar);
 
-        require(['imageLoader'], function (imageLoader) {
-            imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
-        });
+        imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
         document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
@@ -81,7 +79,7 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                    url += "&height=" + (userButtonHeight * Math.max(window.devicePixelRatio || 1, 2));
                 }
 
                 if (headerUserButton) {
@@ -168,7 +166,7 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            mainDrawerButton.addEventListener('click', openMainDrawer);
+            mainDrawerButton.addEventListener('click', toggleMainDrawer);
         }
 
         var headerBackButton = document.querySelector('.headerBackButton');
@@ -199,9 +197,19 @@
     var requiresUserRefresh = true;
     var lastOpenTime = new Date().getTime();
 
-    function openMainDrawer() {
+    function toggleMainDrawer() {
 
         var drawerPanel = document.querySelector('.mainDrawerPanel');
+        if (drawerPanel.selected == 'drawer') {
+            closeMainDrawer(drawerPanel);
+        } else {
+            openMainDrawer(drawerPanel);
+        }
+    }
+
+    function openMainDrawer(drawerPanel) {
+
+        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
         drawerPanel.openDrawer();
         lastOpenTime = new Date().getTime();
     }
@@ -244,9 +252,10 @@
 
         document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
-    function closeMainDrawer() {
+    function closeMainDrawer(drawerPanel) {
 
-        document.querySelector('.mainDrawerPanel').closeDrawer();
+        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
+        drawerPanel.closeDrawer();
     }
     function onMainDrawerSelect(e) {
 
@@ -590,7 +599,7 @@
         },
 
         onHardwareMenuButtonClick: function () {
-            openMainDrawer();
+            toggleMainDrawer();
         },
 
         onSettingsClicked: function (event) {
@@ -943,7 +952,7 @@
 
     setDrawerClass();
 
-})(window, document, jQuery, window.devicePixelRatio);
+});
 
 (function () {
 

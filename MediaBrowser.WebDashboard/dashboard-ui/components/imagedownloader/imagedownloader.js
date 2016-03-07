@@ -56,7 +56,7 @@
     }
 
     function renderRemoteImages(page, imagesResult, imageType, startIndex, limit) {
-        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
+        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount));
 
         var html = '';
 
@@ -289,7 +289,7 @@
             html += '</h2>';
 
             html += '<div class="editorContent">';
-            html += Globalize.translateHtml(template);
+            html += Globalize.translateDocument(template);
             html += '</div>';
 
             dlg.innerHTML = html;

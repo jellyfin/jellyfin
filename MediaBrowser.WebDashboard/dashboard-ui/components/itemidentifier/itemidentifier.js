@@ -87,7 +87,7 @@
             html += getSearchResultHtml(result, i);
         }
 
-        var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
+        var elem = $('.identificationSearchResultList', page).html(html);
 
         $('.searchImage', elem).on('click', function () {
 
@@ -266,7 +266,7 @@
                 $('#txtLookupYear', page).val(item.ProductionYear);
             }
 
-            $('.identifyProviderIds', page).html(html).trigger('create');
+            $('.identifyProviderIds', page).html(html);
 
             page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
         });
@@ -295,7 +295,7 @@
                 dlg.classList.add('background-theme-b');
 
                 var html = '';
-                html += Globalize.translateHtml(template);
+                html += Globalize.translateDocument(template);
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -361,7 +361,7 @@
             dlg.classList.add('background-theme-a');
 
             var html = '';
-            html += Globalize.translateHtml(template);
+            html += Globalize.translateDocument(template);
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);

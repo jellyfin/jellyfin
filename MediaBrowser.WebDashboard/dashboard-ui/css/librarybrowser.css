@@ -17,7 +17,7 @@
 }
 
 .background-theme-b, paper-dialog.background-theme-b {
-    background-color: #1A1A1A;
+    background-color: #181818;
     /*background: radial-gradient(circle, #282828, #141414);*/
 }
 
@@ -55,15 +55,16 @@
     padding-bottom: 0;
 }
 
-.libraryPage > .ui-content {
+.pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
 }
 
-.pageWithAbsoluteTabs .pageTabContent {
-    padding-top: 10px;
-}
+/*.pageWithAbsoluteTabs .pageTabContent {
+    padding-left: .5em !important;
+    padding-right: .5em !important;
+}*/
 
-@media all and (max-width: 1200px) {
+@media all and (max-width: 600px) {
 
     .libraryPage > .ui-content {
         padding-left: .5em !important;
