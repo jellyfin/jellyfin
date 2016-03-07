@@ -12,25 +12,21 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The item.</value>
         public BaseItemInfo Item { get; set; }
-
         /// <summary>
         /// Gets or sets the item identifier.
         /// </summary>
         /// <value>The item identifier.</value>
         public string ItemId { get; set; }
-        
         /// <summary>
         /// Gets or sets the session id.
         /// </summary>
         /// <value>The session id.</value>
         public string SessionId { get; set; }
-
         /// <summary>
         /// Gets or sets the media version identifier.
         /// </summary>
         /// <value>The media version identifier.</value>
         public string MediaSourceId { get; set; }
-
         /// <summary>
         /// Gets or sets the position ticks.
         /// </summary>
@@ -46,5 +42,10 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play session identifier.</value>
         public string PlaySessionId { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="PlaybackStopInfo"/> is failed.
+        /// </summary>
+        /// <value><c>true</c> if failed; otherwise, <c>false</c>.</value>
+        public bool Failed { get; set; }
     }
 }

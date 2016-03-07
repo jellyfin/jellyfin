@@ -423,7 +423,24 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
-                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
+
+                // TODO: We should probably preserve the full list and sent it tp the server that way
+                string[] supportedAudioCodecs = transcodingProfile.AudioCodec.Split(',');
+                string inputAudioCodec = audioStream == null ? null : audioStream.Codec;
+                foreach (string supportedAudioCodec in supportedAudioCodecs)
+                {
+                    if (StringHelper.EqualsIgnoreCase(supportedAudioCodec, inputAudioCodec))
+                    {
+                        playlistItem.AudioCodec = supportedAudioCodec;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(playlistItem.AudioCodec))
+                {
+                    playlistItem.AudioCodec = supportedAudioCodecs[0];
+                }
+
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
@@ -761,7 +778,7 @@ namespace MediaBrowser.Model.Dlna
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
-                if (profile.Method != SubtitleDeliveryMethod.External)
+                if (profile.Method != SubtitleDeliveryMethod.External && profile.Method != SubtitleDeliveryMethod.Hls)
                 {
                     continue;
                 }
@@ -771,7 +788,8 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                if ((profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)) ||
+                    (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
                     bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 

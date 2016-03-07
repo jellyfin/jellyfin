@@ -865,10 +865,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+            if (info.Status != RecordingStatus.InProgress)
             {
-                MetadataRefreshMode = metadataRefreshMode
-            });
+                _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem)
+                {
+                    MetadataRefreshMode = metadataRefreshMode
+                });
+            }
 
             return item.Id;
         }
