@@ -423,7 +423,24 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
-                playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
+
+                // TODO: We should probably preserve the full list and sent it tp the server that way
+                string[] supportedAudioCodecs = transcodingProfile.AudioCodec.Split(',');
+                string inputAudioCodec = audioStream == null ? null : audioStream.Codec;
+                foreach (string supportedAudioCodec in supportedAudioCodecs)
+                {
+                    if (StringHelper.EqualsIgnoreCase(supportedAudioCodec, inputAudioCodec))
+                    {
+                        playlistItem.AudioCodec = supportedAudioCodec;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(playlistItem.AudioCodec))
+                {
+                    playlistItem.AudioCodec = supportedAudioCodecs[0];
+                }
+
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;

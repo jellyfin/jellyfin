@@ -813,7 +813,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 foreach (var user in users)
                 {
-                    playedToCompletion = await OnPlaybackStopped(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                    playedToCompletion = await OnPlaybackStopped(user.Id, key, libraryItem, info.PositionTicks, info.Failed).ConfigureAwait(false);
                 }
             }
 
@@ -846,25 +846,29 @@ namespace MediaBrowser.Server.Implementations.Session
             await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks)
+        private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks, bool playbackFailed)
         {
-            var data = _userDataRepository.GetUserData(userId, userDataKey);
-            bool playedToCompletion;
+            bool playedToCompletion = false;
 
-            if (positionTicks.HasValue)
+            if (!playbackFailed)
             {
-                playedToCompletion = _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
-            }
-            else
-            {
-                // If the client isn't able to report this, then we'll just have to make an assumption
-                data.PlayCount++;
-                data.Played = true;
-                data.PlaybackPositionTicks = 0;
-                playedToCompletion = true;
-            }
+                var data = _userDataRepository.GetUserData(userId, userDataKey);
+                
+                if (positionTicks.HasValue)
+                {
+                    playedToCompletion = _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
+                }
+                else
+                {
+                    // If the client isn't able to report this, then we'll just have to make an assumption
+                    data.PlayCount++;
+                    data.Played = true;
+                    data.PlaybackPositionTicks = 0;
+                    playedToCompletion = true;
+                }
 
-            await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+                await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+            }
 
             return playedToCompletion;
         }
