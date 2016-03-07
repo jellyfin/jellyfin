@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['appStorage'], function (appStorage) {
 
     var pageBackgroundCreated;
 
@@ -246,4 +246,4 @@
         clear: clearBackdrop
     };
 
-})(jQuery, document);
+});

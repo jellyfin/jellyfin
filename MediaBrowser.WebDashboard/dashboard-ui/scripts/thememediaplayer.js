@@ -1,4 +1,4 @@
-﻿(function (document) {
+﻿define(['appStorage'], function (appStorage) {
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -73,4 +73,4 @@
         }
     });
 
-})(document);
+});

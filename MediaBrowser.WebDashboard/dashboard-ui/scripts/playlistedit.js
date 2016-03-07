@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['appStorage'], function (appStorage) {
 
     var data = {};
     function getPageData() {
@@ -197,4 +197,4 @@
         }
     };
 
-})(jQuery, document);
+});

@@ -2332,58 +2332,60 @@ var AppInfo = {};
 
         return new Promise(function (resolve, reject) {
 
-            var deviceName;
+            require(['appStorage'], function (appStorage) {
+                var deviceName;
 
-            if (browserInfo.chrome) {
-                deviceName = "Chrome";
-            } else if (browserInfo.edge) {
-                deviceName = "Edge";
-            } else if (browserInfo.firefox) {
-                deviceName = "Firefox";
-            } else if (browserInfo.msie) {
-                deviceName = "Internet Explorer";
-            } else {
-                deviceName = "Web Browser";
-            }
+                if (browserInfo.chrome) {
+                    deviceName = "Chrome";
+                } else if (browserInfo.edge) {
+                    deviceName = "Edge";
+                } else if (browserInfo.firefox) {
+                    deviceName = "Firefox";
+                } else if (browserInfo.msie) {
+                    deviceName = "Internet Explorer";
+                } else {
+                    deviceName = "Web Browser";
+                }
 
-            if (browserInfo.version) {
-                deviceName += " " + browserInfo.version;
-            }
+                if (browserInfo.version) {
+                    deviceName += " " + browserInfo.version;
+                }
 
-            if (browserInfo.ipad) {
-                deviceName += " Ipad";
-            } else if (browserInfo.iphone) {
-                deviceName += " Iphone";
-            } else if (browserInfo.android) {
-                deviceName += " Android";
-            }
+                if (browserInfo.ipad) {
+                    deviceName += " Ipad";
+                } else if (browserInfo.iphone) {
+                    deviceName += " Iphone";
+                } else if (browserInfo.android) {
+                    deviceName += " Android";
+                }
 
-            function onDeviceAdAcquired(id) {
+                function onDeviceAdAcquired(id) {
 
-                resolve({
-                    deviceId: id,
-                    deviceName: deviceName,
-                    appName: "Emby Web Client",
-                    appVersion: window.dashboardVersion
-                });
-            }
+                    resolve({
+                        deviceId: id,
+                        deviceName: deviceName,
+                        appName: "Emby Web Client",
+                        appVersion: window.dashboardVersion
+                    });
+                }
 
-            var deviceIdKey = '_deviceId1';
-            var deviceId = appStorage.getItem(deviceIdKey);
+                var deviceIdKey = '_deviceId1';
+                var deviceId = appStorage.getItem(deviceIdKey);
 
-            if (deviceId) {
-                onDeviceAdAcquired(deviceId);
-            } else {
-                require(['cryptojs-sha1'], function () {
-                    var keys = [];
-                    keys.push(navigator.userAgent);
-                    keys.push((navigator.cpuClass || ""));
-                    keys.push(new Date().getTime());
-                    var randomId = CryptoJS.SHA1(keys.join('|')).toString();
-                    appStorage.setItem(deviceIdKey, randomId);
-                    onDeviceAdAcquired(randomId);
-                });
-            }
+                if (deviceId) {
+                    onDeviceAdAcquired(deviceId);
+                } else {
+                    require(['cryptojs-sha1'], function () {
+                        var keys = [];
+                        keys.push(navigator.userAgent);
+                        keys.push((navigator.cpuClass || ""));
+                        keys.push(new Date().getTime());
+                        var randomId = CryptoJS.SHA1(keys.join('|')).toString();
+                        appStorage.setItem(deviceIdKey, randomId);
+                        onDeviceAdAcquired(randomId);
+                    });
+                }
+            });
         });
     }
 
@@ -2403,18 +2405,16 @@ var AppInfo = {};
         var initialDependencies = [];
 
         initialDependencies.push('browser');
-        initialDependencies.push('appStorage');
 
         if (!window.Promise) {
             initialDependencies.push('native-promise-only');
         }
 
-        require(initialDependencies, function (browser, appStorage) {
+        require(initialDependencies, function (browser) {
 
             initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
-            window.appStorage = appStorage;
 
             setAppInfo();
             setDocumentClasses();

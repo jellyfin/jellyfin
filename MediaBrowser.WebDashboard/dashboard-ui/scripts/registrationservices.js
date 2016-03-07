@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appStorage'], function (appStorage) {
 
     var supporterPlaybackKey = 'lastSupporterPlaybackMessage4';
 
@@ -297,4 +297,4 @@
         }
     };
 
-})();
+});

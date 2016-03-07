@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings'], function (playlistManager, appSettings) {
+﻿define(['playlistManager', 'appSettings', 'appStorage'], function (playlistManager, appSettings, appStorage) {
 
     var libraryBrowser = (function (window, document, screen) {
 
