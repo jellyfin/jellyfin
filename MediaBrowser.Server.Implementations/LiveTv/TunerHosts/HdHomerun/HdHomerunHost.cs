@@ -415,9 +415,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task Validate(TunerHostInfo info)
         {
-            if (info.IsEnabled)
+            if (!info.IsEnabled)
             {
-                await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
+                return;
+            }
+
+            // Test it by pulling down the lineup
+            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
+                CancellationToken = CancellationToken.None
+            }))
+            {
+                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+
+                info.DeviceId = response.DeviceID;
             }
         }
 
