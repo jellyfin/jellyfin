@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -21,6 +22,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly ILiveTvManager _liveTvManager;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IHttpClient _httpClient;
+        private IJsonSerializer _json;
 
         public HdHomerunDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient)
         {
@@ -79,21 +81,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 url = new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped).TrimEnd('/');
 
                 // Test it by pulling down the lineup
-                using (await _httpClient.Get(new HttpRequestOptions
+                using (var stream = await _httpClient.Get(new HttpRequestOptions
                 {
-                    Url = string.Format("{0}/lineup.json", url),
+                    Url = string.Format("{0}/discover.json", url),
                     CancellationToken = CancellationToken.None
                 }))
                 {
-                }
-                
-                await _liveTvManager.SaveTunerHost(new TunerHostInfo
-                {
-                    Type = HdHomerunHost.DeviceType,
-                    Url = url,
-                    DataVersion = 1
+                    var response = _json.DeserializeFromStream<HdHomerunHost.DiscoverResponse>(stream);
 
-                }).ConfigureAwait(false);
+                    var existing = GetConfiguration().TunerHosts
+                        .FirstOrDefault(i => string.Equals(i.Type, HdHomerunHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(i.DeviceId, response.DeviceID, StringComparison.OrdinalIgnoreCase));
+
+                    if (existing == null)
+                    {
+                        await _liveTvManager.SaveTunerHost(new TunerHostInfo
+                        {
+                            Type = HdHomerunHost.DeviceType,
+                            Url = url,
+                            DataVersion = 1,
+                            DeviceId = response.DeviceID
+
+                        }).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        if (!string.Equals(existing.Url, url, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existing.Url = url;
+                            await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
