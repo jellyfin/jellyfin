@@ -783,6 +783,11 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
+                if (profile.Method == SubtitleDeliveryMethod.Hls && playMethod != PlayMethod.Transcode)
+                {
+                    continue;
+                }
+
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
                     continue;
@@ -796,12 +801,6 @@ namespace MediaBrowser.Model.Dlna
                     if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
                     {
                         if (subtitleStream.SupportsExternalStream)
-                        {
-                            return profile;
-                        }
-
-                        // For sync we can handle the longer extraction times
-                        if (context == EncodingContext.Static && subtitleStream.IsTextSubtitleStream)
                         {
                             return profile;
                         }

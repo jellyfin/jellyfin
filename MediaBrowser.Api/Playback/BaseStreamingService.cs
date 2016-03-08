@@ -214,7 +214,7 @@ namespace MediaBrowser.Api.Playback
                 args += " -map -0:a";
             }
 
-            if (state.SubtitleStream == null)
+            if (state.SubtitleStream == null || state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Hls)
             {
                 args += " -map -0:s";
             }
@@ -477,7 +477,7 @@ namespace MediaBrowser.Api.Playback
 
             var pts = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && !state.VideoRequest.CopyTimestamps)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode && !state.VideoRequest.CopyTimestamps)
             {
                 var seconds = TimeSpan.FromTicks(state.Request.StartTimeTicks ?? 0).TotalSeconds;
 
@@ -575,7 +575,7 @@ namespace MediaBrowser.Api.Playback
 
             var output = string.Empty;
 
-            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream)
+            if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode)
             {
                 var subParam = GetTextSubtitleParam(state);
 
@@ -865,7 +865,7 @@ namespace MediaBrowser.Api.Playback
         {
             var arg = string.Format("-i {0}", GetInputPathArgument(state));
 
-            if (state.SubtitleStream != null)
+            if (state.SubtitleStream != null && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode)
             {
                 if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
                 {

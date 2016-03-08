@@ -1835,8 +1835,8 @@ namespace MediaBrowser.Controller.Entities
                 ProviderIds = ProviderIds,
                 IndexNumber = IndexNumber,
                 ParentIndexNumber = ParentIndexNumber,
-				Year = ProductionYear,
-				PremiereDate = PremiereDate
+                Year = ProductionYear,
+                PremiereDate = PremiereDate
             };
         }
 
@@ -1984,6 +1984,15 @@ namespace MediaBrowser.Controller.Entities
         public virtual Task Delete(DeleteOptions options)
         {
             return LibraryManager.DeleteItem(this, options);
+        }
+
+        public virtual Task OnFileDeleted()
+        {
+            // Remove from database
+            return Delete(new DeleteOptions
+            {
+                DeleteFileLocation = false
+            });
         }
     }
 }
