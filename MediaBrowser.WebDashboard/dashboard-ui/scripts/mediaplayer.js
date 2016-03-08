@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
+define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, userSettings, appStorage) {
 
     function mediaPlayer() {
 
@@ -1729,7 +1729,7 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     window.MediaPlayer = new mediaPlayer();
 
-    window.MediaPlayer.init = function() {
+    window.MediaPlayer.init = function () {
         window.MediaController.registerPlayer(window.MediaPlayer);
         window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
     };

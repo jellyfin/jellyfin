@@ -23,6 +23,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="../neon-animated-pages.html">
+  <link rel="import" href="../neon-animatable.html">
+  <link rel="import" href="../animations/slide-from-top-animation.html">
+  <link rel="import" href="../animations/slide-down-animation.html">
   <link rel="import" href="test-resizable-pages.html">
 
 </head>
@@ -41,6 +44,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <a-resizable-page></a-resizable-page>
         <b-resizable-page></b-resizable-page>
         <c-resizable-page></c-resizable-page>
+      </neon-animated-pages>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="animate-initial-selection">
+    <template>
+      <neon-animated-pages entry-animation="slide-from-left-animation" exit-animation="slide-right-animation" animate-initial-selection>
+        <neon-animatable></neon-animatable>
+        <neon-animatable></neon-animatable>
       </neon-animated-pages>
     </template>
   </test-fixture>
@@ -66,6 +78,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
           done();
         }, 50);
+      });
+    });
+    suite('animate-initial-selection', function() {
+      test('\'neon-animation-finish\' event fired after animating initial selection', function(done) {
+        var animatedPages = fixture('animate-initial-selection');
+        assert.isUndefined(animatedPages.selected);
+        var pages = Polymer.dom(animatedPages).children;
+        animatedPages.addEventListener('neon-animation-finish', function(event) {
+          assert.strictEqual(animatedPages.selected, 0);
+          assert.isFalse(event.detail.fromPage);
+          assert.deepEqual(event.detail.toPage, pages[0]);
+          done();
+        });
+        animatedPages.selected = 0;
       });
     });
   </script>

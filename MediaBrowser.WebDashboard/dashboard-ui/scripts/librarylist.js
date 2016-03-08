@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'appStorage'], function (appSettings, appStorage) {
 
     var showOverlayTimeout;
 

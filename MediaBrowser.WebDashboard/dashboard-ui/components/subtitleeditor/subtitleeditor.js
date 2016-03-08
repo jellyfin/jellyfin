@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'appStorage', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, appStorage) {
 
     var currentItem;
 

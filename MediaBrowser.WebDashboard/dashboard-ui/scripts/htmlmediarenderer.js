@@ -513,7 +513,10 @@
         function enableNativeTrackSupport(track) {
 
             if (browserInfo.safari) {
-                return false;
+                if (navigator.userAgent.toLowerCase().indexOf('os x') == -1) {
+                    // Leave it to apple to have different behavior between safari on ios vs osx
+                    return false;
+                }
             }
 
             if (browserInfo.firefox) {
@@ -594,13 +597,13 @@
                 trackElement.label = 'manualTrack' + track.index;
 
                 // download the track json
-                fetchSubtitles(track).then(function(data) {
+                fetchSubtitles(track).then(function (data) {
 
                     // show in ui
                     console.log('downloaded ' + data.TrackEvents.length + ' track events');
                     // add some cues to show the text
                     // in safari, the cues need to be added before setting the track mode to showing
-                    data.TrackEvents.forEach(function(trackEvent) {
+                    data.TrackEvents.forEach(function (trackEvent) {
                         trackElement.addCue(new VTTCue(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
                     });
                     trackElement.mode = 'showing';

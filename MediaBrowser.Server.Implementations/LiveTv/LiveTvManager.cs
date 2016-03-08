@@ -926,16 +926,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var queryResult = _libraryManager.QueryItems(internalQuery);
 
-            var returnArray = queryResult.Items
-                .Cast<LiveTvProgram>()
-                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
-                .ToArray();
-
-            await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
+            var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user).ToArray();
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray.Select(i => i.Item1).ToArray(),
+                Items = returnArray,
                 TotalRecordCount = queryResult.TotalRecordCount
             };
 
@@ -1006,15 +1001,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var user = _userManager.GetUserById(query.UserId);
 
-            var returnArray = internalResult.Items
-                .Select(i => new Tuple<BaseItemDto, string, string>(_dtoService.GetBaseItemDto(i, options, user), i.ServiceName, i.ExternalId))
-                .ToArray();
-
-            await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ToArray();
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = returnArray.Select(i => i.Item1).ToArray(),
+                Items = returnArray,
                 TotalRecordCount = internalResult.TotalRecordCount
             };
 
@@ -1635,18 +1626,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var internalResult = await GetInternalRecordings(query, cancellationToken).ConfigureAwait(false);
 
-            var tuples = internalResult.Items
-                .Select(i => new Tuple<BaseItem, BaseItemDto>(i, _dtoService.GetBaseItemDto(i, options, user)))
-                .ToArray();
-
-            if (user != null)
-            {
-                _dtoService.FillSyncInfo(tuples, new DtoOptions(), user);
-            }
+            var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ToArray();
 
             return new QueryResult<BaseItemDto>
             {
-                Items = tuples.Select(i => i.Item2).ToArray(),
+                Items = returnArray,
                 TotalRecordCount = internalResult.TotalRecordCount
             };
         }
@@ -1705,6 +1689,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Items = returnArray,
                 TotalRecordCount = returnArray.Length
             };
+        }
+
+        public Task OnRecordingFileDeleted(ILiveTvRecording recording)
+        {
+            var service = GetService(recording);
+
+            if (service is EmbyTV.EmbyTV)
+            {
+                // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
+                return service.DeleteRecordingAsync(recording.ExternalId, CancellationToken.None);
+            }
+
+            return Task.FromResult(true);
         }
 
         public async Task DeleteRecording(string recordingId)

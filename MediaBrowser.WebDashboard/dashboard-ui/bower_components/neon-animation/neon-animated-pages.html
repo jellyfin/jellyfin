@@ -86,19 +86,17 @@ animations to be run when switching to or switching out of the page.
 
     },
 
-    observers: [
-      '_selectedChanged(selected)'
-    ],
-
     listeners: {
+      'iron-select': '_onIronSelect',
       'neon-animation-finish': '_onNeonAnimationFinish'
     },
 
-    _selectedChanged: function(selected) {
-
-      var selectedPage = this.selectedItem;
+    _onIronSelect: function(event) {
+      var selectedPage = event.detail.item;
+      if (!selectedPage) return;
+      
       var oldPage = this._valueToItem(this._prevSelected) || false;
-      this._prevSelected = selected;
+      this._prevSelected = this.selected;
 
       // on initial load and if animateInitialSelection is negated, simply display selectedPage.
       if (!oldPage && !this.animateInitialSelection) {

@@ -1,4 +1,4 @@
-﻿(function (window) {
+﻿define(['appStorage'], function (appStorage) {
 
     var currentDisplayInfo;
     function mirrorItem(info) {
@@ -1061,4 +1061,4 @@
         mirrorIfEnabled(info);
     });
 
-})(this);
+});

@@ -529,6 +529,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 "subs" :
                 null;
 
+            if (!string.IsNullOrWhiteSpace(subtitleGroup))
+            {
+                AddSubtitles(state, subtitleStreams, builder);
+            }
+
             AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream))
@@ -548,11 +553,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
             }
 
-            if (!string.IsNullOrWhiteSpace(subtitleGroup))
-            {
-                AddSubtitles(state, subtitleStreams, builder);
-            }
-
             return builder.ToString();
         }
 
@@ -566,11 +566,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder)
         {
-            var selectedIndex = state.SubtitleStream == null ? (int?)null : state.SubtitleStream.Index;
+            var selectedIndex = state.SubtitleStream == null || state.VideoRequest.SubtitleMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
 
             foreach (var stream in subtitles)
             {
-                const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},URI=\"{3}\",LANGUAGE=\"{4}\"";
+                const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
                 var name = stream.Language;
 
@@ -579,10 +579,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 if (string.IsNullOrWhiteSpace(name)) name = stream.Codec ?? "Unknown";
 
-                var url = string.Format("{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}",
+                var url = string.Format("{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&api_key={3}",
                     state.Request.MediaSourceId,
                     stream.Index.ToString(UsCulture),
-                    30.ToString(UsCulture));
+                    30.ToString(UsCulture),
+                    AuthorizationContext.GetAuthorizationInfo(Request).Token);
 
                 var line = string.Format(format,
                     name,
@@ -827,7 +828,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                     state.SegmentLength.ToString(UsCulture));
 
-                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
+                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
                 args += " " + GetVideoQualityParam(state, GetH264Encoder(state)) + keyFrameArg;
 
@@ -853,7 +854,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableCopyTs(StreamState state)
         {
-            return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream;
+            return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
         }
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
