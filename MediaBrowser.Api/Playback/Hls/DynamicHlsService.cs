@@ -529,6 +529,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 "subs" :
                 null;
 
+            if (!string.IsNullOrWhiteSpace(subtitleGroup))
+            {
+                AddSubtitles(state, subtitleStreams, builder);
+            }
+
             AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream))
@@ -548,11 +553,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
             }
 
-            if (!string.IsNullOrWhiteSpace(subtitleGroup))
-            {
-                AddSubtitles(state, subtitleStreams, builder);
-            }
-
             return builder.ToString();
         }
 
@@ -570,7 +570,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             foreach (var stream in subtitles)
             {
-                const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},URI=\"{3}\",LANGUAGE=\"{4}\"";
+                const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
                 var name = stream.Language;
 

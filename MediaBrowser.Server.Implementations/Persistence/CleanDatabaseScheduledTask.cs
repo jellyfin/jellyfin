@@ -239,11 +239,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     typeof(Year).Name, 
                     typeof(Channel).Name, 
                     typeof(AggregateFolder).Name, 
-                    typeof(CollectionFolder).Name, 
-
-                    // LiveTVManager handles recordings
-                    typeof(LiveTvAudioRecording).Name, 
-                    typeof(LiveTvVideoRecording).Name
+                    typeof(CollectionFolder).Name
                 }
             });
 
@@ -279,11 +275,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItem.Path ?? string.Empty);
 
-                    await libraryItem.Delete(new DeleteOptions
-                    {
-                        DeleteFileLocation = false
-
-                    }).ConfigureAwait(false);
+                    await libraryItem.OnFileDeleted().ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
