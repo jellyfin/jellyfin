@@ -165,8 +165,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('open() triggers iron-resize', function(done) {
-          // Ignore the iron-resize on attached.
-          var callCount = -1;
+          var callCount = 0;
           // Ignore iron-resize triggered by window resize.
           window.addEventListener('resize', function() { callCount--; }, true);
           overlay.addEventListener('iron-resize', function() { callCount++; });
@@ -353,16 +352,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('overlay positioned & sized properly', function(done) {
           overlay.addEventListener('iron-overlay-opened', function() {
             var s = getComputedStyle(overlay);
-            assert.equal(parseFloat(s.left), (window.innerWidth - overlay.offsetWidth) / 2, 'centered horizontally');
-            assert.equal(parseFloat(s.top), (window.innerHeight - overlay.offsetHeight) / 2, 'centered vertically');
+            assert.closeTo(parseFloat(s.left), (window.innerWidth - overlay.offsetWidth) / 2, 1, 'centered horizontally');
+            assert.closeTo(parseFloat(s.top), (window.innerHeight - overlay.offsetHeight) / 2, 1, 'centered vertically');
             done();
           });
         });
 
-        test('open overlay refits on iron-resize', function() {
+        test('open overlay refits on iron-resize', function(done) {
           var spy = sinon.spy(overlay, 'refit');
+          // At this point, overlay is still opening.
           overlay.fire('iron-resize');
-          assert.isTrue(spy.called, 'overlay should refit');
+          assert.isFalse(spy.called, 'overlay did not refit while animating');
+          overlay.addEventListener('iron-overlay-opened', function() {
+            overlay.fire('iron-resize');
+            assert.isTrue(spy.called, 'overlay did refit');
+            done();
+          });
         });
 
       });
@@ -664,10 +669,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('backdrop is removed when toggling overlay opened', function(done) {
           overlay.open();
-          assert.isObject(overlay.backdropElement.parentNode, 'backdrop is immediately inserted in the document');
+          assert.isOk(overlay.backdropElement.parentNode, 'backdrop is immediately inserted in the document');
           runAfterClose(overlay, function() {
             assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
-            assert.isNotObject(overlay.backdropElement.parentNode, 'backdrop is removed from document');
+            assert.isNotOk(overlay.backdropElement.parentNode, 'backdrop is removed from document');
             done();
           });
         });

@@ -243,6 +243,8 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     ready: function() {
+      // Used to skip calls to notifyResize and refit while the overlay is animating.
+      this.__isAnimating = false;
       // with-backdrop needs tabindex to be set in order to trap the focus.
       // If it is not set, IronOverlayBehavior will set it, and remove it if with-backdrop = false.
       this.__shouldRemoveTabIndex = false;
@@ -328,6 +330,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this._manager.trackBackdrop(this);
 
+      this.__isAnimating = true;
       if (this.opened) {
         this._prepareRenderOpened();
       }
@@ -410,7 +413,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       // Needed to calculate the size of the overlay so that transitions on its size
       // will have the correct starting points.
       this._preparePositioning();
-      this.fit();
+      this.refit();
       this._finishPositioning();
 
       if (this.withBackdrop) {
@@ -441,24 +444,23 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _finishRenderOpened: function() {
-      // This ensures the overlay is visible before we set the focus
-      // (by calling _onIronResize -> refit).
-      this.notifyResize();
       // Focus the child node with [autofocus]
       this._applyFocus();
 
+      this.notifyResize();
+      this.__isAnimating = false;
       this.fire('iron-overlay-opened');
     },
 
     _finishRenderClosed: function() {
       // Hide the overlay and remove the backdrop.
-      this.resetFit();
       this.style.display = 'none';
       this._manager.removeOverlay(this);
 
       this._applyFocus();
-      this.notifyResize();
 
+      this.notifyResize();
+      this.__isAnimating = false;
       this.fire('iron-overlay-closed', this.closingReason);
     },
 
@@ -513,6 +515,10 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _onIronResize: function() {
+      if (this.__isAnimating) {
+        return;
+      }
+
       if (this.opened) {
         this.refit();
       }
@@ -524,7 +530,7 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Can be overridden in order to avoid multiple observers on the same node.
      */
     _onNodesChange: function() {
-      if (this.opened) {
+      if (this.opened && !this.__isAnimating) {
         this.notifyResize();
       }
       // Store it so we don't query too much.

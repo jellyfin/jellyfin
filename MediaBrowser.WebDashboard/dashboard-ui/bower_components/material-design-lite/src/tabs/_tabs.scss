@@ -1,0 +1,114 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+
+
+.mdl-tabs {
+  display: block;
+  width: 100%;
+}
+
+.mdl-tabs__tab-bar {
+    display         : flex;
+    flex-direction  : row;
+    justify-content : center; // ⇾
+    align-content   : space-between; // ||
+    align-items     : flex-start; // ↓
+
+    height          : 48px;
+    padding         : 0 0 0 0;
+    margin          : 0;
+    border-bottom   : 1px solid $tab-border-color;
+}
+
+.mdl-tabs__tab {
+  margin: 0;
+  border: none;
+  padding: 0 24px 0 24px;
+
+  float: left;
+  position: relative;
+  display: block;
+
+  text-decoration: none;
+  height: 48px;
+  line-height: 48px;
+
+  text-align: center;
+  font-weight: 500;
+  font-size: $layout-tab-font-size;
+  text-transform: uppercase;
+
+  color: $tab-text-color;
+  overflow: hidden;
+
+  .mdl-tabs.is-upgraded &.is-active {
+    color: $tab-active-text-color;
+  }
+
+  .mdl-tabs.is-upgraded &.is-active:after {
+    height: 2px;
+    width: 100%;
+    display: block;
+    content: " ";
+    bottom: 0px;
+    left: 0px;
+    position: absolute;
+    background: $tab-highlight-color;
+    animation: border-expand 0.2s cubic-bezier(0.4, 0.0, 0.4, 1) 0.01s alternate forwards;
+    transition: all 1s cubic-bezier(0.4, 0.0, 1, 1);
+  }
+
+  & .mdl-tabs__ripple-container {
+    display: block;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
+    overflow: hidden;
+
+    & .mdl-ripple {
+      background: $tab-highlight-color;
+    }
+  }
+}
+
+.mdl-tabs__panel {
+  display: block;
+
+  .mdl-tabs.is-upgraded & {
+    display: none;
+  }
+
+  .mdl-tabs.is-upgraded &.is-active {
+    display: block;
+  }
+}
+
+@keyframes border-expand {
+  0% {
+    opacity: 0;
+    width: 0;
+  }
+
+  100% {
+    opacity: 1;
+    width: 100%;
+  }
+}

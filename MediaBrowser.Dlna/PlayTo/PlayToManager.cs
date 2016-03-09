@@ -171,7 +171,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private string GetServerAddress(IPAddress localIp)
         {
-            return _appHost.GetLocalApiUrl(localIp.ToString());
+            return _appHost.GetLocalApiUrl(localIp);
         }
 
         public void Dispose()

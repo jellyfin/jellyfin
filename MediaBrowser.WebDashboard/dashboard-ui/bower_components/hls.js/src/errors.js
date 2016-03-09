@@ -40,6 +40,8 @@ export const ErrorDetails = {
   BUFFER_APPENDING_ERROR: 'bufferAppendingError',
   // Identifier for a buffer stalled error event
   BUFFER_STALLED_ERROR: 'bufferStalledError',
-  // Identifier for a buffer full error event
-  BUFFER_FULL_ERROR: 'bufferFullError'
+  // Identifier for a buffer full event
+  BUFFER_FULL_ERROR: 'bufferFullError',
+  // Identifier for a buffer seek over hole event
+  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole'
 };

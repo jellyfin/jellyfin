@@ -1,0 +1,301 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* Typography */
+
+@mixin typo-preferred-font($usePreferred: true) {
+  @if $usePreferred {
+    font-family: $preferred_font;
+  }
+}
+
+@mixin typo-display-4($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 112px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-display-3($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-display-2($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 45px;
+  font-weight: 400;
+  line-height: 48px;
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-display-1($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 40px;
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-headline($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  -moz-osx-font-smoothing: grayscale;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-title($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-subhead($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.04em;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-subhead-2($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0.04em;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-body-2($colorContrast: false, $usePreferred: false) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 14px;
+  @if $usePreferred {
+    font-weight: 500;
+  } @else {
+    font-weight: bold;
+  }
+  line-height: 24px;
+  letter-spacing: 0;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-body-1($colorContrast: false, $usePreferred: false) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-caption($colorContrast: false, $usePreferred: false) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-blockquote($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  position: relative;
+  font-size: 24px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+
+  &:before {
+    position: absolute;
+    left: -0.5em;
+    content: '“';
+  }
+
+  &:after {
+    content: '”';
+    margin-left: -0.05em;
+  }
+
+  @if $colorContrast {
+    opacity: 0.54;
+  }
+}
+
+@mixin typo-menu($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-button($colorContrast: false, $usePreferred: true) {
+  @include typo-preferred-font($usePreferred);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: 0;
+
+  @if $colorContrast {
+    opacity: 0.87;
+  }
+}
+
+@mixin typo-icon() {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  word-wrap: normal;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Shadows */
+
+// Focus shadow mixin.
+@mixin focus-shadow() {
+  box-shadow: 0 0 8px rgba(0,0,0,.18),0 8px 16px rgba(0,0,0,.36);
+}
+
+@mixin shadow-2dp() {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 3px 1px -2px rgba(0, 0, 0, $shadow-key-umbra-opacity),
+              0 1px 5px 0 rgba(0, 0, 0, $shadow-ambient-shadow-opacity);
+}
+@mixin shadow-3dp() {
+  box-shadow: 0 3px 4px 0 rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 3px 3px -2px rgba(0, 0, 0, $shadow-key-umbra-opacity),
+              0 1px 8px 0 rgba(0, 0, 0, $shadow-ambient-shadow-opacity);
+}
+@mixin shadow-4dp() {
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 1px 10px 0 rgba(0, 0, 0, $shadow-ambient-shadow-opacity),
+              0 2px 4px -1px rgba(0, 0, 0, $shadow-key-umbra-opacity);
+}
+@mixin shadow-6dp() {
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 1px 18px 0 rgba(0, 0, 0, $shadow-ambient-shadow-opacity),
+              0 3px 5px -1px rgba(0, 0, 0, $shadow-key-umbra-opacity);
+}
+@mixin shadow-8dp() {
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 3px 14px 2px rgba(0, 0, 0, $shadow-ambient-shadow-opacity),
+              0 5px 5px -3px rgba(0, 0, 0, $shadow-key-umbra-opacity);
+}
+
+@mixin shadow-16dp() {
+  box-shadow: 0 16px 24px 2px rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0  6px 30px 5px rgba(0, 0, 0, $shadow-ambient-shadow-opacity),
+              0  8px 10px -5px rgba(0, 0, 0, $shadow-key-umbra-opacity);
+}
+
+@mixin shadow-24dp() {
+  box-shadow: 0  9px 46px  8px rgba(0, 0, 0, $shadow-key-penumbra-opacity),
+              0 11px 15px -7px rgba(0, 0, 0, $shadow-ambient-shadow-opacity),
+              0 24px 38px  3px rgba(0, 0, 0, $shadow-key-umbra-opacity);
+}
+
+/* Animations */
+
+@mixin material-animation-fast-out-slow-in($duration:0.2s) {
+  transition-duration: $duration;
+  transition-timing-function: $animation-curve-fast-out-slow-in;
+}
+
+@mixin material-animation-linear-out-slow-in($duration:0.2s) {
+  transition-duration: $duration;
+  transition-timing-function: $animation-curve-linear-out-slow-in;
+}
+
+@mixin material-animation-fast-out-linear-in($duration:0.2s) {
+  transition-duration: $duration;
+  transition-timing-function: $animation-curve-fast-out-linear-in;
+}
+
+@mixin material-animation-default($duration:0.2s) {
+  transition-duration: $duration;
+  transition-timing-function: $animation-curve-default;
+}
+
+/* Dialog */
+
+@mixin dialog-width($units:5) {
+  @if(type_of($units) != 'number') {
+    @error "The unit given to dialog-width should be a number.";
+  }
+  // 56dp is the base unit width for Dialogs.
+  // With 5 units being the number of units for a mobile device.
+  // https://goo.gl/sK2O5o
+  width: $units * 56px;
+}

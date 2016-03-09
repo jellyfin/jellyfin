@@ -578,6 +578,7 @@ var BufferController = function (_EventHandler) {
         ms.removeEventListener('sourceclose', this.onmsc);
         // unlink MediaSource from video tag
         this.media.src = '';
+        this.media.removeAttribute('src');
         this.mediaSource = null;
         this.media = null;
         this.pendingTracks = null;
@@ -810,9 +811,9 @@ var BufferController = function (_EventHandler) {
               }
             } else {
               // QuotaExceededError: http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
-              // let's stop appending any segments, and report BUFFER_FULL error
+              // let's stop appending any segments, and report BUFFER_FULL_ERROR error
               segments = [];
-              event.details = _errors.ErrorDetails.BUFFER_FULL;
+              event.details = _errors.ErrorDetails.BUFFER_FULL_ERROR;
               hls.trigger(_events2.default.ERROR, event);
             }
           }
@@ -1417,8 +1418,11 @@ var StreamController = function (_EventHandler) {
             if (levelDetails.live) {
               // check if requested position is within seekable boundaries :
               //logger.log(`start/pos/bufEnd/seeking:${start.toFixed(3)}/${pos.toFixed(3)}/${bufferEnd.toFixed(3)}/${this.media.seeking}`);
-              if (bufferEnd < Math.max(start, end - config.liveMaxLatencyDurationCount * levelDetails.targetduration)) {
-                this.seekAfterBuffered = start + Math.max(0, levelDetails.totalduration - config.liveSyncDurationCount * levelDetails.targetduration);
+              var maxLatency = config.liveMaxLatencyDuration !== undefined ? config.liveMaxLatencyDuration : config.liveMaxLatencyDurationCount * levelDetails.targetduration;
+
+              if (bufferEnd < Math.max(start, end - maxLatency)) {
+                var targetLatency = config.liveSyncDuration !== undefined ? config.liveSyncDuration : config.liveSyncDurationCount * levelDetails.targetduration;
+                this.seekAfterBuffered = start + Math.max(0, levelDetails.totalduration - targetLatency);
                 _logger.logger.log('buffer end: ' + bufferEnd + ' is located too far from the end of live sliding playlist, media position will be reseted to: ' + this.seekAfterBuffered.toFixed(3));
                 bufferEnd = this.seekAfterBuffered;
               }
@@ -1662,7 +1666,7 @@ var StreamController = function (_EventHandler) {
         if (pos + maxHoleDuration >= start && pos < end) {
           // play position is inside this buffer TimeRange, retrieve end of buffer position and buffer length
           bufferStart = start;
-          bufferEnd = end + maxHoleDuration;
+          bufferEnd = end;
           bufferLen = bufferEnd - pos;
         } else if (pos + maxHoleDuration < start) {
           bufferStartNext = start;
@@ -1674,11 +1678,15 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'getBufferRange',
     value: function getBufferRange(position) {
-      var i, range;
-      for (i = this.bufferRange.length - 1; i >= 0; i--) {
-        range = this.bufferRange[i];
-        if (position >= range.start && position <= range.end) {
-          return range;
+      var i,
+          range,
+          bufferRange = this.bufferRange;
+      if (bufferRange) {
+        for (i = bufferRange.length - 1; i >= 0; i--) {
+          range = bufferRange[i];
+          if (position >= range.start && position <= range.end) {
+            return range;
+          }
         }
       }
       return null;
@@ -1995,7 +2003,8 @@ var StreamController = function (_EventHandler) {
       if (this.startFragRequested === false) {
         // if live playlist, set start position to be fragment N-this.config.liveSyncDurationCount (usually 3)
         if (newDetails.live) {
-          this.startPosition = Math.max(0, sliding + duration - this.config.liveSyncDurationCount * newDetails.targetduration);
+          var targetLatency = this.config.liveSyncDuration !== undefined ? this.config.liveSyncDuration : this.config.liveSyncDurationCount * newDetails.targetduration;
+          this.startPosition = Math.max(0, sliding + duration - targetLatency);
         }
         this.nextLoadPosition = this.startPosition;
       }
@@ -2249,7 +2258,7 @@ var StreamController = function (_EventHandler) {
           _logger.logger.warn('mediaController: ' + data.details + ' while loading frag,switch to ' + (data.fatal ? 'ERROR' : 'IDLE') + ' state ...');
           this.state = data.fatal ? State.ERROR : State.IDLE;
           break;
-        case _errors.ErrorDetails.BUFFER_FULL:
+        case _errors.ErrorDetails.BUFFER_FULL_ERROR:
           // trigger a smooth level switch to empty buffers
           // also reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
           this.config.maxMaxBufferLength /= 2;
@@ -2296,8 +2305,9 @@ var StreamController = function (_EventHandler) {
           }
           var bufferInfo = this.bufferInfo(currentTime, 0),
               expectedPlaying = !(media.paused || media.ended || media.seeking || readyState < 2),
-              jumpThreshold = 0.2,
-              playheadMoving = currentTime > media.playbackRate * this.lastCurrentTime;
+              jumpThreshold = 0.4,
+              // tolerance needed as some browsers stalls playback before reaching buffered range end
+          playheadMoving = currentTime > media.playbackRate * this.lastCurrentTime;
 
           if (this.stalled && playheadMoving) {
             this.stalled = false;
@@ -2319,14 +2329,15 @@ var StreamController = function (_EventHandler) {
             }
             // if we are below threshold, try to jump if next buffer range is close
             if (bufferInfo.len <= jumpThreshold) {
-              // no buffer available @ currentTime, check if next buffer is close (more than 5ms diff but within a config.maxSeekHole second range)
+              // no buffer available @ currentTime, check if next buffer is close (within a config.maxSeekHole second range)
               var nextBufferStart = bufferInfo.nextStart,
                   delta = nextBufferStart - currentTime;
-              if (nextBufferStart && delta < this.config.maxSeekHole && delta > 0.005 && !media.seeking) {
+              if (nextBufferStart && delta < this.config.maxSeekHole && delta > 0 && !media.seeking) {
                 // next buffer is close ! adjust currentTime to nextBufferStart
                 // this will ensure effective video decoding
                 _logger.logger.log('adjust currentTime from ' + media.currentTime + ' to next buffered @ ' + nextBufferStart);
                 media.currentTime = nextBufferStart;
+                this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false });
               }
             }
           } else {
@@ -4920,8 +4931,10 @@ var ErrorDetails = exports.ErrorDetails = {
   BUFFER_APPENDING_ERROR: 'bufferAppendingError',
   // Identifier for a buffer stalled error event
   BUFFER_STALLED_ERROR: 'bufferStalledError',
-  // Identifier for a buffer full error event
-  BUFFER_FULL_ERROR: 'bufferFullError'
+  // Identifier for a buffer full event
+  BUFFER_FULL_ERROR: 'bufferFullError',
+  // Identifier for a buffer seek over hole event
+  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole'
 };
 
 },{}],20:[function(require,module,exports){
@@ -5340,6 +5353,8 @@ var Hls = function () {
           maxSeekHole: 2,
           liveSyncDurationCount: 3,
           liveMaxLatencyDurationCount: Infinity,
+          liveSyncDuration: undefined,
+          liveMaxLatencyDuration: undefined,
           maxMaxBufferLength: 600,
           enableWorker: true,
           enableSoftwareAES: true,
@@ -5381,6 +5396,11 @@ var Hls = function () {
     _classCallCheck(this, Hls);
 
     var defaultConfig = Hls.DefaultConfig;
+
+    if ((config.liveSyncDurationCount || config.liveMaxLatencyDurationCount) && (config.liveSyncDuration || config.liveMaxLatencyDuration)) {
+      throw new Error('Illegal hls.js config: don\'t mix up liveSyncDurationCount/liveMaxLatencyDurationCount and liveSyncDuration/liveMaxLatencyDuration');
+    }
+
     for (var prop in defaultConfig) {
       if (prop in config) {
         continue;
@@ -5390,6 +5410,10 @@ var Hls = function () {
 
     if (config.liveMaxLatencyDurationCount !== undefined && config.liveMaxLatencyDurationCount <= config.liveSyncDurationCount) {
       throw new Error('Illegal hls.js config: "liveMaxLatencyDurationCount" must be gt "liveSyncDurationCount"');
+    }
+
+    if (config.liveMaxLatencyDuration !== undefined && (config.liveMaxLatencyDuration <= config.liveSyncDuration || config.liveSyncDuration === undefined)) {
+      throw new Error('Illegal hls.js config: "liveMaxLatencyDuration" must be gt "liveSyncDuration"');
     }
 
     (0, _logger.enableLogs)(config.debug);
@@ -5706,13 +5730,17 @@ var FragmentLoader = function (_EventHandler) {
   }, {
     key: 'loaderror',
     value: function loaderror(event) {
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.FRAG_LOAD_ERROR, fatal: false, frag: this.frag, response: event });
     }
   }, {
     key: 'loadtimeout',
     value: function loadtimeout() {
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.FRAG_LOAD_TIMEOUT, fatal: false, frag: this.frag });
     }
   }, {
@@ -5810,13 +5838,17 @@ var KeyLoader = function (_EventHandler) {
   }, {
     key: 'loaderror',
     value: function loaderror(event) {
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.KEY_LOAD_ERROR, fatal: false, frag: this.frag, response: event });
     }
   }, {
     key: 'loadtimeout',
     value: function loadtimeout() {
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.KEY_LOAD_TIMEOUT, fatal: false, frag: this.frag });
     }
   }, {
@@ -5907,7 +5939,7 @@ var PlaylistLoader = function (_EventHandler) {
       this.url = url;
       this.id = id1;
       this.id2 = id2;
-      if (this.id === undefined) {
+      if (this.id === null) {
         retry = config.manifestLoadingMaxRetry;
         timeout = config.manifestLoadingTimeOut;
         retryDelay = config.manifestLoadingRetryDelay;
@@ -6141,7 +6173,9 @@ var PlaylistLoader = function (_EventHandler) {
         details = _errors.ErrorDetails.LEVEL_LOAD_ERROR;
         fatal = false;
       }
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: details, fatal: fatal, url: this.url, loader: this.loader, response: event.currentTarget, level: this.id, id: this.id2 });
     }
   }, {
@@ -6155,7 +6189,9 @@ var PlaylistLoader = function (_EventHandler) {
         details = _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT;
         fatal = false;
       }
-      this.loader.abort();
+      if (this.loader) {
+        this.loader.abort();
+      }
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: details, fatal: fatal, url: this.url, loader: this.loader, level: this.id, id: this.id2 });
     }
   }]);
@@ -7951,7 +7987,7 @@ var URLHelper = {
       baseURL = baseURLQuerySplit[1];
     }
 
-    var baseURLDomainSplit = /^((([a-z]+):)?\/\/[a-z0-9\.-]+(:[0-9]+)?\/)(.*)$/i.exec(baseURL);
+    var baseURLDomainSplit = /^((([a-z]+):)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?\/)(.*)$/i.exec(baseURL);
     var baseURLProtocol = baseURLDomainSplit[3];
     var baseURLDomain = baseURLDomainSplit[1];
     var baseURLPath = baseURLDomainSplit[5];

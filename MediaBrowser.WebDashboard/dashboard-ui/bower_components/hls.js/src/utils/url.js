@@ -33,7 +33,7 @@ var URLHelper = {
       baseURL = baseURLQuerySplit[1];
     }
 
-    var baseURLDomainSplit = /^((([a-z]+):)?\/\/[a-z0-9\.-]+(:[0-9]+)?\/)(.*)$/i.exec(baseURL);
+    var baseURLDomainSplit = /^((([a-z]+):)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?\/)(.*)$/i.exec(baseURL);
     var baseURLProtocol = baseURLDomainSplit[3];
     var baseURLDomain = baseURLDomainSplit[1];
     var baseURLPath = baseURLDomainSplit[5];

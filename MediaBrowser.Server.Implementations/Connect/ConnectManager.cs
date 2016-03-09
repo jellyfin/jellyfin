@@ -81,6 +81,12 @@ namespace MediaBrowser.Server.Implementations.Connect
                     if (!ip.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
                         !ip.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                     {
+                        // Handle ipv6
+                        if (ip.IndexOf(':') != -1)
+                        {
+                            ip = "[" + ip + "]";
+                        }
+
                         ip = (_appHost.EnableHttps ? "https://" : "http://") + ip;
                     }
 
@@ -316,7 +322,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 var json = _json.SerializeToString(_data);
 
@@ -324,7 +330,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 lock (_dataFileLock)
                 {
-					_fileSystem.WriteAllText(path, encrypted, Encoding.UTF8);
+                    _fileSystem.WriteAllText(path, encrypted, Encoding.UTF8);
                 }
             }
             catch (Exception ex)
@@ -341,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 lock (_dataFileLock)
                 {
-					var encrypted = _fileSystem.ReadAllText(path, Encoding.UTF8);
+                    var encrypted = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
                     var json = _encryption.DecryptString(encrypted);
 
@@ -381,7 +387,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 await UpdateConnectInfo().ConfigureAwait(false);
             }
-            
+
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -480,7 +486,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 await UpdateConnectInfo().ConfigureAwait(false);
             }
-            
+
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try

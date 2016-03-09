@@ -1,0 +1,667 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+// Navigation classes. Only used here for now, but we may at some point move
+// this to its own component.
+.mdl-navigation {
+  display: flex;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+}
+
+.mdl-navigation__link {
+  color: $layout-text-color;
+  text-decoration: none;
+  margin: 0;
+  @include typo-body-1(true);
+
+  // Align icons inside link with text
+  & .material-icons {
+    vertical-align: middle;
+  }
+}
+
+// Main layout class.
+.mdl-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Utility classes for screen sizes.
+.mdl-layout.is-small-screen .mdl-layout--large-screen-only {
+  display: none;
+}
+
+.mdl-layout:not(.is-small-screen) .mdl-layout--small-screen-only {
+  display: none;
+}
+
+.mdl-layout__container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+
+  // Optional utility classes for formatting special blocks in this component.
+  .mdl-layout__title,
+  .mdl-layout-title {
+    display: block;
+    position: relative;
+
+    @include typo-title();
+    font-weight: 400;
+    box-sizing: border-box;
+  }
+
+  .mdl-layout-spacer {
+    flex-grow: 1;
+  }
+
+
+  // Drawer.
+  .mdl-layout__drawer {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+
+    width: $layout-drawer-width;
+    height: 100%;
+    max-height: 100%;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    @include shadow-2dp();
+
+    box-sizing: border-box;
+    border-right: 1px solid $layout-drawer-border-color;
+    background: $layout-drawer-bg-color;
+
+    // Transform offscreen.
+    transform: translateX(-$layout-drawer-width - 10px);
+    transform-style: preserve-3d;
+    will-change: transform;
+
+    @include material-animation-default();
+    transition-property: transform;
+
+    color: $layout-text-color;
+
+    overflow: visible;
+    overflow-y: auto;
+
+    z-index: 5;
+
+    &.is-visible {
+      transform: translateX(0);
+      & ~ .mdl-layout__content.mdl-layout__content {
+        overflow: hidden;
+      }
+    }
+
+    & > * {
+      flex-shrink: 0;
+    }
+
+    & > .mdl-layout__title,
+    & > .mdl-layout-title {
+      line-height: $layout-desktop-header-height;
+      padding-left: $layout-header-desktop-indent;
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        line-height: $layout-mobile-header-height;
+        padding-left: $layout-header-mobile-indent;
+      }
+    }
+
+    & .mdl-navigation {
+      flex-direction: column;
+      align-items: stretch;
+      padding-top: 16px;
+
+      & .mdl-navigation__link {
+      display: block;
+      flex-shrink: 0;
+      padding: 16px $layout-header-desktop-indent;
+      margin: 0;
+      color: $layout-drawer-navigation-color;
+
+        @media screen and (max-width: $layout-screen-size-threshold) {
+          padding: 16px $layout-header-mobile-indent;
+        }
+
+        &:hover {
+          background-color: $layout-nav-color;
+        }
+
+        &--current {
+            background-color: $layout-drawer-navigation-link-active-background;
+            color: $layout-drawer-navigation-link-active-color;
+        }
+      }
+    }
+
+    @media screen and (min-width: $layout-screen-size-threshold + 1px) {
+      .mdl-layout--fixed-drawer > & {
+        transform: translateX(0);
+      }
+    }
+  }
+
+
+  // Drawer button.
+  // TODO(sgomes): Replace with an icon button when we have that component.
+  .mdl-layout__drawer-button {
+    display: block;
+
+    position: absolute;
+    height: $layout-drawer-button-desktop-size;
+    width: $layout-drawer-button-desktop-size;
+    border: 0;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+    font-size: 26px;
+    line-height: $layout-drawer-button-desktop-size + 2;
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 10px 12px;
+    top: 0;
+    left: 0;
+    color: $layout-header-text-color;
+
+    z-index: 4;
+
+    .mdl-layout__header & {
+      position: absolute;
+      color: $layout-header-text-color;
+      background-color: inherit;
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        margin: 4px;
+      }
+    }
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      margin: 4px;
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    @media screen and (min-width: $layout-screen-size-threshold + 1px) {
+      .mdl-layout--fixed-drawer > & {
+        display: none;
+      }
+
+      .mdl-layout--no-desktop-drawer-button & {
+        display: none;
+      }
+    }
+
+    .mdl-layout--no-drawer-button & {
+      display: none;
+    }
+  }
+
+  .mdl-layout__header {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-height: $layout-desktop-header-height;
+    max-height: 1000px;
+    z-index: 3;
+
+    background-color: $layout-header-bg-color;
+    color: $layout-header-text-color;
+
+    @include shadow-2dp();
+    @include material-animation-default();
+    transition-property: max-height, box-shadow;
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      min-height: $layout-mobile-header-height;
+    }
+
+    .mdl-layout--fixed-drawer.is-upgraded:not(.is-small-screen) > & {
+      margin-left: $layout-drawer-width;
+      width: calc(100% - #{$layout-drawer-width});
+    }
+
+    @media screen and (min-width: $layout-screen-size-threshold + 1px) {
+      .mdl-layout--fixed-drawer > & {
+        .mdl-layout__header-row {
+          padding-left: 40px;
+        }
+      }
+    }
+
+    & > .mdl-layout-icon {
+      position: absolute;
+      left: $layout-header-desktop-indent;
+      top: ($layout-desktop-header-height - $layout-header-icon-size) / 2;
+      height: $layout-header-icon-size;
+      width: $layout-header-icon-size;
+      overflow: hidden;
+      z-index: 3;
+      display: block;
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        left: $layout-header-mobile-indent;
+        top: ($layout-mobile-header-height - $layout-header-icon-size) / 2;
+      }
+    }
+
+    .mdl-layout.has-drawer & > .mdl-layout-icon {
+      display: none;
+    }
+
+    &.is-compact {
+      max-height: $layout-desktop-header-height;
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        max-height: $layout-mobile-header-height;
+      }
+    }
+
+    &.is-compact.has-tabs {
+      height: $layout-desktop-header-height + $layout-tab-bar-height;
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        min-height: $layout-mobile-header-height + $layout-tab-bar-height;
+      }
+    }
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      & {
+        display: none;
+      }
+
+      .mdl-layout--fixed-header > & {
+        display: flex;
+      }
+    }
+  }
+
+    .mdl-layout__header--transparent.mdl-layout__header--transparent {
+      background-color: transparent;
+      box-shadow: none;
+    }
+
+    .mdl-layout__header--seamed {
+      box-shadow: none;
+    }
+
+    .mdl-layout__header--scroll {
+      box-shadow: none;
+    }
+
+    .mdl-layout__header--waterfall {
+      box-shadow: none;
+      overflow: hidden;
+
+      &.is-casting-shadow {
+        @include shadow-2dp();
+      }
+
+      &.mdl-layout__header--waterfall-hide-top {
+        justify-content: flex-end;
+      }
+    }
+
+    .mdl-layout__header-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      align-self: stretch;
+      align-items: center;
+      height: $layout-header-desktop-row-height;
+      margin: 0;
+      padding: 0 $layout-header-desktop-indent 0 $layout-header-desktop-baseline;
+
+      .mdl-layout--no-drawer-button & {
+        padding-left: $layout-header-desktop-indent;
+      }
+
+      @media screen and (min-width: $layout-screen-size-threshold + 1px) {
+        .mdl-layout--no-desktop-drawer-button & {
+          padding-left: $layout-header-desktop-indent;
+        }
+      }
+
+      @media screen and (max-width: $layout-screen-size-threshold) {
+        height: $layout-header-mobile-row-height;
+        padding: 0 $layout-header-mobile-indent 0 $layout-header-mobile-baseline;
+
+        .mdl-layout--no-drawer-button & {
+          padding-left: $layout-header-mobile-indent;
+        }
+      }
+
+      & > * {
+        flex-shrink: 0;
+      }
+
+      .mdl-layout__header--scroll & {
+        width: 100%;
+      }
+
+      & .mdl-navigation {
+        margin: 0;
+        padding: 0;
+        height: $layout-header-desktop-row-height;
+        flex-direction: row;
+        align-items: center;
+
+        @media screen and (max-width: $layout-screen-size-threshold) {
+          height: $layout-header-mobile-row-height;
+        }
+      }
+
+      & .mdl-navigation__link {
+        display: block;
+        color: $layout-header-text-color;
+        line-height: $layout-header-desktop-row-height;
+        padding: 0 24px;
+
+        @media screen and (max-width: $layout-screen-size-threshold) {
+          line-height: $layout-header-mobile-row-height;
+          padding: 0 $layout-header-mobile-indent;
+        }
+      }
+    }
+
+  // Obfuscator.
+  .mdl-layout__obfuscator {
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 4;
+    visibility: hidden;
+    transition-property: background-color;
+    @include material-animation-default();
+
+    &.is-visible {
+      background-color: rgba(0, 0, 0, 0.5);
+      visibility: visible;
+    }
+
+    @supports (pointer-events: auto) {
+      background-color: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition-property: opacity;
+      visibility: visible;
+      pointer-events: none;
+      &.is-visible {
+        pointer-events: auto;
+        opacity: 1;
+      }
+    }
+  }
+
+
+  // Content.
+  .mdl-layout__content {
+    // Fix IE10 bug.
+    -ms-flex: 0 1 auto;
+
+    position: relative;
+    display: inline-block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-grow: 1;
+    z-index: 1;
+    -webkit-overflow-scrolling: touch;
+
+    .mdl-layout--fixed-drawer > & {
+      margin-left: $layout-drawer-width;
+    }
+
+    .mdl-layout__container.has-scrolling-header & {
+      overflow: visible;
+    }
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      .mdl-layout--fixed-drawer > & {
+        margin-left: 0;
+      }
+
+      .mdl-layout__container.has-scrolling-header & {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+    }
+  }
+
+  // Tabs.
+  .mdl-layout__tab-bar {
+    height: $layout-tab-bar-height * 2;
+    margin: 0;
+    width: calc(100% -
+        #{(($layout-header-desktop-baseline - $layout-tab-desktop-padding) * 2)});
+    padding: 0 0 0
+        ($layout-header-desktop-baseline - $layout-tab-desktop-padding);
+    display: flex;
+    background-color: $layout-header-bg-color;
+    overflow-y: hidden;
+    overflow-x: scroll;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mdl-layout--no-drawer-button & {
+      padding-left: $layout-header-desktop-indent - $layout-tab-desktop-padding;
+      width: calc(100% -
+          #{(($layout-header-desktop-indent - $layout-tab-desktop-padding) * 2)});
+    }
+
+    @media screen and (min-width: $layout-screen-size-threshold + 1px) {
+      .mdl-layout--no-desktop-drawer-button & {
+        padding-left: $layout-header-desktop-indent - $layout-tab-desktop-padding;
+        width: calc(100% -
+            #{(($layout-header-desktop-indent - $layout-tab-desktop-padding) * 2)});
+      }
+    }
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      width: calc(100% -
+          #{($layout-header-mobile-baseline - $layout-tab-mobile-padding)});
+      padding: 0 0 0
+          ($layout-header-mobile-baseline - $layout-tab-mobile-padding);
+
+      .mdl-layout--no-drawer-button & {
+        width: calc(100% -
+            #{(($layout-header-mobile-indent - $layout-tab-mobile-padding) * 2)});
+        padding-left: $layout-header-mobile-indent - $layout-tab-mobile-padding;
+      }
+    }
+
+    .mdl-layout--fixed-tabs & {
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+  }
+
+  .mdl-layout__tab-bar-container {
+    position: relative;
+    height: $layout-tab-bar-height;
+    width: 100%;
+    border: none;
+    margin: 0;
+    z-index: 2;
+    flex-grow: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    .mdl-layout__container > & {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  .mdl-layout__tab-bar-button {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    height: $layout-tab-bar-height;
+    width: $layout-header-desktop-baseline - $layout-tab-desktop-padding;
+    z-index: 4;
+    text-align: center;
+    background-color: $layout-header-bg-color;
+    color: transparent;
+    cursor: pointer;
+    user-select: none;
+
+    .mdl-layout--no-desktop-drawer-button &,
+    .mdl-layout--no-drawer-button & {
+      width: $layout-header-desktop-indent - $layout-tab-desktop-padding;
+
+      & .material-icons {
+        position: relative;
+        left: ($layout-header-desktop-indent - $layout-tab-desktop-padding - 24px) / 2;
+      }
+    }
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      display: none;
+      width: $layout-header-mobile-baseline - $layout-tab-mobile-padding;
+    }
+
+    .mdl-layout--fixed-tabs & {
+      display: none;
+    }
+
+    & .material-icons {
+      line-height: $layout-tab-bar-height;
+    }
+
+    &.is-active {
+      color: $layout-header-text-color;
+    }
+  }
+
+  .mdl-layout__tab-bar-left-button {
+    left: 0;
+  }
+
+  .mdl-layout__tab-bar-right-button {
+    right: 0;
+  }
+
+  .mdl-layout__tab {
+    margin: 0;
+    border: none;
+    padding: 0 $layout-tab-desktop-padding 0 $layout-tab-desktop-padding;
+
+    float: left;
+    position: relative;
+    display: block;
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    text-decoration: none;
+    height: $layout-tab-bar-height;
+    line-height: $layout-tab-bar-height;
+
+    text-align: center;
+    font-weight: 500;
+    font-size: $layout-tab-font-size;
+    text-transform: uppercase;
+
+    color: $layout-header-tab-text-color;
+    overflow: hidden;
+
+    @media screen and (max-width: $layout-screen-size-threshold) {
+      padding: 0 $layout-tab-mobile-padding 0 $layout-tab-mobile-padding;
+    }
+
+    .mdl-layout--fixed-tabs & {
+      float: none;
+      flex-grow: 1;
+      padding: 0;
+    }
+
+    .mdl-layout.is-upgraded &.is-active {
+      color: $layout-header-text-color;
+    }
+
+    .mdl-layout.is-upgraded &.is-active::after {
+      height: $layout-tab-highlight-thickness;
+      width: 100%;
+      display: block;
+      content: " ";
+      bottom: 0;
+      left: 0;
+      position: absolute;
+      background: $layout-header-tab-highlight;
+      animation: border-expand 0.2s cubic-bezier(0.4, 0.0, 0.4, 1) 0.01s alternate forwards;
+      transition: all 1s cubic-bezier(0.4, 0.0, 1, 1);
+    }
+
+    & .mdl-layout__tab-ripple-container {
+      display: block;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      left: 0;
+      top: 0;
+      z-index: 1;
+      overflow: hidden;
+
+      & .mdl-ripple {
+        background-color: $layout-header-text-color;
+      }
+    }
+  }
+
+  .mdl-layout__tab-panel {
+    display: block;
+
+    .mdl-layout.is-upgraded & {
+      display: none;
+    }
+
+    .mdl-layout.is-upgraded &.is-active {
+      display: block;
+    }
+  }

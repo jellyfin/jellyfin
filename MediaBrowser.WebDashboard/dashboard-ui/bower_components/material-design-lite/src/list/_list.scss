@@ -1,0 +1,157 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+
+.mdl-list {
+  display: block;
+  padding: $list-border 0;
+  list-style: none;
+}
+
+.mdl-list__item {
+  @include typo-subhead();
+  line-height: 1;
+  display: flex;
+  min-height: $list-min-height;
+  box-sizing: border-box;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: $list-min-padding;
+  cursor: default;
+  color: $list-main-text-text-color;
+  overflow: hidden;
+
+  & .mdl-list__item-primary-content {
+    order: 0;
+    flex-grow: 2;
+    text-decoration: none;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+
+    & .mdl-list__item-icon {
+      margin-right: $list-icon-text-left-distance - $list-icon-size - $list-min-padding;
+    }
+
+    & .mdl-list__item-avatar {
+      margin-right: $list-avatar-text-left-distance - $list-avatar-size - $list-min-padding;
+    }
+  }
+
+  & .mdl-list__item-secondary-content {
+    display: flex;
+    flex-flow: column;
+    align-items: flex-end;
+    margin-left: $list-min-padding;
+
+    & .mdl-list__item-secondary-action label { display: inline; }
+    & .mdl-list__item-secondary-info {
+      @include typo-caption();
+      color: $list-supporting-text-text-color;
+    }
+    & .mdl-list__item-sub-header {
+      padding: 0 0 0 $list-min-padding;
+    }
+  }
+}
+
+.mdl-list__item-icon,
+.mdl-list__item-icon.material-icons {
+  height: $list-icon-size;
+  width: $list-icon-size;
+  font-size: $list-icon-size;
+  box-sizing: border-box;
+  color: $list-icon-color;
+}
+
+.mdl-list__item-avatar,
+.mdl-list__item-avatar.material-icons {
+  height: $list-avatar-size;
+  width: $list-avatar-size;
+  box-sizing: border-box;
+  border-radius: 50%;
+  // Set a background colour in case the user doesn't provide an image.
+  background-color: $list-icon-color;
+  // Set a font size and color in case the user provides a Material Icon.
+  font-size: $list-avatar-size;
+  color: $list-avatar-color;
+}
+
+.mdl-list__item--two-line {
+  height: $list-two-line-height;
+
+  & .mdl-list__item-primary-content {
+    height: $list-two-line-height - $list-min-padding - $list-bottom-padding;
+    line-height: 20px;
+    display: block;
+
+    & .mdl-list__item-avatar{
+      float: left;
+    }
+
+    & .mdl-list__item-icon {
+      float: left;
+      // Icons are aligned to center of text in a two line list.
+      margin-top:
+        ($list-two-line-height - $list-min-padding - $list-bottom-padding -
+         $list-icon-size) / 2;
+    }
+
+    & .mdl-list__item-secondary-content {
+      height: $list-two-line-height - $list-min-padding - $list-bottom-padding;
+    }
+
+    & .mdl-list__item-sub-title {
+      @include typo-body-1();
+      line-height: 18px;
+      color: $list-supporting-text-text-color;
+      display: block;
+      padding: 0;
+    }
+  }
+}
+
+.mdl-list__item--three-line {
+  height: $list-three-line-height;
+
+  & .mdl-list__item-primary-content {
+    height: $list-three-line-height - $list-min-padding - $list-bottom-padding;
+    line-height: 20px;
+    display: block;
+
+    & .mdl-list__item-avatar,
+    & .mdl-list__item-icon {
+      float: left;
+    }
+  }
+
+  & .mdl-list__item-secondary-content {
+    height: $list-three-line-height - $list-min-padding - $list-bottom-padding;
+  }
+
+  & .mdl-list__item-text-body {
+    @include typo-body-1();
+    line-height: 18px;
+    height: $list-three-line-height - $list-min-padding - $list-bottom-padding;
+    color: $list-supporting-text-text-color;
+    display: block;
+    padding: 0;
+  }
+}

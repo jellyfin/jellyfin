@@ -1,0 +1,29 @@
+{
+  "name": "material-design-lite",
+  "version": "1.1.2",
+  "homepage": "https://github.com/google/material-design-lite",
+  "authors": [
+    "Material Design Lite team"
+  ],
+  "description": "Material Design Components in CSS, JS and HTML",
+  "main": [
+    "material.min.css",
+    "material.min.js"
+  ],
+  "keywords": [
+    "material",
+    "design",
+    "styleguide",
+    "style",
+    "guide"
+  ],
+  "license": "Apache-2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "./lib/.bower_components",
+    "test",
+    "tests"
+  ]
+}
