@@ -1,0 +1,180 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+.mdl-checkbox {
+  position: relative;
+
+  z-index: 1;
+
+  vertical-align: middle;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: $checkbox-label-height;
+  margin: 0;
+  padding: 0;
+
+  &.is-upgraded {
+    padding-left: $checkbox-button-size + $checkbox-padding;
+  }
+}
+
+.mdl-checkbox__input {
+  line-height: $checkbox-label-height;
+
+  .mdl-checkbox.is-upgraded & {
+    // Hide input element, while still making it respond to focus.
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+  }
+}
+
+.mdl-checkbox__box-outline {
+  position: absolute;
+  top: $checkbox-top-offset;
+  left: 0;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: $checkbox-button-size;
+  height: $checkbox-button-size;
+  margin: 0;
+
+  cursor: pointer;
+  overflow: hidden;
+
+  border: 2px solid $checkbox-off-color;
+  border-radius: 2px;
+
+  z-index: 2;
+
+  .mdl-checkbox.is-checked & {
+    border: 2px solid $checkbox-color;
+  }
+
+  fieldset[disabled] .mdl-checkbox &,
+  .mdl-checkbox.is-disabled & {
+    border: 2px solid $checkbox-disabled-color;
+    cursor: auto;
+  }
+}
+
+.mdl-checkbox__focus-helper {
+  position: absolute;
+  top: $checkbox-top-offset;
+  left: 0;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: $checkbox-button-size;
+  height: $checkbox-button-size;
+  border-radius: 50%;
+
+  background-color: transparent;
+
+  .mdl-checkbox.is-focused & {
+    box-shadow: 0 0 0px ($checkbox-button-size / 2) rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .mdl-checkbox.is-focused.is-checked & {
+    box-shadow: 0 0 0px ($checkbox-button-size / 2) $checkbox-focus-color;
+    background-color: $checkbox-focus-color;
+  }
+}
+
+.mdl-checkbox__tick-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  mask: url("#{$checkbox-image-path}/tick-mask.svg?embed");
+
+  background: transparent;
+  @include material-animation-default(0.28s);
+  transition-property: background;
+
+  .mdl-checkbox.is-checked & {
+    background: $checkbox-color url("#{$checkbox-image-path}/tick.svg?embed");
+  }
+
+  fieldset[disabled] .mdl-checkbox.is-checked &,
+  .mdl-checkbox.is-checked.is-disabled & {
+    background: $checkbox-disabled-color url("#{$checkbox-image-path}/tick.svg?embed");
+  }
+}
+
+.mdl-checkbox__label {
+  position: relative;
+  cursor: pointer;
+  font-size: $checkbox-label-font-size;
+  line-height: $checkbox-label-height;
+  margin: 0;
+
+  fieldset[disabled] .mdl-checkbox &,
+  .mdl-checkbox.is-disabled & {
+    color: $checkbox-disabled-color;
+    cursor: auto;
+  }
+}
+
+.mdl-checkbox__ripple-container {
+  position: absolute;
+  z-index: 2;
+  top: -(($checkbox-ripple-size - $checkbox-label-height) / 2);
+  left: -(($checkbox-ripple-size - $checkbox-button-size) / 2);
+
+  box-sizing: border-box;
+  width: $checkbox-ripple-size;
+  height: $checkbox-ripple-size;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+
+  & .mdl-ripple {
+    background: $checkbox-color;
+  }
+
+  fieldset[disabled] .mdl-checkbox &,
+  .mdl-checkbox.is-disabled & {
+    cursor: auto;
+  }
+
+  fieldset[disabled] .mdl-checkbox & .mdl-ripple,
+  .mdl-checkbox.is-disabled & .mdl-ripple {
+    background: transparent;
+  }
+}

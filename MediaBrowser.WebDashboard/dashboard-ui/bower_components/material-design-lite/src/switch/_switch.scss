@@ -1,0 +1,203 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+@import "../variables";
+@import "../mixins";
+
+.mdl-switch {
+  position: relative;
+
+  z-index: 1;
+
+  vertical-align: middle;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: $switch-label-height;
+  margin: 0;
+  padding: 0;
+
+  overflow: visible;
+
+  &.is-upgraded {
+    padding-left: $switch-track-length - 8px;
+  }
+
+  // avoids blue box around switch
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.mdl-switch__input {
+  line-height: $switch-label-height;
+
+  .mdl-switch.is-upgraded & {
+    // Hide input element, while still making it respond to focus.
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+  }
+}
+
+.mdl-switch__track {
+  background: $switch-off-track-color;
+  position: absolute;
+  left: 0;
+  top: $switch-track-top;
+  height: $switch-track-height;
+  width: $switch-track-length;
+  border-radius: $switch-track-height;
+
+  cursor: pointer;
+
+  .mdl-switch.is-checked & {
+    background: $switch-track-color;
+  }
+
+  fieldset[disabled] .mdl-switch,
+  .mdl-switch.is-disabled & {
+    background: $switch-disabled-track-color;
+    cursor: auto;
+  }
+}
+
+.mdl-switch__thumb {
+  background: $switch-off-thumb-color;
+  position: absolute;
+  left: 0;
+  top: $switch-thumb-top;
+  height: $switch-thumb-size;
+  width: $switch-thumb-size;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  @include shadow-2dp();
+
+  @include material-animation-default(0.28s);
+  transition-property: left;
+
+  .mdl-switch.is-checked & {
+    background: $switch-thumb-color;
+    left: $switch-track-length - $switch-thumb-size;
+
+    @include shadow-3dp();
+  }
+
+  fieldset[disabled] .mdl-switch,
+  .mdl-switch.is-disabled & {
+    background: $switch-disabled-thumb-color;
+    cursor: auto;
+  }
+}
+
+.mdl-switch__focus-helper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-$switch-helper-size / 2, -$switch-helper-size / 2);
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: $switch-helper-size;
+  height: $switch-helper-size;
+  border-radius: 50%;
+
+  background-color: transparent;
+
+  .mdl-switch.is-focused & {
+    box-shadow: 0 0 0px (($switch-ripple-size - $switch-helper-size) / 2)
+        rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .mdl-switch.is-focused.is-checked & {
+    box-shadow: 0 0 0px (($switch-ripple-size - $switch-helper-size) / 2)
+        $switch-faded-color;
+    background-color: $switch-faded-color;
+  }
+}
+
+.mdl-switch__label {
+  position: relative;
+  cursor: pointer;
+  font-size: $switch-label-font-size;
+  line-height: $switch-label-height;
+  margin: 0;
+  left: 24px;
+
+  fieldset[disabled] .mdl-switch,
+  .mdl-switch.is-disabled & {
+    color: $switch-disabled-thumb-color;
+    cursor: auto;
+  }
+}
+
+.mdl-switch__ripple-container {
+  position: absolute;
+  z-index: 2;
+  top: -($switch-ripple-size - $switch-label-height) / 2;
+  left: $switch-thumb-size / 2 - $switch-ripple-size / 2;
+
+  box-sizing: border-box;
+  width: $switch-ripple-size;
+  height: $switch-ripple-size;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+
+  transition-duration: 0.40s;
+  transition-timing-function: step-end;
+  transition-property: left;
+
+  & .mdl-ripple {
+    background: $switch-color;
+  }
+
+  fieldset[disabled] .mdl-switch,
+  .mdl-switch.is-disabled & {
+    cursor: auto;
+  }
+
+  fieldset[disabled] .mdl-switch & .mdl-ripple,
+  .mdl-switch.is-disabled & .mdl-ripple {
+    background: transparent;
+  }
+
+  .mdl-switch.is-checked & {
+    left: $switch-track-length - $switch-ripple-size / 2 -
+        $switch-thumb-size / 2;
+  }
+}

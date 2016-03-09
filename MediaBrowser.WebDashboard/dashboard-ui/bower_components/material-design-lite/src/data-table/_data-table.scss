@@ -1,0 +1,120 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+.mdl-data-table {
+  position: relative;
+  border: $data-table-dividers;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: $data-table-font-size;
+  background-color: unquote("rgb(#{$color-white})");
+
+  thead {
+    padding-bottom: 3px;
+
+    .mdl-data-table__select {
+      margin-top: 0;
+    }
+  }
+
+  tbody {
+    tr {
+      position: relative;
+      height: $data-table-row-height;
+      @include material-animation-default(0.28s);
+      transition-property: background-color;
+
+      &.is-selected {
+        background-color: $data-table-selection-color;
+      }
+
+      &:hover {
+        background-color: $data-table-hover-color;
+      }
+    }
+  }
+
+  td, th {
+    padding: 0 $data-table-column-padding 12px $data-table-column-padding;
+    text-align: right;
+
+    &:first-of-type {
+      padding-left: 24px;
+    }
+
+    &:last-of-type {
+      padding-right: 24px;
+    }
+  }
+
+  td {
+    position: relative;
+    vertical-align: middle;
+    height: $data-table-row-height;
+    border-top: $data-table-dividers;
+    border-bottom: $data-table-dividers;
+    padding-top: $data-table-cell-top;
+    box-sizing: border-box;
+
+    .mdl-data-table__select {
+      vertical-align: middle;
+    }
+  }
+
+  th {
+    position: relative;
+    vertical-align: bottom;
+    text-overflow: ellipsis;
+    @include typo-body-2();
+    height: $data-table-row-height;
+    font-size: $data-table-header-font-size;
+    color: $data-table-header-color;
+    padding-bottom: 8px;
+    box-sizing: border-box;
+
+    &.mdl-data-table__header--sorted-ascending,
+    &.mdl-data-table__header--sorted-descending {
+      color: $data-table-header-sorted-color;
+      &:before {
+        @include typo-icon;
+        font-size: $data-table-header-sort-icon-size;
+        content: "\e5d8";
+        margin-right: 5px;
+        vertical-align: sub;
+      }
+      &:hover {
+        cursor: pointer;
+        &:before {
+          color: $data-table-header-sorted-icon-hover-color;
+        }
+      }
+    }
+    &.mdl-data-table__header--sorted-descending:before {
+      content: "\e5db";
+    }
+  }
+}
+
+.mdl-data-table__select {
+  width: 16px;
+}
+
+.mdl-data-table__cell--non-numeric.mdl-data-table__cell--non-numeric {
+  text-align: left;
+}

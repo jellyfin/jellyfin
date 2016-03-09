@@ -1,0 +1,160 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+.mdl-radio {
+  position: relative;
+
+  font-size: $radio-label-font-size;
+  line-height: $radio-label-height;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  margin: 0;
+  padding-left: 0;
+
+  &.is-upgraded {
+    padding-left: $radio-button-size + $radio-padding;
+  }
+}
+
+.mdl-radio__button {
+  line-height: $radio-label-height;
+
+  .mdl-radio.is-upgraded & {
+    // Hide input element, while still making it respond to focus.
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+  }
+}
+
+.mdl-radio__outer-circle {
+  position: absolute;
+  top: $radio-top-offset;
+  left: 0;
+
+  display: inline-block;
+
+  box-sizing: border-box;
+  width: $radio-button-size;
+  height: $radio-button-size;
+  margin: 0;
+
+  cursor: pointer;
+
+  border: 2px solid $radio-off-color;
+  border-radius: 50%;
+
+  z-index: 2;
+
+  .mdl-radio.is-checked & {
+    border: 2px solid $radio-color;
+  }
+
+  fieldset[disabled] .mdl-radio,
+  .mdl-radio.is-disabled & {
+    border: 2px solid $radio-disabled-color;
+    cursor: auto;
+  }
+}
+
+.mdl-radio__inner-circle {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  top: $radio-top-offset + $radio-inner-margin;
+  left: $radio-inner-margin;
+
+  box-sizing: border-box;
+  width: $radio-button-size - ($radio-inner-margin * 2);
+  height: $radio-button-size - ($radio-inner-margin * 2);
+
+  cursor: pointer;
+
+  @include material-animation-default(0.28s);
+  transition-property: transform;
+  transform: scale3d(0, 0, 0);
+
+  border-radius: 50%;
+  background: $radio-color;
+
+  .mdl-radio.is-checked & {
+    transform: scale3d(1, 1, 1);
+  }
+
+  fieldset[disabled] .mdl-radio &,
+  .mdl-radio.is-disabled & {
+    background: $radio-disabled-color;
+    cursor: auto;
+  }
+
+  .mdl-radio.is-focused & {
+    box-shadow: 0 0 0px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.mdl-radio__label {
+  cursor: pointer;
+
+  fieldset[disabled] .mdl-radio &,
+  .mdl-radio.is-disabled & {
+    color: $radio-disabled-color;
+    cursor: auto;
+  }
+}
+
+.mdl-radio__ripple-container {
+  position: absolute;
+  z-index: 2;
+  top: -(($radio-ripple-size - $radio-label-height) / 2);
+  left: -(($radio-ripple-size - $radio-button-size) / 2);
+
+  box-sizing: border-box;
+  width: $radio-ripple-size;
+  height: $radio-ripple-size;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+
+  & .mdl-ripple {
+    background: $radio-color;
+  }
+
+  fieldset[disabled] .mdl-radio &,
+  .mdl-radio.is-disabled & {
+    cursor: auto;
+  }
+
+  fieldset[disabled] .mdl-radio & .mdl-ripple,
+  .mdl-radio.is-disabled & .mdl-ripple {
+    background: transparent;
+  }
+}

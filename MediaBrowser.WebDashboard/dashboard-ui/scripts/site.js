@@ -1901,12 +1901,12 @@ var AppInfo = {};
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
         define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
-        define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
         define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
+        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
 
         // alias
         define("historyManager", [], function () {
@@ -1983,6 +1983,14 @@ var AppInfo = {};
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
+        }
+
+        if (browser.animate) {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
+        } else if (browser.tv) {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading-smarttv"], returnFirstDependency);
+        } else {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
     }
 

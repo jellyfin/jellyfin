@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Material Design Lite</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+    <meta name="msapplication-TileColor" content="#3372DF">
+
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel="canonical" href="http://www.example.com/">
+    -->
+
+    <!-- Page styles -->
+    <link href='//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="styleguide.css">
+  </head>
+  <body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-styleguide">
+
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">Material Design Lite</span>
+        <nav id="main-navigation" class="mdl-navigation">
+        </nav>
+      </div>
+
+      <div class="mdl-layout__content">
+        <div class="styleguide-demo">
+          <h1>Typography</h1>
+          <iframe src="./typography/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>List</h1>
+          <iframe src="./list/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Palette</h1>
+          <iframe src="./palette/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Shadows</h1>
+          <iframe src="./shadow/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Cards</h1>
+          <iframe src="./card/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Animation</h1>
+          <iframe src="./animation/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Button</h1>
+          <iframe src="./button/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Menu</h1>
+          <iframe src="./menu/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Text Field</h1>
+          <iframe src="./textfield/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Radio Buttons</h1>
+          <iframe src="./radio/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Checkbox</h1>
+          <iframe src="./checkbox/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Switch</h1>
+          <iframe src="./switch/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Icon Toggle</h1>
+          <iframe src="./icon-toggle/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Slider</h1>
+          <iframe src="./slider/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Spinner</h1>
+          <iframe src="./spinner/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Progress Bar</h1>
+          <iframe src="./progress/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Layout</h1>
+            <iframe src="./layout/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Content Tabs</h1>
+          <iframe src="./tabs/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Icons</h1>
+          <iframe src="./icons/demo.html" scrolling="no"></iframe>
+        </div>
+
+
+        <div class="styleguide-demo">
+          <h1>Tooltip</h1>
+          <iframe src="./tooltip/demo.html" scrolling="no"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Column Layout</h1>
+            <iframe src="./column-layout/demo.html"></iframe>
+        </div>
+
+        <div class="styleguide-demo">
+          <h1>Footer</h1>
+            <iframe src="./footer/demo.html"></iframe>
+        </div>
+      </div>
+    </div>
+    <!-- build:js scripts/main.min.js -->
+    <script src="mdlComponentHandler.js"></script>
+    <script src="layout/layout.js" async defer></script>
+    <!-- endbuild -->
+
+    <!-- Script to handle sizing the iFrames -->
+    <script>
+      'use strict';
+      var navList = document.getElementById('main-navigation');
+      var totalDemosPendingLoading = 0;
+      sizeDemos();
+
+      function sizeDemos() {
+        var demos = document.querySelectorAll('.styleguide-demo');
+        totalDemosPendingLoading = demos.length;
+        for (var i = 0; i < demos.length; i++) {
+          var demoTitle = demos[i].querySelector('h1').textContent;
+          var anchorLink = 'demo-' + i;
+
+          // Add list item
+          var navAnchor = document.createElement('a');
+          navAnchor.classList.add('mdl-navigation__link');
+          navAnchor.href = '#' + anchorLink;
+          navAnchor.appendChild(document.createTextNode(demoTitle));
+          navList.appendChild(navAnchor);
+
+          var anchor = document.createElement('a');
+          anchor.id = anchorLink;
+          demos[i].insertBefore(anchor , demos[i].querySelector('h1'));
+
+          // Size iframe
+          sizeDemo(demos[i]);
+        }
+      }
+
+      function sizeDemo(rootDemoElement) {
+        var iframe = rootDemoElement.querySelector('iframe');
+        if (iframe === null) {
+          totalDemosPendingLoading--;
+          return;
+        }
+        iframe.onload = function() {
+          var contentHeight = iframe.contentDocument.documentElement.scrollHeight;
+          iframe.style.height = contentHeight + 'px';
+          iframe.classList.add('heightSet');
+          totalDemosPendingLoading--;
+          if (totalDemosPendingLoading <= 0) {
+            document.body.classList.add('demosLoaded');
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

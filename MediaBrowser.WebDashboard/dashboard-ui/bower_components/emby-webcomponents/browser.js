@@ -9,7 +9,7 @@
             return true;
         }
 
-        if (userAgent.indexOf('samsung') != -1) {
+        if (userAgent.indexOf('samsungbrowser') != -1) {
             return true;
         }
 
@@ -18,6 +18,10 @@
         }
 
         if (userAgent.indexOf('viera') != -1) {
+            return true;
+        }
+
+        if (userAgent.indexOf('webos') != -1) {
             return true;
         }
 
