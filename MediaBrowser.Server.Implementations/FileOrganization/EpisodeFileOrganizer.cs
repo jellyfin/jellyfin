@@ -547,7 +547,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             if (series == null)
             {
-                SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(e => e.MatchStrings.Contains(seriesName, StringComparer.OrdinalIgnoreCase));
+                SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(e => e.MatchStrings.Contains(nameWithoutYear, StringComparer.OrdinalIgnoreCase));
 
                 if (info != null)
                 {
