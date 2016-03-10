@@ -699,6 +699,7 @@ namespace MediaBrowser.Api.Images
 
         private ImageFormat[] GetClientSupportedFormats()
         {
+            //Logger.Debug("Request types: {0}", string.Join(",", Request.AcceptTypes ?? new string[] { }));
             var supportsWebP = (Request.AcceptTypes ?? new string[] { }).Contains("image/webp", StringComparer.OrdinalIgnoreCase);
 
             var userAgent = Request.UserAgent ?? string.Empty;
