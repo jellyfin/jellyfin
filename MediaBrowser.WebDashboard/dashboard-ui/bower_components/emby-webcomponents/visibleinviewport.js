@@ -17,6 +17,10 @@
 
         var vpWidth = window.innerWidth,
             vpHeight = window.innerHeight;
+			
+		if (!elem.getBoundingClientRect){
+			return true;
+		}
 
         // Use this native browser method, if available.
         var rec = elem.getBoundingClientRect(),

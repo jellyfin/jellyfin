@@ -271,8 +271,13 @@
         $('#txtSignupPassword', page).val('');
         $('#txtSignupPasswordConfirm', page).val('');
 
-        var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
-        $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+        if (browserInfo.safari && AppInfo.isNativeApp) {
+            // With apple we can't even have a link to the site
+            $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessageWithoutLink'));
+        } else {
+            var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
+            $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+        }
 
     }).on('pageshow', "#connectLoginPage", function () {
 
