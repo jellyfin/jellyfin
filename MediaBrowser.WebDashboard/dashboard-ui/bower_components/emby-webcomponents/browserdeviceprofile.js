@@ -91,9 +91,7 @@ define(['browser'], function (browser) {
             return true;
         }
 
-        var userAgent = navigator.userAgent.toLowerCase();
-
-        if (userAgent.indexOf('samsungbrowser') != -1) {
+        if (browser.tizen) {
             return true;
         }
 
@@ -102,47 +100,66 @@ define(['browser'], function (browser) {
 
     function testCanPlayTs() {
 
-        // Unfortunately there's no real way to detect mkv support
-        var userAgent = navigator.userAgent.toLowerCase();
-
-        if (userAgent.indexOf('webos') != -1) {
-            return true;
-        }
-
-        if (userAgent.indexOf('samsungbrowser') != -1) {
-            return true;
-        }
-
-        return false;
+        return browser.tizen || browser.webos;
     }
 
-    function testCanPlayWmv() {
+    function getDirectPlayProfileForVideoContainer(container) {
 
-        // Unfortunately there's no real way to detect mkv support
-        var userAgent = navigator.userAgent.toLowerCase();
+        var supported = false;
 
-        if (userAgent.indexOf('webos') != -1) {
-            return true;
+        switch (container) {
+
+            case '3gp':
+            case 'avi':
+            case 'asf':
+            case 'flv':
+            case 'mpg':
+            case 'mpeg':
+            case 'mts':
+            case 'trp':
+            case 'vob':
+            case 'vro':
+                supported = browser.tizen;
+                break;
+            case 'm2ts':
+            case 'wmv':
+                supported = browser.tizen || browser.webos;
+                break;
+            default:
+                break;
         }
 
-        return false;
+        if (!supported) {
+            return null;
+        }
+
+        return {
+            Container: container,
+            Type: 'Video'
+        };
     }
 
-    function testCanPlayM2ts() {
+    function getMaxBitrate() {
 
-        // Unfortunately there's no real way to detect mkv support
         var userAgent = navigator.userAgent.toLowerCase();
 
-        if (userAgent.indexOf('webos') != -1) {
-            return true;
+        if (browser.tizen) {
+
+            // 2015 models
+            if (userAgent.indexOf('tizen 2.3') != -1) {
+                return 20000000;
+            }
+
+            // 2016 models
+            return 40000000;
         }
 
-        return false;
+        return 100000000;
     }
 
     return function () {
 
-        var bitrateSetting = 100000000;
+        var bitrateSetting = getMaxBitrate();
 
         var videoTestElement = document.createElement('video');
 
@@ -223,22 +240,14 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (testCanPlayWmv()) {
-            profile.DirectPlayProfiles.push({
-                Container: 'wmv',
-                Type: 'Video',
-                VideoCodec: 'h264'
-            });
-        }
+        // These are formats we can't test for but some devices will support
+        ['m2ts', 'wmv'].map(getDirectPlayProfileForVideoContainer).filter(function (i) {
+            return i != null;
 
-        if (testCanPlayM2ts()) {
-            profile.DirectPlayProfiles.push({
-                Container: 'm2ts',
-                Type: 'Video',
-                VideoCodec: 'h264',
-                AudioCodec: videoAudioCodecs.join(',')
-            });
-        }
+        }).forEach(function (i) {
+
+            profile.DirectPlayProfiles.push(i);
+        });
 
         ['opus', 'mp3', 'aac', 'flac', 'webma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 

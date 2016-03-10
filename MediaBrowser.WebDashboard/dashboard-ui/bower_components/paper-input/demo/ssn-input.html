@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-input/iron-input.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="ssn-validator.html">
 
 <dom-module id="ssn-input">
@@ -27,15 +28,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: auto;
         text-align: center;
       }
+
+      .container {
+        @apply(--layout-horizontal);
+      }
     </style>
 
     <ssn-validator></ssn-validator>
 
-    <input is="iron-input" maxlength="3" bind-value="{{_ssn1}}" size="3" aria-label="First 3 digits of social security number">
-    -
-    <input is="iron-input" maxlength="2" bind-value="{{_ssn2}}" size="2" aria-label="Middle 2 digits of social security number">
-    -
-    <input is="iron-input" maxlength="4" bind-value="{{_ssn3}}" size="4" aria-label="Last 4 digits of social security number">
+    <div class="container">
+
+      <input is="iron-input" maxlength="3" bind-value="{{_ssn1}}" size="3" aria-label="First 3 digits of social security number">
+      -
+      <input is="iron-input" maxlength="2" bind-value="{{_ssn2}}" size="2" aria-label="Middle 2 digits of social security number">
+      -
+      <input is="iron-input" maxlength="4" bind-value="{{_ssn3}}" size="4" aria-label="Last 4 digits of social security number">
+
+    </div>
 
   </template>
 </dom-module>

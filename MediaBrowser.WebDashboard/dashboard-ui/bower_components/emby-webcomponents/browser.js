@@ -95,6 +95,8 @@
 
     browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') != -1;
     browser.animate = document.documentElement.animate != null;
+    browser.tizen = userAgent.toLowerCase().indexOf('tizen') != -1;
+    browser.webos = userAgent.toLowerCase().indexOf('webos') != -1;
 
     browser.tv = isTv();
 
