@@ -84,6 +84,62 @@ define(['browser'], function (browser) {
         return false;
     }
 
+    function testCanPlayMkv() {
+
+        // Unfortunately there's no real way to detect mkv support
+        if (browser.chrome) {
+            return true;
+        }
+
+        var userAgent = navigator.userAgent.toLowerCase();
+
+        if (userAgent.indexOf('samsungbrowser') != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function testCanPlayTs() {
+
+        // Unfortunately there's no real way to detect mkv support
+        var userAgent = navigator.userAgent.toLowerCase();
+
+        if (userAgent.indexOf('webos') != -1) {
+            return true;
+        }
+
+        if (userAgent.indexOf('samsungbrowser') != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function testCanPlayWmv() {
+
+        // Unfortunately there's no real way to detect mkv support
+        var userAgent = navigator.userAgent.toLowerCase();
+
+        if (userAgent.indexOf('webos') != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function testCanPlayM2ts() {
+
+        // Unfortunately there's no real way to detect mkv support
+        var userAgent = navigator.userAgent.toLowerCase();
+
+        if (userAgent.indexOf('webos') != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
     return function () {
 
         var bitrateSetting = 100000000;
@@ -91,8 +147,9 @@ define(['browser'], function (browser) {
         var videoTestElement = document.createElement('video');
 
         var canPlayWebm = videoTestElement.canPlayType('video/webm').replace(/no/, '');
-        // No real way to detect this, but it's too good to pass up
-        var canPlayMkv = browser.chrome;
+
+        var canPlayMkv = testCanPlayMkv();
+        var canPlayTs = testCanPlayTs();
 
         var profile = {};
 
@@ -121,8 +178,11 @@ define(['browser'], function (browser) {
                 }
             }
         }
-        if (canPlayMkv) {
+
+        var mp3Added = false;
+        if (canPlayMkv || canPlayTs) {
             if (supportsMp3VideoAudio) {
+                mp3Added = true;
                 videoAudioCodecs.push('mp3');
                 hlsVideoAudioCodecs.push('mp3');
             }
@@ -131,11 +191,9 @@ define(['browser'], function (browser) {
             videoAudioCodecs.push('aac');
             hlsVideoAudioCodecs.push('aac');
         }
-        if (!canPlayMkv) {
-            if (supportsMp3VideoAudio) {
-                videoAudioCodecs.push('mp3');
-                hlsVideoAudioCodecs.push('mp3');
-            }
+        if (!mp3Added && supportsMp3VideoAudio) {
+            videoAudioCodecs.push('mp3');
+            hlsVideoAudioCodecs.push('mp3');
         }
 
         if (canPlayH264()) {
@@ -150,6 +208,32 @@ define(['browser'], function (browser) {
         if (canPlayMkv) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv,mov',
+                Type: 'Video',
+                VideoCodec: 'h264',
+                AudioCodec: videoAudioCodecs.join(',')
+            });
+        }
+
+        if (canPlayTs) {
+            profile.DirectPlayProfiles.push({
+                Container: 'ts,mpegts',
+                Type: 'Video',
+                VideoCodec: 'h264',
+                AudioCodec: videoAudioCodecs.join(',')
+            });
+        }
+
+        if (testCanPlayWmv()) {
+            profile.DirectPlayProfiles.push({
+                Container: 'wmv',
+                Type: 'Video',
+                VideoCodec: 'h264'
+            });
+        }
+
+        if (testCanPlayM2ts()) {
+            profile.DirectPlayProfiles.push({
+                Container: 'm2ts',
                 Type: 'Video',
                 VideoCodec: 'h264',
                 AudioCodec: videoAudioCodecs.join(',')
@@ -204,6 +288,17 @@ define(['browser'], function (browser) {
         if (canPlayMkv && !browser.mobile) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
+                Type: 'Video',
+                AudioCodec: videoAudioCodecs.join(','),
+                VideoCodec: 'h264',
+                Context: 'Streaming',
+                CopyTimestamps: true
+            });
+        }
+
+        if (canPlayTs) {
+            profile.TranscodingProfiles.push({
+                Container: 'ts',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
