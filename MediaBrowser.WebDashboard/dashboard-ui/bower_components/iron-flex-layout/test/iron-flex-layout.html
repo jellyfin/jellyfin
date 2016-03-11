@@ -53,6 +53,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #c1 { background-color: #E91E63; }
       #c2 { background-color: #03A9F4; }
       #c3 { background-color: #CDDC39; }
+      #c4 { background-color: #03A9F4; }
+      #c5 { background-color: #E91E63; }
 
       .horizontal { @apply(--layout-horizontal); }
       .horizontal-reverse { @apply(--layout-horizontal-reverse); }
@@ -72,6 +74,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .justified { @apply(--layout-justified); }
       .around-justified { @apply(--layout-around-justified); }
       .fit { @apply(--layout-fit); }
+      .start-aligned { @apply(--layout-start-aligned); }
+      .end-aligned { @apply(--layout-end-aligned); }
+      .center-aligned { @apply(--layout-center-aligned); }
+      .between-aligned { @apply(--layout-between-aligned); }
+      .around-aligned { @apply(--layout-around-aligned); }
+
     </style>
   </head>
   <body>
@@ -110,11 +118,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
       </template>
     </test-fixture>
+
+    <test-fixture id="align-content">
+      <template>
+        <div class="container small tall horizontal flex wrap">
+          <div id="c1"></div>
+          <div id="c2"></div>
+          <div id="c3"></div>
+          <div id="c4"></div>
+          <div id="c5"></div>
+        </div>
+      </template>
+    </test-fixture>
     <script>
       function positionEquals(node, top, bottom, left, right) {
         var rect = node.getBoundingClientRect();
-        return rect.top === top && rect.bottom === bottom
-            && rect.left === left && rect.right === right;
+        return rect.top === top && rect.bottom === bottom && 
+               rect.left === left && rect.right === right;
       }
       suite('basic layout', function() {
         var container;
@@ -321,6 +341,76 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.isTrue(positionEquals(c2, 0, 50, end + spacing, end + spacing + 50), "child 2 position ok");
           end = end + spacing + 50 + spacing;
           assert.isTrue(positionEquals(c3, 0, 50, end + spacing, end + spacing + 50), "child 3 position ok");
+        });
+      });
+
+      suite('align-content', function() {
+        var container;
+
+        setup(function() {
+          container = fixture('align-content');
+        });
+
+        test('default is stretch', function() {
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 100, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 100, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 100, 200, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, 100, 200, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, 200, 300, 0, 50), "child 5 position ok");
+        });
+
+        test('--layout-start-aligned', function() {
+          container.classList.add('start-aligned');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 50, 100, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, 50, 100, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, 100, 150, 0, 50), "child 5 position ok");
+        });
+
+        test('--layout-end-aligned', function() {
+          container.classList.add('end-aligned');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          assert.isTrue(positionEquals(c1, 150, 200, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 150, 200, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, 200, 250, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, 200, 250, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, 250, 300, 0, 50), "child 5 position ok");
+        });
+
+        test('--layout-center-aligned', function() {
+          container.classList.add('center-aligned');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, center-50, center, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, center-50, center, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, center, center+50, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, center, center+50, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, center+50, center+100, 0, 50), "child 5 position ok");
+        });
+
+        test('--layout-between-aligned', function() {
+          container.classList.add('between-aligned');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, 0, 50, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 0, 50, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, center, center+50, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, center, center+50, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, 250, 300, 0, 50), "child 5 position ok");
+        });
+
+        test('--layout-around-aligned', function() {
+          container.classList.add('around-aligned');
+          assert.isTrue(positionEquals(container, 0, 300, 0, 120), "container position ok");
+          var center = (300 - 50) / 2;
+          assert.isTrue(positionEquals(c1, 25, 75, 0, 50), "child 1 position ok");
+          assert.isTrue(positionEquals(c2, 25, 75, 50, 100), "child 2 position ok");
+          assert.isTrue(positionEquals(c3, center, center+50, 0, 50), "child 3 position ok");
+          assert.isTrue(positionEquals(c4, center, center+50, 50, 100), "child 4 position ok");
+          assert.isTrue(positionEquals(c5, 225, 275, 0, 50), "child 5 position ok");
         });
       });
 

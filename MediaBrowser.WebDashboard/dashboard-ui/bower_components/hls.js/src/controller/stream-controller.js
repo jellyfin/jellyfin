@@ -847,7 +847,8 @@ class StreamController extends EventHandler {
       // include levelCodec in audio and video tracks
       track = tracks.audio;
       if(track) {
-        var audioCodec = this.levels[this.level].audioCodec;
+        var audioCodec = this.levels[this.level].audioCodec,
+            ua = navigator.userAgent.toLowerCase();
         if(audioCodec && this.audioCodecSwap) {
           logger.log('swapping playlist audio codec');
           if(audioCodec.indexOf('mp4a.40.5') !==-1) {
@@ -858,18 +859,20 @@ class StreamController extends EventHandler {
         }
         // in case AAC and HE-AAC audio codecs are signalled in manifest
         // force HE-AAC , as it seems that most browsers prefers that way,
-        // except for mono streams OR on Android OR on FF
+        // except for mono streams OR on FF
         // these conditions might need to be reviewed ...
         if (this.audioCodecSwitch) {
-            var ua = navigator.userAgent.toLowerCase();
             // don't force HE-AAC if mono stream
            if(track.metadata.channelCount !== 1 &&
-            // don't force HE-AAC if android
-            ua.indexOf('android') === -1 &&
             // don't force HE-AAC if firefox
             ua.indexOf('firefox') === -1) {
               audioCodec = 'mp4a.40.5';
           }
+        }
+        // HE-AAC is broken on Android, always signal audio codec as AAC even if variant manifest states otherwise
+        if(ua.indexOf('android') !== -1) {
+          audioCodec = 'mp4a.40.2';
+          logger.log(`Android: force audio codec to` + audioCodec);
         }
         track.levelCodec = audioCodec;
       }

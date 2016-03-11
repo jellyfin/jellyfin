@@ -129,6 +129,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       return style.transform || style.webkitTransform;
     }
 
+    suite('basic', function() {
+      test('can be created imperatively', function() {
+        var container = document.createElement('paper-input-container');
+        var input = document.createElement('input', 'iron-input');
+        input.className = 'paper-input-input';
+        input.id = 'input';
+
+        var label = document.createElement('label');
+        label.innerHTML = 'label';
+
+        Polymer.dom(container).appendChild(label);
+        Polymer.dom(container).appendChild(input);
+
+        document.body.appendChild(container);
+        assert.isOk(container);
+        document.body.removeChild(container);
+      });
+    });
+
     suite('label position', function() {
 
       test('label is visible by default', function() {

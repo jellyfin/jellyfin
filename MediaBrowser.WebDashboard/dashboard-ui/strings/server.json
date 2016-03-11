@@ -2294,6 +2294,7 @@
     "LabelProfile": "Profile:",
     "LabelBitrateMbps": "Bitrate (Mbps):",
     "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "ButtonNewServer": "New Server",
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
     "MyDevice": "My Device",

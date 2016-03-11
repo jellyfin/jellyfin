@@ -512,11 +512,9 @@
 
         function enableNativeTrackSupport(track) {
 
-            if (browserInfo.safari) {
-                if (navigator.userAgent.toLowerCase().indexOf('os x') == -1) {
-                    // Leave it to apple to have different behavior between safari on ios vs osx
-                    return false;
-                }
+            if (browserInfo.safari && browserInfo.mobile) {
+                // Leave it to apple to have different behavior between safari on ios vs osx
+                return false;
             }
 
             if (browserInfo.firefox) {
@@ -648,7 +646,7 @@
                 console.log('expectedId: ' + expectedId + '--currentTrack.Id:' + currentTrack.id);
 
                 // IE doesn't support track id
-                if (browserInfo.msie) {
+                if (browserInfo.msie || browserInfo.edge) {
                     if (trackIndex == i) {
                         mode = 1; // show this track
                     } else {

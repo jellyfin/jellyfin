@@ -264,7 +264,6 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
             // If not resizing, get the original image
             if (!options.maxWidth && !options.width && !options.maxHeight && !options.height) {
                 options.quality = 100;
-                options.format = 'jpg';
             }
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {

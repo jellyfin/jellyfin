@@ -49,12 +49,12 @@
         });
     }
 
-    function organizeEpsiodeWithCorrections(page, item) {
+    function organizeFileWithCorrections(page, item) {
 
-        showEpisodeCorrectionPopup(page, item);
+        showCorrectionPopup(page, item);
     }
 
-    function showEpisodeCorrectionPopup(page, item) {
+    function showCorrectionPopup(page, item) {
 
         require(['components/fileorganizer/fileorganizer'], function (fileorganizer) {
 
@@ -74,7 +74,7 @@
         if (!item.TargetPath) {
 
             if (item.Type == "Episode") {
-                organizeEpsiodeWithCorrections(page, item);
+                organizeFileWithCorrections(page, item);
             }
 
             return;
