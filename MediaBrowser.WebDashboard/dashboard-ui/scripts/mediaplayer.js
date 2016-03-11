@@ -47,8 +47,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
         function updateDeviceProfileForAndroid(profile) {
 
             // Just here as an easy escape out, if ever needed
-            var enableVlcVideo = window.VlcAudio;
-            var enableVlcAudio = true;
+            var enableVlcVideo = true;
+            var enableVlcAudio = window.VlcAudio;
 
             if (enableVlcVideo) {
 
@@ -150,6 +150,15 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
                         Property: 'VideoLevel',
                         Value: '41'
                     }]
+                });
+
+                profile.TranscodingProfiles.filter(function (p) {
+
+                    return p.Type == 'Video' && p.VideoCodec == 'h264';
+
+                }).forEach(function (p) {
+
+                    p.AudioCodec += ',ac3';
                 });
             }
 

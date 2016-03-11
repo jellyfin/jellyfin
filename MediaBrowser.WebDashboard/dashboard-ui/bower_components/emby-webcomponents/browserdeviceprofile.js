@@ -100,7 +100,7 @@ define(['browser'], function (browser) {
 
     function testCanPlayTs() {
 
-        return browser.tizen || browser.webos;
+        return browser.tizen || browser.web0s;
     }
 
     function getDirectPlayProfileForVideoContainer(container) {
@@ -123,7 +123,7 @@ define(['browser'], function (browser) {
                 break;
             case 'm2ts':
             case 'wmv':
-                supported = browser.tizen || browser.webos;
+                supported = browser.tizen || browser.web0s;
                 break;
             default:
                 break;

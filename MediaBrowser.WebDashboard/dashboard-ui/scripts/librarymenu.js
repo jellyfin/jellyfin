@@ -83,8 +83,8 @@
                 }
 
                 if (headerUserButton) {
-                    headerUserButton.icon = null;
                     headerUserButton.src = url;
+                    headerUserButton.icon = null;
                     headerUserButton.classList.add('headerUserButtonRound');
                     hasImage = true;
                 }
@@ -94,6 +94,7 @@
         if (headerUserButton && !hasImage) {
             headerUserButton.icon = 'person';
             headerUserButton.src = null;
+            headerUserButton.removeAttribute('src');
             headerUserButton.classList.remove('headerUserButtonRound');
 
             // Looks like a bug in paper-icon-button that this doesn't get removed
