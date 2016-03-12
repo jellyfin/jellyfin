@@ -301,7 +301,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", language);
+                url += string.Format("&language={0}", MovieDbProvider.NormalizeLanguage(language));
 
                 // Get images in english and with no language
                 url += "&include_image_language=" + MovieDbProvider.GetImageLanguagesParam(language);
