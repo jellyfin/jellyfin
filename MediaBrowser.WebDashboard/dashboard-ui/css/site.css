@@ -336,16 +336,8 @@ h1, h1 a {
 }
 
 h2 {
-    font-weight: 400;
+    font-weight: 300;
 }
-
-/*a, a.ui-link {
-    font-weight: normal;
-}
-
-.ui-controlgroup a, a.ui-btn {
-    font-weight: bold;
-}*/
 
 .ui-btn {
     font-family: inherit;
